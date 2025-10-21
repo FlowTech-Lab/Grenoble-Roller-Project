@@ -214,7 +214,7 @@ touch navbar.html footer.html auth-forms.html banners.html cards.html card-lists
                 Complete design system for Eventbrite-like applications
             </p>
             <p class="text-muted">
-                Bootstrap 5.3.2 + Liquid Apple 2025 Layer + Custom Components
+                Bootstrap 5.3.2 + Liquid Design 2025 Layer + Custom Components
             </p>
         </div>
     </section>

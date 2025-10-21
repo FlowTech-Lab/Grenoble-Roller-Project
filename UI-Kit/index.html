@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Grenoble Roller official site - Modern UI Kit with Bootstrap 5.3.2 and Liquid Apple 2025 design. Discover our accessible and performant components.">
+    <meta name="description" content="Grenoble Roller official site - Modern UI Kit with Bootstrap 5.3.2 and Liquid Design 2025. Discover our accessible and performant components.">
     <meta name="keywords" content="Grenoble Roller, UI Kit, Bootstrap 5, Design System, Liquid Design, Accessibility">
     <meta name="author" content="Grenoble Roller">
     <title>Grenoble Roller - UI Kit & Components</title>
@@ -15,7 +15,7 @@
     <!-- Custom CSS - Bootstrap 5.3.2 + Liquid Layer (all-in-one) -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="centered-content">
     <!-- ========================================
          GRENOBLE ROLLER NAVBAR
          ======================================== -->
@@ -105,12 +105,12 @@
             <h1 class="display-3 fw-bold mb-4 liquid-fade-in">
                 <i class="bi bi-palette me-3" aria-hidden="true"></i>
                 Grenoble Roller UI Kit
-            </h1>
+                </h1>
             <p class="lead text-muted mb-4">
                 Complete Design System for Grenoble Roller Applications By The Hacking Project
             </p>
             <p class="text-muted mb-5">
-                Bootstrap 5.3.2 + Liquid Apple 2025 Layer + Custom Components
+                Bootstrap 5.3.2 + Liquid Design 2025 Layer + Custom Components
             </p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
                 <a href="#atoms" class="btn btn-liquid-primary btn-lg">
@@ -131,1248 +131,82 @@
          Basic building blocks of the design system
          ======================================== -->
     <section id="atoms" class="py-5">
-        <div class="container-fluid">
+        <div class="container">
             <div class="row mb-5">
                 <div class="col-12 text-center">
-                    <h2 class="display-4 fw-bold mb-3">
+                    <h2 class="display-4 fw-bold mb-3 text-liquid-primary-white">
                         <i class="bi bi-circle text-liquid-primary me-3"></i>
                         Atoms
                     </h2>
                     <p class="lead text-muted">
                         Basic building blocks of the design system
                     </p>
+                    <p class="text-muted">
+                        Buttons, Forms, Cards, Alerts, Badges, Typography, Navbars and more...
+                    </p>
                     <hr class="w-50 mx-auto">
-                </div>
-            </div>
-        
-        <!-- DÉBUT DU CONTENU ATOMS (ton kit UI actuel) -->
-
-        <!-- Liquid Section -->
-        <section id="liquid" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Liquid + Bootstrap - The best of both worlds</h2>
-                    <p class="mb-4">The Liquid layer adds glass morphism effects and organic gradients to Bootstrap 5.3.2.</p>
-                    
-                    <!-- Liquid Cards -->
-                    <div class="row justify-content-center">
-                        <div class="col-md-4 mb-4">
-                            <div class="card card-liquid rounded-liquid">
-                                <div class="card-body">
-                                    <h5 class="card-title">Liquid Card</h5>
-                                    <p class="card-text">This card uses glass morphism effects with backdrop-filter.</p>
-                                    <button class="btn btn-liquid-primary">Liquid Action</button>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card card-liquid card-liquid-primary rounded-liquid">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Liquid Primary Card</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">This card uses a header with organic gradient.</p>
+            
+            <!-- Atoms Preview -->
+            <div class="row mb-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="card card-liquid shadow-liquid p-4">
+                        <div class="row g-4">
+                            <!-- Preview 1: Buttons -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="bi bi-circle-fill text-primary me-2"></i>Buttons</h5>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button class="btn btn-liquid-primary">Primary</button>
                                     <button class="btn btn-liquid-success">Success</button>
                                     <button class="btn btn-liquid-danger">Danger</button>
+                                    <button class="btn btn-outline-primary">Outline</button>
                                 </div>
+                            </div>
+                            
+                            <!-- Preview 2: Cards -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="bi bi-card-text text-info me-2"></i>Cards</h5>
+                                <div class="card card-liquid-primary">
+                                <div class="card-body">
+                                        <h6 class="card-title">Liquid Card</h6>
+                                        <p class="card-text small mb-0">Glass morphism with backdrop-filter</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Liquid Buttons and Forms -->
-                    <div class="row mt-4">
+                            <!-- Preview 3: Forms -->
                         <div class="col-md-6">
-                            <h4>Liquid Forms</h4>
-                            <form>
-                                <div class="mb-3">
-                                    <label for="liquidEmail" class="form-label">Email</label>
-                                    <input type="email" class="form-control form-control-liquid" id="liquidEmail" placeholder="email@example.com">
+                                <h5 class="mb-3"><i class="bi bi-input-cursor-text text-success me-2"></i>Forms</h5>
+                                <input type="text" class="form-control form-control-liquid" placeholder="Liquid input field">
                                 </div>
-                                <div class="mb-3">
-                                    <label for="liquidPassword" class="form-label">Password</label>
-                                    <input type="password" class="form-control form-control-liquid" id="liquidPassword" placeholder="Password">
-                                </div>
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="liquidCheck">
-                                        <label class="form-check-label" for="liquidCheck">
-                                            Remember me
-                                        </label>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-liquid-primary">Sign in</button>
-                            </form>
-                        </div>
+                            
+                            <!-- Preview 4: Alerts & Badges -->
                         <div class="col-md-6">
-                            <h4>Liquid Buttons</h4>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-liquid-primary">Liquid Primary</button>
-                                <button type="button" class="btn btn-liquid-success">Liquid Success</button>
-                                <button type="button" class="btn btn-liquid-danger">Liquid Danger</button>
+                                <h5 class="mb-3"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Alerts & Badges</h5>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span class="badge badge-liquid-primary">Primary</span>
+                                    <span class="badge badge-liquid-success">Success</span>
+                                    <span class="badge badge-liquid-danger">Danger</span>
                             </div>
-                            <h4 class="mt-4">Bootstrap Buttons (original)</h4>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-outline-primary">Outline Primary</button>
-                                <button type="button" class="btn btn-outline-success">Outline Success</button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Navbars Section -->
-        <section id="navbars" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Navbars</h2>
-                    
-                    <!-- Liquid Navbar -->
-                    <div class="mb-4">
-                        <h4>Liquid Navbar</h4>
-                        <nav class="navbar navbar-expand-lg navbar-liquid mb-3" aria-label="Liquid navbar example">
-                            <div class="container-fluid">
-                                <a class="navbar-brand fw-bold" href="#" title="Grenoble Roller">
-                                    <i class="bi bi-roller-skate me-2" aria-hidden="true"></i>Grenoble Roller
-                                </a>
-                                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar1" 
-                                        aria-controls="navbar1" aria-expanded="false" aria-label="Toggle navigation">
-                                    <span class="navbar-toggler-icon"></span>
-                                </button>
-                                <div class="collapse navbar-collapse" id="navbar1">
-                                    <ul class="navbar-nav me-auto">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" href="#" aria-current="page">
-                                                <i class="bi bi-house me-1" aria-hidden="true"></i>Home</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                <i class="bi bi-star me-1" aria-hidden="true"></i>Features</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                <i class="bi bi-tag me-1" aria-hidden="true"></i>Pricing</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                <i class="bi bi-info-circle me-1" aria-hidden="true"></i> About</a>
-                                        </li>
-                                        <li class="nav-item dropdown">
-                                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" 
-                                               aria-expanded="false" aria-label="Dropdown menu">
-                                                <i class="bi bi-list me-1" aria-hidden="true"></i>Dropdown
-                                            </a>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                    <form class="d-flex" role="search">
-                                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Rechercher">
-                                        <button class="btn btn-liquid-primary" type="submit" aria-label="Rechercher">
-                                            <i class="bi bi-search" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
-                                </div>
                             </div>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- Buttons Section -->
-        <section id="buttons" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Buttons</h2>
-                    
-                    <!-- Button Variants -->
-                    <div class="mb-4">
-                        <h4>Button Variants</h4>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <button type="button" class="btn btn-primary">Primary</button>
-                            <button type="button" class="btn btn-secondary">Secondary</button>
-                            <button type="button" class="btn btn-success">Success</button>
-                            <button type="button" class="btn btn-danger">Danger</button>
-                            <button type="button" class="btn btn-warning">Warning</button>
-                            <button type="button" class="btn btn-info">Info</button>
-                            <button type="button" class="btn btn-light">Light</button>
-                            <button type="button" class="btn btn-dark">Dark</button>
-                        </div>
-                    </div>
-
-                    <!-- Button Sizes -->
-                    <div class="mb-4">
-                        <h4>Button Sizes</h4>
-                        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                            <button type="button" class="btn btn-primary btn-sm">Small</button>
-                            <button type="button" class="btn btn-primary">Default</button>
-                            <button type="button" class="btn btn-primary btn-lg">Large</button>
-                        </div>
-                    </div>
-
-                    <!-- Button Styles -->
-                    <div class="mb-4">
-                        <h4>Button Styles</h4>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <button type="button" class="btn btn-primary">Solid</button>
-                            <button type="button" class="btn btn-outline-primary">Outline</button>
-                            <button type="button" class="btn btn-link">Link</button>
-                        </div>
-                    </div>
-
-                    <!-- Button Groups -->
-                    <div class="mb-4">
-                        <h4>Button Groups</h4>
-                        <div class="btn-group mb-3" role="group">
-                            <button type="button" class="btn btn-primary">Left</button>
-                            <button type="button" class="btn btn-primary">Middle</button>
-                            <button type="button" class="btn btn-primary">Right</button>
-                        </div>
-                    </div>
-
-                    <!-- Icon Buttons -->
-                    <div class="mb-4">
-                        <h4>Icon Buttons</h4>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <button type="button" class="btn btn-primary" aria-label="Like">
-                                <i class="bi bi-heart me-2" aria-hidden="true"></i>Like
-                            </button>
-                            <button type="button" class="btn btn-success" aria-label="Confirm">
-                                <i class="bi bi-check me-2" aria-hidden="true"></i>Confirm
-                            </button>
-                            <button type="button" class="btn btn-danger" aria-label="Delete">
-                                <i class="bi bi-trash me-2" aria-hidden="true"></i>Delete
-                            </button>
-                            <button type="button" class="btn btn-info" aria-label="Information">
-                                <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Info
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Typography Section -->
-        <section id="typography" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Typography</h2>
-                    
-                    <!-- Headings -->
-                    <div class="mb-4">
-                        <h4>Headings</h4>
-                        <div class="mb-3">
-                            <h1 class="text-liquid-primary-white">Heading 1</h1>
-                            <h2>Heading 2</h2>
-                            <h3>Heading 3</h3>
-                            <h4>Heading 4</h4>
-                            <h5>Heading 5</h5>
-                            <h6>Heading 6</h6>
-                        </div>
-                    </div>
-
-                    <!-- Heading with secondary text -->
-                    <div class="mb-4">
-                        <h4>Heading with faded secondary text</h4>
-                        <h3>Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.</h3>
-                    </div>
-
-                    <!-- Body text -->
-                    <div class="mb-4">
-                        <h4>Example body text</h4>
-                        <p>Nullam quis risus eget urna mollis ornare vel eu leo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam id dolor id nibh ultricies vehicula.</p>
-                    </div>
-
-                    <!-- Text styles -->
-                    <div class="mb-4">
-                        <h4>Text Styles</h4>
-                        <p class="small">This line of text is meant to be treated as fine print.</p>
-                        <p><strong>The following is rendered as bold text.</strong></p>
-                        <p><em>The following is rendered as italicized text.</em></p>
-                        <p><abbr title="attribute">An abbreviation of the word attribute is attr.</abbr></p>
-                    </div>
-
-                    <!-- Emphasis classes -->
-                    <div class="mb-4">
-                        <h4>Emphasis classes</h4>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="text-primary">.text-primary</p>
-                                <p class="text-primary-emphasis">.text-primary-emphasis</p>
-                                <p class="text-secondary">.text-secondary</p>
-                                <p class="text-secondary-emphasis">.text-secondary-emphasis</p>
-                                <p class="text-success">.text-success</p>
-                                <p class="text-success-emphasis">.text-success-emphasis</p>
-                                <p class="text-danger">.text-danger</p>
-                                <p class="text-danger-emphasis">.text-danger-emphasis</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="text-warning">.text-warning</p>
-                                <p class="text-warning-emphasis">.text-warning-emphasis</p>
-                                <p class="text-info">.text-info</p>
-                                <p class="text-info-emphasis">.text-info-emphasis</p>
-                                <p class="text-light bg-dark">.text-light</p>
-                                <p class="text-light-emphasis bg-dark">.text-light-emphasis</p>
-                                <p class="text-dark">.text-dark</p>
-                                <p class="text-dark-emphasis">.text-dark-emphasis</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    </div>
-
-                    <!-- Text Colors Liquid (Custom) -->
-                    <div class="mb-4">
-                        <h4>Text Colors Liquid <span class="badge badge-liquid-primary">Custom</span></h4>
-                        <p class="text-muted small">Custom classes with Grenoble Roller Liquid colors</p>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h3 class="text-liquid-primary">.text-liquid-primary</h3>
-                                <h3 class="text-liquid-primary-light">.text-liquid-primary-light</h3>
-                                <h3 class="text-liquid-primary-dark">.text-liquid-primary-dark</h3>
-                                <h3 class="text-liquid-success">.text-liquid-success</h3>
-                            </div>
-                            <div class="col-md-6">
-                                <h3 class="text-liquid-primary-white">.text-liquid-primary-white</h3>
-                                <h3 class="text-liquid-warning">.text-liquid-warning</h3>
-                                <h3 class="text-liquid-danger">.text-liquid-danger</h3>
-                                <h3 class="text-liquid-info">.text-liquid-info</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Blockquotes -->
-                    <div class="mb-4">
-                        <h4>Blockquotes</h4>
-                        <blockquote class="blockquote">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-                            <footer class="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
-                        </blockquote>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tables Section -->
-        <section id="tables" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Tables</h2>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col">Type</th>
-                                    <th scope="col">Column heading</th>
-                                    <th scope="col">Column heading</th>
-                                    <th scope="col">Column heading</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="table-active">
-                                    <th scope="row">Active</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Default</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-primary">
-                                    <th scope="row">Primary</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-secondary">
-                                    <th scope="row">Secondary</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-success">
-                                    <th scope="row">Success</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-danger">
-                                    <th scope="row">Danger</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-warning">
-                                    <th scope="row">Warning</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-info">
-                                    <th scope="row">Info</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-light">
-                                    <th scope="row">Light</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                                <tr class="table-dark">
-                                    <th scope="row">Dark</th>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                    <td>Column content</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Forms Section -->
-        <section id="forms" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Forms</h2>
-                    
-                    <form>
-                        <fieldset>
-                            <legend>Legend</legend>
-                            
-                            <!-- Email -->
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" placeholder="email@example.com">
-                                <div class="form-text">We'll never share your email with anyone else.</div>
-                            </div>
-                            
-                            <!-- Password -->
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" placeholder="Password">
-                            </div>
-                            
-                            <!-- Select -->
-                            <div class="mb-3">
-                                <label for="select" class="form-label">Example select</label>
-                                <select class="form-select" id="select">
-                                    <option>1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Disabled select -->
-                            <div class="mb-3">
-                                <label for="disabledSelect" class="form-label">Example disabled select</label>
-                                <select class="form-select" id="disabledSelect" disabled>
-                                    <option>1</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Multiple select -->
-                            <div class="mb-3">
-                                <label for="multipleSelect" class="form-label">Example multiple select</label>
-                                <select class="form-select" id="multipleSelect" multiple>
-                                    <option>1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                    <option>5</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Textarea -->
-                            <div class="mb-3">
-                                <label for="textarea" class="form-label">Example textarea</label>
-                                <textarea class="form-control" id="textarea" rows="3"></textarea>
-                            </div>
-                            
-                            <!-- File input -->
-                            <div class="mb-3">
-                                <label for="file" class="form-label">Default file input example</label>
-                                <input class="form-control" type="file" id="file">
-                            </div>
-                            
-                            <!-- Radio buttons -->
-                            <div class="mb-3">
-                                <label class="form-label">Radio buttons</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="radio" id="radio1" value="option1">
-                                    <label class="form-check-label" for="radio1">
-                                        Option one is this and that—be sure to include why it's great
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="radio" id="radio2" value="option2">
-                                    <label class="form-check-label" for="radio2">
-                                        Option two can be something else and selecting it will deselect option one
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="radio" id="radio3" value="option3" disabled>
-                                    <label class="form-check-label" for="radio3">
-                                        Option three is disabled
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Checkboxes -->
-                            <div class="mb-3">
-                                <label class="form-label">Checkboxes</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="checkbox1">
-                                    <label class="form-check-label" for="checkbox1">
-                                        Default checkbox
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="checkbox2" checked>
-                                    <label class="form-check-label" for="checkbox2">
-                                        Checked checkbox
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Switches -->
-                            <div class="mb-3">
-                                <label class="form-label">Switches</label>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switch1">
-                                    <label class="form-check-label" for="switch1">
-                                        Default switch checkbox input
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="switch2" checked>
-                                    <label class="form-check-label" for="switch2">
-                                        Checked switch checkbox input
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Ranges -->
-                            <div class="mb-3">
-                                <label for="range" class="form-label">Example range</label>
-                                <input type="range" class="form-range" id="range">
-                                <label for="disabledRange" class="form-label">Disabled range</label>
-                                <input type="range" class="form-range" id="disabledRange" disabled>
-                            </div>
-                            
-                            <!-- Disabled and readonly -->
-                            <div class="mb-3">
-                                <label for="disabledInput" class="form-label">Disabled input</label>
-                                <input type="text" class="form-control" id="disabledInput" placeholder="Disabled input here..." disabled>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="readonlyInput" class="form-label">Readonly input</label>
-                                <input type="text" class="form-control" id="readonlyInput" placeholder="Readonly input here..." readonly>
-                            </div>
-                            
-                            <!-- Valid and invalid -->
-                            <div class="mb-3">
-                                <label for="validInput" class="form-label">Valid input</label>
-                                <input type="text" class="form-control is-valid" id="validInput" value="correct value">
-                                <div class="valid-feedback">
-                                    Success! You've done it.
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="invalidInput" class="form-label">Invalid input</label>
-                                <input type="text" class="form-control is-invalid" id="invalidInput" value="wrong value">
-                                <div class="invalid-feedback">
-                                    Sorry, that username's taken. Try another?
-                                </div>
-                            </div>
-                            
-                            <!-- Input sizes -->
-                            <div class="mb-3">
-                                <label for="largeInput" class="form-label">Large input</label>
-                                <input type="text" class="form-control form-control-lg" id="largeInput" placeholder=".form-control-lg">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="defaultInput" class="form-label">Default input</label>
-                                <input type="text" class="form-control" id="defaultInput" placeholder="Default input">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="smallInput" class="form-label">Small input</label>
-                                <input type="text" class="form-control form-control-sm" id="smallInput" placeholder=".form-control-sm">
-                            </div>
-                            
-                            <!-- Input addons -->
-                            <div class="mb-3">
-                                <label for="addonInput" class="form-label">Input addons</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="text" class="form-control" id="addonInput" placeholder=".00">
-                                    <span class="input-group-text">Recipient's username</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Floating labels -->
-                            <div class="mb-3">
-                                <h5>Floating labels</h5>
-                                <div class="form-floating mb-3">
-                                    <input type="email" class="form-control" id="floatingEmail" placeholder="name@example.com">
-                                    <label for="floatingEmail">Email address</label>
-                                </div>
-                                <div class="form-floating">
-                                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
-                                    <label for="floatingPassword">Password</label>
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </fieldset>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <!-- Navs Section -->
-        <section id="navs" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Navs</h2>
-                    
-                    <!-- Tabs -->
-                    <div class="mb-4">
-                        <h4>Tabs</h4>
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" 
-                                        type="button" role="tab" aria-controls="home" aria-selected="true">Home</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" 
-                                        type="button" role="tab" aria-controls="profile" aria-selected="false">Profile</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link disabled" id="disabled-tab" type="button" role="tab" 
-                                        aria-controls="disabled" aria-selected="false" disabled>Disabled</button>
-                            </li>
-                            <li class="nav-item dropdown" role="presentation">
-                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" 
-                                   aria-expanded="false">Dropdown</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                                <p>Raw denim you probably haven't heard of them jean shorts Austin. Nesciunt tofu stumptown aliqua, retro synth master cleanse. Mustache cliche tempor, williamsburg carles vegan helvetica. Reprehenderit butcher retro keffiyeh dreamcatcher synth. Cosby sweater eu banh mi, qui irure terry richardson ex squid. Aliquip placeat salvia cillum iphone. Seitan aliquip quis cardigan american apparel, butcher voluptate nisi qui.</p>
-                            </div>
-                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                                <p>Another tab content here.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Pills -->
-                    <div class="mb-4">
-                        <h4>Pills</h4>
-                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" 
-                                        type="button" role="tab" aria-controls="pills-home" aria-selected="true">Active</button>
-                            </li>
-                            <li class="nav-item dropdown" role="presentation">
-                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" 
-                                   aria-expanded="false">Dropdown</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-link-tab" data-bs-toggle="pill" data-bs-target="#pills-link" 
-                                        type="button" role="tab" aria-controls="pills-link" aria-selected="false">Link</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link disabled" id="pills-disabled-tab" type="button" role="tab" 
-                                        aria-controls="pills-disabled" aria-selected="false" disabled>Disabled</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content" id="pills-tabContent">
-                            <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-                                <p>Active tab content.</p>
-                            </div>
-                            <div class="tab-pane fade" id="pills-link" role="tabpanel" aria-labelledby="pills-link-tab" tabindex="0">
-                                <p>Link tab content.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Breadcrumbs -->
-                    <div class="mb-4">
-                        <h4>Breadcrumbs</h4>
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                <li class="breadcrumb-item"><a href="#">Library</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Data</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="mb-4">
-                        <h4>Pagination</h4>
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination">
-                                <li class="page-item">
-                                    <a class="page-link" href="#" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                                <li class="page-item"><a class="page-link" href="#">5</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                    
-                    <!-- Underline -->
-                    <div class="mb-4">
-                        <h4>Underline</h4>
-                        <ul class="nav nav-underline">
-                            <li class="nav-item">
-                                <a class="nav-link active" href="#">Active</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Link</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Link</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link disabled" href="#">Disabled</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Alerts & Badges Liquid Section -->
-        <section id="alerts" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Alerts & Badges Liquid</h2>
-                    
-                    <!-- Liquid Alerts -->
-                    <div class="mb-4">
-                        <h4>Liquid Alerts (with glass morphism)</h4>
-                        <div class="alert-liquid-primary rounded-liquid p-3 mb-3" role="alert">
-                            <strong>Liquid Information!</strong> This alert uses glass morphism effects with blue gradient.
-                        </div>
-                        <div class="alert-liquid-success rounded-liquid p-3 mb-3" role="alert">
-                            <strong>Liquid Success!</strong> Your action has been completed successfully.
-                        </div>
-                        <div class="alert-liquid-warning rounded-liquid p-3 mb-3" role="alert">
-                            <strong>Liquid Warning!</strong> Please check your information before continuing.
-                        </div>
-                        <div class="alert-liquid-danger rounded-liquid p-3 mb-3" role="alert">
-                            <strong>Liquid Error!</strong> An error occurred during processing.
-                        </div>
-                    </div>
-                    
-                    <!-- Original Morph Alerts -->
-                    <div class="mb-4">
-                        <h4>Original Morph Alerts</h4>
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            <strong>Warning!</strong> Best check yo self, you're not looking too good.
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        <div class="alert alert-danger" role="alert">
-                            Oh snap! Change a few things up and try submitting again.
-                        </div>
-                        <div class="alert alert-success" role="alert">
-                            Well done! You successfully read this important alert message.
-                        </div>
-                        <div class="alert alert-info" role="alert">
-                            Heads up! This alert needs your attention, but it's not super important.
-                        </div>
-                    </div>
-                    
-                    <!-- Badges Liquid -->
-                    <div class="mb-4" id="badges">
-                        <h4>Liquid Badges (with gradients)</h4>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge badge-liquid-primary">Liquid Primary</span>
-                            <span class="badge badge-liquid-success">Liquid Success</span>
-                            <span class="badge badge-liquid-danger">Liquid Danger</span>
-                        </div>
-                        <h4>Original Morph Badges</h4>
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge text-bg-primary">Primary</span>
-                            <span class="badge text-bg-secondary">Secondary</span>
-                            <span class="badge text-bg-success">Success</span>
-                            <span class="badge text-bg-danger">Danger</span>
-                            <span class="badge text-bg-warning">Warning</span>
-                            <span class="badge text-bg-info">Info</span>
-                            <span class="badge text-bg-light">Light</span>
-                            <span class="badge text-bg-dark">Dark</span>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge rounded-pill text-bg-primary">Primary</span>
-                            <span class="badge rounded-pill text-bg-secondary">Secondary</span>
-                            <span class="badge rounded-pill text-bg-success">Success</span>
-                            <span class="badge rounded-pill text-bg-danger">Danger</span>
-                            <span class="badge rounded-pill text-bg-warning">Warning</span>
-                            <span class="badge rounded-pill text-bg-info">Info</span>
-                            <span class="badge rounded-pill text-bg-light">Light</span>
-                            <span class="badge rounded-pill text-bg-dark">Dark</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Progress -->
-                    <div class="mb-4">
-                        <h4>Progress</h4>
-                        <div class="mb-3">
-                            <h5>Basic</h5>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: 25%"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h5>Contextual alternatives</h5>
-                            <div class="progress mb-2">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 25%"></div>
-                            </div>
-                            <div class="progress mb-2">
-                                <div class="progress-bar bg-info" role="progressbar" style="width: 50%"></div>
-                            </div>
-                            <div class="progress mb-2">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: 75%"></div>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h5>Multiple bars</h5>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: 15%"></div>
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 30%"></div>
-                                <div class="progress-bar bg-info" role="progressbar" style="width: 20%"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h5>Striped</h5>
-                            <div class="progress">
-                                <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 10%"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h5>Animated</h5>
-                            <div class="progress">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 75%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Containers Section -->
-        <section id="containers" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Containers</h2>
-                    
-                    <!-- List groups -->
-                    <div class="mb-4">
-                        <h4>List groups</h4>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <ul class="list-group">
-                                    <li class="list-group-item">Cras justo odio</li>
-                                    <li class="list-group-item">Dapibus ac facilisis in</li>
-                                    <li class="list-group-item">Morbi leo risus</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <ul class="list-group">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Cras justo odio
-                                        <span class="badge bg-primary rounded-pill">14</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Dapibus ac facilisis in
-                                        <span class="badge bg-primary rounded-pill">2</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Morbi leo risus
-                                        <span class="badge bg-primary rounded-pill">1</span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="col-md-4">
-                                <ul class="list-group">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Cras justo odio
-                                        <span class="badge bg-primary rounded-pill">5</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Dapibus ac facilisis in
-                                        <span class="badge bg-primary rounded-pill">4</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Morbi leo risus
-                                        <span class="badge bg-primary rounded-pill">9</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Morbi leo risus
-                                        <span class="badge bg-primary rounded-pill">8</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Morbi leo risus
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
                         
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <div class="list-group">
-                                    <a href="#" class="list-group-item list-group-item-action">Cras justo odio</a>
-                                    <a href="#" class="list-group-item list-group-item-action">Dapibus ac facilisis in</a>
-                                    <a href="#" class="list-group-item list-group-item-action">Morbi leo risus</a>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="list-group">
-                                    <a href="#" class="list-group-item list-group-item-action">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h5 class="mb-1">List group item heading</h5>
-                                            <small>3 days ago</small>
-                                        </div>
-                                        <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
-                                        <small>Donec id elit non mi porta.</small>
-                                    </a>
-                                </div>
-                            </div>
+                        <!-- CTA Button -->
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <a href="atoms.html" class="btn btn-liquid-primary btn-lg" target="_blank">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>
+                                View Complete Atoms Library
+                            </a>
+                            <p class="text-muted small mt-2 mb-0">
+                                Explore all atomic components: Typography, Navbars, Tables, Tabs, Accordions and more
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Cards Section -->
-        <section id="cards" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Cards</h2>
-                    
-                    <!-- Basic cards -->
-                    <div class="row mb-4">
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-primary">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Primary card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-secondary">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Secondary card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-success">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Success card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-danger">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Danger card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-warning">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Warning card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-info">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Info card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-light">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Light card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card text-bg-dark">
-                                <div class="card-header">Header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Dark card title</h5>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Standard cards -->
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-header">Card header</div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Special title treatment</h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">Support card subtitle</h6>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                    <a href="#" class="btn btn-primary">Go somewhere</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Card title</h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                                    <a href="#" class="card-link">Card link</a>
-                                    <a href="#" class="card-link">Another link</a>
-                                </div>
-                                <div class="card-footer text-muted">
-                                    2 days ago
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Accordions Section -->
-        <section id="accordions" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Accordions</h2>
-                    
-                    <div class="accordion" id="accordionExample">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" 
-                                        aria-expanded="true" aria-controls="collapseOne">
-                                    Accordion Item #1
-                                </button>
-                            </h2>
-                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                                <div class="accordion-body">
-                                    This is the first item's accordion body. It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the .accordion-body, though the transition does limit overflow.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" 
-                                        aria-expanded="false" aria-controls="collapseTwo">
-                                    Accordion Item #2
-                                </button>
-                            </h2>
-                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                <div class="accordion-body">
-                                    This is the second item's accordion body. It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the .accordion-body, though the transition does limit overflow.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" 
-                                        aria-expanded="false" aria-controls="collapseThree">
-                                    Accordion Item #3
-                                </button>
-                            </h2>
-                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                <div class="accordion-body">
-                                    This is the third item's accordion body. It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the .accordion-body, though the transition does limit overflow.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Dialogs Section -->
-        <section id="dialogs" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Dialogs</h2>
-                    
-                    <!-- Modals -->
-                    <div class="mb-4">
-                        <h4>Modals</h4>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                            Launch demo modal
-                        </button>
-                        
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Modal body text goes here.
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary">Save changes</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Offcanvas -->
-                    <div class="mb-4">
-                        <h4>Offcanvas</h4>
-                        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample">
-                            Toggle offcanvas
-                        </button>
-                        
-                        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
-                            <div class="offcanvas-header">
-                                <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                            </div>
-                            <div class="offcanvas-body">
-                                <div>
-                                    Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Popovers -->
-                    <div class="mb-4">
-                        <h4>Popovers</h4>
-                        <button type="button" class="btn btn-secondary" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Top popover">
-                            Popover on top
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Right popover">
-                            Popover on right
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-content="Bottom popover">
-                            Popover on bottom
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Left popover">
-                            Popover on left
-                        </button>
-                    </div>
-                    
-                    <!-- Tooltips -->
-                    <div class="mb-4">
-                        <h4>Tooltips</h4>
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Tooltip on top">
-                            Tooltip on top
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Tooltip on right">
-                            Tooltip on right
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tooltip on bottom">
-                            Tooltip on bottom
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="left" title="Tooltip on left">
-                            Tooltip on left
-                        </button>
-                    </div>
-                    
-                    <!-- Toasts -->
-                    <div class="mb-4">
-                        <h4>Toasts</h4>
-                        <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button>
-                        
-                        <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                                <div class="toast-header">
-                                    <strong class="me-auto">Bootstrap</strong>
-                                    <small>11 mins ago</small>
-                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                                </div>
-                                <div class="toast-body">
-                                    Hello, world! This is a toast message.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
         
-        <!-- FIN DU CONTENU ATOMS -->
-        
-        </div><!-- /container-fluid -->
+        </div><!-- /container -->
     </section><!-- /atoms -->
 
     <!-- ========================================
@@ -1380,10 +214,10 @@
          Functional components combining atoms
          ======================================== -->
     <section id="molecules" class="py-5">
-        <div class="container-fluid">
+                            <div class="container-fluid">
             <div class="row mb-5">
                 <div class="col-12 text-center">
-                    <h2 class="display-4 fw-bold mb-3">
+                    <h2 class="display-4 fw-bold mb-3 text-liquid-primary-white">
                         <i class="bi bi-hexagon text-liquid-primary me-3"></i>
                         Molecules
                     </h2>
@@ -1391,9 +225,9 @@
                         Functional components combining atoms
                     </p>
                     <hr class="w-50 mx-auto">
-                </div>
-            </div>
-            
+                                </div>
+                    </div>
+
             <!-- ========================================
                  BANNERS MOLECULES
                  ======================================== -->
@@ -1417,7 +251,7 @@
                                     <div class="col-12 col-lg-8 text-center">
                                         <i class="bi bi-roller-skate banner-icon mb-3"></i>
                                         <h2 class="banner-title mb-4">
-                                            Rejoignez la communauté<br>de passionnés de roller !
+                                            Rejoignez la communauté<br> Grenoble Roller !
                                         </h2>
                                         <p class="banner-subtitle mb-4">
                                             Découvrez des événements, partagez vos sorties et connectez-vous<br>
@@ -1432,13 +266,13 @@
                                                 <i class="bi bi-person-plus me-2"></i>
                                                 S'inscrire
                                             </a>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
+                    </div>
+                </div>
                         </div>
                     </div>
-                    
+
                     <!-- Page Banner Preview -->
                     <h4 class="h5 mb-3">Page Banner (Internal pages)</h4>
                     <div class="banner-page mb-4">
@@ -1454,20 +288,20 @@
                                         <p class="banner-subtitle-page mb-0">
                                             Découvrez toutes nos sorties roller
                                         </p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    
+                        </div>
+                        </div>
+                    </div>
+
                     <!-- Info & Links -->
                     <div class="text-center">
                         <a href="components/banners.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Source Code & Variations
                         </a>
+                        </div>
                     </div>
                 </div>
-            </div>
             
             <!-- ========================================
                  CARDS MOLECULES
@@ -1492,7 +326,7 @@
                                     <span class="card-event-date badge badge-liquid-primary">
                                         <i class="bi bi-calendar3 me-1"></i> 15 JAN
                                     </span>
-                                </div>
+                        </div>
                                 <div class="card-body">
                                     <h5 class="card-title">Rando Bastille</h5>
                                     <div class="card-event-info mb-3">
@@ -1505,14 +339,14 @@
                                         <p class="mb-0">
                                             <i class="bi bi-tag text-liquid-success me-2"></i> <strong>Gratuit</strong>
                                         </p>
-                                    </div>
+                    </div>
                                     <a href="#" class="btn btn-outline-primary w-100">
                                         Voir plus <i class="bi bi-arrow-right ms-2"></i>
                                     </a>
-                                </div>
-                            </div>
-                        </div>
-                        
+                    </div>
+                    </div>
+                    </div>
+
                         <div class="col-md-4">
                             <div class="card card-event card-liquid rounded-liquid shadow-liquid">
                                 <div class="card-event-image">
@@ -1520,7 +354,7 @@
                                     <span class="card-event-date badge badge-liquid-danger">
                                         <i class="bi bi-calendar3 me-1"></i> 22 FÉV
                                     </span>
-                                </div>
+                            </div>
                                 <div class="card-body">
                                     <h5 class="card-title">Sortie Nocturne</h5>
                                     <div class="card-event-info mb-3">
@@ -1533,14 +367,14 @@
                                         <p class="mb-0">
                                             <i class="bi bi-tag text-liquid-primary me-2"></i> <strong>5€</strong>
                                         </p>
-                                    </div>
+                            </div>
                                     <a href="#" class="btn btn-liquid-primary w-100">
                                         S'inscrire <i class="bi bi-arrow-right ms-2"></i>
                                     </a>
-                                </div>
-                            </div>
                         </div>
                     </div>
+                    </div>
+                </div>
                     
                     <!-- User Cards -->
                     <h4 class="h5 mb-3">User Cards (Horizontal)</h4>
@@ -1550,7 +384,7 @@
                                 <div class="card-body d-flex align-items-center">
                                     <div class="card-user-avatar me-3">
                                         <i class="bi bi-person-circle"></i>
-                                    </div>
+                    </div>
                                     <div class="card-user-info flex-grow-1">
                                         <h5 class="card-title mb-1">Jean Dupont</h5>
                                         <p class="card-user-role mb-2">
@@ -1559,15 +393,15 @@
                                         <p class="card-text small text-muted mb-0">
                                             Passionné de roller depuis 10 ans
                                         </p>
-                                    </div>
+                </div>
                                     <div class="card-user-action">
                                         <a href="#" class="btn btn-outline-primary btn-sm">Profil</a>
-                                    </div>
-                                </div>
+            </div>
                             </div>
-                        </div>
-                    </div>
-                    
+                            </div>
+                            </div>
+                            </div>
+                            
                     <!-- City Cards -->
                     <h4 class="h5 mb-3">City Cards</h4>
                     <div class="row g-3 mb-4">
@@ -1579,11 +413,11 @@
                                     <div class="card-city-content">
                                         <h5 class="card-city-name">Grenoble</h5>
                                         <p class="card-city-count mb-0">45 événements</p>
-                                    </div>
-                                </div>
                             </div>
-                        </div>
-                        
+                            </div>
+                            </div>
+                            </div>
+                            
                         <div class="col-md-3">
                             <div class="card card-city card-liquid rounded-liquid shadow-liquid">
                                 <div class="card-city-image">
@@ -1592,21 +426,21 @@
                                     <div class="card-city-content">
                                         <h5 class="card-city-name">Lyon</h5>
                                         <p class="card-city-count mb-0">32 événements</p>
-                                    </div>
+                                </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
+                                </div>
+                            </div>
+                            
                     <!-- Info & Links -->
                     <div class="text-center">
                         <a href="components/cards.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View All Card Types
                         </a>
-                    </div>
-                </div>
-            </div>
-            
+                                </div>
+                                </div>
+                            </div>
+                            
             <!-- ========================================
                  COMMENT MOLECULE
                  ======================================== -->
@@ -1631,7 +465,7 @@
                                     <div class="comment-header">
                                         <h6 class="comment-author mb-1">Jean Dupont</h6>
                                         <span class="comment-time text-muted small">Il y a 2 heures</span>
-                                    </div>
+                                </div>
                                     <p class="comment-text mb-3">
                                         Super événement ! J'ai adoré la randonnée, l'ambiance était au top. 🎉
                                     </p>
@@ -1642,21 +476,21 @@
                                         <button class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-heart me-1"></i> 12
                                         </button>
-                                    </div>
-                                </div>
+                            </div>
+                            </div>
                             </div>
                         </div>
-                    </div>
-                    
+                            </div>
+                            
                     <!-- Info & Links -->
                     <div class="text-center mt-4">
                         <a href="components/comment.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Examples with Replies
                         </a>
                     </div>
-                </div>
-            </div>
-            
+                                </div>
+                            </div>
+                            
             <!-- ========================================
                  ELEMENT PRESENTATION MOLECULES
                  ======================================== -->
@@ -1677,8 +511,8 @@
                                 <div class="col-lg-6">
                                     <div class="element-image rounded-liquid shadow-liquid">
                                         <img src="img/roller.png" alt="Community" class="img-fluid rounded-liquid">
-                                    </div>
                                 </div>
+                            </div>
                                 <div class="col-lg-6">
                                     <div class="element-content">
                                         <span class="element-badge badge badge-liquid-primary mb-3">
@@ -1693,21 +527,21 @@
                                         <a href="#" class="btn btn-liquid-primary btn-lg">
                                             En savoir plus
                                         </a>
-                                    </div>
+                            </div>
+                            </div>
+                            </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
+                            
                     <!-- Info & Links -->
                     <div class="text-center">
                         <a href="components/element.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Both Variations
                         </a>
-                    </div>
-                </div>
-            </div>
-            
+                                </div>
+                                </div>
+                            </div>
+                            
         </div><!-- /container-fluid -->
     </section><!-- /molecules -->
 
@@ -1771,30 +605,30 @@
                                                 <a class="nav-link active" aria-current="page" href="#">
                                                     <i class="bi bi-house me-1"></i> Accueil
                                                 </a>
-                                            </li>
+                            </li>
                                             <li class="nav-item">
                                                 <a class="nav-link" href="#">
                                                     <i class="bi bi-calendar-event me-1"></i> Événements
                                                 </a>
-                                            </li>
+                            </li>
                                             <li class="nav-item">
                                                 <a class="nav-link" href="#">
                                                     <i class="bi bi-plus-circle me-1"></i> Créer un événement
                                                 </a>
-                                            </li>
+                            </li>
                                             <li class="nav-item dropdown">
                                                 <a class="nav-link dropdown-toggle" href="#" role="button" 
                                                    data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="bi bi-book me-1"></i> Ressources
                                                 </a>
-                                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu">
                                                     <li><a class="dropdown-item" href="#"><i class="bi bi-map me-2"></i> Parcours</a></li>
                                                     <li><a class="dropdown-item" href="#"><i class="bi bi-trophy me-2"></i> Initiations</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
+                                    <li><hr class="dropdown-divider"></li>
                                                     <li><a class="dropdown-item" href="#"><i class="bi bi-bar-chart me-2"></i> Statistiques</a></li>
-                                                </ul>
-                                            </li>
-                                        </ul>
+                                </ul>
+                            </li>
+                        </ul>
                                         
                                         <!-- Search -->
                                         <form class="d-flex me-3 navbar-search" role="search">
@@ -1806,7 +640,7 @@
                                                 <button class="btn btn-outline-primary" type="submit">
                                                     <i class="bi bi-search"></i>
                                                 </button>
-                                            </div>
+                            </div>
                                         </form>
                                         
                                         <!-- User menu -->
@@ -1825,14 +659,14 @@
                                                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profil</a></li>
                                                     <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-check me-2"></i> Mes événements</a></li>
                                                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Paramètres</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
+                                    <li><hr class="dropdown-divider"></li>
                                                     <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </nav>
+                                </ul>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                        </nav>
                         </div>
                     </div>
                     
@@ -1845,8 +679,8 @@
                             <i class="bi bi-phone me-2"></i> Test Responsive
                         </button>
                     </div>
+                    </div>
                 </div>
-            </div>
             
             <!-- ========================================
                  AUTH FORMS ORGANISM
@@ -1870,27 +704,27 @@
                                         <i class="bi bi-roller-skate fs-1 text-liquid-primary"></i>
                                         <h4 class="mt-2 fw-bold" style="color: var(--gr-primary);">Connexion</h4>
                                         <p class="text-muted small">Exemple de formulaire d'authentification</p>
-                                    </div>
-                                    
+                    </div>
+                    
                                     <form>
                                         <div class="mb-3">
                                             <label for="previewEmail" class="form-label">Email</label>
                                             <input type="email" class="form-control form-control-liquid" 
                                                    id="previewEmail" placeholder="votre@email.com">
-                                        </div>
-                                        
+                    </div>
+                    
                                         <div class="mb-3">
                                             <label for="previewPassword" class="form-label">Mot de passe</label>
                                             <input type="password" class="form-control form-control-liquid" 
                                                    id="previewPassword" placeholder="••••••••">
-                                        </div>
-                                        
+                    </div>
+                    
                                         <div class="mb-3 form-check">
                                             <input type="checkbox" class="form-check-input" id="previewRemember">
                                             <label class="form-check-label" for="previewRemember">
                                                 Se souvenir de moi
                                             </label>
-                                        </div>
+                            </div>
                                         
                                         <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
                                             <i class="bi bi-box-arrow-in-right me-2"></i>
@@ -1905,12 +739,12 @@
                                                 Pas de compte ? 
                                                 <a href="#" class="text-decoration-none">Inscrivez-vous</a>
                                             </p>
-                                        </div>
+                            </div>
                                     </form>
-                                </div>
+                            </div>
                             </div>
                         </div>
-                    </div>
+                                </div>
                     
                     <!-- Info & Links -->
                     <div class="text-center">
@@ -1920,10 +754,10 @@
                         </p>
                         <a href="components/auth-forms.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View All 4 Forms
-                        </a>
-                    </div>
-                </div>
-            </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
             
             <!-- ========================================
                  CARD LISTS ORGANISMS
@@ -1950,7 +784,7 @@
                                             <i class="bi bi-calendar3 me-1"></i> 15 JAN
                                         </span>
                                     </div>
-                                    <div class="card-body">
+                                <div class="card-body">
                                         <h5 class="card-title">Rando Bastille</h5>
                                         <div class="card-event-info mb-3">
                                             <p class="mb-2">
@@ -1962,13 +796,13 @@
                                             <p class="mb-0">
                                                 <i class="bi bi-tag text-liquid-success me-2"></i> <strong>Gratuit</strong>
                                             </p>
-                                        </div>
+                                </div>
                                         <a href="#" class="btn btn-outline-primary w-100">
                                             Voir plus <i class="bi bi-arrow-right ms-2"></i>
                                         </a>
-                                    </div>
-                                </div>
                             </div>
+                        </div>
+                                </div>
                             
                             <div class="col-12 col-md-6 col-lg-4">
                                 <div class="card card-event card-liquid rounded-liquid shadow-liquid">
@@ -1977,8 +811,8 @@
                                         <span class="card-event-date badge badge-liquid-danger">
                                             <i class="bi bi-calendar3 me-1"></i> 22 FÉV
                                         </span>
-                                    </div>
-                                    <div class="card-body">
+                            </div>
+                                <div class="card-body">
                                         <h5 class="card-title">Sortie Nocturne</h5>
                                         <div class="card-event-info mb-3">
                                             <p class="mb-2">
@@ -1990,14 +824,14 @@
                                             <p class="mb-0">
                                                 <i class="bi bi-tag text-liquid-primary me-2"></i> <strong>5€</strong>
                                             </p>
-                                        </div>
+                                </div>
                                         <a href="#" class="btn btn-liquid-primary w-100">
                                             S'inscrire <i class="bi bi-arrow-right ms-2"></i>
                                         </a>
-                                    </div>
-                                </div>
                             </div>
-                            
+                        </div>
+                    </div>
+                    
                             <div class="col-12 col-md-6 col-lg-4">
                                 <div class="card card-event card-liquid rounded-liquid shadow-liquid">
                                     <div class="card-event-image">
@@ -2006,7 +840,7 @@
                                             <i class="bi bi-calendar3 me-1"></i> 05 MAR
                                         </span>
                                     </div>
-                                    <div class="card-body">
+                                <div class="card-body">
                                         <h5 class="card-title">Initiation Débutants</h5>
                                         <div class="card-event-info mb-3">
                                             <p class="mb-2">
@@ -2018,24 +852,24 @@
                                             <p class="mb-0">
                                                 <i class="bi bi-tag text-liquid-success me-2"></i> <strong>Gratuit</strong>
                                             </p>
-                                        </div>
+                                </div>
                                         <a href="#" class="btn btn-liquid-success w-100">
                                             S'inscrire <i class="bi bi-arrow-right ms-2"></i>
                                         </a>
-                                    </div>
+                            </div>
+                        </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     
                     <!-- Info & Links -->
                     <div class="text-center">
                         <a href="components/card-lists.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Full Grids & Lists
                         </a>
-                    </div>
-                </div>
-            </div>
+                                </div>
+                            </div>
+                        </div>
             
             <!-- ========================================
                  COMMENT SECTION ORGANISM
@@ -2061,8 +895,8 @@
                                             Commentaires 
                                             <span class="badge badge-liquid-primary ms-2">3</span>
                                         </h4>
-                                    </div>
-                                    
+                    </div>
+                    
                                     <!-- Form -->
                                     <div class="comment-form mb-4">
                                         <form>
@@ -2070,14 +904,14 @@
                                                 <textarea class="form-control form-control-liquid" 
                                                           rows="3" 
                                                           placeholder="Partagez votre expérience..."></textarea>
-                                            </div>
+                                </div>
                                             <div class="d-flex justify-content-end">
                                                 <button type="submit" class="btn btn-liquid-primary">
                                                     <i class="bi bi-send me-2"></i> Publier
                                                 </button>
-                                            </div>
+                            </div>
                                         </form>
-                                    </div>
+                        </div>
                                     
                                     <hr class="my-4">
                                     
@@ -2086,12 +920,12 @@
                                         <div class="comment mb-3">
                                             <div class="comment-avatar">
                                                 <i class="bi bi-person-circle"></i>
-                                            </div>
+                                </div>
                                             <div class="comment-content">
                                                 <div class="comment-header">
                                                     <h6 class="comment-author mb-1">Jean Dupont</h6>
                                                     <span class="comment-time text-muted small">Il y a 2 heures</span>
-                                                </div>
+                            </div>
                                                 <p class="comment-text mb-3">
                                                     Super événement ! 🎉
                                                 </p>
@@ -2102,23 +936,23 @@
                                                     <button class="btn btn-sm btn-outline-danger">
                                                         <i class="bi bi-heart me-1"></i> 12
                                                     </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                        </div>
+                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                                </div>
+                                </div>
+                            </div>
                     
                     <!-- Info & Links -->
                     <div class="text-center mt-4">
                         <a href="components/comment-section.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Full Comment Section
                         </a>
+                        </div>
                     </div>
                 </div>
-            </div>
             
             <!-- ========================================
                  RESOURCE PRESENTATION ORGANISM
@@ -2142,9 +976,9 @@
                         <a href="components/resource.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Full Event Show Page
                         </a>
-                    </div>
-                </div>
-            </div>
+                                </div>
+                            </div>
+                        </div>
             
             <!-- ========================================
                  EVENT CALENDAR ORGANISM
@@ -2168,9 +1002,9 @@
                         <a href="components/calendar.html" class="btn btn-outline-primary" target="_blank">
                             <i class="bi bi-code-square me-2"></i> View Interactive Calendar
                         </a>
-                    </div>
-                </div>
-            </div>
+                                </div>
+                            </div>
+                        </div>
             
             <!-- ========================================
                  FOOTER ORGANISM
@@ -2219,7 +1053,7 @@
                                                 <li><a href="#">Villes</a></li>
                                                 <li><a href="#">Créer</a></li>
                                             </ul>
-                                        </div>
+                                    </div>
                                         
                                         <!-- Column 3 -->
                                         <div class="col-6 col-md-3">
@@ -2233,7 +1067,7 @@
                                                 <li><a href="#">CGU</a></li>
                                                 <li><a href="#">Confidentialité</a></li>
                                             </ul>
-                                        </div>
+                                    </div>
                                         
                                         <!-- Column 4 -->
                                         <div class="col-6 col-md-3">
@@ -2254,10 +1088,10 @@
                                                 <a href="#" class="social-link" aria-label="TikTok">
                                                     <i class="bi bi-tiktok"></i>
                                                 </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
+                            </div>
+                        </div>
+                    </div>
+                    
                                     <hr class="my-4">
                                     
                                     <!-- Copyright -->
@@ -2267,9 +1101,9 @@
                                                 © 2025 Grenoble Roller - Tous droits réservés | 
                                                 Fait avec <i class="bi bi-heart-fill text-danger"></i> à Grenoble
                                             </p>
-                                        </div>
-                                    </div>
+                            </div>
                                 </div>
+                            </div>
                             </footer>
                         </div>
                     </div>
@@ -2281,8 +1115,8 @@
                         </a>
                     </div>
                 </div>
-            </div>
-            
+                    </div>
+                    
         </div><!-- /container-fluid -->
     </section><!-- /organisms -->
 
@@ -2295,13 +1129,13 @@
                 <strong>Grenoble Roller UI Kit</strong> - Complete Design System
             </p>
             <p class="small mb-0">
-                Bootstrap 5.3.2 + Liquid Apple 2025 Layer | 
+                Bootstrap 5.3.2 + Liquid Design 2025 Layer | 
                 <a href="atoms.html" class="text-decoration-none">Atoms Only</a> | 
                 <a href="https://github.com/grenoble-roller" class="text-decoration-none" target="_blank">
                     <i class="bi bi-github"></i> GitHub
                 </a>
             </p>
-        </div>
+                                </div>
     </footer>
 
     <!-- Bootstrap JS -->

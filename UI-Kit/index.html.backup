@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Grenoble Roller official site - Modern UI Kit with Bootstrap 5.3.2 and Liquid Design 2025. Discover our accessible and performant components.">
+    <meta name="description" content="Grenoble Roller official site - Modern UI Kit with Bootstrap 5.3.2 and Liquid Apple 2025 design. Discover our accessible and performant components.">
     <meta name="keywords" content="Grenoble Roller, UI Kit, Bootstrap 5, Design System, Liquid Design, Accessibility">
     <meta name="author" content="Grenoble Roller">
-    <title>Grenoble Roller - Atoms Only</title>
+    <title>Grenoble Roller - UI Kit & Components</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🛼</text></svg>">
@@ -22,47 +22,53 @@
     <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid sticky-top shadow-liquid" aria-label="Main Grenoble Roller navigation">
         <div class="container-fluid">
             <!-- Logo -->
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html" title="Grenoble Roller - Back to Showcase">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#hero" title="Grenoble Roller - Accueil">
                 <i class="bi bi-roller-skate me-2 fs-4"></i>
                 <span>Grenoble Roller</span>
             </a>
             
             <!-- Toggle -->
             <button class="navbar-toggler" type="button" 
-                    data-bs-toggle="collapse" data-bs-target="#navbarAtomsMain" 
-                    aria-controls="navbarAtomsMain" aria-expanded="false" 
+                    data-bs-toggle="collapse" data-bs-target="#navbarGrenobleRollerMain" 
+                    aria-controls="navbarGrenobleRollerMain" aria-expanded="false" 
                     aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <!-- Content -->
-            <div class="collapse navbar-collapse" id="navbarAtomsMain">
+            <div class="collapse navbar-collapse" id="navbarGrenobleRollerMain">
                 <!-- Main menu -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">
-                            <i class="bi bi-arrow-left me-1"></i> Back to Showcase
+                        <a class="nav-link active" aria-current="page" href="#hero">
+                            <i class="bi bi-house me-1"></i> Accueil
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#liquid">
+                        <a class="nav-link" href="#atoms">
                             <i class="bi bi-circle me-1"></i> Atoms
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#molecules">
+                            <i class="bi bi-hexagon me-1"></i> Molecules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#organisms">
+                            <i class="bi bi-grid-3x3 me-1"></i> Organisms
                         </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" 
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-list me-1"></i> Sections
+                            <i class="bi bi-book me-1"></i> Ressources
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#buttons"><i class="bi bi-circle me-2"></i> Buttons</a></li>
-                            <li><a class="dropdown-item" href="#cards"><i class="bi bi-card-text me-2"></i> Cards</a></li>
-                            <li><a class="dropdown-item" href="#forms"><i class="bi bi-input-cursor-text me-2"></i> Forms</a></li>
-                            <li><a class="dropdown-item" href="#alerts"><i class="bi bi-exclamation-triangle me-2"></i> Alerts</a></li>
-                            <li><a class="dropdown-item" href="#badges"><i class="bi bi-tag me-2"></i> Badges</a></li>
+                            <li><a class="dropdown-item" href="atoms.html" target="_blank"><i class="bi bi-circle me-2"></i> Atoms Only</a></li>
+                            <li><a class="dropdown-item" href="components/navbar.html" target="_blank"><i class="bi bi-layout-text-window me-2"></i> Components</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#typography"><i class="bi bi-fonts me-2"></i> Typography</a></li>
-                            <li><a class="dropdown-item" href="#navbars"><i class="bi bi-layout-text-window me-2"></i> Navbars</a></li>
+                            <li><a class="dropdown-item" href="PLAN_MOLECULES_ORGANISMS.md" target="_blank"><i class="bi bi-file-text me-2"></i> Documentation</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -91,111 +97,119 @@
         </div>
     </nav>
 
-    <div class="container-fluid py-4">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="display-4 text-center mb-5 text-liquid-primary-white liquid-fade-in">
-                    <i class="bi bi-palette me-3" aria-hidden="true"></i>Grenoble Roller - Atoms Only
-                </h1>
-                <p class="lead text-center mb-5">
-                    Bootstrap 5.3.2 + Liquid Design 2025 Layer - Atomic Components
-                </p>
+    <!-- ========================================
+         HERO SECTION
+         ======================================== -->
+    <section id="hero" class="py-5 text-center">
+        <div class="container py-5">
+            <h1 class="display-3 fw-bold mb-4 liquid-fade-in">
+                <i class="bi bi-palette me-3" aria-hidden="true"></i>
+                Grenoble Roller UI Kit
+            </h1>
+            <p class="lead text-muted mb-4">
+                Complete Design System for Grenoble Roller Applications By The Hacking Project
+            </p>
+            <p class="text-muted mb-5">
+                Bootstrap 5.3.2 + Liquid Apple 2025 Layer + Custom Components
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="#atoms" class="btn btn-liquid-primary btn-lg">
+                    <i class="bi bi-circle me-2"></i> View Atoms
+                </a>
+                <a href="#molecules" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-hexagon me-2"></i> View Molecules
+                </a>
+                <a href="#organisms" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-grid-3x3 me-2"></i> View Organisms
+                </a>
             </div>
         </div>
+    </section>
 
-        <!-- Liquid Section -->
-        <section id="liquid" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Liquid + Bootstrap - The best of both worlds</h2>
-                    <p class="mb-4">The Liquid layer adds glass morphism effects and organic gradients to Bootstrap 5.3.2.</p>
-                    
-                    <!-- Liquid Cards -->
-                    <div class="row justify-content-center">
-                        <div class="col-md-4 mb-4">
-                            <div class="card card-liquid rounded-liquid">
-                                <div class="card-body">
-                                    <h5 class="card-title">Liquid Card</h5>
-                                    <p class="card-text">This card uses glass morphism effects with backdrop-filter.</p>
-                                    <button class="btn btn-liquid-primary">Liquid Action</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card card-liquid card-liquid-primary rounded-liquid">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Liquid Primary Card</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">This card uses a header with organic gradient.</p>
+    <!-- ========================================
+         SECTION 1 : ATOMS
+         Basic building blocks of the design system
+         ======================================== -->
+    <section id="atoms" class="py-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-4 fw-bold mb-3 text-liquid-primary-white">
+                        <i class="bi bi-circle text-liquid-primary me-3"></i>
+                        Atoms
+                    </h2>
+                    <p class="lead text-muted">
+                        Basic building blocks of the design system
+                    </p>
+                    <p class="text-muted">
+                        Buttons, Forms, Cards, Alerts, Badges, Typography, Navbars and more...
+                    </p>
+                    <hr class="w-50 mx-auto">
+                </div>
+            </div>
+            
+            <!-- Atoms Preview -->
+            <div class="row mb-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="card card-liquid shadow-liquid p-4">
+                        <div class="row g-4">
+                            <!-- Preview 1: Buttons -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="bi bi-circle-fill text-primary me-2"></i>Buttons</h5>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button class="btn btn-liquid-primary">Primary</button>
                                     <button class="btn btn-liquid-success">Success</button>
                                     <button class="btn btn-liquid-danger">Danger</button>
+                                    <button class="btn btn-outline-primary">Outline</button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Liquid Buttons and Forms -->
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h4>Liquid Forms</h4>
-                            <form>
-                                <div class="mb-3">
-                                    <label for="liquidEmail" class="form-label">Email</label>
-                                    <input type="email" class="form-control form-control-liquid" id="liquidEmail" placeholder="email@example.com">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="liquidPassword" class="form-label">Password</label>
-                                    <input type="password" class="form-control form-control-liquid" id="liquidPassword" placeholder="Password">
-                                </div>
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="liquidCheck">
-                                        <label class="form-check-label" for="liquidCheck">
-                                            Remember me
-                                        </label>
+                            
+                            <!-- Preview 2: Cards -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="bi bi-card-text text-info me-2"></i>Cards</h5>
+                                <div class="card card-liquid-primary">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Liquid Card</h6>
+                                        <p class="card-text small mb-0">Glass morphism with backdrop-filter</p>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-liquid-primary">Sign in</button>
-                            </form>
+                            </div>
+                            
+                            <!-- Preview 3: Forms -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="bi bi-input-cursor-text text-success me-2"></i>Forms</h5>
+                                <input type="text" class="form-control form-control-liquid" placeholder="Liquid input field">
+                            </div>
+                            
+                            <!-- Preview 4: Alerts & Badges -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Alerts & Badges</h5>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span class="badge badge-liquid-primary">Primary</span>
+                                    <span class="badge badge-liquid-success">Success</span>
+                                    <span class="badge badge-liquid-danger">Danger</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <h4>Liquid Buttons</h4>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-liquid-primary">Liquid Primary</button>
-                                <button type="button" class="btn btn-liquid-success">Liquid Success</button>
-                                <button type="button" class="btn btn-liquid-danger">Liquid Danger</button>
-                            </div>
-                            <h4 class="mt-4">Bootstrap Buttons (original)</h4>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-outline-primary">Outline Primary</button>
-                                <button type="button" class="btn btn-outline-success">Outline Success</button>
-                            </div>
+                        
+                        <!-- CTA Button -->
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <a href="atoms.html" class="btn btn-liquid-primary btn-lg" target="_blank">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>
+                                View Complete Atoms Library
+                            </a>
+                            <p class="text-muted small mt-2 mb-0">
+                                Explore all atomic components: Typography, Navbars, Tables, Tabs, Accordions and more
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
+        
+        </div><!-- /container -->
+    </section><!-- /atoms -->
 
-        <!-- Navbars Section -->
-        <section id="navbars" class="mb-5">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="h3 mb-4">Navbars</h2>
-                    
-                    <!-- Liquid Navbar -->
-                    <div class="mb-4">
-                        <h4>Liquid Navbar</h4>
-                        <nav class="navbar navbar-expand-lg navbar-liquid mb-3" aria-label="Liquid navbar example">
-                            <div class="container-fluid">
-                                <a class="navbar-brand fw-bold" href="#" title="Grenoble Roller">
-                                    <i class="bi bi-roller-skate me-2" aria-hidden="true"></i>Grenoble Roller
-                                </a>
-                                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar1" 
-                                        aria-controls="navbar1" aria-expanded="false" aria-label="Toggle navigation">
-                                    <span class="navbar-toggler-icon"></span>
-                                </button>
-                                <div class="collapse navbar-collapse" id="navbar1">
+    <!-- ========================================
                                     <ul class="navbar-nav me-auto">
                                         <li class="nav-item">
                                             <a class="nav-link active" href="#" aria-current="page">
@@ -322,7 +336,7 @@
                     <div class="mb-4">
                         <h4>Headings</h4>
                         <div class="mb-3">
-                            <h1>Heading 1</h1>
+                            <h1 class="text-liquid-primary-white">Heading 1</h1>
                             <h2>Heading 2</h2>
                             <h3>Heading 3</h3>
                             <h4>Heading 4</h4>
@@ -1325,7 +1339,940 @@
                 </div>
             </div>
         </section>
-    </div>
+        
+        <!-- FIN DU CONTENU ATOMS -->
+        
+        </div><!-- /container-fluid -->
+    </section><!-- /atoms -->
+
+    <!-- ========================================
+         SECTION 2 : MOLECULES
+         Functional components combining atoms
+         ======================================== -->
+    <section id="molecules" class="py-5">
+        <div class="container-fluid">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-4 fw-bold mb-3">
+                        <i class="bi bi-hexagon text-liquid-primary me-3"></i>
+                        Molecules
+                    </h2>
+                    <p class="lead text-muted">
+                        Functional components combining atoms
+                    </p>
+                    <hr class="w-50 mx-auto">
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 BANNERS MOLECULES
+                 ======================================== -->
+            <div class="row mb-5" id="banners-molecules">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-image me-2"></i>
+                        Banners
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Hero banner for homepage and page banner for internal pages. Beautiful gradient overlays.
+                    </p>
+                    
+                    <!-- Hero Banner Preview -->
+                    <h4 class="h5 mb-3">Hero Banner (Homepage)</h4>
+                    <div class="banner-hero mb-4">
+                        <div class="banner-overlay"></div>
+                        <div class="banner-content">
+                            <div class="container">
+                                <div class="row justify-content-center">
+                                    <div class="col-12 col-lg-8 text-center">
+                                        <i class="bi bi-roller-skate banner-icon mb-3"></i>
+                                        <h2 class="banner-title mb-4">
+                                            Rejoignez la communauté<br>de passionnés de roller !
+                                        </h2>
+                                        <p class="banner-subtitle mb-4">
+                                            Découvrez des événements, partagez vos sorties et connectez-vous<br>
+                                            avec d'autres riders à Grenoble
+                                        </p>
+                                        <div class="banner-actions">
+                                            <a href="#" class="btn btn-liquid-primary btn-lg">
+                                                <i class="bi bi-calendar-event me-2"></i>
+                                                Découvrir
+                                            </a>
+                                            <a href="#" class="btn btn-outline-light btn-lg">
+                                                <i class="bi bi-person-plus me-2"></i>
+                                                S'inscrire
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Page Banner Preview -->
+                    <h4 class="h5 mb-3">Page Banner (Internal pages)</h4>
+                    <div class="banner-page mb-4">
+                        <div class="banner-overlay"></div>
+                        <div class="banner-content">
+                            <div class="container">
+                                <div class="row justify-content-center">
+                                    <div class="col-12 text-center">
+                                        <i class="bi bi-calendar-event banner-icon-small mb-2"></i>
+                                        <h3 class="banner-title-page mb-2">
+                                            Nos Événements
+                                        </h3>
+                                        <p class="banner-subtitle-page mb-0">
+                                            Découvrez toutes nos sorties roller
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <a href="components/banners.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Source Code & Variations
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 CARDS MOLECULES
+                 ======================================== -->
+            <div class="row mb-5" id="cards-molecules">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-card-heading me-2"></i>
+                        Cards
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Reusable card components for events, users, and cities. With hover effects and Liquid design.
+                    </p>
+                    
+                    <!-- Event Cards -->
+                    <h4 class="h5 mb-3">Event Cards (Vertical)</h4>
+                    <div class="row g-3 mb-5">
+                        <div class="col-md-4">
+                            <div class="card card-event card-liquid rounded-liquid shadow-liquid">
+                                <div class="card-event-image">
+                                    <img src="img/roller.png" alt="Rando Bastille">
+                                    <span class="card-event-date badge badge-liquid-primary">
+                                        <i class="bi bi-calendar3 me-1"></i> 15 JAN
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Rando Bastille</h5>
+                                    <div class="card-event-info mb-3">
+                                        <p class="mb-2">
+                                            <i class="bi bi-geo-alt text-liquid-primary me-2"></i> Grenoble
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-people text-liquid-primary me-2"></i> 25 inscrits
+                                        </p>
+                                        <p class="mb-0">
+                                            <i class="bi bi-tag text-liquid-success me-2"></i> <strong>Gratuit</strong>
+                                        </p>
+                                    </div>
+                                    <a href="#" class="btn btn-outline-primary w-100">
+                                        Voir plus <i class="bi bi-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card card-event card-liquid rounded-liquid shadow-liquid">
+                                <div class="card-event-image">
+                                    <img src="img/bannersmall3.png" alt="Sortie nocturne">
+                                    <span class="card-event-date badge badge-liquid-danger">
+                                        <i class="bi bi-calendar3 me-1"></i> 22 FÉV
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Sortie Nocturne</h5>
+                                    <div class="card-event-info mb-3">
+                                        <p class="mb-2">
+                                            <i class="bi bi-geo-alt text-liquid-primary me-2"></i> Centre-ville
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-people text-liquid-primary me-2"></i> 12 inscrits
+                                        </p>
+                                        <p class="mb-0">
+                                            <i class="bi bi-tag text-liquid-primary me-2"></i> <strong>5€</strong>
+                                        </p>
+                                    </div>
+                                    <a href="#" class="btn btn-liquid-primary w-100">
+                                        S'inscrire <i class="bi bi-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Cards -->
+                    <h4 class="h5 mb-3">User Cards (Horizontal)</h4>
+                    <div class="row g-3 mb-5">
+                        <div class="col-md-6">
+                            <div class="card card-user card-liquid rounded-liquid shadow-liquid">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="card-user-avatar me-3">
+                                        <i class="bi bi-person-circle"></i>
+                                    </div>
+                                    <div class="card-user-info flex-grow-1">
+                                        <h5 class="card-title mb-1">Jean Dupont</h5>
+                                        <p class="card-user-role mb-2">
+                                            <span class="badge badge-liquid-primary">Organisateur</span>
+                                        </p>
+                                        <p class="card-text small text-muted mb-0">
+                                            Passionné de roller depuis 10 ans
+                                        </p>
+                                    </div>
+                                    <div class="card-user-action">
+                                        <a href="#" class="btn btn-outline-primary btn-sm">Profil</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- City Cards -->
+                    <h4 class="h5 mb-3">City Cards</h4>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card card-city card-liquid rounded-liquid shadow-liquid">
+                                <div class="card-city-image">
+                                    <img src="img/bannersmall3.png" alt="Grenoble">
+                                    <div class="card-city-overlay"></div>
+                                    <div class="card-city-content">
+                                        <h5 class="card-city-name">Grenoble</h5>
+                                        <p class="card-city-count mb-0">45 événements</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card card-city card-liquid rounded-liquid shadow-liquid">
+                                <div class="card-city-image">
+                                    <img src="img/roller.png" alt="Lyon">
+                                    <div class="card-city-overlay"></div>
+                                    <div class="card-city-content">
+                                        <h5 class="card-city-name">Lyon</h5>
+                                        <p class="card-city-count mb-0">32 événements</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <a href="components/cards.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View All Card Types
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 COMMENT MOLECULE
+                 ======================================== -->
+            <div class="row mb-5" id="comment-molecule">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-chat-left-text me-2"></i>
+                        Comment
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Individual comment component with avatar, metadata, content, and actions. Supports nested replies.
+                    </p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-8">
+                            <!-- Comment Example -->
+                            <div class="comment mb-3">
+                                <div class="comment-avatar">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <h6 class="comment-author mb-1">Jean Dupont</h6>
+                                        <span class="comment-time text-muted small">Il y a 2 heures</span>
+                                    </div>
+                                    <p class="comment-text mb-3">
+                                        Super événement ! J'ai adoré la randonnée, l'ambiance était au top. 🎉
+                                    </p>
+                                    <div class="comment-actions">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-reply me-1"></i> Répondre
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-heart me-1"></i> 12
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center mt-4">
+                        <a href="components/comment.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Examples with Replies
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 ELEMENT PRESENTATION MOLECULES
+                 ======================================== -->
+            <div class="row mb-5" id="element-presentation-molecules">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-layout-split me-2"></i>
+                        Element Presentation
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Alternating image/text sections for landing pages. Image left or image right variations.
+                    </p>
+                    
+                    <!-- Image Left Example -->
+                    <div class="element-presentation mb-5">
+                        <div class="container">
+                            <div class="row align-items-center g-4">
+                                <div class="col-lg-6">
+                                    <div class="element-image rounded-liquid shadow-liquid">
+                                        <img src="img/roller.png" alt="Community" class="img-fluid rounded-liquid">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="element-content">
+                                        <span class="element-badge badge badge-liquid-primary mb-3">
+                                            <i class="bi bi-star me-1"></i> Notre communauté
+                                        </span>
+                                        <h3 class="element-title mb-3">
+                                            Rejoignez des passionnés
+                                        </h3>
+                                        <p class="element-text mb-4">
+                                            Plus de 500 riders à Grenoble. Débutant ou expert, trouvez votre place !
+                                        </p>
+                                        <a href="#" class="btn btn-liquid-primary btn-lg">
+                                            En savoir plus
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <a href="components/element.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Both Variations
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div><!-- /container-fluid -->
+    </section><!-- /molecules -->
+
+    <!-- ========================================
+         SECTION 3 : ORGANISMS
+         Complex sections combining molecules and atoms
+         ======================================== -->
+    <section id="organisms" class="py-5">
+        <div class="container-fluid">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-4 fw-bold mb-3">
+                        <i class="bi bi-grid-3x3 text-liquid-primary me-3"></i>
+                        Organisms
+                    </h2>
+                    <p class="lead text-muted">
+                        Complex sections combining molecules and atoms
+                    </p>
+                    <hr class="w-50 mx-auto">
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 NAVBAR ORGANISM
+                 ======================================== -->
+            <div class="row mb-5" id="navbar-organism">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-layout-text-window me-2"></i>
+                        Navbar
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Complete navigation bar with logo, menu, search, and user authentication. Fully responsive with burger menu on mobile.
+                    </p>
+                    
+                    <!-- Preview Card -->
+                    <div class="card card-liquid mb-3">
+                        <div class="card-body p-0">
+                            <!-- Navbar Preview -->
+                            <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid shadow-liquid">
+                                <div class="container-fluid">
+                                    <!-- Logo -->
+                                    <a class="navbar-brand fw-bold d-flex align-items-center" href="#" title="Grenoble Roller - Accueil">
+                                        <i class="bi bi-roller-skate me-2 fs-4"></i>
+                                        <span>Grenoble Roller</span>
+                                    </a>
+                                    
+                                    <!-- Toggle -->
+                                    <button class="navbar-toggler" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#showcaseNavbarGR" 
+                                            aria-controls="showcaseNavbarGR" aria-expanded="false" 
+                                            aria-label="Toggle navigation">
+                                        <span class="navbar-toggler-icon"></span>
+                                    </button>
+                                    
+                                    <!-- Content -->
+                                    <div class="collapse navbar-collapse" id="showcaseNavbarGR">
+                                        <!-- Main menu -->
+                                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                            <li class="nav-item">
+                                                <a class="nav-link active" aria-current="page" href="#">
+                                                    <i class="bi bi-house me-1"></i> Accueil
+                                                </a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" href="#">
+                                                    <i class="bi bi-calendar-event me-1"></i> Événements
+                                                </a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" href="#">
+                                                    <i class="bi bi-plus-circle me-1"></i> Créer un événement
+                                                </a>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="#" role="button" 
+                                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-book me-1"></i> Ressources
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-map me-2"></i> Parcours</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-trophy me-2"></i> Initiations</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-bar-chart me-2"></i> Statistiques</a></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        
+                                        <!-- Search -->
+                                        <form class="d-flex me-3 navbar-search" role="search">
+                                            <div class="input-group">
+                                                <input class="form-control form-control-liquid" 
+                                                       type="search" 
+                                                       placeholder="Rechercher..." 
+                                                       aria-label="Search">
+                                                <button class="btn btn-outline-primary" type="submit">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                        
+                                        <!-- User menu -->
+                                        <div class="d-flex align-items-center gap-2">
+                                            <!-- Theme toggle -->
+                                            <button class="btn btn-outline-primary" onclick="toggleTheme()" aria-label="Toggle theme">
+                                                <i class="bi bi-moon-fill" id="theme-icon-navbar"></i>
+                                            </button>
+                                            
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-primary dropdown-toggle" type="button" 
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-person-circle me-1"></i> Mon profil
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profil</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-check me-2"></i> Mes événements</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Paramètres</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="components/navbar.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Source Code
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="alert('Try resizing your browser to see responsive behavior!')">
+                            <i class="bi bi-phone me-2"></i> Test Responsive
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 AUTH FORMS ORGANISM
+                 ======================================== -->
+            <div class="row mb-5" id="auth-forms-organism">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Authentication Forms
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Complete authentication forms with Liquid design. Includes Login, Signup, Reset Password, and Change Password.
+                    </p>
+                    
+                    <!-- Preview: Login Form -->
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card card-liquid rounded-liquid shadow-liquid auth-form">
+                                <div class="card-body p-4">
+                                    <div class="text-center mb-4">
+                                        <i class="bi bi-roller-skate fs-1 text-liquid-primary"></i>
+                                        <h4 class="mt-2 fw-bold" style="color: var(--gr-primary);">Connexion</h4>
+                                        <p class="text-muted small">Exemple de formulaire d'authentification</p>
+                                    </div>
+                                    
+                                    <form>
+                                        <div class="mb-3">
+                                            <label for="previewEmail" class="form-label">Email</label>
+                                            <input type="email" class="form-control form-control-liquid" 
+                                                   id="previewEmail" placeholder="votre@email.com">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="previewPassword" class="form-label">Mot de passe</label>
+                                            <input type="password" class="form-control form-control-liquid" 
+                                                   id="previewPassword" placeholder="••••••••">
+                                        </div>
+                                        
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" id="previewRemember">
+                                            <label class="form-check-label" for="previewRemember">
+                                                Se souvenir de moi
+                                            </label>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                                            Se connecter
+                                        </button>
+                                        
+                                        <div class="text-center">
+                                            <a href="#" class="d-block small text-decoration-none mb-2">
+                                                Mot de passe oublié ?
+                                            </a>
+                                            <p class="small text-muted mb-0">
+                                                Pas de compte ? 
+                                                <a href="#" class="text-decoration-none">Inscrivez-vous</a>
+                                            </p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            4 formulaires disponibles : Login, Signup, Reset Password, Change Password
+                        </p>
+                        <a href="components/auth-forms.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View All 4 Forms
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 CARD LISTS ORGANISMS
+                 ======================================== -->
+            <div class="row mb-5" id="card-lists-organisms">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-grid me-2"></i>
+                        Card Lists
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Organisms that display multiple cards in organized layouts. Event grid and user list.
+                    </p>
+                    
+                    <!-- Event Grid Preview -->
+                    <h4 class="h5 mb-3">Event Grid (3 columns)</h4>
+                    <div class="event-grid mb-5">
+                        <div class="row g-4">
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card card-event card-liquid rounded-liquid shadow-liquid">
+                                    <div class="card-event-image">
+                                        <img src="img/roller.png" alt="Rando Bastille">
+                                        <span class="card-event-date badge badge-liquid-primary">
+                                            <i class="bi bi-calendar3 me-1"></i> 15 JAN
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Rando Bastille</h5>
+                                        <div class="card-event-info mb-3">
+                                            <p class="mb-2">
+                                                <i class="bi bi-geo-alt text-liquid-primary me-2"></i> Grenoble
+                                            </p>
+                                            <p class="mb-2">
+                                                <i class="bi bi-people text-liquid-primary me-2"></i> 25 inscrits
+                                            </p>
+                                            <p class="mb-0">
+                                                <i class="bi bi-tag text-liquid-success me-2"></i> <strong>Gratuit</strong>
+                                            </p>
+                                        </div>
+                                        <a href="#" class="btn btn-outline-primary w-100">
+                                            Voir plus <i class="bi bi-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card card-event card-liquid rounded-liquid shadow-liquid">
+                                    <div class="card-event-image">
+                                        <img src="img/bannersmall3.png" alt="Sortie nocturne">
+                                        <span class="card-event-date badge badge-liquid-danger">
+                                            <i class="bi bi-calendar3 me-1"></i> 22 FÉV
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Sortie Nocturne</h5>
+                                        <div class="card-event-info mb-3">
+                                            <p class="mb-2">
+                                                <i class="bi bi-geo-alt text-liquid-primary me-2"></i> Centre-ville
+                                            </p>
+                                            <p class="mb-2">
+                                                <i class="bi bi-people text-liquid-primary me-2"></i> 12 inscrits
+                                            </p>
+                                            <p class="mb-0">
+                                                <i class="bi bi-tag text-liquid-primary me-2"></i> <strong>5€</strong>
+                                            </p>
+                                        </div>
+                                        <a href="#" class="btn btn-liquid-primary w-100">
+                                            S'inscrire <i class="bi bi-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card card-event card-liquid rounded-liquid shadow-liquid">
+                                    <div class="card-event-image">
+                                        <img src="img/roller.png" alt="Initiation">
+                                        <span class="card-event-date badge badge-liquid-success">
+                                            <i class="bi bi-calendar3 me-1"></i> 05 MAR
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Initiation Débutants</h5>
+                                        <div class="card-event-info mb-3">
+                                            <p class="mb-2">
+                                                <i class="bi bi-geo-alt text-liquid-primary me-2"></i> Parc Paul Mistral
+                                            </p>
+                                            <p class="mb-2">
+                                                <i class="bi bi-people text-liquid-primary me-2"></i> 8/15 inscrits
+                                            </p>
+                                            <p class="mb-0">
+                                                <i class="bi bi-tag text-liquid-success me-2"></i> <strong>Gratuit</strong>
+                                            </p>
+                                        </div>
+                                        <a href="#" class="btn btn-liquid-success w-100">
+                                            S'inscrire <i class="bi bi-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <a href="components/card-lists.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Full Grids & Lists
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 COMMENT SECTION ORGANISM
+                 ======================================== -->
+            <div class="row mb-5" id="comment-section-organism">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        Comment Section
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Complete comment section with form to add comments and list of existing comments.
+                    </p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-8">
+                            <div class="comment-section card card-liquid rounded-liquid shadow-liquid">
+                                <div class="card-body p-4">
+                                    <!-- Header -->
+                                    <div class="comment-section-header mb-4">
+                                        <h4 class="h5 mb-0">
+                                            <i class="bi bi-chat-left-text text-liquid-primary me-2"></i>
+                                            Commentaires 
+                                            <span class="badge badge-liquid-primary ms-2">3</span>
+                                        </h4>
+                                    </div>
+                                    
+                                    <!-- Form -->
+                                    <div class="comment-form mb-4">
+                                        <form>
+                                            <div class="mb-3">
+                                                <textarea class="form-control form-control-liquid" 
+                                                          rows="3" 
+                                                          placeholder="Partagez votre expérience..."></textarea>
+                                            </div>
+                                            <div class="d-flex justify-content-end">
+                                                <button type="submit" class="btn btn-liquid-primary">
+                                                    <i class="bi bi-send me-2"></i> Publier
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <!-- Comments -->
+                                    <div class="comment-list">
+                                        <div class="comment mb-3">
+                                            <div class="comment-avatar">
+                                                <i class="bi bi-person-circle"></i>
+                                            </div>
+                                            <div class="comment-content">
+                                                <div class="comment-header">
+                                                    <h6 class="comment-author mb-1">Jean Dupont</h6>
+                                                    <span class="comment-time text-muted small">Il y a 2 heures</span>
+                                                </div>
+                                                <p class="comment-text mb-3">
+                                                    Super événement ! 🎉
+                                                </p>
+                                                <div class="comment-actions">
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-reply me-1"></i> Répondre
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-heart me-1"></i> 12
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center mt-4">
+                        <a href="components/comment-section.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Full Comment Section
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 RESOURCE PRESENTATION ORGANISM
+                 ======================================== -->
+            <div class="row mb-5" id="resource-presentation-organism">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Resource Presentation
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Complete show page layout for events with image, info card, description, and sidebar.
+                    </p>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Complex layout with 8/4 columns, sticky sidebar, and social share buttons
+                        </p>
+                        <a href="components/resource.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Full Event Show Page
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 EVENT CALENDAR ORGANISM
+                 ======================================== -->
+            <div class="row mb-5" id="calendar-organism">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        Event Calendar
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Monthly calendar with event badges, navigation, and interactive days.
+                    </p>
+                    
+                    <!-- Info & Links -->
+                    <div class="text-center">
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Custom organism with CSS Grid, badges on event days, and month navigation
+                        </p>
+                        <a href="components/calendar.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Interactive Calendar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 FOOTER ORGANISM
+                 ======================================== -->
+            <div class="row mb-5" id="footer-organism">
+                <div class="col-12">
+                    <h3 class="h2 mb-3">
+                        <i class="bi bi-layout-text-sidebar-reverse me-2"></i>
+                        Footer
+                    </h3>
+                    <p class="text-muted mb-4">
+                        Professional footer with 4 columns, social links, newsletter, and copyright. Fully responsive.
+                    </p>
+                    
+                    <!-- Preview Card -->
+                    <div class="card card-liquid mb-3">
+                        <div class="card-body p-0">
+                            <!-- Footer Preview -->
+                            <footer class="footer-grenoble-roller">
+                                <div class="container py-5">
+                                    <!-- 4 Columns -->
+                                    <div class="row g-4">
+                                        <!-- Column 1 -->
+                                        <div class="col-6 col-md-3">
+                                            <h5 class="footer-title mb-3">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                À propos
+                                            </h5>
+                                            <ul class="footer-links list-unstyled">
+                                                <li><a href="#">Qui sommes-nous</a></li>
+                                                <li><a href="#">Équipe</a></li>
+                                                <li><a href="#">Carrières</a></li>
+                                                <li><a href="#">Blog</a></li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <!-- Column 2 -->
+                                        <div class="col-6 col-md-3">
+                                            <h5 class="footer-title mb-3">
+                                                <i class="bi bi-calendar-event me-2"></i>
+                                                Événements
+                                            </h5>
+                                            <ul class="footer-links list-unstyled">
+                                                <li><a href="#">Parcourir</a></li>
+                                                <li><a href="#">Catégories</a></li>
+                                                <li><a href="#">Villes</a></li>
+                                                <li><a href="#">Créer</a></li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <!-- Column 3 -->
+                                        <div class="col-6 col-md-3">
+                                            <h5 class="footer-title mb-3">
+                                                <i class="bi bi-question-circle me-2"></i>
+                                                Support
+                                            </h5>
+                                            <ul class="footer-links list-unstyled">
+                                                <li><a href="#">FAQ</a></li>
+                                                <li><a href="#">Contact</a></li>
+                                                <li><a href="#">CGU</a></li>
+                                                <li><a href="#">Confidentialité</a></li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <!-- Column 4 -->
+                                        <div class="col-6 col-md-3">
+                                            <h5 class="footer-title mb-3">
+                                                <i class="bi bi-share me-2"></i>
+                                                Suivez-nous
+                                            </h5>
+                                            <div class="footer-social d-flex gap-3 flex-wrap">
+                                                <a href="#" class="social-link" aria-label="Facebook">
+                                                    <i class="bi bi-facebook"></i>
+                                                </a>
+                                                <a href="#" class="social-link" aria-label="Twitter">
+                                                    <i class="bi bi-twitter"></i>
+                                                </a>
+                                                <a href="#" class="social-link" aria-label="Instagram">
+                                                    <i class="bi bi-instagram"></i>
+                                                </a>
+                                                <a href="#" class="social-link" aria-label="TikTok">
+                                                    <i class="bi bi-tiktok"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <!-- Copyright -->
+                                    <div class="row">
+                                        <div class="col-12 text-center">
+                                            <p class="footer-copyright mb-0">
+                                                © 2025 Grenoble Roller - Tous droits réservés | 
+                                                Fait avec <i class="bi bi-heart-fill text-danger"></i> à Grenoble
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </footer>
+                        </div>
+                    </div>
+                    
+                    <!-- Info & Links -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="components/footer.html" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-code-square me-2"></i> View Source Code
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div><!-- /container-fluid -->
+    </section><!-- /organisms -->
+
+    <!-- ========================================
+         FOOTER
+         ======================================== -->
+    <footer class="py-4 text-center text-muted border-top">
+        <div class="container">
+            <p class="mb-2">
+                <strong>Grenoble Roller UI Kit</strong> - Complete Design System
+            </p>
+            <p class="small mb-0">
+                Bootstrap 5.3.2 + Liquid Apple 2025 Layer | 
+                <a href="atoms.html" class="text-decoration-none">Atoms Only</a> | 
+                <a href="https://github.com/grenoble-roller" class="text-decoration-none" target="_blank">
+                    <i class="bi bi-github"></i> GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
@@ -1339,10 +2286,20 @@
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-bs-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            const themeIcon = document.getElementById('theme-icon');
+            
+            // Update all theme icons on the page
+            const themeIcons = [
+                document.getElementById('theme-icon'),
+                document.getElementById('theme-icon-navbar')
+            ];
             
             html.setAttribute('data-bs-theme', newTheme);
-            themeIcon.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            
+            themeIcons.forEach(icon => {
+                if (icon) {
+                    icon.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                }
+            });
             
             // Save theme preference
             localStorage.setItem('theme', newTheme);
@@ -1352,10 +2309,20 @@
         document.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             const html = document.documentElement;
-            const themeIcon = document.getElementById('theme-icon');
+            
+            // Update all theme icons
+            const themeIcons = [
+                document.getElementById('theme-icon'),
+                document.getElementById('theme-icon-navbar')
+            ];
             
             html.setAttribute('data-bs-theme', savedTheme);
-            themeIcon.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            
+            themeIcons.forEach(icon => {
+                if (icon) {
+                    icon.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                }
+            });
         });
         
         // Initialize tooltips
