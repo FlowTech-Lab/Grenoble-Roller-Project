@@ -27,7 +27,7 @@
     
     --gr-primary:  #007bff;
     --gr-primary-light: #5aa9fa;
-    --gr-primary-dark:  #0041aa;
+    --gr-primary-dark:  #ffffff;
     --gr-success: #0d6322;
     --gr-warning: #7e4900;
     --gr-danger: #911a14;
@@ -51,11 +51,21 @@
     /* Bootstrap shadow overrides */
     --bs-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     --bs-box-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
+    
+    /* Hover shadows (light theme - dark shadows) */
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15);
+    --shadow-hover-lg: 0 4px 8px rgba(0, 0, 0, 0.2);
+    --shadow-hover-card: 0 6px 12px rgba(0, 0, 0, 0.15);
   }
   
   [data-bs-theme=dark] {
     --liquid-glass-bg: rgba(0, 0, 0, 0.25);
     --liquid-glass-border: rgba(255, 255, 255, 0.1);
+    
+    /* Hover shadows (dark theme - white shadows) */
+    --shadow-hover: 0 2px 4px rgba(255, 255, 255, 0.15);
+    --shadow-hover-lg: 0 4px 8px rgba(255, 255, 255, 0.2);
+    --shadow-hover-card: 0 6px 12px rgba(255, 255, 255, 0.15);
   }
   
   /* === LIQUID BODY BACKGROUND === */
@@ -124,13 +134,13 @@
   
   .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: var(--shadow-hover);
     transition: var(--transition-liquid);
   }
-
+  
   .btn-liquid-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 122, 255, 0.3);
+    box-shadow: var(--shadow-hover-lg);
     transition: var(--transition-liquid);
   }
   
@@ -738,7 +748,7 @@
   
   .card-event:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: var(--shadow-hover-card) !important;
     transition: var(--transition-liquid);
   }
   
@@ -783,7 +793,7 @@
   .card-user:hover {
     transform: translateX(5px);
     transition: var(--transition-liquid);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: var(--shadow-hover-lg) !important;
   }
   
   .card-user-avatar {
@@ -815,7 +825,7 @@
   
   .card-city:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: var(--shadow-hover-card) !important;
     transition: var(--transition-liquid);
   }
   
