@@ -1,0 +1,13 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+PLAN_MOLECULES_ORGANISMS.md
+
+# Development files
+.vscode
+.idea
+*.log
+

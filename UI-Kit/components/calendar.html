@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Calendar - Grenoble Roller UI Kit</title>
+    
+    <!-- Custom CSS (includes Bootstrap 5.3.2 + Bootstrap Icons + Liquid Layer) -->
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container-fluid py-5">
+        <!-- ========================================
+             DOCUMENTATION
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h1 class="display-4 text-liquid-primary-white mb-3">
+                    <i class="bi bi-grid-3x3 text-liquid-primary me-3"></i>
+                    Event Calendar Organism
+                </h1>
+                <p class="lead text-muted">
+                    Monthly calendar showing events with badges and navigation
+                </p>
+                
+                <div class="alert alert-liquid-primary rounded-liquid p-4 mb-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Features
+                    </h5>
+                    <ul class="mb-0">
+                        <li><strong>Month navigation:</strong> Previous/Next month buttons</li>
+                        <li><strong>Event badges:</strong> Visual indicators on days with events</li>
+                        <li><strong>Interactive:</strong> Click on day to view events</li>
+                        <li><strong>Responsive:</strong> Adapts to mobile screens</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================
+             PREVIEW
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 mb-3">Preview</h2>
+                
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-10">
+                        <!-- Calendar -->
+                        <div class="event-calendar card card-liquid rounded-liquid shadow-liquid">
+                            <div class="card-body p-4">
+                                <!-- Calendar Header -->
+                                <div class="calendar-header d-flex justify-content-between align-items-center mb-4">
+                                    <button class="btn btn-outline-primary" id="prevMonth">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <h3 class="h4 mb-0 text-liquid-primary">
+                                        <i class="bi bi-calendar3 me-2"></i>
+                                        Janvier 2025
+                                    </h3>
+                                    <button class="btn btn-outline-primary" id="nextMonth">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Calendar Grid -->
+                                <div class="calendar-grid">
+                                    <!-- Days of week -->
+                                    <div class="calendar-days-header">
+                                        <div class="calendar-day-name">Lun</div>
+                                        <div class="calendar-day-name">Mar</div>
+                                        <div class="calendar-day-name">Mer</div>
+                                        <div class="calendar-day-name">Jeu</div>
+                                        <div class="calendar-day-name">Ven</div>
+                                        <div class="calendar-day-name">Sam</div>
+                                        <div class="calendar-day-name">Dim</div>
+                                    </div>
+                                    
+                                    <!-- Calendar days -->
+                                    <div class="calendar-days">
+                                        <!-- Week 1 -->
+                                        <div class="calendar-day empty"></div>
+                                        <div class="calendar-day empty"></div>
+                                        <div class="calendar-day">1</div>
+                                        <div class="calendar-day">2</div>
+                                        <div class="calendar-day">3</div>
+                                        <div class="calendar-day">4</div>
+                                        <div class="calendar-day">5</div>
+                                        
+                                        <!-- Week 2 -->
+                                        <div class="calendar-day">6</div>
+                                        <div class="calendar-day">7</div>
+                                        <div class="calendar-day">8</div>
+                                        <div class="calendar-day">9</div>
+                                        <div class="calendar-day has-event">
+                                            10
+                                            <span class="event-badge badge badge-liquid-primary">1</span>
+                                        </div>
+                                        <div class="calendar-day">11</div>
+                                        <div class="calendar-day">12</div>
+                                        
+                                        <!-- Week 3 -->
+                                        <div class="calendar-day">13</div>
+                                        <div class="calendar-day">14</div>
+                                        <div class="calendar-day has-event today">
+                                            15
+                                            <span class="event-badge badge badge-liquid-success">2</span>
+                                        </div>
+                                        <div class="calendar-day">16</div>
+                                        <div class="calendar-day">17</div>
+                                        <div class="calendar-day">18</div>
+                                        <div class="calendar-day">19</div>
+                                        
+                                        <!-- Week 4 -->
+                                        <div class="calendar-day">20</div>
+                                        <div class="calendar-day">21</div>
+                                        <div class="calendar-day has-event">
+                                            22
+                                            <span class="event-badge badge badge-liquid-danger">1</span>
+                                        </div>
+                                        <div class="calendar-day">23</div>
+                                        <div class="calendar-day">24</div>
+                                        <div class="calendar-day">25</div>
+                                        <div class="calendar-day">26</div>
+                                        
+                                        <!-- Week 5 -->
+                                        <div class="calendar-day">27</div>
+                                        <div class="calendar-day">28</div>
+                                        <div class="calendar-day">29</div>
+                                        <div class="calendar-day">30</div>
+                                        <div class="calendar-day">31</div>
+                                        <div class="calendar-day empty"></div>
+                                        <div class="calendar-day empty"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Legend -->
+                                <div class="calendar-legend mt-4 pt-3 border-top">
+                                    <div class="d-flex gap-3 flex-wrap justify-content-center">
+                                        <span class="small">
+                                            <span class="badge bg-primary">●</span> Événement prévu
+                                        </span>
+                                        <span class="small">
+                                            <span class="badge bg-success">●</span> Aujourd'hui
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to showcase -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <a href="../index.html#organisms" class="btn btn-liquid-primary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back to Showcase
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme toggle -->
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        });
+    </script>
+</body>
+</html>
+

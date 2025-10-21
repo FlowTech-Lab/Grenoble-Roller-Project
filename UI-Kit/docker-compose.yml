@@ -1,0 +1,16 @@
+services:
+  grenoble-roller-ui-kit:
+    image: nginx:alpine
+    container_name: grenoble-roller-ui-kit
+    ports:
+      - "3082:80"
+    volumes:
+      - .:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - grenoble-roller-network
+
+networks:
+  grenoble-roller-network:
+    driver: bridge
+

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navbar - Grenoble Roller UI Kit</title>
+    
+    <!-- Custom CSS (includes Bootstrap 5.3.2 + Bootstrap Icons + Liquid Layer) -->
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container-fluid py-5">
+        <!-- ========================================
+             DOCUMENTATION
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h1 class="display-4 text-liquid-primary-white mb-3">
+                    <i class="bi bi-grid-3x3 text-liquid-primary me-3"></i>
+                    Navbar Organism
+                </h1>
+                <p class="lead text-muted">
+                    Complete navigation bar for Grenoble Roller community platform
+                </p>
+                
+                <div class="alert alert-liquid-primary rounded-liquid p-4 mb-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Components
+                    </h5>
+                    <ul class="mb-0">
+                        <li><strong>Left:</strong> Logo + Main menu (Accueil, Événements, Créer, Ressources)</li>
+                        <li><strong>Center:</strong> Search bar</li>
+                        <li><strong>Right:</strong> User menu (Profile dropdown) + Auth buttons</li>
+                        <li><strong>Responsive:</strong> Burger menu on mobile</li>
+                    </ul>
+                </div>
+
+                <div class="card card-liquid rounded-liquid mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            UX Best Practices
+                        </h5>
+                        <ul class="mb-0 small">
+                            <li>Primary actions on the left (Accueil, Événements, Créer)</li>
+                            <li>User-specific actions on the right (Profile, Logout)</li>
+                            <li>Clear and simple labels</li>
+                            <li>Icons for quick identification</li>
+                            <li>Logical grouping (Resources in dropdown)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================
+             PREVIEW
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 mb-3">Preview</h2>
+                
+                <!-- NAVBAR START -->
+                <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid shadow-liquid mb-4" aria-label="Main Grenoble Roller navigation">
+                    <div class="container-fluid">
+                        <!-- Logo -->
+                        <a class="navbar-brand fw-bold d-flex align-items-center" href="#" title="Grenoble Roller - Accueil">
+                            <i class="bi bi-roller-skate me-2 fs-4"></i>
+                            <span>Grenoble Roller</span>
+                        </a>
+                        
+                        <!-- Toggle button for mobile -->
+                        <button class="navbar-toggler" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#navbarGrenobleRoller" 
+                                aria-controls="navbarGrenobleRoller" aria-expanded="false" 
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        
+                        <!-- Navbar content -->
+                        <div class="collapse navbar-collapse" id="navbarGrenobleRoller">
+                            <!-- LEFT: Main menu -->
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="#">
+                                        <i class="bi bi-house me-1"></i>
+                                        Accueil
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        Événements
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">
+                                        <i class="bi bi-plus-circle me-1"></i>
+                                        Créer un événement
+                                    </a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" 
+                                       data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu ressources">
+                                        <i class="bi bi-book me-1"></i>
+                                        Ressources
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-map me-2"></i>
+                                                Parcours
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-trophy me-2"></i>
+                                                Initiations
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-bar-chart me-2"></i>
+                                                Statistiques
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            
+                            <!-- CENTER: Search bar -->
+                            <form class="d-flex me-3 navbar-search" role="search">
+                                <div class="input-group">
+                                    <input class="form-control form-control-liquid" 
+                                           type="search" 
+                                           placeholder="Rechercher un événement, un membre..." 
+                                           aria-label="Search">
+                                    <button class="btn btn-outline-primary" type="submit" aria-label="Rechercher">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <!-- RIGHT: User menu -->
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- Theme toggle -->
+                                <button class="btn btn-outline-primary" onclick="toggleTheme()" aria-label="Toggle theme">
+                                    <i class="bi bi-moon-fill" id="theme-icon"></i>
+                                </button>
+                                
+                                <!-- User profile dropdown (when logged in) -->
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" 
+                                            data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu utilisateur">
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        Mon profil
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-person me-2"></i>
+                                                Profil
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-calendar-check me-2"></i>
+                                                Mes événements
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-gear me-2"></i>
+                                                Paramètres
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#">
+                                                <i class="bi bi-box-arrow-right me-2"></i>
+                                                Déconnexion
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Login button (when NOT logged in) -->
+                                <!-- Uncomment to show login instead of profile -->
+                                <!--
+                                <a href="#" class="btn btn-liquid-primary">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                                    Connexion
+                                </a>
+                                -->
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <!-- NAVBAR END -->
+            
+            </div>
+        </div>
+
+        <!-- ========================================
+             VARIATIONS
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 mb-3">Variation: Not Logged In</h2>
+                <p class="text-muted mb-3">When user is not authenticated, show login button instead of profile dropdown.</p>
+                
+                <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid shadow-liquid mb-4">
+                    <div class="container-fluid">
+                        <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                            <i class="bi bi-roller-skate me-2 fs-4"></i>
+                            <span>Grenoble Roller</span>
+                        </a>
+                        
+                        <button class="navbar-toggler" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#navbarNotLoggedIn">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        
+                        <div class="collapse navbar-collapse" id="navbarNotLoggedIn">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#">
+                                        <i class="bi bi-house me-1"></i>
+                                        Accueil
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        Événements
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        À propos
+                                    </a>
+                                </li>
+                            </ul>
+                            
+                            <form class="d-flex me-3 navbar-search" role="search">
+                                <div class="input-group">
+                                    <input class="form-control form-control-liquid" type="search" 
+                                           placeholder="Rechercher..." aria-label="Search">
+                                    <button class="btn btn-outline-primary" type="submit">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div class="d-flex gap-2">
+                                <!-- Theme toggle -->
+                                <button class="btn btn-outline-primary" onclick="toggleTheme()" aria-label="Toggle theme">
+                                    <i class="bi bi-moon-fill" id="theme-icon-2"></i>
+                                </button>
+                                
+                                <a href="#" class="btn btn-outline-primary">
+                                    Connexion
+                                </a>
+                                <a href="#" class="btn btn-liquid-primary">
+                                    Inscription
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div class="alert alert-success" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>Try it!</strong> Test responsive behavior by resizing your browser window.
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================
+             CODE SNIPPET
+             ======================================== -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="h3 mb-3">HTML Code</h2>
+                <p class="text-muted mb-3">Copy this code to use the navbar in your application.</p>
+                
+                <pre class="bg-dark text-light p-4 rounded"><code>&lt;nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid shadow-liquid"&gt;
+    &lt;div class="container-fluid"&gt;
+        &lt;!-- Logo --&gt;
+        &lt;a class="navbar-brand fw-bold d-flex align-items-center" href="#"&gt;
+            &lt;i class="bi bi-roller-skate me-2 fs-4"&gt;&lt;/i&gt;
+            &lt;span&gt;Grenoble Roller&lt;/span&gt;
+        &lt;/a&gt;
+        
+        &lt;!-- Toggle --&gt;
+        &lt;button class="navbar-toggler" data-bs-toggle="collapse" 
+                data-bs-target="#navbarGrenobleRoller"&gt;
+            &lt;span class="navbar-toggler-icon"&gt;&lt;/span&gt;
+        &lt;/button&gt;
+        
+        &lt;!-- Content --&gt;
+        &lt;div class="collapse navbar-collapse" id="navbarGrenobleRoller"&gt;
+            &lt;!-- Main menu, Search, User menu... --&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/nav&gt;</code></pre>
+            </div>
+        </div>
+
+        <!-- Back to showcase -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <a href="../index.html#organisms" class="btn btn-liquid-primary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back to Showcase
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme toggle -->
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const themeIcon = document.getElementById('theme-icon');
+            const themeIcon2 = document.getElementById('theme-icon-2');
+            
+            html.setAttribute('data-bs-theme', newTheme);
+            
+            // Update icons
+            if (themeIcon) {
+                themeIcon.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            }
+            if (themeIcon2) {
+                themeIcon2.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            }
+            
+            // Save preference
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeIcon2 = document.getElementById('theme-icon-2');
+            
+            html.setAttribute('data-bs-theme', savedTheme);
+            
+            // Set initial icons
+            if (themeIcon) {
+                themeIcon.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            }
+            if (themeIcon2) {
+                themeIcon2.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            }
+        });
+    </script>
+</body>
+</html>
+

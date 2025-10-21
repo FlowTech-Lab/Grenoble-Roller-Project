@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Presentation - Grenoble Roller UI Kit</title>
+    
+    <!-- Custom CSS (includes Bootstrap 5.3.2 + Bootstrap Icons + Liquid Layer) -->
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container-fluid py-5">
+        <!-- ========================================
+             DOCUMENTATION
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h1 class="display-4 text-liquid-primary-white mb-3">
+                    <i class="bi bi-grid-3x3 text-liquid-primary me-3"></i>
+                    Resource Presentation Organism
+                </h1>
+                <p class="lead text-muted">
+                    Complete show page layout for events, users, or any resource
+                </p>
+                
+                <div class="alert alert-liquid-primary rounded-liquid p-4 mb-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Layout Structure
+                    </h5>
+                    <ul class="mb-0">
+                        <li><strong>Row 1:</strong> Image (8 col) + Info Card (4 col)</li>
+                        <li><strong>Row 2:</strong> Description (8 col) + Sidebar (4 col)</li>
+                        <li><strong>Row 3:</strong> Social share buttons</li>
+                        <li><strong>Responsive:</strong> Stacks on mobile</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================
+             PREVIEW
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 mb-3">Preview: Event Show Page</h2>
+                
+                <!-- Resource Presentation -->
+                <div class="resource-presentation">
+                    <div class="container">
+                        <!-- Row 1: Image + Info Card -->
+                        <div class="row g-4 mb-4">
+                            <!-- Main Image -->
+                            <div class="col-lg-8">
+                                <div class="resource-image rounded-liquid shadow-liquid">
+                                    <img src="../img/roller.png" alt="Rando Bastille" class="img-fluid rounded-liquid">
+                                </div>
+                            </div>
+                            
+                            <!-- Info Card -->
+                            <div class="col-lg-4">
+                                <div class="card card-liquid rounded-liquid shadow-liquid sticky-top" style="top: 2rem;">
+                                    <div class="card-body">
+                                        <h4 class="h5 mb-3 text-liquid-primary">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Informations
+                                        </h4>
+                                        
+                                        <!-- Date -->
+                                        <div class="resource-info-item mb-3">
+                                            <h6 class="text-muted small mb-1">Date</h6>
+                                            <p class="mb-0">
+                                                <i class="bi bi-calendar3 text-liquid-primary me-2"></i>
+                                                <strong>Samedi 15 janvier 2025</strong><br>
+                                                <small class="text-muted">14h00 - 18h00</small>
+                                            </p>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <!-- Location -->
+                                        <div class="resource-info-item mb-3">
+                                            <h6 class="text-muted small mb-1">Lieu</h6>
+                                            <p class="mb-0">
+                                                <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+                                                <strong>Place Victor Hugo</strong><br>
+                                                <small class="text-muted">38000 Grenoble</small>
+                                            </p>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <!-- Price -->
+                                        <div class="resource-info-item mb-3">
+                                            <h6 class="text-muted small mb-1">Tarif</h6>
+                                            <p class="mb-0">
+                                                <i class="bi bi-tag text-liquid-success me-2"></i>
+                                                <strong class="text-liquid-success">Gratuit</strong>
+                                            </p>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <!-- Participants -->
+                                        <div class="resource-info-item mb-4">
+                                            <h6 class="text-muted small mb-1">Participants</h6>
+                                            <p class="mb-0">
+                                                <i class="bi bi-people text-liquid-primary me-2"></i>
+                                                <strong>25 inscrits</strong> / 50 max
+                                            </p>
+                                            <div class="progress mt-2" style="height: 6px;">
+                                                <div class="progress-bar bg-primary" style="width: 50%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- CTA Button -->
+                                        <button class="btn btn-liquid-primary w-100 btn-lg mb-2">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            S'inscrire
+                                        </button>
+                                        
+                                        <button class="btn btn-outline-secondary w-100">
+                                            <i class="bi bi-share me-2"></i>
+                                            Partager
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Row 2: Description + Sidebar -->
+                        <div class="row g-4 mb-4">
+                            <!-- Description -->
+                            <div class="col-lg-8">
+                                <div class="card card-liquid rounded-liquid shadow-liquid">
+                                    <div class="card-body p-4">
+                                        <h3 class="h4 mb-3 text-liquid-primary">
+                                            <i class="bi bi-file-text me-2"></i>
+                                            Description
+                                        </h3>
+                                        <p class="mb-3">
+                                            Rejoignez-nous pour une magnifique randonnée jusqu'à la Bastille ! 
+                                            Cette sortie convient à tous les niveaux et nous permettra de profiter 
+                                            d'une vue exceptionnelle sur Grenoble et ses montagnes.
+                                        </p>
+                                        <p class="mb-3">
+                                            <strong>Programme :</strong>
+                                        </p>
+                                        <ul>
+                                            <li>14h00 - Rendez-vous Place Victor Hugo</li>
+                                            <li>14h30 - Départ de la montée</li>
+                                            <li>16h00 - Pause au sommet (goûter offert)</li>
+                                            <li>17h30 - Retour en ville</li>
+                                        </ul>
+                                        <p class="mb-0">
+                                            N'oubliez pas vos protections et de l'eau ! 💧
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sidebar -->
+                            <div class="col-lg-4">
+                                <!-- Organizer Card -->
+                                <div class="card card-liquid rounded-liquid shadow-liquid mb-3">
+                                    <div class="card-body">
+                                        <h5 class="h6 mb-3 text-liquid-primary">
+                                            <i class="bi bi-person-badge me-2"></i>
+                                            Organisateur
+                                        </h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--gr-primary);"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Marie Martin</h6>
+                                                <p class="small text-muted mb-0">25 événements organisés</p>
+                                            </div>
+                                        </div>
+                                        <a href="#" class="btn btn-outline-primary btn-sm w-100 mt-3">
+                                            Voir le profil
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Participants Card -->
+                                <div class="card card-liquid rounded-liquid shadow-liquid">
+                                    <div class="card-body">
+                                        <h5 class="h6 mb-3 text-liquid-primary">
+                                            <i class="bi bi-people me-2"></i>
+                                            Participants (25)
+                                        </h5>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <i class="bi bi-person-circle" style="font-size: 2rem; color: var(--gr-primary);"></i>
+                                            <i class="bi bi-person-circle" style="font-size: 2rem; color: var(--gr-success);"></i>
+                                            <i class="bi bi-person-circle" style="font-size: 2rem; color: var(--gr-info);"></i>
+                                            <i class="bi bi-person-circle" style="font-size: 2rem; color: var(--gr-warning);"></i>
+                                            <span class="badge bg-secondary align-self-center">+21</span>
+                                        </div>
+                                        <a href="#" class="btn btn-outline-primary btn-sm w-100 mt-3">
+                                            Voir tous les participants
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Row 3: Social Share -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card card-liquid rounded-liquid shadow-liquid">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                            <span class="text-muted">
+                                                <i class="bi bi-share me-2"></i>
+                                                Partager cet événement
+                                            </span>
+                                            <div class="d-flex gap-2">
+                                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-facebook"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-twitter"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-envelope"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-link-45deg"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to showcase -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <a href="../index.html#organisms" class="btn btn-liquid-primary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back to Showcase
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme toggle -->
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        });
+    </script>
+</body>
+</html>
+

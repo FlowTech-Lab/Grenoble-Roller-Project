@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element Presentation - Grenoble Roller UI Kit</title>
+    
+    <!-- Custom CSS (includes Bootstrap 5.3.2 + Bootstrap Icons + Liquid Layer) -->
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container-fluid py-5">
+        <!-- ========================================
+             DOCUMENTATION
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h1 class="display-4 text-liquid-primary-white mb-3">
+                    <i class="bi bi-hexagon text-liquid-primary me-3"></i>
+                    Element Presentation Molecules
+                </h1>
+                <p class="lead text-muted">
+                    Alternating image/text sections for landing pages
+                </p>
+                
+                <div class="alert alert-liquid-primary rounded-liquid p-4 mb-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        2 Variations
+                    </h5>
+                    <ul class="mb-0">
+                        <li><strong>Image Left:</strong> Image on left (6 col), Text on right (6 col)</li>
+                        <li><strong>Image Right:</strong> Text on left (6 col), Image on right (6 col)</li>
+                        <li><strong>Responsive:</strong> Stacks on mobile (image always on top)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================
+             VARIATION 1: IMAGE LEFT
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 mb-3">1. Image Left + Text Right</h2>
+                
+                <div class="element-presentation mb-5">
+                    <div class="container">
+                        <div class="row align-items-center g-4">
+                            <!-- Image -->
+                            <div class="col-lg-6">
+                                <div class="element-image rounded-liquid shadow-liquid">
+                                    <img src="../img/roller.png" alt="Grenoble Roller Community" class="img-fluid rounded-liquid">
+                                </div>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="col-lg-6">
+                                <div class="element-content">
+                                    <span class="element-badge badge badge-liquid-primary mb-3">
+                                        <i class="bi bi-star me-1"></i>
+                                        Notre communauté
+                                    </span>
+                                    <h2 class="element-title mb-3">
+                                        Rejoignez des passionnés de roller
+                                    </h2>
+                                    <p class="element-text mb-4">
+                                        Grenoble Roller rassemble plus de 500 riders de tous niveaux. 
+                                        Que vous soyez débutant ou expert, vous trouverez votre place 
+                                        dans notre communauté chaleureuse et accueillante.
+                                    </p>
+                                    <ul class="element-features mb-4">
+                                        <li>
+                                            <i class="bi bi-check-circle text-liquid-success me-2"></i>
+                                            Événements hebdomadaires
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-check-circle text-liquid-success me-2"></i>
+                                            Tous niveaux acceptés
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-check-circle text-liquid-success me-2"></i>
+                                            Ambiance conviviale
+                                        </li>
+                                    </ul>
+                                    <a href="#" class="btn btn-liquid-primary btn-lg">
+                                        <i class="bi bi-person-plus me-2"></i>
+                                        Rejoindre la communauté
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================
+             VARIATION 2: IMAGE RIGHT
+             ======================================== -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="h3 mb-3">2. Text Left + Image Right</h2>
+                
+                <div class="element-presentation">
+                    <div class="container">
+                        <div class="row align-items-center g-4">
+                            <!-- Content -->
+                            <div class="col-lg-6 order-lg-1">
+                                <div class="element-content">
+                                    <span class="element-badge badge badge-liquid-success mb-3">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        Événements variés
+                                    </span>
+                                    <h2 class="element-title mb-3">
+                                        Des sorties pour tous les goûts
+                                    </h2>
+                                    <p class="element-text mb-4">
+                                        Randonnées urbaines, initiations, compétitions, sorties nocturnes... 
+                                        Nous organisons des événements variés tout au long de l'année pour 
+                                        satisfaire toutes les envies !
+                                    </p>
+                                    <ul class="element-features mb-4">
+                                        <li>
+                                            <i class="bi bi-check-circle text-liquid-success me-2"></i>
+                                            Plus de 50 événements par an
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-check-circle text-liquid-success me-2"></i>
+                                            Parcours découverte de Grenoble
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-check-circle text-liquid-success me-2"></i>
+                                            Sorties à thème
+                                        </li>
+                                    </ul>
+                                    <a href="#" class="btn btn-liquid-success btn-lg">
+                                        <i class="bi bi-calendar-event me-2"></i>
+                                        Voir les événements
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Image -->
+                            <div class="col-lg-6 order-lg-2">
+                                <div class="element-image rounded-liquid shadow-liquid">
+                                    <img src="../img/bannersmall3.png" alt="Événements variés" class="img-fluid rounded-liquid">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to showcase -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <a href="../index.html#molecules" class="btn btn-liquid-primary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Back to Showcase
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme toggle -->
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        });
+    </script>
+</body>
+</html>
+
