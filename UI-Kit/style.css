@@ -20,25 +20,27 @@
 /* === LIQUID GRENOBLE ROLLER VARIABLES === */
 :root {
     /* Grenoble Roller colors (optimized for WCAG 2.1 AA accessibility) */
-    --gr-white: #ffffff;
-    --gr-primary: #007bff;
-    --gr-primary-light: #3494fc;
-    --gr-primary-dark: #0051D5;
+    --gr-white:    #f8f9fa;
+    --gr-bg-light: #f2f4f6;
+    --gr-primary:  #007bff;
+    --gr-primary-light: #5aa9fa;
+    --gr-primary-dark:  #0041aa;
+    --gr-text:     #212529;
     --gr-success: #0d6322;
     --gr-warning: #7e4900;
     --gr-danger: #911a14;
     --gr-info: #2782bb;
     
     /* Glass/Liquid effects */
-    --liquid-glass-bg: rgba(255, 255, 255, 0.25);
-    --liquid-glass-border: rgba(255, 255, 255, 0.18);
+    --liquid-glass-bg:     rgba(255,255,255,0.35);
+    --liquid-glass-border: rgba(255,255,255,0.2);
     --liquid-blur: blur(12px);
     
     /* Organic gradients */
     --gradient-liquid-primary: linear-gradient(135deg, var(--gr-primary) 0%, var(--gr-primary-light) 100%);
     --gradient-liquid-success: linear-gradient(135deg, var(--gr-success) 0%, #0d6322 100%);
     --gradient-liquid-danger: linear-gradient(135deg, var(--gr-danger) 0%, #b82820 100%);
-    --gradient-liquid-pastel: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 25%, #ede9fe 50%, #fce7f3 75%, #fef3c7 100%);
+    --gradient-liquid-pastel: linear-gradient(135deg, #f0f5f9 0%, #e8eef3 50%, #f5f7fa 100%);
     
     /* Liquid transitions */
     --transition-liquid: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
