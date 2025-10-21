@@ -7,7 +7,7 @@
     <meta name="description" content="Grenoble Roller official site - Modern UI Kit with Bootstrap 5.3.2 and Liquid Apple 2025 design. Discover our accessible and performant components.">
     <meta name="keywords" content="Grenoble Roller, UI Kit, Bootstrap 5, Design System, Liquid Design, Accessibility">
     <meta name="author" content="Grenoble Roller">
-    <title>Grenoble Roller - UI Kit Liquid + Bootstrap</title>
+    <title>Grenoble Roller - Atoms Only</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🛼</text></svg>">
@@ -16,40 +16,75 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Liquid Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-liquid sticky-top" aria-label="Main navigation">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#" title="Grenoble Roller - Accueil">
-                <i class="bi bi-roller-skate me-2" aria-hidden="true"></i>Grenoble Roller
+    <!-- ========================================
+         GRENOBLE ROLLER NAVBAR
+         ======================================== -->
+    <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid sticky-top shadow-liquid" aria-label="Main Grenoble Roller navigation">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html" title="Grenoble Roller - Back to Showcase">
+                <i class="bi bi-roller-skate me-2 fs-4"></i>
+                <span>Grenoble Roller</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            
+            <!-- Toggle -->
+            <button class="navbar-toggler" type="button" 
+                    data-bs-toggle="collapse" data-bs-target="#navbarAtomsMain" 
+                    aria-controls="navbarAtomsMain" aria-expanded="false" 
+                    aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+            
+            <!-- Content -->
+            <div class="collapse navbar-collapse" id="navbarAtomsMain">
+                <!-- Main menu -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#liquid" aria-current="page">Liquid</a>
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Showcase
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#buttons">Buttons</a>
+                        <a class="nav-link active" aria-current="page" href="#liquid">
+                            <i class="bi bi-circle me-1"></i> Atoms
+                        </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#cards">Cards</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#forms">Forms</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#alerts">Alerts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#badges">Badges</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-list me-1"></i> Sections
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#buttons"><i class="bi bi-circle me-2"></i> Buttons</a></li>
+                            <li><a class="dropdown-item" href="#cards"><i class="bi bi-card-text me-2"></i> Cards</a></li>
+                            <li><a class="dropdown-item" href="#forms"><i class="bi bi-input-cursor-text me-2"></i> Forms</a></li>
+                            <li><a class="dropdown-item" href="#alerts"><i class="bi bi-exclamation-triangle me-2"></i> Alerts</a></li>
+                            <li><a class="dropdown-item" href="#badges"><i class="bi bi-tag me-2"></i> Badges</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#typography"><i class="bi bi-fonts me-2"></i> Typography</a></li>
+                            <li><a class="dropdown-item" href="#navbars"><i class="bi bi-layout-text-window me-2"></i> Navbars</a></li>
+                        </ul>
                     </li>
                 </ul>
-                <div class="d-flex">
-                    <button class="btn btn-liquid-primary me-2" onclick="toggleTheme()" aria-label="Toggle theme">
-                        <i class="bi bi-moon-fill" id="theme-icon" aria-hidden="true"></i>
+                
+                <!-- Search -->
+                <form class="d-flex me-3 navbar-search" role="search">
+                    <div class="input-group">
+                        <input class="form-control form-control-liquid" 
+                               type="search" 
+                               placeholder="Rechercher..." 
+                               aria-label="Search">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- User menu -->
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Theme toggle -->
+                    <button class="btn btn-outline-primary" onclick="toggleTheme()" aria-label="Toggle theme">
+                        <i class="bi bi-moon-fill" id="theme-icon"></i>
                     </button>
                 </div>
             </div>
@@ -60,10 +95,10 @@
         <div class="row">
             <div class="col-12">
                 <h1 class="display-4 text-center mb-5 text-liquid-primary-white liquid-fade-in">
-                    <i class="bi bi-palette me-3" aria-hidden="true"></i>Grenoble Roller UI Kit
+                    <i class="bi bi-palette me-3" aria-hidden="true"></i>Grenoble Roller - Atoms Only
                 </h1>
                 <p class="lead text-center mb-5">
-                    Bootstrap 5.3.2 + Liquid Apple 2025 Layer - All-in-one
+                    Bootstrap 5.3.2 + Liquid Apple 2025 Layer - Atomic Components
                 </p>
             </div>
         </div>

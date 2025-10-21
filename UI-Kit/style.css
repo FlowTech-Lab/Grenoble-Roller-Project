@@ -1201,4 +1201,35 @@
     }
   }
   
+  /* === THEME TOGGLE BUTTON (FIXED) === */
+  .theme-toggle-fixed {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 2px solid var(--liquid-glass-border);
+    box-shadow: var(--bs-box-shadow-lg);
+    transition: var(--transition-liquid);
+    cursor: pointer;
+  }
+  
+  .theme-toggle-fixed:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: var(--shadow-hover-lg);
+  }
+  
+  .theme-toggle-fixed i {
+    font-size: 1.5rem;
+    color: var(--gr-primary);
+  }
+  
   /* === END LIQUID LAYER === */

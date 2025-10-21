@@ -9,6 +9,33 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+    <!-- Grenoble Roller Navbar -->
+    <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid sticky-top shadow-liquid mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="../index.html">
+                <i class="bi bi-roller-skate me-2 fs-4"></i>
+                <span>Grenoble Roller</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarComponent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarComponent">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html#organisms">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Showcase
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button class="btn btn-outline-primary" onclick="toggleTheme()">
+                        <i class="bi bi-moon-fill" id="theme-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container-fluid py-5">
         <!-- ========================================
              DOCUMENTATION
@@ -259,13 +286,35 @@
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-bs-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
             html.setAttribute('data-bs-theme', newTheme);
+            
+            // Update all theme icons
+            const icons = ['theme-icon', 'theme-icon-fixed'];
+            icons.forEach(id => {
+                const icon = document.getElementById(id);
+                if (icon) {
+                    icon.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                }
+            });
+            
             localStorage.setItem('theme', newTheme);
         }
         
         document.addEventListener('DOMContentLoaded', function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            const html = document.documentElement;
+            
+            html.setAttribute('data-bs-theme', savedTheme);
+            
+            // Set initial icons
+            const icons = ['theme-icon', 'theme-icon-fixed'];
+            icons.forEach(id => {
+                const icon = document.getElementById(id);
+                if (icon) {
+                    icon.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                }
+            });
         });
     </script>
 </body>
