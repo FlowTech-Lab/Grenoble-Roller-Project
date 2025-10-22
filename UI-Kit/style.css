@@ -135,13 +135,11 @@
   .btn:hover {
     transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
-    transition: var(--transition-liquid);
   }
   
   .btn-liquid-primary:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover-lg);
-    transition: var(--transition-liquid);
   }
   
   .btn-liquid-primary:hover::before {
@@ -173,11 +171,10 @@
     -webkit-backdrop-filter: var(--liquid-blur);
     border: 1px solid var(--liquid-glass-border);
     box-shadow: var(--bs-box-shadow);
-    transition: var(--transition-liquid);
+    transition: var(--transition-liquid) !important;
   }
   
   .card-liquid:hover {
-    transform: none;
     box-shadow: var(--bs-box-shadow-lg);
   }
   
@@ -347,12 +344,16 @@
   
   /* === ACCESSIBILITY === */
   @media (prefers-reduced-motion: reduce) {
+    /* Désactiver seulement les animations complexes, pas les transitions de base */
     .liquid-float,
-    .liquid-fade-in,
-    .btn-liquid-primary::before,
-    .card-liquid {
+    .liquid-fade-in {
       animation: none !important;
-      transition: none !important;
+    }
+    
+    /* Réduire les transitions mais ne pas les supprimer complètement */
+    .card-liquid,
+    .btn-liquid-primary::before {
+      transition: all 200ms ease !important;
     }
   }
   
@@ -399,7 +400,6 @@
   .navbar-grenoble-roller .nav-link:hover {
     color: var(--gr-primary);
     transform: translateY(-2px);
-    transition: var(--transition-liquid);
   }
   
   .navbar-grenoble-roller .nav-link.active {
@@ -447,7 +447,6 @@
     background: var(--liquid-glass-bg);
     color: var(--gr-primary);
     transform: translateX(5px);
-    transition: var(--transition-liquid);
   }
   
   .navbar-grenoble-roller .dropdown-divider {
@@ -511,7 +510,6 @@
   .footer-grenoble-roller .footer-link:hover {
     color: var(--gr-primary);
     transform: translateX(5px);
-    transition: var(--transition-liquid);
   }
   
   /* Social links */
@@ -534,7 +532,6 @@
     background: var(--gr-primary);
     color: white;
     transform: translateY(-3px) scale(1.1);
-    transition: var(--transition-liquid);
     box-shadow: var(--bs-box-shadow);
   }
   
@@ -598,7 +595,6 @@
   .auth-form a:hover {
     color: var(--gr-primary-dark);
     transform: translateX(3px);
-    transition: var(--transition-liquid);
   }
   
   /* ========================================
@@ -742,14 +738,13 @@
   
   /* Event Card (Vertical) */
   .card-event {
-    transition: var(--transition-liquid);
+    transition: var(--transition-liquid) !important;
     overflow: hidden;
   }
   
   .card-event:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover-card) !important;
-    transition: var(--transition-liquid);
   }
   
   .card-event-image {
@@ -792,7 +787,6 @@
   
   .card-user:hover {
     transform: translateX(5px);
-    transition: var(--transition-liquid);
     box-shadow: var(--shadow-hover-lg) !important;
   }
   
@@ -826,7 +820,6 @@
   .card-city:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-hover-card) !important;
-    transition: var(--transition-liquid);
   }
   
   .card-city-image {
