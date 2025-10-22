@@ -1,22 +1,22 @@
-# 📋 Configuration Trello - Shape Up
+# 📋 Configuration Trello - Shape Up (3 semaines, 4 personnes)
 
 ## 🎯 Structure du Tableau
 
-### Colonnes Principales (Shape Up)
+### Colonnes Principales (Shape Up Adapté)
 
-#### 📥 **Shaping**
+#### 📥 **Shaping** (2-3 jours)
 - Épopées et User Stories en cours de définition
 - Champs personnalisés : Priorité (P0-P3), Estimation (points), Assigné
 - Labels : Front, Back, Design, Ops
 
-#### 📋 **Betting Table**
+#### 📋 **Betting Table** (1 jour)
 - Pitches prêts pour validation
 - Critères d'acceptation définis
 - Estimation validée
 
-#### 🔄 **Building**
+#### 🔄 **Building** (3 semaines)
 - Une carte = une feature active
-- Limite : 2-3 cartes par développeur
+- Limite : 1-2 cartes par développeur (4 personnes = 4-8 cartes max)
 - Mise à jour quotidienne
 
 #### 👀 **En Revue/QA**
@@ -33,7 +33,7 @@
 - Historique des livrables
 - Métriques de vélocité
 
-#### 🚫 **Cooldown**
+#### 🚫 **Cooldown** (1 semaine)
 - Bug fixes prioritaires
 - Technical debt paydown
 - R&D personnel
@@ -43,158 +43,184 @@
 
 ## 🎯 Cartes par Phase Shape Up
 
-### **PHASE 1 : SHAPING** (Semaine -2 à 0)
+### **PHASE 1 : SHAPING** (2-3 jours)
 
 #### Cartes à créer :
 - [ ] **Identifier problème utilisateur**
   - Description : Communauté roller dispersée (Facebook, WhatsApp)
   - Labels : Design, Front
-  - Estimation : 2 points
+  - Estimation : 1 point
+  - Assigné : Product Owner
 
-- [ ] **Définir appetite (6 semaines)**
+- [ ] **Définir appetite (3 semaines)**
   - Description : Appetite fixe, scope flexible
   - Labels : Ops
   - Estimation : 1 point
+  - Assigné : Tech Lead
 
 - [ ] **Breadboarding solution**
   - Description : Wireframes grossiers (Excalidraw)
   - Labels : Design, Front
-  - Estimation : 3 points
+  - Estimation : 2 points
+  - Assigné : UX Designer
 
 - [ ] **Identifier rabbit holes**
   - Description : Liste des No-Gos (microservices, Kubernetes, etc.)
   - Labels : Ops
-  - Estimation : 2 points
+  - Estimation : 1 point
+  - Assigné : Tech Lead
 
 - [ ] **Écrire pitch (1 page A4)**
   - Description : Problème → Solution → Appetite → No-Gos
   - Labels : Ops
-  - Estimation : 3 points
+  - Estimation : 2 points
+  - Assigné : Product Owner
 
-### **PHASE 2 : BETTING TABLE** (Semaine 0)
+### **PHASE 2 : BETTING TABLE** (1 jour)
 
 #### Cartes à créer :
 - [ ] **Présenter pitch (15 min)**
   - Description : Présentation + questions + validation
   - Labels : Ops
   - Estimation : 1 point
+  - Assigné : Product Owner
 
 - [ ] **Décision finale**
   - Description : Vote + engagement + documentation
   - Labels : Ops
   - Estimation : 1 point
+  - Assigné : Tech Lead
 
-### **PHASE 3 : BUILDING** (Semaine 1-6)
+### **PHASE 3 : BUILDING** (3 semaines)
 
-#### Semaine 1-2 : Get One Piece Done
+#### Semaine 1 : Get One Piece Done
 - [ ] **Setup projet Rails 8**
   - Description : `rails new grenoble-roller --database=postgresql --css=bootstrap`
   - Labels : Back, Ops
-  - Estimation : 5 points
+  - Estimation : 3 points
+  - Assigné : Tech Lead
 
 - [ ] **Authentification complète**
   - Description : Devise + rôles (Membre, Staff, Admin)
   - Labels : Back, Front
-  - Estimation : 8 points
+  - Estimation : 5 points
+  - Assigné : Backend Dev
 
 - [ ] **Premier événement CRUD**
   - Description : Créer, lire, modifier, supprimer événements
   - Labels : Back, Front
-  - Estimation : 8 points
+  - Estimation : 5 points
+  - Assigné : Fullstack Dev
 
 - [ ] **Inscription événement**
   - Description : Un utilisateur peut s'inscrire à un événement
   - Labels : Back, Front
-  - Estimation : 5 points
-
-- [ ] **Déploiement staging**
-  - Description : Application accessible en ligne
-  - Labels : Ops
   - Estimation : 3 points
+  - Assigné : Frontend Dev
 
-#### Semaine 2-4 : Map Scopes
+#### Semaine 2 : Map Scopes
 - [ ] **Gestion des rôles et permissions**
   - Description : Pundit pour autorisation
   - Labels : Back
-  - Estimation : 5 points
+  - Estimation : 3 points
+  - Assigné : Backend Dev
 
 - [ ] **Upload et gestion des photos**
   - Description : Photos d'événements
   - Labels : Back, Front
-  - Estimation : 8 points
+  - Estimation : 5 points
+  - Assigné : Fullstack Dev
 
 - [ ] **Interface admin**
   - Description : Valider les organisateurs
   - Labels : Back, Front
-  - Estimation : 8 points
+  - Estimation : 5 points
+  - Assigné : Frontend Dev
 
 - [ ] **Notifications email**
   - Description : Inscription, rappel
   - Labels : Back
-  - Estimation : 5 points
+  - Estimation : 3 points
+  - Assigné : Backend Dev
 
-#### Semaine 4-6 : Downhill Execution
+#### Semaine 3 : Downhill Execution
 - [ ] **Tests complets**
   - Description : RSpec + Capybara (coverage >70%)
   - Labels : Back, Front
-  - Estimation : 8 points
+  - Estimation : 5 points
+  - Assigné : Tous
 
 - [ ] **Tests de performance**
   - Description : Tests de charge basiques
   - Labels : Ops
-  - Estimation : 3 points
+  - Estimation : 2 points
+  - Assigné : Tech Lead
 
 - [ ] **Audit sécurité**
   - Description : Brakeman
   - Labels : Ops
-  - Estimation : 2 points
+  - Estimation : 1 point
+  - Assigné : Tech Lead
 
 - [ ] **Documentation**
   - Description : README complet, runbooks
   - Labels : Ops
-  - Estimation : 3 points
+  - Estimation : 2 points
+  - Assigné : Tech Lead
 
 - [ ] **Déploiement production**
   - Description : Application en ligne
   - Labels : Ops
-  - Estimation : 5 points
+  - Estimation : 3 points
+  - Assigné : Tech Lead
 
-### **PHASE 4 : COOLDOWN** (Semaine 7-8)
+### **PHASE 4 : COOLDOWN** (1 semaine)
 
 #### Cartes à créer :
 - [ ] **Bug fixes prioritaires**
   - Description : Problèmes signalés par utilisateurs
   - Labels : Back, Front
-  - Estimation : 5 points
+  - Estimation : 3 points
+  - Assigné : Tous
 
 - [ ] **Technical debt paydown**
   - Description : Refactoring, tests manquants
   - Labels : Back, Front
-  - Estimation : 8 points
+  - Estimation : 5 points
+  - Assigné : Tous
 
 - [ ] **R&D personnel**
   - Description : Explorer nouvelles libs, POCs
   - Labels : Back, Front
-  - Estimation : 5 points
+  - Estimation : 3 points
+  - Assigné : Tous
 
 - [ ] **Formation**
   - Description : Apprendre nouvelles technos
   - Labels : Back, Front
-  - Estimation : 3 points
+  - Estimation : 2 points
+  - Assigné : Tous
 
 - [ ] **Rétrospective**
   - Description : Améliorer process Shape Up
   - Labels : Ops
-  - Estimation : 2 points
+  - Estimation : 1 point
+  - Assigné : Tech Lead
 
 ---
 
-## 🎯 Configuration Trello
+## 🎯 Configuration Trello (4 personnes)
+
+### Rôles Équipe
+- **Tech Lead** : Architecture, DevOps, coordination
+- **Backend Dev** : Rails, API, base de données
+- **Frontend Dev** : Bootstrap, JavaScript, UX
+- **Fullstack Dev** : Polyvalent, support équipe
 
 ### Champs Personnalisés
 - **Priorité** : P0 (Critique), P1 (Haute), P2 (Moyenne), P3 (Basse)
-- **Estimation** : Points (1, 2, 3, 5, 8, 13)
-- **Assigné** : Nom du développeur
+- **Estimation** : Points (1, 2, 3, 5, 8)
+- **Assigné** : Tech Lead, Backend Dev, Frontend Dev, Fullstack Dev
 - **Phase** : Shaping, Betting, Building, Cooldown
 
 ### Labels
@@ -212,12 +238,17 @@
 
 ---
 
-## 📊 Métriques Shape Up
+## 📊 Métriques Shape Up (3 semaines, 4 personnes)
 
 ### Vélocité
-- **Points par semaine** : 20-30 points
+- **Points par semaine** : 15-20 points par personne (60-80 points total)
 - **Burndown chart** : Suivi quotidien
 - **Hill Chart** : Position montée/descente
+
+### Répartition des Points
+- **Semaine 1** : 20 points (Setup + Auth + CRUD)
+- **Semaine 2** : 20 points (Permissions + Photos + Admin)
+- **Semaine 3** : 20 points (Tests + Performance + Deploy)
 
 ### Critères de "Done"
 - [ ] Tests passent (coverage >70%)
@@ -228,21 +259,23 @@
 
 ---
 
-## 🚨 Règles Shape Up
+## 🚨 Règles Shape Up (3 semaines)
 
 ### ✅ À Faire
-- **Appetite fixe** : 6 semaines, scope flexible
-- **Cooldown obligatoire** : 2 semaines de repos
+- **Appetite fixe** : 3 semaines, scope flexible
+- **Cooldown obligatoire** : 1 semaine de repos
 - **Feature shippable** : Déployable en production
 - **Pas de backlog** : Projet unique
+- **Limite cartes** : 1-2 cartes par personne max
 
 ### ❌ À Éviter
-- **Sprints fragmentés** : Pas de 2 semaines
+- **Sprints fragmentés** : Pas de 1 semaine
 - **Backlog infini** : Pas de sprint planning
 - **Estimation en temps** : Utiliser points
 - **Sauter cooldown** : Santé équipe prioritaire
+- **Over-engineering** : MVP simple d'abord
 
 ---
 
 *Configuration Trello selon méthodologie Shape Up*  
-*Version : 1.0 - Shape Up Compliant*
+*Version : 2.0 - Shape Up Adapté (3 semaines, 4 personnes)*
