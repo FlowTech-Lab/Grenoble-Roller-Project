@@ -99,9 +99,28 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
+## 🎯 MÉTHODOLOGIE SHAPE UP ADAPTÉE
+
+### Principe Fondamental
+**Appetite fixe (6 semaines), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
+
+### 4 Phases Shape Up
+1. **SHAPING** (Semaine -2 à 0) : Définir les limites
+2. **BETTING TABLE** (Semaine 0) : Priorisation brutale  
+3. **BUILDING** (Semaine 1-6) : Livrer feature shippable
+4. **COOLDOWN** (Semaine 7-8) : Repos obligatoire
+
+### Rabbit Holes Évités
+- ❌ Microservices → Monolithe Rails d'abord
+- ❌ Kubernetes → Docker Compose simple
+- ❌ Internationalisation → MVP français uniquement
+- ❌ API publique → API interne uniquement
+
+---
+
 ## 🚀 PHASES DE DÉVELOPPEMENT
 
-### **PHASE 1 - DISCOVERY & CADRAGE** (1 semaine)
+### **PHASE 1 - SHAPING** (Semaine -2 à 0)
 
 #### 🎯 **Objectifs**
 - Définir le périmètre fonctionnel précis

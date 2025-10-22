@@ -29,6 +29,22 @@ A web app centralizing roller events in Grenoble. Members browse events; verifie
 - Cover photos required on events
 - Profiles stay private; users can only edit their own profile
 
+## 🎯 Méthodologie Shape Up
+
+**Appetite fixe (6 semaines), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
+
+### 4 Phases Shape Up
+1. **SHAPING** (Semaine -2 à 0) : Définir les limites
+2. **BETTING TABLE** (Semaine 0) : Priorisation brutale  
+3. **BUILDING** (Semaine 1-6) : Livrer feature shippable
+4. **COOLDOWN** (Semaine 7-8) : Repos obligatoire
+
+### Rabbit Holes Évités
+- ❌ Microservices → Monolithe Rails d'abord
+- ❌ Kubernetes → Docker Compose simple
+- ❌ Internationalisation → MVP français uniquement
+- ❌ API publique → API interne uniquement
+
 ## Future Enhancements (Backlog)
 - Online payments for membership, goodies, paid events
 - Categories/tags, filters, search
