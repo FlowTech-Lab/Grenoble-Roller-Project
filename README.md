@@ -1,33 +1,36 @@
-### Description courte
-Plateforme communautaire pour organiser et découvrir des sorties roller à Grenoble, gérée par des organisateurs validés.
+# Grenoble Roller – Events Platform
 
-## Grenoble Roller – Plateforme d’événements
-Application web pour centraliser les sorties roller à Grenoble. Les membres consultent les événements, les organisateurs validés créent et publient des sorties.
+### Short Description
+Community platform to organize and discover rollerblading outings in Grenoble, managed by verified organizers.
 
-### Objectifs
-- Rassembler la communauté roller grenobloise
-- Simplifier la création et la découverte d’événements
-- Mettre en avant des parcours prédéfinis (cartes)
+## Overview
+A web app centralizing roller events in Grenoble. Members browse events; verified organizers create and publish outings.
 
-### Rôles
-- **Utilisateur**: consulte les événements, propose des idées de sorties
-- **Organisateur validé**: crée et publie des événements, gère leurs infos
-- **Admin**: valide les organisateurs, modère
+## Goals
+- Bring the Grenoble roller community together
+- Make event creation and discovery simple
+- Highlight predefined routes (maps)
 
-### Fonctionnalités clés
-- Liste des prochains événements (cartes verticales, photo de couverture)
-- Détail d’un événement: date/heure, durée, lieu, parcours, description
-- Propositions d’idées de sorties par les membres (validation/modération)
-- Map avec parcours prédéfinis (affichage simple)
-- Petite boutique de goodies de l’association 
-- Authentification; seuls les organisateurs validés peuvent créer des événements
+## Roles
+- **User**: browses events, suggests outing ideas
+- **Verified Organizer**: creates and publishes events, manages their details
+- **Admin**: verifies organizers, moderates content
 
-### Contraintes et choix
-- Pas de limite de places pour les événements
-- Photos de couverture requises sur les événements
-- Les profils restent privés; chacun modifie uniquement son profil
+## Key Features
+- Upcoming events list (vertical cards with cover photo)
+- Event details: date/time, duration, location, route, description
+- Member-submitted outing ideas (with validation/moderation)
+- Map with predefined routes (simple display)
+- Small association goodies shop
+- Authentication; only verified organizers can create events
 
-- Paiements en ligne pour adhésion, goodies, événements payants
-- Catégories/tags, filtres, recherche
-- Notifications email ou push
-- Cartes interactives plus avancées (tracé GPX, stats)
+## Constraints & Decisions
+- No seat limits on events
+- Cover photos required on events
+- Profiles stay private; users can only edit their own profile
+
+## Future Enhancements (Backlog)
+- Online payments for membership, goodies, paid events
+- Categories/tags, filters, search
+- Email or push notifications
+- More advanced interactive maps (GPX tracks, stats)
