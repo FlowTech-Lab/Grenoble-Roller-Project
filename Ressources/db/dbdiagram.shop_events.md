@@ -1,14 +1,11 @@
-// Schéma DB – dbdiagram.io (PostgreSQL) – Grenoble Roller
-// Principes:
-// - Roles hiérarchiques: Simple, Inscrit, Initiation, Organisateur, Modérateur, Admin, SuperAdmin
-// - Rails 8 + PostgreSQL; montants en _cents, timestamps par défaut, contraintes explicites
+// Schéma DB – Users + Boutique + Événements (complet)
+// Copie synchronisée à partir de dbdiagram.md
 
 Table roles {
   id integer [pk, increment]
-  // level permet un contrôle simple par niveau (plus haut = plus de droits)
-  code varchar(50) [not null, unique]   // e.g. USER, REGISTERED, INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN
+  code varchar(50) [not null, unique]
   name varchar(100) [not null]
-  level smallint [not null]             // 10..70 (USER=10 .. SUPERADMIN=70)
+  level smallint [not null]
   created_at timestamp
 }
 
@@ -22,7 +19,7 @@ Table users {
   phone varchar(30)
   avatar_url varchar(255)
   email_verified boolean [not null, default: false]
-  role_id integer [not null]            // rôle principal (hiérarchique)
+  role_id integer [not null]
   created_at timestamp
   updated_at timestamp
   Indexes {
@@ -30,13 +27,12 @@ Table users {
   }
 }
 
-// Demandes pour devenir organisateur (validation par admin/modo)
 Table organizer_applications {
   id integer [pk, increment]
   user_id integer [not null]
   motivation text
-  status varchar(20) [not null, default: "pending"] // pending, approved, rejected
-  reviewed_by integer                                // users.id de l'admin/modo
+  status varchar(20) [not null, default: "pending"]
+  reviewed_by integer
   reviewed_at timestamptz
   created_at timestamp
   Indexes {
@@ -45,14 +41,13 @@ Table organizer_applications {
   }
 }
 
-// Parcours / routes prédéfinies
 Table routes {
   id integer [pk, increment]
   name varchar(140) [not null]
   description text
-  distance_km numeric(5,2)               // ex: 12.50
+  distance_km numeric(5,2)
   elevation_m integer
-  difficulty varchar(20)                  // easy, medium, hard
+  difficulty varchar(20)
   gpx_url varchar(255)
   map_image_url varchar(255)
   safety_notes text
@@ -61,18 +56,18 @@ Table routes {
 
 Table events {
   id integer [pk, increment]
-  creator_user_id integer [not null]      // admin/organisateur
-  status varchar(20) [not null, default: "draft"]  // draft, published, canceled
+  creator_user_id integer [not null]
+  status varchar(20) [not null, default: "draft"]
   start_at timestamptz [not null]
-  duration_min integer [not null]         // >0 et multiple de 5 (check)
-  title varchar(140) [not null]           // len 5..140 (check)
-  description text [not null]             // len 20..1000 (check)
-  price_cents integer [not null, default: 0] // 0 = gratuit
+  duration_min integer [not null]
+  title varchar(140) [not null]
+  description text [not null]
+  price_cents integer [not null, default: 0]
   currency char(3) [not null, default: "EUR"]
   location_text varchar(255) [not null]
   meeting_lat numeric(9,6)
   meeting_lng numeric(9,6)
-  route_id integer                         // optionnel
+  route_id integer
   cover_image_url varchar(255)
   created_at timestamp
   updated_at timestamp
@@ -83,12 +78,11 @@ Table events {
   }
 }
 
-// Inscriptions/participations aux events
 Table attendances {
   id integer [pk, increment]
   user_id integer [not null]
   event_id integer [not null]
-  status varchar(20) [not null, default: "registered"] // registered, paid, canceled, present, no_show
+  status varchar(20) [not null, default: "registered"]
   payment_id integer
   stripe_customer_id varchar(255)
   created_at timestamp
@@ -100,18 +94,16 @@ Table attendances {
   }
 }
 
-// Paiements centralisés (Stripe / HelloAsso / gratuit)
 Table payments {
   id integer [pk, increment]
-  provider varchar(20) [not null]         // stripe, helloasso, free
+  provider varchar(20) [not null]
   provider_payment_id varchar(255)
   amount_cents integer [not null, default: 0]
   currency char(3) [not null, default: "EUR"]
-  status varchar(20) [not null, default: "succeeded"] // created, pending, succeeded, failed, refunded
+  status varchar(20) [not null, default: "succeeded"]
   created_at timestamp
 }
 
-// Boutique minimaliste
 Table product_categories {
   id integer [pk, increment]
   name varchar(100) [not null]
@@ -138,10 +130,45 @@ Table products {
   }
 }
 
+// Variantes produits (ex: taille/couleur)
+Table option_types {
+  id integer [pk, increment]
+  name varchar(50) [not null, unique]
+  presentation varchar(100)
+}
+
+Table option_values {
+  id integer [pk, increment]
+  option_type_id integer [not null]
+  value varchar(50) [not null]
+  presentation varchar(100)
+  Indexes { option_type_id }
+}
+
+Table product_variants {
+  id integer [pk, increment]
+  product_id integer [not null]
+  sku varchar(80) [not null, unique]
+  price_cents integer [not null]
+  currency char(3) [not null, default: "EUR"]
+  stock_qty integer [not null, default: 0]
+  is_active boolean [not null, default: true]
+  created_at timestamp
+  updated_at timestamp
+  Indexes { product_id }
+}
+
+Table variant_option_values {
+  id integer [pk, increment]
+  variant_id integer [not null]
+  option_value_id integer [not null]
+  Indexes { (variant_id, option_value_id) [unique] }
+}
+
 Table orders {
   id integer [pk, increment]
   user_id integer [not null]
-  status varchar(20) [not null, default: "pending"] // pending, paid, canceled, shipped
+  status varchar(20) [not null, default: "pending"]
   total_cents integer [not null, default: 0]
   currency char(3) [not null, default: "EUR"]
   payment_id integer
@@ -156,17 +183,16 @@ Table orders {
 Table order_items {
   id integer [pk, increment]
   order_id integer [not null]
-  product_id integer [not null]
+  variant_id integer [not null]
   quantity integer [not null, default: 1]
   unit_price_cents integer [not null]
   created_at timestamp
   Indexes {
     order_id
-    product_id
+    variant_id
   }
 }
 
-// Partenaires
 Table partners {
   id integer [pk, increment]
   name varchar(140) [not null]
@@ -177,7 +203,6 @@ Table partners {
   created_at timestamp
 }
 
-// Contact / messages (formulaire simple)
 Table contact_messages {
   id integer [pk, increment]
   name varchar(140) [not null]
@@ -187,12 +212,11 @@ Table contact_messages {
   created_at timestamp
 }
 
-// Journalisation d'actions d'admin/modo
 Table audit_logs {
   id integer [pk, increment]
   actor_user_id integer [not null]
-  action varchar(80) [not null]       // e.g. event.publish, user.promote
-  target_type varchar(50) [not null]  // users, events, products, orders, etc.
+  action varchar(80) [not null]
+  target_type varchar(50) [not null]
   target_id integer [not null]
   metadata jsonb
   created_at timestamp
@@ -203,20 +227,23 @@ Table audit_logs {
 }
 
 // Références & contraintes
-Ref: users.role_id > roles.id                    // ON DELETE RESTRICT
-Ref: organizer_applications.user_id > users.id   // ON DELETE CASCADE
+Ref: users.role_id > roles.id
+Ref: organizer_applications.user_id > users.id
 Ref: organizer_applications.reviewed_by > users.id
-Ref: events.creator_user_id > users.id           // ON DELETE RESTRICT
-Ref: events.route_id > routes.id                 // ON DELETE SET NULL
-Ref: attendances.user_id > users.id              // ON DELETE CASCADE
-Ref: attendances.event_id > events.id            // ON DELETE CASCADE
-Ref: attendances.payment_id > payments.id        // ON DELETE SET NULL
-Ref: orders.user_id > users.id                   // ON DELETE CASCADE
-Ref: orders.payment_id > payments.id             // ON DELETE SET NULL
-Ref: order_items.order_id > orders.id            // ON DELETE CASCADE
-Ref: order_items.product_id > products.id        // ON DELETE RESTRICT
-Ref: products.category_id > product_categories.id // ON DELETE SET NULL
+Ref: events.creator_user_id > users.id
+Ref: events.route_id > routes.id
+Ref: attendances.user_id > users.id
+Ref: attendances.event_id > events.id
+Ref: attendances.payment_id > payments.id
+Ref: orders.user_id > users.id
+Ref: orders.payment_id > payments.id
+Ref: order_items.order_id > orders.id
+Ref: order_items.variant_id > product_variants.id
+Ref: products.category_id > product_categories.id
 Ref: audit_logs.actor_user_id > users.id
+Ref: product_variants.product_id > products.id
+Ref: option_values.option_type_id > option_types.id
+Ref: variant_option_values.variant_id > product_variants.id
+Ref: variant_option_values.option_value_id > option_values.id
 
-// Seed rôles (suggestion):
-// USER(10), REGISTERED(20), INITIATION(30), ORGANIZER(40), MODERATOR(50), ADMIN(60), SUPERADMIN(70)
+
