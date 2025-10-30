@@ -64,67 +64,6 @@ sudo apt-get install docker.io
 ## 🏗️ ARCHITECTURE TECHNIQUE
 
 ### **Structure du projet Rails 8**
-```
-grenoble-roller/
-├── app/
-│   ├── controllers/
-│   │   ├── application_controller.rb
-│   │   ├── users_controller.rb
-│   │   ├── events_controller.rb
-│   │   ├── admin_controller.rb
-│   │   └── api/
-│   │       ├── v1/
-│   │       │   ├── events_controller.rb
-│   │       │   └── users_controller.rb
-│   ├── models/
-│   │   ├── user.rb
-│   │   ├── event.rb
-│   │   ├── membership.rb
-│   │   ├── initiation.rb
-│   │   └── concerns/
-│   ├── views/
-│   │   ├── layouts/
-│   │   │   ├── application.html.erb
-│   │   │   └── admin.html.erb
-│   │   ├── shared/
-│   │   └── components/
-│   ├── assets/
-│   │   ├── stylesheets/
-│   │   │   ├── application.scss
-│   │   │   ├── bootstrap-custom.scss
-│   │   │   └── components/
-│   │   ├── javascript/
-│   │   │   ├── application.js
-│   │   │   ├── controllers/
-│   │   │   └── components/
-│   │   └── images/
-│   └── jobs/
-│       ├── social_media_job.rb
-│       └── notification_job.rb
-├── config/
-│   ├── routes.rb
-│   ├── database.yml
-│   ├── application.rb
-│   └── environments/
-├── db/
-│   ├── migrate/
-│   └── seeds.rb
-├── spec/
-│   ├── models/
-│   ├── controllers/
-│   ├── requests/
-│   └── features/
-├── lib/
-│   ├── services/
-│   ├── decorators/
-│   └── api/
-├── config/
-│   ├── initializers/
-│   └── locales/
-└── docker-compose.yml
-```
-
----
 
 ## 🚀 COMMANDES DE DÉMARRAGE
 

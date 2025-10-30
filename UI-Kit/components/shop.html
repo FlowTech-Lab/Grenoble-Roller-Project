@@ -47,80 +47,166 @@
             </div>
         </div>
 
-        <section class="mb-5">
-            <div class="product-grid">
-                <div class="card card-product card-liquid rounded-liquid">
-                    <div class="card-product-image">
-                        <img src="../img/roller.png" alt="T-shirt Grenoble Roller">
+        <section class="mb-5" aria-label="Catalogue produits">
+            <div class="row">
+                <div class="col-12 col-lg-8 mx-auto">
+                    <div class="product-grid">
+                <article class="card card-product card-liquid rounded-liquid">
+                    <div class="card-product-image-wrapper">
+                        <div class="card-product-image">
+                            <img src="../img/T-shirt.png" alt="T-shirt Grenoble Roller - coton bio, coupe unisexe" loading="lazy" decoding="async">
+                        </div>
                         <span class="badge badge-liquid-success badge-stock">En stock</span>
                     </div>
                     <div class="card-body">
-                        <h5 class="product-title mb-2">T-shirt Grenoble Roller</h5>
-                        <p class="mb-3 small text-muted">Coton bio, coupe unisexe</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="price-row">
-                                <span class="price">15,00€</span>
-                                <span class="price-old">19,00€</span>
-                                <span class="badge text-bg-warning price-badge">Promo</span>
+                        <div class="product-content">
+                            <h5 class="product-title mb-2">T-shirt Grenoble Roller</h5>
+                            <p class="product-description mb-3 small text-muted">
+                                Porter les couleurs de Grenoble Roller !<br>
+                                Matière en Polyester – respirant, parfait pour le sport !<br>
+                            </p>
+                        </div>
+                        <div class="product-options-section mb-3">
+                            <div class="product-options">
+                            <select class="form-select form-select-sm" aria-label="Choisir la taille du T-shirt">
+                                <option selected>Choisir taille</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                            <select class="form-select form-select-sm" aria-label="Choisir la couleur du T-shirt">
+                                <option selected>Couleur: Blanc</option>
+                            </select>
                             </div>
-                            <button class="btn btn-liquid-primary btn-sm" onclick="addToCart('T-shirt Grenoble Roller', 15, '../img/roller.png')">
-                                <i class="bi bi-plus-lg me-1"></i>Ajouter
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="product-footer">
+                            <div class="price-section-vertical">
+                                <div class="price-display">
+                                    <span class="price">10,00€</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-liquid-primary btn-add" aria-label="Ajouter T-shirt Grenoble Roller au panier" onclick="addToCart('T-shirt Grenoble Roller', 10, '../img/T-shirt.png')">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                <span class="btn-text">Ajouter au panier</span>
                             </button>
                         </div>
                     </div>
-                </div>
-                <div class="card card-product card-liquid rounded-liquid">
-                    <div class="card-product-image">
-                        <img src="../img/bannersmall3.png" alt="Sticker Pack">
-                        <span class="badge badge-liquid-primary badge-stock">Best</span>
+                </article>
+                <article class="card card-product card-liquid rounded-liquid">
+                    <div class="card-product-image-wrapper">
+                        <div class="card-product-image">
+                            <img src="../img/Veste.png" alt="Veste Grenoble Roller - coupe-vent" loading="lazy" decoding="async">
+                        </div>
+                        <span class="badge badge-liquid-primary badge-stock">Nouveau</span>
                     </div>
                     <div class="card-body">
-                        <h5 class="product-title mb-2">Sticker Pack</h5>
-                        <p class="mb-3 small text-muted">Lot de 5 stickers</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="price-row">
-                                <span class="price">5,00€</span>
+                        <div class="product-content">
+                            <h5 class="product-title mb-2">Veste Grenoble Roller</h5>
+                            <p class="product-description mb-3 small text-muted">
+                                Lorsqu'il y a une brise fraîche. Porter les couleurs de Grenoble Roller !<br>
+                                Polyester respirant, parfait pour le sport.<br>
+                            </p>
+                        </div>
+                        <div class="product-options-section mb-3">
+                            <div class="product-options">
+                            <select class="form-select form-select-sm" aria-label="Choisir la taille de la veste">
+                                <option selected>Choisir taille</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                            <select class="form-select form-select-sm" aria-label="Choisir la couleur de la veste">
+                                <option selected>Choisir couleur</option>
+                                <option value="Blanc">Blanc</option>
+                                <option value="Noir">Noir</option>
+                                <option value="Bleu Foncé">Bleu Foncé</option>
+                                <option value="Rouge">Rouge</option>
+                            </select>
                             </div>
-                            <button class="btn btn-liquid-primary btn-sm" onclick="addToCart('Sticker Pack', 5, '../img/bannersmall3.png')">
-                                <i class="bi bi-plus-lg me-1"></i>Ajouter
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="product-footer">
+                            <div class="price-section-vertical">
+                                <div class="price-display">
+                                    <span class="price">20,00€</span>
+                                    <span class="price-old">30,00€</span>
+                                </div>
+                                <span class="badge text-bg-warning badge-promo">Promo</span>
+                            </div>
+                            <button class="btn btn-liquid-primary btn-add" aria-label="Ajouter Veste Grenoble Roller au panier" onclick="addToCart('Veste Grenoble Roller', 20, '../img/Veste.png')">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                <span class="btn-text">Ajouter au panier</span>
                             </button>
                         </div>
                     </div>
-                </div>
-                <div class="card card-product card-liquid rounded-liquid">
-                    <div class="card-product-image">
-                        <img src="../img/roller.png" alt="Gourde Grenoble Roller">
-                        <span class="badge text-bg-secondary badge-stock">Faible stock</span>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="product-title mb-2">Gourde Grenoble Roller</h5>
-                        <p class="mb-3 small text-muted">Aluminium 500ml</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="price-row">
-                                <span class="price">12,00€</span>
-                            </div>
-                            <button class="btn btn-liquid-primary btn-sm" onclick="addToCart('Gourde Grenoble Roller', 12, '../img/roller.png')">
-                                <i class="bi bi-plus-lg me-1"></i>Ajouter
-                            </button>
+                </article>
+                <article class="card card-product card-liquid rounded-liquid">
+                    <div class="card-product-image-wrapper">
+                        <div class="card-product-image">
+                            <img src="../img/casquette.png" alt="Casquette Grenoble Roller - taille réglable" loading="lazy" decoding="async">
                         </div>
-                    </div>
-                </div>
-                <div class="card card-product card-liquid rounded-liquid">
-                    <div class="card-product-image">
-                        <img src="../img/bannersmall3.png" alt="Casquette Grenoble Roller">
                         <span class="badge badge-liquid-success badge-stock">En stock</span>
                     </div>
                     <div class="card-body">
-                        <h5 class="product-title mb-2">Casquette Grenoble Roller</h5>
-                        <p class="mb-3 small text-muted">Taille réglable</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="price-row">
-                                <span class="price">14,00€</span>
+                        <div class="product-content">
+                            <h5 class="product-title mb-2">Casquette Grenoble Roller</h5>
+                            <p class="product-description mb-3 small text-muted">
+                                Se protéger du soleil, c'est important. Porter les couleurs de Grenoble Roller !<br>
+                                Taille unique, réglable.
+                            </p>
+                        </div>
+                        <div class="product-options-section mb-3">
+                            <div class="product-options">
+                            <select class="form-select form-select-sm" aria-label="Taille casquette" disabled>
+                                <option selected>Taille unique</option>
+                            </select>
                             </div>
-                            <button class="btn btn-liquid-primary btn-sm" onclick="addToCart('Casquette Grenoble Roller', 14, '../img/bannersmall3.png')">
-                                <i class="bi bi-plus-lg me-1"></i>Ajouter
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="product-footer">
+                            <div class="price-section-vertical">
+                                <div class="price-display">
+                                    <span class="price">6,00€</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-liquid-primary btn-add" aria-label="Ajouter Casquette Grenoble Roller au panier" onclick="addToCart('Casquette Grenoble Roller', 6, '../img/casquette.png')">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                <span class="btn-text">Ajouter au panier</span>
                             </button>
                         </div>
+                    </div>
+                </article>
+                <article class="card card-product card-liquid rounded-liquid">
+                    <div class="card-product-image-wrapper">
+                        <div class="card-product-image">
+                            <img src="../img/bannersmall3.png" alt="Adhésion Grenoble Roller - cotisation annuelle" loading="lazy" decoding="async">
+                        </div>
+                        <span class="badge badge-liquid-success badge-stock">Disponible</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="product-content">
+                            <h5 class="product-title mb-2">Adhésion</h5>
+                            <p class="product-description mb-3 small text-muted">Cotisation annuelle</p>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="product-footer">
+                            <div class="price-section-vertical">
+                                <div class="price-display">
+                                    <span class="price">10,00€</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-liquid-primary btn-add" aria-label="Ajouter Adhésion au panier" onclick="addToCart('Adhésion', 10, '../img/bannersmall3.png')">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                <span class="btn-text">Ajouter au panier</span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
                     </div>
                 </div>
             </div>
@@ -143,6 +229,38 @@
         <section class="mb-5">
             <div class="row">
                 <div class="col-12 col-lg-8 mx-auto">
+                    <div class="card card-liquid rounded-liquid mb-4" aria-labelledby="donationTitle">
+                        <div class="card-body p-4">
+                            <h3 id="donationTitle" class="h5 text-liquid-primary mb-3">
+                                <i class="bi bi-heart me-2"></i>Souhaitez-vous ajouter un don à Grenoble Roller ?
+                            </h3>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="donation" id="don0" value="0" checked onchange="setDonation(0)">
+                                    <label class="form-check-label" for="don0">Pas de don</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="donation" id="don2" value="2" onchange="setDonation(2)">
+                                    <label class="form-check-label" for="don2">2 €</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="donation" id="don3" value="3" onchange="setDonation(3)">
+                                    <label class="form-check-label" for="don3">3 €</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="donation" id="don5" value="5" onchange="setDonation(5)">
+                                    <label class="form-check-label" for="don5">5 €</label>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="donation" id="donCustom" value="custom" onchange="enableCustomDonation()">
+                                        <label class="form-check-label" for="donCustom">Choisir un montant</label>
+                                    </div>
+                                    <input type="number" min="0" step="0.5" class="form-control form-control-liquid" id="donationCustomInput" placeholder="0,00" style="max-width: 140px;" disabled oninput="setDonationCustom(this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card card-liquid rounded-liquid">
                         <div class="card-body p-4">
                             <h3 class="h5 text-liquid-primary mb-3">
@@ -162,6 +280,10 @@
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
                                             Sous-total
                                             <span>—</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Don
+                                            <span id="donationDisplay">0,00€</span>
                                         </li>
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
                                             Total
@@ -219,6 +341,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const cart = [];
+        let donationAmount = 0;
         function addToCart(title, price, img) {
             const existing = cart.find(i => i.title === title);
             if (existing) {
@@ -257,9 +380,27 @@
                 `;
                 container.appendChild(row);
             });
-            document.getElementById('cartTotal').textContent = total.toFixed(2) + '€';
-            document.getElementById('checkoutTotal').textContent = total.toFixed(2) + '€';
+            const totalWithDonation = total + (Number.isFinite(donationAmount) ? donationAmount : 0);
+            document.getElementById('cartTotal').textContent = totalWithDonation.toFixed(2) + '€';
+            document.getElementById('checkoutTotal').textContent = totalWithDonation.toFixed(2) + '€';
+            const donationDisplay = document.getElementById('donationDisplay');
+            if (donationDisplay) donationDisplay.textContent = (Number.isFinite(donationAmount) ? donationAmount : 0).toFixed(2) + '€';
             document.getElementById('cartCount').textContent = cart.reduce((a, i) => a + i.qty, 0);
+        }
+        function setDonation(amount) {
+            donationAmount = Number(amount) || 0;
+            const customInput = document.getElementById('donationCustomInput');
+            if (customInput) customInput.disabled = true;
+            renderCart();
+        }
+        function enableCustomDonation() {
+            const customInput = document.getElementById('donationCustomInput');
+            if (customInput) { customInput.disabled = false; customInput.focus(); }
+        }
+        function setDonationCustom(value) {
+            const val = parseFloat(String(value).replace(',', '.'));
+            donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
+            renderCart();
         }
         function incQty(index) { cart[index].qty += 1; renderCart(); }
         function decQty(index) { cart[index].qty = Math.max(1, cart[index].qty - 1); renderCart(); }
