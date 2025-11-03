@@ -9,7 +9,6 @@
 #   end
 User.destroy_all
 Role.destroy_all
-
 puts "Seed Supprimé !"
 
 admin_role = Role.create!(name: "admin")
@@ -28,17 +27,31 @@ admin = User.create!(
   role: admin_role
 )
 
-user = User.create!(
+johanna = User.create!(
   email: "johannadelfieux@gmail.com",
   password: "jobee123", 
   password_confirmation: "jobee123",
   first_name: "Johanna",
   last_name: "Delfieux",
-  bio: "Développeur fullstack passionné par les nouvelles technologies",
+  bio: "Développeuse fullstack passionnée par les nouvelles technologies",
   phone: "0686699836",
-  role: user_role,
-  created_at: Time.now,
-  updated_at: Time.now
+  role: user_role 
 )
+
+5.times do |i|
+  user = User.create!(
+    email: "client#{i + 1}@example.com",
+    password: "password123",
+    password_confirmation: "password123",
+    first_name: "Client",
+    last_name: "Test #{i + 1}",
+    bio: "Client de test numéro #{i + 1}",
+    phone: "06#{rand(10000000..99999999)}",
+    role: user_role,
+    created_at: Time.now - rand(1..30).days,
+    updated_at: Time.now
+  )
+end
+
 puts "Admin crée !"
-puts "Utilisateur Johanna crée !"
+puts "Utilisateur Johanna crée !" 
