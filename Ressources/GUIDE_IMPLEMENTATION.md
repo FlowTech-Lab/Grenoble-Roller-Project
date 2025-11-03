@@ -22,44 +22,6 @@
 
 ---
 
-## 📋 PRÉREQUIS TECHNIQUES
-
-### **Environnement de développement**
-```bash
-# Ruby 3.3+
-rbenv install 3.3.0
-rbenv global 3.3.0
-
-# Rails 8
-gem install rails -v 8.0.0
-
-# PostgreSQL
-sudo apt-get install postgresql postgresql-contrib
-
-# Redis
-sudo apt-get install redis-server
-
-# Node.js (pour Bootstrap et assets)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-### **Outils de développement**
-```bash
-# Git
-git --version
-
-# Docker (optionnel)
-sudo apt-get install docker.io
-
-# VS Code extensions recommandées
-# - Ruby
-# - Rails
-# - Bootstrap 5 Snippets
-# - GitLens
-```
-
----
 
 ## 🏗️ ARCHITECTURE TECHNIQUE
 
@@ -70,10 +32,10 @@ sudo apt-get install docker.io
 ### **1. Initialisation du projet**
 ```bash
 # Créer le projet Rails 8
-rails new grenoble-roller --database=postgresql --skip-test --css=bootstrap
+rails new app --database=postgresql --css=bootstrap
 
 # Aller dans le dossier
-cd grenoble-roller
+cd app
 
 # Installer les gems
 bundle install
