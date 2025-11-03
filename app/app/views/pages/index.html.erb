@@ -1,75 +1,29 @@
-<nav class="navbar navbar-expand-lg navbar-light navbar-liquid navbar-grenoble-roller mb-4">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-      <i class="bi bi-roller-skate"></i>
-      Grenoble Roller
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMain">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link active" href="#">Accueil</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<div class="container mb-5">
-  <section class="banner-hero mb-4">
-    <div class="banner-overlay"></div>
-    <div class="banner-content text-center">
-      <i class="bi bi-roller-skate banner-icon"></i>
-      <h1 class="banner-title">Bienvenue</h1>
-      <p class="banner-subtitle">Test UI-Kit + Bootstrap</p>
-      <div class="banner-actions">
-        <a href="#" class="btn btn-liquid-primary">Appel à l’action</a>
-        <a href="#" class="btn btn-outline-primary">Secondaire</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="alert alert-liquid-primary mb-4">
-    Ceci est une alerte de test (alert-liquid-primary).
-  </div>
-
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="card card-liquid">
-        <div class="card-header">Carte Liquide</div>
-        <div class="card-body">
-          <p class="mb-3">Vérifie l’ombre, le blur, et les variables CSS.</p>
-          <button class="btn btn-liquid-primary">Bouton primaire</button>
-          <button class="btn btn-liquid-success">Succès</button>
-          <button class="btn btn-liquid-danger">Danger</button>
+<div class="hero-section">
+  <div class="container py-5">
+    <div class="row align-items-center min-vh-50">
+      <div class="col-lg-6">
+        <div class="hero-content">
+          <h1 class="display-4 fw-bold mb-4 text-gr-ice">
+            Bienvenue sur <span class="text-gr-highlight">Grenoble Roller</span>
+          </h1>
+          <p class="lead mb-4 text-gr-glacier">
+            Découvrez et créez des événements roller dans la région grenobloise. 
+            Rejoignez une communauté passionnée et vivez des moments inoubliables sur roulettes !
+          </p>
+          <div class="hero-actions">
+            <% unless user_signed_in? %>
+              <%= link_to "S'inscrire gratuitement", new_user_registration_path, class: "btn btn-outline-secondary btn-lg w-100 w-md-auto" %>
+            <% end %>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="comment">
-        <div class="comment-avatar"><i class="bi bi-person-circle"></i></div>
-        <div class="comment-content">
-          <div class="comment-header">
-            <h6 class="comment-author mb-0">John</h6>
-            <span class="comment-time text-muted">il y a 1 min</span>
-          </div>
-          <div class="comment-text">Composant commentaire de test.</div>
-          <div class="comment-actions">
-            <button class="btn btn-sm btn-outline-primary">Répondre</button>
-            <button class="btn btn-sm btn-outline-secondary">Like</button>
+      <div class="col-lg-6 text-center">
+        <div class="hero-image">
+          <div class="roller-icon">
+            <i class="fas fa-skating fa-10x text-gr-highlight opacity-25"></i>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<footer class="footer-grenoble-roller mt-5 py-4">
-  <div class="container text-center">
-    <a class="social-link me-2" href="#"><i class="bi bi-facebook"></i></a>
-    <a class="social-link me-2" href="#"><i class="bi bi-instagram"></i></a>
-    <a class="social-link" href="#"><i class="bi bi-youtube"></i></a>
-  </div>
-</footer>

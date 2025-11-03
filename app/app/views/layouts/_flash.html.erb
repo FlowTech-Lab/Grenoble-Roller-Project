@@ -1,0 +1,43 @@
+<!-- Toast container -->
+<% if notice || alert %>
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <% if notice %>
+      <div class="toast" 
+           role="alert" 
+           aria-live="assertive" 
+           aria-atomic="true" 
+           data-bs-autohide="true" 
+           data-bs-delay="5000"
+           data-controller="toast">
+        <div class="toast-header bg-info text-white">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong class="me-auto">Information</strong>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          <%= notice %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if alert %>
+      <div class="toast" 
+           role="alert" 
+           aria-live="assertive" 
+           aria-atomic="true" 
+           data-bs-autohide="true" 
+           data-bs-delay="5000"
+           data-controller="toast">
+        <div class="toast-header bg-danger text-white">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong class="me-auto">Alerte</strong>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          <%= alert %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
