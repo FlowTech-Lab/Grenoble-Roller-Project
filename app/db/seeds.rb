@@ -7,3 +7,38 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+User.destroy_all
+Role.destroy_all
+
+puts "Seed Supprimé !"
+
+admin_role = Role.create!(name: "admin")
+user_role = Role.create!(name: "user")
+
+puts "✅ #{Role.count} rôles créés avec succès !"
+
+admin = User.create!(
+  email: "admin@roller.com",
+  password: "admin123",
+  password_confirmation: "admin123",
+  first_name: "Admin",
+  last_name: "Roller",
+  bio: "Administrateur du site Grenoble Roller",
+  phone: "0698765432",
+  role: admin_role
+)
+
+user = User.create!(
+  email: "johannadelfieux@gmail.com",
+  password: "jobee123", 
+  password_confirmation: "jobee123",
+  first_name: "Johanna",
+  last_name: "Delfieux",
+  bio: "Développeur fullstack passionné par les nouvelles technologies",
+  phone: "0686699836",
+  role: user_role,
+  created_at: Time.now,
+  updated_at: Time.now
+)
+puts "Admin crée !"
+puts "Utilisateur Johanna crée !"
