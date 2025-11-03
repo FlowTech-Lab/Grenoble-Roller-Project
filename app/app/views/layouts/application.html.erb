@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr" data-bs-theme="light">
   <head>
-    <title><%= content_for(:title) || "App" %></title>
+    <title><%= content_for(:title) || "Grenoble Roller" %></title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -10,19 +11,59 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application.bootstrap", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <%= render 'layouts/navbar' %>
+
+    <main>
+      <%= render 'layouts/flash' %>
+      <%= yield %>
+    </main>
+
+    <%= render 'layouts/footer-simple' %>
+
+    <!-- Theme toggle script -->
+    <script>
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        html.setAttribute('data-bs-theme', newTheme);
+        
+        const icons = ['theme-icon', 'theme-icon-fixed'];
+        icons.forEach(id => {
+          const icon = document.getElementById(id);
+          if (icon) {
+            icon.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+          }
+        });
+        
+        localStorage.setItem('theme', newTheme);
+      }
+      
+      // Initialize theme when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const html = document.documentElement;
+        
+        html.setAttribute('data-bs-theme', savedTheme);
+        
+        const icons = ['theme-icon', 'theme-icon-fixed'];
+        icons.forEach(id => {
+          const icon = document.getElementById(id);
+          if (icon) {
+            icon.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+          }
+        });
+      });
+    </script>
   </body>
 </html>

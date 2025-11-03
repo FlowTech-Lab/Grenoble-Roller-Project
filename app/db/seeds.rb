@@ -27,6 +27,7 @@ admin = User.create!(
   phone: "0698765432",
   role: admin_role
 )
+puts "Admin crée !"
 
 user = User.create!(
   email: "johannadelfieux@gmail.com",
@@ -40,5 +41,18 @@ user = User.create!(
   created_at: Time.now,
   updated_at: Time.now
 )
-puts "Admin crée !"
 puts "Utilisateur Johanna crée !"
+
+user = User.create!(
+  email: "T3rorX@gmail.com",
+  password: "T3rorX123", 
+  password_confirmation: "T3rorX123",
+  first_name: "florian",
+  last_name: "Astier",
+  bio: "Développeur fullstack passionné par les nouvelles technologies",
+  phone: "0652556832",
+  role: admin_role,
+  created_at: Time.now,
+  updated_at: Time.now
+)
+puts "Utilisateur Florian crée !"
