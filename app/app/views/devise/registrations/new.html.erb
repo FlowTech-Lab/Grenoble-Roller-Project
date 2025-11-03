@@ -41,6 +41,8 @@
     <%= f.text_area :bio, rows: 3 %>
   </div>
 
+  <!-- Champ caché pour attribuer le rôle client par défaut -->
+  <%= f.hidden_field :role_id, value: Role.find_by(name: 'client')&.id %>
 
   <div class="actions">
     <%= f.submit "Sign up" %>

@@ -26,6 +26,7 @@ admin = User.create!(
   phone: "0698765432",
   role: admin_role
 )
+puts "Admin crée !"
 
 johanna = User.create!(
   email: "johannadelfieux@gmail.com",
@@ -37,7 +38,7 @@ johanna = User.create!(
   phone: "0686699836",
   role: user_role 
 )
-
+puts "Utilisateur Johanna crée !" 
 5.times do |i|
   user = User.create!(
     email: "client#{i + 1}@example.com",
@@ -51,6 +52,7 @@ johanna = User.create!(
     created_at: Time.now - rand(1..30).days,
     updated_at: Time.now
   )
+  puts "Utilisateur client #{i + 1} crée"
 end
 
 puts "Admin crée !"
