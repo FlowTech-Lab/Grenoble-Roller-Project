@@ -1,8 +1,15 @@
 # db/seeds.rb
 
 # Nettoyage
+VariantOptionValue.delete_all
+OptionValue.delete_all
+OptionType.delete_all
+ProductVariant.delete_all
+Product.delete_all
+ProductCategory.delete_all
 User.destroy_all
 Role.destroy_all
+
 puts "🌪️ Seed supprimé !"
 
 # Création des rôles
@@ -64,6 +71,148 @@ puts "👨‍💻 Utilisateur Florian créé !"
     updated_at: Time.now
   )
   puts "👤 Utilisateur client #{i + 1} créé !"
+end
+
+#Création des catégories - Lucas
+categories = [
+  { name: "Rollers", slug: "rollers" },
+  { name: "Protections", slug: "protections" },
+  { name: "Accessoires", slug: "accessoires" }
+].map { |attrs| ProductCategory.create!(attrs) 
+}
+puts "🖼️ Catégories créées!"
+
+#Création produits test - Lucas
+products = [
+  {
+    name: "Roller Quad Street 3000",
+    slug: "roller-quad-street-3000",
+    category: categories[0],
+    description: "Un roller quad idéal pour le freestyle et les balades urbaines.",
+    price_cents: 129_00,
+    stock_qty: 10,
+    currency: "EUR",
+    is_active: true
+  },
+  {
+    name: "Casque de protection ProX",
+    slug: "casque-prox",
+    category: categories[1],
+    description: "Casque ultra-léger et certifié pour la pratique du roller.",
+    price_cents: 45_00,
+    stock_qty: 25,
+    currency: "EUR",
+    is_active: true
+  },
+  {
+    name: "Sac de transport RollerBag 50L",
+    slug: "sac-rollerbag-50l",
+    category: categories[2],
+    description: "Grand sac de transport renforcé, parfait pour tout ton équipement.",
+    price_cents: 65_00,
+    stock_qty: 15,
+    currency: "EUR",
+    is_active: true
+  }
+].map { |attrs| Product.create!(attrs) 
+}
+
+puts "🛼 Produits créés!"
+
+#Création variants produits test - Lucas
+variants = [
+  # Variantes du roller quad
+  {
+    product: products[0],
+    sku: "ROLL-STREET-37",
+    price_cents: 129_00,
+    stock_qty: 3,
+    currency: "EUR",
+    is_active: true
+  },
+  {
+    product: products[0],
+    sku: "ROLL-STREET-39",
+    price_cents: 129_00,
+    stock_qty: 4,
+    currency: "EUR",
+    is_active: true
+  },
+  {
+    product: products[0],
+    sku: "ROLL-STREET-41",
+    price_cents: 129_00,
+    stock_qty: 3,
+    currency: "EUR",
+    is_active: true
+  },
+
+  # Variantes du casque
+  {
+    product: products[1],
+    sku: "CASQ-PROX-S",
+    price_cents: 45_00,
+    stock_qty: 10,
+    currency: "EUR",
+    is_active: true
+  },
+  {
+    product: products[1],
+    sku: "CASQ-PROX-M",
+    price_cents: 45_00,
+    stock_qty: 10,
+    currency: "EUR",
+    is_active: true
+  },
+  {
+    product: products[1],
+    sku: "CASQ-PROX-L",
+    price_cents: 45_00,
+    stock_qty: 5,
+    currency: "EUR",
+    is_active: true
+  }
+].map { |attrs| ProductVariant.create!(attrs) 
+}
+puts "🎨 Variants produits créés!"
+
+
+puts "🎨 Création des types d'options..."
+option_types = [
+  { name: "size", presentation: "Taille" },
+  { name: "color", presentation: "Couleur" }
+].map { |attrs| OptionType.create!(attrs) 
+}
+
+
+puts "🎯 Création des valeurs d'options..."
+sizes = [
+  { option_type: option_types[0], value: "37", presentation: "Taille 37" },
+  { option_type: option_types[0], value: "39", presentation: "Taille 39" },
+  { option_type: option_types[0], value: "41", presentation: "Taille 41" }
+].map { |attrs| OptionValue.create!(attrs) 
+}
+
+colors = [
+  { option_type: option_types[1], value: "Red", presentation: "Rouge" },
+  { option_type: option_types[1], value: "Blue", presentation: "Bleu" },
+  { option_type: option_types[1], value: "Black", presentation: "Noir" }
+].map { |attrs| OptionValue.create!(attrs) 
+}
+
+
+puts "🔗 Association des options aux variantes..."
+# Exemple : les rollers ont des tailles, les casques ont des tailles aussi
+ProductVariant.all.each do |variant|
+  product = variant.product
+
+  if product.name.include?("Roller")
+    size_value = sizes.sample
+    VariantOptionValue.create!(variant:, option_value: size_value)
+  elsif product.name.include?("Casque")
+    size_value = sizes.sample
+    VariantOptionValue.create!(variant:, option_value: size_value)
+  end
 end
 
 puts "🌱 Seed terminé avec succès !"
