@@ -3,6 +3,7 @@
 require "securerandom"
 
 # 🧹 Nettoyage (dans l'ordre pour éviter les erreurs FK)
+OrderItem.destroy_all
 Order.destroy_all
 Payment.destroy_all
 User.destroy_all
@@ -73,6 +74,8 @@ end
 # 💸 Paiements
 puts "🧾 Création des paiements..."
 
+
+#On crée 4 paiements “manuels” : 1 stripe réussi / 1 paypal en attente / 1 stripe échoué / 1 mollie réussi
 payments_data = [
   {
     provider: "stripe",
@@ -108,11 +111,14 @@ payments_data = [
   }
 ]
 
+
+
 payments_data.each { |attrs| Payment.create!(attrs) }
 puts "✅ #{Payment.count} paiements créés !"
 
-# on complète jusqu’à 20 paiements
-TARGET_ORDERS = 20
+# On veut autant de paiements que de commandes (ici 5).
+# Les paiements ajoutés ici sont “aléatoires”
+TARGET_ORDERS = 5
 if Payment.count < TARGET_ORDERS
   (TARGET_ORDERS - Payment.count).times do
     Payment.create!(
@@ -131,6 +137,9 @@ end
 puts "Création des commandes..."
 users = User.all
 payments = Payment.order(:created_at).limit(TARGET_ORDERS)
+
+# Chaque order dépend donc d’un paiement existant et d’un utilisateur.
+# On récupère les 5 paiements les plus récents.
 
 if users.empty?
   puts "⚠️ Aucun user trouvé, crée d'abord des utilisateurs avant de seed les orders."
@@ -157,4 +166,30 @@ else
   puts "✅ #{payments.size} commandes créées avec succès."
 end
 
+# 🛒 Création des OrderItems
+puts "Création des articles de commande..."
+
+orders = Order.all
+
+if defined?(Variant) && Variant.any?
+  variant_ids = Variant.ids
+else
+  variant_ids = (1..10).to_a
+end
+
+orders.each do |order|
+  rand(1..3).times do
+    unit_price = rand(500..5000)
+    quantity = rand(1..3)
+    OrderItem.create!(
+      order: order,
+      variant_id: variant_ids.sample,
+      quantity: quantity,
+      unit_price_cents: unit_price,
+      created_at: order.created_at + rand(0..3).hours
+    )
+  end
+end
+
+puts "✅ #{OrderItem.count} articles de commande créés avec succès."
 puts "🌱 Seed terminé avec succès !"
