@@ -18,10 +18,12 @@
                             <i class="bi bi-calendar-event me-2"></i>
                             Découvrir les événements
                         </a>
+                        <% if !user_signed_in? %>
                         <a href="#" class="btn btn-outline-light btn-lg">
                             <i class="bi bi-person-plus me-2"></i>
                             S'inscrire
                         </a>
+                        <% end %>
                     </div>
                 </div>
             </div>
