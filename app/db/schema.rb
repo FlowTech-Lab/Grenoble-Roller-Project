@@ -10,9 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_04_131739) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_04_140913) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "option_types", force: :cascade do |t|
+    t.string "name", limit: 50, null: false
+    t.string "presentation", limit: 100
+    t.index ["name"], name: "index_option_types_on_name", unique: true
+  end
+
+  create_table "option_values", force: :cascade do |t|
+    t.bigint "option_type_id", null: false
+    t.string "value", limit: 50, null: false
+    t.string "presentation", limit: 100
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["option_type_id"], name: "index_option_values_on_option_type_id"
+  end
 
   create_table "order_items", force: :cascade do |t|
     t.bigint "order_id", null: false
@@ -43,21 +58,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_131739) do
     t.string "currency", limit: 3, default: "EUR", null: false
     t.string "status", limit: 20, default: "succeeded", null: false
     t.datetime "created_at"
-  end
-
-  create_table "option_types", force: :cascade do |t|
-    t.string "name", limit: 50, null: false
-    t.string "presentation", limit: 100
-    t.index ["name"], name: "index_option_types_on_name", unique: true
-  end
-
-  create_table "option_values", force: :cascade do |t|
-    t.bigint "option_type_id", null: false
-    t.string "value", limit: 50, null: false
-    t.string "presentation", limit: 100
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["option_type_id"], name: "index_option_values_on_option_type_id"
   end
 
   create_table "product_categories", force: :cascade do |t|
@@ -124,7 +124,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_131739) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["role_id"], name: "index_users_on_role_id"
   end
-  
+
   create_table "variant_option_values", force: :cascade do |t|
     t.bigint "variant_id", null: false
     t.bigint "option_value_id", null: false
@@ -136,11 +136,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_131739) do
   end
 
   add_foreign_key "option_values", "option_types"
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "orders", "payments"
+  add_foreign_key "orders", "users"
   add_foreign_key "product_variants", "products"
   add_foreign_key "products", "product_categories", column: "category_id"
   add_foreign_key "variant_option_values", "option_values"
   add_foreign_key "variant_option_values", "product_variants", column: "variant_id"
-  add_foreign_key "order_items", "orders"
-  add_foreign_key "orders", "payments"
-  add_foreign_key "orders", "users"
 end
