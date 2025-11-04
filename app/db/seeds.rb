@@ -1,16 +1,20 @@
 # db/seeds.rb
 
-# Nettoyage
+require "securerandom"
+
+# 🧹 Nettoyage (dans l'ordre pour éviter les erreurs FK)
+Order.destroy_all
+Payment.destroy_all
 User.destroy_all
 Role.destroy_all
 puts "🌪️ Seed supprimé !"
 
-# Création des rôles
+# 🎭 Création des rôles
 admin_role = Role.create!(name: "admin")
-user_role = Role.create!(name: "user")
+user_role  = Role.create!(name: "user")
 puts "✅ #{Role.count} rôles créés avec succès !"
 
-# Création de l'admin principal
+# 👑 Admin principal
 admin = User.create!(
   email: "admin@roller.com",
   password: "admin123",
@@ -23,8 +27,8 @@ admin = User.create!(
 )
 puts "👑 Admin créé !"
 
-# Création de Johanna (user)
-johanna = User.create!(
+# 👩‍💻 Johanna
+User.create!(
   email: "johannadelfieux@gmail.com",
   password: "jobee123",
   password_confirmation: "jobee123",
@@ -36,8 +40,8 @@ johanna = User.create!(
 )
 puts "👩‍💻 Utilisatrice Johanna créée !"
 
-# Création de Florian (autre admin)
-florian = User.create!(
+# 👨‍💻 Florian
+User.create!(
   email: "T3rorX@gmail.com",
   password: "T3rorX123",
   password_confirmation: "T3rorX123",
@@ -49,9 +53,9 @@ florian = User.create!(
 )
 puts "👨‍💻 Utilisateur Florian créé !"
 
-# Création d’utilisateurs de test
+# 👥 Utilisateurs de test
 5.times do |i|
-  user = User.create!(
+  User.create!(
     email: "client#{i + 1}@example.com",
     password: "password123",
     password_confirmation: "password123",
@@ -66,6 +70,7 @@ puts "👨‍💻 Utilisateur Florian créé !"
   puts "👤 Utilisateur client #{i + 1} créé !"
 end
 
+# 💸 Paiements
 puts "🧾 Création des paiements..."
 
 payments_data = [
@@ -103,11 +108,53 @@ payments_data = [
   }
 ]
 
-payments_data.each do |attrs|
-  Payment.create!(attrs)
-end
-
+payments_data.each { |attrs| Payment.create!(attrs) }
 puts "✅ #{Payment.count} paiements créés !"
 
+# on complète jusqu’à 20 paiements
+TARGET_ORDERS = 20
+if Payment.count < TARGET_ORDERS
+  (TARGET_ORDERS - Payment.count).times do
+    Payment.create!(
+      provider: %w[stripe paypal mollie].sample,
+      provider_payment_id: "gen_#{SecureRandom.hex(6)}",
+      amount_cents: [1500, 2500, 4999, 10000, 1299, 7999].sample,
+      currency: "EUR",
+      status: %w[succeeded pending failed].sample,
+      created_at: Time.now - rand(0..5).days
+    )
+  end
+  puts "➕ Paiements complétés à #{Payment.count}"
+end
+
+# 🧾 Commandes
+puts "Création des commandes..."
+users = User.all
+payments = Payment.order(:created_at).limit(TARGET_ORDERS)
+
+if users.empty?
+  puts "⚠️ Aucun user trouvé, crée d'abord des utilisateurs avant de seed les orders."
+else
+  payments.each do |pay|
+    order_status =
+      case pay.status
+      when "succeeded" then %w[paid shipped].sample
+      when "pending"   then "pending"
+      else "cancelled"
+      end
+
+    Order.create!(
+      user: users.sample,
+      payment: pay,
+      status: order_status,
+      total_cents: pay.amount_cents,
+      currency: pay.currency,
+      created_at: pay.created_at + rand(0..6).hours,
+      updated_at: Time.now
+    )
+  end
+
+  puts "✅ #{payments.size} commandes créées avec succès."
+end
 
 puts "🌱 Seed terminé avec succès !"
