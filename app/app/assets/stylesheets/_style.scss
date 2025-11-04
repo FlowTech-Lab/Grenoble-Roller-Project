@@ -1509,3 +1509,20 @@
     font-weight: 800;
     color: var(--gr-primary);
   }
+
+  /* Navbar logo theme switching */
+  .navbar-logo-light {
+    display: block;
+  }
+  
+  .navbar-logo-dark {
+    display: none;
+  }
+  
+  [data-bs-theme="dark"] .navbar-logo-light {
+    display: none;
+  }
+  
+  [data-bs-theme="dark"] .navbar-logo-dark {
+    display: block;
+  }
