@@ -66,4 +66,48 @@ puts "👨‍💻 Utilisateur Florian créé !"
   puts "👤 Utilisateur client #{i + 1} créé !"
 end
 
+puts "🧾 Création des paiements..."
+
+payments_data = [
+  {
+    provider: "stripe",
+    provider_payment_id: "pi_#{SecureRandom.hex(6)}",
+    amount_cents: 2500,
+    currency: "EUR",
+    status: "succeeded",
+    created_at: Time.now - 3.days
+  },
+  {
+    provider: "paypal",
+    provider_payment_id: "pay_#{SecureRandom.hex(6)}",
+    amount_cents: 4999,
+    currency: "EUR",
+    status: "pending",
+    created_at: Time.now - 2.days
+  },
+  {
+    provider: "stripe",
+    provider_payment_id: "pi_#{SecureRandom.hex(6)}",
+    amount_cents: 1500,
+    currency: "EUR",
+    status: "failed",
+    created_at: Time.now - 1.day
+  },
+  {
+    provider: "mollie",
+    provider_payment_id: "mol_#{SecureRandom.hex(6)}",
+    amount_cents: 10000,
+    currency: "EUR",
+    status: "succeeded",
+    created_at: Time.now
+  }
+]
+
+payments_data.each do |attrs|
+  Payment.create!(attrs)
+end
+
+puts "✅ #{Payment.count} paiements créés !"
+
+
 puts "🌱 Seed terminé avec succès !"

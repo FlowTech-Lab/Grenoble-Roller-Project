@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_03_151411) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_04_110828) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "payments", force: :cascade do |t|
+    t.string "provider", limit: 20, null: false
+    t.string "provider_payment_id"
+    t.integer "amount_cents", default: 0, null: false
+    t.string "currency", limit: 3, default: "EUR", null: false
+    t.string "status", limit: 20, default: "succeeded", null: false
+    t.datetime "created_at"
+  end
 
   create_table "roles", force: :cascade do |t|
     t.string "name"
