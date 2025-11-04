@@ -1,53 +1,97 @@
-<h2>Sign up</h2>
+<div class="container mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="card shadow-lg border-0">
+        <div class="card-body p-4">
+          <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }) do |f| %>
+            <%= render "devise/shared/error_messages", resource: resource %>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+            <h5 class="mb-3 text-primary">
+              <i class="bi bi-person-circle me-2"></i>Informations personnelles
+            </h5>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <%= f.label :first_name, "Prénom", class: "form-label" %>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <%= f.text_field :first_name, class: "form-control", placeholder: "Jean", required: true %>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <%= f.label :last_name, "Nom", class: "form-label" %>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                  <%= f.text_field :last_name, class: "form-control", placeholder: "Dupont", required: true %>
+                </div>
+              </div>
+            </div>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+            <div class="mb-3">
+              <%= f.label :email, class: "form-label" %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <%= f.email_field :email, class: "form-control", placeholder: "votre@email.com", autocomplete: "email" %>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <%= f.label :phone, "Téléphone", class: "form-label" %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <%= f.text_field :phone, class: "form-control", placeholder: "06 12 34 56 78" %>
+              </div>
+            </div>
+
+            <h5 class="mb-3 mt-4 text-primary">
+              <i class="bi bi-shield-lock me-2"></i>Sécurité
+            </h5>
+
+            <div class="mb-3">
+              <%= f.label :password, "Mot de passe", class: "form-label" %>
+              <% if @minimum_password_length %>
+                <small class="form-text text-muted d-block mb-1">
+                  (minimum <%= @minimum_password_length %> caractères)
+                </small>
+              <% end %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <%= f.password_field :password, class: "form-control", placeholder: "••••••••", autocomplete: "new-password" %>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <%= f.label :password_confirmation, "Confirmer le mot de passe", class: "form-label" %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <%= f.password_field :password_confirmation, class: "form-control", placeholder: "••••••••", autocomplete: "new-password" %>
+              </div>
+            </div>
+
+            <!-- Bio -->
+            <h5 class="mb-3 mt-4 text-primary">
+              <i class="bi bi-chat-left-text me-2"></i>À propos de vous
+            </h5>
+
+            <div class="mb-4">
+              <%= f.label :bio, "Biographie (optionnel)", class: "form-label" %>
+              <%= f.text_area :bio, rows: 3, class: "form-control" %>
+              <small class="form-text text-muted">
+                Présentez-vous brièvement à la communauté
+              </small>
+            </div>
+
+            <%= f.hidden_field :role_id, value: Role.find_by(name: 'client')&.id %>
+
+            <div class="d-grid mb-3">
+              <%= f.submit "Créer mon compte", class: "btn btn-liquid-primary btn-lg" %>
+            </div>
+          <% end %>
+
+          <%= render "devise/shared/links" %>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <div class="field">
-    <%= f.label :password %>
-    <% if @minimum_password_length %>
-    <em>(<%= @minimum_password_length %> characters minimum)</em>
-    <% end %><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :first_name, "Prénom" %>
-    <%= f.text_field :first_name, autofocus: true, required: true %>
-  </div>
-
-  <div class="field">
-    <%= f.label :last_name, "Nom" %>
-    <%= f.text_field :last_name, required: true %>
-  </div>
-
-  <div class="field">
-    <%= f.label :phone, "Téléphone" %>
-    <%= f.text_field :phone, placeholder: "06 12 34 56 78" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :bio, "Bio" %>
-    <%= f.text_area :bio, rows: 3 %>
-  </div>
-
-  <!-- Champ caché pour attribuer le rôle client par défaut -->
-  <%= f.hidden_field :role_id, value: Role.find_by(name: 'client')&.id %>
-
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
-
+</div>
