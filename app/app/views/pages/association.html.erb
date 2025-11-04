@@ -1,61 +1,102 @@
 <!-- ========================================
-     HERO SECTION - ELEMENT PRESENTATION
-     Image au milieu, texte de chaque côté
+     HERO SECTION - 3 COLONNES ÉQUILIBRÉES
+     Image plus grande, texte mieux espacé
      ======================================== -->
-<section>
+<section class="py-5 py-lg-7">
   <div class="container">
-    <div class="element-presentation">
-      <div class="row align-items-center g-4 g-lg-5">
-        <!-- Texte gauche -->
-        <div class="col-12 col-lg-4 col-xl-5">
-          <div class="element-content text-center text-lg-end">
-            <span class="element-badge badge badge-liquid-primary mb-3">
-              <i class="bi bi-heart me-1"></i>
-              Notre histoire
-            </span>
-            <h1 class="element-title mb-3 display-4 fw-bold">
-              Grenoble Roller
-            </h1>
-            <p class="element-text lead mb-4">
-              Une communauté passionnée depuis plus de 15 ans
-            </p>
-          </div>
-        </div>
-        
-        <!-- Image au milieu -->
-        <div class="col-12 col-lg-4 col-xl-2 text-center d-flex align-items-center justify-content-center">
-          <div class="element-image rounded-liquid shadow-liquid" style="max-width: 100%;">
-            <%= image_tag('img/Affiche-reprise.jpg', 
-                alt: 'Affiche reprise Grenoble Roller', 
-                class: 'img-fluid rounded-liquid',
-                style: 'max-height: 500px; width: auto; object-fit: contain;') %>
-          </div>
-        </div>
-        
-        <!-- Texte droite -->
-        <div class="col-12 col-lg-4 col-xl-5">
-          <div class="element-content text-center text-lg-start">
-            <span class="element-badge badge badge-liquid-success mb-3">
-              <i class="bi bi-people me-1"></i>
-              Rejoignez-nous
-            </span>
-            <h2 class="element-title mb-3">
-              Plus de 500 riders actifs
-            </h2>
-            <p class="element-text mb-4">
-              Découvrez Grenoble autrement avec nos sorties régulières, 
-              événements et randonnées pour tous les niveaux
-            </p>
-            <a href="#adhesion" class="btn btn-liquid-primary btn-lg">
-              <i class="bi bi-person-plus me-2"></i>
-              Adhérer maintenant
+    <div class="row align-items-center g-4 g-lg-5">
+      
+      <!-- Colonne 1 : Texte gauche (25%) -->
+      <div class="col-12 col-lg-3">
+        <div class="element-content text-center text-lg-end">
+          <span class="element-badge badge badge-liquid-primary mb-3 d-inline-block">
+            <i class="bi bi-heart me-1"></i>
+            Notre histoire
+          </span>
+          <h1 class="element-title mb-3 display-5 fw-bold lh-tight">
+            Grenoble<br>Roller
+          </h1>
+          <p class="element-text mb-4">
+            Une communauté passionnée<br>
+            <strong>depuis + de 15 ans</strong>
+          </p>
+          
+          <!-- Stats rapides -->
+          <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-calendar-event text-liquid-primary fs-5"></i>
+              <div class="text-start">
+                <div class="fw-bold text-liquid-primary">50+</div>
+                <div class="small text-muted">Événements/an</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-geo-alt text-liquid-primary fs-5"></i>
+              <div class="text-start">
+                <div class="fw-bold text-liquid-primary">Grenoble</div>
+                <div class="small text-muted">et environs</div>
+              </div>
+            </div>
+            <a href="#adhesion" class="btn btn-liquid-primary btn-sm w-100">
+                <i class="bi bi-person-plus me-2"></i>
+            Evenements
             </a>
           </div>
+        </div>
+      </div>
+      
+      <!-- Colonne 2 : Image au milieu (50%) -->
+      <div class="col-12 col-lg-6 d-flex justify-content-center">
+        <div class="element-image rounded-liquid shadow-liquid" style="width: 100%; max-width: 450px;">
+          <%= image_tag('img/Affiche-reprise.jpg', 
+              alt: 'Affiche reprise Grenoble Roller', 
+              class: 'img-fluid rounded-liquid',
+              style: 'width: 100%; height: auto; object-fit: contain;',
+              loading: 'lazy') %>
+        </div>
+      </div>
+      
+      <!-- Colonne 3 : Texte droite (25%) -->
+      <div class="col-12 col-lg-3">
+        <div class="element-content text-center text-lg-start">
+          <span class="element-badge badge badge-liquid-success mb-3 d-inline-block">
+            <i class="bi bi-people me-1"></i>
+            Rejoignez-nous
+          </span>
+          <h2 class="element-title mb-3 h3 lh-tight">
+            <strong>+500 riders</strong><br>
+            actifs
+          </h2>
+          <p class="element-text small mb-4">
+            Découvrez Grenoble avec nos sorties régulières, événements et randonnées pour tous
+          </p>
+          
+          <!-- Points forts rapides -->
+          <div class="mb-4">
+            <div class="d-flex align-items-start gap-2 mb-2">
+              <i class="bi bi-check-circle-fill text-liquid-success mt-1"></i>
+              <span class="small">Tous niveaux acceptés</span>
+            </div>
+            <div class="d-flex align-items-start gap-2 mb-2">
+              <i class="bi bi-check-circle-fill text-liquid-success mt-1"></i>
+              <span class="small">Ambiance conviviale</span>
+            </div>
+            <div class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-liquid-success mt-1"></i>
+              <span class="small">Sorties hebdomadaires</span>
+            </div>
+          </div>
+          
+          <a href="#adhesion" class="btn btn-liquid-primary btn-sm w-100">
+            <i class="bi bi-person-plus me-2"></i>
+            Adhérer maintenant
+          </a>
         </div>
       </div>
     </div>
   </div>
 </section>
+
 
 <!-- ========================================
      SECTION VIDÉO : TEASER RENTRÉE 2025
@@ -149,11 +190,20 @@
                 Partage d'expériences et de techniques
               </li>
             </ul>
+            <div class="alert alert-liquid-success rounded-liquid p-3 mt-3">
+              <p class="mb-2 small">
+                <i class="bi bi-arrow-right-circle text-liquid-success me-2"></i>
+                <strong>Débutant ?</strong> Inscrivez-vous à une session d'initiation pour découvrir le roller en douceur !
+              </p>
+              <a href="#" class="btn btn-sm btn-liquid-success" disabled aria-disabled="true">
+                <i class="bi bi-hourglass-split me-2"></i>
+                Page Initiation (à venir)
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
 
     <!-- Valeur 3 : Respect - Image Right -->
     <div class="element-presentation">
