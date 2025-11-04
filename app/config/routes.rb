@@ -13,4 +13,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   root 'pages#index'
+  
+  # Static pages
+  get '/association', to: 'pages#association', as: 'association'
 end
