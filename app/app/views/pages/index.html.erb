@@ -1,29 +1,30 @@
-<div class="hero-section">
-  <div class="container py-5">
-    <div class="row align-items-center min-vh-50">
-      <div class="col-lg-6">
-        <div class="hero-content">
-          <h1 class="display-4 fw-bold mb-4 text-gr-ice">
-            Bienvenue sur <span class="text-gr-highlight">Grenoble Roller</span>
-          </h1>
-          <p class="lead mb-4 text-gr-glacier">
-            Découvrez et créez des événements roller dans la région grenobloise. 
-            Rejoignez une communauté passionnée et vivez des moments inoubliables sur roulettes !
-          </p>
-          <div class="hero-actions">
-            <% unless user_signed_in? %>
-              <%= link_to "S'inscrire gratuitement", new_user_registration_path, class: "btn btn-outline-secondary btn-lg w-100 w-md-auto" %>
-            <% end %>
-          </div>
+<!-- Hero Banner -->
+<div class="banner-hero mb-3">
+    <div class="banner-overlay"></div>
+    <div class="banner-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-8 text-center">
+                    <i class="bi bi-roller-skate banner-icon mb-3"></i>
+                    <h1 class="banner-title mb-4">
+                        La communauté<br>Roller Grenobloise !
+                    </h1>
+                    <p class="banner-subtitle mb-4">
+                        Découvrez des événements, partagez vos sorties et connectez-vous<br>
+                        avec d'autres riders à Grenoble
+                    </p>
+                    <div class="banner-actions">
+                        <a href="#" class="btn btn-liquid-primary btn-lg">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            Découvrir les événements
+                        </a>
+                        <a href="#" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>
+                            S'inscrire
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="col-lg-6 text-center">
-        <div class="hero-image">
-          <div class="roller-icon">
-            <i class="fas fa-skating fa-10x text-gr-highlight opacity-25"></i>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
 </div>
