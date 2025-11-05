@@ -13,6 +13,11 @@
         <li class="nav-item">
           <a class="nav-link" href="<%= root_path %>">Accueil</a>
         </li>
+        <li class="nav-item">
+          <%= link_to association_path, class: "nav-link" do %>
+            <i class="bi bi-info-circle me-1"></i>L'association
+          <% end %>
+        </li>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <!-- Theme toggle -->
