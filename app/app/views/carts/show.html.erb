@@ -67,13 +67,51 @@
               <% end %>
             </div>
 
+            <!-- Donation section -->
+            <div class="card card-liquid rounded-liquid mb-3" aria-labelledby="donationTitle">
+              <div class="card-body p-4">
+                <h3 id="donationTitle" class="h5 text-liquid-primary mb-3">
+                  <i class="bi bi-heart me-2"></i>Souhaitez-vous ajouter un don à Grenoble Roller ?
+                </h3>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="donation" id="don0" value="0" checked onchange="setDonation(0)">
+                    <label class="form-check-label" for="don0">Pas de don</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="donation" id="don2" value="2" onchange="setDonation(2)">
+                    <label class="form-check-label" for="don2">2 €</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="donation" id="don3" value="3" onchange="setDonation(3)">
+                    <label class="form-check-label" for="don3">3 €</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="donation" id="don5" value="5" onchange="setDonation(5)">
+                    <label class="form-check-label" for="don5">5 €</label>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="donation" id="donCustom" value="custom" onchange="enableCustomDonation()">
+                      <label class="form-check-label" for="donCustom">Choisir un montant</label>
+                    </div>
+                    <input type="number" min="0" step="0.5" class="form-control form-control-liquid" id="donationCustomInput" placeholder="0,00" style="max-width: 140px;" disabled oninput="setDonationCustom(this.value)">
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Cart summary -->
             <div class="border-top pt-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <%= button_to clear_cart_path, method: :delete, class: "btn btn-outline-secondary btn-sm", data: { confirm: "Êtes-vous sûr de vouloir vider le panier ?" } do %>
                   <i class="bi bi-trash me-1"></i>Vider le panier
                 <% end %>
-                <strong class="fs-5">Total: <%= number_to_currency(@total_cents / 100.0, unit: "€") %></strong>
+                <div class="text-end">
+                  <div class="small text-muted mb-1">Sous-total: <%= number_to_currency(@total_cents / 100.0, unit: "€") %></div>
+                  <div class="small text-muted mb-1">Don: <span id="donationDisplay">0,00€</span></div>
+                  <strong class="fs-5">Total: <span id="cartTotalWithDonation"><%= number_to_currency(@total_cents / 100.0, unit: "€") %></span></strong>
+                </div>
               </div>
             </div>
 
@@ -100,6 +138,46 @@
 </div>
 
 <script>
+  // Donation management
+  let donationAmount = 0;
+  const cartSubtotal = <%= @total_cents %> / 100.0;
+
+  function setDonation(amount) {
+    donationAmount = Number(amount) || 0;
+    const customInput = document.getElementById('donationCustomInput');
+    if (customInput) customInput.disabled = true;
+    updateDonationDisplay();
+  }
+
+  function enableCustomDonation() {
+    const customInput = document.getElementById('donationCustomInput');
+    if (customInput) {
+      customInput.disabled = false;
+      customInput.focus();
+    }
+  }
+
+  function setDonationCustom(value) {
+    const val = parseFloat(String(value).replace(',', '.'));
+    donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
+    updateDonationDisplay();
+  }
+
+  function updateDonationDisplay() {
+    const donationDisplay = document.getElementById('donationDisplay');
+    const cartTotalWithDonation = document.getElementById('cartTotalWithDonation');
+    
+    if (donationDisplay) {
+      donationDisplay.textContent = donationAmount.toFixed(2) + '€';
+    }
+    
+    if (cartTotalWithDonation) {
+      const total = cartSubtotal + donationAmount;
+      cartTotalWithDonation.textContent = total.toFixed(2) + '€';
+    }
+  }
+
+  // Quantity management
   function incrementQty(variantId, maxStock) {
     const qtyInput = document.getElementById('qty-' + variantId);
     const currentQty = parseInt(qtyInput.value, 10);
