@@ -18,6 +18,11 @@
             <i class="bi bi-info-circle me-1"></i>L'association
           <% end %>
         </li>
+        <li class="nav-item">
+          <%= link_to shop_path, class: "nav-link" do %>
+            <i class="bi bi-bag me-1"></i>Boutique
+          <% end %>
+        </li>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <!-- Theme toggle -->
@@ -25,6 +30,15 @@
           <i class="bi bi-moon-fill" id="theme-icon"></i>
         </button>
         
+        <%= link_to cart_path, class: "btn btn-outline-primary cart-button", id: "cart-button" do %>
+          <i class="bi bi-basket"></i>
+          <% if cart_items_count > 0 %>
+            <span class="badge text-bg-danger cart-badge" id="cartCount" data-cart-count="<%= cart_items_count %>"><%= cart_items_count %></span>
+          <% else %>
+            <span class="badge text-bg-danger cart-badge" id="cartCount" data-cart-count="0" style="display: none;">0</span>
+          <% end %>
+        <% end %>
+
         <!-- User menu -->
         <% if user_signed_in? %>
           <div class="dropdown">
@@ -44,8 +58,8 @@
                 <% end %>
               </li>
               <li>
-                <%= link_to "#", class: "dropdown-item" do %>
-                  <i class="bi bi-calendar-event me-2"></i>Mes événements
+                <%= link_to orders_path, class: "dropdown-item" do %>
+                  <i class="bi bi-box-seam me-2"></i>Mes commandes
                 <% end %>
               </li>
               <% if current_user.role&.name == 'admin' %>

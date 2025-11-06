@@ -451,11 +451,99 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] Boutique: `product_categories`, `products`, `product_variants`, `option_types`, `option_values`, `variant_option_values`
 - [✅] Paiements (`payments`) et commandes (`orders`, `order_items`)
 - [✅] FK `order_items.variant_id → product_variants.id` + seeds corrigés
+- [✅] **Boutique fonctionnelle** :
+  - [✅] Catalogue produits (index/show) avec variantes
+  - [✅] Panier session (add/update/remove/clear)
+  - [✅] Checkout (création commande + déduction stock)
+  - [✅] Historique commandes (index/show)
+  - [✅] Guardrails (validation stock, quantité max, variantes actives)
+  - [✅] UX quantité limitée au stock sur fiche produit
+- [🔜] **Boutique UX/UI** : Améliorations visuelles et expérience utilisateur
 - [🔜] Auth complète (Devise: vues + flows)
 - [🔜] Permissions (Pundit: politiques + intégration)
 - [🔜] Événements: `routes`, `events`, `attendances`, `organizer_applications`
 - [🔜] Interface admin minimale
 - [🔜] Upload photos (Active Storage)
+
+---
+
+## 📋 AMÉLIORATIONS FUTURES (Backlog)
+
+### 🛒 Panier - Persistance pour utilisateurs connectés
+
+**Problème actuel** :
+- Le panier est stocké uniquement dans `session[:cart]` (cookies)
+- Perdu si cookie expiré/supprimé
+- Pas de synchronisation multi-appareils
+- Même système pour connectés/non connectés
+
+**Solution proposée** :
+1. **Table `carts`** (optionnel) ou utiliser `orders` avec `status: 'cart'`
+   - `user_id` (nullable pour non connectés)
+   - `session_id` (pour non connectés)
+   - `created_at`, `updated_at`
+
+2. **Fusion automatique** :
+   - À la connexion : fusionner `session[:cart]` avec panier DB de l'utilisateur
+   - Synchronisation entre appareils pour utilisateurs connectés
+
+3. **Migration progressive** :
+   - Utilisateurs connectés : panier en DB
+   - Utilisateurs non connectés : panier en session (comme actuellement)
+
+**Priorité** : Basse (fonctionnel actuellement, amélioration UX)
+
+---
+
+### 🎨 Boutique - Variantes de couleurs avec changement d'images
+
+**Problème actuel** :
+- Chaque couleur est un produit séparé (ex: "Veste - Noir", "Veste - Bleu", "Veste - Blanc")
+- Duplication de produits pour chaque couleur
+- L'image ne change pas dynamiquement selon la couleur sélectionnée dans les variantes
+- Gestion complexe des stocks et prix par couleur
+
+**Solution proposée** :
+1. **Migration structure** :
+   - Ajouter colonne `image_url` à la table `product_variants`
+   - Regrouper les produits par couleur en un seul produit avec variantes
+   - Migration des données existantes (fusionner produits de même famille)
+
+2. **Logique de changement d'image** :
+   - Stocker l'image dans `product_variants.image_url` (fallback sur `product.image_url`)
+   - JavaScript pour changer l'image dynamiquement selon la variante sélectionnée
+   - API endpoint optionnel pour récupérer l'image d'une variante
+
+3. **Exemple structure** :
+   ```
+   Product: "Veste Grenoble Roller"
+   ├─ Variant 1 (Noir, S) → image: "veste_noir.avif"
+   ├─ Variant 2 (Noir, M) → image: "veste_noir.avif"
+   ├─ Variant 3 (Bleu, S) → image: "veste_bleu.avif"
+   └─ Variant 4 (Blanc, L) → image: "veste.png"
+   ```
+
+4. **Avantages** :
+   - Un seul produit à gérer au lieu de N produits (N = nombre de couleurs)
+   - Image change automatiquement selon la sélection
+   - Meilleure organisation des stocks et prix
+   - URL produit unique (SEO amélioré)
+
+**Priorité** : Moyenne (amélioration structurelle importante, mais fonctionnel actuellement)
+
+---
+
+### 🎨 Boutique - Améliorations UX/UI
+
+**État actuel** :
+- ✅ Fonctionnalités de base opérationnelles (catalogue, panier, checkout)
+- ✅ Guardrails techniques (stock, validations)
+- 🔜 Améliorations visuelles et expérience utilisateur à définir
+
+**À venir** :
+- Améliorations UX/UI selon spécifications détaillées (en attente)
+
+**Priorité** : Haute (amélioration immédiate de l'expérience utilisateur)
 
 ---
 

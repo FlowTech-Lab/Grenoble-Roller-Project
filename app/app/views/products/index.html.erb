@@ -1,0 +1,242 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h1 class="display-5 text-liquid-primary-white mb-2">
+        <i class="bi bi-bag-heart me-2"></i>Boutique
+      </h1>
+    </div>
+  </div>
+
+  <section class="mb-5" aria-label="Catalogue produits">
+    <div class="row">
+      <div class="col-12 col-lg-8 mx-auto">
+        <div class="product-grid">
+          <% @products.each do |product| %>
+            <% 
+              active_variants = product.product_variants.where(is_active: true).includes(variant_option_values: { option_value: :option_type })
+              has_stock = active_variants.any? { |v| v.stock_qty > 0 }
+              min_price = active_variants.minimum(:price_cents) || product.price_cents
+              max_price = active_variants.maximum(:price_cents) || product.price_cents
+              has_multiple_prices = min_price != max_price
+              
+              # Group variants by option types (size, color)
+              size_options = active_variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'size' } }.uniq
+              color_options = active_variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'color' } }.uniq
+            %>
+            <article class="card card-product card-liquid rounded-liquid" 
+                     data-product-url="<%= product_path(product.slug.presence || product) %>" 
+                     style="cursor: pointer;">
+              <div class="card-product-image-wrapper">
+                <div class="card-product-image">
+                  <% if product.image_url.present? %>
+                    <%= image_tag product.image_url, alt: product.name, loading: "lazy", decoding: "async" %>
+                  <% end %>
+                </div>
+                <% if has_stock %>
+                  <span class="badge badge-liquid-success badge-stock">En stock</span>
+                <% else %>
+                  <span class="badge badge-liquid-danger badge-stock">Rupture</span>
+                <% end %>
+              </div>
+              <div class="card-body">
+                <div class="product-content">
+                  <h5 class="product-title mb-2"><%= product.name %></h5>
+                  <p class="product-description mb-3 small text-muted">
+                    <%= product.description.presence || "Porter les couleurs de Grenoble Roller !" %>
+                  </p>
+                </div>
+                
+                <% if active_variants.any? %>
+                  <% 
+                    # Si une seule variante, on l'active automatiquement
+                    single_variant = active_variants.count == 1 ? active_variants.first : nil
+                  %>
+                  <div class="product-options-section mb-3">
+                    <div class="product-options">
+                      <% if size_options.any? %>
+                        <select class="form-select form-select-sm product-size-select" 
+                                aria-label="Choisir la taille" 
+                                data-product-id="<%= product.id %>"
+                                id="size-select-<%= product.id %>">
+                          <option value="">Choisir taille</option>
+                          <% size_options.each do |size_opt| %>
+                            <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == size_opt.id && ov.option_type.name == 'size' } %>
+                            <option value="<%= size_opt.id %>" <%= 'selected' if selected %>><%= size_opt.presentation %></option>
+                          <% end %>
+                        </select>
+                      <% end %>
+                      
+                      <% if color_options.any? %>
+                        <select class="form-select form-select-sm product-color-select" 
+                                aria-label="Choisir la couleur" 
+                                data-product-id="<%= product.id %>"
+                                id="color-select-<%= product.id %>">
+                          <option value="">Choisir couleur</option>
+                          <% color_options.each do |color_opt| %>
+                            <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == color_opt.id && ov.option_type.name == 'color' } %>
+                            <option value="<%= color_opt.id %>" <%= 'selected' if selected %>><%= color_opt.presentation %></option>
+                          <% end %>
+                        </select>
+                      <% end %>
+                      
+                      <% if size_options.empty? && color_options.empty? %>
+                        <select class="form-select form-select-sm" disabled>
+                          <option selected>Taille unique</option>
+                        </select>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+                
+                <div class="spacer"></div>
+                <div class="product-footer">
+                  <div class="price-section-vertical">
+                    <div class="price-display">
+                      <% if has_multiple_prices %>
+                        <span class="price">À partir de <%= format_price(min_price) %></span>
+                      <% else %>
+                        <span class="price"><%= format_price(min_price) %></span>
+                      <% end %>
+                    </div>
+                  </div>
+                  <%= form_with url: add_item_cart_path, method: :post, class: "d-inline", data: { turbo: false } do |f| %>
+                    <% if single_variant && single_variant.stock_qty > 0 %>
+                      <%= hidden_field_tag :variant_id, single_variant.id, id: "variant-id-#{product.id}" %>
+                      <%= hidden_field_tag :quantity, 1 %>
+                      <button type="submit" 
+                              class="btn btn-liquid-primary btn-add" 
+                              aria-label="Ajouter <%= product.name %> au panier"
+                              id="add-btn-<%= product.id %>">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        <span class="btn-text">Ajouter au panier</span>
+                      </button>
+                    <% else %>
+                      <%= hidden_field_tag :variant_id, "", id: "variant-id-#{product.id}", required: true %>
+                      <%= hidden_field_tag :quantity, 1 %>
+                      <button type="submit" 
+                              class="btn btn-liquid-primary btn-add" 
+                              aria-label="Ajouter <%= product.name %> au panier"
+                              id="add-btn-<%= product.id %>"
+                              disabled>
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        <span class="btn-text">Ajouter au panier</span>
+                      </button>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Map to store variants by product and option combinations
+    const productVariants = {};
+    
+    <% @products.each do |product| %>
+      <% active_variants = product.product_variants.where(is_active: true).includes(variant_option_values: { option_value: :option_type }) %>
+      productVariants[<%= product.id %>] = [
+        <% active_variants.each do |v| %>
+          {
+            id: <%= v.id %>,
+            sizeId: <%= (v.option_values.find { |ov| ov.option_type.name == 'size' }&.id || 'null') %>,
+            colorId: <%= (v.option_values.find { |ov| ov.option_type.name == 'color' }&.id || 'null') %>,
+            stock: <%= v.stock_qty %>,
+            price: <%= v.price_cents %>
+          },
+        <% end %>
+      ];
+      
+      <% if active_variants.count == 1 && active_variants.first.stock_qty > 0 %>
+        // Auto-select single variant
+        const variantInput<%= product.id %> = document.getElementById('variant-id-<%= product.id %>');
+        const addBtn<%= product.id %> = document.getElementById('add-btn-<%= product.id %>');
+        if (variantInput<%= product.id %> && addBtn<%= product.id %>) {
+          variantInput<%= product.id %>.value = <%= active_variants.first.id %>;
+          addBtn<%= product.id %>.disabled = false;
+        }
+      <% end %>
+    <% end %>
+    
+    // Handle option selection for each product
+    const processedProducts = new Set();
+    
+    document.querySelectorAll('.product-size-select, .product-color-select').forEach(select => {
+      const productId = parseInt(select.dataset.productId);
+      
+      // Avoid processing the same product multiple times
+      if (processedProducts.has(productId)) return;
+      processedProducts.add(productId);
+      
+      const sizeSelect = document.getElementById('size-select-' + productId);
+      const colorSelect = document.getElementById('color-select-' + productId);
+      const variantInput = document.getElementById('variant-id-' + productId);
+      const addBtn = document.getElementById('add-btn-' + productId);
+      const cardProduct = select.closest('.card-product');
+      const priceDisplay = cardProduct ? cardProduct.querySelector('.price') : null;
+      
+      function updateVariant() {
+        if (!variantInput || !addBtn) return;
+        
+        const sizeId = sizeSelect && sizeSelect.value ? parseInt(sizeSelect.value) : null;
+        const colorId = colorSelect && colorSelect.value ? parseInt(colorSelect.value) : null;
+        
+        // Find matching variant - must match both selected options
+        const variant = productVariants[productId].find(v => {
+          const matchSize = sizeId === null ? true : (v.sizeId === sizeId || v.sizeId === null);
+          const matchColor = colorId === null ? true : (v.colorId === colorId || v.colorId === null);
+          return matchSize && matchColor;
+        });
+        
+        if (variant && variant.stock > 0) {
+          variantInput.value = variant.id;
+          addBtn.disabled = false;
+          if (priceDisplay) {
+            priceDisplay.textContent = formatPriceFromCents(variant.price);
+          }
+        } else {
+          variantInput.value = '';
+          addBtn.disabled = true;
+          if (priceDisplay && productVariants[productId] && productVariants[productId].length > 0) {
+            const minPrice = Math.min(...productVariants[productId].map(v => v.price));
+            const hasMultiple = productVariants[productId].length > 1;
+            priceDisplay.textContent = hasMultiple ? 'À partir de ' + formatPriceFromCents(minPrice) : formatPriceFromCents(minPrice);
+          }
+        }
+      }
+      
+      // Initial update for products with options
+      updateVariant();
+      
+      if (sizeSelect) sizeSelect.addEventListener('change', updateVariant);
+      if (colorSelect) colorSelect.addEventListener('change', updateVariant);
+    });
+    
+    function formatPriceFromCents(cents) {
+      const amount = cents / 100.0;
+      const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
+      return formatted.replace('.', ',') + '€';
+    }
+
+    // Make product cards clickable (except interactive elements)
+    document.querySelectorAll('.card-product').forEach(card => {
+      card.addEventListener('click', function(event) {
+        // Check if the click target is an interactive element (button, select, input, form, or a child of these)
+        const isInteractiveElement = event.target.closest('button, select, input, form, a');
+        
+        // If the click is not on an interactive element, navigate to the product URL
+        if (!isInteractiveElement) {
+          const productUrl = this.dataset.productUrl;
+          if (productUrl) {
+            window.location.href = productUrl;
+          }
+        }
+      });
+    });
+  });
+</script>

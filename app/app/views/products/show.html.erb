@@ -1,0 +1,320 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><%= link_to "Accueil", root_path %></li>
+          <li class="breadcrumb-item"><%= link_to "Boutique", shop_path %></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= @product.name %></li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Image principale -->
+    <div class="col-12 col-lg-6">
+      <div class="card card-liquid rounded-liquid">
+        <div class="card-product-image-wrapper" style="aspect-ratio: 1 / 1; max-height: 600px;">
+          <div class="card-product-image">
+            <% if @product.image_url.present? %>
+              <%= image_tag @product.image_url, alt: @product.name, loading: "eager", decoding: "async", style: "object-fit: contain;" %>
+            <% else %>
+              <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                <i class="bi bi-image fs-1 text-muted"></i>
+              </div>
+            <% end %>
+          </div>
+          <% 
+            has_stock = @variants.any? { |v| v.stock_qty > 0 }
+          %>
+          <% if has_stock %>
+            <span class="badge badge-liquid-success badge-stock">En stock</span>
+          <% else %>
+            <span class="badge badge-liquid-danger badge-stock">Rupture</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informations produit -->
+    <div class="col-12 col-lg-6">
+      <div class="card card-liquid rounded-liquid h-100">
+        <div class="card-body d-flex flex-column">
+          <!-- Titre et catégorie -->
+          <div class="mb-3">
+            <h1 class="product-title mb-2"><%= @product.name %></h1>
+            <% if @product.category %>
+              <p class="text-muted mb-0">
+                <i class="bi bi-tag me-1"></i><%= @product.category.name %>
+              </p>
+            <% end %>
+          </div>
+
+          <!-- Description -->
+          <% if @product.description.present? %>
+            <div class="mb-4">
+              <p class="product-description text-muted">
+                <%= simple_format(@product.description) %>
+              </p>
+            </div>
+          <% end %>
+
+          <!-- Prix -->
+          <div class="mb-4">
+            <% 
+              min_price = @variants.minimum(:price_cents) || @product.price_cents
+              max_price = @variants.maximum(:price_cents) || @product.price_cents
+              has_multiple_prices = min_price != max_price
+            %>
+            <div class="price-section-vertical">
+              <div class="price-display">
+                <% if has_multiple_prices %>
+                  <span class="price">À partir de <%= format_price(min_price) %></span>
+                <% else %>
+                  <span class="price"><%= format_price(min_price) %></span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sélection variantes -->
+          <% if @variants.any? %>
+            <% 
+              size_options = @variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'size' } }.uniq
+              color_options = @variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'color' } }.uniq
+              single_variant = @variants.count == 1 ? @variants.first : nil
+            %>
+            <div class="product-options-section mb-4">
+              <div class="product-options">
+                <% if size_options.any? %>
+                  <select class="form-select form-select-sm product-size-select" 
+                          aria-label="Choisir la taille" 
+                          id="size-select-detail">
+                    <option value="">Choisir taille</option>
+                    <% size_options.each do |size_opt| %>
+                      <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == size_opt.id && ov.option_type.name == 'size' } %>
+                      <option value="<%= size_opt.id %>" <%= 'selected' if selected %>><%= size_opt.presentation %></option>
+                    <% end %>
+                  </select>
+                <% end %>
+                
+                <% if color_options.any? %>
+                  <select class="form-select form-select-sm product-color-select" 
+                          aria-label="Choisir la couleur" 
+                          id="color-select-detail">
+                    <option value="">Choisir couleur</option>
+                    <% color_options.each do |color_opt| %>
+                      <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == color_opt.id && ov.option_type.name == 'color' } %>
+                      <option value="<%= color_opt.id %>" <%= 'selected' if selected %>><%= color_opt.presentation %></option>
+                    <% end %>
+                  </select>
+                <% end %>
+                
+                <% if size_options.empty? && color_options.empty? %>
+                  <select class="form-select form-select-sm" disabled>
+                    <option selected>Taille unique</option>
+                  </select>
+                <% end %>
+              </div>
+              <small id="stock_hint" class="text-muted d-block mt-2" style="display: none;">
+                Stock: <span id="stock_value">0</span>
+              </small>
+            </div>
+          <% end %>
+
+          <!-- Quantité et ajout au panier -->
+          <div class="mt-auto">
+            <%= form_with url: add_item_cart_path, method: :post, class: "d-flex flex-column gap-3", id: "add-to-cart-form", data: { turbo: false } do |f| %>
+              <%= hidden_field_tag :variant_id, single_variant ? single_variant.id : "", id: "variant-id-detail", required: true %>
+              
+              <div class="d-flex align-items-center gap-3">
+                <label for="quantity_field" class="form-label mb-0">Quantité:</label>
+                <div class="qty-control">
+                  <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQtyDetail()" do %>
+                    <i class="bi bi-dash"></i>
+                  <% end %>
+                  <%= number_field_tag :quantity, 1, min: 1, max: (single_variant&.stock_qty.to_i if single_variant), class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "quantity_field", style: "width: 3em;" %>
+                  <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, onclick: "incrementQtyDetail()" do %>
+                    <i class="bi bi-plus"></i>
+                  <% end %>
+                </div>
+              </div>
+
+              <button type="submit" 
+                      class="btn btn-liquid-primary btn-add w-100" 
+                      id="add-btn-detail"
+                      <%= 'disabled' unless single_variant && single_variant.stock_qty > 0 %>>
+                <i class="bi bi-cart-plus me-2" aria-hidden="true"></i>
+                <span>Ajouter au panier</span>
+              </button>
+            <% end %>
+
+            <div class="mt-3 text-center">
+              <%= link_to cart_path, class: "btn btn-outline-primary btn-sm" do %>
+                <i class="bi bi-basket me-1"></i>Voir le panier
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Map des variantes avec leurs options
+    const productVariants = [
+      <% @variants.each do |v| %>
+        {
+          id: <%= v.id %>,
+          sizeId: <%= (v.option_values.find { |ov| ov.option_type.name == 'size' }&.id || 'null') %>,
+          colorId: <%= (v.option_values.find { |ov| ov.option_type.name == 'color' }&.id || 'null') %>,
+          stock: <%= v.stock_qty %>,
+          price: <%= v.price_cents %>
+        },
+      <% end %>
+    ];
+
+    const sizeSelect = document.getElementById('size-select-detail');
+    const colorSelect = document.getElementById('color-select-detail');
+    const variantInput = document.getElementById('variant-id-detail');
+    const addBtn = document.getElementById('add-btn-detail');
+    const stockHint = document.getElementById('stock_hint');
+    const qtyField = document.getElementById('quantity_field');
+    const priceDisplay = document.querySelector('.price');
+
+    function updateVariant() {
+      const sizeId = sizeSelect && sizeSelect.value ? parseInt(sizeSelect.value) : null;
+      const colorId = colorSelect && colorSelect.value ? parseInt(colorSelect.value) : null;
+
+      // Si des sélecteurs existent mais sont vides, ne pas trouver de variante
+      const hasSizeSelect = sizeSelect !== null;
+      const hasColorSelect = colorSelect !== null;
+      const sizeSelected = sizeId !== null;
+      const colorSelected = colorId !== null;
+
+      // Si des sélecteurs existent mais sont vides, ne pas trouver de variante
+      let variant = null;
+      
+      if ((hasSizeSelect && !sizeSelected) || (hasColorSelect && !colorSelected)) {
+        // Au moins un sélecteur existe mais n'est pas rempli, pas de variante
+        variant = null;
+      } else {
+        // Trouver la variante correspondante
+        variant = productVariants.find(v => {
+          const matchSize = !hasSizeSelect ? true : (v.sizeId === sizeId || v.sizeId === null);
+          const matchColor = !hasColorSelect ? true : (v.colorId === colorId || v.colorId === null);
+          return matchSize && matchColor;
+        });
+      }
+
+      if (variant && variant.stock > 0) {
+        variantInput.value = variant.id;
+        addBtn.disabled = false;
+        
+        // Afficher et mettre à jour le stock
+        if (stockHint) {
+          const stockValue = stockHint.querySelector('#stock_value');
+          if (stockValue) {
+            stockValue.textContent = variant.stock;
+          }
+          stockHint.style.display = 'block';
+        }
+        
+        // Mettre à jour la quantité max
+        if (qtyField) {
+          qtyField.max = variant.stock;
+          const current = parseInt(qtyField.value || '1', 10);
+          if (current > variant.stock) {
+            qtyField.value = variant.stock;
+          }
+        }
+        
+        // Mettre à jour le prix
+        if (priceDisplay) {
+          priceDisplay.textContent = formatPriceFromCents(variant.price);
+        }
+      } else {
+        variantInput.value = '';
+        addBtn.disabled = true;
+        
+        // Cacher le stock si aucune variante sélectionnée
+        if (stockHint) {
+          stockHint.style.display = 'none';
+        }
+        
+        if (qtyField) {
+          qtyField.max = 0;
+        }
+      }
+    }
+
+    // Auto-sélection si une seule variante
+    <% if @variants.count == 1 && @variants.first.stock_qty > 0 %>
+      if (variantInput && addBtn) {
+        variantInput.value = <%= @variants.first.id %>;
+        addBtn.disabled = false;
+        // Afficher le stock pour la variante unique
+        if (stockHint) {
+          const stockValue = stockHint.querySelector('#stock_value');
+          if (stockValue) {
+            stockValue.textContent = <%= @variants.first.stock_qty %>;
+          }
+          stockHint.style.display = 'block';
+        }
+      }
+    <% end %>
+
+    // Event listeners pour les sélecteurs
+    if (sizeSelect) sizeSelect.addEventListener('change', updateVariant);
+    if (colorSelect) colorSelect.addEventListener('change', updateVariant);
+
+    // Initial update
+    updateVariant();
+
+    // Fonctions pour la quantité
+    window.incrementQtyDetail = function() {
+      if (!qtyField) return;
+      const max = parseInt(qtyField.max || '0', 10);
+      const current = parseInt(qtyField.value || '1', 10);
+      if (max > 0 && current < max) {
+        qtyField.value = current + 1;
+      }
+    };
+
+    window.decrementQtyDetail = function() {
+      if (!qtyField) return;
+      const current = parseInt(qtyField.value || '1', 10);
+      if (current > 1) {
+        qtyField.value = current - 1;
+      }
+    };
+
+    // Formatage du prix
+    function formatPriceFromCents(cents) {
+      const amount = cents / 100.0;
+      const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
+      return formatted.replace('.', ',') + '€';
+    }
+
+    // Validation du formulaire
+    const form = document.getElementById('add-to-cart-form');
+    if (form && qtyField) {
+      form.addEventListener('submit', function(e) {
+        const max = parseInt(qtyField.max || '0', 10);
+        const val = parseInt(qtyField.value || '1', 10);
+        if (max > 0 && val > max) {
+          e.preventDefault();
+          qtyField.value = max;
+          alert('Quantité ajustée au stock disponible (' + max + ').');
+        }
+        if (!variantInput.value) {
+          e.preventDefault();
+          alert('Veuillez sélectionner une variante.');
+        }
+      });
+    }
+  });
+</script>

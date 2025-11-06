@@ -1,0 +1,39 @@
+<div class="container">
+  <h1 class="mb-4"><i class="bi bi-box-seam me-2"></i>Mes commandes</h1>
+
+  <% if @orders.empty? %>
+    <div class="alert alert-liquid-info">Vous n'avez pas encore de commande.</div>
+    <%= link_to "Aller à la boutique", shop_path, class: "btn btn-liquid-primary" %>
+  <% else %>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Articles</th>
+            <th>Statut</th>
+            <th class="text-end">Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @orders.each do |order| %>
+            <tr>
+              <td>#<%= order.id %></td>
+              <td><%= l(order.created_at, format: :short) %></td>
+              <td><%= order.order_items.sum(:quantity) %></td>
+              <td><span class="badge badge-liquid-primary"><%= order.status %></span></td>
+              <td class="text-end"><%= number_to_currency(order.total_cents / 100.0, unit: "€") %></td>
+              <td class="text-end">
+                <%= link_to "Détails", order_path(order), class: "btn btn-outline-primary btn-sm" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>
+
+

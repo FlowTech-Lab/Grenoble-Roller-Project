@@ -186,99 +186,7 @@ categories = [
 }
 puts "🖼️ Catégories créées!"
 
-#Création produits test - Lucas
-products = [
-  {
-    name: "Roller Quad Street 3000",
-    slug: "roller-quad-street-3000",
-    category: categories[0],
-    description: "Un roller quad idéal pour le freestyle et les balades urbaines.",
-    price_cents: 129_00,
-    stock_qty: 10,
-    currency: "EUR",
-    is_active: true
-  },
-  {
-    name: "Casque de protection ProX",
-    slug: "casque-prox",
-    category: categories[1],
-    description: "Casque ultra-léger et certifié pour la pratique du roller.",
-    price_cents: 45_00,
-    stock_qty: 25,
-    currency: "EUR",
-    is_active: true
-  },
-  {
-    name: "Sac de transport RollerBag 50L",
-    slug: "sac-rollerbag-50l",
-    category: categories[2],
-    description: "Grand sac de transport renforcé, parfait pour tout ton équipement.",
-    price_cents: 65_00,
-    stock_qty: 15,
-    currency: "EUR",
-    is_active: true
-  }
-].map { |attrs| Product.create!(attrs) 
-}
-
-puts "🛼 Produits créés!"
-
-#Création variants produits test - Lucas
-variants = [
-  # Variantes du roller quad
-  {
-    product: products[0],
-    sku: "ROLL-STREET-37",
-    price_cents: 129_00,
-    stock_qty: 3,
-    currency: "EUR",
-    is_active: true
-  },
-  {
-    product: products[0],
-    sku: "ROLL-STREET-39",
-    price_cents: 129_00,
-    stock_qty: 4,
-    currency: "EUR",
-    is_active: true
-  },
-  {
-    product: products[0],
-    sku: "ROLL-STREET-41",
-    price_cents: 129_00,
-    stock_qty: 3,
-    currency: "EUR",
-    is_active: true
-  },
-
-  # Variantes du casque
-  {
-    product: products[1],
-    sku: "CASQ-PROX-S",
-    price_cents: 45_00,
-    stock_qty: 10,
-    currency: "EUR",
-    is_active: true
-  },
-  {
-    product: products[1],
-    sku: "CASQ-PROX-M",
-    price_cents: 45_00,
-    stock_qty: 10,
-    currency: "EUR",
-    is_active: true
-  },
-  {
-    product: products[1],
-    sku: "CASQ-PROX-L",
-    price_cents: 45_00,
-    stock_qty: 5,
-    currency: "EUR",
-    is_active: true
-  }
-].map { |attrs| ProductVariant.create!(attrs) 
-}
-puts "🎨 Variants produits créés!"
+puts "🛼 Création des produits..."
 
 
 puts "🎨 Création des types d'options..."
@@ -290,34 +198,228 @@ option_types = [
 
 
 puts "🎯 Création des valeurs d'options..."
-sizes = [
+# Tailles chaussures
+shoe_sizes = [
   { option_type: option_types[0], value: "37", presentation: "Taille 37" },
   { option_type: option_types[0], value: "39", presentation: "Taille 39" },
   { option_type: option_types[0], value: "41", presentation: "Taille 41" }
-].map { |attrs| OptionValue.create!(attrs) 
-}
+].map { |attrs| OptionValue.create!(attrs) }
 
+# Tailles textile
+apparel_sizes = %w[S M L].map { |sz| OptionValue.create!(option_type: option_types[0], value: sz, presentation: "Taille #{sz}") }
+
+# Couleurs
 colors = [
   { option_type: option_types[1], value: "Red", presentation: "Rouge" },
   { option_type: option_types[1], value: "Blue", presentation: "Bleu" },
-  { option_type: option_types[1], value: "Black", presentation: "Noir" }
-].map { |attrs| OptionValue.create!(attrs) 
-}
+  { option_type: option_types[1], value: "Black", presentation: "Noir" },
+  { option_type: option_types[1], value: "White", presentation: "Blanc" },
+  { option_type: option_types[1], value: "Violet", presentation: "Violet" }
+].map { |attrs| OptionValue.create!(attrs) }
+
+# Références pour faciliter l'accès
+color_black = OptionValue.find_by!(option_type: option_types[1], value: "Black")
+color_blue = OptionValue.find_by!(option_type: option_types[1], value: "Blue")
+color_white = OptionValue.find_by!(option_type: option_types[1], value: "White")
+color_red = OptionValue.find_by!(option_type: option_types[1], value: "Red")
+color_violet = OptionValue.find_by!(option_type: option_types[1], value: "Violet")
 
 
-puts "🔗 Association des options aux variantes..."
-# Exemple : les rollers ont des tailles, les casques ont des tailles aussi
-ProductVariant.all.each do |variant|
-  product = variant.product
+# ---------------------------
+# 1. CASQUE LED - 3 tailles (S, M, L)
+# ---------------------------
+casque_led = Product.create!(
+  name: "Casque LED Grenoble Roller",
+  slug: "casque-led",
+  category: categories[1],
+  description: "Casque de protection avec éclairage LED intégré pour une visibilité optimale.",
+  price_cents: 55_00,
+  stock_qty: 0,
+  currency: "EUR",
+  is_active: true,
+  image_url: "produits/casque led.png"
+)
 
-  if product.name.include?("Roller")
-    size_value = sizes.sample
-    VariantOptionValue.create!(variant:, option_value: size_value)
-  elsif product.name.include?("Casque")
-    size_value = sizes.sample
-    VariantOptionValue.create!(variant:, option_value: size_value)
+apparel_sizes.each do |size_ov|
+  variant = ProductVariant.create!(
+    product: casque_led,
+    sku: "CASQ-LED-#{size_ov.value}",
+    price_cents: 55_00,
+    stock_qty: [5, 8, 3][apparel_sizes.index(size_ov)],
+    currency: "EUR",
+    is_active: true
+  )
+  VariantOptionValue.create!(variant:, option_value: size_ov)
+end
+
+# ---------------------------
+# 2. CASQUETTE - Taille unique, blanche
+# ---------------------------
+casquette = Product.create!(
+  name: "Casquette Grenoble Roller",
+  slug: "casquette-grenoble-roller",
+  category: categories[2],
+  description: "Casquette blanche avec logo Grenoble Roller.",
+  price_cents: 15_00,
+  stock_qty: 20,
+  currency: "EUR",
+  is_active: true,
+  image_url: "produits/casquette.png"
+)
+
+variant_casquette = ProductVariant.create!(
+  product: casquette,
+  sku: "CASQ-UNIQUE",
+  price_cents: 15_00,
+  stock_qty: 20,
+  currency: "EUR",
+  is_active: true
+)
+VariantOptionValue.create!(variant: variant_casquette, option_value: color_white)
+
+# ---------------------------
+# 3. SAC À DOS + ROLLER - 4 couleurs (noir/rouge/violet/bleu) - même image
+# ---------------------------
+sac_couleurs = [
+  { color: color_black, name: "Sac à dos + Roller - Noir", slug: "sac-dos-roller-noir" },
+  { color: color_red, name: "Sac à dos + Roller - Rouge", slug: "sac-dos-roller-rouge" },
+  { color: color_violet, name: "Sac à dos + Roller - Violet", slug: "sac-dos-roller-violet" },
+  { color: color_blue, name: "Sac à dos + Roller - Bleu", slug: "sac-dos-roller-bleu" }
+]
+
+sac_couleurs.each do |sac|
+  product = Product.create!(
+    name: sac[:name],
+    slug: sac[:slug],
+    category: categories[2],
+    description: "Sac à dos pratique avec compartiment dédié pour transporter vos rollers.",
+    price_cents: 45_00,
+    stock_qty: 0,
+    currency: "EUR",
+    is_active: true,
+    image_url: "produits/Sac a dos + roller.png"
+  )
+  
+  variant = ProductVariant.create!(
+    product: product,
+    sku: "SAC-DOS-#{sac[:color].value.upcase}",
+    price_cents: 45_00,
+    stock_qty: 10,
+    currency: "EUR",
+    is_active: true
+  )
+  VariantOptionValue.create!(variant:, option_value: sac[:color])
+end
+
+# ---------------------------
+# 4. SAC ROLLER SIMPLE - Taille et couleur uniques
+# ---------------------------
+sac_simple = Product.create!(
+  name: "Sac Roller Simple",
+  slug: "sac-roller-simple",
+  category: categories[2],
+  description: "Sac simple et pratique pour transporter vos rollers.",
+  price_cents: 25_00,
+  stock_qty: 15,
+  currency: "EUR",
+  is_active: true,
+  image_url: "produits/Sac roller simple.png"
+)
+
+variant_sac_simple = ProductVariant.create!(
+  product: sac_simple,
+  sku: "SAC-SIMPLE",
+  price_cents: 25_00,
+  stock_qty: 15,
+  currency: "EUR",
+  is_active: true
+)
+
+# ---------------------------
+# 5. T-SHIRT - Clair et plusieurs tailles
+# ---------------------------
+tshirt = Product.create!(
+  name: "T-shirt Grenoble Roller",
+  slug: "tshirt-grenoble-roller",
+  category: categories[2],
+  description: "T-shirt clair confortable avec logo Grenoble Roller.",
+  price_cents: 20_00,
+  stock_qty: 0,
+  currency: "EUR",
+  is_active: true,
+  image_url: "produits/tshirt.PNG"
+)
+
+apparel_sizes.each do |size_ov|
+  variant = ProductVariant.create!(
+    product: tshirt,
+    sku: "TSHIRT-#{size_ov.value}",
+    price_cents: 20_00,
+    stock_qty: [8, 12, 6][apparel_sizes.index(size_ov)],
+    currency: "EUR",
+    is_active: true
+  )
+  VariantOptionValue.create!(variant:, option_value: size_ov)
+end
+
+# ---------------------------
+# 6. VESTE - 3 couleurs (noir/bleu/blanc), plusieurs tailles, 3 images différentes
+# ---------------------------
+vestes = [
+  { color: color_black, name: "Veste Grenoble Roller - Noir", slug: "veste-grenoble-roller-noir", image: "produits/veste noir.avif" },
+  { color: color_blue, name: "Veste Grenoble Roller - Bleu", slug: "veste-grenoble-roller-bleu", image: "produits/veste bleu.avif" },
+  { color: color_white, name: "Veste Grenoble Roller - Blanc", slug: "veste-grenoble-roller-blanc", image: "produits/veste.png" }
+]
+
+vestes.each do |v|
+  product = Product.create!(
+    name: v[:name],
+    slug: v[:slug],
+    category: categories[2],
+    description: "Veste Grenoble Roller, coupe unisexe, confortable et résistante.",
+    price_cents: 40_00,
+    stock_qty: 0,
+    currency: "EUR",
+    is_active: true,
+    image_url: v[:image]
+  )
+
+  apparel_sizes.each_with_index do |size_ov, idx|
+    variant = ProductVariant.create!(
+      product: product,
+      sku: "VESTE-#{v[:color].value.upcase}-#{size_ov.value}",
+      price_cents: 40_00,
+      stock_qty: [5, 10, 7][idx],
+      currency: "EUR",
+      is_active: true
+    )
+    VariantOptionValue.create!(variant:, option_value: size_ov)
+    VariantOptionValue.create!(variant:, option_value: v[:color])
   end
 end
+
+puts "✅ Produits créés avec leurs variantes et options !"
+
+# Produit désactivé (pour tests)
+disabled_product = Product.create!(
+  name: "Gourde Grenoble Roller (désactivée)",
+  slug: "gourde-gr-desactivee",
+  category: categories[2],
+  description: "Produit temporairement indisponible.",
+  price_cents: 12_00,
+  stock_qty: 0,
+  currency: "EUR",
+  is_active: false,
+  image_url: "produits/Sac roller simple.png"
+)
+ProductVariant.create!(
+  product: disabled_product,
+  sku: "GOURDE-STD",
+  price_cents: 12_00,
+  stock_qty: 0,
+  currency: "EUR",
+  is_active: false
+)
 
 # 🛒 Création des OrderItems (APRÈS la création des variants)
 puts "Création des articles de commande..."

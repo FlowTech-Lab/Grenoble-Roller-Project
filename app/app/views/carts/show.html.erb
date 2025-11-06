@@ -1,0 +1,211 @@
+<div class="container py-4">
+  <h1 class="mb-4 text-center"><i class="bi bi-basket me-2"></i>Panier</h1>
+
+  <div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <% if @cart_items.empty? %>
+            <div class="empty-state">
+              <i class="bi bi-bag"></i>
+              <p class="mb-3">Votre panier est vide.</p>
+              <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
+                <i class="bi bi-arrow-left me-1"></i>Retour à la boutique
+              <% end %>
+            </div>
+          <% else %>
+            <!-- Cart items list -->
+            <div class="mb-4">
+              <% @cart_items.each do |ci| %>
+                <div class="cart-item">
+                  <div class="cart-item-image">
+                    <%= image_tag ci[:product].image_url, alt: ci[:product].name, loading: "lazy" %>
+                  </div>
+                  
+                  <div class="cart-item-content">
+                    <div class="cart-item-info">
+                      <p class="cart-item-title mb-1"><%= ci[:product].name %></p>
+                      <div class="d-flex align-items-center gap-2">
+                        <p class="small text-muted mb-0"><%= ci[:variant].sku %></p>
+                        <span class="small text-muted">•</span>
+                        <p class="small text-muted mb-0"><%= format_price(ci[:unit_price_cents]) %> / u</p>
+                      </div>
+                    </div>
+                    
+                    <div class="cart-item-qty">
+                      <%= form_with url: update_item_cart_path, method: :patch, class: "d-inline-flex align-items-center gap-2", id: "cart-item-form-#{ci[:variant].id}", data: { turbo: false } do |f| %>
+                        <%= hidden_field_tag :variant_id, ci[:variant].id %>
+                        <%= hidden_field_tag :original_quantity, ci[:quantity], id: "original-qty-#{ci[:variant].id}" %>
+                        <div class="qty-control" id="qty-control-<%= ci[:variant].id %>">
+                          <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQty(#{ci[:variant].id}, #{ci[:variant].stock_qty})" do %>
+                            <i class="bi bi-dash"></i>
+                          <% end %>
+                          <%= number_field_tag :quantity, ci[:quantity], min: 1, max: ci[:variant].stock_qty, class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "qty-#{ci[:variant].id}", data: { original: ci[:quantity], max: ci[:variant].stock_qty }, oninput: "checkQuantityChange(#{ci[:variant].id})" %>
+                          <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, onclick: "incrementQty(#{ci[:variant].id}, #{ci[:variant].stock_qty})" do %>
+                            <i class="bi bi-plus"></i>
+                          <% end %>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary qty-update-btn" id="update-btn-<%= ci[:variant].id %>" aria-label="Mettre à jour" onclick="resetQuantityState(<%= ci[:variant].id %>)" style="display: none;">
+                          <i class="bi bi-check"></i>
+                        </button>
+                      <% end %>
+                      <div class="qty-error-text" id="invalid-feedback-<%= ci[:variant].id %>" style="display: none;">
+                        Max: <%= ci[:variant].stock_qty %>
+                      </div>
+                    </div>
+                    
+                    <div class="cart-item-price">
+                      <div class="text-end">
+                        <strong><%= format_price(ci[:subtotal_cents]) %></strong>
+                      </div>
+                    </div>
+                    
+                    <div class="cart-item-actions">
+                      <%= button_to remove_item_cart_path(variant_id: ci[:variant].id), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Supprimer", aria: { label: "Supprimer" } do %>
+                        <i class="bi bi-trash"></i>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Cart summary -->
+            <div class="border-top pt-3">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <%= button_to clear_cart_path, method: :delete, class: "btn btn-outline-secondary btn-sm", data: { confirm: "Êtes-vous sûr de vouloir vider le panier ?" } do %>
+                  <i class="bi bi-trash me-1"></i>Vider le panier
+                <% end %>
+                <div class="text-end">
+                  <div class="small text-muted mb-1">Sous-total: <%= format_price(@total_cents) %></div>
+                  <div class="small text-muted mb-1">Don: <span id="donationDisplay">0€</span></div>
+                  <strong class="fs-5">Total: <span id="cartTotalWithDonation"><%= format_price(@total_cents) %></span></strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="d-flex flex-column flex-md-row gap-2">
+              <%= link_to shop_path, class: "btn btn-outline-primary flex-fill" do %>
+                <i class="bi bi-arrow-left me-1"></i>Continuer les achats
+              <% end %>
+              <% if user_signed_in? %>
+                <%= link_to new_order_path, class: "btn btn-liquid-primary flex-fill" do %>
+                  <i class="bi bi-credit-card me-1"></i>Confirmer et payer
+                <% end %>
+              <% else %>
+                <%= link_to new_user_session_path, class: "btn btn-liquid-primary flex-fill" do %>
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Se connecter pour commander
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Donation management
+  let donationAmount = 0;
+  const cartSubtotal = <%= @total_cents %> / 100.0;
+
+  function setDonation(amount) {
+    donationAmount = Number(amount) || 0;
+    const customInput = document.getElementById('donationCustomInput');
+    if (customInput) customInput.disabled = true;
+    updateDonationDisplay();
+  }
+
+  function enableCustomDonation() {
+    const customInput = document.getElementById('donationCustomInput');
+    if (customInput) {
+      customInput.disabled = false;
+      customInput.focus();
+    }
+  }
+
+  function setDonationCustom(value) {
+    const val = parseFloat(String(value).replace(',', '.'));
+    donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
+    updateDonationDisplay();
+  }
+
+  function formatPrice(amount) {
+    // Formater sans décimales si c'est un nombre entier
+    const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
+    return formatted.replace('.', ',') + '€';
+  }
+
+  function updateDonationDisplay() {
+    const donationDisplay = document.getElementById('donationDisplay');
+    const cartTotalWithDonation = document.getElementById('cartTotalWithDonation');
+    
+    if (donationDisplay) {
+      donationDisplay.textContent = formatPrice(donationAmount);
+    }
+    
+    if (cartTotalWithDonation) {
+      const total = cartSubtotal + donationAmount;
+      cartTotalWithDonation.textContent = formatPrice(total);
+    }
+  }
+
+  // Quantity management
+  function incrementQty(variantId, maxStock) {
+    const qtyInput = document.getElementById('qty-' + variantId);
+    const currentQty = parseInt(qtyInput.value, 10);
+    if (currentQty < maxStock) {
+      qtyInput.value = currentQty + 1;
+      document.getElementById('cart-item-form-' + variantId).submit();
+    }
+  }
+
+  function decrementQty(variantId, maxStock) {
+    const qtyInput = document.getElementById('qty-' + variantId);
+    const currentQty = parseInt(qtyInput.value, 10);
+    if (currentQty > 1) {
+      qtyInput.value = currentQty - 1;
+      document.getElementById('cart-item-form-' + variantId).submit();
+    }
+  }
+
+  function checkQuantityChange(variantId) {
+    const qtyInput = document.getElementById('qty-' + variantId);
+    const updateBtn = document.getElementById('update-btn-' + variantId);
+    const qtyControl = document.getElementById('qty-control-' + variantId);
+    const invalidFeedback = document.getElementById('invalid-feedback-' + variantId);
+    const originalQty = parseInt(qtyInput.dataset.original, 10);
+    const maxStock = parseInt(qtyInput.dataset.max, 10);
+    const currentQty = parseInt(qtyInput.value, 10) || 0;
+    
+    const isValid = currentQty >= 1 && currentQty <= maxStock;
+    
+    if (!isValid && currentQty > 0) {
+      qtyInput.classList.add('is-invalid');
+      qtyControl.classList.add('qty-invalid');
+      if (invalidFeedback) invalidFeedback.style.display = 'block';
+      updateBtn.style.display = 'none';
+      qtyControl.classList.remove('qty-changed');
+      return;
+    } else {
+      qtyInput.classList.remove('is-invalid');
+      qtyControl.classList.remove('qty-invalid');
+      if (invalidFeedback) invalidFeedback.style.display = 'none';
+    }
+    
+    if (currentQty !== originalQty && isValid) {
+      updateBtn.style.display = 'inline-block';
+      qtyControl.classList.add('qty-changed');
+    } else {
+      updateBtn.style.display = 'none';
+      qtyControl.classList.remove('qty-changed');
+    }
+  }
+
+  function resetQuantityState(variantId) {
+    const qtyInput = document.getElementById('qty-' + variantId);
+    if (qtyInput) qtyInput.dataset.original = qtyInput.value;
+  }
+</script>

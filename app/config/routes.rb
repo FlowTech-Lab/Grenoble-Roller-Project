@@ -16,4 +16,19 @@ Rails.application.routes.draw do
   
   # Static pages
   get '/association', to: 'pages#association', as: 'association'
+
+  # Shop
+  resources :products, only: [:index, :show]
+  get '/shop', to: 'products#index', as: 'shop'
+
+  # Cart
+  resource :cart, only: [:show] do
+    post :add_item
+    patch :update_item
+    delete :remove_item
+    delete :clear
+  end
+
+  # Orders (Checkout)
+  resources :orders, only: [:index, :new, :create, :show]
 end
