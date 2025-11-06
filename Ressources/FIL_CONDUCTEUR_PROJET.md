@@ -459,6 +459,34 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 
 ---
 
+## 📋 AMÉLIORATIONS FUTURES (Backlog)
+
+### 🛒 Panier - Persistance pour utilisateurs connectés
+
+**Problème actuel** :
+- Le panier est stocké uniquement dans `session[:cart]` (cookies)
+- Perdu si cookie expiré/supprimé
+- Pas de synchronisation multi-appareils
+- Même système pour connectés/non connectés
+
+**Solution proposée** :
+1. **Table `carts`** (optionnel) ou utiliser `orders` avec `status: 'cart'`
+   - `user_id` (nullable pour non connectés)
+   - `session_id` (pour non connectés)
+   - `created_at`, `updated_at`
+
+2. **Fusion automatique** :
+   - À la connexion : fusionner `session[:cart]` avec panier DB de l'utilisateur
+   - Synchronisation entre appareils pour utilisateurs connectés
+
+3. **Migration progressive** :
+   - Utilisateurs connectés : panier en DB
+   - Utilisateurs non connectés : panier en session (comme actuellement)
+
+**Priorité** : Basse (fonctionnel actuellement, amélioration UX)
+
+---
+
 *Document créé le : $(date)*  
 *Version : 1.0*  
 *Équipe : 2 développeurs*

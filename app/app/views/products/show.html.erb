@@ -25,10 +25,14 @@
       <% end %>
 
       <div class="d-flex gap-2">
-        <button class="btn btn-liquid-primary" disabled>
-          <i class="bi bi-cart-plus me-2"></i>Ajouter au panier (à venir)
-        </button>
-        <%= link_to "Retour à la boutique", shop_path, class: "btn btn-outline-primary" %>
+        <%= form_with url: add_item_cart_path, method: :post, class: "d-flex gap-2" do |f| %>
+          <%= hidden_field_tag :variant_id, @variants.first&.id %>
+          <%= number_field_tag :quantity, 1, min: 1, class: "form-control", style: "max-width: 100px;" %>
+          <button class="btn btn-liquid-primary" type="submit">
+            <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+          </button>
+        <% end %>
+        <%= link_to "Voir le panier", cart_path, class: "btn btn-outline-primary" %>
       </div>
     </div>
   </div>
