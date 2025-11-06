@@ -297,7 +297,7 @@ sac_couleurs.each do |sac|
     stock_qty: 0,
     currency: "EUR",
     is_active: true,
-    image_url: "produits/Sac a dos + roller.png"
+    image_url: "produits/Sac a dos roller.png"
   )
   
   variant = ProductVariant.create!(
