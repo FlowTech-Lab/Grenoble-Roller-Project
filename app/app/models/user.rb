@@ -5,6 +5,7 @@ class User < ApplicationRecord
         :recoverable, :rememberable, :validatable
   # Relation avec Role
   belongs_to :role
+  has_many :orders, dependent: :nullify
   before_validation :set_default_role, on: :create
   
   # Validations: prénom obligatoire, nom optionnel

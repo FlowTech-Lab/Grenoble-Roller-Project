@@ -28,4 +28,7 @@ Rails.application.routes.draw do
     delete :remove_item
     delete :clear
   end
+
+  # Orders (Checkout)
+  resources :orders, only: [:new, :create, :show]
 end

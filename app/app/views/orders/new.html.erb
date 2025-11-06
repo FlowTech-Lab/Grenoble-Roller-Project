@@ -1,0 +1,39 @@
+<div class="container">
+  <h1 class="mb-4"><i class="bi bi-receipt me-2"></i>Checkout</h1>
+
+  <div class="table-responsive mb-3">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Variante</th>
+          <th class="text-center">Qté</th>
+          <th class="text-end">Prix Unitaire</th>
+          <th class="text-end">Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @cart_items.each do |ci| %>
+          <tr>
+            <td><%= ci[:product].name %></td>
+            <td><%= ci[:variant].sku %></td>
+            <td class="text-center"><%= ci[:quantity] %></td>
+            <td class="text-end"><%= number_to_currency(ci[:unit_price_cents] / 100.0, unit: "€") %></td>
+            <td class="text-end"><%= number_to_currency(ci[:subtotal_cents] / 100.0, unit: "€") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <%= link_to "Retour au panier", cart_path, class: "btn btn-outline-secondary" %>
+    <h4 class="mb-0">Total: <%= number_to_currency(@total_cents / 100.0, unit: "€") %></h4>
+  </div>
+
+  <div class="mt-3">
+    <%= button_to "Confirmer la commande", orders_path, method: :post, class: "btn btn-liquid-primary" %>
+  </div>
+</div>
+
+
