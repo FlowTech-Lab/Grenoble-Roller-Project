@@ -1,2 +1,60 @@
-<%= render "form" %>
-
+<div class="container-fluid py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card card-liquid rounded-liquid shadow-liquid auth-form">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <i class="bi bi-roller-skate fs-1 text-liquid-primary"></i>
+            <h3 class="mt-2">Connexion</h3>
+            <p class="text-muted small">Accédez à votre compte</p>
+          </div>
+          
+          <%= form_for(resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }) do |f| %>
+            <%= render "devise/shared/error_messages", resource: resource %>
+            
+            <!-- Email -->
+            <div class="mb-3">
+              <%= f.label :email, "Email", class: "form-label" %>
+              <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control form-control-liquid", placeholder: "votre@email.com", required: true %>
+            </div>
+            
+            <!-- Password -->
+            <div class="mb-3">
+              <%= f.label :password, "Mot de passe", class: "form-label" %>
+              <%= f.password_field :password, autocomplete: "current-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true %>
+            </div>
+            
+            <!-- Remember me -->
+            <% if devise_mapping.rememberable? %>
+              <div class="mb-3 form-check">
+                <%= f.check_box :remember_me, class: "form-check-input" %>
+                <%= f.label :remember_me, "Se souvenir de moi", class: "form-check-label" %>
+              </div>
+            <% end %>
+            
+            <!-- Submit -->
+            <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
+              <i class="bi bi-box-arrow-in-right me-2"></i>
+              Se connecter
+            </button>
+          <% end %>
+          
+          <!-- Links -->
+          <div class="text-center">
+            <% if devise_mapping.recoverable? %>
+              <%= link_to new_password_path(resource_name), class: "d-block small text-decoration-none mb-2" do %>
+                Mot de passe oublié ?
+              <% end %>
+            <% end %>
+            <% if devise_mapping.registerable? %>
+              <p class="small text-muted mb-0">
+                Pas de compte ? 
+                <%= link_to "Inscrivez-vous", new_registration_path(resource_name), class: "text-decoration-none" %>
+              </p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

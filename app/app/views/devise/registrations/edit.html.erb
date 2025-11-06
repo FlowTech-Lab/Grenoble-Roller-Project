@@ -60,7 +60,7 @@
               </div>
             </div>
 
-            <div class="mb-0">
+            <div class="mb-4">
               <%= f.label :bio, "Biographie", class: "form-label" %>
               <%= f.text_area :bio, rows: 4, class: "form-control form-control-liquid", placeholder: "Parlez-nous de vous, de votre passion pour le roller..." %>
               <small class="form-text text-muted">
@@ -68,69 +68,58 @@
                 Présentez-vous brièvement à la communauté
               </small>
             </div>
-          </div>
-        </div>
 
-        <!-- Modifier le mot de passe -->
-        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
-          <div class="card-body p-4">
-            <h3 class="h5 text-liquid-primary mb-4">
-              <i class="bi bi-shield-lock me-2"></i>Modifier le mot de passe
+            <!-- Confirmation -->
+            <h3 class="h5 text-liquid-primary mb-4 mt-4 pt-3 border-top">
+              <i class="bi bi-shield-check me-2"></i>Confirmation
             </h3>
             
-            <div class="mb-3">
-              <%= f.label :password, "Nouveau mot de passe", class: "form-label" %>
-              <% if @minimum_password_length %>
-                <small class="form-text text-muted d-block mb-2">
-                  <i class="bi bi-info-circle me-1"></i>
-                  Minimum <%= @minimum_password_length %> caractères
-                </small>
-              <% end %>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <%= f.password_field :password, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "new-password" %>
-              </div>
-              <small class="form-text text-muted">
-                Laissez vide si vous ne souhaitez pas le modifier
-              </small>
+            <div class="alert alert-liquid-warning rounded-liquid mb-4">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Pour votre sécurité</strong>, nous avons besoin de votre mot de passe actuel pour confirmer vos modifications.
             </div>
-
-            <div class="mb-3">
-              <%= f.label :password_confirmation, "Confirmer le nouveau mot de passe", class: "form-label" %>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                <%= f.password_field :password_confirmation, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "new-password" %>
-              </div>
-            </div>
-
-            <div class="mb-0">
+            
+            <div class="mb-4">
               <%= f.label :current_password, "Mot de passe actuel", class: "form-label" %>
-              <small class="form-text text-muted d-block mb-2">
-                <i class="bi bi-shield-check me-1"></i>
-                Nous avons besoin de votre mot de passe actuel pour confirmer vos modifications
-              </small>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-key"></i></span>
-                <%= f.password_field :current_password, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "current-password", required: true %>
+              <div class="d-flex flex-wrap align-items-end gap-2">
+                <div class="flex-grow-1" style="min-width: 200px;">
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                    <%= f.password_field :current_password, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "current-password", required: true %>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <%= link_to :back, class: "btn btn-outline-primary" do %>
+                    <i class="bi bi-arrow-left me-1"></i>Retour
+                  <% end %>
+                  <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary" %>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Actions -->
-        <div class="d-flex gap-2 mb-4">
-          <%= link_to :back, class: "btn btn-outline-primary flex-fill" do %>
-            <i class="bi bi-arrow-left me-1"></i>Retour
-          <% end %>
-          <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary flex-fill" %>
-        </div>
       <% end %>
+
+      <!-- Changer le mot de passe -->
+      <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+        <div class="card-body p-4">
+          <h3 class="h5 text-liquid-primary mb-3">
+            <i class="bi bi-shield-lock me-2"></i>Modifier le mot de passe
+          </h3>
+          <p class="text-muted mb-3">
+            Vous souhaitez changer votre mot de passe ? Utilisez le lien ci-dessous pour accéder à la page de modification.
+          </p>
+          <%= link_to edit_user_password_path, class: "btn btn-outline-primary" do %>
+            <i class="bi bi-shield-lock me-2"></i>Changer mon mot de passe
+          <% end %>
+        </div>
+      </div>
 
       <!-- Supprimer le compte -->
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
           <h3 class="h5 text-liquid-danger mb-3">
-            <i class="bi bi-exclamation-triangle me-2"></i>Avertissement : action permanente
+            <i class="bi bi-exclamation-triangle me-2"></i>Zone de danger
           </h3>
           <p class="text-muted mb-3">
             Vous n'êtes pas satisfait ? La suppression de votre compte est <strong>irréversible</strong> et entraînera la perte de toutes vos données.
