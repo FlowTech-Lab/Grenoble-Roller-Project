@@ -66,6 +66,31 @@
           }
         });
       });
+
+      // Cart count update function
+      function updateCartCount() {
+        const cartCountEl = document.getElementById('cartCount');
+        if (!cartCountEl) return;
+        
+        // Récupérer le count depuis le data-attribute ou le calculer
+        const currentCount = parseInt(cartCountEl.getAttribute('data-cart-count') || cartCountEl.textContent || '0', 10);
+        cartCountEl.textContent = currentCount;
+        
+        // Cacher le badge si count = 0, sinon l'afficher
+        if (currentCount > 0) {
+          cartCountEl.style.display = 'inline-block';
+          cartCountEl.style.visibility = 'visible';
+        } else {
+          cartCountEl.style.display = 'none';
+          cartCountEl.style.visibility = 'hidden';
+        }
+      }
+
+      // Update cart count on page load
+      document.addEventListener('DOMContentLoaded', updateCartCount);
+      
+      // Expose function globally for use in other scripts
+      window.updateCartCount = updateCartCount;
     </script>
   </body>
 </html>
