@@ -1,7 +1,9 @@
 class ProductsController < ApplicationController
   def index
     @categories = ProductCategory.order(:name)
-    @products = Product.includes(:category).where(is_active: true).order(:name)
+    @products = Product.includes(:category, product_variants: { variant_option_values: :option_value })
+                        .where(is_active: true)
+                        .order(:name)
   end
 
   def show

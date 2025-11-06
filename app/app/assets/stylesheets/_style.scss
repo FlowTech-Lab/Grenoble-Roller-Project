@@ -31,7 +31,7 @@
     --liquid-blur: blur(12px);
     
     /* Organic gradients */
-    --gradient-liquid-primary: linear-gradient(135deg, #5aa9fa 0%, #8ccfff 100%);
+    --gradient-liquid-primary: linear-gradient(135deg, #1e8dff 0%, #1ea0ff 100%);
     --gradient-liquid-success: linear-gradient(135deg, var(--gr-success) 0%, #0d6322 100%);
     --gradient-liquid-danger: linear-gradient(135deg, var(--gr-danger) 0%, #b82820 100%);
     --gradient-liquid-pastel: linear-gradient(135deg, #f0f5f9 0%, #e8eef3 50%, #f5f7fa 100%);
@@ -154,6 +154,11 @@
     background: var(--gradient-liquid-danger);
     border: none;
     color: white;
+  }
+
+  /* Outline buttons - same color as navbar links (adapts to theme) */
+  .btn-outline-primary {
+    --bs-btn-color: var(--bs-body-color);
   }
   
   /* Liquid cards with glass morphism */
