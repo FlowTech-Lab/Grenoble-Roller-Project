@@ -74,11 +74,6 @@
               <i class="bi bi-shield-check me-2"></i>Confirmation
             </h3>
             
-            <div class="alert alert-liquid-warning rounded-liquid mb-4">
-              <i class="bi bi-info-circle me-2"></i>
-              <strong>Pour votre sécurité</strong>, nous avons besoin de votre mot de passe actuel pour confirmer vos modifications.
-            </div>
-            
             <div class="mb-4">
               <%= f.label :current_password, "Mot de passe actuel", class: "form-label" %>
               <div class="d-flex flex-wrap align-items-end gap-2">
@@ -95,6 +90,11 @@
                   <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary" %>
                 </div>
               </div>
+            </div>
+            
+            <div class="alert alert-liquid-warning rounded-liquid mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Pour votre sécurité</strong>, nous avons besoin de votre mot de passe actuel pour confirmer vos modifications.
             </div>
           </div>
         </div>
