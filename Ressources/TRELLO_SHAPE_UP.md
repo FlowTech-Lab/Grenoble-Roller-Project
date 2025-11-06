@@ -100,6 +100,12 @@
   - Estimation : 3 points
   - Assigné : Tech Lead
 
+- [X] **Schéma boutique + seeds de base**
+  - Description : Catégories, Produits, Variantes, Options, Commandes, Paiements + FK OrderItems→Variants
+  - Labels : Back
+  - Estimation : 3 points
+  - Assigné : Backend Dev
+
 - [ ] **Authentification complète**
   - Description : Devise + rôles (Membre, Staff, Admin)
   - Labels : Back, Front

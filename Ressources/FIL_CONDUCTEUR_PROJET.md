@@ -443,6 +443,22 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 
 ---
 
+## ✅/🔜 SUIVI D'AVANCEMENT (Semaine 1)
+
+- [✅] Base Users (Devise) + détails (`first_name`, `last_name`, etc.)
+- [✅] Table `roles` conforme (ajout `code` unique + `level`) et FK `users.role_id`
+- [✅] Seeds rôles (USER→SUPERADMIN) et Florian en SUPERADMIN
+- [✅] Boutique: `product_categories`, `products`, `product_variants`, `option_types`, `option_values`, `variant_option_values`
+- [✅] Paiements (`payments`) et commandes (`orders`, `order_items`)
+- [✅] FK `order_items.variant_id → product_variants.id` + seeds corrigés
+- [🔜] Auth complète (Devise: vues + flows)
+- [🔜] Permissions (Pundit: politiques + intégration)
+- [🔜] Événements: `routes`, `events`, `attendances`, `organizer_applications`
+- [🔜] Interface admin minimale
+- [🔜] Upload photos (Active Storage)
+
+---
+
 *Document créé le : $(date)*  
 *Version : 1.0*  
 *Équipe : 2 développeurs*

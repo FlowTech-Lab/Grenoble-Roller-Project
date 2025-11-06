@@ -176,32 +176,7 @@ else
   puts "✅ #{payments.size} commandes créées avec succès."
 end
 
-# 🛒 Création des OrderItems
-puts "Création des articles de commande..."
-
-orders = Order.all
-
-if defined?(Variant) && Variant.any?
-  variant_ids = Variant.ids
-else
-  variant_ids = (1..10).to_a
-end
-
-orders.each do |order|
-  rand(1..3).times do
-    unit_price = rand(500..5000)
-    quantity = rand(1..3)
-    OrderItem.create!(
-      order: order,
-      variant_id: variant_ids.sample,
-      quantity: quantity,
-      unit_price_cents: unit_price,
-      created_at: order.created_at + rand(0..3).hours
-    )
-  end
-end
-
-puts "✅ #{OrderItem.count} articles de commande créés avec succès."
+# 🛒 Création des OrderItems (APRÈS la création des variants)
 #Création des catégories - Lucas
 categories = [
   { name: "Rollers", slug: "rollers" },
@@ -342,6 +317,32 @@ ProductVariant.all.each do |variant|
     size_value = sizes.sample
     VariantOptionValue.create!(variant:, option_value: size_value)
   end
+end
+
+# 🛒 Création des OrderItems (APRÈS la création des variants)
+puts "Création des articles de commande..."
+
+orders = Order.all
+variant_ids = ProductVariant.ids
+
+if variant_ids.empty?
+  puts "⚠️ Aucun variant trouvé, les OrderItems ne seront pas créés."
+else
+  orders.each do |order|
+    rand(1..3).times do
+      unit_price = rand(500..5000)
+      quantity = rand(1..3)
+      OrderItem.create!(
+        order: order,
+        variant_id: variant_ids.sample,
+        quantity: quantity,
+        unit_price_cents: unit_price,
+        created_at: order.created_at + rand(0..3).hours
+      )
+    end
+  end
+
+  puts "✅ #{OrderItem.count} articles de commande créés avec succès."
 end
 
 puts "🌱 Seed terminé avec succès !"
