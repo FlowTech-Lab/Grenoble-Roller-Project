@@ -7,7 +7,7 @@
 
 **Objectif** : Développer un site web moderne pour l'association Grenoble Roller en utilisant Rails 8 et Bootstrap, avec une approche agile et une architecture scalable.
 
-**Durée estimée** : 8-10 semaines  
+**Durée estimée** : 3 semaines (Building) + 1 semaine (Cooldown)  
 **Équipe** : 2 développeurs  
 **Méthodologie** : Agile avec Trello + TDD + CI/CD
 
@@ -102,13 +102,13 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 ## 🎯 MÉTHODOLOGIE SHAPE UP ADAPTÉE
 
 ### Principe Fondamental
-**Appetite fixe (6 semaines), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
+**Appetite fixe (3 semaines), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
 
 ### 4 Phases Shape Up
-1. **SHAPING** (Semaine -2 à 0) : Définir les limites
-2. **BETTING TABLE** (Semaine 0) : Priorisation brutale  
-3. **BUILDING** (Semaine 1-6) : Livrer feature shippable
-4. **COOLDOWN** (Semaine 7-8) : Repos obligatoire
+1. **SHAPING** (2-3 jours) : Définir les limites
+2. **BETTING TABLE** (1 jour) : Priorisation brutale  
+3. **BUILDING** (Semaines 1-3) : Livrer feature shippable
+4. **COOLDOWN** (Semaine 4) : Repos obligatoire
 
 ### Rabbit Holes Évités
 - ❌ Microservices → Monolithe Rails d'abord
@@ -184,7 +184,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-### **PHASE 3 - ENVIRONNEMENT & CI/CD** (1 semaine)
+### **PHASE 3 - ENVIRONNEMENT & CI/CD** (intégré Semaine 1)
 
 #### 🎯 **Objectifs**
 - Mettre en place l'environnement de développement
@@ -221,7 +221,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-### **PHASE 4 - DÉVELOPPEMENT ITÉRATIF** (4-6 sprints de 1 semaine)
+### **PHASE 4 - DÉVELOPPEMENT ITÉRATIF** (Cycle unique de 3 semaines)
 
 #### 🎯 **Objectifs**
 - Développement TDD avec revues de code
@@ -274,7 +274,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-### **PHASE 5 - TESTS & OPTIMISATION** (1-2 semaines)
+### **PHASE 5 - TESTS & OPTIMISATION** (Semaine 3)
 
 #### 🎯 **Objectifs**
 - Tests de montée en charge
@@ -305,7 +305,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-### **PHASE 6 - DÉPLOIEMENT PRODUCTION** (1 semaine)
+### **PHASE 6 - DÉPLOIEMENT PRODUCTION** (fin Semaine 3 ou début Cooldown)
 
 #### 🎯 **Objectifs**
 - Déploiement en production
@@ -422,19 +422,13 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-## 📅 TIMELINE DÉTAILLÉE
+## 📅 TIMELINE 3 SEMAINES
 
 | Semaine | Phase | Objectifs | Livrables |
 |---------|-------|-----------|-----------|
-| 1 | Discovery | Cadrage et architecture | User Stories, Architecture |
-| 2 | Design | Wireframes et prototypes | Prototypes, Design System |
-| 3 | Environnement | CI/CD et monitoring | Pipeline, Monitoring |
-| 4-5 | Sprint 1-2 | Auth et base | Authentification, Dashboard |
-| 6-7 | Sprint 3-4 | Événements et paiement | CRUD, HelloAsso |
-| 8 | Sprint 5 | Initiation et admin | Module initiation, Panel admin |
-| 9 | Sprint 6 | Réseaux sociaux | APIs, Posts auto |
-| 10 | Tests | Performance et optimisation | Tests de charge, Cache |
-| 11 | Production | Déploiement et formation | Site en production |
+| 1 | Building (S1) | Setup Rails 8, Auth (Devise), Rôles (Pundit), 1er CRUD Événements | Auth complète, CRUD Événements fonctionnel, base UI |
+| 2 | Building (S2) | Permissions fines, Upload photos (Active Storage), Interface admin, Notifications email | Rôles/permissions, gestion médias, admin minimal, mails |
+| 3 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Doc, Déploiement | Coverage OK, audit sécurité, README/runbooks, staging+prod |
 
 ---
 

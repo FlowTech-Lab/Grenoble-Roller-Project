@@ -46,31 +46,31 @@
 ### **PHASE 1 : SHAPING** (2-3 jours)
 
 #### Cartes à créer :
-- [ ] **Identifier problème utilisateur**
+- [X] **Identifier problème utilisateur**
   - Description : Communauté roller dispersée (Facebook, WhatsApp)
   - Labels : Design, Front
   - Estimation : 1 point
   - Assigné : Product Owner
 
-- [ ] **Définir appetite (3 semaines)**
+- [X **Définir appetite (3 semaines)**
   - Description : Appetite fixe, scope flexible
   - Labels : Ops
   - Estimation : 1 point
   - Assigné : Tech Lead
 
-- [ ] **Breadboarding solution**
+- [X] **Breadboarding solution**
   - Description : Wireframes grossiers (Excalidraw)
   - Labels : Design, Front
   - Estimation : 2 points
   - Assigné : UX Designer
 
-- [ ] **Identifier rabbit holes**
+- [X] **Identifier rabbit holes**
   - Description : Liste des No-Gos (microservices, Kubernetes, etc.)
   - Labels : Ops
   - Estimation : 1 point
   - Assigné : Tech Lead
 
-- [ ] **Écrire pitch (1 page A4)**
+- X] **Écrire pitch (1 page A4)**
   - Description : Problème → Solution → Appetite → No-Gos
   - Labels : Ops
   - Estimation : 2 points
@@ -79,13 +79,13 @@
 ### **PHASE 2 : BETTING TABLE** (1 jour)
 
 #### Cartes à créer :
-- [ ] **Présenter pitch (15 min)**
+- [X] **Présenter pitch (15 min)**
   - Description : Présentation + questions + validation
   - Labels : Ops
   - Estimation : 1 point
   - Assigné : Product Owner
 
-- [ ] **Décision finale**
+- [X] **Décision finale**
   - Description : Vote + engagement + documentation
   - Labels : Ops
   - Estimation : 1 point
@@ -94,7 +94,7 @@
 ### **PHASE 3 : BUILDING** (3 semaines)
 
 #### Semaine 1 : Get One Piece Done
-- [ ] **Setup projet Rails 8**
+- [X] **Setup projet Rails 8**
   - Description : `rails new grenoble-roller --database=postgresql --css=bootstrap`
   - Labels : Back, Ops
   - Estimation : 3 points
