@@ -28,7 +28,7 @@
                       <div class="d-flex align-items-center gap-2">
                         <p class="small text-muted mb-0"><%= ci[:variant].sku %></p>
                         <span class="small text-muted">•</span>
-                        <p class="small text-muted mb-0"><%= number_to_currency(ci[:unit_price_cents] / 100.0, unit: "€") %> / u</p>
+                        <p class="small text-muted mb-0"><%= format_price(ci[:unit_price_cents]) %> / u</p>
                       </div>
                     </div>
                     
@@ -56,7 +56,7 @@
                     
                     <div class="cart-item-price">
                       <div class="text-end">
-                        <strong><%= number_to_currency(ci[:subtotal_cents] / 100.0, unit: "€") %></strong>
+                        <strong><%= format_price(ci[:subtotal_cents]) %></strong>
                       </div>
                     </div>
                     
@@ -111,9 +111,9 @@
                   <i class="bi bi-trash me-1"></i>Vider le panier
                 <% end %>
                 <div class="text-end">
-                  <div class="small text-muted mb-1">Sous-total: <%= number_to_currency(@total_cents / 100.0, unit: "€") %></div>
-                  <div class="small text-muted mb-1">Don: <span id="donationDisplay">0,00€</span></div>
-                  <strong class="fs-5">Total: <span id="cartTotalWithDonation"><%= number_to_currency(@total_cents / 100.0, unit: "€") %></span></strong>
+                  <div class="small text-muted mb-1">Sous-total: <%= format_price(@total_cents) %></div>
+                  <div class="small text-muted mb-1">Don: <span id="donationDisplay">0€</span></div>
+                  <strong class="fs-5">Total: <span id="cartTotalWithDonation"><%= format_price(@total_cents) %></span></strong>
                 </div>
               </div>
             </div>
@@ -166,17 +166,23 @@
     updateDonationDisplay();
   }
 
+  function formatPrice(amount) {
+    // Formater sans décimales si c'est un nombre entier
+    const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
+    return formatted.replace('.', ',') + '€';
+  }
+
   function updateDonationDisplay() {
     const donationDisplay = document.getElementById('donationDisplay');
     const cartTotalWithDonation = document.getElementById('cartTotalWithDonation');
     
     if (donationDisplay) {
-      donationDisplay.textContent = donationAmount.toFixed(2) + '€';
+      donationDisplay.textContent = formatPrice(donationAmount);
     }
     
     if (cartTotalWithDonation) {
       const total = cartSubtotal + donationAmount;
-      cartTotalWithDonation.textContent = total.toFixed(2) + '€';
+      cartTotalWithDonation.textContent = formatPrice(total);
     }
   }
 
