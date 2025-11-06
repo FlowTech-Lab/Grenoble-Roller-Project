@@ -25,7 +25,11 @@
                   <div class="cart-item-content">
                     <div class="cart-item-info">
                       <p class="cart-item-title mb-1"><%= ci[:product].name %></p>
-                      <p class="small text-muted mb-0"><%= ci[:variant].sku %></p>
+                      <div class="d-flex align-items-center gap-2">
+                        <p class="small text-muted mb-0"><%= ci[:variant].sku %></p>
+                        <span class="small text-muted">•</span>
+                        <p class="small text-muted mb-0"><%= number_to_currency(ci[:unit_price_cents] / 100.0, unit: "€") %> / u</p>
+                      </div>
                     </div>
                     
                     <div class="cart-item-qty">
@@ -41,7 +45,7 @@
                             <i class="bi bi-plus"></i>
                           <% end %>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary qty-update-btn" id="update-btn-<%= ci[:variant].id %>" aria-label="Mettre à jour" onclick="resetQuantityState(<%= ci[:variant].id %>)" style="visibility: hidden; opacity: 0;">
+                        <button type="submit" class="btn btn-sm btn-outline-primary qty-update-btn" id="update-btn-<%= ci[:variant].id %>" aria-label="Mettre à jour" onclick="resetQuantityState(<%= ci[:variant].id %>)" style="display: none;">
                           <i class="bi bi-check"></i>
                         </button>
                       <% end %>
@@ -53,7 +57,6 @@
                     <div class="cart-item-price">
                       <div class="text-end">
                         <strong><%= number_to_currency(ci[:subtotal_cents] / 100.0, unit: "€") %></strong>
-                        <div class="small text-muted"><%= number_to_currency(ci[:unit_price_cents] / 100.0, unit: "€") %> / u</div>
                       </div>
                     </div>
                     
@@ -211,8 +214,7 @@
       qtyInput.classList.add('is-invalid');
       qtyControl.classList.add('qty-invalid');
       if (invalidFeedback) invalidFeedback.style.display = 'block';
-      updateBtn.style.visibility = 'hidden';
-      updateBtn.style.opacity = '0';
+      updateBtn.style.display = 'none';
       qtyControl.classList.remove('qty-changed');
       return;
     } else {
@@ -222,12 +224,10 @@
     }
     
     if (currentQty !== originalQty && isValid) {
-      updateBtn.style.visibility = 'visible';
-      updateBtn.style.opacity = '1';
+      updateBtn.style.display = 'inline-block';
       qtyControl.classList.add('qty-changed');
     } else {
-      updateBtn.style.visibility = 'hidden';
-      updateBtn.style.opacity = '0';
+      updateBtn.style.display = 'none';
       qtyControl.classList.remove('qty-changed');
     }
   }
