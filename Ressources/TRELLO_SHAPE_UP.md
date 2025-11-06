@@ -106,6 +106,18 @@
   - Estimation : 3 points
   - Assigné : Backend Dev
 
+- [X] **Boutique fonctionnelle complète**
+  - Description : Catalogue, Panier session, Checkout, Historique commandes, Guardrails stock
+  - Labels : Back, Front
+  - Estimation : 8 points
+  - Assigné : Fullstack Dev
+
+- [ ] **Boutique UX/UI améliorations**
+  - Description : Améliorations visuelles et expérience utilisateur selon spécifications
+  - Labels : Front, Design
+  - Estimation : 5 points
+  - Assigné : Frontend Dev
+
 - [ ] **Authentification complète**
   - Description : Devise + rôles (Membre, Staff, Admin)
   - Labels : Back, Front

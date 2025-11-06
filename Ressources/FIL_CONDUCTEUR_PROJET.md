@@ -451,6 +451,14 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] Boutique: `product_categories`, `products`, `product_variants`, `option_types`, `option_values`, `variant_option_values`
 - [✅] Paiements (`payments`) et commandes (`orders`, `order_items`)
 - [✅] FK `order_items.variant_id → product_variants.id` + seeds corrigés
+- [✅] **Boutique fonctionnelle** :
+  - [✅] Catalogue produits (index/show) avec variantes
+  - [✅] Panier session (add/update/remove/clear)
+  - [✅] Checkout (création commande + déduction stock)
+  - [✅] Historique commandes (index/show)
+  - [✅] Guardrails (validation stock, quantité max, variantes actives)
+  - [✅] UX quantité limitée au stock sur fiche produit
+- [🔜] **Boutique UX/UI** : Améliorations visuelles et expérience utilisateur
 - [🔜] Auth complète (Devise: vues + flows)
 - [🔜] Permissions (Pundit: politiques + intégration)
 - [🔜] Événements: `routes`, `events`, `attendances`, `organizer_applications`
@@ -522,6 +530,20 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
    - URL produit unique (SEO amélioré)
 
 **Priorité** : Moyenne (amélioration structurelle importante, mais fonctionnel actuellement)
+
+---
+
+### 🎨 Boutique - Améliorations UX/UI
+
+**État actuel** :
+- ✅ Fonctionnalités de base opérationnelles (catalogue, panier, checkout)
+- ✅ Guardrails techniques (stock, validations)
+- 🔜 Améliorations visuelles et expérience utilisateur à définir
+
+**À venir** :
+- Améliorations UX/UI selon spécifications détaillées (en attente)
+
+**Priorité** : Haute (amélioration immédiate de l'expérience utilisateur)
 
 ---
 
