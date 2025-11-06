@@ -160,6 +160,17 @@
   .btn-outline-primary {
     --bs-btn-color: var(--bs-body-color);
   }
+
+  /* HelloAsso info box */
+  .helloasso-info {
+    background: rgba(0, 123, 255, 0.08) !important;
+    border: 1px solid rgba(0, 123, 255, 0.15) !important;
+  }
+
+  [data-bs-theme=dark] .helloasso-info {
+    background: rgba(90, 169, 250, 0.1) !important;
+    border: 1px solid rgba(90, 169, 250, 0.2) !important;
+  }
   
   /* Liquid cards with glass morphism */
   .card-liquid {

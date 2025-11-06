@@ -1,20 +1,31 @@
-<div class="container mb-5">
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h1 class="display-5 text-liquid-primary-white mb-2">
+        <i class="bi bi-person-circle me-2"></i>Mon profil
+      </h1>
+      <p class="text-muted">Gérez vos informations personnelles</p>
+    </div>
+  </div>
+
   <div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-      <div class="card shadow-lg border-0">
-        <div class="card-body p-4">
-          <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }, data: { turbo: false }) do |f| %>
-            <%= render "devise/shared/error_messages", resource: resource %>
-            <h5 class="mb-3 text-primary">
+    <div class="col-12 col-lg-8">
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }, data: { turbo: false }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <!-- Informations personnelles -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 text-liquid-primary mb-4">
               <i class="bi bi-person-circle me-2"></i>Informations personnelles
-            </h5>
+            </h3>
             
-            <div class="row mb-3">
+            <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <%= f.label :first_name, "Prénom", class: "form-label" %>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-person"></i></span>
-                  <%= f.text_field :first_name, class: "form-control", placeholder: "Jean", required: true %>
+                  <%= f.text_field :first_name, class: "form-control form-control-liquid", placeholder: "Jean", required: true %>
                 </div>
               </div>
               
@@ -22,22 +33,22 @@
                 <%= f.label :last_name, "Nom (optionnel)", class: "form-label" %>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                  <%= f.text_field :last_name, class: "form-control", placeholder: "Dupont" %>
+                  <%= f.text_field :last_name, class: "form-control form-control-liquid", placeholder: "Dupont" %>
                 </div>
               </div>
             </div>
 
             <div class="mb-3">
-              <%= f.label :email, class: "form-label" %>
+              <%= f.label :email, "Email", class: "form-label" %>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <%= f.email_field :email, class: "form-control", placeholder: "votre@email.com", autocomplete: "email" %>
+                <%= f.email_field :email, class: "form-control form-control-liquid", placeholder: "votre@email.com", autocomplete: "email" %>
               </div>
               <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-                <small class="form-text text-warning">
+                <div class="alert alert-liquid-warning rounded-liquid mt-2 mb-0 p-2">
                   <i class="bi bi-clock-history me-1"></i>
-                  En attente de confirmation pour : <%= resource.unconfirmed_email %>
-                </small>
+                  <small>En attente de confirmation pour : <%= resource.unconfirmed_email %></small>
+                </div>
               <% end %>
             </div>
 
@@ -45,69 +56,93 @@
               <%= f.label :phone, "Téléphone", class: "form-label" %>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                <%= f.text_field :phone, class: "form-control", placeholder: "06 12 34 56 78" %>
+                <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78" %>
               </div>
             </div>
-            <div class="mb-4">
+
+            <div class="mb-0">
               <%= f.label :bio, "Biographie", class: "form-label" %>
-              <%= f.text_area :bio, rows: 3, class: "form-control", placeholder: "Parlez-nous de vous, de votre passion pour le roller..." %>
+              <%= f.text_area :bio, rows: 4, class: "form-control form-control-liquid", placeholder: "Parlez-nous de vous, de votre passion pour le roller..." %>
               <small class="form-text text-muted">
+                <i class="bi bi-info-circle me-1"></i>
                 Présentez-vous brièvement à la communauté
               </small>
             </div>
-            <h5 class="mb-3 mt-4 text-primary border-top pt-3">
+          </div>
+        </div>
+
+        <!-- Modifier le mot de passe -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 text-liquid-primary mb-4">
               <i class="bi bi-shield-lock me-2"></i>Modifier le mot de passe
-            </h5>
+            </h3>
+            
             <div class="mb-3">
               <%= f.label :password, "Nouveau mot de passe", class: "form-label" %>
               <% if @minimum_password_length %>
-                <small class="form-text text-muted d-block mb-1">
-                  (minimum <%= @minimum_password_length %> caractères)
+                <small class="form-text text-muted d-block mb-2">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Minimum <%= @minimum_password_length %> caractères
                 </small>
               <% end %>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <%= f.password_field :password, class: "form-control", placeholder: "••••••••", autocomplete: "new-password" %>
+                <%= f.password_field :password, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "new-password" %>
+              </div>
+              <small class="form-text text-muted">
+                Laissez vide si vous ne souhaitez pas le modifier
+              </small>
+            </div>
+
+            <div class="mb-3">
+              <%= f.label :password_confirmation, "Confirmer le nouveau mot de passe", class: "form-label" %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <%= f.password_field :password_confirmation, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "new-password" %>
               </div>
             </div>
-            <div class="mb-4">
-                <%= f.label :password_confirmation, "Confirmer le nouveau mot de passe", class: "form-label" %>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                  <%= f.password_field :password_confirmation, class: "form-control", placeholder: "••••••••", autocomplete: "new-password" %>
-                </div>
-            </div>
-            <div class="mb-4">
+
+            <div class="mb-0">
               <%= f.label :current_password, "Mot de passe actuel", class: "form-label" %>
-                <small class="form-text text-muted d-block mb-1">
-                  <i class="bi bi-shield-check me-1"></i>
-                  Nous avons besoin de votre mot de passe actuel pour confirmer vos modifications
-                </small>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-key"></i></span>
-                <%= f.password_field :current_password, class: "form-control", placeholder: "••••••••", autocomplete: "current-password", required: true %>
+              <small class="form-text text-muted d-block mb-2">
+                <i class="bi bi-shield-check me-1"></i>
+                Nous avons besoin de votre mot de passe actuel pour confirmer vos modifications
+              </small>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                <%= f.password_field :current_password, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "current-password", required: true %>
+              </div>
             </div>
-            </div>
-            <div class="d-grid mb-3">
-              <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary btn-lg" %>
-            </div>
-        <% end %>
-        <div class="text-center mt-3">
-          <%= link_to "← Retour", :back, class: "btn btn-outline-secondary" %>
+          </div>
         </div>
-        <div class="card-body">
-          <h6 class="mb-3">Supprimer mon compte</h6>
-            <p class="text-muted mb-3">
-            Vous n'êtes pas satisfait ? La suppression de votre compte est irréversible et entraînera la perte de toutes vos données.
-            </p>
-            <%= button_to "Supprimer définitivement mon compte", 
-            registration_path(resource_name), 
-            data: { 
-              confirm: "Êtes-vous vraiment sûr(e) ? Cette action est irréversible !", 
-              turbo_confirm: "Êtes-vous vraiment sûr(e) ? Cette action est irréversible !" 
-            }, 
-            method: :delete,
-            class: "btn btn-danger" %>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 mb-4">
+          <%= link_to :back, class: "btn btn-outline-primary flex-fill" do %>
+            <i class="bi bi-arrow-left me-1"></i>Retour
+          <% end %>
+          <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary flex-fill" %>
+        </div>
+      <% end %>
+
+      <!-- Supprimer le compte -->
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <h3 class="h5 text-liquid-danger mb-3">
+            <i class="bi bi-exclamation-triangle me-2"></i>Avertissement : action permanente
+          </h3>
+          <p class="text-muted mb-3">
+            Vous n'êtes pas satisfait ? La suppression de votre compte est <strong>irréversible</strong> et entraînera la perte de toutes vos données.
+          </p>
+          <%= button_to "Supprimer définitivement mon compte", 
+              registration_path(resource_name), 
+              data: { 
+                confirm: "Êtes-vous vraiment sûr(e) ? Cette action est irréversible !", 
+                turbo_confirm: "Êtes-vous vraiment sûr(e) ? Cette action est irréversible !" 
+              }, 
+              method: :delete,
+              class: "btn btn-liquid-danger" %>
         </div>
       </div>
     </div>
