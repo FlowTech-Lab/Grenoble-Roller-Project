@@ -487,6 +487,44 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 
 ---
 
+### 🎨 Boutique - Variantes de couleurs avec changement d'images
+
+**Problème actuel** :
+- Chaque couleur est un produit séparé (ex: "Veste - Noir", "Veste - Bleu", "Veste - Blanc")
+- Duplication de produits pour chaque couleur
+- L'image ne change pas dynamiquement selon la couleur sélectionnée dans les variantes
+- Gestion complexe des stocks et prix par couleur
+
+**Solution proposée** :
+1. **Migration structure** :
+   - Ajouter colonne `image_url` à la table `product_variants`
+   - Regrouper les produits par couleur en un seul produit avec variantes
+   - Migration des données existantes (fusionner produits de même famille)
+
+2. **Logique de changement d'image** :
+   - Stocker l'image dans `product_variants.image_url` (fallback sur `product.image_url`)
+   - JavaScript pour changer l'image dynamiquement selon la variante sélectionnée
+   - API endpoint optionnel pour récupérer l'image d'une variante
+
+3. **Exemple structure** :
+   ```
+   Product: "Veste Grenoble Roller"
+   ├─ Variant 1 (Noir, S) → image: "veste_noir.avif"
+   ├─ Variant 2 (Noir, M) → image: "veste_noir.avif"
+   ├─ Variant 3 (Bleu, S) → image: "veste_bleu.avif"
+   └─ Variant 4 (Blanc, L) → image: "veste.png"
+   ```
+
+4. **Avantages** :
+   - Un seul produit à gérer au lieu de N produits (N = nombre de couleurs)
+   - Image change automatiquement selon la sélection
+   - Meilleure organisation des stocks et prix
+   - URL produit unique (SEO amélioré)
+
+**Priorité** : Moyenne (amélioration structurelle importante, mais fonctionnel actuellement)
+
+---
+
 *Document créé le : $(date)*  
 *Version : 1.0*  
 *Équipe : 2 développeurs*
