@@ -1,119 +1,132 @@
-<div class="container-fluid py-4">
-  <div class="row mb-4">
-    <div class="col-12 text-center">
-      <div class="mb-3">
-        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-      </div>
-      <h1 class="display-5 text-liquid-primary-white mb-2">
-        Commande confirmée !
-      </h1>
-      <p class="text-muted">Merci pour votre commande</p>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-12 col-lg-8 mx-auto">
-      <!-- Order info card -->
-      <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
-          <h3 class="h5 text-liquid-primary mb-4">
-            <i class="bi bi-receipt me-2"></i>Détails de la commande
-          </h3>
-          
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-hash text-muted"></i>
-                <span class="text-muted">Numéro de commande:</span>
-              </div>
-              <p class="fs-5 fw-bold text-liquid-primary mb-0">#<%= @order.id %></p>
+          <!-- Header compact -->
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+            <h1 class="h5 mb-0">
+              <i class="bi bi-receipt-cutoff text-liquid-primary me-2"></i>
+              Commande #<%= @order.id %>
+            </h1>
+            <% 
+              status_btn = case @order.status.downcase
+                when 'pending', 'en attente'
+                  'btn-warning'
+                when 'preparation', 'en préparation', 'preparing'
+                  'btn-info'
+                when 'sent', 'envoyé', 'shipped', 'finished', 'terminé'
+                  'btn-success'
+                when 'cancelled', 'annulé', 'canceled'
+                  'btn-danger'
+                else
+                  'btn-success'
+              end
+            %>
+            <button type="button" class="btn <%= status_btn %> btn-sm" disabled>
+              <i class="bi <%= case @order.status.downcase
+                when 'pending', 'en attente'
+                  'bi-hourglass-split'
+                when 'preparation', 'en préparation', 'preparing'
+                  'bi-gear'
+                when 'sent', 'envoyé', 'shipped'
+                  'bi-truck'
+                when 'cancelled', 'annulé', 'canceled'
+                  'bi-x-circle'
+                else
+                  'bi-check-circle'
+              end %> me-1"></i>
+              <%= @order.status %>
+            </button>
+          </div>
+
+          <!-- Order info compact -->
+          <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3 pb-3 border-bottom">
+            <div class="d-flex align-items-center gap-1">
+              <i class="bi bi-calendar"></i>
+              <span><%= @order.created_at.strftime("%d/%m/%Y à %H:%M") %></span>
             </div>
-            
-            <div class="col-md-6">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-calendar text-muted"></i>
-                <span class="text-muted">Date:</span>
-              </div>
-              <p class="fs-6 mb-0"><%= @order.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
+            <span>•</span>
+            <div class="d-flex align-items-center gap-1">
+              <i class="bi bi-box-seam"></i>
+              <span><%= @order.order_items.sum(:quantity) %> article(s)</span>
             </div>
+            <span class="ms-auto fw-bold text-liquid-primary">
+              <%= format_price(@order.total_cents) %>
+            </span>
+          </div>
+
+          <!-- Order items -->
+          <div class="mb-3">
+            <h3 class="h6 text-liquid-primary mb-3">
+              <i class="bi bi-list-ul me-2"></i>Articles
+            </h3>
             
-            <div class="col-md-6">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-info-circle text-muted"></i>
-                <span class="text-muted">Statut:</span>
-              </div>
-              <span class="badge badge-liquid-primary fs-6"><%= @order.status %></span>
+            <div class="mb-3">
+              <% @order.order_items.each do |item| %>
+                <div class="cart-item mb-2 pb-2 border-bottom">
+                  <div class="cart-item-image">
+                    <%= image_tag item.variant.product.image_url, alt: item.variant.product.name, loading: "lazy" %>
+                  </div>
+                  
+                  <div class="cart-item-content">
+                    <div class="cart-item-info">
+                      <p class="cart-item-title mb-1"><%= item.variant.product.name %></p>
+                      <div class="d-flex align-items-center gap-2">
+                        <p class="small text-muted mb-0"><%= item.variant.sku %></p>
+                        <span class="small text-muted">•</span>
+                        <p class="small text-muted mb-0"><%= format_price(item.unit_price_cents) %> / u</p>
+                      </div>
+                    </div>
+                    
+                    <div class="cart-item-qty">
+                      <span class="badge badge-liquid-primary">Qté: <%= item.quantity %></span>
+                    </div>
+                    
+                    <div class="cart-item-price">
+                      <div class="text-end">
+                        <strong><%= format_price(item.unit_price_cents * item.quantity) %></strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
             </div>
-            
-            <div class="col-md-6">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-currency-euro text-muted"></i>
-                <span class="text-muted">Total:</span>
+
+            <!-- Total compact -->
+            <div class="border-top pt-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="small text-muted">Sous-total:</span>
+                <span class="small text-muted"><%= format_price(@order.order_items.sum { |item| item.unit_price_cents * item.quantity }) %></span>
               </div>
-              <p class="fs-5 fw-bold text-liquid-primary mb-0"><%= format_price(@order.total_cents) %></p>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <strong>Total:</strong>
+                <strong class="text-liquid-primary"><%= format_price(@order.total_cents) %></strong>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Order items -->
-      <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
-        <div class="card-body p-4">
-          <h3 class="h5 text-liquid-primary mb-4">
-            <i class="bi bi-list-ul me-2"></i>Articles commandés
-          </h3>
-          
-          <div class="mb-4">
-            <% @order.order_items.each do |item| %>
-              <div class="cart-item">
-                <div class="cart-item-image">
-                  <%= image_tag item.variant.product.image_url, alt: item.variant.product.name, loading: "lazy" %>
-                </div>
-                
-                <div class="cart-item-content">
-                  <div class="cart-item-info">
-                    <p class="cart-item-title mb-1"><%= item.variant.product.name %></p>
-                    <div class="d-flex align-items-center gap-2">
-                      <p class="small text-muted mb-0"><%= item.variant.sku %></p>
-                      <span class="small text-muted">•</span>
-                      <p class="small text-muted mb-0"><%= format_price(item.unit_price_cents) %> / u</p>
-                    </div>
-                  </div>
-                  
-                  <div class="cart-item-qty">
-                    <span class="badge badge-liquid-primary">Qté: <%= item.quantity %></span>
-                  </div>
-                  
-                  <div class="cart-item-price">
-                    <div class="text-end">
-                      <strong><%= format_price(item.unit_price_cents * item.quantity) %></strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <!-- Action buttons compact -->
+          <div class="d-flex gap-2 flex-wrap pt-3 border-top">
+            <%= link_to orders_path, class: "btn btn-outline-primary btn-sm" do %>
+              <i class="bi bi-arrow-left me-1"></i>Retour
+            <% end %>
+            <%= link_to shop_path, class: "btn btn-outline-primary btn-sm" do %>
+              <i class="bi bi-bag me-1"></i>Boutique
+            <% end %>
+            <% if ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(@order.status.downcase) %>
+              <%= button_to cancel_order_path(@order), 
+                  method: :patch,
+                  class: "btn btn-outline-danger btn-sm",
+                  data: { 
+                    confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible et le stock sera restauré.",
+                    turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible et le stock sera restauré."
+                  } do %>
+                <i class="bi bi-x-circle me-1"></i>Annuler
+              <% end %>
             <% end %>
           </div>
-
-          <!-- Order total summary -->
-          <div class="border-top pt-3">
-            <div class="d-flex justify-content-end">
-              <div class="text-end">
-                <div class="small text-muted mb-1">Sous-total: <%= format_price(@order.order_items.sum { |item| item.unit_price_cents * item.quantity }) %></div>
-                <strong class="fs-5">Total: <%= format_price(@order.total_cents) %></strong>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-
-      <!-- Action buttons -->
-      <div class="d-flex gap-2 justify-content-center">
-        <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
-          <i class="bi bi-bag me-2"></i>Continuer mes achats
-        <% end %>
-        <%= link_to orders_path, class: "btn btn-outline-primary" do %>
-          <i class="bi bi-list-ul me-2"></i>Voir mes commandes
-        <% end %>
       </div>
     </div>
   </div>
