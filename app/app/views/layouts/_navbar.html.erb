@@ -54,8 +54,8 @@
                 <% end %>
               </li>
               <li>
-                <%= link_to "#", class: "dropdown-item" do %>
-                  <i class="bi bi-calendar-event me-2"></i>Mes événements
+                <%= link_to orders_path, class: "dropdown-item" do %>
+                  <i class="bi bi-box-seam me-2"></i>Mes commandes
                 <% end %>
               </li>
               <% if current_user.role&.name == 'admin' %>

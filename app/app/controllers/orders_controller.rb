@@ -1,6 +1,10 @@
 class OrdersController < ApplicationController
   before_action :authenticate_user!
 
+  def index
+    @orders = current_user.orders.includes(order_items: { variant: :product }).order(created_at: :desc)
+  end
+
   def new
     @cart_items = build_cart_items
     redirect_to cart_path, alert: 'Votre panier est vide.' and return if @cart_items.empty?
