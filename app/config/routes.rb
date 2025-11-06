@@ -16,4 +16,8 @@ Rails.application.routes.draw do
   
   # Static pages
   get '/association', to: 'pages#association', as: 'association'
+
+  # Shop
+  resources :products, only: [:index, :show]
+  get '/shop', to: 'products#index', as: 'shop'
 end

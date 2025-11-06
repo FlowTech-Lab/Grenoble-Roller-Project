@@ -1,0 +1,37 @@
+<div class="container">
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <% if @product.image_url.present? %>
+        <img src="<%= @product.image_url %>" class="img-fluid rounded shadow-liquid" alt="<%= @product.name %>">
+      <% end %>
+    </div>
+    <div class="col-12 col-lg-6">
+      <h1 class="mb-1"><%= @product.name %></h1>
+      <p class="text-muted mb-3"><%= @product.category&.name %></p>
+      <p class="lead fw-bold"><%= number_to_currency(@product.price_cents.to_i / 100.0, unit: "€") %></p>
+      <div class="mb-4">
+        <%= simple_format(@product.description) %>
+      </div>
+
+      <% if @variants.any? %>
+        <div class="mb-3">
+          <label class="form-label">Variants</label>
+          <select id="variant_id" class="form-select form-control-liquid">
+            <% @variants.each do |v| %>
+              <option value="<%= v.id %>"><%= v.sku %> - <%= number_to_currency(v.price_cents.to_i / 100.0, unit: "€") %></option>
+            <% end %>
+          </select>
+        </div>
+      <% end %>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-liquid-primary" disabled>
+          <i class="bi bi-cart-plus me-2"></i>Ajouter au panier (à venir)
+        </button>
+        <%= link_to "Retour à la boutique", shop_path, class: "btn btn-outline-primary" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+
