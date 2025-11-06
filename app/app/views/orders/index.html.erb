@@ -1,73 +1,111 @@
-<div class="container-fluid py-4">
-  <div class="row mb-4">
-    <div class="col-12 text-center">
-      <h1 class="display-5 text-liquid-primary-white mb-2">
-        <i class="bi bi-box-seam me-2"></i>Mes commandes
-      </h1>
-      <p class="text-muted">Consultez l'historique de vos commandes</p>
-    </div>
-  </div>
-
+<div class="container py-4">
   <div class="row justify-content-center">
-    <div class="col-12 col-lg-5 mx-auto">
-      <% if @orders.empty? %>
-        <!-- Empty state -->
-        <div class="card card-liquid rounded-liquid shadow-liquid">
-          <div class="card-body p-5 text-center">
-            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
-            <h3 class="h5 text-muted mt-3 mb-3">Vous n'avez pas encore de commande</h3>
-            <p class="text-muted mb-4">Découvrez notre boutique et trouvez des produits qui vous plaisent !</p>
-            <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
-              <i class="bi bi-bag me-2"></i>Aller à la boutique
-            <% end %>
+    <div class="col-12 col-lg-8">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <i class="bi bi-box-seam text-liquid-primary me-2"></i>Mes commandes
+            </h1>
+            <p class="text-muted small mb-0">Consultez l'historique de vos commandes</p>
           </div>
-        </div>
-      <% else %>
-        <!-- Orders list -->
-        <% @orders.each do |order| %>
-          <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
-            <div class="card-body p-4">
-              <div class="d-flex flex-wrap align-items-center gap-3">
-                <!-- Order icon and number -->
-                <div class="d-flex align-items-center gap-2">
-                  <i class="bi bi-receipt-cutoff text-liquid-primary" style="font-size: 1.5rem;"></i>
-                  <div>
-                    <span class="text-muted small">Commande</span>
-                    <strong class="d-block">#<%= order.id %></strong>
+
+          <% if @orders.empty? %>
+            <!-- Empty state -->
+            <div class="text-center py-5">
+              <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+              <h3 class="h6 text-muted mt-3 mb-2">Vous n'avez pas encore de commande</h3>
+              <p class="text-muted small mb-4">Découvrez notre boutique et trouvez des produits qui vous plaisent !</p>
+              <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
+                <i class="bi bi-bag me-2"></i>Aller à la boutique
+              <% end %>
+            </div>
+          <% else %>
+            <!-- Orders list -->
+            <% @orders.each do |order| %>
+              <div class="mb-3 pb-3 border-bottom <%= 'border-0 pb-0 mb-0' if order == @orders.last %>">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                  <!-- Order icon and number -->
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-receipt-cutoff text-liquid-primary"></i>
+                    <div>
+                      <span class="text-muted small">Commande</span>
+                      <strong class="d-block">#<%= order.id %></strong>
+                    </div>
+                  </div>
+
+                  <!-- Status button -->
+                  <% 
+                    status_btn = case order.status.downcase
+                      when 'pending', 'en attente'
+                        'btn-warning'
+                      when 'preparation', 'en préparation', 'preparing'
+                        'btn-info'
+                      when 'sent', 'envoyé', 'shipped', 'finished', 'terminé'
+                        'btn-success'
+                      when 'cancelled', 'annulé', 'canceled'
+                        'btn-danger'
+                      else
+                        'btn-success'
+                    end
+                  %>
+                  <button type="button" class="btn <%= status_btn %> btn-sm" disabled>
+                    <i class="bi <%= case order.status.downcase
+                      when 'pending', 'en attente'
+                        'bi-hourglass-split'
+                      when 'preparation', 'en préparation', 'preparing'
+                        'bi-gear'
+                      when 'sent', 'envoyé', 'shipped'
+                        'bi-truck'
+                      when 'cancelled', 'annulé', 'canceled'
+                        'bi-x-circle'
+                      else
+                        'bi-check-circle'
+                    end %> me-1"></i>
+                    <%= order.status %>
+                  </button>
+
+                  <!-- Date -->
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar text-muted"></i>
+                    <span class="text-muted small"><%= l(order.created_at, format: :short) %></span>
+                  </div>
+
+                  <!-- Articles count -->
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-box-seam text-muted"></i>
+                    <span class="small"><%= order.order_items.sum(:quantity) %> article(s)</span>
+                  </div>
+
+                  <!-- Total -->
+                  <div class="ms-auto d-flex align-items-center gap-2">
+                    <strong class="text-liquid-primary"><%= format_price(order.total_cents) %></strong>
+                  </div>
+
+                  <!-- Action buttons -->
+                  <div class="d-flex gap-2">
+                    <%= link_to order_path(order), class: "btn btn-outline-primary btn-sm" do %>
+                      <i class="bi bi-eye me-1"></i>Détails
+                    <% end %>
+                    <% if ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(order.status.downcase) %>
+                      <%= button_to cancel_order_path(order), 
+                          method: :patch,
+                          class: "btn btn-outline-danger btn-sm",
+                          data: { 
+                            confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible.",
+                            turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible."
+                          } do %>
+                        <i class="bi bi-x-circle me-1"></i>Annuler
+                      <% end %>
+                    <% end %>
                   </div>
                 </div>
-
-                <!-- Pending icon -->
-                <% if order.status.downcase == 'pending' || order.status.downcase == 'en attente' %>
-                  <i class="bi bi-hourglass-split text-warning"></i>
-                <% end %>
-
-                <!-- Date -->
-                <div class="d-flex align-items-center gap-2">
-                  <i class="bi bi-calendar text-muted"></i>
-                  <span class="text-muted"><%= l(order.created_at, format: :short) %></span>
-                </div>
-
-                <!-- Articles count -->
-                <div class="d-flex align-items-center gap-2">
-                  <i class="bi bi-box-seam text-muted"></i>
-                  <span><%= order.order_items.sum(:quantity) %> article(s)</span>
-                </div>
-
-                <!-- Total -->
-                <div class="ms-auto d-flex align-items-center gap-2">
-                  <strong class="text-liquid-primary"><%= format_price(order.total_cents) %></strong>
-                </div>
-
-                <!-- Action button -->
-                <%= link_to order_path(order), class: "btn btn-outline-primary btn-sm" do %>
-                  <i class="bi bi-eye me-1"></i>Détails
-                <% end %>
               </div>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
     </div>
   </div>
 </div>

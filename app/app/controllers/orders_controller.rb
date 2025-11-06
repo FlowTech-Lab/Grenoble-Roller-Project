@@ -70,6 +70,34 @@ class OrdersController < ApplicationController
     @order = current_user.orders.includes(order_items: { variant: :product }).find(params[:id])
   end
 
+  def cancel
+    @order = current_user.orders.includes(order_items: :variant).find(params[:id])
+    
+    # Vérifier que la commande peut être annulée
+    unless ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(@order.status.downcase)
+      redirect_to order_path(@order), alert: 'Cette commande ne peut pas être annulée.'
+      return
+    end
+
+    # Transaction pour garantir la cohérence
+    Order.transaction do
+      # Restaurer le stock
+      @order.order_items.each do |item|
+        variant = item.variant
+        if variant
+          variant.increment!(:stock_qty, item.quantity)
+        end
+      end
+
+      # Mettre à jour le statut
+      @order.update!(status: 'cancelled')
+    end
+    
+    redirect_to order_path(@order), notice: 'Commande annulée avec succès. Le stock a été restauré.'
+  rescue => e
+    redirect_to order_path(@order), alert: "Erreur lors de l'annulation : #{e.message}"
+  end
+
   private
 
   def build_cart_items

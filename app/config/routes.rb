@@ -32,5 +32,9 @@ Rails.application.routes.draw do
   end
 
   # Orders (Checkout)
-  resources :orders, only: [:index, :new, :create, :show]
+  resources :orders, only: [:index, :new, :create, :show] do
+    member do
+      patch :cancel
+    end
+  end
 end
