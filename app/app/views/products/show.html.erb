@@ -13,48 +13,36 @@
         <%= simple_format(@product.description) %>
       </div>
 
-      <% if @variants.any? %>
-        <div class="mb-3">
-          <label class="form-label">Sélectionner une variante</label>
-          <select id="variant_id" name="variant_id" class="form-select form-control-liquid">
-            <% @variants.each do |v| %>
-              <% 
-                size_opt = v.option_values.find { |ov| ov.option_type.name == 'size' }
-                color_opt = v.option_values.find { |ov| ov.option_type.name == 'color' }
-                variant_label = [size_opt&.presentation, color_opt&.presentation].compact.join(' - ')
-                variant_label = v.sku if variant_label.blank?
-              %>
-              <option value="<%= v.id %>" data-image="<%= @product.image_url %>">
-                <%= variant_label %> - <%= number_to_currency(v.price_cents.to_i / 100.0, unit: "€") %>
-              </option>
-            <% end %>
-          </select>
-        </div>
-      <% end %>
-
       <div class="d-flex gap-2">
-        <%= form_with url: add_item_cart_path, method: :post, class: "d-flex gap-2", id: "add-to-cart-form" do |f| %>
-          <%= hidden_field_tag :variant_id, @variants.first&.id, id: "selected_variant_id" %>
-          <%= number_field_tag :quantity, 1, min: 1, class: "form-control", style: "max-width: 100px;" %>
-          <button class="btn btn-liquid-primary" type="submit">
-            <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
-          </button>
+        <%= form_with url: add_item_cart_path, method: :post, class: "d-flex flex-column gap-2", id: "add-to-cart-form" do |f| %>
+          <% if @variants.any? %>
+            <div class="mb-2">
+              <label class="form-label">Sélectionner une variante</label>
+              <%= select_tag :variant_id, 
+                  options_for_select(
+                    @variants.map { |v| 
+                      size_opt = v.option_values.find { |ov| ov.option_type.name == 'size' }
+                      color_opt = v.option_values.find { |ov| ov.option_type.name == 'color' }
+                      variant_label = [size_opt&.presentation, color_opt&.presentation].compact.join(' - ')
+                      variant_label = v.sku if variant_label.blank?
+                      [variant_label + " - #{number_to_currency(v.price_cents.to_i / 100.0, unit: "€")}", v.id]
+                    },
+                    @variants.first&.id
+                  ),
+                  { class: "form-select form-control-liquid", required: true } %>
+            </div>
+          <% else %>
+            <%= hidden_field_tag :variant_id, @variants.first&.id %>
+          <% end %>
+          <div class="d-flex gap-2">
+            <%= number_field_tag :quantity, 1, min: 1, class: "form-control", style: "max-width: 100px;" %>
+            <button class="btn btn-liquid-primary" type="submit">
+              <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+            </button>
+          </div>
         <% end %>
         <%= link_to "Voir le panier", cart_path, class: "btn btn-outline-primary" %>
       </div>
-
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          const variantSelect = document.getElementById('variant_id');
-          const selectedVariantInput = document.getElementById('selected_variant_id');
-          
-          if (variantSelect && selectedVariantInput) {
-            variantSelect.addEventListener('change', function() {
-              selectedVariantInput.value = this.value;
-            });
-          }
-        });
-      </script>
     </div>
   </div>
 </div>

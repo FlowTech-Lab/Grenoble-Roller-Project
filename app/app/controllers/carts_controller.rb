@@ -11,7 +11,8 @@ class CartsController < ApplicationController
     quantity = params[:quantity].to_i
     quantity = 1 if quantity <= 0
 
-    session[:cart][variant_id] = (session[:cart][variant_id] || 0) + quantity
+    key = variant_id.to_s
+    session[:cart][key] = (session[:cart][key] || 0) + quantity
     redirect_to cart_path, notice: 'Item added to cart.'
   end
 
@@ -19,17 +20,19 @@ class CartsController < ApplicationController
     variant_id = params.require(:variant_id).to_i
     quantity = params.require(:quantity).to_i
 
+    key = variant_id.to_s
     if quantity <= 0
-      session[:cart].delete(variant_id)
+      session[:cart].delete(key)
     else
-      session[:cart][variant_id] = quantity
+      session[:cart][key] = quantity
     end
     redirect_to cart_path, notice: 'Cart updated.'
   end
 
   def remove_item
     variant_id = params.require(:variant_id).to_i
-    session[:cart].delete(variant_id)
+    key = variant_id.to_s
+    session[:cart].delete(key)
     redirect_to cart_path, notice: 'Item removed.'
   end
 
