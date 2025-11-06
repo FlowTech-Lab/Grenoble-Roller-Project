@@ -1,33 +1,137 @@
-# Grenoble Roller – Events Platform
+# Grenoble Roller – Community Platform
+
+**Repository**: [https://github.com/FlowTech-Lab/Grenoble-Roller-Project](https://github.com/FlowTech-Lab/Grenoble-Roller-Project)
 
 ### Short Description
-Community platform to organize and discover rollerblading outings in Grenoble, managed by verified organizers.
+Community platform for the Grenoble rollerblading association, featuring an e-commerce shop for goodies and future event management capabilities.
 
 ## Overview
-A web app centralizing roller events in Grenoble. Members browse events; verified organizers create and publish outings.
+A Ruby on Rails 8 web application for the Grenoble rollerblading community. Currently implements a complete e-commerce shop with product catalog, shopping cart, and order management. Event management features are planned for future development.
 
 ## Goals
 - Bring the Grenoble roller community together
-- Make event creation and discovery simple
-- Highlight predefined routes (maps)
+- Provide an e-commerce platform for association goodies
+- Enable future event creation and discovery (Phase 2)
+- Highlight predefined routes with maps (Phase 2)
 
-## Roles
-- **User**: browses events, suggests outing ideas
-- **Verified Organizer**: creates and publishes events, manages their details
-- **Admin**: verifies organizers, moderates content
+## Current Status (Phase 1 - E-commerce)
 
-## Key Features
-- Upcoming events list (vertical cards with cover photo)
-- Event details: date/time, duration, location, route, description
-- Member-submitted outing ideas (with validation/moderation)
-- Map with predefined routes (simple display)
-- Small association goodies shop
-- Authentication; only verified organizers can create events
+### ✅ Implemented Features
+- **Authentication & Authorization**
+  - Devise-based user authentication
+  - 7-level role system (USER, REGISTERED, INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
+  - User profiles with personal information
+  - Password reset functionality
 
-## Constraints & Decisions
-- No seat limits on events
-- Cover photos required on events
-- Profiles stay private; users can only edit their own profile
+- **E-commerce Shop**
+  - Product catalog with categories (Rollers, Protections, Accessoires)
+  - Product variants with options (size, color)
+  - Shopping cart functionality
+  - Order management system
+  - Payment integration structure (ready for HelloAsso/Stripe/PayPal)
+  - Stock management
+
+- **Pages**
+  - Homepage
+  - Association information page
+  - Product listing and detail pages
+
+### 🚧 Planned Features (Phase 2)
+- Event creation and management
+- Event listing with calendar view
+- Route maps integration
+- Verified organizer system
+- Member-submitted outing ideas
+
+## Roles & Permissions
+- **USER** (level 10): Basic user, can browse and purchase
+- **REGISTERED** (level 20): Registered member
+- **INITIATION** (level 30): Initiation level member
+- **ORGANIZER** (level 40): Can create and manage events (future)
+- **MODERATOR** (level 50): Can moderate content (future)
+- **ADMIN** (level 60): Full administrative access
+- **SUPERADMIN** (level 70): Highest level access
+
+## Tech Stack
+- **Framework**: Ruby on Rails 8.0.4
+- **Database**: PostgreSQL 16
+- **Authentication**: Devise
+- **Frontend**: Bootstrap 5, Stimulus, Turbo
+- **Containerization**: Docker & Docker Compose
+- **Deployment**: Kamal-ready (Dockerfile included)
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker & Docker Compose
+- Git
+
+### Development Setup
+
+**Option 1: Automated Setup (Recommended)**
+```bash
+# Clone the repository
+git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
+cd Grenoble-Roller-Project
+
+# Run the automated setup script
+./script/setup-docker.sh
+```
+
+**Option 2: Manual Setup**
+```bash
+# Clone the repository
+git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
+cd Grenoble-Roller-Project
+
+# Start Docker containers
+docker compose -f ops/dev/docker-compose.yml up -d
+
+# Run database migrations and seed
+docker exec grenoble-roller-dev bin/rails db:migrate
+docker exec grenoble-roller-dev bin/rails db:seed
+```
+
+**Access the application**
+- Application: http://localhost:3000
+- Database: localhost:5434 (user: postgres, password: postgres)
+
+### Default Test Accounts
+- **Super Admin**: `T3rorX@hotmail.fr` / `T3rorX123`
+- **Admin**: `admin@roller.com` / `admin123`
+- **Test Users**: `client1@example.com` to `client5@example.com` / `password123`
+
+## 📁 Project Structure
+
+```
+├── app/
+│   ├── controllers/     # Application controllers
+│   ├── models/          # ActiveRecord models
+│   ├── views/           # ERB templates
+│   └── assets/          # CSS, JS, images
+├── config/
+│   ├── credentials.yml.enc  # Encrypted secrets (requires master.key)
+│   └── environments/   # Environment configurations
+├── db/
+│   ├── migrate/         # Database migrations
+│   ├── seeds.rb         # Seed data
+│   └── schema.rb        # Current database schema
+├── docs/                # Project documentation
+├── ops/                 # Docker Compose configurations
+│   ├── dev/            # Development environment
+│   ├── staging/        # Staging environment
+│   └── production/      # Production environment
+└── ressources/          # Design resources, guides
+```
+
+## 🔐 Security & Credentials
+
+The project uses Rails encrypted credentials. The `config/master.key` file is required to decrypt `config/credentials.yml.enc`.
+
+**Important**: 
+- `config/master.key` is in `.gitignore` (never commit it)
+- `config/credentials.yml.enc` can be committed (it's encrypted)
+- If you need to regenerate credentials: `bin/rails credentials:edit`
 
 ## 🎯 Méthodologie Shape Up
 
@@ -45,8 +149,42 @@ A web app centralizing roller events in Grenoble. Members browse events; verifie
 - ❌ Internationalisation → MVP français uniquement
 - ❌ API publique → API interne uniquement
 
-## Future Enhancements (Backlog)
-- Online payments for membership, goodies, paid events
-- Categories/tags, filters, search
-- Email or push notifications
-- More advanced interactive maps (GPX tracks, stats)
+## 📚 Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+- Architecture and design decisions
+- Rails conventions and setup guides
+- Testing strategies
+- Operations runbooks
+- Security and privacy guidelines
+
+See `docs/README.md` for the complete documentation index.
+
+## 🗄️ Database Schema
+
+### Core Models
+- **Users**: Authentication and user profiles (Devise)
+- **Roles**: 7-level permission system
+- **Products**: Product catalog with categories
+- **ProductVariants**: Product variations with options (size, color)
+- **Orders**: Customer orders
+- **OrderItems**: Order line items
+- **Payments**: Payment records (multi-provider ready)
+
+See `db/schema.rb` for the complete database structure.
+
+## 🐳 Docker Environments
+
+Three Docker Compose configurations are available:
+
+- **Development** (`ops/dev/`): Port 3000, hot-reload enabled
+- **Staging** (`ops/staging/`): Port 3001, production-like
+- **Production** (`ops/production/`): Port 3002, optimized build
+
+## 🔄 Future Enhancements (Backlog)
+- Event creation and management system
+- Route maps with GPX integration
+- Email notifications
+- Advanced search and filtering
+- Payment gateway integration (HelloAsso, Stripe, PayPal)
+- Social features (sharing, comments)

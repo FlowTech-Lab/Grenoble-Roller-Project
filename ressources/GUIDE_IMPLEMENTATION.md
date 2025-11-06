@@ -3,6 +3,27 @@
 
 ---
 
+## 📊 ÉTAT ACTUEL DU PROJET (Nov 2025)
+
+### ✅ Phase 1 - E-commerce (TERMINÉE)
+- ✅ Rails 8.0.4 configuré avec Docker (dev/staging/prod)
+- ✅ Authentification Devise + 7 niveaux de rôles (USER à SUPERADMIN)
+- ✅ E-commerce complet fonctionnel (catalogue, panier, checkout, commandes)
+- ✅ Base de données PostgreSQL 16 avec 13 migrations appliquées
+- ✅ Seeds complets (rôles, utilisateurs, produits, commandes, paiements)
+- ✅ Documentation complète mise à jour
+
+### 🔜 Phase 2 - Événements (À VENIR)
+- 🔜 CRUD événements
+- 🔜 Inscriptions aux événements
+- 🔜 Calendrier interactif
+- 🔜 Upload photos (Active Storage)
+- 🔜 Permissions fines (Pundit)
+- 🔜 Interface admin
+- 🔜 Notifications email
+
+---
+
 ## 🎯 MÉTHODOLOGIE SHAPE UP
 
 ### Principe Fondamental
@@ -626,13 +647,20 @@ end
 
 ## 🎯 PROCHAINES ÉTAPES
 
+### ✅ Phase 1 - E-commerce (TERMINÉE)
 1. **✅ Validation du fil conducteur**
-2. **🔄 Création du repository GitHub**
-3. **🚀 Initialisation du projet Rails 8**
-4. **📋 Configuration du tableau Trello**
-5. **🧪 Mise en place des tests**
-6. **🔧 Configuration CI/CD**
-7. **🎨 Développement des composants Bootstrap**
+2. **✅ Création du repository GitHub**
+3. **✅ Initialisation du projet Rails 8**
+4. **✅ Configuration du tableau Trello**
+5. **✅ E-commerce complet**
+6. **✅ Documentation complète**
+
+### 🔜 Phase 2 - Événements (À VENIR)
+1. **🔜 Développement module événements**
+2. **🔜 Mise en place des tests (RSpec + Capybara)**
+3. **🔜 Configuration CI/CD**
+4. **🔜 Développement des composants Bootstrap pour événements**
+5. **🔜 Déploiement production finalisé**
 
 ---
 
