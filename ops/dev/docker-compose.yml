@@ -1,0 +1,52 @@
+# --- ops/dev/docker-compose.yml ---
+# Usage: docker compose -f ops/dev/docker-compose.yml up
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.dev
+    container_name: grenoble-roller-dev
+    # env_file:
+    #   - ../../.env  # Uncomment if .env file exists
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_development
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: grenoble_roller_development
+      RAILS_ENV: development
+    ports:
+      - "3000:3000"
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../../:/rails
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres:16-alpine
+    container_name: grenoble-roller-db-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: grenoble_roller_development
+    volumes:
+      - grenoble-roller-dev-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"  # Port dédié pour accès depuis l'hôte
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  grenoble-roller-dev-data:

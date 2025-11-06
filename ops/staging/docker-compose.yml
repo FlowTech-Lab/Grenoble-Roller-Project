@@ -1,0 +1,50 @@
+# --- ops/staging/docker-compose.yml ---
+# Usage: docker compose -f ops/staging/docker-compose.yml up -d
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: grenoble-roller-staging
+    env_file:
+      - ../../.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_production
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: grenoble_roller_production
+      RAILS_ENV: production
+    ports:
+      - "3001:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - grenoble-roller-staging-data:/rails/db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres:16-alpine
+    container_name: grenoble-roller-db-staging
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: grenoble_roller_production
+    volumes:
+      - grenoble-roller-staging-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  grenoble-roller-staging-data:
+  grenoble-roller-staging-db-data:
