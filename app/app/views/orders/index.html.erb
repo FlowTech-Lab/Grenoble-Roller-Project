@@ -1,39 +1,73 @@
-<div class="container">
-  <h1 class="mb-4"><i class="bi bi-box-seam me-2"></i>Mes commandes</h1>
-
-  <% if @orders.empty? %>
-    <div class="alert alert-liquid-info">Vous n'avez pas encore de commande.</div>
-    <%= link_to "Aller à la boutique", shop_path, class: "btn btn-liquid-primary" %>
-  <% else %>
-    <div class="table-responsive">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Date</th>
-            <th>Articles</th>
-            <th>Statut</th>
-            <th class="text-end">Total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @orders.each do |order| %>
-            <tr>
-              <td>#<%= order.id %></td>
-              <td><%= l(order.created_at, format: :short) %></td>
-              <td><%= order.order_items.sum(:quantity) %></td>
-              <td><span class="badge badge-liquid-primary"><%= order.status %></span></td>
-              <td class="text-end"><%= number_to_currency(order.total_cents / 100.0, unit: "€") %></td>
-              <td class="text-end">
-                <%= link_to "Détails", order_path(order), class: "btn btn-outline-primary btn-sm" %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h1 class="display-5 text-liquid-primary-white mb-2">
+        <i class="bi bi-box-seam me-2"></i>Mes commandes
+      </h1>
+      <p class="text-muted">Consultez l'historique de vos commandes</p>
     </div>
-  <% end %>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-5 mx-auto">
+      <% if @orders.empty? %>
+        <!-- Empty state -->
+        <div class="card card-liquid rounded-liquid shadow-liquid">
+          <div class="card-body p-5 text-center">
+            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <h3 class="h5 text-muted mt-3 mb-3">Vous n'avez pas encore de commande</h3>
+            <p class="text-muted mb-4">Découvrez notre boutique et trouvez des produits qui vous plaisent !</p>
+            <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
+              <i class="bi bi-bag me-2"></i>Aller à la boutique
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <!-- Orders list -->
+        <% @orders.each do |order| %>
+          <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+            <div class="card-body p-4">
+              <div class="d-flex flex-wrap align-items-center gap-3">
+                <!-- Order icon and number -->
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-receipt-cutoff text-liquid-primary" style="font-size: 1.5rem;"></i>
+                  <div>
+                    <span class="text-muted small">Commande</span>
+                    <strong class="d-block">#<%= order.id %></strong>
+                  </div>
+                </div>
+
+                <!-- Pending icon -->
+                <% if order.status.downcase == 'pending' || order.status.downcase == 'en attente' %>
+                  <i class="bi bi-hourglass-split text-warning"></i>
+                <% end %>
+
+                <!-- Date -->
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-calendar text-muted"></i>
+                  <span class="text-muted"><%= l(order.created_at, format: :short) %></span>
+                </div>
+
+                <!-- Articles count -->
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-box-seam text-muted"></i>
+                  <span><%= order.order_items.sum(:quantity) %> article(s)</span>
+                </div>
+
+                <!-- Total -->
+                <div class="ms-auto d-flex align-items-center gap-2">
+                  <strong class="text-liquid-primary"><%= format_price(order.total_cents) %></strong>
+                </div>
+
+                <!-- Action button -->
+                <%= link_to order_path(order), class: "btn btn-outline-primary btn-sm" do %>
+                  <i class="bi bi-eye me-1"></i>Détails
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 </div>
-
-
