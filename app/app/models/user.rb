@@ -14,6 +14,7 @@ class User < ApplicationRecord
   private
   
   def set_default_role
-    self.role ||= Role.find_by(name: 'user')
+    # Priorité au code stable, fallback sur un libellé courant
+    self.role ||= Role.find_by(code: 'USER') || Role.find_by(name: 'Utilisateur') || Role.first
   end
 end

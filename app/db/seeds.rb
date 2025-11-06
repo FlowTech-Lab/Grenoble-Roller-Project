@@ -17,9 +17,25 @@ Role.destroy_all
 
 puts "🌪️ Seed supprimé !"
 
-# 🎭 Création des rôles
-admin_role = Role.create!(name: "admin")
-user_role  = Role.create!(name: "user")
+# 🎭 Création des rôles (code/level conformes au schéma)
+roles_seed = [
+  { code: "USER",        name: "Utilisateur", level: 10 },
+  { code: "REGISTERED",  name: "Inscrit",     level: 20 },
+  { code: "INITIATION",  name: "Initiation",  level: 30 },
+  { code: "ORGANIZER",   name: "Organisateur",level: 40 },
+  { code: "MODERATOR",   name: "Modérateur",  level: 50 },
+  { code: "ADMIN",       name: "Admin",       level: 60 },
+  { code: "SUPERADMIN",  name: "Super Admin", level: 70 }
+]
+
+roles_seed.each do |attrs|
+  Role.create!(attrs)
+end
+
+admin_role = Role.find_by!(code: "ADMIN")
+user_role  = Role.find_by!(code: "USER")
+superadmin_role = Role.find_by!(code: "SUPERADMIN")
+
 puts "✅ #{Role.count} rôles créés avec succès !"
 
 # 👑 Admin principal
@@ -35,31 +51,18 @@ admin = User.create!(
 )
 puts "👑 Admin créé !"
 
-# 👩‍💻 Johanna
-User.create!(
-  email: "johannadelfieux@gmail.com",
-  password: "jobee123",
-  password_confirmation: "jobee123",
-  first_name: "Johanna",
-  last_name: "Delfieux",
-  bio: "Développeuse fullstack passionnée par les nouvelles technologies",
-  phone: "0686699836",
-  role: user_role
-)
-puts "👩‍💻 Utilisatrice Johanna créée !"
-
-# 👨‍💻 Florian
-User.create!(
-  email: "T3rorX@gmail.com",
+# 👨‍💻 Florian (SUPERADMIN)
+florian = User.create!(
+  email: "T3rorX@hotmail.fr",
   password: "T3rorX123",
   password_confirmation: "T3rorX123",
   first_name: "Florian",
   last_name: "Astier",
   bio: "Développeur fullstack passionné par les nouvelles technologies",
   phone: "0652556832",
-  role: admin_role
+  role: superadmin_role
 )
-puts "👨‍💻 Utilisateur Florian créé !"
+puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 
 # 👥 Utilisateurs de test
 5.times do |i|
