@@ -15,28 +15,55 @@ class OrdersController < ApplicationController
     cart_items = build_cart_items
     return redirect_to cart_path, alert: 'Votre panier est vide.' if cart_items.empty?
 
-    total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
-
-    order = Order.create!(
-      user: current_user,
-      status: 'pending',
-      total_cents: total_cents,
-      currency: 'EUR'
-    )
-
+    # Vérifier le stock avant de créer la commande
+    stock_errors = []
     cart_items.each do |ci|
-      OrderItem.create!(
-        order: order,
-        variant_id: ci[:variant].id,
-        quantity: ci[:quantity],
-        unit_price_cents: ci[:unit_price_cents]
-      )
+      variant = ci[:variant]
+      requested_qty = ci[:quantity]
+      available_stock = variant.stock_qty.to_i
+      
+      if !variant.is_active || !variant.product&.is_active
+        stock_errors << "#{variant.product.name} (#{variant.sku}) n'est plus disponible"
+      elsif available_stock < requested_qty
+        stock_errors << "#{variant.product.name} (#{variant.sku}) : stock insuffisant (#{requested_qty} demandé, #{available_stock} disponible)"
+      end
     end
 
-    session[:cart] = {}
-    redirect_to order_path(order), notice: 'Commande créée avec succès.'
+    if stock_errors.any?
+      return redirect_to cart_path, alert: "Stock insuffisant : #{stock_errors.join('; ')}"
+    end
+
+    total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
+
+    # Transaction pour garantir la cohérence
+    Order.transaction do
+      order = Order.create!(
+        user: current_user,
+        status: 'pending',
+        total_cents: total_cents,
+        currency: 'EUR'
+      )
+
+      cart_items.each do |ci|
+        variant = ci[:variant]
+        OrderItem.create!(
+          order: order,
+          variant_id: variant.id,
+          quantity: ci[:quantity],
+          unit_price_cents: ci[:unit_price_cents]
+        )
+        
+        # Déduire le stock
+        variant.decrement!(:stock_qty, ci[:quantity])
+      end
+
+      session[:cart] = {}
+      redirect_to order_path(order), notice: 'Commande créée avec succès.'
+    end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to cart_path, alert: "Erreur lors de la création de la commande: #{e.message}"
+  rescue => e
+    redirect_to cart_path, alert: "Erreur : #{e.message}"
   end
 
   def show

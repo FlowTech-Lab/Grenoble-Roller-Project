@@ -18,24 +18,25 @@
           <% if @variants.any? %>
             <div class="mb-2">
               <label class="form-label">Sélectionner une variante</label>
-              <%= select_tag :variant_id, 
-                  options_for_select(
-                    @variants.map { |v| 
-                      size_opt = v.option_values.find { |ov| ov.option_type.name == 'size' }
-                      color_opt = v.option_values.find { |ov| ov.option_type.name == 'color' }
-                      variant_label = [size_opt&.presentation, color_opt&.presentation].compact.join(' - ')
-                      variant_label = v.sku if variant_label.blank?
-                      [variant_label + " - #{number_to_currency(v.price_cents.to_i / 100.0, unit: "€")}", v.id]
-                    },
-                    @variants.first&.id
-                  ),
-                  { class: "form-select form-control-liquid", required: true } %>
+              <select id="variant_id" name="variant_id" class="form-select form-control-liquid" required>
+                <% @variants.each_with_index do |v, idx| %>
+                  <% 
+                    size_opt = v.option_values.find { |ov| ov.option_type.name == 'size' }
+                    color_opt = v.option_values.find { |ov| ov.option_type.name == 'color' }
+                    variant_label = [size_opt&.presentation, color_opt&.presentation].compact.join(' - ')
+                    variant_label = v.sku if variant_label.blank?
+                    display = variant_label + " - #{number_to_currency(v.price_cents.to_i / 100.0, unit: "€")}"
+                  %>
+                  <option value="<%= v.id %>" data-stock="<%= v.stock_qty.to_i %>" <%= 'selected' if idx == 0 %>><%= display %></option>
+                <% end %>
+              </select>
+              <small id="stock_hint" class="text-muted d-block mt-1">Stock: <%= @variants.first&.stock_qty.to_i %></small>
             </div>
           <% else %>
             <%= hidden_field_tag :variant_id, @variants.first&.id %>
           <% end %>
           <div class="d-flex gap-2">
-            <%= number_field_tag :quantity, 1, min: 1, class: "form-control", style: "max-width: 100px;" %>
+            <%= number_field_tag :quantity, 1, min: 1, max: (@variants.first&.stock_qty.to_i if @variants.any?), class: "form-control", id: "quantity_field", style: "max-width: 100px;" %>
             <button class="btn btn-liquid-primary" type="submit">
               <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
             </button>
@@ -43,6 +44,44 @@
         <% end %>
         <%= link_to "Voir le panier", cart_path, class: "btn btn-outline-primary" %>
       </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const variantSelect = document.getElementById('variant_id');
+          const qtyField = document.getElementById('quantity_field');
+          const stockHint = document.getElementById('stock_hint');
+          const form = document.getElementById('add-to-cart-form');
+
+          function syncMaxFromVariant() {
+            if (!variantSelect) return;
+            const opt = variantSelect.options[variantSelect.selectedIndex];
+            const stock = parseInt(opt.getAttribute('data-stock') || '0', 10);
+            if (qtyField) {
+              qtyField.max = stock;
+              const current = parseInt(qtyField.value || '1', 10);
+              if (stock > 0 && current > stock) qtyField.value = stock;
+              if (stock === 0) qtyField.value = 1;
+            }
+            if (stockHint) { stockHint.textContent = 'Stock: ' + stock; }
+          }
+
+          if (variantSelect) {
+            variantSelect.addEventListener('change', syncMaxFromVariant);
+            syncMaxFromVariant();
+          }
+
+          if (form && qtyField) {
+            form.addEventListener('submit', function(e) {
+              const max = parseInt(qtyField.max || '0', 10);
+              const val = parseInt(qtyField.value || '1', 10);
+              if (max > 0 && val > max) {
+                e.preventDefault();
+                qtyField.value = max;
+                alert('Quantité ajustée au stock disponible (' + max + ').');
+              }
+            });
+          }
+        });
+      </script>
     </div>
   </div>
 </div>
