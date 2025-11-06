@@ -30,7 +30,7 @@
           <div class="dropdown">
             <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi bi-person-circle me-2"></i>
-              <%= current_user.first_name %> <%= current_user.last_name %>
+              <%= current_user.first_name.presence || current_user.email %>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
