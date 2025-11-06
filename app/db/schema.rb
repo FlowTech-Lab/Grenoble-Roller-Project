@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_04_140913) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_06_121500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,6 +103,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_140913) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "code", limit: 50, null: false
+    t.integer "level", limit: 2, null: false
+    t.index ["code"], name: "index_roles_on_code", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -137,10 +140,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_04_140913) do
 
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "product_variants", column: "variant_id"
   add_foreign_key "orders", "payments"
   add_foreign_key "orders", "users"
   add_foreign_key "product_variants", "products"
   add_foreign_key "products", "product_categories", column: "category_id"
+  add_foreign_key "users", "roles"
   add_foreign_key "variant_option_values", "option_values"
   add_foreign_key "variant_option_values", "product_variants", column: "variant_id"
 end

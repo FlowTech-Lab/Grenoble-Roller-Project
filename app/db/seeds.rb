@@ -17,9 +17,25 @@ Role.destroy_all
 
 puts "🌪️ Seed supprimé !"
 
-# 🎭 Création des rôles
-admin_role = Role.create!(name: "admin")
-user_role  = Role.create!(name: "user")
+# 🎭 Création des rôles (code/level conformes au schéma)
+roles_seed = [
+  { code: "USER",        name: "Utilisateur", level: 10 },
+  { code: "REGISTERED",  name: "Inscrit",     level: 20 },
+  { code: "INITIATION",  name: "Initiation",  level: 30 },
+  { code: "ORGANIZER",   name: "Organisateur",level: 40 },
+  { code: "MODERATOR",   name: "Modérateur",  level: 50 },
+  { code: "ADMIN",       name: "Admin",       level: 60 },
+  { code: "SUPERADMIN",  name: "Super Admin", level: 70 }
+]
+
+roles_seed.each do |attrs|
+  Role.create!(attrs)
+end
+
+admin_role = Role.find_by!(code: "ADMIN")
+user_role  = Role.find_by!(code: "USER")
+superadmin_role = Role.find_by!(code: "SUPERADMIN")
+
 puts "✅ #{Role.count} rôles créés avec succès !"
 
 # 👑 Admin principal
@@ -35,31 +51,18 @@ admin = User.create!(
 )
 puts "👑 Admin créé !"
 
-# 👩‍💻 Johanna
-User.create!(
-  email: "johannadelfieux@gmail.com",
-  password: "jobee123",
-  password_confirmation: "jobee123",
-  first_name: "Johanna",
-  last_name: "Delfieux",
-  bio: "Développeuse fullstack passionnée par les nouvelles technologies",
-  phone: "0686699836",
-  role: user_role
-)
-puts "👩‍💻 Utilisatrice Johanna créée !"
-
-# 👨‍💻 Florian
-User.create!(
-  email: "T3rorX@gmail.com",
+# 👨‍💻 Florian (SUPERADMIN)
+florian = User.create!(
+  email: "T3rorX@hotmail.fr",
   password: "T3rorX123",
   password_confirmation: "T3rorX123",
   first_name: "Florian",
   last_name: "Astier",
   bio: "Développeur fullstack passionné par les nouvelles technologies",
   phone: "0652556832",
-  role: admin_role
+  role: superadmin_role
 )
-puts "👨‍💻 Utilisateur Florian créé !"
+puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 
 # 👥 Utilisateurs de test
 5.times do |i|
@@ -173,32 +176,7 @@ else
   puts "✅ #{payments.size} commandes créées avec succès."
 end
 
-# 🛒 Création des OrderItems
-puts "Création des articles de commande..."
-
-orders = Order.all
-
-if defined?(Variant) && Variant.any?
-  variant_ids = Variant.ids
-else
-  variant_ids = (1..10).to_a
-end
-
-orders.each do |order|
-  rand(1..3).times do
-    unit_price = rand(500..5000)
-    quantity = rand(1..3)
-    OrderItem.create!(
-      order: order,
-      variant_id: variant_ids.sample,
-      quantity: quantity,
-      unit_price_cents: unit_price,
-      created_at: order.created_at + rand(0..3).hours
-    )
-  end
-end
-
-puts "✅ #{OrderItem.count} articles de commande créés avec succès."
+# 🛒 Création des OrderItems (APRÈS la création des variants)
 #Création des catégories - Lucas
 categories = [
   { name: "Rollers", slug: "rollers" },
@@ -339,6 +317,32 @@ ProductVariant.all.each do |variant|
     size_value = sizes.sample
     VariantOptionValue.create!(variant:, option_value: size_value)
   end
+end
+
+# 🛒 Création des OrderItems (APRÈS la création des variants)
+puts "Création des articles de commande..."
+
+orders = Order.all
+variant_ids = ProductVariant.ids
+
+if variant_ids.empty?
+  puts "⚠️ Aucun variant trouvé, les OrderItems ne seront pas créés."
+else
+  orders.each do |order|
+    rand(1..3).times do
+      unit_price = rand(500..5000)
+      quantity = rand(1..3)
+      OrderItem.create!(
+        order: order,
+        variant_id: variant_ids.sample,
+        quantity: quantity,
+        unit_price_cents: unit_price,
+        created_at: order.created_at + rand(0..3).hours
+      )
+    end
+  end
+
+  puts "✅ #{OrderItem.count} articles de commande créés avec succès."
 end
 
 puts "🌱 Seed terminé avec succès !"
