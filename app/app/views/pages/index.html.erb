@@ -19,10 +19,14 @@
                             Découvrir les événements
                         </a>
                         <% if !user_signed_in? %>
-                        <a href="#" class="btn btn-outline-light btn-lg">
+                        <%= link_to new_user_session_path, class: "btn btn-outline-light btn-lg" do %>
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Connexion
+                        <% end %>
+                        <%= link_to new_user_registration_path, class: "btn btn-outline-light btn-lg" do %>
                             <i class="bi bi-person-plus me-2"></i>
                             S'inscrire
-                        </a>
+                        <% end %>
                         <% end %>
                     </div>
                 </div>
