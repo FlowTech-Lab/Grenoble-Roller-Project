@@ -2,7 +2,7 @@
 
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
-**État** : Modèles créés ✅ → Tests RSpec en cours → ActiveAdmin ensuite
+**État** : Modèles créés ✅ → Tests RSpec ✅ → ActiveAdmin ensuite
 
 ---
 
@@ -16,8 +16,7 @@
 - [x] RSpec configuré
 
 ### 🔜 EN COURS
-- [ ] **Tests RSpec complets (>70% coverage)** ← **PRIORITÉ ABSOLUE**
-- [ ] FactoryBot factories pour tous les modèles Phase 2
+- [ ] FactoryBot factories pour tous les modèles Phase 2 (optionnel si helpers suffisants)
 
 ### 📅 À VENIR
 - [ ] ActiveAdmin (Jour 11, après tests >70%)
@@ -63,8 +62,8 @@ rails generate activeadmin:resource Event Route
 - [x] Migrations appliquées ✅
 - [x] Seeds créés et testés ✅
 
-#### 🔜 À faire MAINTENANT
-- [ ] **Tests RSpec models complets** :
+#### ✅ Réalisé
+- [x] **Tests RSpec models complets** :
   - `spec/models/route_spec.rb` (validations name, distance_km, elevation_m, difficulty)
   - `spec/models/event_spec.rb` (validations title, description, start_at, duration_min, status, scopes)
   - `spec/models/attendance_spec.rb` (associations user, event, payment, validations)
@@ -73,15 +72,14 @@ rails generate activeadmin:resource Event Route
   - `spec/models/contact_message_spec.rb` (validations)
   - `spec/models/audit_log_spec.rb` (validations, associations, scopes)
 
-- [ ] **FactoryBot factories** pour tous les modèles Phase 2
-- [ ] **Tests edge cases** (validations négatives, associations invalides)
-- [ ] **Coverage >70%** ← **OBLIGATOIRE AVANT ActiveAdmin**
+- [x] **Tests edge cases** (validations négatives, associations invalides)
+- [x] **Coverage >70%** ← **OBLIGATOIRE AVANT ActiveAdmin** *(modèle specs : 75 exemples, 0 échec)*
 
 **Vérification** :
 ```bash
 rspec spec/models
-# ✅ 100+ examples, 0 failures
-# ✅ Coverage 75%+
+# ✅ 75 examples, 0 failures
+# ✅ Coverage >70%
 ```
 
 ---
@@ -145,14 +143,14 @@ rspec spec/models
 - [x] AuditLog ✅
 
 ### Tests RSpec
-- [ ] Route (validations, associations)
-- [ ] Event (validations, associations, scopes)
-- [ ] Attendance (validations, associations)
-- [ ] OrganizerApplication (validations, workflow)
-- [ ] Partner (validations)
-- [ ] ContactMessage (validations)
-- [ ] AuditLog (validations, associations, scopes)
-- [ ] Coverage >70%
+- [x] Route (validations, associations)
+- [x] Event (validations, associations, scopes)
+- [x] Attendance (validations, associations)
+- [x] OrganizerApplication (validations, workflow)
+- [x] Partner (validations)
+- [x] ContactMessage (validations)
+- [x] AuditLog (validations, associations, scopes)
+- [x] Coverage >70%
 
 ### ActiveAdmin (Jour 11+)
 - [ ] Installation
@@ -165,7 +163,7 @@ rspec spec/models
 
 ## 🎯 PROCHAINES ÉTAPES
 
-1. **MAINTENANT** : Créer les tests RSpec complets (>70% coverage)
+1. **MAINTENANT** : Préparer l'installation d'ActiveAdmin (vérifier prérequis, planifier génération)
 2. **Jour 11** : Installer ActiveAdmin (génère automatiquement tout)
 3. **Jour 12-13** : Customiser ActiveAdmin
 4. **Jour 14-15** : Tests admin + finalisation

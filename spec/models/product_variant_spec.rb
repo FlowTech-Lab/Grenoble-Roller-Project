@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe ProductVariant, type: :model do
-  let!(:category) { ProductCategory.create!(name: 'Accessoires', slug: 'accessoires') }
-  let!(:product) { Product.create!(category: category, name: 'T-shirt', slug: 'tshirt', price_cents: 1900, currency: 'EUR', stock_qty: 10, is_active: true, image_url: 'https://example.org/tshirt.jpg') }
+  let!(:category) { ProductCategory.create!(name: 'Accessoires', slug: "accessoires-#{SecureRandom.hex(3)}") }
+  let!(:product) { Product.create!(category: category, name: 'T-shirt', slug: "tshirt-#{SecureRandom.hex(3)}", price_cents: 1900, currency: 'EUR', stock_qty: 10, is_active: true, image_url: 'https://example.org/tshirt.jpg') }
 
   def build_variant(attrs = {})
     defaults = {
@@ -20,12 +20,12 @@ RSpec.describe ProductVariant, type: :model do
     expect(build_variant).to be_valid
   end
 
-  it 'requires sku, price_cents and currency' do
+  it 'requires sku and price_cents (currency defaults to EUR)' do
     v = ProductVariant.new
     expect(v).to be_invalid
     expect(v.errors[:sku]).to be_present
     expect(v.errors[:price_cents]).to be_present
-    expect(v.errors[:currency]).to be_present
+    expect(v.currency).to eq('EUR')
   end
 
   it 'enforces sku uniqueness' do

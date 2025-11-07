@@ -603,7 +603,7 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 
 **Résumé rapide** :
 - ✅ **Jour 1-2** : Modèles et migrations Phase 2 créés et appliqués
-- 🔜 **Jour 5-10** : Tests RSpec complets (>70% coverage) - **PRIORITÉ ABSOLUE**
+- ✅ **Jour 5-10** : Tests RSpec complets (>70% coverage) réalisés
 - 🔜 **Jour 11** : Installation ActiveAdmin (génère automatiquement contrôleurs/vues/routes)
 - 🔜 **Jour 12-13** : Customisation ActiveAdmin
 - 🔜 **Jour 14-15** : Tests admin + finalisation
@@ -630,7 +630,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 5. ✅ Modèles et migrations Phase 2 créés et appliqués
 6. ✅ Seeds Phase 2 créés et testés
 7. ✅ RSpec configuré
-8. 🔜 **Tests RSpec Phase 2 complets (coverage >70%)** ← **PRIORITÉ ABSOLUE**
+8. ✅ Tests RSpec Phase 2 complets (coverage >70%)
 9. 🔜 ActiveAdmin (Jour 11, après tests >70%)
 10. 🔜 Customisation ActiveAdmin (Jour 12-13)
 11. 🔜 Tests admin + permissions (Jour 14-15)
@@ -703,7 +703,8 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 
 #### Tests & Qualité ⚠️ **CORRIGÉ - TDD dès le début**
 - [✅] RSpec configuré ✅
-- [🔜] **Tests TDD dès Week 1-2** (RSpec + Capybara, coverage >70% maintenu)
+- [✅] Model specs Phase 2 >70% coverage (à maintenir)
+- [🔜] Tests d'intégration (Capybara) à ajouter
 - [🔜] Tests de performance (Week 3)
 - [🔜] Audit sécurité complet (Brakeman) - Week 3
 
