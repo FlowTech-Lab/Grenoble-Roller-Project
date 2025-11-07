@@ -10,24 +10,6 @@ This guide explains how to set up the Grenoble Roller project for local developm
 
 ## Quick Start
 
-### Option 1: Automated Setup (Recommended)
-
-After cloning the repository, you can use the automated setup script:
-
-```bash
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
-cd Grenoble-Roller-Project
-./script/setup-docker.sh
-```
-
-This script will:
-- Check prerequisites (Docker, Docker Compose, etc.)
-- Build and start containers
-- Run database migrations
-- Optionally seed the database
-
-### Option 2: Manual Setup
-
 ### 1. Clone the Repository
 
 ```bash
