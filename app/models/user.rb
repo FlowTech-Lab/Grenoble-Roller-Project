@@ -6,6 +6,19 @@ class User < ApplicationRecord
   # Relation avec Role
   belongs_to :role
   has_many :orders, dependent: :nullify
+  
+  # Phase 2 - Events associations
+  has_many :created_events, class_name: 'Event', foreign_key: 'creator_user_id', dependent: :restrict_with_error
+  has_many :attendances, dependent: :destroy
+  has_many :events, through: :attendances
+  
+  # Phase 2 - Organizer applications
+  has_many :organizer_applications, dependent: :destroy
+  has_many :reviewed_applications, class_name: 'OrganizerApplication', foreign_key: 'reviewed_by_id', dependent: :nullify
+  
+  # Phase 2 - Audit logs
+  has_many :audit_logs, class_name: 'AuditLog', foreign_key: 'actor_user_id', dependent: :nullify
+  
   before_validation :set_default_role, on: :create
   
   # Validations: prénom obligatoire, nom optionnel
