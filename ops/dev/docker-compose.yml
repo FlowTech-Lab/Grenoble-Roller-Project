@@ -31,6 +31,20 @@ services:
       timeout: 5s
       retries: 5
 
+  css-watcher:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.dev
+    container_name: grenoble-roller-css-watcher
+    environment:
+      RAILS_ENV: development
+    volumes:
+      - ../../:/rails
+    command: ["npm", "run", "watch:css"]
+    depends_on:
+      - web
+    restart: unless-stopped
+
   db:
     image: postgres:16-alpine
     container_name: grenoble-roller-db-dev

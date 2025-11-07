@@ -37,6 +37,7 @@ docker compose -f ops/dev/docker-compose.yml up -d
 This will:
 - Build the Rails application container
 - Start PostgreSQL database
+- Start CSS watcher for automatic CSS recompilation
 - Expose the app on http://localhost:3000
 - Expose the database on localhost:5434
 
@@ -107,11 +108,40 @@ docker compose -f ops/dev/docker-compose.yml down
 docker exec grenoble-roller-dev bin/rails db:reset
 ```
 
+## CSS Auto-Reload
+
+The development environment includes automatic CSS recompilation:
+
+- **CSS Watcher**: A separate container (`grenoble-roller-css-watcher`) watches for changes in `app/assets/stylesheets/` and automatically recompiles CSS
+- **Auto-rebuild on startup**: CSS is automatically rebuilt when containers start, ensuring latest changes after `git pull`
+- **No manual rebuild needed**: Just save your SCSS files and refresh the browser
+
+### After Git Pull
+
+When you pull changes that include CSS modifications:
+
+1. The CSS will be automatically rebuilt on container startup
+2. The CSS watcher will continue monitoring for new changes
+3. No need to manually run `npm run build:css`
+
+### Manual CSS Rebuild
+
+If needed, you can manually rebuild CSS:
+
+```bash
+# Rebuild CSS once
+docker exec grenoble-roller-dev npm run build:css
+
+# Check CSS watcher logs
+docker logs -f grenoble-roller-css-watcher
+```
+
 ## Docker Compose Configuration
 
 The development environment is configured in `ops/dev/docker-compose.yml`:
 
 - **Web container**: `grenoble-roller-dev` (port 3000)
+- **CSS Watcher container**: `grenoble-roller-css-watcher` (watches SCSS files)
 - **Database container**: `grenoble-roller-db-dev` (port 5434)
 - **Volumes**: Code is mounted for hot-reload
 - **Health checks**: Automatic container health monitoring

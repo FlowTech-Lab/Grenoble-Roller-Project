@@ -1,118 +1,37 @@
 <!-- ========================================
-     HERO SECTION - 3 COLONNES ÉQUILIBRÉES
-     Image plus grande, texte mieux espacé
-     ======================================== -->
-<section class="py-5 py-lg-7">
-  <div class="container">
-    <div class="row align-items-center g-4 g-lg-5">
-      
-      <!-- Colonne 1 : Texte gauche (25%) -->
-      <div class="col-12 col-lg-3">
-        <div class="element-content text-center text-lg-end">
-          <span class="element-badge badge badge-liquid-primary mb-3 d-inline-block">
-            <i class="bi bi-heart me-1"></i>
-            Notre histoire
-          </span>
-          <h1 class="element-title mb-3 display-5 fw-bold lh-tight">
-            Grenoble<br>Roller
-          </h1>
-          <p class="element-text mb-4">
-            Une communauté passionnée<br>
-            <strong>depuis + de 15 ans</strong>
-          </p>
-          
-          <!-- Stats rapides -->
-          <div class="d-flex flex-column gap-2 align-items-center align-items-lg-end">
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-calendar-event text-liquid-primary fs-5"></i>
-              <div class="text-start">
-                <div class="fw-bold text-liquid-primary">50+</div>
-                <div class="small text-muted">Événements/an</div>
-              </div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-geo-alt text-liquid-primary fs-5"></i>
-              <div class="text-start">
-                <div class="fw-bold text-liquid-primary">Grenoble</div>
-                <div class="small text-muted">et environs</div>
-              </div>
-            </div>
-            <a href="#adhesion" class="btn btn-liquid-primary btn-sm w-100">
-                <i class="bi bi-person-plus me-2"></i>
-            Evenements
-            </a>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Colonne 2 : Image au milieu (50%) -->
-      <div class="col-12 col-lg-6 d-flex justify-content-center">
-        <div class="element-image rounded-liquid shadow-liquid" style="width: 100%; max-width: 450px;">
-          <%= image_tag('img/Affiche-reprise.jpg', 
-              alt: 'Affiche reprise Grenoble Roller', 
-              class: 'img-fluid rounded-liquid',
-              style: 'width: 100%; height: auto; object-fit: contain;',
-              loading: 'lazy') %>
-        </div>
-      </div>
-      
-      <!-- Colonne 3 : Texte droite (25%) -->
-      <div class="col-12 col-lg-3">
-        <div class="element-content text-center text-lg-start">
-          <span class="element-badge badge badge-liquid-success mb-3 d-inline-block">
-            <i class="bi bi-people me-1"></i>
-            Rejoignez-nous
-          </span>
-          <h2 class="element-title mb-3 h3 lh-tight">
-            <strong>+500 riders</strong><br>
-            actifs
-          </h2>
-          <p class="element-text small mb-4">
-            Découvrez Grenoble avec nos sorties régulières, événements et randonnées pour tous
-          </p>
-          
-          <!-- Points forts rapides -->
-          <div class="mb-4">
-            <div class="d-flex align-items-start gap-2 mb-2">
-              <i class="bi bi-check-circle-fill text-liquid-success mt-1"></i>
-              <span class="small">Tous niveaux acceptés</span>
-            </div>
-            <div class="d-flex align-items-start gap-2 mb-2">
-              <i class="bi bi-check-circle-fill text-liquid-success mt-1"></i>
-              <span class="small">Ambiance conviviale</span>
-            </div>
-            <div class="d-flex align-items-start gap-2">
-              <i class="bi bi-check-circle-fill text-liquid-success mt-1"></i>
-              <span class="small">Sorties hebdomadaires</span>
-            </div>
-          </div>
-          
-          <a href="#adhesion" class="btn btn-liquid-primary btn-sm w-100">
-            <i class="bi bi-person-plus me-2"></i>
-            Adhérer maintenant
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ========================================
      SECTION VIDÉO : TEASER RENTRÉE 2025
      ======================================== -->
-<section>
+<section class="py-4">
   <div class="container">
-    <div class="row mb-5">
-      <div class="col-12 text-center">
-        <h2 class="display-4 fw-bold mb-3">
-          <i class="bi bi-play-circle text-liquid-primary me-3"></i>
-          Découvrez nos sorties
-        </h2>
-        <hr class="w-50 mx-auto">
+    <!-- Zone titre et CTA -->
+    <div class="mb-4 text-center">
+      <!-- Titre centré -->
+      <h2 class="fw-bold mb-2">Découvrez Grenoble Roller en vidéo</h2>
+      
+      <!-- Badge communauté -->
+      <p class="lead text-muted mb-2">
+        <i class="bi bi-heart-fill text-liquid-primary me-2"></i>
+        Une communauté passionnée <strong>depuis + de 15 ans</strong>
+      </p>
+      
+      <!-- Bouton Adhérer centré -->
+      <div class="mb-2 d-flex justify-content-center">
+        <a href="#adhesion" class="btn btn-liquid-primary btn-sm">
+          <i class="bi bi-person-plus me-2"></i>
+          Adhérer
+        </a>
       </div>
+      
+      <!-- Description -->
+      <p class="text-secondary small mb-4">
+        Laissez-vous porter par l'ambiance de nos randonnées et de notre communauté passionnée !
+      </p>
+      
+      <!-- Séparation subtile -->
+      <hr class="w-50 mx-auto">
     </div>
-
+    
+    <!-- Vidéo -->
     <div class="row justify-content-center">
       <div class="col-lg-10 col-xl-8">
         <div class="card card-liquid rounded-liquid shadow-liquid p-3">
@@ -122,7 +41,7 @@
               controls 
               poster="<%= image_path('logo/logo_grenobleroller_color.png') %>"
               preload="metadata">
-              <source src="/video/Teaser_Rentree_Rando_Roller_2025.mp4" type="video/mp4">
+              <source src="<%= asset_path('video/Teaser_Rentree_Rando_Roller_2025.mp4') %>" type="video/mp4">
               Votre navigateur ne supporte pas la lecture de vidéos HTML5.
             </video>
           </div>
