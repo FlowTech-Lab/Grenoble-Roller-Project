@@ -14,7 +14,7 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages (including curl for healthchecks)
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
@@ -79,6 +79,8 @@ USER 1000:1000
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+# Expose port (default 3000, can be overridden via PORT env var)
+EXPOSE 3000
+# Use PORT environment variable if set, otherwise default to 3000
+# For staging/production with Thruster, set PORT=80 and use ./bin/thrust
+CMD sh -c 'PORT=${PORT:-3000} ./bin/rails server -b 0.0.0.0 -p $PORT'
