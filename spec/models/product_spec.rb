@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Product, type: :model do
-  let!(:category) { ProductCategory.create!(name: 'Accessoires', slug: 'accessoires') }
+  let!(:category) { ProductCategory.create!(name: 'Accessoires', slug: "accessoires-#{SecureRandom.hex(3)}") }
 
   def build_product(attrs = {})
     defaults = {
@@ -21,14 +21,14 @@ RSpec.describe Product, type: :model do
     expect(build_product).to be_valid
   end
 
-  it 'requires presence of key attributes' do
+  it 'requires presence of key attributes (except currency default)' do
     p = Product.new
     expect(p).to be_invalid
     expect(p.errors[:name]).to be_present
     expect(p.errors[:slug]).to be_present
     expect(p.errors[:price_cents]).to be_present
-    expect(p.errors[:currency]).to be_present
     expect(p.errors[:image_url]).to be_present
+    expect(p.currency).to eq('EUR')
   end
 
   it 'enforces slug uniqueness' do

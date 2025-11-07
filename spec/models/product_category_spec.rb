@@ -14,15 +14,15 @@ RSpec.describe ProductCategory, type: :model do
   end
 
   it 'enforces slug uniqueness' do
-    ProductCategory.create!(name: 'Cat1', slug: 'unique')
-    dup = ProductCategory.new(name: 'Cat2', slug: 'unique')
+    ProductCategory.create!(name: 'Cat1', slug: 'unique-cat')
+    dup = ProductCategory.new(name: 'Cat2', slug: 'unique-cat')
     expect(dup).to be_invalid
     expect(dup.errors[:slug]).to be_present
   end
 
   it 'restricts destroy when products exist' do
-    category = ProductCategory.create!(name: 'Cat', slug: 'cat')
-    product = Product.create!(category: category, name: 'T-shirt', slug: 'tshirt', price_cents: 1500, currency: 'EUR', stock_qty: 0, is_active: true, image_url: 'https://example.org/img.jpg')
+    category = ProductCategory.create!(name: 'Cat', slug: "cat-#{SecureRandom.hex(3)}")
+    product = Product.create!(category: category, name: 'T-shirt', slug: "tshirt-#{SecureRandom.hex(3)}", price_cents: 1500, currency: 'EUR', stock_qty: 0, is_active: true, image_url: 'https://example.org/img.jpg')
     expect {
       category.destroy
     }.to raise_error(ActiveRecord::DeleteRestrictionError)

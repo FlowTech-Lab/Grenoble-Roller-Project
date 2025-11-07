@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Payment, type: :model do
-  let!(:role) { Role.create!(name: 'Utilisateur', code: 'USER', level: 1) }
-  let!(:user) { User.create!(email: 'pay@example.com', password: 'password123', first_name: 'Pay', role: role) }
+  let!(:role) { ensure_role(code: 'USER_PAYMENT', name: 'Utilisateur Payment', level: 40) }
+  let!(:user) { create_user(role: role, email: 'pay@example.com', first_name: 'Pay') }
 
   it 'nullifies payment_id on associated orders when destroyed' do
     payment = Payment.create!(provider: 'test', provider_payment_id: 'abc123', amount_cents: 1000, currency: 'EUR', status: 'succeeded')
