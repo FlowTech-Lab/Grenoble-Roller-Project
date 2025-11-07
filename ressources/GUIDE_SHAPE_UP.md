@@ -10,7 +10,7 @@ Pour les détails de planning, sprints et état d'avancement, consultez le fil c
 
 ## 🎯 PRINCIPE FONDAMENTAL
 
-**Appetite fixe (6 semaines), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
+**Appetite fixe (3 semaines Building + 1 semaine Cooldown), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
 
 ---
 
@@ -78,15 +78,15 @@ Pour les détails de planning, sprints et état d'avancement, consultez le fil c
 #### Exemple de Structure Building (Référence)
 > **📋 Pour le planning détaillé** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) sections "PHASE 2 - ÉVÉNEMENTS"
 
-**Semaine 1-2** : Get One Piece Done (MVP minimal fonctionnel)  
-**Semaine 3-4** : Map Scopes (Développer les scopes identifiés)  
-**Semaine 5-6** : Downhill Execution (Tests, performance, sécurité)
+**Semaine 1-2** : Get One Piece Done (CRUD Événements, Inscriptions, Calendrier)  
+**Semaine 3** : Map Scopes (ActiveAdmin, Permissions, Notifications)  
+**Jour 15** : Downhill Execution (Tests, performance, sécurité)
 
-**Principe** : Livrer une feature shippable à la fin des 6 semaines
+**Principe** : Livrer une feature shippable à la fin des 3 semaines (15 jours exactement)
 
 ---
 
-### **PHASE 4 : COOLDOWN** (Semaine 7-8)
+### **PHASE 4 : COOLDOWN** (Semaine 4)
 **Objectif : Repos, amélioration, innovation**
 
 #### Actions (Non Négociables)
@@ -119,6 +119,24 @@ Pour les détails de planning, sprints et état d'avancement, consultez le fil c
 
 #### Output
 → **Équipe reposée + learnings documentés**
+
+---
+
+## ✅ CHECKLIST SHAPING & BETTING TABLE
+
+### ✅ PHASE 1 : SHAPING (Semaine -2 à 0)
+- [ ] Problème utilisateur identifié
+- [ ] Appetite défini (3 semaines Building)
+- [ ] Breadboarding & Fat Marker Sketching
+- [ ] Rabbit holes identifiés
+- [ ] Pitch écrit (1 page A4 max)
+- [ ] ER Diagram créé (Event → Route, User, Attendance)
+
+### ✅ PHASE 2 : BETTING TABLE (Semaine 0)
+- [ ] Pitch présenté (15 min)
+- [ ] Questions/débat (10 min)
+- [ ] Décision finale validée
+- [ ] Projet validé pour cycle 3 semaines
 
 ---
 
@@ -329,11 +347,12 @@ Une feature est "Done" quand :
 ## 🚨 RÈGLES SHAPE UP
 
 ### ✅ À Faire
-- **Appetite fixe** : 6 semaines, scope flexible
-- **Cooldown obligatoire** : 2 semaines de repos
+- **Appetite fixe** : 3 semaines Building, scope flexible
+- **Cooldown obligatoire** : 1 semaine de repos
 - **Feature shippable** : Déployable en production
 - **Pas de backlog** : Projet unique
 - **Limite cartes** : 1-2 cartes par personne max
+- **Timeline stricte** : 15 jours exactement (Jour 1-15)
 
 ### ❌ À Éviter
 - **Sprints fragmentés** : Pas de 1 semaine
@@ -361,10 +380,11 @@ Une feature est "Done" quand :
 
 1. **YAGNI** : You Ain't Gonna Need It
 2. **KISS** : Keep It Simple, Stupid
-3. **Appetite fixe** : 6 semaines, scope flexible
-4. **Cooldown obligatoire** : 2 semaines de repos
+3. **Appetite fixe** : 3 semaines Building, scope flexible
+4. **Cooldown obligatoire** : 1 semaine de repos
 5. **Feature shippable** : Déployable en production
 6. **Pas de backlog** : Projet unique, pas de sprint planning
+7. **Timeline stricte** : 15 jours exactement (Jour 1-15)
 
 ---
 

@@ -1,7 +1,9 @@
 # 🎯 FIL CONDUCTEUR - Projet Site Web Grenoble Roller
 ## Rails 8 + Bootstrap - Plan de développement structuré
 
-> **📋 Pour la méthodologie Shape Up et configuration Trello** : Voir [`GUIDE_SHAPE_UP.md`](GUIDE_SHAPE_UP.md)
+> **📋 Pour la méthodologie Shape Up et configuration Trello** : Voir [`GUIDE_SHAPE_UP.md`](GUIDE_SHAPE_UP.md)  
+> **📋 Pour le guide technique d'implémentation** : Voir [`GUIDE_IMPLEMENTATION.md`](GUIDE_IMPLEMENTATION.md)  
+> **📋 Pour la checklist complète Phase 2** : Voir [`CHECKLIST_PHASE2.md`](CHECKLIST_PHASE2.md)
 
 **Document principal** : Ce fichier contient le planning détaillé, les sprints, l'état d'avancement et toutes les informations de suivi du projet.
 
@@ -134,9 +136,12 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 #### 📋 **Livrables**
 - [ ] User Stories détaillées avec critères d'acceptation
+- [ ] **ER Diagram (Event → Route, User, Attendance)** ← **CRITIQUE avant Jour 1**
 - [ ] Diagrammes d'architecture technique
 - [ ] Personas et parcours utilisateurs
 - [ ] Plan d'infrastructure (serveur, DB, CI/CD)
+- [ ] **Branching strategy (main/develop/feature branches)** ← **CRITIQUE**
+- [ ] **Database.yml pour 3 envs (dev/staging/prod)** ← **CRITIQUE**
 - [ ] Conventions de développement
 
 #### 🛠️ **Actions**
@@ -188,40 +193,46 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-### **PHASE 3 - ENVIRONNEMENT & CI/CD** (intégré Semaine 1)
+### **PHASE 3 - ENVIRONNEMENT & CI/CD** (Jour 4-5 - AVANT modèles métier)
+
+> ⚠️ **IMPORTANT** : CI/CD doit être configuré **AVANT** le développement des modèles métier pour garantir la qualité dès le début.
 
 #### 🎯 **Objectifs**
 - Mettre en place l'environnement de développement
-- Configurer CI/CD
-- Implémenter le monitoring
+- Configurer CI/CD **tôt** (Jour 4-5)
+- Implémenter le monitoring de base
 
 #### 📋 **Livrables**
 - [ ] Repository GitHub structuré
 - [ ] Pipeline CI (tests, linting, audit)
 - [ ] Pipeline CD (staging/prod)
-- [ ] Monitoring initial
+- [ ] Monitoring initial (Prometheus + Grafana basique)
 
-#### 🛠️ **Actions**
-1. **Repository GitHub** (1 jour)
-   - Structure de branches (main/develop/feature/hotfix)
-   - .gitignore et conventions
-   - Documentation README
+#### 🛠️ **Actions (Ordre Recommandé Rails 8)**
 
-2. **Pipeline CI** (2 jours)
-   - Tests RSpec automatisés
-   - Linting RuboCop
-   - Audit de sécurité
-   - Tests de performance
+**Jour 1-2 : Infrastructure de Base**
+- [ ] Rails 8 + Ruby 3.3+ + PostgreSQL ✓ (déjà fait)
+- [ ] Docker Compose (dev/staging/prod) ✓ (déjà fait)
+- [ ] Repository Git avec conventions (main/develop/feature branches) ✓
+- [ ] Credentials Rails configurés ✓
 
-3. **Pipeline CD** (2 jours)
-   - Déploiement staging automatique
-   - Déploiement prod manuel
-   - Rollback automatique
+**Jour 2-3 : Authentification & Rôles**
+- [ ] Devise + configuration initiale ✓ (déjà fait)
+- [ ] Modèle User avec enum rôles + validations Rails 8 : `enum role: [...], validate: true` + `validates :role, presence: true`
+- [ ] Tests fixtures/seeds en parallèle
 
-4. **Monitoring** (1 jour)
-   - Prometheus + Grafana
-   - Alertes critiques
-   - Métriques de performance
+**Jour 3-4 : Autorisation & Tests Setup**
+- [ ] Pundit (policies) **AVANT** les contrôleurs métier
+- [ ] ApplicationController avec includes Pundit complet (include Pundit::Authorization, verify_authorized, rescue_from)
+- [ ] RSpec setup + minitest configuration
+- [ ] FactoryBot (factories/) NOT fixtures
+- [ ] Database cleaner + Transaction rollback
+
+**Jour 5 : CI/CD GitHub Actions** ⚠️ **CRITIQUE - FAIRE MAINTENANT**
+- [ ] GitHub Actions workflow (tests, linting, security)
+- [ ] Tests automatisés dans CI (coverage >70% dès Week 2, pas Week 5)
+- [ ] Prometheus + Grafana basique (optionnel MVP)
+- [ ] Let's Encrypt préconfiguré (optionnel MVP)
 
 ---
 
@@ -232,54 +243,113 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - Tests automatisés et performance
 - Déploiement continu
 
-#### 📋 **Sprint 1-2 : Authentification & Base**
-- [ ] Système d'authentification (Devise)
-- [ ] Gestion des rôles (Pundit)
-- [ ] Dashboard de base
-- [ ] Présentation association
-- [ ] Prestations de base
+#### 📋 **Sprint 1-2 : Authentification & Base** ✅ (TERMINÉ)
+- [✅] Système d'authentification (Devise)
+- [✅] Gestion des rôles (enum avec validations Rails 8)
+- [✅] Dashboard de base
+- [✅] Présentation association
+- [✅] E-commerce complet
 
-#### 📋 **Sprint 3-4 : Événements & Paiement**
-- [ ] CRUD événements complet
-- [ ] Calendrier interactif (FullCalendar)
-- [ ] Intégration HelloAsso
-- [ ] Système de paiement
+#### 📋 **Sprint 3-4 : Événements & Paiement** (Phase 2 - Week 1-2)
+- [ ] **CRUD événements complet** (modèles stables d'abord)
+- [ ] **Calendrier interactif** (FullCalendar)
+- [ ] **Système d'inscription** aux événements
+- [ ] Intégration HelloAsso (optionnel Phase 2)
 - [ ] Gestion des inscriptions
 
-#### 📋 **Sprint 5 : Initiation & Admin**
+#### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)** ⚠️ **CORRIGÉ - APRÈS tests complets**
+
+**✅ PRÉ-REQUIS (Jour 1-10)**
+- [x] Event modèle 100% finalisé (migrations, associations, validations OK)
+- [x] Routes CRÉÉES AVANT Events (ordre migrations respecté)
+- [x] Tests RSpec Event >70% coverage ✓
+- [x] Attendances + inscriptions testées ✓
+- [x] Calendrier fonctionnel testé ✓
+
+**⚠️ TIMING CRITIQUE : ActiveAdmin installé Jour 11-12 SEULEMENT**
+- [ ] Jour 11 : Installation ActiveAdmin (modèles garantis stables)
+  - `bundle add activeadmin devise`
+  - `rails generate activeadmin:install --skip-users`
+  - `rails generate activeadmin:resource Event Route User Attendance Product Order`
+- [ ] Configuration Pundit dans `app/admin/application.rb`
+- [ ] Sécurisation routes admin (rôles ADMIN/SUPERADMIN uniquement)
+
+**📝 Jour 12-13 : Customisation ActiveAdmin**
+- [ ] Filtres (email, role, created_at) - utilisables par bénévoles via UI
+- [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
+- [ ] Export CSV/PDF intégré
+- [ ] Dashboard validation organisateurs
+- [ ] Actions personnalisées (validate_organizer!)
+- [ ] Upload photos via Active Storage
+
+**✅ Jour 14 : Tests Admin Panel**
+- [ ] Tests admin controllers (RSpec)
+- [ ] Integration tests (admin actions via Capybara)
+- [ ] Permissions Pundit testées
+- [ ] Coverage >70% maintenu
+
+**Référence** : `docs/04-rails/admin-panel-research.md` (**ActiveAdmin recommandé pour contexte associatif**)
+
+#### 📋 **Sprint 6 : Initiation & Finalisation** (Phase 2 - Week 3)
 - [ ] Module initiation
 - [ ] Gestion des créneaux
 - [ ] Système de prêt matériel
-- [ ] Panel admin (Administrate) - Installation, configuration, statistiques
-- [ ] Gestion des membres via admin
-- **Référence** : `docs/04-rails/admin-panel-research.md`
+- [ ] Upload photos (Active Storage)
+- [ ] Notifications email
+- [ ] Tests de régression (coverage >70% maintenu)
 
-#### 📋 **Sprint 6 : Réseaux Sociaux & Finalisation**
-- [ ] API Twitter/X et Facebook
-- [ ] Posts automatiques (cron)
-- [ ] Ajustements UI/UX
-- [ ] Accessibilité WCAG 2.2
-- [ ] Tests de régression
+#### 🛠️ **Actions par Sprint (Rails 8 TDD)**
 
-#### 🛠️ **Actions par Sprint**
 1. **Planification** (1h)
    - Sélection des User Stories
    - Estimation des tâches
    - Répartition des rôles
 
-2. **Développement** (4 jours)
-   - TDD avec RSpec
+2. **Développement TDD** (4 jours)
+   - **Tests AVANT code** (TDD strict)
+   - RSpec + FactoryBot (pas fixtures)
    - Revues de code croisées
-   - Tests d'intégration
+   - Tests d'intégration (Capybara)
+   - Coverage >70% **maintenu en continu** (pas à la fin)
 
 3. **Déploiement** (1 jour)
    - Tests en staging
    - Démonstration
    - Feedback et ajustements
 
+#### ⚠️ **SÉQUENCE CRITIQUE Rails 8 (Ordre à Respecter)**
+
+```
+JOUR 1: Rails 8 + Docker ✓
+  ↓
+JOUR 2-3: Devise (User model + auth) ✓
+  ↓
+JOUR 4: Pundit setup + RSpec setup
+  ↓
+JOUR 5: CI/CD GitHub Actions
+  ↓
+JOUR 6-7: Models Event/Route/Attendance (Routes AVANT Events!)
+  ↓
+JOUR 8: Controllers CRUD Events
+  ↓
+JOUR 9: Inscriptions + Calendrier
+  ↓
+JOUR 10: Tests unitaires & intégration (Coverage >70%)
+  ↓
+JOUR 11: Pundit Policies + Finalisation modèles (100% stables)
+  ↓
+JOUR 12: ⚠️ INSTALL ACTIVEADMIN (après modèles garantis stables)
+  ↓
+JOUR 13-14: ActiveAdmin customisation (filtres, bulk actions, exports)
+  ↓
+JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
+```
+
 ---
 
-### **PHASE 5 - TESTS & OPTIMISATION** (Semaine 3)
+### **PHASE 5 - TESTS & OPTIMISATION** (Intégré dans Phase 2 - Week 3)
+
+> ⚠️ **CORRIGÉ** : Tests doivent être faits **en parallèle du développement** (TDD), pas à la fin. Coverage >70% dès Week 2.
 
 #### 🎯 **Objectifs**
 - Tests de montée en charge
@@ -292,21 +362,33 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [ ] Mise en cache Redis
 - [ ] CDN et compression
 
-#### 🛠️ **Actions**
-1. **Tests de charge** (3 jours)
-   - Scénarios 10→1000 utilisateurs
-   - Identification des goulots
-   - Optimisation des requêtes
+#### 🛠️ **Actions (Réparties sur Phase 2)**
 
-2. **Mise en cache** (2 jours)
+**Week 1-2 : Tests TDD (en parallèle)**
+- [ ] Model tests (validations, associations, scopes)
+- [ ] Controller tests (RSpec avec let + factories)
+- [ ] Integration tests (Capybara)
+- [ ] **Coverage >70%** (unitaire + intégration) ← **OBLIGATOIRE dès Week 2**
+
+**Week 3 : Performance & Optimisation (OPTIONNEL pour MVP)**
+1. **Optimisation requêtes** (obligatoire)
+   - Identification N+1 queries
+   - Optimisation requêtes (includes, joins)
+   - Index database si nécessaire
+
+2. **Audit sécurité** (obligatoire)
+   - Brakeman security audit
+   - Fixes vulnérabilités
+
+3. **Tests de charge** (optionnel MVP associatif)
+   - ⚠️ **Si temps** : Tests simple via k6 (10→100 users)
+   - ⚠️ **Si pas temps** : Sauter, faire en Cooldown
+   - **Note** : Coverage >70% suffit pour MVP. Tests de charge coûtent du temps sans ROI immédiat.
+
+4. **Mise en cache** (optionnel MVP)
    - Cache fragment Rails
    - Redis pour sessions
    - CDN pour assets
-
-3. **Optimisation** (2 jours)
-   - Compression Brotli
-   - Minification assets
-   - Optimisation images
 
 ---
 
@@ -320,8 +402,10 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 #### 📋 **Livrables**
 - [ ] Déploiement production
 - [ ] SSL automatisé (Let's Encrypt)
+- [ ] **Rollback strategy production** ← **CRITIQUE** (procédure documentée)
+- [ ] **Error tracking (Sentry / Rollbar)** ← **CRITIQUE** (bugs invisibles production)
 - [ ] Documentation runbook
-- [ ] Formation administrateurs
+- [ ] **Formation bénévoles** : durée/format/docs (budgéter 4h formation + docs)
 
 #### 🛠️ **Actions**
 1. **Déploiement** (2 jours)
@@ -415,15 +499,92 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 5. **Documentation négligée** → README et runbooks
 6. **Revue de code insuffisante** → Pull requests obligatoires
 7. **Monitoring absent** → Alertes 24/7
+8. **⚠️ ActiveAdmin installé trop tôt** → Attendre modèles stables (Jour 8+)
+9. **⚠️ Tests à la fin** → TDD dès le début (coverage >70% Week 2)
+10. **⚠️ CI/CD trop tard** → Configurer Jour 4-5, pas Semaine 1
 
-### **✅ Bonnes Pratiques**
+### **✅ Bonnes Pratiques Rails 8**
 1. **Architecture claire** → Diagrammes et documentation
-2. **Tests complets** → Unitaires, intégration, e2e
-3. **CI/CD robuste** → Déploiement automatisé
+2. **Tests complets TDD** → Unitaires, intégration, e2e (dès Week 1-2)
+3. **CI/CD tôt** → Déploiement automatisé (Jour 4-5)
 4. **Performance** → Tests de charge réguliers
 5. **Sécurité** → Audit et mise à jour
 6. **Monitoring** → Métriques et alertes
 7. **Documentation** → Toujours à jour
+8. **Énums avec validations** → `enum role: [...], validate: true`
+9. **Pundit AVANT contrôleurs** → Policies d'abord
+10. **ActiveAdmin APRÈS tests complets** → Jour 11-12 uniquement (choix pour contexte associatif : stabilité 14+ ans, zéro maintenance, interface graphique complète)
+11. **⚠️ Routes migration AVANT Events** → Ordre migrations critique (Event dépend de Route via FK)
+
+### **🎯 Checklist Implémentation Rails 8 (Révisée)**
+
+#### ✅ Phase 1 (Semaines 1-2) - TERMINÉE
+- [✅] Rails 8 + Docker
+- [✅] Devise + User model
+- [✅] Role enum avec validations
+- [✅] E-commerce CRUD (current state)
+
+#### ✅ Phase 2 Révisée (Semaines 3-4) - À CORRIGER
+- [ ] **EVENT models** (Route, Event, EventRegistration, Attendance) - **Jour 1-2**
+- [ ] **EVENT CRUD controllers** (manual or scaffold) - **Jour 3-4**
+- [ ] **Permissions (Pundit policies)** - **Jour 7** (AVANT ActiveAdmin)
+- [ ] **Tests (RSpec > 70%)** - **TDD dès Week 1-2**
+- [ ] **CI/CD green** ✓ - **Jour 4-5**
+- [ ] → **THEN install ActiveAdmin** (Jour 11-12, après tests complets)
+- [ ] **ActiveAdmin resources** (Event, User, Route, Product, Order, Attendance) - **Jour 11**
+- [ ] **Customization ActiveAdmin** (filtres, bulk actions, exports) - **Jour 12-13**
+- [ ] **Integration tests** (admin actions) - **Jour 12**
+- [ ] **Feature specs** (Capybara) - **Jour 12**
+
+#### ✅ Phase 3 (Semaine 5)
+- [ ] Performance tests
+- [ ] Cache strategy (Redis)
+- [ ] CDN assets
+- [ ] Production deploy
+
+---
+
+## 📋 RÉSUMÉ DES CORRECTIONS APPORTÉES (Analyse Rails 8)
+
+### 🔴 Problèmes Critiques Corrigés
+
+1. **✅ Ordre des Dépendances Fondamentales**
+   - **AVANT** : CI/CD en Semaine 1
+   - **APRÈS** : CI/CD Jour 4-5 (AVANT modèles métier)
+
+2. **✅ Admin Panel - Installation Timing (CRITIQUE)**
+   - **AVANT** : Administrate Semaine 3-4 (Sprint 5)
+   - **APRÈS** : **ActiveAdmin** Jour 11-12 (APRÈS tests complets >70% coverage)
+   - **POURQUOI ActiveAdmin ?** Contexte associatif → stabilité 14+ ans, zéro maintenance post-livraison, interface graphique pour bénévoles non-tech, features complètes (export CSV, filtres, bulk actions)
+   - **POURQUOI Jour 11-12 ?** ActiveAdmin génère du code pour chaque model. Si model change → code généré invalide. Mieux attendre modèles rock-solid (migrations + validations + associations 100% définitives + tests passing)
+
+3. **✅ Énums + Validations Rails 8**
+   - **AVANT** : `enum role: [:user, :admin]` (risky)
+   - **APRÈS** : `enum role: [:user, :admin], validate: true` (secure)
+
+4. **✅ Ordre Modèles - Associations Complexes**
+   - **AVANT** : Ordre non spécifié
+   - **APRÈS** : Base → FK simples → Joins/polymorphes → Dépendants
+
+5. **✅ ApplicationController Setup**
+   - **AVANT** : Setup incomplet
+   - **APRÈS** : Pundit complet + rescue_from + verify_authorized
+
+6. **✅ Testing Order (TDD)**
+   - **AVANT** : Tests >70% Week 5
+   - **APRÈS** : TDD dès Week 1-2, coverage >70% maintenu
+
+7. **✅ Séquence Devise + Pundit + ActiveAdmin**
+   - **AVANT** : Ordre flou
+   - **APRÈS** : Timeline jour par jour détaillée (Jour 1 → 13+)
+   - **CHOIX ActiveAdmin** : Contexte associatif nécessite stabilité, zéro maintenance, interface graphique complète
+
+### 📊 Recommandations Structurelles Intégrées
+
+- **A. Refactoriser Phase 2** : Semaine 3 détaillée jour par jour
+- **B. Testing Order** : TDD dès Week 1, pas Week 5
+- **C. Séquence Complète** : Timeline jour par jour (Jour 1 → 15)
+- **D. Choix ActiveAdmin** : Contexte associatif → stabilité, zéro maintenance, interface graphique complète
 
 ---
 
@@ -442,30 +603,127 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - ✅ Documentation complète (README, setup, architecture)
 - ✅ Seeds complets avec données de test
 
-### 🔜 PHASE 2 - ÉVÉNEMENTS (À PLANIFIER)
+### 🔜 PHASE 2 - ÉVÉNEMENTS (À PLANIFIER - ORDRE CORRIGÉ Rails 8)
+
+> **📋 Checklist complète jour par jour** : Voir [`CHECKLIST_PHASE2.md`](CHECKLIST_PHASE2.md)
+
+> ⚠️ **CRITIQUE** : L'ordre d'implémentation a été révisé selon les bonnes pratiques Rails 8.  
+> **ActiveAdmin doit être installé APRÈS tests complets** (Jour 11-12), pas avant.  
+> **Pourquoi ActiveAdmin (et pas Administrate) ?** Contexte association avec bénévoles non-tech → besoin de stabilité (14+ ans), zéro maintenance post-livraison, interface graphique complète, features out-of-the-box (export CSV, filtres, bulk actions).  
+> **⚠️ ORDRE MIGRATIONS CRITIQUE** : Routes AVANT Events (Event dépend de Route via FK `route_id`).
 
 | Semaine | Phase | Objectifs | Livrables | État |
 |---------|-------|-----------|-----------|------|
 | 1-2 | Building (S1) | CRUD Événements, Inscriptions, Calendrier | Événements fonctionnels, système d'inscription | 🔜 À VENIR |
-| 3-4 | Building (S2) | Permissions fines (Pundit), Upload photos, Interface admin (Administrate), Notifications | Rôles/permissions, gestion médias, admin minimal (Administrate), mails | 🔜 À VENIR |
+| 3 | Building (S2) | **Modèles stables → ActiveAdmin (Jour 11+)**, Permissions fines (Pundit), Upload photos, Notifications | Rôles/permissions, gestion médias, admin minimal (ActiveAdmin), mails | 🔜 À VENIR |
 
-**Détails Semaines 3-4 (Building S2)** :
+#### 📋 **SÉQUENCE DÉTAILLÉE - Phase 2 (Rails 8 Best Practices)**
 
-**Semaine 3 - Setup Admin Panel** :
-- [ ] Installation gem Administrate
-- [ ] Configuration dashboards de base (User, Event, EventRegistration)
-- [ ] Intégration avec Pundit pour permissions
+**Week 1-2 (Building S1) - CRUD Événements**
+
+**Jour 1-2 : Models CRUD + Tests (TDD)** ⚠️ **ORDRE MIGRATIONS CRITIQUE**
+
+- [ ] **⚠️ ORDRE CORRECT DES MIGRATIONS** (dépendances FK) :
+  1. Base Models (pas de dépendances) : `Role`, `User` ✓ (déjà fait)
+  2. **`routes`** ← **CRÉER EN PREMIER** (Event dépend de Route via FK `route_id`)
+  3. `events` (belongs_to :creator_user, belongs_to :route) ← Route doit exister AVANT
+  4. `attendances` (belongs_to :user, belongs_to :event) ← Event doit exister AVANT
+  5. `organizer_applications` (belongs_to :user, belongs_to :reviewed_by)
+  6. `partners`, `contact_messages`, `audit_logs` (pas de dépendances)
+
+- [ ] **Créer migrations dans l'ordre** (selon `dbdiagram.md`) :
+  - `routes` (EN PREMIER - Event dépend de Route via FK)
+  - `events` (APRÈS routes)
+  - `attendances` (APRÈS events)
+  - `organizer_applications`, `partners`, `contact_messages`, `audit_logs`
+- [ ] **Énums avec validations Rails 8** : `enum status: [...], validate: true` + `validates :status, presence: true`
+- [ ] Controllers manuels SIMPLEMENT (app/controllers/events_controller.rb)
+- [ ] Tests RSpec models (validations, associations, scopes) - **TDD dès le début**
+- [ ] Seeds ordonnés (db/seeds/001_roles.rb → 002_users.rb → 003_events.rb)
+
+**Jour 3-4 : Controllers & Routes**
+- [ ] CRUD Events controller complet (new, create, edit, update, destroy)
+- [ ] Routes RESTful + custom (register, unregister)
+- [ ] Vues ERB de base (index, show, new, edit)
+- [ ] Tests controllers (RSpec avec let + factories)
+- [ ] Guardrails (validations dates, places, etc.)
+
+**Jour 5-6 : Inscriptions & Calendrier**
+- [ ] Système inscription/désinscription aux événements
+- [ ] Calendrier interactif (FullCalendar)
+- [ ] Tests d'intégration (Capybara)
+
+**Jour 7-8 : Tests Unitaires & Intégration (TDD)**
+- [ ] Tests unitaires Event (RSpec) - validations, associations, scopes
+- [ ] Tests intégration Events + Attendances (Capybara)
+- [ ] Tests calendar + inscription workflow
+- [ ] **Coverage >70%** (unitaire + intégration) ← **OBLIGATOIRE**
+- [ ] Revue qualité, fixes bugs, optimisation requêtes (N+1 queries)
+
+**Jour 9 : Pundit Policies (AVANT ActiveAdmin)**
+- [ ] Créer policies : `app/policies/event_policy.rb`
+- [ ] Update ApplicationController avec Pundit complet
+- [ ] Tests authorization (Pundit rules)
 - [ ] Sécurisation accès (rôles ADMIN/SUPERADMIN uniquement)
+
+**Jour 10 : Finalisation Modèles & Tests**
+- [ ] ⚠️ **Vérifier que tous les modèles Event/Route sont 100% FINALISÉS** :
+  - Migrations définitives ✓
+  - Associations complètes ✓
+  - Validations finales ✓
+  - Enums corrects ✓
+  - Tests passing >70% ✓
+- [ ] Revue finale code Event/Route/Attendance
+- [ ] Documentation modèles
+
+**SEMAINE 3 (Jour 11-15) - Admin Panel & Finalisation**
+
+**⚠️ CRITIQUE : ActiveAdmin installé Jour 11-12 SEULEMENT (après modèles garantis stables)**
+
+**Jour 11 : Installation ActiveAdmin (MODÈLES 100% STABLES)**
+- [ ] ⚠️ **PRÉ-REQUIS vérifiés** :
+  - Event modèle 100% finalisé ✓
+  - Routes CRÉÉES AVANT Events ✓
+  - Tests RSpec Event >70% coverage ✓
+  - Attendances + inscriptions testées ✓
+  - Calendrier fonctionnel testé ✓
+- [ ] `bundle add activeadmin devise`
+- [ ] `rails generate activeadmin:install --skip-users`
+- [ ] Config `app/admin/application.rb` (authentication_method, PunditAdapter)
+- [ ] Generate resources : `rails g activeadmin:resource Event User Route Product Order Attendance`
 - [ ] Configuration routes admin (`/admin`)
 
-**Semaine 4 - Fonctionnalités Admin** :
+**Jour 12-13 : Customisation ActiveAdmin**
+- [ ] Configurer colonnes visibles (index, show, form)
+- [ ] Filtres simples (email, role, created_at) - utilisables via UI par bénévoles
+- [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
+- [ ] Export CSV/PDF intégré (out-of-the-box)
 - [ ] Dashboard validation organisateurs
-- [ ] Statistiques de base (événements, membres, inscriptions)
-- [ ] Actions personnalisées (valider organisateur, etc.)
+- [ ] Actions personnalisées (validate_organizer!)
 - [ ] Upload photos via Active Storage dans admin
-- [ ] Personnalisation interface (cohérence avec Bootstrap)
+- [ ] Statistiques de base (chartkick si besoin)
 
-**Référence** : `docs/04-rails/admin-panel-research.md` (recherche et recommandations complètes)
+**Jour 14 : Tests Admin Panel & Notifications**
+- [ ] Tests admin controllers (RSpec)
+- [ ] Integration tests (admin actions via Capybara)
+- [ ] Permissions Pundit testées
+- [ ] Coverage >70% maintenu
+- [ ] Notifications email (inscription événement, rappel)
+- [ ] Active Storage configuration complète
+- [ ] Upload photos événements
+
+**Jour 15 : Performance & Sécurité (OPTIONNEL pour MVP)**
+- [ ] Audit sécurité complet (Brakeman) ← **OBLIGATOIRE**
+- [ ] Optimisation requêtes (N+1 queries) ← **OBLIGATOIRE**
+- [ ] Tests de performance basiques (optionnel pour MVP associatif)
+  - ⚠️ **Si temps** : Tests simple via k6 (10→100 users)
+  - ⚠️ **Si pas temps** : Sauter, faire en Cooldown
+- [ ] Cache strategy (Redis) - optionnel MVP
+- [ ] CDN assets - optionnel MVP
+
+> **Note** : Pour MVP associatif, **Coverage >70% suffit**. Tests de charge coûtent du temps sans ROI immédiat. Faire en Cooldown si nécessaire.
+
+**Référence** : `docs/04-rails/admin-panel-research.md` (recherche et recommandations complètes - **ActiveAdmin recommandé pour contexte associatif**)
 
 | 5-6 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Déploiement prod | Coverage OK, audit sécurité, déploiement finalisé | 🔜 À VENIR |
 
@@ -548,10 +806,10 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [🔜] Upload photos (Active Storage)
 - [🔜] Notifications email (inscription événement, rappel)
 
-#### Tests & Qualité
-- [🔜] Tests complets (RSpec + Capybara, coverage >70%)
-- [🔜] Tests de performance
-- [🔜] Audit sécurité complet (Brakeman)
+#### Tests & Qualité ⚠️ **CORRIGÉ - TDD dès le début**
+- [🔜] **Tests TDD dès Week 1-2** (RSpec + Capybara, coverage >70% maintenu)
+- [🔜] Tests de performance (Week 3)
+- [🔜] Audit sécurité complet (Brakeman) - Week 3
 
 #### Déploiement
 - [🔜] Déploiement production finalisé
@@ -606,14 +864,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
    - JavaScript pour changer l'image dynamiquement selon la variante sélectionnée
    - API endpoint optionnel pour récupérer l'image d'une variante
 
-3. **Exemple structure** :
-   ```
-   Product: "Veste Grenoble Roller"
-   ├─ Variant 1 (Noir, S) → image: "veste_noir.avif"
-   ├─ Variant 2 (Noir, M) → image: "veste_noir.avif"
-   ├─ Variant 3 (Bleu, S) → image: "veste_bleu.avif"
-   └─ Variant 4 (Blanc, L) → image: "veste.png"
-   ```
+3. **Structure** : Un produit avec variantes (couleur, taille) → image par variante
 
 4. **Avantages** :
    - Un seul produit à gérer au lieu de N produits (N = nombre de couleurs)
