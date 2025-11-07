@@ -11,4 +11,15 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
+# Force CSS rebuild in development environment on startup
+# This ensures CSS is up-to-date after git pull
+# Note: This runs AFTER volume mount, so it compiles CSS in the mounted directory
+if [ "${RAILS_ENV}" == "development" ] && [ -f "package.json" ]; then
+  echo "Rebuilding CSS to ensure latest changes are applied..."
+  # Ensure builds directory exists
+  mkdir -p app/assets/builds
+  # Build CSS
+  npm run build:css || echo "Warning: CSS rebuild failed, continuing anyway..."
+fi
+
 exec "${@}"
