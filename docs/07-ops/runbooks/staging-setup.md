@@ -78,13 +78,6 @@ RAILS_MASTER_KEY=<your-master-key-here>
 
 ### 4. Build and Start Containers
 
-**Option A: Using the automated script (Recommended)**
-```bash
-./script/setup-docker.sh
-# Select option 2 for staging
-```
-
-**Option B: Manual setup**
 ```bash
 # Build and start staging containers
 docker compose -f ops/staging/docker-compose.yml up -d --build

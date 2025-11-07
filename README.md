@@ -68,24 +68,13 @@ A Ruby on Rails 8 web application for the Grenoble rollerblading community. Curr
 
 ### Development Setup
 
-**Option 1: Automated Setup (Recommended)**
-```bash
-# Clone the repository
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
-cd Grenoble-Roller-Project
-
-# Run the automated setup script
-./script/setup-docker.sh
-```
-
-**Option 2: Manual Setup**
 ```bash
 # Clone the repository
 git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
 cd Grenoble-Roller-Project
 
 # Start Docker containers
-docker compose -f ops/dev/docker-compose.yml up -d
+docker compose -f ops/dev/docker-compose.yml up -d --build
 
 # Run database migrations and seed
 docker exec grenoble-roller-dev bin/rails db:migrate
