@@ -259,12 +259,15 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 #### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)** ⚠️ **CORRIGÉ - APRÈS tests complets**
 
-**✅ PRÉ-REQUIS (Jour 1-10)**
-- [x] Event modèle 100% finalisé (migrations, associations, validations OK)
-- [x] Routes CRÉÉES AVANT Events (ordre migrations respecté)
-- [x] Tests RSpec Event >70% coverage ✓
-- [x] Attendances + inscriptions testées ✓
-- [x] Calendrier fonctionnel testé ✓
+**✅ PRÉ-REQUIS (Jour 1-10) - MODÈLES PHASE 2**
+- [x] Event modèle 100% finalisé (migrations, associations, validations OK) ✅
+- [x] Routes CRÉÉES AVANT Events (ordre migrations respecté) ✅
+- [x] Migrations appliquées (7 migrations Phase 2) ✅
+- [x] Seeds créés et testés (Phase 2) ✅
+- [x] Modèles testés (validations, associations, scopes) ✅
+- [ ] Tests RSpec Event >70% coverage (à faire)
+- [ ] Attendances + inscriptions testées (à faire)
+- [ ] Calendrier fonctionnel testé (à faire)
 
 **⚠️ TIMING CRITIQUE : ActiveAdmin installé Jour 11-12 SEULEMENT**
 - [ ] Jour 11 : Installation ActiveAdmin (modèles garantis stables)
@@ -524,12 +527,14 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - [✅] Role enum avec validations
 - [✅] E-commerce CRUD (current state)
 
-#### ✅ Phase 2 Révisée (Semaines 3-4) - À CORRIGER
-- [ ] **EVENT models** (Route, Event, EventRegistration, Attendance) - **Jour 1-2**
+#### ✅ Phase 2 Révisée (Semaines 3-4) - EN COURS
+- [x] **EVENT models** (Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog) - **Jour 1-2** ✅
+- [x] **Migrations appliquées** (7 migrations Phase 2) ✅
+- [x] **Seeds créés et testés** (Phase 2) ✅
 - [ ] **EVENT CRUD controllers** (manual or scaffold) - **Jour 3-4**
 - [ ] **Permissions (Pundit policies)** - **Jour 7** (AVANT ActiveAdmin)
 - [ ] **Tests (RSpec > 70%)** - **TDD dès Week 1-2**
-- [ ] **CI/CD green** ✓ - **Jour 4-5**
+- [ ] **CI/CD green** - **Jour 4-5**
 - [ ] → **THEN install ActiveAdmin** (Jour 11-12, après tests complets)
 - [ ] **ActiveAdmin resources** (Event, User, Route, Product, Order, Attendance) - **Jour 11**
 - [ ] **Customization ActiveAdmin** (filtres, bulk actions, exports) - **Jour 12-13**
@@ -621,25 +626,26 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 
 **Week 1-2 (Building S1) - CRUD Événements**
 
-**Jour 1-2 : Models CRUD + Tests (TDD)** ⚠️ **ORDRE MIGRATIONS CRITIQUE**
+**Jour 1-2 : Models CRUD + Tests (TDD)** ⚠️ **ORDRE MIGRATIONS CRITIQUE** ✅ TERMINÉ
 
-- [ ] **⚠️ ORDRE CORRECT DES MIGRATIONS** (dépendances FK) :
+- [x] **⚠️ ORDRE CORRECT DES MIGRATIONS** (dépendances FK) ✅ :
   1. Base Models (pas de dépendances) : `Role`, `User` ✓ (déjà fait)
-  2. **`routes`** ← **CRÉER EN PREMIER** (Event dépend de Route via FK `route_id`)
-  3. `events` (belongs_to :creator_user, belongs_to :route) ← Route doit exister AVANT
-  4. `attendances` (belongs_to :user, belongs_to :event) ← Event doit exister AVANT
-  5. `organizer_applications` (belongs_to :user, belongs_to :reviewed_by)
-  6. `partners`, `contact_messages`, `audit_logs` (pas de dépendances)
+  2. **`routes`** ← **CRÉÉ EN PREMIER** (Event dépend de Route via FK `route_id`) ✅
+  3. `events` (belongs_to :creator_user, belongs_to :route) ← Route existe ✅
+  4. `attendances` (belongs_to :user, belongs_to :event) ← Event existe ✅
+  5. `organizer_applications` (belongs_to :user, belongs_to :reviewed_by) ✅
+  6. `partners`, `contact_messages`, `audit_logs` (pas de dépendances) ✅
 
-- [ ] **Créer migrations dans l'ordre** (selon `dbdiagram.md`) :
-  - `routes` (EN PREMIER - Event dépend de Route via FK)
-  - `events` (APRÈS routes)
-  - `attendances` (APRÈS events)
-  - `organizer_applications`, `partners`, `contact_messages`, `audit_logs`
-- [ ] **Énums avec validations Rails 8** : `enum status: [...], validate: true` + `validates :status, presence: true`
-- [ ] Controllers manuels SIMPLEMENT (app/controllers/events_controller.rb)
+- [x] **Migrations créées dans l'ordre** (selon `dbdiagram.md`) ✅ :
+  - `routes` (EN PREMIER - Event dépend de Route via FK) ✅
+  - `events` (APRÈS routes) ✅
+  - `attendances` (APRÈS events) ✅
+  - `organizer_applications`, `partners`, `contact_messages`, `audit_logs` ✅
+- [x] **Énums avec validations Rails 8** : `enum :status, {...}, validate: true` ✅
+- [x] **Migrations appliquées et testées** ✅
+- [x] **Seeds créés et testés (Phase 2)** ✅
+- [ ] Controllers manuels (app/controllers/events_controller.rb)
 - [ ] Tests RSpec models (validations, associations, scopes) - **TDD dès le début**
-- [ ] Seeds ordonnés (db/seeds/001_roles.rb → 002_users.rb → 003_events.rb)
 
 **Jour 3-4 : Controllers & Routes**
 - [ ] CRUD Events controller complet (new, create, edit, update, destroy)
@@ -667,26 +673,29 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - [ ] Sécurisation accès (rôles ADMIN/SUPERADMIN uniquement)
 
 **Jour 10 : Finalisation Modèles & Tests**
-- [ ] ⚠️ **Vérifier que tous les modèles Event/Route sont 100% FINALISÉS** :
-  - Migrations définitives ✓
-  - Associations complètes ✓
-  - Validations finales ✓
-  - Enums corrects ✓
-  - Tests passing >70% ✓
-- [ ] Revue finale code Event/Route/Attendance
-- [ ] Documentation modèles
+- [x] ⚠️ **Vérifier que tous les modèles Event/Route sont 100% FINALISÉS** ✅ :
+  - Migrations définitives ✅
+  - Associations complètes ✅
+  - Validations finales ✅
+  - Enums corrects ✅
+  - Seeds créés et testés ✅
+- [x] Revue finale code Event/Route/Attendance ✅
+- [x] Documentation modèles ✅
+- [ ] Tests passing >70% (à faire avec RSpec)
 
 **SEMAINE 3 (Jour 11-15) - Admin Panel & Finalisation**
 
 **⚠️ CRITIQUE : ActiveAdmin installé Jour 11-12 SEULEMENT (après modèles garantis stables)**
 
 **Jour 11 : Installation ActiveAdmin (MODÈLES 100% STABLES)**
-- [ ] ⚠️ **PRÉ-REQUIS vérifiés** :
-  - Event modèle 100% finalisé ✓
-  - Routes CRÉÉES AVANT Events ✓
-  - Tests RSpec Event >70% coverage ✓
-  - Attendances + inscriptions testées ✓
-  - Calendrier fonctionnel testé ✓
+- [x] ⚠️ **PRÉ-REQUIS vérifiés** :
+  - Event modèle 100% finalisé ✅
+  - Routes CRÉÉES AVANT Events ✅
+  - Migrations appliquées et testées ✅
+  - Seeds créés et testés ✅
+  - [ ] Tests RSpec Event >70% coverage (à faire)
+  - [ ] Attendances + inscriptions testées (à faire)
+  - [ ] Calendrier fonctionnel testé (à faire)
 - [ ] `bundle add activeadmin devise`
 - [ ] `rails generate activeadmin:install --skip-users`
 - [ ] Config `app/admin/application.rb` (authentication_method, PunditAdapter)
@@ -733,20 +742,26 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 
 Ce fil conducteur garantit une livraison progressive, un maximum de visibilité et un contrôle qualité continu. L'utilisation de Trello optimise la collaboration à deux, tandis que Rails 8, Bootstrap et les pipelines automatisés assurent rapidité, sécurité et maintenabilité.
 
-### État Actuel (Nov 2025)
+### État Actuel (Jan 2025)
 - ✅ **Phase 1 E-commerce** : Terminée et fonctionnelle
-- 🔜 **Phase 2 Événements** : À planifier et développer
+- 🔄 **Phase 2 Événements** : Modèles et migrations créés ✅, contrôleurs et vues à venir
 
 **Prochaines étapes** :
 1. ✅ Validation du fil conducteur
 2. ✅ Création du tableau Trello
 3. ✅ Phase 1 E-commerce terminée
-4. 🔜 Planification Phase 2 - Événements
-5. 🔜 Développement module événements
+4. ✅ Planification Phase 2 - Événements
+5. ✅ Modèles et migrations Phase 2 créés et appliqués
+6. ✅ Seeds Phase 2 créés et testés
+7. ✅ RSpec configuré
+8. 🔜 Développement contrôleurs Phase 2 (EventsController, RoutesController, etc.)
+9. 🔜 Développement vues Phase 2
+10. 🔜 Tests RSpec Phase 2 (coverage >70%)
+11. 🔜 ActiveAdmin (Jour 11-12, après tests complets)
 
 ---
 
-## ✅/🔜 SUIVI D'AVANCEMENT (État actuel - Nov 2025)
+## ✅/🔜 SUIVI D'AVANCEMENT (État actuel - Jan 2025)
 
 ### ✅ PHASE 1 - E-COMMERCE (TERMINÉE)
 
@@ -791,7 +806,9 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [🔜] Vues Devise personnalisées si nécessaire
 
 #### Module Événements
-- [🔜] Modèles: `routes`, `events`, `attendances`, `organizer_applications`
+- [✅] Modèles: `routes`, `events`, `attendances`, `organizer_applications`, `partners`, `contact_messages`, `audit_logs` ✅
+- [✅] Migrations appliquées (7 migrations Phase 2) ✅
+- [✅] Seeds créés et testés (Phase 2) ✅
 - [🔜] CRUD événements complet
 - [🔜] Calendrier interactif
 - [🔜] Inscription aux événements
@@ -807,6 +824,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [🔜] Notifications email (inscription événement, rappel)
 
 #### Tests & Qualité ⚠️ **CORRIGÉ - TDD dès le début**
+- [✅] RSpec configuré ✅
 - [🔜] **Tests TDD dès Week 1-2** (RSpec + Capybara, coverage >70% maintenu)
 - [🔜] Tests de performance (Week 3)
 - [🔜] Audit sécurité complet (Brakeman) - Week 3

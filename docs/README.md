@@ -43,11 +43,11 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 
 ## Qualité & sécurité
 - Qualité: RuboCop Rails Omakase, Brakeman.
-- Tests: Minitest (dossier `test/`), exécution via `bin/rails test`.
+- Tests: RSpec configuré (dossier `spec/`), Minitest disponible (dossier `test/`).
 - Secrets: `04-rails/setup/credentials.md` + rotation régulière.
 - Performances: traquer N+1, cache, jobs idempotents.
 
-## Documentation actuelle (État du projet - Nov 2025)
+## Documentation actuelle (État du projet - Jan 2025)
 
 ### Setup & Configuration
 - ✅ `04-rails/setup/local-development.md` - Guide de setup avec Docker (dev)
@@ -56,7 +56,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `07-ops/runbooks/production-setup.md` - Guide d'installation production
 
 ### Architecture
-- ✅ `03-architecture/domain/models.md` - Modèles de domaine actuels (e-commerce)
+- ✅ `03-architecture/domain/models.md` - Modèles de domaine (Phase 1 + Phase 2)
 - ✅ `03-architecture/system-overview.md` - Vue d'ensemble système (C4 niveau Contexte)
 
 ### Operations
@@ -66,9 +66,10 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `04-rails/routes.md` - Routes et flux principaux
 - ✅ `04-rails/conventions/README.md` - Conventions Rails du projet
 - ✅ `04-rails/admin-panel-research.md` - Recherche et recommandations pour le panel admin (Phase 2)
+- ✅ `04-rails/phase2-migrations-models.md` - Documentation Phase 2 (migrations et modèles)
 
 ### Tests
-- ✅ `05-testing/strategy.md` - Stratégie de tests (Minitest)
+- ✅ `05-testing/strategy.md` - Stratégie de tests (RSpec configuré)
 
 ### À compléter
 - `08-security-privacy/` - Approfondir modèle de menace & RGPD

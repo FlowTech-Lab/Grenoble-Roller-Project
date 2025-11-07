@@ -10,9 +10,65 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_06_121500) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_07_164412) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "attendances", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "event_id", null: false
+    t.string "status", limit: 20, default: "registered", null: false
+    t.bigint "payment_id"
+    t.string "stripe_customer_id", limit: 255
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_attendances_on_event_id"
+    t.index ["payment_id"], name: "index_attendances_on_payment_id"
+    t.index ["user_id", "event_id"], name: "index_attendances_on_user_id_and_event_id", unique: true
+    t.index ["user_id"], name: "index_attendances_on_user_id"
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.bigint "actor_user_id", null: false
+    t.string "action", limit: 80, null: false
+    t.string "target_type", limit: 50, null: false
+    t.integer "target_id", null: false
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_user_id"], name: "index_audit_logs_on_actor_user_id"
+    t.index ["target_type", "target_id"], name: "index_audit_logs_on_target_type_and_target_id"
+  end
+
+  create_table "contact_messages", force: :cascade do |t|
+    t.string "name", limit: 140, null: false
+    t.string "email", limit: 255, null: false
+    t.string "subject", limit: 140, null: false
+    t.text "message", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.bigint "creator_user_id", null: false
+    t.string "status", limit: 20, default: "draft", null: false
+    t.timestamptz "start_at", null: false
+    t.integer "duration_min", null: false
+    t.string "title", limit: 140, null: false
+    t.text "description", null: false
+    t.integer "price_cents", default: 0, null: false
+    t.string "currency", limit: 3, default: "EUR", null: false
+    t.string "location_text", limit: 255, null: false
+    t.decimal "meeting_lat", precision: 9, scale: 6
+    t.decimal "meeting_lng", precision: 9, scale: 6
+    t.bigint "route_id"
+    t.string "cover_image_url", limit: 255
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_user_id"], name: "index_events_on_creator_user_id"
+    t.index ["route_id"], name: "index_events_on_route_id"
+    t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
+  end
 
   create_table "option_types", force: :cascade do |t|
     t.string "name", limit: 50, null: false
@@ -49,6 +105,28 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_06_121500) do
     t.datetime "updated_at", null: false
     t.index ["payment_id"], name: "index_orders_on_payment_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "organizer_applications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "motivation"
+    t.string "status", limit: 20, default: "pending", null: false
+    t.bigint "reviewed_by_id"
+    t.datetime "reviewed_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reviewed_by_id"], name: "index_organizer_applications_on_reviewed_by_id"
+    t.index ["user_id"], name: "index_organizer_applications_on_user_id"
+  end
+
+  create_table "partners", force: :cascade do |t|
+    t.string "name", limit: 140, null: false
+    t.string "url", limit: 255
+    t.string "logo_url", limit: 255
+    t.text "description"
+    t.boolean "is_active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "payments", force: :cascade do |t|
@@ -108,6 +186,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_06_121500) do
     t.index ["code"], name: "index_roles_on_code", unique: true
   end
 
+  create_table "routes", force: :cascade do |t|
+    t.string "name", limit: 140, null: false
+    t.text "description"
+    t.decimal "distance_km", precision: 5, scale: 2
+    t.integer "elevation_m"
+    t.string "difficulty", limit: 20
+    t.string "gpx_url", limit: 255
+    t.string "map_image_url", limit: 255
+    t.text "safety_notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -138,11 +229,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_06_121500) do
     t.index ["variant_id"], name: "index_variant_option_values_on_variant_id"
   end
 
+  add_foreign_key "attendances", "events"
+  add_foreign_key "attendances", "payments"
+  add_foreign_key "attendances", "users"
+  add_foreign_key "audit_logs", "users", column: "actor_user_id"
+  add_foreign_key "events", "routes"
+  add_foreign_key "events", "users", column: "creator_user_id"
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "product_variants", column: "variant_id"
   add_foreign_key "orders", "payments"
   add_foreign_key "orders", "users"
+  add_foreign_key "organizer_applications", "users"
+  add_foreign_key "organizer_applications", "users", column: "reviewed_by_id"
   add_foreign_key "product_variants", "products"
   add_foreign_key "products", "product_categories", column: "category_id"
   add_foreign_key "users", "roles"

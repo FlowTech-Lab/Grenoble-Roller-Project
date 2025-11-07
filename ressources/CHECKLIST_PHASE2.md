@@ -9,10 +9,10 @@
 ## 📋 CHECKLIST GLOBALE
 
 ### ✅ PRÉ-REQUIS (Avant Jour 1)
-- [ ] ER Diagram créé (Event → Route, User, Attendance)
-- [ ] Branching strategy définie (main/develop/feature branches)
-- [ ] Database.yml configuré pour 3 envs (dev/staging/prod)
-- [ ] `dbdiagram.md` à jour avec tous les modèles
+- [x] ER Diagram créé (Event → Route, User, Attendance) ✅
+- [x] Branching strategy définie (main/develop/feature branches) ✅
+- [x] Database.yml configuré pour 3 envs (dev/staging/prod) ✅
+- [x] `dbdiagram.md` à jour avec tous les modèles ✅
 
 ---
 
@@ -31,7 +31,7 @@
 ### ✅ Jour 4 : Autorisation & Tests Setup
 - [ ] Pundit (policies) **AVANT** les contrôleurs métier
 - [ ] ApplicationController avec includes Pundit complet
-- [ ] RSpec setup + minitest configuration
+- [x] RSpec setup ✅ (configuré)
 - [ ] FactoryBot (factories/) NOT fixtures
 - [ ] Database cleaner + Transaction rollback
 
@@ -46,15 +46,16 @@
 ## 📅 SEMAINE 2 (Jour 6-10) - CRUD Événements
 
 ### ✅ Jour 6-7 : Models CRUD + Tests (TDD) ⚠️ **ORDRE MIGRATIONS CRITIQUE**
-- [ ] **⚠️ ORDRE CORRECT DES MIGRATIONS** :
-  1. `routes` ← **CRÉER EN PREMIER** (Event dépend de Route via FK)
-  2. `events` (APRÈS routes)
-  3. `attendances` (APRÈS events)
-  4. `organizer_applications`, `partners`, `contact_messages`, `audit_logs`
-- [ ] **Énums avec validations Rails 8** : `enum status: [...], validate: true` + `validates :status, presence: true`
+- [x] **⚠️ ORDRE CORRECT DES MIGRATIONS** :
+  1. `routes` ← **CRÉER EN PREMIER** (Event dépend de Route via FK) ✅
+  2. `events` (APRÈS routes) ✅
+  3. `attendances` (APRÈS events) ✅
+  4. `organizer_applications`, `partners`, `contact_messages`, `audit_logs` ✅
+- [x] **Énums avec validations Rails 8** : `enum :status, {...}, validate: true` ✅
+- [x] Migrations appliquées et testées ✅
+- [x] Seeds créés et testés (Phase 2) ✅
 - [ ] Controllers manuels (app/controllers/events_controller.rb)
 - [ ] Tests RSpec models (validations, associations, scopes) - **TDD dès le début**
-- [ ] Seeds ordonnés (db/seeds/001_roles.rb → 002_users.rb → 003_events.rb)
 
 ### ✅ Jour 8 : Controllers & Routes
 - [ ] CRUD Events controller complet (new, create, edit, update, destroy)
@@ -135,8 +136,8 @@
 ## 🚨 POINTS CRITIQUES À VÉRIFIER
 
 ### ⚠️ Ordre Migrations
-- [ ] Routes créées AVANT Events (Event dépend de Route via FK `route_id`)
-- [ ] Events créés AVANT Attendances (Attendance dépend de Event via FK)
+- [x] Routes créées AVANT Events (Event dépend de Route via FK `route_id`) ✅
+- [x] Events créés AVANT Attendances (Attendance dépend de Event via FK) ✅
 
 ### ⚠️ ActiveAdmin Timing
 - [ ] ActiveAdmin installé APRÈS tests complets (Jour 12, pas avant)
