@@ -70,35 +70,65 @@
 ### **PHASE 3 : BUILDING** (Semaine 1-6)
 **Objectif : Livrer une feature shippable**
 
-#### Semaine 1-2 : Get One Piece Done
-- [ ] **Setup projet Rails 8** : `rails new grenoble-roller --database=postgresql --css=bootstrap`
-- [ ] **Authentification complète** : Devise + rôles (Membre, Staff, Admin)
-- [ ] **Premier événement** : CRUD complet (créer, lire, modifier, supprimer)
-- [ ] **Inscription événement** : Un utilisateur peut s'inscrire à un événement
-- [ ] **Déploiement staging** : Application accessible en ligne
+#### ✅ Semaine 1-2 : Get One Piece Done (TERMINÉ - Phase 1 E-commerce)
+- [X] **Setup projet Rails 8** : `rails new grenoble-roller --database=postgresql --css=bootstrap`
+  - ✅ Rails 8.0.4 configuré avec Docker (dev/staging/prod)
+  - ✅ PostgreSQL 16, Bootstrap 5, Stimulus, Turbo
+- [X] **Authentification de base** : Devise + rôles (7 niveaux: USER à SUPERADMIN)
+  - ✅ Devise configuré et fonctionnel
+  - ✅ Système de rôles avec 7 niveaux
+  - ✅ Seeds avec utilisateurs de test
+- [X] **E-commerce complet** : Boutique fonctionnelle
+  - ✅ Catalogue produits avec variantes et options
+  - ✅ Panier session (add/update/remove/clear)
+  - ✅ Checkout et création de commandes
+  - ✅ Historique des commandes
+  - ✅ Guardrails stock et validations
+- [X] **Documentation** : README complet, runbooks, setup guides
+  - ✅ Documentation mise à jour (Nov 2025)
+  - ✅ Guides de setup Docker
+  - ✅ Documentation architecture et modèles
 
-#### Semaine 2-4 : Map Scopes
-- [ ] **Scope 1** : Gestion des rôles et permissions (Pundit)
-- [ ] **Scope 2** : Upload et gestion des photos d'événements
-- [ ] **Scope 3** : Interface admin pour valider les organisateurs
-- [ ] **Scope 4** : Notifications par email (inscription, rappel)
+#### 🔜 Semaine 2-4 : Map Scopes (Phase 2 - Événements)
+- [ ] **Scope 1** : CRUD événements complet
+  - Créer, lire, modifier, supprimer événements
+  - Calendrier interactif
+  - Gestion des parcours
+- [ ] **Scope 2** : Inscription aux événements
+  - Un utilisateur peut s'inscrire à un événement
+  - Gestion des places (si nécessaire)
+- [ ] **Scope 3** : Gestion des rôles et permissions (Pundit)
+  - Permissions fines pour organisateurs
+  - Validation des organisateurs
+- [ ] **Scope 4** : Upload et gestion des photos d'événements
+  - Active Storage pour photos
+  - Affichage dans les événements
+- [ ] **Scope 5** : Interface admin pour valider les organisateurs
+  - Panel admin minimal
+  - Validation des organisateurs
+- [ ] **Scope 6** : Notifications par email (inscription, rappel)
+  - Emails d'inscription événement
+  - Rappels événements
 - [ ] **Ajustements** : Réduire scope si nécessaire (pas deadline)
 
-#### Semaine 4-6 : Downhill Execution
+#### 🔜 Semaine 4-6 : Downhill Execution (Phase 2)
 - [ ] **Hill Chart tracking** : Position sur la montée/descente
 - [ ] **Tests complets** : RSpec + Capybara (coverage >70%)
 - [ ] **Performance** : Tests de charge basiques
-- [ ] **Sécurité** : Audit Brakeman
-- [ ] **Documentation** : README complet, runbooks
+- [ ] **Sécurité** : Audit Brakeman complet
+- [ ] **Documentation** : Mise à jour avec module événements
 
-#### Semaine 6 : Shipping
-- [ ] **Déploiement production** : Application en ligne
+#### 🔜 Semaine 6 : Shipping (Phase 2)
+- [ ] **Déploiement production** : Application en ligne avec événements
 - [ ] **Formation utilisateurs** : 2-3 membres testent
 - [ ] **Feedback** : Collecter retours utilisateurs
-- [ ] **Documentation** : Guide utilisateur basique
+- [ ] **Documentation** : Guide utilisateur complet
 
-#### Output
-→ **MVP shippable** en production
+#### Output Phase 1
+→ **E-commerce shippable** : Boutique fonctionnelle complète
+
+#### Output Phase 2 (À venir)
+→ **MVP complet shippable** : E-commerce + Événements en production
 
 ---
 
@@ -171,7 +201,14 @@ Uphill (Montée) = Découverte, incertitude
 Downhill (Descente) = Exécution, certitude
 ```
 
-**Semaine 1-2** : Uphill (découverte Rails 8, setup)
+### Phase 1 - E-commerce (✅ TERMINÉ)
+**Semaine 1-2** : ✅ Downhill (exécution, finition e-commerce)
+- Setup Rails 8 : Terminé
+- E-commerce : Terminé et fonctionnel
+- Documentation : Terminé
+
+### Phase 2 - Événements (🔜 À VENIR)
+**Semaine 1-2** : Uphill (découverte module événements, CRUD)
 **Semaine 3-4** : Transition (découverte complexité réelle)
 **Semaine 5-6** : Downhill (exécution, finition)
 
@@ -204,7 +241,17 @@ Downhill (Descente) = Exécution, certitude
 
 ## 🎯 CRITÈRES DE "DONE"
 
-### MVP Shippable
+### Phase 1 - E-commerce Shippable (✅ TERMINÉ)
+- [X] Application fonctionnelle en développement
+- [X] E-commerce complet (catalogue, panier, checkout, commandes)
+- [X] Authentification et rôles fonctionnels
+- [X] Documentation complète (README, setup, architecture)
+- [X] Docker configuré (dev/staging/prod)
+- [ ] Tests >70% coverage (à planifier)
+- [ ] Performance acceptable (<2s chargement) (à tester)
+- [ ] Déploiement production (à finaliser)
+
+### Phase 2 - MVP Complet Shippable (🔜 À VENIR)
 - [ ] Application déployée en production
 - [ ] 2-3 utilisateurs peuvent tester
 - [ ] Flux principal fonctionne (inscription → événement → participation)

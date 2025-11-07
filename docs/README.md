@@ -29,15 +29,40 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - Pas de docs obsolètes: si un doc est dépassé, soit le mettre à jour, soit le supprimer.
 
 ## Flux recommandé (nouveau dev)
-1. Lire `00-overview/project-vision.md` et `03-architecture/system-overview.md`.
-2. Suivre `04-rails/setup/` puis `07-ops/runbooks/local-setup.md` pour l’environnement local.
-3. Lire `01-ways-of-working/` (branches, PR, revue).
-4. Consulter `05-testing/strategy.md` et `rspec-guidelines.md`.
+1. Lire le `README.md` principal du projet pour une vue d'ensemble.
+2. Suivre `04-rails/setup/local-development.md` pour configurer l'environnement local avec Docker.
+3. Consulter `03-architecture/domain/models.md` pour comprendre la structure des données.
+4. Lire `04-rails/setup/credentials.md` pour la gestion des secrets.
+5. Lire `01-ways-of-working/` (branches, PR, revue).
+6. Consulter `05-testing/strategy.md` pour les tests.
+
+## Déploiement
+- **Développement** : `04-rails/setup/local-development.md` ou `07-ops/runbooks/local-setup.md`
+- **Staging** : `07-ops/runbooks/staging-setup.md`
+- **Production** : À venir
 
 ## Qualité & sécurité
 - CI: lint RuboCop, Brakeman, Bundler Audit, tests RSpec.
 - Secrets: `04-rails/setup/credentials.md` + rotation régulière.
 - Performances: traquer N+1, cache, jobs idempotents.
+
+## Documentation actuelle (État du projet - Nov 2025)
+
+### Setup & Configuration
+- ✅ `04-rails/setup/local-development.md` - Guide de setup avec Docker (dev)
+- ✅ `04-rails/setup/credentials.md` - Gestion des credentials Rails
+- ✅ `07-ops/runbooks/staging-setup.md` - Guide d'installation staging
+
+### Architecture
+- ✅ `03-architecture/domain/models.md` - Modèles de domaine actuels (e-commerce)
+
+### Operations
+- ✅ `07-ops/runbooks/local-setup.md` - Runbook setup local
+
+### À compléter
+- `00-overview/project-vision.md` - Vision du projet
+- `03-architecture/system-overview.md` - Vue d'ensemble système
+- `07-ops/runbooks/production-setup.md` - Guide d'installation production
 
 ## Mise à jour continue
 - À chaque PR significative: mettre à jour la section concernée.

@@ -422,13 +422,28 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 ---
 
-## 📅 TIMELINE 3 SEMAINES
+## 📅 TIMELINE ACTUALISÉE
 
-| Semaine | Phase | Objectifs | Livrables |
-|---------|-------|-----------|-----------|
-| 1 | Building (S1) | Setup Rails 8, Auth (Devise), Rôles (Pundit), 1er CRUD Événements | Auth complète, CRUD Événements fonctionnel, base UI |
-| 2 | Building (S2) | Permissions fines, Upload photos (Active Storage), Interface admin, Notifications email | Rôles/permissions, gestion médias, admin minimal, mails |
-| 3 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Doc, Déploiement | Coverage OK, audit sécurité, README/runbooks, staging+prod |
+### ✅ PHASE 1 - E-COMMERCE (TERMINÉE - Nov 2025)
+
+| Semaine | Phase | Objectifs | Livrables | État |
+|---------|-------|-----------|-----------|------|
+| 1-2 | Building (S1) | Setup Rails 8, Auth (Devise), Rôles, E-commerce complet | Auth + rôles, Boutique fonctionnelle, Docker configuré | ✅ TERMINÉ |
+
+**Livrables Phase 1** :
+- ✅ Rails 8.0.4 configuré avec Docker
+- ✅ Authentification Devise + 7 niveaux de rôles
+- ✅ E-commerce complet (catalogue, panier, checkout, commandes)
+- ✅ Documentation complète (README, setup, architecture)
+- ✅ Seeds complets avec données de test
+
+### 🔜 PHASE 2 - ÉVÉNEMENTS (À PLANIFIER)
+
+| Semaine | Phase | Objectifs | Livrables | État |
+|---------|-------|-----------|-----------|------|
+| 1-2 | Building (S1) | CRUD Événements, Inscriptions, Calendrier | Événements fonctionnels, système d'inscription | 🔜 À VENIR |
+| 3-4 | Building (S2) | Permissions fines (Pundit), Upload photos, Interface admin, Notifications | Rôles/permissions, gestion médias, admin minimal, mails | 🔜 À VENIR |
+| 5-6 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Déploiement prod | Coverage OK, audit sécurité, déploiement finalisé | 🔜 À VENIR |
 
 ---
 
@@ -436,34 +451,87 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 Ce fil conducteur garantit une livraison progressive, un maximum de visibilité et un contrôle qualité continu. L'utilisation de Trello optimise la collaboration à deux, tandis que Rails 8, Bootstrap et les pipelines automatisés assurent rapidité, sécurité et maintenabilité.
 
+### État Actuel (Nov 2025)
+- ✅ **Phase 1 E-commerce** : Terminée et fonctionnelle
+- 🔜 **Phase 2 Événements** : À planifier et développer
+
 **Prochaines étapes** :
 1. ✅ Validation du fil conducteur
-2. 🔄 Création du tableau Trello
-3. 🚀 Lancement de la Phase 1
+2. ✅ Création du tableau Trello
+3. ✅ Phase 1 E-commerce terminée
+4. 🔜 Planification Phase 2 - Événements
+5. 🔜 Développement module événements
 
 ---
 
-## ✅/🔜 SUIVI D'AVANCEMENT (Semaine 1)
+## ✅/🔜 SUIVI D'AVANCEMENT (État actuel - Nov 2025)
 
-- [✅] Base Users (Devise) + détails (`first_name`, `last_name`, etc.)
+### ✅ PHASE 1 - E-COMMERCE (TERMINÉE)
+
+#### Authentification & Rôles
+- [✅] Base Users (Devise) + détails (`first_name`, `last_name`, `bio`, `phone`, `avatar_url`)
 - [✅] Table `roles` conforme (ajout `code` unique + `level`) et FK `users.role_id`
-- [✅] Seeds rôles (USER→SUPERADMIN) et Florian en SUPERADMIN
+- [✅] Seeds rôles (7 niveaux: USER→SUPERADMIN) et Florian en SUPERADMIN
+- [✅] Devise configuré et fonctionnel
+- [✅] Système de rôles opérationnel
+
+#### E-commerce - Base de données
 - [✅] Boutique: `product_categories`, `products`, `product_variants`, `option_types`, `option_values`, `variant_option_values`
 - [✅] Paiements (`payments`) et commandes (`orders`, `order_items`)
 - [✅] FK `order_items.variant_id → product_variants.id` + seeds corrigés
-- [✅] **Boutique fonctionnelle** :
+- [✅] 13 migrations appliquées avec succès
+- [✅] Seeds complets (7 rôles, utilisateurs, produits, commandes, paiements)
+
+#### E-commerce - Fonctionnalités
+- [✅] **Boutique fonctionnelle complète** :
   - [✅] Catalogue produits (index/show) avec variantes
   - [✅] Panier session (add/update/remove/clear)
   - [✅] Checkout (création commande + déduction stock)
   - [✅] Historique commandes (index/show)
   - [✅] Guardrails (validation stock, quantité max, variantes actives)
   - [✅] UX quantité limitée au stock sur fiche produit
+
+#### Infrastructure & Documentation
+- [✅] Setup Rails 8.0.4 avec Docker (dev/staging/prod)
+- [✅] PostgreSQL 16 configuré
+- [✅] Docker Compose pour 3 environnements
+- [✅] Documentation complète mise à jour (README, setup guides, architecture)
+- [✅] Credentials Rails configurés et régénérés
+
+### 🔜 PHASE 2 - ÉVÉNEMENTS (À VENIR)
+
+#### Améliorations E-commerce
 - [🔜] **Boutique UX/UI** : Améliorations visuelles et expérience utilisateur
-- [🔜] Auth complète (Devise: vues + flows)
-- [🔜] Permissions (Pundit: politiques + intégration)
-- [🔜] Événements: `routes`, `events`, `attendances`, `organizer_applications`
+- [🔜] Panier persistant pour utilisateurs connectés (fusion session/DB)
+
+#### Authentification avancée
+- [🔜] Permissions fines (Pundit: politiques + intégration)
+- [🔜] Vues Devise personnalisées si nécessaire
+
+#### Module Événements
+- [🔜] Modèles: `routes`, `events`, `attendances`, `organizer_applications`
+- [🔜] CRUD événements complet
+- [🔜] Calendrier interactif
+- [🔜] Inscription aux événements
+- [🔜] Gestion des parcours (GPX)
+
+#### Administration
 - [🔜] Interface admin minimale
+- [🔜] Validation des organisateurs
+- [🔜] Statistiques d'utilisation
+
+#### Médias & Notifications
 - [🔜] Upload photos (Active Storage)
+- [🔜] Notifications email (inscription événement, rappel)
+
+#### Tests & Qualité
+- [🔜] Tests complets (RSpec + Capybara, coverage >70%)
+- [🔜] Tests de performance
+- [🔜] Audit sécurité complet (Brakeman)
+
+#### Déploiement
+- [🔜] Déploiement production finalisé
+- [🔜] Formation utilisateurs
 
 ---
 
