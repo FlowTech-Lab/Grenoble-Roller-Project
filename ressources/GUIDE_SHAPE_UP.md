@@ -1,5 +1,10 @@
-# 🚀 GUIDE SHAPE UP - Grenoble Roller
-## Rails 8 + Bootstrap - Méthodologie Shape Up Adaptée
+# 🚀 GUIDE SHAPE UP - Méthodologie et Configuration Trello
+## Référence complète de la méthodologie Shape Up et son implémentation avec Trello
+
+> **📋 Pour le planning détaillé du projet** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md)
+
+Ce document explique la **méthodologie Shape Up** et comment la mettre en pratique avec **Trello**.  
+Pour les détails de planning, sprints et état d'avancement, consultez le fil conducteur principal.
 
 ---
 
@@ -70,65 +75,14 @@
 ### **PHASE 3 : BUILDING** (Semaine 1-6)
 **Objectif : Livrer une feature shippable**
 
-#### ✅ Semaine 1-2 : Get One Piece Done (TERMINÉ - Phase 1 E-commerce)
-- [X] **Setup projet Rails 8** : `rails new grenoble-roller --database=postgresql --css=bootstrap`
-  - ✅ Rails 8.0.4 configuré avec Docker (dev/staging/prod)
-  - ✅ PostgreSQL 16, Bootstrap 5, Stimulus, Turbo
-- [X] **Authentification de base** : Devise + rôles (7 niveaux: USER à SUPERADMIN)
-  - ✅ Devise configuré et fonctionnel
-  - ✅ Système de rôles avec 7 niveaux
-  - ✅ Seeds avec utilisateurs de test
-- [X] **E-commerce complet** : Boutique fonctionnelle
-  - ✅ Catalogue produits avec variantes et options
-  - ✅ Panier session (add/update/remove/clear)
-  - ✅ Checkout et création de commandes
-  - ✅ Historique des commandes
-  - ✅ Guardrails stock et validations
-- [X] **Documentation** : README complet, runbooks, setup guides
-  - ✅ Documentation mise à jour (Nov 2025)
-  - ✅ Guides de setup Docker
-  - ✅ Documentation architecture et modèles
+#### Exemple de Structure Building (Référence)
+> **📋 Pour le planning détaillé** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) sections "PHASE 2 - ÉVÉNEMENTS"
 
-#### 🔜 Semaine 2-4 : Map Scopes (Phase 2 - Événements)
-- [ ] **Scope 1** : CRUD événements complet
-  - Créer, lire, modifier, supprimer événements
-  - Calendrier interactif
-  - Gestion des parcours
-- [ ] **Scope 2** : Inscription aux événements
-  - Un utilisateur peut s'inscrire à un événement
-  - Gestion des places (si nécessaire)
-- [ ] **Scope 3** : Gestion des rôles et permissions (Pundit)
-  - Permissions fines pour organisateurs
-  - Validation des organisateurs
-- [ ] **Scope 4** : Upload et gestion des photos d'événements
-  - Active Storage pour photos
-  - Affichage dans les événements
-- [ ] **Scope 5** : Interface admin pour valider les organisateurs
-  - Panel admin minimal
-  - Validation des organisateurs
-- [ ] **Scope 6** : Notifications par email (inscription, rappel)
-  - Emails d'inscription événement
-  - Rappels événements
-- [ ] **Ajustements** : Réduire scope si nécessaire (pas deadline)
+**Semaine 1-2** : Get One Piece Done (MVP minimal fonctionnel)  
+**Semaine 3-4** : Map Scopes (Développer les scopes identifiés)  
+**Semaine 5-6** : Downhill Execution (Tests, performance, sécurité)
 
-#### 🔜 Semaine 4-6 : Downhill Execution (Phase 2)
-- [ ] **Hill Chart tracking** : Position sur la montée/descente
-- [ ] **Tests complets** : RSpec + Capybara (coverage >70%)
-- [ ] **Performance** : Tests de charge basiques
-- [ ] **Sécurité** : Audit Brakeman complet
-- [ ] **Documentation** : Mise à jour avec module événements
-
-#### 🔜 Semaine 6 : Shipping (Phase 2)
-- [ ] **Déploiement production** : Application en ligne avec événements
-- [ ] **Formation utilisateurs** : 2-3 membres testent
-- [ ] **Feedback** : Collecter retours utilisateurs
-- [ ] **Documentation** : Guide utilisateur complet
-
-#### Output Phase 1
-→ **E-commerce shippable** : Boutique fonctionnelle complète
-
-#### Output Phase 2 (À venir)
-→ **MVP complet shippable** : E-commerce + Événements en production
+**Principe** : Livrer une feature shippable à la fin des 6 semaines
 
 ---
 
@@ -168,6 +122,108 @@
 
 ---
 
+## 📋 CONFIGURATION TRELLO
+
+### Structure du Tableau
+
+#### Colonnes Principales (Shape Up Adapté)
+
+##### 📥 **Shaping** (2-3 jours)
+- Épopées et User Stories en cours de définition
+- Champs personnalisés : Priorité (P0-P3), Estimation (points), Assigné
+- Labels : Front, Back, Design, Ops
+
+##### 📋 **Betting Table** (1 jour)
+- Pitches prêts pour validation
+- Critères d'acceptation définis
+- Estimation validée
+
+##### 🔄 **Building** (3 semaines)
+- Une carte = une feature active
+- Limite : 1-2 cartes par développeur (4 personnes = 4-8 cartes max)
+- Mise à jour quotidienne
+
+##### 👀 **En Revue/QA**
+- Tests unitaires et d'intégration
+- Revue de code croisée
+- Tests de régression
+
+##### ✅ **Shippable**
+- Feature complète déployable en production
+- Tests de performance OK
+- Documentation mise à jour
+
+##### 🏁 **Terminé**
+- Historique des livrables
+- Métriques de vélocité
+
+##### 🚫 **Cooldown** (1 semaine)
+- Bug fixes prioritaires
+- Technical debt paydown
+- R&D personnel
+- Formation
+
+---
+
+### Configuration Trello (4 personnes)
+
+#### Rôles Équipe
+- **Tech Lead** : Architecture, DevOps, coordination
+- **Backend Dev** : Rails, API, base de données
+- **Frontend Dev** : Bootstrap, JavaScript, UX
+- **Fullstack Dev** : Polyvalent, support équipe
+
+#### Champs Personnalisés
+- **Priorité** : P0 (Critique), P1 (Haute), P2 (Moyenne), P3 (Basse)
+- **Estimation** : Points (1, 2, 3, 5, 8)
+- **Assigné** : Tech Lead, Backend Dev, Frontend Dev, Fullstack Dev
+- **Phase** : Shaping, Betting, Building, Cooldown
+
+#### Labels
+- **Front** : Interface utilisateur
+- **Back** : Backend, API
+- **Design** : UX/UI, wireframes
+- **Ops** : DevOps, déploiement
+- **Test** : Tests, QA
+- **Doc** : Documentation
+
+#### Power-Ups Recommandés
+- **Calendar** : Voir les deadlines
+- **Custom Fields** : Priorité, estimation
+- **Butler** : Automatisation basique
+
+---
+
+### Exemples de Cartes par Phase
+
+> **📋 Pour les cartes détaillées et l'état d'avancement** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md)
+
+#### **PHASE 1 : SHAPING** (2-3 jours)
+Exemples de cartes :
+- Identifier problème utilisateur
+- Définir appetite
+- Breadboarding solution
+- Identifier rabbit holes
+- Écrire pitch
+
+#### **PHASE 2 : BETTING TABLE** (1 jour)
+Exemples de cartes :
+- Présenter pitch
+- Décision finale
+
+#### **PHASE 3 : BUILDING** (3 semaines)
+> **📋 Pour le détail des cartes et l'état** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) sections "PHASE 2 - ÉVÉNEMENTS"
+
+#### **PHASE 4 : COOLDOWN** (1 semaine)
+Exemples de cartes :
+- Bug fixes prioritaires
+- Technical debt paydown
+- R&D personnel
+- Formation
+- Rétrospective
+
+---
+
 ## 🛠️ STACK TECHNIQUE SIMPLIFIÉ
 
 ### **Backend (Monolithe Rails)**
@@ -201,18 +257,14 @@ Uphill (Montée) = Découverte, incertitude
 Downhill (Descente) = Exécution, certitude
 ```
 
-### Phase 1 - E-commerce (✅ TERMINÉ)
-**Semaine 1-2** : ✅ Downhill (exécution, finition e-commerce)
-- Setup Rails 8 : Terminé
-- E-commerce : Terminé et fonctionnel
-- Documentation : Terminé
+### Exemple d'Utilisation
+> **📋 Pour l'état d'avancement actuel** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) section "SUIVI D'AVANCEMENT"
 
-### Phase 2 - Événements (🔜 À VENIR)
-**Semaine 1-2** : Uphill (découverte module événements, CRUD)
-**Semaine 3-4** : Transition (découverte complexité réelle)
-**Semaine 5-6** : Downhill (exécution, finition)
+**Principe** : Suivre la position sur la montée/descente pour chaque scope
+- **Uphill** = Découverte, incertitude (OK en début)
+- **Downhill** = Exécution, certitude (objectif fin de cycle)
 
-**⚠️ Alarme** : Si encore "uphill" en S5 → revoir scope
+**⚠️ Alarme** : Si encore "uphill" en fin de cycle → revoir scope
 
 ---
 
@@ -241,23 +293,15 @@ Downhill (Descente) = Exécution, certitude
 
 ## 🎯 CRITÈRES DE "DONE"
 
-### Phase 1 - E-commerce Shippable (✅ TERMINÉ)
-- [X] Application fonctionnelle en développement
-- [X] E-commerce complet (catalogue, panier, checkout, commandes)
-- [X] Authentification et rôles fonctionnels
-- [X] Documentation complète (README, setup, architecture)
-- [X] Docker configuré (dev/staging/prod)
-- [ ] Tests >70% coverage (à planifier)
-- [ ] Performance acceptable (<2s chargement) (à tester)
-- [ ] Déploiement production (à finaliser)
+### Critères Généraux de "Done"
+> **📋 Pour les critères spécifiques au projet** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md)
 
-### Phase 2 - MVP Complet Shippable (🔜 À VENIR)
-- [ ] Application déployée en production
-- [ ] 2-3 utilisateurs peuvent tester
-- [ ] Flux principal fonctionne (inscription → événement → participation)
-- [ ] Tests >70% coverage
-- [ ] Documentation utilisateur basique
-- [ ] Performance acceptable (<2s chargement)
+Une feature est "Done" quand :
+- ✅ Tests passent (coverage >70%)
+- ✅ Code review approuvé
+- ✅ Documentation mise à jour
+- ✅ Déployable en production
+- ✅ Performance acceptable
 
 ### Cooldown Réussi
 - [ ] Bugs critiques corrigés
@@ -268,6 +312,38 @@ Downhill (Descente) = Exécution, certitude
 
 ---
 
+## 📊 MÉTRIQUES SHAPE UP
+
+### Vélocité
+- **Points par semaine** : 15-20 points par personne (60-80 points total)
+- **Burndown chart** : Suivi quotidien
+- **Hill Chart** : Position montée/descente
+
+### Exemple de Répartition
+> **📋 Pour l'état d'avancement actuel** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) section "SUIVI D'AVANCEMENT"
+
+**Principe** : Suivre les points par semaine et ajuster le scope si nécessaire
+
+---
+
+## 🚨 RÈGLES SHAPE UP
+
+### ✅ À Faire
+- **Appetite fixe** : 6 semaines, scope flexible
+- **Cooldown obligatoire** : 2 semaines de repos
+- **Feature shippable** : Déployable en production
+- **Pas de backlog** : Projet unique
+- **Limite cartes** : 1-2 cartes par personne max
+
+### ❌ À Éviter
+- **Sprints fragmentés** : Pas de 1 semaine
+- **Backlog infini** : Pas de sprint planning
+- **Estimation en temps** : Utiliser points
+- **Sauter cooldown** : Santé équipe prioritaire
+- **Over-engineering** : MVP simple d'abord
+
+---
+
 ## 📚 RESSOURCES
 
 ### Livre Officiel (Gratuit)
@@ -275,7 +351,7 @@ Downhill (Descente) = Exécution, certitude
 
 ### Outils Recommandés
 - **Excalidraw** : Wireframes rapides
-- **Linear** : Tracking scopes (pas user stories)
+- **Trello** : Tracking scopes (configuration ci-dessus)
 - **Hill Chart** : Plugin custom ou spreadsheet
 - **Loom** : Vidéos async pour progrès
 
@@ -293,5 +369,5 @@ Downhill (Descente) = Exécution, certitude
 ---
 
 *Guide créé selon la méthodologie Shape Up adaptée*  
-*Version : 1.0 - Shape Up Compliant*  
+*Version : 2.0 - Shape Up Compliant avec Configuration Trello*  
 *Équipe : 2 développeurs*

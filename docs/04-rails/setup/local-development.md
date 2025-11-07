@@ -188,7 +188,6 @@ If port 3000 or 5434 is already in use:
 
 ## Next Steps
 
-- Read the [Rails conventions](conventions/)
-- Check the [architecture documentation](../03-architecture/)
-- Review the [testing strategy](../05-testing/)
-
+- Read the [Rails conventions](../conventions/)
+- Check the [architecture documentation](../../03-architecture/)
+- Review the [testing strategy](../../05-testing/)

@@ -42,7 +42,8 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - **Production** : À venir
 
 ## Qualité & sécurité
-- CI: lint RuboCop, Brakeman, Bundler Audit, tests RSpec.
+- Qualité: RuboCop Rails Omakase, Brakeman.
+- Tests: Minitest (dossier `test/`), exécution via `bin/rails test`.
 - Secrets: `04-rails/setup/credentials.md` + rotation régulière.
 - Performances: traquer N+1, cache, jobs idempotents.
 
@@ -52,20 +53,28 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `04-rails/setup/local-development.md` - Guide de setup avec Docker (dev)
 - ✅ `04-rails/setup/credentials.md` - Gestion des credentials Rails
 - ✅ `07-ops/runbooks/staging-setup.md` - Guide d'installation staging
+- ✅ `07-ops/runbooks/production-setup.md` - Guide d'installation production
 
 ### Architecture
 - ✅ `03-architecture/domain/models.md` - Modèles de domaine actuels (e-commerce)
+- ✅ `03-architecture/system-overview.md` - Vue d'ensemble système (C4 niveau Contexte)
 
 ### Operations
 - ✅ `07-ops/runbooks/local-setup.md` - Runbook setup local
 
+### Rails
+- ✅ `04-rails/routes.md` - Routes et flux principaux
+- ✅ `04-rails/conventions/README.md` - Conventions Rails du projet
+- ✅ `04-rails/admin-panel-research.md` - Recherche et recommandations pour le panel admin (Phase 2)
+
+### Tests
+- ✅ `05-testing/strategy.md` - Stratégie de tests (Minitest)
+
 ### À compléter
-- `00-overview/project-vision.md` - Vision du projet
-- `03-architecture/system-overview.md` - Vue d'ensemble système
-- `07-ops/runbooks/production-setup.md` - Guide d'installation production
+- `08-security-privacy/` - Approfondir modèle de menace & RGPD
+- `10-decisions-and-changelog/` - ADRs et changelog à enrichir
 
 ## Mise à jour continue
 - À chaque PR significative: mettre à jour la section concernée.
 - À chaque décision: créer/mettre à jour un ADR.
 - À chaque cycle: renseigner `02-shape-up/building/cycle-XX-build-log.md` puis `cooldown`.
-

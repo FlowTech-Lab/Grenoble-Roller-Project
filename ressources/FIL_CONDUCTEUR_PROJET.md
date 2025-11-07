@@ -1,6 +1,10 @@
 # 🎯 FIL CONDUCTEUR - Projet Site Web Grenoble Roller
 ## Rails 8 + Bootstrap - Plan de développement structuré
 
+> **📋 Pour la méthodologie Shape Up et configuration Trello** : Voir [`GUIDE_SHAPE_UP.md`](GUIDE_SHAPE_UP.md)
+
+**Document principal** : Ce fichier contient le planning détaillé, les sprints, l'état d'avancement et toutes les informations de suivi du projet.
+
 ---
 
 ## 📋 SYNTHÈSE EXÉCUTIVE
@@ -246,8 +250,9 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [ ] Module initiation
 - [ ] Gestion des créneaux
 - [ ] Système de prêt matériel
-- [ ] Panel admin (statistiques)
-- [ ] Gestion des membres
+- [ ] Panel admin (Administrate) - Installation, configuration, statistiques
+- [ ] Gestion des membres via admin
+- **Référence** : `docs/04-rails/admin-panel-research.md`
 
 #### 📋 **Sprint 6 : Réseaux Sociaux & Finalisation**
 - [ ] API Twitter/X et Facebook
@@ -442,7 +447,26 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 | Semaine | Phase | Objectifs | Livrables | État |
 |---------|-------|-----------|-----------|------|
 | 1-2 | Building (S1) | CRUD Événements, Inscriptions, Calendrier | Événements fonctionnels, système d'inscription | 🔜 À VENIR |
-| 3-4 | Building (S2) | Permissions fines (Pundit), Upload photos, Interface admin, Notifications | Rôles/permissions, gestion médias, admin minimal, mails | 🔜 À VENIR |
+| 3-4 | Building (S2) | Permissions fines (Pundit), Upload photos, Interface admin (Administrate), Notifications | Rôles/permissions, gestion médias, admin minimal (Administrate), mails | 🔜 À VENIR |
+
+**Détails Semaines 3-4 (Building S2)** :
+
+**Semaine 3 - Setup Admin Panel** :
+- [ ] Installation gem Administrate
+- [ ] Configuration dashboards de base (User, Event, EventRegistration)
+- [ ] Intégration avec Pundit pour permissions
+- [ ] Sécurisation accès (rôles ADMIN/SUPERADMIN uniquement)
+- [ ] Configuration routes admin (`/admin`)
+
+**Semaine 4 - Fonctionnalités Admin** :
+- [ ] Dashboard validation organisateurs
+- [ ] Statistiques de base (événements, membres, inscriptions)
+- [ ] Actions personnalisées (valider organisateur, etc.)
+- [ ] Upload photos via Active Storage dans admin
+- [ ] Personnalisation interface (cohérence avec Bootstrap)
+
+**Référence** : `docs/04-rails/admin-panel-research.md` (recherche et recommandations complètes)
+
 | 5-6 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Déploiement prod | Coverage OK, audit sécurité, déploiement finalisé | 🔜 À VENIR |
 
 ---
