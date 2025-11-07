@@ -1,11 +1,11 @@
 # 🎯 FIL CONDUCTEUR - Projet Site Web Grenoble Roller
 ## Rails 8 + Bootstrap - Plan de développement structuré
 
+> **📋 Document unique Phase 2** : Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) - Planning, checklist et pièges à éviter  
 > **📋 Pour la méthodologie Shape Up et configuration Trello** : Voir [`GUIDE_SHAPE_UP.md`](GUIDE_SHAPE_UP.md)  
-> **📋 Pour le guide technique d'implémentation** : Voir [`GUIDE_IMPLEMENTATION.md`](GUIDE_IMPLEMENTATION.md)  
-> **📋 Pour la checklist complète Phase 2** : Voir [`CHECKLIST_PHASE2.md`](CHECKLIST_PHASE2.md)
+> **📋 Pour le guide technique d'implémentation** : Voir [`GUIDE_IMPLEMENTATION.md`](GUIDE_IMPLEMENTATION.md)
 
-**Document principal** : Ce fichier contient le planning détaillé, les sprints, l'état d'avancement et toutes les informations de suivi du projet.
+**Document principal** : Ce fichier contient le planning général, les sprints, l'état d'avancement et toutes les informations de suivi du projet.
 
 ---
 
@@ -257,41 +257,18 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [ ] Intégration HelloAsso (optionnel Phase 2)
 - [ ] Gestion des inscriptions
 
-#### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)** ⚠️ **CORRIGÉ - APRÈS tests complets**
+#### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)**
 
-**✅ PRÉ-REQUIS (Jour 1-10) - MODÈLES PHASE 2**
-- [x] Event modèle 100% finalisé (migrations, associations, validations OK) ✅
-- [x] Routes CRÉÉES AVANT Events (ordre migrations respecté) ✅
-- [x] Migrations appliquées (7 migrations Phase 2) ✅
-- [x] Seeds créés et testés (Phase 2) ✅
-- [x] Modèles testés (validations, associations, scopes) ✅
-- [ ] Tests RSpec Event >70% coverage (à faire)
-- [ ] Attendances + inscriptions testées (à faire)
-- [ ] Calendrier fonctionnel testé (à faire)
+> **📋 Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé complet**
 
-**⚠️ TIMING CRITIQUE : ActiveAdmin installé Jour 11-12 SEULEMENT**
-- [ ] Jour 11 : Installation ActiveAdmin (modèles garantis stables)
-  - `bundle add activeadmin devise`
-  - `rails generate activeadmin:install --skip-users`
-  - `rails generate activeadmin:resource Event Route User Attendance Product Order`
-- [ ] Configuration Pundit dans `app/admin/application.rb`
-- [ ] Sécurisation routes admin (rôles ADMIN/SUPERADMIN uniquement)
+**Résumé** :
+- ✅ **Pré-requis** : Modèles Phase 2 créés et stables
+- 🔜 **Jour 5-10** : Tests RSpec complets (>70% coverage)
+- 🔜 **Jour 11** : Installation ActiveAdmin (génère automatiquement tout)
+- 🔜 **Jour 12-13** : Customisation ActiveAdmin
+- 🔜 **Jour 14-15** : Tests admin + finalisation
 
-**📝 Jour 12-13 : Customisation ActiveAdmin**
-- [ ] Filtres (email, role, created_at) - utilisables par bénévoles via UI
-- [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
-- [ ] Export CSV/PDF intégré
-- [ ] Dashboard validation organisateurs
-- [ ] Actions personnalisées (validate_organizer!)
-- [ ] Upload photos via Active Storage
-
-**✅ Jour 14 : Tests Admin Panel**
-- [ ] Tests admin controllers (RSpec)
-- [ ] Integration tests (admin actions via Capybara)
-- [ ] Permissions Pundit testées
-- [ ] Coverage >70% maintenu
-
-**Référence** : `docs/04-rails/admin-panel-research.md` (**ActiveAdmin recommandé pour contexte associatif**)
+**⚠️ IMPORTANT** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir `PLAN_PHASE2.md`)
 
 #### 📋 **Sprint 6 : Initiation & Finalisation** (Phase 2 - Week 3)
 - [ ] Module initiation
@@ -528,18 +505,16 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - [✅] E-commerce CRUD (current state)
 
 #### ✅ Phase 2 Révisée (Semaines 3-4) - EN COURS
-- [x] **EVENT models** (Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog) - **Jour 1-2** ✅
+> **📋 Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé**
+
+- [x] **EVENT models** (Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog) ✅
 - [x] **Migrations appliquées** (7 migrations Phase 2) ✅
 - [x] **Seeds créés et testés** (Phase 2) ✅
-- [ ] **EVENT CRUD controllers** (manual or scaffold) - **Jour 3-4**
-- [ ] **Permissions (Pundit policies)** - **Jour 7** (AVANT ActiveAdmin)
-- [ ] **Tests (RSpec > 70%)** - **TDD dès Week 1-2**
-- [ ] **CI/CD green** - **Jour 4-5**
-- [ ] → **THEN install ActiveAdmin** (Jour 11-12, après tests complets)
-- [ ] **ActiveAdmin resources** (Event, User, Route, Product, Order, Attendance) - **Jour 11**
-- [ ] **Customization ActiveAdmin** (filtres, bulk actions, exports) - **Jour 12-13**
-- [ ] **Integration tests** (admin actions) - **Jour 12**
-- [ ] **Feature specs** (Capybara) - **Jour 12**
+- [x] **Modèles stables** (validations, associations, scopes) ✅
+- [ ] **Tests RSpec complets (>70% coverage)** ← **PRIORITÉ ABSOLUE**
+- [ ] **ActiveAdmin** (Jour 11, après tests >70%)
+- [ ] **Customisation ActiveAdmin** (Jour 12-13)
+- [ ] **Tests admin + finalisation** (Jour 14-15)
 
 #### ✅ Phase 3 (Semaine 5)
 - [ ] Performance tests
@@ -622,117 +597,18 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 | 1-2 | Building (S1) | CRUD Événements, Inscriptions, Calendrier | Événements fonctionnels, système d'inscription | 🔜 À VENIR |
 | 3 | Building (S2) | **Modèles stables → ActiveAdmin (Jour 11+)**, Permissions fines (Pundit), Upload photos, Notifications | Rôles/permissions, gestion médias, admin minimal (ActiveAdmin), mails | 🔜 À VENIR |
 
-#### 📋 **SÉQUENCE DÉTAILLÉE - Phase 2 (Rails 8 Best Practices)**
+#### 📋 **SÉQUENCE DÉTAILLÉE - Phase 2**
 
-**Week 1-2 (Building S1) - CRUD Événements**
+> **📋 Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé jour par jour avec checklist complète et pièges à éviter**
 
-**Jour 1-2 : Models CRUD + Tests (TDD)** ⚠️ **ORDRE MIGRATIONS CRITIQUE** ✅ TERMINÉ
+**Résumé rapide** :
+- ✅ **Jour 1-2** : Modèles et migrations Phase 2 créés et appliqués
+- 🔜 **Jour 5-10** : Tests RSpec complets (>70% coverage) - **PRIORITÉ ABSOLUE**
+- 🔜 **Jour 11** : Installation ActiveAdmin (génère automatiquement contrôleurs/vues/routes)
+- 🔜 **Jour 12-13** : Customisation ActiveAdmin
+- 🔜 **Jour 14-15** : Tests admin + finalisation
 
-- [x] **⚠️ ORDRE CORRECT DES MIGRATIONS** (dépendances FK) ✅ :
-  1. Base Models (pas de dépendances) : `Role`, `User` ✓ (déjà fait)
-  2. **`routes`** ← **CRÉÉ EN PREMIER** (Event dépend de Route via FK `route_id`) ✅
-  3. `events` (belongs_to :creator_user, belongs_to :route) ← Route existe ✅
-  4. `attendances` (belongs_to :user, belongs_to :event) ← Event existe ✅
-  5. `organizer_applications` (belongs_to :user, belongs_to :reviewed_by) ✅
-  6. `partners`, `contact_messages`, `audit_logs` (pas de dépendances) ✅
-
-- [x] **Migrations créées dans l'ordre** (selon `dbdiagram.md`) ✅ :
-  - `routes` (EN PREMIER - Event dépend de Route via FK) ✅
-  - `events` (APRÈS routes) ✅
-  - `attendances` (APRÈS events) ✅
-  - `organizer_applications`, `partners`, `contact_messages`, `audit_logs` ✅
-- [x] **Énums avec validations Rails 8** : `enum :status, {...}, validate: true` ✅
-- [x] **Migrations appliquées et testées** ✅
-- [x] **Seeds créés et testés (Phase 2)** ✅
-- [ ] Controllers manuels (app/controllers/events_controller.rb)
-- [ ] Tests RSpec models (validations, associations, scopes) - **TDD dès le début**
-
-**Jour 3-4 : Controllers & Routes**
-- [ ] CRUD Events controller complet (new, create, edit, update, destroy)
-- [ ] Routes RESTful + custom (register, unregister)
-- [ ] Vues ERB de base (index, show, new, edit)
-- [ ] Tests controllers (RSpec avec let + factories)
-- [ ] Guardrails (validations dates, places, etc.)
-
-**Jour 5-6 : Inscriptions & Calendrier**
-- [ ] Système inscription/désinscription aux événements
-- [ ] Calendrier interactif (FullCalendar)
-- [ ] Tests d'intégration (Capybara)
-
-**Jour 7-8 : Tests Unitaires & Intégration (TDD)**
-- [ ] Tests unitaires Event (RSpec) - validations, associations, scopes
-- [ ] Tests intégration Events + Attendances (Capybara)
-- [ ] Tests calendar + inscription workflow
-- [ ] **Coverage >70%** (unitaire + intégration) ← **OBLIGATOIRE**
-- [ ] Revue qualité, fixes bugs, optimisation requêtes (N+1 queries)
-
-**Jour 9 : Pundit Policies (AVANT ActiveAdmin)**
-- [ ] Créer policies : `app/policies/event_policy.rb`
-- [ ] Update ApplicationController avec Pundit complet
-- [ ] Tests authorization (Pundit rules)
-- [ ] Sécurisation accès (rôles ADMIN/SUPERADMIN uniquement)
-
-**Jour 10 : Finalisation Modèles & Tests**
-- [x] ⚠️ **Vérifier que tous les modèles Event/Route sont 100% FINALISÉS** ✅ :
-  - Migrations définitives ✅
-  - Associations complètes ✅
-  - Validations finales ✅
-  - Enums corrects ✅
-  - Seeds créés et testés ✅
-- [x] Revue finale code Event/Route/Attendance ✅
-- [x] Documentation modèles ✅
-- [ ] Tests passing >70% (à faire avec RSpec)
-
-**SEMAINE 3 (Jour 11-15) - Admin Panel & Finalisation**
-
-**⚠️ CRITIQUE : ActiveAdmin installé Jour 11-12 SEULEMENT (après modèles garantis stables)**
-
-**Jour 11 : Installation ActiveAdmin (MODÈLES 100% STABLES)**
-- [x] ⚠️ **PRÉ-REQUIS vérifiés** :
-  - Event modèle 100% finalisé ✅
-  - Routes CRÉÉES AVANT Events ✅
-  - Migrations appliquées et testées ✅
-  - Seeds créés et testés ✅
-  - [ ] Tests RSpec Event >70% coverage (à faire)
-  - [ ] Attendances + inscriptions testées (à faire)
-  - [ ] Calendrier fonctionnel testé (à faire)
-- [ ] `bundle add activeadmin devise`
-- [ ] `rails generate activeadmin:install --skip-users`
-- [ ] Config `app/admin/application.rb` (authentication_method, PunditAdapter)
-- [ ] Generate resources : `rails g activeadmin:resource Event User Route Product Order Attendance`
-- [ ] Configuration routes admin (`/admin`)
-
-**Jour 12-13 : Customisation ActiveAdmin**
-- [ ] Configurer colonnes visibles (index, show, form)
-- [ ] Filtres simples (email, role, created_at) - utilisables via UI par bénévoles
-- [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
-- [ ] Export CSV/PDF intégré (out-of-the-box)
-- [ ] Dashboard validation organisateurs
-- [ ] Actions personnalisées (validate_organizer!)
-- [ ] Upload photos via Active Storage dans admin
-- [ ] Statistiques de base (chartkick si besoin)
-
-**Jour 14 : Tests Admin Panel & Notifications**
-- [ ] Tests admin controllers (RSpec)
-- [ ] Integration tests (admin actions via Capybara)
-- [ ] Permissions Pundit testées
-- [ ] Coverage >70% maintenu
-- [ ] Notifications email (inscription événement, rappel)
-- [ ] Active Storage configuration complète
-- [ ] Upload photos événements
-
-**Jour 15 : Performance & Sécurité (OPTIONNEL pour MVP)**
-- [ ] Audit sécurité complet (Brakeman) ← **OBLIGATOIRE**
-- [ ] Optimisation requêtes (N+1 queries) ← **OBLIGATOIRE**
-- [ ] Tests de performance basiques (optionnel pour MVP associatif)
-  - ⚠️ **Si temps** : Tests simple via k6 (10→100 users)
-  - ⚠️ **Si pas temps** : Sauter, faire en Cooldown
-- [ ] Cache strategy (Redis) - optionnel MVP
-- [ ] CDN assets - optionnel MVP
-
-> **Note** : Pour MVP associatif, **Coverage >70% suffit**. Tests de charge coûtent du temps sans ROI immédiat. Faire en Cooldown si nécessaire.
-
-**Référence** : `docs/04-rails/admin-panel-research.md` (recherche et recommandations complètes - **ActiveAdmin recommandé pour contexte associatif**)
+**⚠️ PIÈGE CRITIQUE** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir détails dans `PLAN_PHASE2.md`)
 
 | 5-6 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Déploiement prod | Coverage OK, audit sécurité, déploiement finalisé | 🔜 À VENIR |
 
@@ -754,10 +630,12 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 5. ✅ Modèles et migrations Phase 2 créés et appliqués
 6. ✅ Seeds Phase 2 créés et testés
 7. ✅ RSpec configuré
-8. 🔜 Développement contrôleurs Phase 2 (EventsController, RoutesController, etc.)
-9. 🔜 Développement vues Phase 2
-10. 🔜 Tests RSpec Phase 2 (coverage >70%)
-11. 🔜 ActiveAdmin (Jour 11-12, après tests complets)
+8. 🔜 **Tests RSpec Phase 2 complets (coverage >70%)** ← **PRIORITÉ ABSOLUE**
+9. 🔜 ActiveAdmin (Jour 11, après tests >70%)
+10. 🔜 Customisation ActiveAdmin (Jour 12-13)
+11. 🔜 Tests admin + permissions (Jour 14-15)
+
+**⚠️ IMPORTANT** : Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé Phase 2 avec les pièges à éviter
 
 ---
 
