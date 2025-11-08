@@ -14,12 +14,12 @@
 - [x] Validations, associations, enums, scopes
 - [x] Seeds créés et testés (Phase 2)
 - [x] RSpec configuré
+- [x] ActiveAdmin installé (core + intégration Pundit configurée)
 
 ### 🔜 EN COURS
 - [ ] FactoryBot factories pour tous les modèles Phase 2 (optionnel si helpers suffisants)
 
 ### 📅 À VENIR
-- [ ] ActiveAdmin (Jour 11, après tests >70%)
 - [ ] Customisation ActiveAdmin (Jour 12-13)
 - [ ] Tests admin + permissions (Jour 14-15)
 
@@ -103,13 +103,50 @@ rspec spec/models
 > Utiliser la même configuration (`DATABASE_URL` explicite) pour `db:drop db:create db:schema:load` si un reset test est nécessaire.
 
 #### Installation
-- [ ] `bundle add activeadmin devise`
-- [ ] `rails generate activeadmin:install --skip-users`
-- [ ] Config `app/admin/application.rb` (authentication_method, PunditAdapter)
+- [x] Gems `activeadmin` + `pundit` ajoutées (`Gemfile`) puis `bundle install` via Docker (`BUNDLE_PATH=/rails/vendor/bundle`)
+- [x] `rails generate active_admin:install --skip-users`
+- [x] Configuration `config/initializers/active_admin.rb` + `ApplicationController` (Devise auth, `ActiveAdmin::PunditAdapter`, redirections)
+- [x] `rails generate pundit:install`
+- [x] `rails db:migrate` (création table `active_admin_comments`)
+- [x] Vérification RSpec `spec/models` (base test) après migration
 - [ ] Generate resources :
   ```bash
   rails g activeadmin:resource Event Route User Attendance Product Order OrganizerApplication Partner ContactMessage AuditLog
   ```
+
+> Commandes exécutées (Docker) :
+> ```bash
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   web bundle install
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+>   web bundle exec rails generate active_admin:install --skip-users
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+>   web bundle exec rails generate pundit:install
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+>   web bundle exec rails db:migrate
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+>   -e RAILS_ENV=test \
+>   web bundle exec rails db:drop db:create db:schema:load
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+>   -e RAILS_ENV=test \
+>   web bundle exec rspec spec/models
+> ```
 
 #### ✅ ActiveAdmin génère automatiquement
 - Contrôleurs admin (`app/admin/events.rb`, `app/admin/routes.rb`, etc.)
@@ -163,7 +200,7 @@ rspec spec/models
 - [x] Coverage >70%
 
 ### ActiveAdmin (Jour 11+)
-- [ ] Installation
+- [x] Installation
 - [ ] Resources générés
 - [ ] Customisation (filtres, bulk actions, exports)
 - [ ] Tests admin
