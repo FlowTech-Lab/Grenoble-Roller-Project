@@ -17,9 +17,9 @@
 - 🔜 CRUD événements (Jour 6-8)
 - 🔜 Inscriptions aux événements (Jour 9)
 - 🔜 Calendrier interactif (Jour 9)
-- 🔜 Tests TDD >70% coverage (Jour 10)
-- 🔜 Permissions fines Pundit (Jour 11)
-- 🔜 Interface admin ActiveAdmin (Jour 12-13)
+- ✅ Tests TDD >70% coverage (Jour 10)
+- ✅ Permissions fines Pundit (Jour 11)
+- ✅ Interface admin ActiveAdmin (Jour 12-13)
 - 🔜 Upload photos (Active Storage) (Jour 14)
 - 🔜 Notifications email (Jour 14)
 - 🔜 Performance & Sécurité (Jour 15)
@@ -670,11 +670,16 @@ end
 - [ ] Jour 10 : Tests Unitaires & Intégration (Coverage >70%)
 
 ### ✅ SEMAINE 3 (Jour 11-15) - Admin Panel & Finalisation
-- [ ] Jour 11 : Pundit Policies + Finalisation Modèles
-- [ ] Jour 12 : Installation ActiveAdmin ⚠️ **APRÈS modèles stables**
+- [x] Jour 11 : Pundit Policies + Finalisation Modèles (policies + accès sécurisés)
+- [x] Jour 12 : Installation ActiveAdmin ⚠️ **APRÈS modèles stables**
+- [x] Génération ressources ActiveAdmin : Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog, User, Product, Order
 - [ ] Jour 13 : Customisation ActiveAdmin
 - [ ] Jour 14 : Tests Admin Panel & Notifications
 - [ ] Jour 15 : Performance & Sécurité (Brakeman)
+
+> ℹ️ `bin/docker-entrypoint` reconstruit automatiquement les CSS (application + ActiveAdmin) à chaque `docker compose up web`.  
+> Accès back-office validé : http://localhost:3000/admin (`admin@roller.com` / `admin123`).
+> Accès admin vérifié : http://localhost:3000/admin (`admin@roller.com` / `admin123`).
 
 ---
 
@@ -691,8 +696,8 @@ end
 ### 🔜 Phase 2 - Événements (15 jours - À VENIR)
 1. **🔜 Checklist complète** : Voir [`CHECKLIST_PHASE2.md`](../ressources/CHECKLIST_PHASE2.md)
 2. **🔜 Développement module événements** (Jour 6-9)
-3. **🔜 Tests TDD >70% coverage** (Jour 10)
-4. **🔜 ActiveAdmin** (Jour 12-13)
+3. **✅ Tests TDD >70% coverage** (Jour 10)
+4. **✅ ActiveAdmin** (Jour 12-13)
 5. **🔜 Performance & Sécurité** (Jour 15)
 
 ---

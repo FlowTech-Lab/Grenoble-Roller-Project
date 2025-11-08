@@ -242,11 +242,11 @@ end
 **⚠️ CRITIQUE : Installer ActiveAdmin APRÈS que les modèles Event/Route soient 100% stables**
 
 #### Jour 8-9 : Installation ActiveAdmin
-- [ ] `bundle add activeadmin devise`
-- [ ] `rails generate activeadmin:install --skip-users`
-- [ ] Config `app/admin/application.rb` avec Pundit
-- [ ] Generate resources : `Event`, `User`, `Route`, `Product`, `Order`
-- [ ] Configuration routes admin (`/admin`)
+- [x] `bundle add activeadmin devise` *(+ ajout `pundit`)*
+- [x] `rails generate activeadmin:install --skip-users`
+- [x] Config `config/initializers/active_admin.rb` + `ApplicationController` avec Pundit/Devise
+- [ ] Generate resources : `Event`, `User`, `Route`, `Product`, `Order`, etc.
+- [x] Configuration routes admin (`/admin`) via `ActiveAdmin.routes(self)`
 
 #### Jour 10-11 : Customisation ActiveAdmin
 - [ ] Configurer colonnes visibles (index, show, form)
@@ -263,6 +263,47 @@ end
 - [ ] Integration tests (admin actions)
 - [ ] Feature specs (Capybara)
 - [ ] Documentation pour bénévoles (guide d'utilisation)
+
+## 🛠️ 2025-11-08 — Implémentation ActiveAdmin & Pundit
+
+- Gems ajoutées : `activeadmin`, `pundit` (bundler dans image Docker).
+- Générateurs exécutés :
+  ```bash
+  docker compose -f ops/dev/docker-compose.yml run --rm \
+    -e BUNDLE_PATH=/usr/local/bundle \
+    -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+    web bundle exec rails generate active_admin:install --skip-users
+
+  docker compose -f ops/dev/docker-compose.yml run --rm \
+    -e BUNDLE_PATH=/usr/local/bundle \
+    -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+    web bundle exec rails generate pundit:install
+  ```
+- Configuration :
+  - `config/initializers/active_admin.rb` : `authentication_method`, `current_user_method`, `ActiveAdmin::PunditAdapter`, logout path.
+  - `ApplicationController` : `include Pundit::Authorization`, gestion d'`ActiveAdminAccessDenied`.
+  - `app/policies/admin/application_policy.rb` + `admin/dashboard_policy.rb` ajoutés (rôles `ADMIN/SUPERADMIN`).
+- Automatisation :
+  - `bin/docker-entrypoint` reconstruit les CSS (application + ActiveAdmin) à chaque `docker compose up web` ⇒ plus besoin de lancer `npm run build:css` à la main.
+- Validation :
+  - Dashboard accessible sur `http://localhost:3000/admin` (compte seed `admin@roller.com` / `admin123`).
+- Ressources générées :
+  - `Route`, `Event`, `Attendance`, `OrganizerApplication`, `Partner`, `ContactMessage`, `AuditLog`, `User`, `Product`, `Order`
+  - Configuration index/filtres/formulaires + actions d’approbation organisateurs, ressources lecture seule (ContactMessage/AuditLog).
+- Migration `20251108000914_create_active_admin_comments.rb` appliquée.
+- Vérification post-migration :
+  ```bash
+  docker compose -f ops/dev/docker-compose.yml run --rm \
+    -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+    -e RAILS_ENV=test \
+    web bundle exec rails db:drop db:create db:schema:load
+
+  docker compose -f ops/dev/docker-compose.yml run --rm \
+    -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+    -e RAILS_ENV=test \
+    web bundle exec rspec spec/models
+  # => 75 examples, 0 failures
+  ```
 
 ## 🚫 Cas où Administrate resterait OK
 

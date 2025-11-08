@@ -19,6 +19,8 @@ gem "cssbundling-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 gem 'devise'
+gem 'pundit'
+gem 'activeadmin'
 
 gem 'table_print'
 

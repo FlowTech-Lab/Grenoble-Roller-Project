@@ -20,6 +20,30 @@ class Event < ApplicationRecord
   scope :past, -> { where('start_at <= ?', Time.current) }
   scope :published, -> { where(status: 'published') }
 
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[
+      id
+      title
+      status
+      start_at
+      duration_min
+      price_cents
+      currency
+      location_text
+      meeting_lat
+      meeting_lng
+      route_id
+      creator_user_id
+      cover_image_url
+      created_at
+      updated_at
+    ]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[attendances creator_user route users]
+  end
+
   def full?
     # Si vous avez un max_participants, vérifier ici
     false

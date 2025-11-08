@@ -255,7 +255,7 @@ resources :contact_messages, only: [:new, :create]
 - [x] Tests de validations et associations réussis
 - [ ] Contrôleurs créés
 - [ ] Routes créées
-- [ ] Tests RSpec créés
+- [x] Tests RSpec créés (`spec/models` : 75 exemples, 0 échec)
 - [ ] Vues créées
 
 ---
