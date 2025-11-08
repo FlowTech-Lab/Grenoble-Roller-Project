@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const setTheme = (theme) => {
     root.setAttribute('data-theme', theme);
+    root.setAttribute('data-bs-theme', theme === 'dark' ? 'dark' : 'light');
     localStorage.setItem(storageKey, theme);
     if (toggleButton) {
       toggleButton.dataset.theme = theme;
