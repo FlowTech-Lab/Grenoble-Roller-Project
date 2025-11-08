@@ -90,7 +90,17 @@ rspec spec/models
 - [x] Modèles 100% stables ✅
 - [x] Migrations appliquées ✅
 - [x] Seeds testés ✅
-- [ ] **Tests RSpec >70% coverage** ← **OBLIGATOIRE**
+- [x] **Tests RSpec >70% coverage** ← **OBLIGATOIRE** (confirmé via `bundle exec rspec spec/models`)
+
+> ✅ Commande validée (Docker) :
+> ```bash
+> docker compose -f ops/dev/docker-compose.yml up -d db
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+>   -e RAILS_ENV=test \
+>   web bundle exec rspec spec/models
+> ```
+> Utiliser la même configuration (`DATABASE_URL` explicite) pour `db:drop db:create db:schema:load` si un reset test est nécessaire.
 
 #### Installation
 - [ ] `bundle add activeadmin devise`
