@@ -287,6 +287,9 @@ end
   - `bin/docker-entrypoint` reconstruit les CSS (application + ActiveAdmin) à chaque `docker compose up web` ⇒ plus besoin de lancer `npm run build:css` à la main.
 - Validation :
   - Dashboard accessible sur `http://localhost:3000/admin` (compte seed `admin@roller.com` / `admin123`).
+- Ressources générées :
+  - `Route`, `Event`, `Attendance`, `OrganizerApplication`, `Partner`, `ContactMessage`, `AuditLog`, `User`, `Product`, `Order`
+  - Configuration index/filtres/formulaires + actions d’approbation organisateurs, ressources lecture seule (ContactMessage/AuditLog).
 - Migration `20251108000914_create_active_admin_comments.rb` appliquée.
 - Vérification post-migration :
   ```bash

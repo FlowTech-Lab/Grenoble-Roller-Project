@@ -25,6 +25,14 @@ class User < ApplicationRecord
   validates :first_name, presence: true
   validates :phone, format: { with: /\A[0-9\s\-\+\(\)]+\z/, message: "format invalide" }, allow_blank: true
   
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id email first_name last_name phone email_verified role_id created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[orders created_events attendances events organizer_applications reviewed_applications audit_logs role]
+  end
+
   private
   
   def set_default_role

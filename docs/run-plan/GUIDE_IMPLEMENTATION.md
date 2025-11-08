@@ -672,11 +672,13 @@ end
 ### ✅ SEMAINE 3 (Jour 11-15) - Admin Panel & Finalisation
 - [x] Jour 11 : Pundit Policies + Finalisation Modèles (policies + accès sécurisés)
 - [x] Jour 12 : Installation ActiveAdmin ⚠️ **APRÈS modèles stables**
+- [x] Génération ressources ActiveAdmin : Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog, User, Product, Order
 - [ ] Jour 13 : Customisation ActiveAdmin
 - [ ] Jour 14 : Tests Admin Panel & Notifications
 - [ ] Jour 15 : Performance & Sécurité (Brakeman)
 
 > ℹ️ `bin/docker-entrypoint` reconstruit automatiquement les CSS (application + ActiveAdmin) à chaque `docker compose up web`.  
+> Accès back-office validé : http://localhost:3000/admin (`admin@roller.com` / `admin123`).
 > Accès admin vérifié : http://localhost:3000/admin (`admin@roller.com` / `admin123`).
 
 ---

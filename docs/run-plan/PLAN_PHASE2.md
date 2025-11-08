@@ -111,9 +111,18 @@ rspec spec/models
 - [x] Vérification RSpec `spec/models` (base test) après migration
 - [x] `bin/docker-entrypoint` mis à jour pour reconstruire automatiquement les CSS (application + ActiveAdmin) à chaque `docker compose up web`
 - [x] Accès `/admin` validé (`admin@roller.com` / `admin123`)
-- [ ] Generate resources :
+- [x] Generate resources :
   ```bash
-  rails g activeadmin:resource Event Route User Attendance Product Order OrganizerApplication Partner ContactMessage AuditLog
+  rails g activeadmin:resource Route
+  rails g activeadmin:resource Event
+  rails g activeadmin:resource Attendance
+  rails g activeadmin:resource OrganizerApplication
+  rails g activeadmin:resource Partner
+  rails g activeadmin:resource ContactMessage
+  rails g activeadmin:resource AuditLog
+  rails g activeadmin:resource User
+  rails g activeadmin:resource Product
+  rails g activeadmin:resource Order
   ```
 
 > Commandes exécutées (Docker) :

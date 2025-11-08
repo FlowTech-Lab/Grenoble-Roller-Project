@@ -5,5 +5,13 @@ class Partner < ApplicationRecord
 
   scope :active, -> { where(is_active: true) }
   scope :inactive, -> { where(is_active: false) }
+
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id name url logo_url description is_active created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    []
+  end
 end
 
