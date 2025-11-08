@@ -18,8 +18,15 @@ if [ "${RAILS_ENV}" == "development" ] && [ -f "package.json" ]; then
   echo "Rebuilding CSS to ensure latest changes are applied..."
   # Ensure builds directory exists
   mkdir -p app/assets/builds
-  # Build CSS
-  npm run build:css || echo "Warning: CSS rebuild failed, continuing anyway..."
+  # Build CSS (application + ActiveAdmin) with proper SASS_PATH and npm path
+  ACTIVEADMIN_STYLES_PATH=$(bundle exec ruby -e 'spec = Gem.loaded_specs["activeadmin"]; print spec&.full_gem_path ? spec.full_gem_path + "/app/assets/stylesheets" : ""')
+  if [ -n "$ACTIVEADMIN_STYLES_PATH" ]; then
+    export SASS_PATH="node_modules:${ACTIVEADMIN_STYLES_PATH}"
+  else
+    echo "Warning: Could not resolve ActiveAdmin styles path, fallback to node_modules only."
+    export SASS_PATH="node_modules"
+  fi
+  PATH="/usr/local/node/bin:$PATH" npm run build:css || echo "Warning: CSS rebuild failed, continuing anyway..."
 fi
 
 exec "${@}"
