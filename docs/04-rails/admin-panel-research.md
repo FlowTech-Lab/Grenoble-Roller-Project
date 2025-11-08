@@ -283,6 +283,10 @@ end
   - `config/initializers/active_admin.rb` : `authentication_method`, `current_user_method`, `ActiveAdmin::PunditAdapter`, logout path.
   - `ApplicationController` : `include Pundit::Authorization`, gestion d'`ActiveAdminAccessDenied`.
   - `app/policies/admin/application_policy.rb` + `admin/dashboard_policy.rb` ajoutés (rôles `ADMIN/SUPERADMIN`).
+- Automatisation :
+  - `bin/docker-entrypoint` reconstruit les CSS (application + ActiveAdmin) à chaque `docker compose up web` ⇒ plus besoin de lancer `npm run build:css` à la main.
+- Validation :
+  - Dashboard accessible sur `http://localhost:3000/admin` (compte seed `admin@roller.com` / `admin123`).
 - Migration `20251108000914_create_active_admin_comments.rb` appliquée.
 - Vérification post-migration :
   ```bash

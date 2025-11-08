@@ -263,8 +263,8 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 **Résumé** :
 - ✅ **Pré-requis** : Modèles Phase 2 créés et stables
-- 🔜 **Jour 5-10** : Tests RSpec complets (>70% coverage)
-- 🔜 **Jour 11** : Installation ActiveAdmin (génère automatiquement tout)
+- ✅ **Jour 5-10** : Tests RSpec complets (>70% coverage)
+- ✅ **Jour 11** : Installation ActiveAdmin (génère automatiquement tout)
 - 🔜 **Jour 12-13** : Customisation ActiveAdmin
 - 🔜 **Jour 14-15** : Tests admin + finalisation
 
@@ -511,8 +511,8 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - [x] **Migrations appliquées** (7 migrations Phase 2) ✅
 - [x] **Seeds créés et testés** (Phase 2) ✅
 - [x] **Modèles stables** (validations, associations, scopes) ✅
-- [ ] **Tests RSpec complets (>70% coverage)** ← **PRIORITÉ ABSOLUE**
-- [ ] **ActiveAdmin** (Jour 11, après tests >70%)
+- [x] **Tests RSpec complets (>70% coverage)** ← **OK (75 exemples, 0 échec)**
+- [x] **ActiveAdmin** (Jour 11, après tests >70%)
 - [ ] **Customisation ActiveAdmin** (Jour 12-13)
 - [ ] **Tests admin + finalisation** (Jour 14-15)
 
@@ -604,7 +604,7 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 **Résumé rapide** :
 - ✅ **Jour 1-2** : Modèles et migrations Phase 2 créés et appliqués
 - ✅ **Jour 5-10** : Tests RSpec complets (>70% coverage) réalisés
-- 🔜 **Jour 11** : Installation ActiveAdmin (génère automatiquement contrôleurs/vues/routes)
+- ✅ **Jour 11** : Installation ActiveAdmin (génère automatiquement contrôleurs/vues/routes)
 - 🔜 **Jour 12-13** : Customisation ActiveAdmin
 - 🔜 **Jour 14-15** : Tests admin + finalisation
 
@@ -631,7 +631,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 6. ✅ Seeds Phase 2 créés et testés
 7. ✅ RSpec configuré
 8. ✅ Tests RSpec Phase 2 complets (coverage >70%)
-9. 🔜 ActiveAdmin (Jour 11, après tests >70%)
+9. ✅ ActiveAdmin (Jour 11, après tests >70%)
 10. 🔜 Customisation ActiveAdmin (Jour 12-13)
 11. 🔜 Tests admin + permissions (Jour 14-15)
 

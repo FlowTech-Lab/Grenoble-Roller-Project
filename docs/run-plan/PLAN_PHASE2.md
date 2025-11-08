@@ -109,6 +109,8 @@ rspec spec/models
 - [x] `rails generate pundit:install`
 - [x] `rails db:migrate` (création table `active_admin_comments`)
 - [x] Vérification RSpec `spec/models` (base test) après migration
+- [x] `bin/docker-entrypoint` mis à jour pour reconstruire automatiquement les CSS (application + ActiveAdmin) à chaque `docker compose up web`
+- [x] Accès `/admin` validé (`admin@roller.com` / `admin123`)
 - [ ] Generate resources :
   ```bash
   rails g activeadmin:resource Event Route User Attendance Product Order OrganizerApplication Partner ContactMessage AuditLog
@@ -146,6 +148,9 @@ rspec spec/models
 >   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
 >   -e RAILS_ENV=test \
 >   web bundle exec rspec spec/models
+>
+> docker compose -f ops/dev/docker-compose.yml up web
+> # → Dashboard ActiveAdmin disponible via http://localhost:3000/admin
 > ```
 
 #### ✅ ActiveAdmin génère automatiquement
