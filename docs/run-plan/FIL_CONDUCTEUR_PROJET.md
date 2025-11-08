@@ -606,6 +606,8 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - ✅ **Jour 5-10** : Tests RSpec complets (>70% coverage) réalisés
 - ✅ **Jour 11** : Installation ActiveAdmin (génère automatiquement contrôleurs/vues/routes)
 - 🔜 **Jour 12-13** : Customisation ActiveAdmin
+- 🔜 **Jour 12-13** : Ajout du module `Role` dans ActiveAdmin + ajustement Pundit pour hiérarchie dynamique
+- 🔜 **À programmer (Cooldown ou phase suivante)** : Exposer `payments`, `product_variants`, `option_types/values` dans ActiveAdmin + batch actions / exports avancés
 - 🔜 **Jour 14-15** : Tests admin + finalisation
 
 **⚠️ PIÈGE CRITIQUE** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir détails dans `PLAN_PHASE2.md`)
@@ -633,7 +635,8 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 8. ✅ Tests RSpec Phase 2 complets (coverage >70%)
 9. ✅ ActiveAdmin (Jour 11, après tests >70%)
 10. 🔜 Customisation ActiveAdmin (Jour 12-13)
-11. 🔜 Tests admin + permissions (Jour 14-15)
+11. 🔜 Exposition `Role` dans ActiveAdmin + policy Pundit
+12. 🔜 Tests admin + permissions (Jour 14-15)
 
 **⚠️ IMPORTANT** : Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé Phase 2 avec les pièges à éviter
 
@@ -696,6 +699,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [🔜] Interface admin minimale
 - [🔜] Validation des organisateurs
 - [🔜] Statistiques d'utilisation
+- [🔜] Exposition admin des entités e-commerce secondaires (`payments`, `product_variants`, `option_types/values`) + batch actions/exports personnalisés (après livraison des CRUD front)
 
 #### Médias & Notifications
 - [🔜] Upload photos (Active Storage)

@@ -174,6 +174,7 @@ rspec spec/models
 
 - [ ] Configurer colonnes visibles (index, show, form)
 - [ ] Filtres simples (email, role, created_at, status, date) - utilisables par bénévoles
+- [x] Exposer `Role` dans ActiveAdmin (ressource dédiée + policy Pundit) pour gérer la hiérarchie/rôles via l'UI
 - [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
 - [ ] Export CSV/PDF intégré (out-of-the-box)
 - [ ] Dashboard validation organisateurs
