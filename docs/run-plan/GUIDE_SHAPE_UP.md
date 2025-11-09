@@ -79,7 +79,7 @@ Pour les détails de planning, sprints et état d'avancement, consultez le fil c
 > **📋 Pour le planning détaillé** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) sections "PHASE 2 - ÉVÉNEMENTS"
 
 **Semaine 1-2** : Get One Piece Done (CRUD Événements, Inscriptions, Calendrier)  
-**Semaine 3** : Map Scopes (ActiveAdmin, Permissions, Notifications)  
+**Semaine 3** : Map Scopes (ActiveAdmin, Permissions, Notifications, ressources ecommerce secondaires + batch/exports)  
 **Jour 15** : Downhill Execution (Tests, performance, sécurité)
 
 **Principe** : Livrer une feature shippable à la fin des 3 semaines (15 jours exactement)

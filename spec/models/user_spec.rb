@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
-  let!(:role) { Role.create!(name: 'Utilisateur', code: 'USER', level: 1) }
+  let!(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
 
   def build_user(attrs = {})
     defaults = {
@@ -37,14 +37,14 @@ RSpec.describe User, type: :model do
   end
 
   it 'has many orders' do
-    user = User.create!(email: 'x@example.com', password: 'password123', first_name: 'X', role: role)
+    user = User.create!(email: 'orders@example.com', password: 'password123', first_name: 'OrderUser', role: role)
     order1 = Order.create!(user: user, status: 'pending', total_cents: 1000, currency: 'EUR')
     order2 = Order.create!(user: user, status: 'pending', total_cents: 2000, currency: 'EUR')
     expect(user.orders).to match_array([order1, order2])
   end
 
   it 'sets default role on create when not provided' do
-    user = build_user
+    user = build_user(email: 'default-role@example.com')
     expect(user.role).to be_nil
     user.save!
     expect(user.role).to eq(role)

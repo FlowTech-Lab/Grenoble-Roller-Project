@@ -1,7 +1,11 @@
 class ApplicationController < ActionController::Base
+  include Pundit::Authorization
+
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
   before_action :configure_permitted_parameters, if: :devise_controller?
+
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   protected
 
@@ -24,5 +28,15 @@ class ApplicationController < ActionController::Base
       :phone, 
       :avatar_url
     ])
+  end
+
+  private
+
+  def user_not_authorized(_exception)
+    redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+  end
+
+  def active_admin_access_denied(exception)
+    user_not_authorized(exception)
   end
 end

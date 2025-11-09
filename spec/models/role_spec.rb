@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Role, type: :model do
-  let(:valid_attributes) { { name: 'Utilisateur', code: 'USER', level: 1 } }
+  let(:valid_attributes) { { name: 'Utilisateur', code: 'ROLE_SPEC', level: 1 } }
 
   it 'is valid with valid attributes' do
     role = Role.new(valid_attributes)
@@ -25,7 +25,7 @@ RSpec.describe Role, type: :model do
   end
 
   it 'requires level to be a positive integer' do
-    role = Role.new(name: 'Test', code: 'TEST', level: 0)
+    role = Role.new(name: 'Test', code: 'ROLE_NEG', level: 0)
     expect(role).to be_invalid
     expect(role.errors[:level]).to be_present
   end

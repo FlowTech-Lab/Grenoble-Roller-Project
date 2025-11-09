@@ -2,7 +2,7 @@
 
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
-**État** : Modèles créés ✅ → Tests RSpec en cours → ActiveAdmin ensuite
+**État** : Modèles créés ✅ → Tests RSpec ✅ → ActiveAdmin ensuite
 
 ---
 
@@ -14,13 +14,12 @@
 - [x] Validations, associations, enums, scopes
 - [x] Seeds créés et testés (Phase 2)
 - [x] RSpec configuré
+- [x] ActiveAdmin installé (core + intégration Pundit configurée)
 
 ### 🔜 EN COURS
-- [ ] **Tests RSpec complets (>70% coverage)** ← **PRIORITÉ ABSOLUE**
-- [ ] FactoryBot factories pour tous les modèles Phase 2
+- [ ] FactoryBot factories pour tous les modèles Phase 2 (optionnel si helpers suffisants)
 
 ### 📅 À VENIR
-- [ ] ActiveAdmin (Jour 11, après tests >70%)
 - [ ] Customisation ActiveAdmin (Jour 12-13)
 - [ ] Tests admin + permissions (Jour 14-15)
 
@@ -63,8 +62,8 @@ rails generate activeadmin:resource Event Route
 - [x] Migrations appliquées ✅
 - [x] Seeds créés et testés ✅
 
-#### 🔜 À faire MAINTENANT
-- [ ] **Tests RSpec models complets** :
+#### ✅ Réalisé
+- [x] **Tests RSpec models complets** :
   - `spec/models/route_spec.rb` (validations name, distance_km, elevation_m, difficulty)
   - `spec/models/event_spec.rb` (validations title, description, start_at, duration_min, status, scopes)
   - `spec/models/attendance_spec.rb` (associations user, event, payment, validations)
@@ -73,15 +72,14 @@ rails generate activeadmin:resource Event Route
   - `spec/models/contact_message_spec.rb` (validations)
   - `spec/models/audit_log_spec.rb` (validations, associations, scopes)
 
-- [ ] **FactoryBot factories** pour tous les modèles Phase 2
-- [ ] **Tests edge cases** (validations négatives, associations invalides)
-- [ ] **Coverage >70%** ← **OBLIGATOIRE AVANT ActiveAdmin**
+- [x] **Tests edge cases** (validations négatives, associations invalides)
+- [x] **Coverage >70%** ← **OBLIGATOIRE AVANT ActiveAdmin** *(modèle specs : 75 exemples, 0 échec)*
 
 **Vérification** :
 ```bash
 rspec spec/models
-# ✅ 100+ examples, 0 failures
-# ✅ Coverage 75%+
+# ✅ 75 examples, 0 failures
+# ✅ Coverage >70%
 ```
 
 ---
@@ -92,16 +90,77 @@ rspec spec/models
 - [x] Modèles 100% stables ✅
 - [x] Migrations appliquées ✅
 - [x] Seeds testés ✅
-- [ ] **Tests RSpec >70% coverage** ← **OBLIGATOIRE**
+- [x] **Tests RSpec >70% coverage** ← **OBLIGATOIRE** (confirmé via `bundle exec rspec spec/models`)
+
+> ✅ Commande validée (Docker) :
+> ```bash
+> docker compose -f ops/dev/docker-compose.yml up -d db
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+>   -e RAILS_ENV=test \
+>   web bundle exec rspec spec/models
+> ```
+> Utiliser la même configuration (`DATABASE_URL` explicite) pour `db:drop db:create db:schema:load` si un reset test est nécessaire.
 
 #### Installation
-- [ ] `bundle add activeadmin devise`
-- [ ] `rails generate activeadmin:install --skip-users`
-- [ ] Config `app/admin/application.rb` (authentication_method, PunditAdapter)
-- [ ] Generate resources :
+- [x] Gems `activeadmin` + `pundit` ajoutées (`Gemfile`) puis `bundle install` via Docker (`BUNDLE_PATH=/rails/vendor/bundle`)
+- [x] `rails generate active_admin:install --skip-users`
+- [x] Configuration `config/initializers/active_admin.rb` + `ApplicationController` (Devise auth, `ActiveAdmin::PunditAdapter`, redirections)
+- [x] `rails generate pundit:install`
+- [x] `rails db:migrate` (création table `active_admin_comments`)
+- [x] Vérification RSpec `spec/models` (base test) après migration
+- [x] `bin/docker-entrypoint` mis à jour pour reconstruire automatiquement les CSS (application + ActiveAdmin) à chaque `docker compose up web`
+- [x] Accès `/admin` validé (`admin@roller.com` / `admin123`)
+- [x] Generate resources :
   ```bash
-  rails g activeadmin:resource Event Route User Attendance Product Order OrganizerApplication Partner ContactMessage AuditLog
+  rails g activeadmin:resource Route
+  rails g activeadmin:resource Event
+  rails g activeadmin:resource Attendance
+  rails g activeadmin:resource OrganizerApplication
+  rails g activeadmin:resource Partner
+  rails g activeadmin:resource ContactMessage
+  rails g activeadmin:resource AuditLog
+  rails g activeadmin:resource User
+  rails g activeadmin:resource Product
+  rails g activeadmin:resource Order
   ```
+
+> Commandes exécutées (Docker) :
+> ```bash
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   web bundle install
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+>   web bundle exec rails generate active_admin:install --skip-users
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+>   web bundle exec rails generate pundit:install
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/grenoble_roller_development \
+>   web bundle exec rails db:migrate
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+>   -e RAILS_ENV=test \
+>   web bundle exec rails db:drop db:create db:schema:load
+>
+> docker compose -f ops/dev/docker-compose.yml run --rm \
+>   -e BUNDLE_PATH=/rails/vendor/bundle \
+>   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+>   -e RAILS_ENV=test \
+>   web bundle exec rspec spec/models
+>
+> docker compose -f ops/dev/docker-compose.yml up web
+> # → Dashboard ActiveAdmin disponible via http://localhost:3000/admin
+> ```
 
 #### ✅ ActiveAdmin génère automatiquement
 - Contrôleurs admin (`app/admin/events.rb`, `app/admin/routes.rb`, etc.)
@@ -115,6 +174,7 @@ rspec spec/models
 
 - [ ] Configurer colonnes visibles (index, show, form)
 - [ ] Filtres simples (email, role, created_at, status, date) - utilisables par bénévoles
+- [x] Exposer `Role` dans ActiveAdmin (ressource dédiée + policy Pundit) pour gérer la hiérarchie/rôles via l'UI
 - [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
 - [ ] Export CSV/PDF intégré (out-of-the-box)
 - [ ] Dashboard validation organisateurs
@@ -145,17 +205,17 @@ rspec spec/models
 - [x] AuditLog ✅
 
 ### Tests RSpec
-- [ ] Route (validations, associations)
-- [ ] Event (validations, associations, scopes)
-- [ ] Attendance (validations, associations)
-- [ ] OrganizerApplication (validations, workflow)
-- [ ] Partner (validations)
-- [ ] ContactMessage (validations)
-- [ ] AuditLog (validations, associations, scopes)
-- [ ] Coverage >70%
+- [x] Route (validations, associations)
+- [x] Event (validations, associations, scopes)
+- [x] Attendance (validations, associations)
+- [x] OrganizerApplication (validations, workflow)
+- [x] Partner (validations)
+- [x] ContactMessage (validations)
+- [x] AuditLog (validations, associations, scopes)
+- [x] Coverage >70%
 
 ### ActiveAdmin (Jour 11+)
-- [ ] Installation
+- [x] Installation
 - [ ] Resources générés
 - [ ] Customisation (filtres, bulk actions, exports)
 - [ ] Tests admin
@@ -165,7 +225,7 @@ rspec spec/models
 
 ## 🎯 PROCHAINES ÉTAPES
 
-1. **MAINTENANT** : Créer les tests RSpec complets (>70% coverage)
+1. **MAINTENANT** : Préparer l'installation d'ActiveAdmin (vérifier prérequis, planifier génération)
 2. **Jour 11** : Installer ActiveAdmin (génère automatiquement tout)
 3. **Jour 12-13** : Customiser ActiveAdmin
 4. **Jour 14-15** : Tests admin + finalisation
