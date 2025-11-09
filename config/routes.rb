@@ -46,4 +46,6 @@ Rails.application.routes.draw do
       delete :cancel_attendance
     end
   end
+
+  resources :attendances, only: :index
 end

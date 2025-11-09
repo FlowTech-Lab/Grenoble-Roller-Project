@@ -66,8 +66,8 @@
       </div>
 
       <div class="d-flex flex-column flex-md-row flex-wrap gap-2 gap-md-3 mb-4 action-row">
-        <% if policy(@event).attend? %>
-          <% if @event.attendances.exists?(user: current_user) %>
+          <% if policy(@event).attend? %>
+          <% if current_user_has_attendance?(@event) %>
             <%= button_to cancel_attendance_event_path(@event), method: :delete, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0', data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
               <i class="bi bi-calendar-x me-2"></i>Se désinscrire
             <% end %>
