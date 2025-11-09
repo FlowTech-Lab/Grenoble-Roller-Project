@@ -866,6 +866,26 @@
   .card-event-info i {
     font-size: 1rem;
   }
+
+  .action-row {
+    .btn {
+      min-width: 0;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .action-row {
+      flex-direction: column;
+      .btn {
+        width: 100%;
+      }
+    }
+  }
   
   /* User Card (Horizontal) */
   .card-user {
@@ -1150,6 +1170,11 @@
     font-weight: 600;
     color: inherit;
     display: block;
+  }
+
+  .event-summary-item .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 }
 

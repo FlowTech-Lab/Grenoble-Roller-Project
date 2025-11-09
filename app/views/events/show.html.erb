@@ -56,23 +56,41 @@
             <div>
               <span class="label">Organisateur</span>
               <span class="value"><%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %></span>
+              <span class="badge bg-body-secondary text-body-secondary mt-1">
+                <i class="bi bi-people-fill me-1"></i>
+                <%= pluralize(@event.attendances.count, "inscrit") %>
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="d-flex flex-column flex-md-row flex-wrap gap-2 gap-md-3 mb-4">
+      <div class="d-flex flex-column flex-md-row flex-wrap gap-2 gap-md-3 mb-4 action-row">
+        <% if policy(@event).attend? %>
+          <% if @event.attendances.exists?(user: current_user) %>
+            <%= button_to cancel_attendance_event_path(@event), method: :delete, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0', data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
+              <i class="bi bi-calendar-x me-2"></i>Se désinscrire
+            <% end %>
+          <% else %>
+            <%= button_to attend_event_path(@event), method: :post, class: 'btn btn-liquid-primary flex-fill flex-md-grow-0', data: { turbo: false } do %>
+              <i class="bi bi-calendar-plus me-2"></i>S’inscrire
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%= link_to 'Voir tous les événements', events_path, class: 'btn btn-outline-primary flex-fill flex-md-grow-0' %>
+
         <% if policy(@event).edit? %>
-          <%= link_to edit_event_path(@event), class: 'btn btn-liquid-primary flex-fill flex-md-grow-0' do %>
+          <%= link_to edit_event_path(@event), class: 'btn btn-outline-secondary flex-fill flex-md-grow-0' do %>
             <i class="bi bi-pencil-square me-2"></i>Modifier
           <% end %>
         <% end %>
+
         <% if policy(@event).destroy? %>
           <button type="button" class="btn btn-outline-danger flex-fill flex-md-grow-0" data-bs-toggle="modal" data-bs-target="#confirmDeleteModalShow">
             <i class="bi bi-trash me-2"></i>Supprimer
           </button>
         <% end %>
-        <%= link_to 'Retour à la liste', events_path, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0' %>
       </div>
 
       <div class="mb-4">

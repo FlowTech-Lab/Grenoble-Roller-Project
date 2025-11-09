@@ -27,6 +27,14 @@ class EventPolicy < ApplicationPolicy
     admin? || owner?
   end
 
+  def attend?
+    user.present?
+  end
+
+  def cancel_attendance?
+    user.present?
+  end
+
   def permitted_attributes
     [
       :title,

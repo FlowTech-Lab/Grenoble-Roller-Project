@@ -73,10 +73,13 @@
     </div>
 
     <% if @upcoming_events.any? %>
-      <div class="event-grid">
-        <div class="row g-4">
-          <%= render partial: 'event_card', collection: @upcoming_events, as: :event %>
-        </div>
+        <div class="event-grid">
+          <div class="row g-4">
+            <%= render partial: 'event_card',
+                       collection: @upcoming_events,
+                       as: :event,
+                   locals: { render_signup_button: true, current_user: current_user } %>
+          </div>
       </div>
     <% else %>
       <div class="alert alert-info border-0 shadow-sm">

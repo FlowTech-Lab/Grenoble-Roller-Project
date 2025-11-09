@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance]
   before_action :authenticate_user!, except: %i[index show]
   before_action :load_supporting_data, only: %i[new create edit update]
 
@@ -54,6 +54,35 @@ class EventsController < ApplicationController
     @event.destroy
 
     redirect_to events_path, notice: 'Événement supprimé.'
+  end
+
+  def attend
+    authenticate_user!
+    authorize @event, :attend?
+
+    attendance = @event.attendances.find_or_initialize_by(user: current_user)
+    if attendance.persisted?
+      redirect_to @event, notice: "Vous êtes déjà inscrit(e) à cet événement."
+    else
+      attendance.status = 'registered'
+      if attendance.save
+        redirect_to @event, notice: 'Inscription confirmée.'
+      else
+        redirect_to @event, alert: attendance.errors.full_messages.to_sentence
+      end
+    end
+  end
+
+  def cancel_attendance
+    authenticate_user!
+    authorize @event, :cancel_attendance?
+
+    attendance = @event.attendances.find_by(user: current_user)
+    if attendance&.destroy
+      redirect_to @event, notice: 'Inscription annulée.'
+    else
+      redirect_to @event, alert: 'Impossible d’annuler votre participation.'
+    end
   end
 
   private

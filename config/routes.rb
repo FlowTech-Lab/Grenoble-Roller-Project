@@ -40,5 +40,10 @@ Rails.application.routes.draw do
   end
 
   # Events (Phase 2)
-  resources :events
+  resources :events do
+    member do
+      post :attend
+      delete :cancel_attendance
+    end
+  end
 end
