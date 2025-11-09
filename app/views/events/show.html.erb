@@ -1,0 +1,87 @@
+<% content_for :title, @event.title %>
+
+<section class="container py-4 py-lg-5">
+  <div class="row g-5">
+    <div class="col-lg-8">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <span class="badge text-bg-<%= @event.published? ? 'success' : @event.draft? ? 'warning' : 'secondary' %> text-uppercase">
+          <%= @event.status.humanize %>
+        </span>
+        <% if @event.route.present? %>
+          <span class="badge bg-body-secondary text-body-secondary">
+            <i class="bi bi-map me-1"></i><%= @event.route.name %>
+          </span>
+        <% end %>
+      </div>
+
+      <h1 class="display-5 fw-semibold mb-3"><%= @event.title %></h1>
+
+      <div class="text-body-secondary mb-4">
+        <p class="mb-2">
+          <i class="bi bi-calendar-week me-2"></i>
+          <strong>Début :</strong> <%= l @event.start_at, format: :long %>
+        </p>
+        <p class="mb-2">
+          <i class="bi bi-clock me-2"></i>
+          <strong>Durée :</strong> <%= @event.duration_min %> minutes
+        </p>
+        <p class="mb-2">
+          <i class="bi bi-geo-alt me-2"></i>
+          <strong>Lieu :</strong> <%= @event.location_text %>
+        </p>
+        <p class="mb-2">
+          <i class="bi bi-currency-euro me-2"></i>
+          <strong>Tarif :</strong>
+          <%= number_to_currency(@event.price_cents / 100.0, unit: @event.currency) %>
+        </p>
+        <p class="mb-0">
+          <i class="bi bi-person-badge me-2"></i>
+          <strong>Organisateur :</strong> <%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %>
+        </p>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 fw-semibold mb-3">Description</h2>
+          <p class="mb-0"><%= simple_format(@event.description) %></p>
+        </div>
+      </div>
+
+      <% if @event.meeting_lat.present? && @event.meeting_lng.present? %>
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h2 class="h5 fw-semibold mb-3">Point de rendez-vous</h2>
+            <p class="text-body-secondary mb-2">
+              Latitude : <%= @event.meeting_lat %> — Longitude : <%= @event.meeting_lng %>
+            </p>
+            <a class="btn btn-outline-primary" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=<%= @event.meeting_lat %>&mlon=<%= @event.meeting_lng %>#map=16/<%= @event.meeting_lat %>/<%= @event.meeting_lng %>">
+              Voir sur la carte
+            </a>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="ratio ratio-4x3 bg-light rounded-top" style="background-image: url('<%= @event.cover_image_url.presence || image_path('logo/logo_grenobleroller_color.png') %>'); background-size: cover; background-position: center;"></div>
+        <div class="card-body">
+          <h2 class="h5 fw-semibold mb-3">Actions</h2>
+          <div class="d-grid gap-2">
+            <% if policy(@event).edit? %>
+              <%= link_to 'Modifier', edit_event_path(@event), class: 'btn btn-outline-primary' %>
+            <% end %>
+            <% if policy(@event).destroy? %>
+              <%= button_to 'Supprimer', @event, method: :delete, class: 'btn btn-outline-danger', data: { confirm: 'Supprimer cet événement ?' } %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-grid">
+        <%= link_to 'Retour aux événements', events_path, class: 'btn btn-secondary' %>
+      </div>
+    </div>
+  </div>
+</section>
+

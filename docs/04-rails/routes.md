@@ -7,6 +7,7 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
 - Accueil: `GET /` → `PagesController#index`
 - Association: `GET /association` → `PagesController#association`
 - Boutique: `GET /products`, `GET /products/:id` (slug ou id), alias `GET /shop`
+- Événements: `GET /events`, `GET /events/:id`, `GET /events/new`, `POST /events`, `PATCH/PUT /events/:id`, `DELETE /events/:id`
 - Panier (singulier): `GET /cart`, `POST /cart/add_item`, `PATCH /cart/update_item`, `DELETE /cart/remove_item`, `DELETE /cart/clear`
 - Commandes: `GET /orders`, `GET /orders/new`, `POST /orders`, `GET /orders/:id`, `PATCH /orders/:id/cancel`
 - Authentification: `devise_for :users` (routes Devise standard + `PasswordsController` personnalisé)
@@ -38,6 +39,18 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
 - `PATCH /orders/:id/cancel` → `orders#cancel` (membre)
   - Protégé par `authenticate_user!`
 
+### Événements (Phase 2)
+- `GET    /events` → `events#index`
+- `GET    /events/new` → `events#new`
+- `POST   /events` → `events#create`
+- `GET    /events/:id` → `events#show`
+- `GET    /events/:id/edit` → `events#edit`
+- `PATCH  /events/:id` → `events#update`
+- `PUT    /events/:id` → `events#update`
+- `DELETE /events/:id` → `events#destroy`
+  - `index`/`show` publics (seuls les événements publiés hors organisateurs)
+  - Création/édition réservées aux rôles `ORGANIZER+` (Pundit)
+
 ### Authentification (Devise)
 - `devise_for :users, controllers: { passwords: 'passwords' }`
   - routes standard: `/users/sign_in`, `/users/sign_out`, `/users/password`, etc.
@@ -61,5 +74,5 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
   - `GET /users/sign_in` → login via Devise
 
 ## Notes
-- Aucune route d’administration dédiée pour l’instant (pas de namespace `admin`).
+- Administration back-office: `ActiveAdmin.routes(self)` expose `/admin/*` (accès restreint via Devise + Pundit).
 - Les contrôleurs utilisent `includes` pour éviter les N+1 (ex: produits/variantes/options).

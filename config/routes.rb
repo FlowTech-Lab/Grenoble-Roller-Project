@@ -37,4 +37,7 @@ Rails.application.routes.draw do
       patch :cancel
     end
   end
+
+  # Events (Phase 2)
+  resources :events
 end
