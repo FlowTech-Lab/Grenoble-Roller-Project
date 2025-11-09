@@ -1,39 +1,46 @@
-<div class="col-md-6 col-xxl-4">
-  <article class="card h-100 shadow-sm border-0">
+<div class="col-12 col-md-6 col-lg-4">
+  <article class="card card-event card-liquid rounded-liquid shadow-liquid h-100">
+    <div class="card-event-image">
+      <%= image_tag(event_cover_image_url(event),
+                    alt: event.title,
+                    loading: 'lazy',
+                    class: 'w-100 h-100 object-fit-cover') %>
+      <span class="card-event-date badge <%= defined?(past) && past ? 'badge-liquid-secondary' : 'badge-liquid-primary' %>">
+        <i class="bi bi-calendar3 me-1"></i>
+        <%= l event.start_at, format: :day_month, locale: :fr %>
+      </span>
+    </div>
+
     <div class="card-body d-flex flex-column">
-      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <% if defined?(past) && past %>
-          <span class="badge text-bg-secondary text-uppercase">Terminé</span>
-        <% elsif event.published? %>
-          <span class="badge text-bg-success text-uppercase">Publié</span>
-        <% else %>
-          <span class="badge text-bg-warning text-uppercase">Brouillon</span>
-        <% end %>
-        <% if event.route.present? %>
-          <span class="badge bg-body-secondary text-body-secondary">
-            <i class="bi bi-geo me-1"></i><%= event.route.name %>
-          </span>
-        <% end %>
+      <h5 class="card-title mb-2">
+        <%= link_to event.title, event_path(event), class: 'stretched-link text-decoration-none text-body' %>
+      </h5>
+
+      <div class="card-event-info mb-3 text-body-secondary small">
+        <p class="mb-2">
+          <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+          <%= event.location_text %>
+        </p>
+        <p class="mb-2">
+          <i class="bi bi-clock text-liquid-primary me-2"></i>
+          <%= l event.start_at, format: :event_long, locale: :fr %>
+        </p>
+        <p class="mb-0">
+          <i class="bi bi-people text-liquid-primary me-2"></i>
+          Organisé par <%= event.creator_user.first_name %>
+        </p>
       </div>
 
-      <h3 class="h4 card-title mb-2">
-        <%= link_to event.title, event_path(event), class: 'stretched-link text-decoration-none text-body' %>
-      </h3>
+      <p class="text-muted small mb-4 flex-grow-1"><%= truncate(event.description, length: 140) %></p>
 
-      <p class="text-body-secondary mb-3">
-        <i class="bi bi-calendar2-week me-1"></i><%= l event.start_at, format: :long %><br>
-        <i class="bi bi-clock me-1"></i><%= event.duration_min %> min
-      </p>
-
-      <p class="card-text mb-4 text-truncate" style="max-height: 4.5rem;"><%= truncate(event.description, length: 160) %></p>
-
-      <div class="mt-auto d-flex align-items-center justify-content-between">
-        <div class="text-body-secondary small">
-          <i class="bi bi-person-badge me-1"></i>
-          <%= event.creator_user.first_name %>
-        </div>
+      <div class="mt-auto">
+        <% if defined?(past) && past %>
+          <%= link_to 'Voir le récap', event_path(event), class: 'btn btn-outline-primary w-100' %>
+        <% else %>
+          <%= link_to 'Voir plus', event_path(event), class: 'btn btn-liquid-primary w-100' %>
+        <% end %>
         <% if policy(event).edit? %>
-          <%= link_to edit_event_path(event), class: 'btn btn-sm btn-outline-primary' do %>
+          <%= link_to edit_event_path(event), class: 'btn btn-outline-secondary btn-sm mt-2 w-100' do %>
             <i class="bi bi-pencil-square me-1"></i>Modifier
           <% end %>
         <% end %>

@@ -1,84 +1,111 @@
 <% content_for :title, 'Événements Grenoble Roller' %>
 
-<section class="container py-4 py-lg-5">
-  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
-    <div>
-      <h1 class="display-5 fw-semibold mb-0">Événements</h1>
-      <p class="text-body-secondary mb-0">
-        Retrouvez toutes les sorties roller, initiations et moments forts de la communauté.
-      </p>
+<section class="banner-page mb-4">
+  <div class="banner-overlay"></div>
+  <div class="banner-content">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 text-center">
+          <i class="bi bi-calendar-event banner-icon-small mb-2" aria-hidden="true"></i>
+          <h1 class="banner-title-page mb-3">Nos Événements</h1>
+          <p class="banner-subtitle-page mb-4">
+            Découvrez toutes nos sorties roller
+          </p>
+        </div>
+      </div>
     </div>
-    <% if policy(Event).new? %>
-      <%= link_to 'Créer un événement', new_event_path, class: 'btn btn-primary btn-lg' %>
-    <% end %>
   </div>
+</section>
 
+<section class="container pb-5">
   <% if @highlighted_event.present? %>
-    <div class="card border-0 shadow-sm mb-5 overflow-hidden">
+    <div class="card card-liquid shadow-liquid mb-5 border-0 overflow-hidden">
       <div class="row g-0 align-items-center">
-        <div class="col-lg-7">
+        <div class="col-lg-6 order-2 order-lg-1">
           <div class="card-body p-4 p-lg-5">
-            <span class="badge bg-success-subtle text-success-emphasis text-uppercase mb-3">
+            <span class="badge badge-liquid-success text-uppercase mb-3">
               Prochain rendez-vous
             </span>
-            <h2 class="card-title h1 fw-bold"><%= @highlighted_event.title %></h2>
-            <p class="card-text text-body-secondary">
-              <i class="bi bi-calendar-week me-2"></i>
-              <%= l @highlighted_event.start_at, format: :long %>
-              &nbsp;•&nbsp;
-              <i class="bi bi-clock me-2"></i>
-              <%= number_with_precision(@highlighted_event.duration_min / 60.0, precision: 1) %> h
-            </p>
-            <p class="card-text lead"><%= truncate(@highlighted_event.description, length: 220) %></p>
-            <div class="d-flex gap-3">
-              <%= link_to 'Voir le détail', event_path(@highlighted_event), class: 'btn btn-liquid-primary' %>
+            <h2 class="card-title display-6 fw-bold mb-3"><%= @highlighted_event.title %></h2>
+            <div class="text-body-secondary mb-3">
+              <p class="mb-2">
+                <i class="bi bi-calendar-week me-2"></i>
+                <strong><%= l @highlighted_event.start_at, format: :event_long, locale: :fr %></strong>
+              </p>
+              <p class="mb-2">
+                <i class="bi bi-clock me-2"></i>
+                <%= @highlighted_event.duration_min %> minutes
+              </p>
+              <p class="mb-0">
+                <i class="bi bi-geo-alt me-2"></i>
+                <%= @highlighted_event.location_text %>
+              </p>
+            </div>
+            <p class="lead mb-4"><%= truncate(@highlighted_event.description, length: 220) %></p>
+            <div class="d-flex flex-wrap gap-2">
+              <%= link_to 'Découvrir l’événement', event_path(@highlighted_event), class: 'btn btn-liquid-primary btn-lg' %>
               <% if policy(@highlighted_event).edit? %>
-                <%= link_to 'Modifier', edit_event_path(@highlighted_event), class: 'btn btn-outline-primary' %>
+                <%= link_to 'Modifier', edit_event_path(@highlighted_event), class: 'btn btn-outline-primary btn-lg' %>
               <% end %>
             </div>
           </div>
         </div>
-        <div class="col-lg-5 d-none d-lg-block">
-          <div class="ratio ratio-4x3 bg-cover" style="background-image: url('<%= @highlighted_event.cover_image_url.presence || image_path('logo/logo_grenobleroller_color.png') %>');">
+        <div class="col-lg-6 order-1 order-lg-2">
+          <div class="ratio ratio-4x3">
+            <%= image_tag(event_cover_image_url(@highlighted_event),
+                          alt: @highlighted_event.title,
+                          class: 'w-100 h-100 object-fit-cover') %>
           </div>
         </div>
       </div>
     </div>
   <% end %>
 
-  <div class="mb-5">
-    <div class="d-flex align-items-center gap-3 mb-3">
-      <h2 class="h3 mb-0">À venir</h2>
-      <span class="badge rounded-pill text-bg-primary"><%= @upcoming_events.size %></span>
+  <div id="events-upcoming" class="mb-5">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1"><i class="bi bi-stars me-2"></i>À venir</h2>
+        <p class="text-body-secondary mb-0">
+          Les prochains rendez-vous roller ouverts à la communauté.
+        </p>
+      </div>
+      <span class="badge badge-liquid-primary fs-6"><%= @upcoming_events.size %> événements</span>
     </div>
-    <div class="row g-4">
-      <% if @upcoming_events.any? %>
-        <%= render partial: 'event_card', collection: @upcoming_events, as: :event %>
-      <% else %>
-        <div class="col-12">
-          <div class="alert alert-info mb-0">
-            Aucun événement planifié pour le moment. Restez connectés !
-          </div>
+
+    <% if @upcoming_events.any? %>
+      <div class="event-grid">
+        <div class="row g-4">
+          <%= render partial: 'event_card', collection: @upcoming_events, as: :event %>
         </div>
-      <% end %>
-    </div>
+      </div>
+    <% else %>
+      <div class="alert alert-info border-0 shadow-sm">
+        <i class="bi bi-info-circle me-2"></i>Aucun événement planifié pour le moment — une annonce arrive bientôt !
+      </div>
+    <% end %>
   </div>
 
   <div>
-    <div class="d-flex align-items-center gap-3 mb-3">
-      <h2 class="h3 mb-0">Événements passés</h2>
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1"><i class="bi bi-archive me-2"></i>Événements passés</h2>
+        <p class="text-body-secondary mb-0">
+          Un aperçu des dernières sorties et initiations organisées.
+        </p>
+      </div>
     </div>
-    <div class="row g-4">
-      <% if @past_events.any? %>
-        <%= render partial: 'event_card', collection: @past_events, as: :event, locals: { past: true } %>
-      <% else %>
-        <div class="col-12">
-          <div class="alert alert-secondary mb-0">
-            Les événements passés apparaîtront ici.
-          </div>
+
+    <% if @past_events.any? %>
+      <div class="event-grid">
+        <div class="row g-4">
+          <%= render partial: 'event_card', collection: @past_events, as: :event, locals: { past: true } %>
         </div>
-      <% end %>
-    </div>
+      </div>
+    <% else %>
+      <div class="alert alert-secondary border-0 shadow-sm">
+        Les événements passés apparaîtront ici prochainement.
+      </div>
+    <% end %>
   </div>
 </section>
 

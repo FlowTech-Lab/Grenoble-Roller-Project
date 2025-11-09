@@ -1,13 +1,6 @@
 <% content_for :title, "Modifier #{@event.title}" %>
 
 <section class="container py-4 py-lg-5">
-  <div class="mb-4">
-    <h1 class="display-5 fw-semibold mb-1">Modifier l’événement</h1>
-    <p class="text-body-secondary mb-0">
-      Mettez à jour les informations avant de publier votre événement.
-    </p>
-  </div>
-
   <%= render 'form', event: @event %>
 </section>
 

@@ -1,87 +1,125 @@
 <% content_for :title, @event.title %>
 
 <section class="container py-4 py-lg-5">
-  <div class="row g-5">
-    <div class="col-lg-8">
+  <article class="card card-liquid event-detail-card shadow-liquid border-0 mx-auto">
+    <div class="ratio ratio-16x9 ratio-lg-21x9 rounded-top overflow-hidden">
+      <%= image_tag(event_cover_image_url(@event), alt: @event.title, class: "w-100 h-100 object-fit-cover") %>
+    </div>
+    <div class="card-body p-4 p-lg-5">
       <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-        <span class="badge text-bg-<%= @event.published? ? 'success' : @event.draft? ? 'warning' : 'secondary' %> text-uppercase">
+        <span class="badge badge-liquid-<%= @event.published? ? 'success' : @event.draft? ? 'warning' : 'danger' %> text-uppercase">
           <%= @event.status.humanize %>
         </span>
         <% if @event.route.present? %>
           <span class="badge bg-body-secondary text-body-secondary">
-            <i class="bi bi-map me-1"></i><%= @event.route.name %>
+            <i class="bi bi-geo-alt me-1"></i><%= @event.route.name %>
           </span>
         <% end %>
+        <span class="badge bg-body-secondary text-body-secondary">
+          <i class="bi bi-clock me-1"></i><%= @event.duration_min %> min
+        </span>
       </div>
 
-      <h1 class="display-5 fw-semibold mb-3"><%= @event.title %></h1>
+      <h1 class="display-6 fw-bold mb-3"><%= @event.title %></h1>
 
-      <div class="text-body-secondary mb-4">
-        <p class="mb-2">
-          <i class="bi bi-calendar-week me-2"></i>
-          <strong>Début :</strong> <%= l @event.start_at, format: :long %>
-        </p>
-        <p class="mb-2">
-          <i class="bi bi-clock me-2"></i>
-          <strong>Durée :</strong> <%= @event.duration_min %> minutes
-        </p>
-        <p class="mb-2">
-          <i class="bi bi-geo-alt me-2"></i>
-          <strong>Lieu :</strong> <%= @event.location_text %>
-        </p>
-        <p class="mb-2">
-          <i class="bi bi-currency-euro me-2"></i>
-          <strong>Tarif :</strong>
-          <%= number_to_currency(@event.price_cents / 100.0, unit: @event.currency) %>
-        </p>
-        <p class="mb-0">
-          <i class="bi bi-person-badge me-2"></i>
-          <strong>Organisateur :</strong> <%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %>
-        </p>
+      <div class="row g-3 mb-4 event-summary-grid text-body-secondary small">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="event-summary-item">
+            <i class="bi bi-calendar-week text-liquid-primary fs-5"></i>
+            <div>
+              <span class="label">Date & heure</span>
+              <span class="value"><%= l @event.start_at, format: :event_long, locale: :fr %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="event-summary-item">
+            <i class="bi bi-geo-alt text-liquid-primary fs-5"></i>
+            <div>
+              <span class="label">Lieu</span>
+              <span class="value"><%= @event.location_text %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="event-summary-item">
+            <i class="bi bi-currency-euro text-liquid-primary fs-5"></i>
+            <div>
+              <span class="label">Tarif</span>
+              <span class="value"><%= number_to_currency(@event.price_cents / 100.0, unit: @event.currency) %></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="event-summary-item">
+            <i class="bi bi-person-badge text-liquid-primary fs-5"></i>
+            <div>
+              <span class="label">Organisateur</span>
+              <span class="value"><%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %></span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-          <h2 class="h4 fw-semibold mb-3">Description</h2>
-          <p class="mb-0"><%= simple_format(@event.description) %></p>
+      <div class="d-flex flex-column flex-md-row flex-wrap gap-2 gap-md-3 mb-4">
+        <% if policy(@event).edit? %>
+          <%= link_to edit_event_path(@event), class: 'btn btn-liquid-primary flex-fill flex-md-grow-0' do %>
+            <i class="bi bi-pencil-square me-2"></i>Modifier
+          <% end %>
+        <% end %>
+        <% if policy(@event).destroy? %>
+          <button type="button" class="btn btn-outline-danger flex-fill flex-md-grow-0" data-bs-toggle="modal" data-bs-target="#confirmDeleteModalShow">
+            <i class="bi bi-trash me-2"></i>Supprimer
+          </button>
+        <% end %>
+        <%= link_to 'Retour à la liste', events_path, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0' %>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="h4 fw-semibold mb-3">À propos</h2>
+        <div class="text-body">
+          <%= simple_format(@event.description) %>
         </div>
       </div>
 
       <% if @event.meeting_lat.present? && @event.meeting_lng.present? %>
-        <div class="card border-0 shadow-sm">
-          <div class="card-body">
-            <h2 class="h5 fw-semibold mb-3">Point de rendez-vous</h2>
-            <p class="text-body-secondary mb-2">
-              Latitude : <%= @event.meeting_lat %> — Longitude : <%= @event.meeting_lng %>
-            </p>
-            <a class="btn btn-outline-primary" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=<%= @event.meeting_lat %>&mlon=<%= @event.meeting_lng %>#map=16/<%= @event.meeting_lat %>/<%= @event.meeting_lng %>">
-              Voir sur la carte
+        <div class="event-summary-item mb-4">
+          <i class="bi bi-map text-liquid-primary fs-5"></i>
+          <div>
+            <span class="label">Point de rendez-vous</span>
+            <span class="value d-block mb-2">Latitude : <%= @event.meeting_lat %> — Longitude : <%= @event.meeting_lng %></span>
+            <a class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=<%= @event.meeting_lat %>&mlon=<%= @event.meeting_lng %>#map=16/<%= @event.meeting_lat %>/<%= @event.meeting_lng %>">
+              <i class="bi bi-map-fill me-1"></i>Voir sur la carte
             </a>
           </div>
         </div>
       <% end %>
     </div>
+  </article>
+</section>
 
-    <div class="col-lg-4">
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="ratio ratio-4x3 bg-light rounded-top" style="background-image: url('<%= @event.cover_image_url.presence || image_path('logo/logo_grenobleroller_color.png') %>'); background-size: cover; background-position: center;"></div>
-        <div class="card-body">
-          <h2 class="h5 fw-semibold mb-3">Actions</h2>
-          <div class="d-grid gap-2">
-            <% if policy(@event).edit? %>
-              <%= link_to 'Modifier', edit_event_path(@event), class: 'btn btn-outline-primary' %>
-            <% end %>
-            <% if policy(@event).destroy? %>
-              <%= button_to 'Supprimer', @event, method: :delete, class: 'btn btn-outline-danger', data: { confirm: 'Supprimer cet événement ?' } %>
-            <% end %>
-          </div>
+<% if policy(@event).destroy? %>
+  <div class="modal fade" id="confirmDeleteModalShow" tabindex="-1" aria-labelledby="confirmDeleteModalShowLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteModalShowLabel">Supprimer l’événement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-      </div>
-
-      <div class="d-grid">
-        <%= link_to 'Retour aux événements', events_path, class: 'btn btn-secondary' %>
+        <div class="modal-body">
+          <p class="mb-0">
+            Cette action est définitive. Souhaitez-vous supprimer
+            <strong><%= @event.title %></strong> ?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <%= button_to event_path(@event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
+            <i class="bi bi-trash me-2"></i>Oui, supprimer
+          <% end %>
+        </div>
       </div>
     </div>
   </div>
-</section>
+<% end %>
 
