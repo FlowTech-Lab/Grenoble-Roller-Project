@@ -67,6 +67,7 @@ class EventsController < ApplicationController
     else
       attendance.status = 'registered'
       if attendance.save
+        EventMailer.attendance_confirmed(attendance).deliver_later
         redirect_to @event, notice: 'Inscription confirmée.'
       else
         redirect_to @event, alert: attendance.errors.full_messages.to_sentence
@@ -80,9 +81,10 @@ class EventsController < ApplicationController
 
     attendance = @event.attendances.find_by(user: current_user)
     if attendance&.destroy
+      EventMailer.attendance_cancelled(current_user, @event).deliver_later
       redirect_to @event, notice: 'Inscription annulée.'
     else
-      redirect_to @event, alert: 'Impossible d’annuler votre participation.'
+      redirect_to @event, alert: 'Impossible d'annuler votre participation.'
     end
   end
 

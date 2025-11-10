@@ -43,6 +43,11 @@
 
 ### 🔜 EN COURS / PRIORITÉ 1
 - [ ] **Tests Capybara** : Parcours utilisateur complet (inscription/désinscription)
+  - ✅ Configuration Capybara avec driver Selenium headless Chrome
+  - ✅ Helper d'authentification pour les tests system
+  - ✅ Tests de features créés (event_attendance_spec.rb, event_management_spec.rb, mes_sorties_spec.rb)
+  - ✅ 30/40 tests passent (75%)
+  - ❌ 10 tests à corriger (tests JavaScript avec modals, formulaires, confirmations)
 
 ### 📅 À VENIR
 
@@ -58,11 +63,17 @@
   - Vérification permissions Pundit
 
 #### Priorité 3 : Fonctionnalités UX
-- [ ] **Notifications e-mail** :
-  - Mailer pour inscription/désinscription
-  - Templates d'emails (HTML + texte)
-  - Configuration ActionMailer (dev/staging/prod)
-  - Tests des mailers
+- [x] **Notifications e-mail** : ✅ TERMINÉ
+  - [x] Mailer pour inscription/désinscription ✅
+  - [x] Templates d'emails (HTML + texte) ✅
+  - [x] Configuration ActionMailer (dev/staging/prod) ✅
+  - [x] Tests des mailers (16 exemples RSpec) ✅
+  - [ ] Tests d'intégration (vérifier que l'email est envoyé) ⏳
+- [ ] **Job de rappel 24h avant** (Optionnel - Haute Valeur) 💡 :
+  - Job `EventReminderJob` pour envoyer automatiquement des rappels
+  - Planification avec `whenever` ou `sidekiq-cron`
+  - Template email déjà créé (`event_reminder`)
+  - Réduit le taux d'absence, améliore l'expérience utilisateur
 - [ ] **Export iCal** :
   - Génération de fichiers .ics pour chaque événement
   - Lien "Ajouter au calendrier" sur les pages événements
@@ -418,27 +429,87 @@ rspec spec/models
 
 ### 📌 PRIORITÉ 3 : Fonctionnalités UX (Semaine 3)
 
-#### 6. Notifications E-mail
+#### 6. Notifications E-mail ✅ TERMINÉ
 **Objectif** : Informer les utilisateurs des inscriptions/désinscriptions
 
 **Tâches** :
-- [ ] Créer `app/mailers/event_mailer.rb`
-- [ ] Créer templates d'emails (HTML + texte) :
-  - `app/views/event_mailer/attendance_confirmation.html.erb`
-  - `app/views/event_mailer/attendance_cancellation.html.erb`
-  - `app/views/event_mailer/event_reminder.html.erb` (optionnel)
-- [ ] Configurer ActionMailer (dev/staging/prod)
-- [ ] Appeler les mailers dans `EventsController#attend` et `#cancel_attendance`
-- [ ] Tests des mailers
-- [ ] Tests d'intégration (vérifier que l'email est envoyé)
+- [x] Créer `app/mailers/event_mailer.rb` ✅
+- [x] Créer templates d'emails (HTML + texte) :
+  - `app/views/event_mailer/attendance_confirmed.html.erb` ✅
+  - `app/views/event_mailer/attendance_confirmed.text.erb` ✅
+  - `app/views/event_mailer/attendance_cancelled.html.erb` ✅
+  - `app/views/event_mailer/attendance_cancelled.text.erb` ✅
+  - `app/views/event_mailer/event_reminder.html.erb` (template créé, job à faire) ✅
+- [x] Configurer ActionMailer (dev/staging/prod) ✅
+- [x] Appeler les mailers dans `EventsController#attend` et `#cancel_attendance` ✅
+- [x] Tests des mailers (16 exemples RSpec) ✅
+- [ ] Tests d'intégration (vérifier que l'email est envoyé) ⏳
+
+**Fichiers créés** :
+- `app/mailers/event_mailer.rb` ✅
+- `app/views/event_mailer/attendance_confirmed.html.erb` ✅
+- `app/views/event_mailer/attendance_confirmed.text.erb` ✅
+- `app/views/event_mailer/attendance_cancelled.html.erb` ✅
+- `app/views/event_mailer/attendance_cancelled.text.erb` ✅
+- `spec/mailers/event_mailer_spec.rb` ✅
+- `docs/06-events/email-notifications-implementation.md` ✅
+
+#### 6.1. Job de Rappel 24h Avant (Optionnel - Haute Valeur) 💡
+**Objectif** : Envoyer automatiquement un email de rappel 24h avant chaque événement aux participants inscrits
+
+**Pourquoi cette feature** :
+- ✅ Réduit le taux d'absence (les participants se souviennent de l'événement)
+- ✅ Améliore l'expérience utilisateur (rappel automatique)
+- ✅ Standard dans les applications d'événements (Eventbrite, Meetup, etc.)
+- ✅ Facile à implémenter (template email déjà créé)
+
+**Tâches** :
+- [ ] Créer `app/jobs/event_reminder_job.rb`
+- [ ] Implémenter la logique de sélection des événements (24-48h avant)
+- [ ] Envoyer les emails via `EventMailer.event_reminder(attendance)`
+- [ ] Configurer la planification (gem `whenever` ou `sidekiq-cron`)
+- [ ] Créer template `app/views/event_mailer/event_reminder.html.erb` (déjà créé ✅)
+- [ ] Créer template `app/views/event_mailer/event_reminder.text.erb`
+- [ ] Tests du job (RSpec)
+- [ ] Tests d'intégration (vérifier que le job s'exécute correctement)
 
 **Fichiers à créer** :
-- `app/mailers/event_mailer.rb`
-- `app/views/event_mailer/attendance_confirmation.html.erb`
-- `app/views/event_mailer/attendance_confirmation.text.erb`
-- `app/views/event_mailer/attendance_cancellation.html.erb`
-- `app/views/event_mailer/attendance_cancellation.text.erb`
-- `spec/mailers/event_mailer_spec.rb`
+- `app/jobs/event_reminder_job.rb`
+- `app/views/event_mailer/event_reminder.text.erb`
+- `spec/jobs/event_reminder_job_spec.rb`
+- `config/schedule.rb` (si utilisation de `whenever`)
+
+**Configuration requise** :
+- Active Job configuré (déjà fait avec Rails)
+- Queue adapter (Sidekiq recommandé pour production, ou `async` pour dev)
+- Planification cron (gem `whenever` ou `sidekiq-cron`)
+
+**Exemple d'implémentation** :
+```ruby
+# app/jobs/event_reminder_job.rb
+class EventReminderJob < ApplicationJob
+  queue_as :default
+
+  def perform
+    # Événements qui démarrent dans 24-48h
+    Event.upcoming
+      .published
+      .where(start_at: 24.hours.from_now..48.hours.from_now)
+      .each do |event|
+        event.attendances.active.each do |attendance|
+          EventMailer.event_reminder(attendance).deliver_later
+        end
+      end
+  end
+end
+
+# config/schedule.rb (gem whenever)
+every 1.day, at: '9:00 am' do
+  runner "EventReminderJob.perform_later"
+end
+```
+
+**Priorité** : 🟡 Moyenne (après export iCal et améliorations ActiveAdmin)
 
 #### 7. Export iCal
 **Objectif** : Permettre aux utilisateurs d'ajouter les événements à leur calendrier
