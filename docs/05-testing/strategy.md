@@ -35,18 +35,18 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
 
 ## Couverture actuelle (10/11/2025)
 
-- **Total** : 106 exemples, 0 échec
-- **Models** : 75 exemples (validations, associations, scopes)
-- **Policies** : 12 exemples (EventPolicy - permissions, scopes)
+- **Total** : 166 exemples, 0 échec
+- **Models** : 135 exemples (validations, associations, scopes, counter cache, max_participants)
+- **Policies** : 12 exemples (EventPolicy - permissions, scopes, attend, can_attend)
 - **Requests** : 19 exemples (Events, Attendances, Pages)
 
 ### Détails par catégorie
 
-#### Models (75 exemples)
-- `spec/models/attendance_spec.rb` - Validations, associations, scopes
+#### Models (135 exemples)
+- `spec/models/attendance_spec.rb` - Validations, associations, scopes, counter cache, max_participants validation
 - `spec/models/audit_log_spec.rb` - Validations, scopes, filtres
 - `spec/models/contact_message_spec.rb` - Validations, format email
-- `spec/models/event_spec.rb` - Validations, scopes (upcoming, past, published)
+- `spec/models/event_spec.rb` - Validations, scopes (upcoming, past, published), max_participants (unlimited?, full?, remaining_spots, has_available_spots?)
 - `spec/models/option_type_spec.rb` - Validations, associations
 - `spec/models/option_value_spec.rb` - Validations, associations
 - `spec/models/order_item_spec.rb` - Associations
@@ -63,7 +63,7 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
 - `spec/models/variant_option_value_spec.rb` - Validations, associations
 
 #### Policies (12 exemples)
-- `spec/policies/event_policy_spec.rb` - Permissions (show, create, update, destroy, attend), scopes par rôle
+- `spec/policies/event_policy_spec.rb` - Permissions (show, create, update, destroy, attend, can_attend, user_has_attendance?), scopes par rôle, validation max_participants
 
 #### Requests (19 exemples)
 - `spec/requests/events_spec.rb` - CRUD public, inscriptions/désinscriptions
@@ -84,7 +84,7 @@ Le projet utilise **FactoryBot** pour générer des données de test. Les factor
 - `spec/factories/roles.rb` - Rôles (visitor, member, organizer, admin, superadmin)
 - `spec/factories/users.rb` - Utilisateurs avec traits par rôle
 - `spec/factories/routes.rb` - Parcours roller
-- `spec/factories/events.rb` - Événements (traits: published, upcoming, past, with_route)
+- `spec/factories/events.rb` - Événements (traits: published, upcoming, past, with_route, with_limit, unlimited)
 - `spec/factories/attendances.rb` - Inscriptions aux événements
 
 **Usage** :
@@ -94,6 +94,12 @@ user = create(:user, :organizer)
 
 # Créer un événement publié à venir
 event = create(:event, :published, :upcoming)
+
+# Créer un événement avec limite de participants
+event = create(:event, :published, :with_limit, max_participants: 20)
+
+# Créer un événement illimité
+event = create(:event, :published, :unlimited)
 
 # Créer une inscription
 attendance = create(:attendance, user: user, event: event)

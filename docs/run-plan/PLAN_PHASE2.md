@@ -3,7 +3,7 @@
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
 **Dernière mise à jour** : Nov 2025  
-**État** : Tests complets (106 exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ⏳
+**État** : Tests complets (166 exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ✅ → Tests Capybara ⏳
 
 ---
 
@@ -17,10 +17,10 @@
 - [x] RSpec configuré
 - [x] FactoryBot factories pour tous les modèles Phase 2 (Role, User, Route, Event, Attendance)
 - [x] Tests RSpec complets :
-  - Models (75 exemples)
+  - Models (75 exemples + 60 nouveaux pour counter cache et max_participants)
   - Requests (Events, Attendances, Pages - 19 exemples)
   - Policies (EventPolicy - 12 exemples)
-  - **Total : 106 exemples, 0 échec** ✅
+  - **Total : 166 exemples, 0 échec** ✅
 - [x] ActiveAdmin installé (core + intégration Pundit configurée)
 - [x] Resources ActiveAdmin générées (Events, Routes, Attendances, Users, Roles, etc.)
 - [x] Application publique : CRUD Events complet (index/show/new/edit/destroy)
@@ -30,10 +30,18 @@
 - [x] Navigation mise à jour (lien "Événements", "Mes sorties")
 - [x] Homepage avec affichage du prochain événement (featured event card)
 - [x] Documentation mise à jour (setup, testing, changelog)
+- [x] **Optimisations DB** : Counter cache `attendances_count` sur Event ✅
+- [x] **Feature** : Ajouter `max_participants` sur Event avec validation (0 = illimité) ✅
+- [x] Popup de confirmation Bootstrap pour l'inscription ✅
+- [x] Affichage des places restantes dans les vues (badges, compteurs) ✅
+- [x] Validation côté modèle et policy pour empêcher l'inscription si événement plein ✅
+- [x] Tests complets pour counter cache et max_participants (60 nouveaux exemples) ✅
+- [x] Correction du problème des boutons dans les cards d'événements (stretched-link) ✅
+  - Restructuration HTML : zone cliquable séparée (`.card-clickable-area`) et zone des boutons (`.action-row-wrapper`)
+  - Le `stretched-link` ne couvre plus que le contenu, pas les boutons
+  - Tous les boutons fonctionnent correctement (S'inscrire, Voir plus, Modifier, Supprimer)
 
 ### 🔜 EN COURS / PRIORITÉ 1
-- [ ] **Optimisations DB** : Counter cache `attendances_count` sur Event
-- [ ] **Feature** : Ajouter `max_participants` sur Event avec validation
 - [ ] **Tests Capybara** : Parcours utilisateur complet (inscription/désinscription)
 
 ### 📅 À VENIR
@@ -288,48 +296,58 @@ rspec spec/models
 
 ### 📌 PRIORITÉ 1 : Optimisations et Fonctionnalités Critiques (Semaine 1)
 
-#### 1. Optimisations Base de Données
+#### 1. Optimisations Base de Données ✅ TERMINÉ
 **Objectif** : Améliorer les performances des listes d'événements
 
 **Tâches** :
-- [ ] Créer migration pour ajouter `attendances_count` sur `events`
-- [ ] Ajouter `counter_cache: true` dans le modèle `Attendance`
-- [ ] Migration de données pour mettre à jour les compteurs existants
-- [ ] Mettre à jour les vues pour utiliser `event.attendances_count` au lieu de `event.attendances.count`
-- [ ] Tests pour vérifier le counter cache
+- [x] Créer migration pour ajouter `attendances_count` sur `events`
+- [x] Ajouter `counter_cache: true` dans le modèle `Attendance`
+- [x] Migration de données pour mettre à jour les compteurs existants
+- [x] Mettre à jour les vues pour utiliser `event.attendances_count` au lieu de `event.attendances.count`
+- [x] Tests pour vérifier le counter cache (3 tests ajoutés)
 
-**Fichiers à modifier** :
-- `db/migrate/XXXXXX_add_attendances_count_to_events.rb`
-- `app/models/attendance.rb`
-- `app/models/event.rb`
-- `app/views/events/_event_card.html.erb`
-- `app/views/events/index.html.erb`
-- `app/views/events/show.html.erb`
-- `app/views/pages/index.html.erb`
+**Fichiers modifiés** :
+- `db/migrate/20251110141700_add_attendances_count_to_events.rb` ✅
+- `app/models/attendance.rb` ✅
+- `app/models/event.rb` ✅
+- `app/views/events/_event_card.html.erb` ✅
+- `app/views/events/index.html.erb` ✅
+- `app/views/events/show.html.erb` ✅
+- `app/views/pages/index.html.erb` ✅
+- `spec/models/attendance_spec.rb` ✅
 
-#### 2. Limite de Participants
-**Objectif** : Gérer le nombre maximum de participants par événement
+#### 2. Limite de Participants ✅ TERMINÉ
+**Objectif** : Gérer le nombre maximum de participants par événement (0 = illimité)
 
 **Tâches** :
-- [ ] Créer migration pour ajouter `max_participants` sur `events`
-- [ ] Ajouter validation dans le modèle `Event` (max_participants > 0)
-- [ ] Ajouter validation dans le modèle `Attendance` (vérifier limite avant création)
-- [ ] Mettre à jour `EventsController#attend` pour gérer la limite
-- [ ] Afficher le nombre de places restantes dans l'UI
-- [ ] Désactiver le bouton "S'inscrire" si limite atteinte
-- [ ] Tests pour les validations et le comportement
+- [x] Créer migration pour ajouter `max_participants` sur `events` (default: 0 = illimité)
+- [x] Ajouter validation dans le modèle `Event` (max_participants >= 0)
+- [x] Ajouter méthodes `unlimited?`, `full?`, `remaining_spots`, `has_available_spots?`
+- [x] Ajouter validation dans le modèle `Attendance` (vérifier limite avant création, ignorer annulées)
+- [x] Mettre à jour `EventPolicy#attend?` pour vérifier si événement plein
+- [x] Ajouter méthodes `can_attend?` et `user_has_attendance?` dans la policy
+- [x] Afficher le nombre de places restantes dans l'UI (badges, compteurs)
+- [x] Désactiver le bouton "S'inscrire" si limite atteinte
+- [x] Popup de confirmation Bootstrap avant inscription
+- [x] Tests pour les validations et le comportement (57 tests ajoutés)
+- [x] Intégration dans ActiveAdmin (affichage et formulaire)
 
-**Fichiers à modifier** :
-- `db/migrate/XXXXXX_add_max_participants_to_events.rb`
-- `app/models/event.rb`
-- `app/models/attendance.rb`
-- `app/controllers/events_controller.rb`
-- `app/policies/event_policy.rb`
-- `app/views/events/_event_card.html.erb`
-- `app/views/events/show.html.erb`
-- `spec/models/event_spec.rb`
-- `spec/models/attendance_spec.rb`
-- `spec/requests/events_spec.rb`
+**Fichiers modifiés** :
+- `db/migrate/20251110142027_add_max_participants_to_events.rb` ✅
+- `app/models/event.rb` ✅
+- `app/models/attendance.rb` ✅
+- `app/controllers/events_controller.rb` ✅
+- `app/policies/event_policy.rb` ✅
+- `app/views/events/_event_card.html.erb` ✅
+- `app/views/events/show.html.erb` ✅
+- `app/views/events/index.html.erb` ✅
+- `app/views/pages/index.html.erb` ✅
+- `app/views/events/_form.html.erb` ✅
+- `app/admin/events.rb` ✅
+- `spec/models/event_spec.rb` ✅
+- `spec/models/attendance_spec.rb` ✅
+- `spec/policies/event_policy_spec.rb` ✅
+- `spec/factories/events.rb` ✅
 
 #### 3. Tests Capybara (Parcours Utilisateur)
 **Objectif** : Couvrir les parcours utilisateur critiques avec des tests d'intégration
@@ -518,5 +536,5 @@ rspec spec/models
 
 **Document créé le** : 2025-01-20  
 **Dernière mise à jour** : 2025-11-10  
-**Version** : 2.0 (Plan détaillé avec priorités et calendrier)
+**Version** : 2.1 (Optimisations DB et max_participants terminées)
 

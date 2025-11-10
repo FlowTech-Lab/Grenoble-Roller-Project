@@ -77,8 +77,9 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 
 ### Tests
 - ✅ `05-testing/strategy.md` - Stratégie de tests (RSpec configuré)
-- ✅ **106 exemples, 0 échec** (75 models + 12 policies + 19 requests)
+- ✅ **166 exemples, 0 échec** (135 models + 12 policies + 19 requests)
 - ✅ FactoryBot factories pour tous les modèles
+- ✅ Tests complets pour counter cache et max_participants
 
 ### Changelog
 - ✅ `10-decisions-and-changelog/CHANGELOG.md` - Changelog des modifications significatives

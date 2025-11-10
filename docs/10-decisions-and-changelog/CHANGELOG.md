@@ -2,6 +2,91 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-11-10] - Optimisations DB + Feature max_participants + Correction bug boutons
+
+### Ajouté
+- **Counter cache `attendances_count`** :
+  - Migration pour ajouter la colonne `attendances_count` sur `events`
+  - `counter_cache: true` dans le modèle `Attendance`
+  - Mise à jour automatique des compteurs lors de création/suppression d'inscriptions
+  - Remplacement de `event.attendances.count` par `event.attendances_count` dans toutes les vues
+  - **Impact performance** : Réduction des requêtes SQL (plus de COUNT(*) par événement)
+
+- **Feature `max_participants`** :
+  - Migration pour ajouter `max_participants` sur `events` (default: 0 = illimité)
+  - Validation `max_participants >= 0` (0 = illimité)
+  - Méthodes `unlimited?`, `full?`, `remaining_spots`, `has_available_spots?` dans `Event`
+  - Validation dans `Attendance` pour empêcher l'inscription si événement plein
+  - Comptage uniquement des inscriptions actives (non annulées)
+  - Intégration dans `EventPolicy` (`attend?`, `can_attend?`, `user_has_attendance?`)
+  - Affichage des places restantes dans les vues (badges "Complet", "X places disponibles", "Illimité")
+  - Bouton "S'inscrire" désactivé si événement plein
+  - **Popup de confirmation Bootstrap** avant inscription avec détails de l'événement
+  - Champ `max_participants` dans le formulaire d'événement (public et ActiveAdmin)
+  - Intégration dans ActiveAdmin (affichage dans index/show/form)
+
+- **Tests** :
+  - 3 tests pour le counter cache (incrémentation, décrémentation, échec)
+  - 57 tests pour `max_participants` (validations, méthodes, policy, attendances)
+  - **Total : 166 exemples, 0 échec** (106 + 60 nouveaux)
+
+### Modifié
+- **Modèle Event** :
+  - Ajout de `max_participants` dans les validations et `ransackable_attributes`
+  - Méthodes `full?`, `unlimited?`, `remaining_spots`, `has_available_spots?`, `active_attendances_count`
+  - Comptage uniquement des inscriptions actives pour vérifier si plein
+
+- **Modèle Attendance** :
+  - Validation `event_has_available_spots` pour empêcher l'inscription si événement plein
+  - Les inscriptions annulées ne comptent pas dans la limite
+
+- **Policy EventPolicy** :
+  - `attend?` retourne `false` si événement plein
+  - Nouvelles méthodes `can_attend?` et `user_has_attendance?`
+  - Ajout de `max_participants` dans `permitted_attributes`
+
+- **Vues** :
+  - Affichage des places restantes (badges, compteurs)
+  - Boutons conditionnels (désactivés si plein)
+  - Popup de confirmation Bootstrap pour l'inscription
+  - Mise à jour de toutes les vues (cards, show, index, homepage)
+
+- **ActiveAdmin** :
+  - Affichage de `max_participants` dans l'index (avec "Illimité" si 0)
+  - Affichage des places restantes dans le show
+  - Champ `max_participants` dans le formulaire avec aide contextuelle
+
+- **FactoryBot** :
+  - Ajout de `max_participants: 0` par défaut (illimité)
+  - Traits `:with_limit` (20 participants) et `:unlimited` (0)
+
+### Corrigé
+- **Bug des boutons dans les cards d'événements** :
+  - Le `stretched-link` sur le titre interceptait tous les clics, y compris sur les boutons
+  - **Solution** : Restructuration HTML avec zone cliquable séparée (`.card-clickable-area`) et zone des boutons (`.action-row-wrapper`)
+  - Le `stretched-link` ne couvre plus que le contenu (titre, description, infos), pas les boutons
+  - Tous les boutons fonctionnent correctement (S'inscrire, Voir plus, Modifier, Supprimer)
+  - Ajout de styles CSS pour isoler les zones cliquables
+
+### Fichiers modifiés
+- `db/migrate/20251110141700_add_attendances_count_to_events.rb`
+- `db/migrate/20251110142027_add_max_participants_to_events.rb`
+- `app/models/event.rb`
+- `app/models/attendance.rb`
+- `app/policies/event_policy.rb`
+- `app/controllers/events_controller.rb`
+- `app/views/events/_event_card.html.erb`
+- `app/views/events/show.html.erb`
+- `app/views/events/index.html.erb`
+- `app/views/pages/index.html.erb`
+- `app/views/events/_form.html.erb`
+- `app/admin/events.rb`
+- `spec/models/event_spec.rb`
+- `spec/models/attendance_spec.rb`
+- `spec/policies/event_policy_spec.rb`
+- `spec/factories/events.rb`
+- `app/assets/stylesheets/_style.scss`
+
 ## [2025-11-10] - Upgrade Rails 8.1.1 + Ruby 3.4.2
 
 ### Ajouté
