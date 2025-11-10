@@ -56,26 +56,45 @@
             <div>
               <span class="label">Organisateur</span>
               <span class="value"><%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %></span>
-              <span class="badge bg-body-secondary text-body-secondary mt-1">
-                <i class="bi bi-people-fill me-1"></i>
-                <%= pluralize(@event.attendances_count, "inscrit") %>
-              </span>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <span class="badge bg-body-secondary text-body-secondary">
+                  <i class="bi bi-people-fill me-1"></i>
+                  <%= pluralize(@event.attendances_count, "inscrit") %>
+                </span>
+                <% unless @event.unlimited? %>
+                  <% if @event.full? %>
+                    <span class="badge bg-danger text-white">
+                      <i class="bi bi-x-circle me-1"></i>Complet
+                    </span>
+                  <% else %>
+                    <span class="badge bg-success text-white">
+                      <i class="bi bi-check-circle me-1"></i><%= pluralize(@event.remaining_spots, "place disponible") %>
+                    </span>
+                  <% end %>
+                <% else %>
+                  <span class="badge bg-info text-white">
+                    <i class="bi bi-infinity me-1"></i>Illimité
+                  </span>
+                <% end %>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="d-flex flex-column flex-md-row flex-wrap gap-2 gap-md-3 mb-4 action-row">
-          <% if policy(@event).attend? %>
-          <% if current_user_has_attendance?(@event) %>
-            <%= button_to cancel_attendance_event_path(@event), method: :delete, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0', data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
-              <i class="bi bi-calendar-x me-2"></i>Se désinscrire
-            <% end %>
-          <% else %>
-            <%= button_to attend_event_path(@event), method: :post, class: 'btn btn-liquid-primary flex-fill flex-md-grow-0', data: { turbo: false } do %>
-              <i class="bi bi-calendar-plus me-2"></i>S’inscrire
-            <% end %>
+        <% if current_user_has_attendance?(@event) %>
+          <%= button_to cancel_attendance_event_path(@event), method: :delete, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0', data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
+            <i class="bi bi-calendar-x me-2"></i>Se désinscrire
           <% end %>
+        <% elsif policy(@event).can_attend? && !@event.full? %>
+          <button type="button" class="btn btn-liquid-primary flex-fill flex-md-grow-0" data-bs-toggle="modal" data-bs-target="#confirmAttendModalShow">
+            <i class="bi bi-calendar-plus me-2"></i>S'inscrire
+          </button>
+        <% elsif @event.full? %>
+          <button type="button" class="btn btn-outline-secondary flex-fill flex-md-grow-0" disabled>
+            <i class="bi bi-x-circle me-2"></i>Complet
+          </button>
         <% end %>
 
         <%= link_to 'Voir tous les événements', events_path, class: 'btn btn-outline-primary flex-fill flex-md-grow-0' %>
@@ -116,12 +135,70 @@
   </article>
 </section>
 
+<% if policy(@event).can_attend? && !@event.full? %>
+  <!-- Modal de confirmation d'inscription -->
+  <div class="modal fade" id="confirmAttendModalShow" tabindex="-1" aria-labelledby="confirmAttendModalShowLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmAttendModalShowLabel">
+            <i class="bi bi-calendar-check me-2"></i>Confirmer votre inscription
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">
+            Vous êtes sur le point de vous inscrire à l'événement :
+          </p>
+          <div class="card card-liquid rounded-liquid shadow-sm mb-3">
+            <div class="card-body">
+              <h6 class="card-title fw-bold"><%= @event.title %></h6>
+              <p class="card-text small mb-2">
+                <i class="bi bi-calendar-week me-2"></i>
+                <%= l @event.start_at, format: :event_long, locale: :fr %>
+              </p>
+              <p class="card-text small mb-2">
+                <i class="bi bi-geo-alt me-2"></i>
+                <%= @event.location_text %>
+              </p>
+              <% unless @event.unlimited? %>
+                <p class="card-text small mb-0">
+                  <i class="bi bi-people me-2"></i>
+                  <%= pluralize(@event.attendances_count, "inscrit") %> / <%= @event.max_participants %> participants
+                  <% if @event.remaining_spots > 0 %>
+                    · <span class="text-success fw-semibold"><%= pluralize(@event.remaining_spots, "place disponible") %></span>
+                  <% end %>
+                </p>
+              <% else %>
+                <p class="card-text small mb-0">
+                  <i class="bi bi-people me-2"></i>
+                  <%= pluralize(@event.attendances_count, "inscrit") %> (illimité)
+                </p>
+              <% end %>
+            </div>
+          </div>
+          <p class="mb-0 text-muted small">
+            <i class="bi bi-info-circle me-1"></i>
+            Vous recevrez une confirmation par email et pourrez annuler votre inscription à tout moment.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <%= button_to attend_event_path(@event), method: :post, class: "btn btn-liquid-primary", data: { turbo: false } do %>
+            <i class="bi bi-calendar-plus me-2"></i>Confirmer l'inscription
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <% if policy(@event).destroy? %>
   <div class="modal fade" id="confirmDeleteModalShow" tabindex="-1" aria-labelledby="confirmDeleteModalShowLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="confirmDeleteModalShowLabel">Supprimer l’événement</h5>
+          <h5 class="modal-title" id="confirmDeleteModalShowLabel">Supprimer l'événement</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">

@@ -28,11 +28,26 @@ class EventPolicy < ApplicationPolicy
   end
 
   def attend?
-    user.present?
+    return false unless user.present?
+    return false if record.full?
+
+    true
   end
 
   def cancel_attendance?
     user.present?
+  end
+
+  # Vérifie si l'utilisateur peut s'inscrire (pas déjà inscrit et événement pas plein)
+  def can_attend?
+    attend? && !user_has_attendance?
+  end
+
+  # Vérifie si l'utilisateur est déjà inscrit
+  def user_has_attendance?
+    return false unless user.present?
+
+    record.attendances.exists?(user_id: user.id)
   end
 
   def permitted_attributes
@@ -48,7 +63,8 @@ class EventPolicy < ApplicationPolicy
       :meeting_lat,
       :meeting_lng,
       :route_id,
-      :cover_image_url
+      :cover_image_url,
+      :max_participants
     ]
   end
 

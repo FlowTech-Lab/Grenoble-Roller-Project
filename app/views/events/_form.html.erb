@@ -50,6 +50,15 @@
           </div>
 
           <div class="col-12 col-md-6">
+            <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
+            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0 %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Mettez <strong>0</strong> pour un nombre illimité de participants.
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
             <%= f.label :price_cents, "Prix (centimes)", class: "form-label" %>
             <%= f.number_field :price_cents, class: "form-control form-control-liquid", min: 0, step: 50, required: true %>
           </div>

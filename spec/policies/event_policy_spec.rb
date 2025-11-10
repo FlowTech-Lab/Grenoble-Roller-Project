@@ -78,13 +78,71 @@ RSpec.describe EventPolicy do
   end
 
   describe '#attend?' do
-    it 'allows any signed-in user' do
+    it 'allows any signed-in user when event has available spots' do
       member = create(:user)
+      event = create(:event, :published, max_participants: 10)
       expect(described_class.new(member, event).attend?).to be(true)
+    end
+
+    it 'allows any signed-in user when event is unlimited' do
+      member = create(:user)
+      event = create(:event, :published, max_participants: 0)
+      expect(described_class.new(member, event).attend?).to be(true)
+    end
+
+    it 'denies when event is full' do
+      member = create(:user)
+      event = create(:event, :published, max_participants: 2)
+      # Fill the event
+      create(:attendance, event: event, user: create(:user), status: 'registered')
+      create(:attendance, event: event, user: create(:user), status: 'registered')
+      event.reload
+      expect(described_class.new(member, event).attend?).to be(false)
     end
 
     it 'denies guests' do
       expect(described_class.new(nil, event).attend?).to be(false)
+    end
+  end
+
+  describe '#can_attend?' do
+    let(:member) { create(:user) }
+    let(:event) { create(:event, :published, max_participants: 10) }
+
+    it 'returns true when user can attend and is not already registered' do
+      expect(described_class.new(member, event).can_attend?).to be(true)
+    end
+
+    it 'returns false when user is already registered' do
+      create(:attendance, event: event, user: member, status: 'registered')
+      event.reload
+      expect(described_class.new(member, event).can_attend?).to be(false)
+    end
+
+    it 'returns false when event is full' do
+      event = create(:event, :published, max_participants: 1)
+      create(:attendance, event: event, user: create(:user), status: 'registered')
+      event.reload
+      expect(described_class.new(member, event).can_attend?).to be(false)
+    end
+  end
+
+  describe '#user_has_attendance?' do
+    let(:member) { create(:user) }
+    let(:event) { create(:event, :published) }
+
+    it 'returns true when user has an attendance' do
+      create(:attendance, event: event, user: member, status: 'registered')
+      event.reload
+      expect(described_class.new(member, event).user_has_attendance?).to be(true)
+    end
+
+    it 'returns false when user does not have an attendance' do
+      expect(described_class.new(member, event).user_has_attendance?).to be(false)
+    end
+
+    it 'returns false when user is nil' do
+      expect(described_class.new(nil, event).user_has_attendance?).to be(false)
     end
   end
 

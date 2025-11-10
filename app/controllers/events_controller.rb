@@ -19,6 +19,7 @@ class EventsController < ApplicationController
       status: 'draft',
       start_at: Time.zone.now.change(min: 0),
       duration_min: 60,
+      max_participants: 0, # 0 = illimité par défaut
       currency: 'EUR'
     )
     authorize @event

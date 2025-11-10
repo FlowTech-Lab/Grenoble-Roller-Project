@@ -6,6 +6,7 @@ FactoryBot.define do
     status { 'draft' }
     start_at { 3.days.from_now }
     duration_min { 60 }
+    max_participants { 0 } # 0 = illimité par défaut
     sequence(:title) { |n| "Roller Session ##{n}" }
     description { 'Session hebdomadaire pour rouler ensemble dans les rues de Grenoble.' }
     price_cents { 0 }
@@ -21,6 +22,14 @@ FactoryBot.define do
 
     trait :past do
       start_at { 2.days.ago }
+    end
+
+    trait :with_limit do
+      max_participants { 20 }
+    end
+
+    trait :unlimited do
+      max_participants { 0 }
     end
   end
 end

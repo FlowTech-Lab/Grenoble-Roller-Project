@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_10_141700) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_10_142027) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -72,6 +72,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_10_141700) do
     t.text "description", null: false
     t.integer "duration_min", null: false
     t.string "location_text", limit: 255, null: false
+    t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
     t.integer "price_cents", default: 0, null: false

@@ -4,7 +4,8 @@ ActiveAdmin.register Event do
 
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
                 :description, :price_cents, :currency, :location_text,
-                :meeting_lat, :meeting_lng, :route_id, :cover_image_url
+                :meeting_lat, :meeting_lng, :route_id, :cover_image_url,
+                :max_participants
 
   scope :all, default: true
   scope('À venir') { |events| events.upcoming }
@@ -21,6 +22,10 @@ ActiveAdmin.register Event do
     end
     column :start_at
     column :duration_min
+    column :max_participants do |event|
+      event.unlimited? ? 'Illimité' : event.max_participants
+    end
+    column :attendances_count
     column :route
     column :creator_user
     column :price_cents do |event|
@@ -42,6 +47,19 @@ ActiveAdmin.register Event do
       row :status
       row :start_at
       row :duration_min
+      row :max_participants do |event|
+        event.unlimited? ? 'Illimité (0)' : event.max_participants
+      end
+      row :attendances_count
+      row :remaining_spots do |event|
+        if event.unlimited?
+          'Illimité'
+        elsif event.full?
+          'Complet (0)'
+        else
+          "#{event.remaining_spots} places restantes"
+        end
+      end
       row :creator_user
       row :route
       row :price_cents do |event|
@@ -79,6 +97,7 @@ ActiveAdmin.register Event do
       f.input :creator_user, collection: User.order(:email)
       f.input :start_at, as: :datetime_select
       f.input :duration_min
+      f.input :max_participants, label: 'Nombre maximum de participants', hint: 'Mettez 0 pour un nombre illimité de participants.'
       f.input :location_text
       f.input :description
     end

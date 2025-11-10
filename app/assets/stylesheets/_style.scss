@@ -880,6 +880,20 @@
     font-size: 1rem;
   }
 
+  // Zone cliquable pour le stretched-link (titre, description, infos)
+  // Le stretched-link de Bootstrap ne couvre que .card-clickable-area (parent avec position: relative)
+  // Les boutons dans .action-row-wrapper sont en dehors et fonctionnent normalement
+  .card-event .card-body {
+    .card-clickable-area {
+      position: relative;
+    }
+    
+    // La zone des boutons est en dehors du stretched-link
+    .action-row-wrapper {
+      position: relative;
+    }
+  }
+
   .action-row {
     .btn {
       min-width: 0;
