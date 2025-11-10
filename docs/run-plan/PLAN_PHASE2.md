@@ -2,7 +2,7 @@
 
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
-**État** : Modèles créés ✅ → Tests RSpec ✅ → ActiveAdmin ensuite
+**État** : Public events (CRUD + inscriptions) ✅ → Tests & ActiveAdmin custom ⏳
 
 ---
 
@@ -15,13 +15,23 @@
 - [x] Seeds créés et testés (Phase 2)
 - [x] RSpec configuré
 - [x] ActiveAdmin installé (core + intégration Pundit configurée)
+- [x] Application publique : CRUD Events complet (index/show/new/edit/destroy)
+- [x] UI/UX évènements conforme UI-Kit (cards, hero, auth-form, mobile-first)
+- [x] Parcours inscription/désinscription (EventsController#attend / #cancel_attendance)
+- [x] Page membre `Mes sorties` (liste des attendances + CTA cohérents)
+- [x] Navigation mise à jour (lien “Événements”, “Mes sorties”)
 
 ### 🔜 EN COURS
 - [ ] FactoryBot factories pour tous les modèles Phase 2 (optionnel si helpers suffisants)
+- [ ] Tests RSpec/Capybara pour les controllers publics (Events, Attendances) et policies
+- [ ] Optimisations UX en file d’attente : badge compteur, retours flash (préparés côté vue)
 
 ### 📅 À VENIR
 - [ ] Customisation ActiveAdmin (Jour 12-13)
 - [ ] Tests admin + permissions (Jour 14-15)
+- [ ] Optimisations performance : `attendances_count` (counter cache), `max_participants`
+- [ ] Notifications e-mail inscription/désinscription + export iCal
+- [ ] Accessibilité (ARIA, navigation clavier) & pagination “Mes sorties”
 
 ---
 
@@ -50,6 +60,8 @@ rails generate activeadmin:resource Event Route
 ```
 
 **✅ Solution** : ActiveAdmin génère TOUT automatiquement. Zéro travail manuel de CRUD admin.
+
+> ℹ️ Exception déjà appliquée côté **application publique** : contrôleurs `EventsController` & `AttendancesController` implémentés pour le front (non admin). Ne rien dupliquer dans l’espace `admin`.
 
 ---
 
@@ -216,7 +228,8 @@ rspec spec/models
 
 ### ActiveAdmin (Jour 11+)
 - [x] Installation
-- [ ] Resources générés
+- [x] Resource `Role` exposée + policy Pundit dédiée
+- [ ] Autres resources générées (`events`, `attendances`, etc.)
 - [ ] Customisation (filtres, bulk actions, exports)
 - [ ] Tests admin
 - [ ] Permissions Pundit
@@ -225,10 +238,10 @@ rspec spec/models
 
 ## 🎯 PROCHAINES ÉTAPES
 
-1. **MAINTENANT** : Préparer l'installation d'ActiveAdmin (vérifier prérequis, planifier génération)
-2. **Jour 11** : Installer ActiveAdmin (génère automatiquement tout)
-3. **Jour 12-13** : Customiser ActiveAdmin
-4. **Jour 14-15** : Tests admin + finalisation
+1. **MAINTENANT** : Renforcer la couverture de tests (Events/Attendances + policies) et finaliser factories
+2. **ENSUITE** : Générer/affiner les resources ActiveAdmin restantes (events, attendances, etc.)
+3. **Jour 12-13** : Customiser ActiveAdmin (UX, filtres, batch, exports)
+4. **Jour 14-15** : Tests admin + finalisation (Brakeman, Bullet, accessibilité)
 
 ---
 
