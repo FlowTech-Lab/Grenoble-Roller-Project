@@ -2,7 +2,8 @@
 
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
-**État** : Public events (CRUD + inscriptions) ✅ → Tests & ActiveAdmin custom ⏳
+**Dernière mise à jour** : Nov 2025  
+**État** : Tests complets (106 exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ⏳
 
 ---
 
@@ -14,24 +15,64 @@
 - [x] Validations, associations, enums, scopes
 - [x] Seeds créés et testés (Phase 2)
 - [x] RSpec configuré
+- [x] FactoryBot factories pour tous les modèles Phase 2 (Role, User, Route, Event, Attendance)
+- [x] Tests RSpec complets :
+  - Models (75 exemples)
+  - Requests (Events, Attendances, Pages - 19 exemples)
+  - Policies (EventPolicy - 12 exemples)
+  - **Total : 106 exemples, 0 échec** ✅
 - [x] ActiveAdmin installé (core + intégration Pundit configurée)
+- [x] Resources ActiveAdmin générées (Events, Routes, Attendances, Users, Roles, etc.)
 - [x] Application publique : CRUD Events complet (index/show/new/edit/destroy)
 - [x] UI/UX évènements conforme UI-Kit (cards, hero, auth-form, mobile-first)
 - [x] Parcours inscription/désinscription (EventsController#attend / #cancel_attendance)
 - [x] Page membre `Mes sorties` (liste des attendances + CTA cohérents)
-- [x] Navigation mise à jour (lien “Événements”, “Mes sorties”)
+- [x] Navigation mise à jour (lien "Événements", "Mes sorties")
+- [x] Homepage avec affichage du prochain événement (featured event card)
+- [x] Documentation mise à jour (setup, testing, changelog)
 
-### 🔜 EN COURS
-- [ ] FactoryBot factories pour tous les modèles Phase 2 (optionnel si helpers suffisants)
-- [ ] Tests RSpec/Capybara pour les controllers publics (Events, Attendances) et policies
-- [ ] Optimisations UX en file d’attente : badge compteur, retours flash (préparés côté vue)
+### 🔜 EN COURS / PRIORITÉ 1
+- [ ] **Optimisations DB** : Counter cache `attendances_count` sur Event
+- [ ] **Feature** : Ajouter `max_participants` sur Event avec validation
+- [ ] **Tests Capybara** : Parcours utilisateur complet (inscription/désinscription)
 
 ### 📅 À VENIR
-- [ ] Customisation ActiveAdmin (Jour 12-13)
-- [ ] Tests admin + permissions (Jour 14-15)
-- [ ] Optimisations performance : `attendances_count` (counter cache), `max_participants`
-- [ ] Notifications e-mail inscription/désinscription + export iCal
-- [ ] Accessibilité (ARIA, navigation clavier) & pagination “Mes sorties”
+
+#### Priorité 2 : Améliorations ActiveAdmin
+- [ ] **Customisation ActiveAdmin** :
+  - Bulk actions (modifier status de plusieurs événements)
+  - Exports CSV/PDF des événements et inscriptions
+  - Dashboard avec statistiques
+  - Actions personnalisées (publier, annuler un événement)
+- [ ] **Tests admin** :
+  - Tests RSpec pour controllers admin
+  - Tests d'intégration Capybara pour actions admin
+  - Vérification permissions Pundit
+
+#### Priorité 3 : Fonctionnalités UX
+- [ ] **Notifications e-mail** :
+  - Mailer pour inscription/désinscription
+  - Templates d'emails (HTML + texte)
+  - Configuration ActionMailer (dev/staging/prod)
+  - Tests des mailers
+- [ ] **Export iCal** :
+  - Génération de fichiers .ics pour chaque événement
+  - Lien "Ajouter au calendrier" sur les pages événements
+  - Export de tous les événements de l'utilisateur
+
+#### Priorité 4 : Performance et Qualité
+- [ ] **Accessibilité** :
+  - ARIA labels sur les boutons et formulaires
+  - Navigation clavier complète
+  - Tests avec screen reader
+  - Amélioration du contraste et des focus states
+- [ ] **Performance** :
+  - Audit N+1 queries avec Bullet gem
+  - Optimisation des requêtes (eager loading, index DB)
+  - Audit de sécurité avec Brakeman
+- [ ] **Pagination** :
+  - Pagination sur "Mes sorties" si >20 événements
+  - Pagination sur la liste des événements (optionnel)
 
 ---
 
@@ -184,13 +225,19 @@ rspec spec/models
 
 ### Jour 12-13 : Customisation ActiveAdmin
 
-- [ ] Configurer colonnes visibles (index, show, form)
-- [ ] Filtres simples (email, role, created_at, status, date) - utilisables par bénévoles
+#### ✅ Réalisé
+- [x] Configurer colonnes visibles (index, show, form) - Events partiellement configuré
+- [x] Filtres simples (title, status, route, creator_user, start_at, created_at) - Events configuré
+- [x] Scopes (À venir, Publiés, Brouillons, Annulés) - Events configuré
 - [x] Exposer `Role` dans ActiveAdmin (ressource dédiée + policy Pundit) pour gérer la hiérarchie/rôles via l'UI
+- [x] Panel "Inscriptions" dans la vue show d'un événement
+
+#### 🔜 À faire
 - [ ] Bulk actions (sélectionner 10 événements = modifier status en 1 clic)
 - [ ] Export CSV/PDF intégré (out-of-the-box)
 - [ ] Dashboard validation organisateurs
 - [ ] Actions personnalisées (validate_organizer!, publish_event, cancel_event)
+- [ ] Améliorer la customisation des autres resources (Routes, Attendances, etc.)
 
 ---
 
@@ -229,19 +276,234 @@ rspec spec/models
 ### ActiveAdmin (Jour 11+)
 - [x] Installation
 - [x] Resource `Role` exposée + policy Pundit dédiée
-- [ ] Autres resources générées (`events`, `attendances`, etc.)
-- [ ] Customisation (filtres, bulk actions, exports)
+- [x] Autres resources générées (`events`, `attendances`, `routes`, `users`, etc.)
+- [x] Customisation basique (scopes, filtres, colonnes) - Events partiellement customisé
+- [ ] Customisation avancée (bulk actions, exports CSV/PDF, dashboard)
 - [ ] Tests admin
-- [ ] Permissions Pundit
+- [ ] Permissions Pundit (partiellement testées)
 
 ---
 
-## 🎯 PROCHAINES ÉTAPES
+## 🎯 PROCHAINES ÉTAPES DÉTAILLÉES
 
-1. **MAINTENANT** : Renforcer la couverture de tests (Events/Attendances + policies) et finaliser factories
-2. **ENSUITE** : Générer/affiner les resources ActiveAdmin restantes (events, attendances, etc.)
-3. **Jour 12-13** : Customiser ActiveAdmin (UX, filtres, batch, exports)
-4. **Jour 14-15** : Tests admin + finalisation (Brakeman, Bullet, accessibilité)
+### 📌 PRIORITÉ 1 : Optimisations et Fonctionnalités Critiques (Semaine 1)
+
+#### 1. Optimisations Base de Données
+**Objectif** : Améliorer les performances des listes d'événements
+
+**Tâches** :
+- [ ] Créer migration pour ajouter `attendances_count` sur `events`
+- [ ] Ajouter `counter_cache: true` dans le modèle `Attendance`
+- [ ] Migration de données pour mettre à jour les compteurs existants
+- [ ] Mettre à jour les vues pour utiliser `event.attendances_count` au lieu de `event.attendances.count`
+- [ ] Tests pour vérifier le counter cache
+
+**Fichiers à modifier** :
+- `db/migrate/XXXXXX_add_attendances_count_to_events.rb`
+- `app/models/attendance.rb`
+- `app/models/event.rb`
+- `app/views/events/_event_card.html.erb`
+- `app/views/events/index.html.erb`
+- `app/views/events/show.html.erb`
+- `app/views/pages/index.html.erb`
+
+#### 2. Limite de Participants
+**Objectif** : Gérer le nombre maximum de participants par événement
+
+**Tâches** :
+- [ ] Créer migration pour ajouter `max_participants` sur `events`
+- [ ] Ajouter validation dans le modèle `Event` (max_participants > 0)
+- [ ] Ajouter validation dans le modèle `Attendance` (vérifier limite avant création)
+- [ ] Mettre à jour `EventsController#attend` pour gérer la limite
+- [ ] Afficher le nombre de places restantes dans l'UI
+- [ ] Désactiver le bouton "S'inscrire" si limite atteinte
+- [ ] Tests pour les validations et le comportement
+
+**Fichiers à modifier** :
+- `db/migrate/XXXXXX_add_max_participants_to_events.rb`
+- `app/models/event.rb`
+- `app/models/attendance.rb`
+- `app/controllers/events_controller.rb`
+- `app/policies/event_policy.rb`
+- `app/views/events/_event_card.html.erb`
+- `app/views/events/show.html.erb`
+- `spec/models/event_spec.rb`
+- `spec/models/attendance_spec.rb`
+- `spec/requests/events_spec.rb`
+
+#### 3. Tests Capybara (Parcours Utilisateur)
+**Objectif** : Couvrir les parcours utilisateur critiques avec des tests d'intégration
+
+**Tâches** :
+- [ ] Installer Capybara et Selenium/Chrome driver
+- [ ] Configurer Capybara dans `spec/rails_helper.rb`
+- [ ] Créer `spec/features/event_attendance_spec.rb` :
+  - Parcours : voir événement → s'inscrire → vérifier inscription → se désinscrire
+  - Test de limite de participants
+  - Test des permissions (non connecté, member, organizer)
+- [ ] Créer `spec/features/event_management_spec.rb` :
+  - Création d'événement (organizer)
+  - Modification d'événement (créateur)
+  - Suppression d'événement (créateur/admin)
+- [ ] Tests des notifications flash
+- [ ] Tests de la page "Mes sorties"
+
+**Fichiers à créer/modifier** :
+- `spec/features/event_attendance_spec.rb`
+- `spec/features/event_management_spec.rb`
+- `spec/features/mes_sorties_spec.rb`
+- `spec/rails_helper.rb`
+- `Gemfile` (ajouter `capybara`, `selenium-webdriver`)
+
+### 📌 PRIORITÉ 2 : Améliorations ActiveAdmin (Semaine 2)
+
+#### 4. Customisation ActiveAdmin
+**Objectif** : Améliorer l'expérience utilisateur du back-office
+
+**Tâches** :
+- [ ] **Bulk Actions** :
+  - Action "Publier" pour sélectionner plusieurs événements
+  - Action "Annuler" pour sélectionner plusieurs événements
+  - Action "Modifier le statut" en masse
+- [ ] **Exports** :
+  - Export CSV des événements avec toutes les colonnes
+  - Export CSV des inscriptions par événement
+  - Export PDF des événements (optionnel)
+- [ ] **Dashboard** :
+  - Statistiques (nombre d'événements, inscriptions, etc.)
+  - Graphiques (optionnel)
+  - Liste des événements à venir
+- [ ] **Actions personnalisées** :
+  - Bouton "Publier" dans la vue show d'un événement
+  - Bouton "Annuler" dans la vue show d'un événement
+  - Validation des organisateurs depuis le dashboard
+
+**Fichiers à modifier** :
+- `app/admin/events.rb`
+- `app/admin/dashboard.rb`
+- `app/admin/attendances.rb`
+
+#### 5. Tests Admin
+**Objectif** : Garantir la qualité du back-office
+
+**Tâches** :
+- [ ] Tests RSpec pour les controllers admin
+- [ ] Tests d'intégration Capybara pour les actions admin
+- [ ] Vérification des permissions Pundit pour chaque rôle
+- [ ] Tests des bulk actions
+- [ ] Tests des exports
+
+**Fichiers à créer** :
+- `spec/admin/events_spec.rb`
+- `spec/features/admin/event_management_spec.rb`
+- `spec/policies/admin/event_policy_spec.rb`
+
+### 📌 PRIORITÉ 3 : Fonctionnalités UX (Semaine 3)
+
+#### 6. Notifications E-mail
+**Objectif** : Informer les utilisateurs des inscriptions/désinscriptions
+
+**Tâches** :
+- [ ] Créer `app/mailers/event_mailer.rb`
+- [ ] Créer templates d'emails (HTML + texte) :
+  - `app/views/event_mailer/attendance_confirmation.html.erb`
+  - `app/views/event_mailer/attendance_cancellation.html.erb`
+  - `app/views/event_mailer/event_reminder.html.erb` (optionnel)
+- [ ] Configurer ActionMailer (dev/staging/prod)
+- [ ] Appeler les mailers dans `EventsController#attend` et `#cancel_attendance`
+- [ ] Tests des mailers
+- [ ] Tests d'intégration (vérifier que l'email est envoyé)
+
+**Fichiers à créer** :
+- `app/mailers/event_mailer.rb`
+- `app/views/event_mailer/attendance_confirmation.html.erb`
+- `app/views/event_mailer/attendance_confirmation.text.erb`
+- `app/views/event_mailer/attendance_cancellation.html.erb`
+- `app/views/event_mailer/attendance_cancellation.text.erb`
+- `spec/mailers/event_mailer_spec.rb`
+
+#### 7. Export iCal
+**Objectif** : Permettre aux utilisateurs d'ajouter les événements à leur calendrier
+
+**Tâches** :
+- [ ] Installer gem `icalendar` ou `ri_cal`
+- [ ] Créer `app/controllers/events_controller.rb#ical` (action pour générer .ics)
+- [ ] Ajouter route pour l'export iCal
+- [ ] Créer helper pour générer le fichier .ics
+- [ ] Ajouter lien "Ajouter au calendrier" sur les pages événements
+- [ ] Créer action pour exporter tous les événements de l'utilisateur
+- [ ] Tests pour la génération du fichier .ics
+
+**Fichiers à créer/modifier** :
+- `app/controllers/events_controller.rb` (ajouter action `ical`)
+- `app/helpers/events_helper.rb` (méthode pour générer .ics)
+- `config/routes.rb` (ajouter route)
+- `app/views/events/show.html.erb` (ajouter lien)
+- `spec/requests/events_spec.rb` (tests)
+
+### 📌 PRIORITÉ 4 : Performance et Qualité (Semaine 4)
+
+#### 8. Accessibilité
+**Objectif** : Rendre l'application accessible à tous les utilisateurs
+
+**Tâches** :
+- [ ] Ajouter ARIA labels sur tous les boutons et formulaires
+- [ ] Vérifier la navigation clavier (Tab, Enter, Esc)
+- [ ] Améliorer les contrastes de couleurs
+- [ ] Améliorer les focus states (visibilité au clavier)
+- [ ] Tests avec screen reader (NVDA, JAWS, VoiceOver)
+- [ ] Validation avec outils d'accessibilité (axe-core, WAVE)
+
+**Fichiers à modifier** :
+- `app/views/events/_event_card.html.erb`
+- `app/views/events/show.html.erb`
+- `app/views/events/_form.html.erb`
+- `app/views/layouts/_navbar.html.erb`
+- `app/assets/stylesheets/_style.scss`
+
+#### 9. Performance
+**Objectif** : Optimiser les performances de l'application
+
+**Tâches** :
+- [ ] Installer Bullet gem (détection N+1 queries)
+- [ ] Configurer Bullet en développement
+- [ ] Auditer toutes les pages et corriger les N+1 queries
+- [ ] Ajouter des index sur les colonnes fréquemment utilisées
+- [ ] Optimiser les requêtes avec eager loading
+- [ ] Audit de sécurité avec Brakeman
+- [ ] Corriger les vulnérabilités identifiées
+
+**Fichiers à créer/modifier** :
+- `Gemfile` (ajouter `bullet`, `brakeman`)
+- `config/environments/development.rb` (configurer Bullet)
+- `app/controllers/events_controller.rb` (optimiser eager loading)
+- `app/controllers/attendances_controller.rb` (optimiser eager loading)
+- `db/migrate/XXXXXX_add_indexes_for_performance.rb`
+
+#### 10. Pagination
+**Objectif** : Améliorer l'expérience utilisateur sur les grandes listes
+
+**Tâches** :
+- [ ] Installer gem `kaminari` ou `pagy`
+- [ ] Ajouter pagination sur "Mes sorties" (si >20 événements)
+- [ ] Ajouter pagination sur la liste des événements (optionnel)
+- [ ] Tests pour la pagination
+
+**Fichiers à créer/modifier** :
+- `Gemfile` (ajouter `kaminari` ou `pagy`)
+- `app/controllers/attendances_controller.rb` (ajouter pagination)
+- `app/views/attendances/index.html.erb` (ajouter pagination)
+- `app/controllers/events_controller.rb` (ajouter pagination optionnel)
+- `app/views/events/index.html.erb` (ajouter pagination optionnel)
+
+---
+
+## 📅 CALENDRIER RECOMMANDÉ
+
+- **Semaine 1** : Optimisations DB (counter cache, max_participants) + Tests Capybara
+- **Semaine 2** : Améliorations ActiveAdmin + Tests admin
+- **Semaine 3** : Notifications email + Export iCal
+- **Semaine 4** : Accessibilité + Audit performance + Pagination
 
 ---
 
@@ -255,5 +517,6 @@ rspec spec/models
 ---
 
 **Document créé le** : 2025-01-20  
-**Version** : 1.0 (Document unique simplifié)
+**Dernière mise à jour** : 2025-11-10  
+**Version** : 2.0 (Plan détaillé avec priorités et calendrier)
 
