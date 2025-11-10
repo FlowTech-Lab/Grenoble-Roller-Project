@@ -7,7 +7,12 @@ RSpec.describe 'Attendances', type: :request do
         user = create(:user)
         event = create(:event, :published, title: 'Sortie du vendredi')
         create(:attendance, user: user, event: event)
-        sign_in user
+        post user_session_path, params: {
+          user: {
+            email: user.email,
+            password: 'password123'
+          }
+        }
 
         get attendances_path
 

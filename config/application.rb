@@ -16,16 +16,6 @@ module App
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Avoid pushing autoload paths into $LOAD_PATH to keep frozen arrays from Ruby 3.4 mutable.
-    config.add_autoload_paths_to_load_path = false
-
-    # Ruby 3.4 freezes some Rails path arrays; duplicate them to allow engines to modify load paths.
-    config.autoload_paths = config.autoload_paths.dup
-    config.eager_load_paths = config.eager_load_paths.dup
-    config.paths['app/controllers'] = config.paths['app/controllers'].dup
-    config.paths['app/helpers'] = config.paths['app/helpers'].dup
-    config.paths['app/models'] = config.paths['app/models'].dup
-
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

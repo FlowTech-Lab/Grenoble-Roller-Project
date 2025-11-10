@@ -5,6 +5,7 @@ RSpec.describe EventPolicy do
 
   let(:event) { create(:event, creator_user: owner) }
   let(:owner) { create(:user, :organizer) }
+  let(:user) { owner }
 
   describe '#show?' do
     context 'when event is published' do
