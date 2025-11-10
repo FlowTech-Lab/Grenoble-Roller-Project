@@ -61,6 +61,9 @@ group :development, :test do
   # RSpec testing framework
   gem "rspec-rails"
   gem "factory_bot_rails"
+  
+  # N+1 query detection [https://github.com/flyerhzm/bullet]
+  gem "bullet", require: false
 end
 
 group :development do

@@ -1,6 +1,8 @@
 require 'rails_helper'
+require 'active_job/test_helper'
 
 RSpec.describe 'Events', type: :request do
+  include ActiveJob::TestHelper
   describe 'GET /events' do
     it 'renders the events index with upcoming events' do
       create(:event, :published, title: 'Roller Night')
@@ -44,7 +46,7 @@ RSpec.describe 'Events', type: :request do
 
     it 'allows an organizer to create an event' do
       organizer = create(:user, :organizer)
-      sign_in organizer
+      login_user(organizer)
 
       expect do
         post events_path, params: { event: valid_params }
@@ -57,7 +59,7 @@ RSpec.describe 'Events', type: :request do
 
     it 'prevents a regular member from creating an event' do
       member = create(:user)
-      sign_in member
+      login_user(member)
 
       expect do
         post events_path, params: { event: valid_params }
@@ -79,11 +81,13 @@ RSpec.describe 'Events', type: :request do
 
     it 'registers the current user' do
       user = create(:user)
-      sign_in user
+      login_user(user)
 
-      expect do
-        post attend_event_path(event)
-      end.to change { Attendance.count }.by(1)
+      perform_enqueued_jobs do
+        expect do
+          post attend_event_path(event)
+        end.to change { Attendance.count }.by(1)
+      end
 
       expect(response).to redirect_to(event_path(event))
       expect(flash[:notice]).to eq('Inscription confirmée.')
@@ -93,7 +97,7 @@ RSpec.describe 'Events', type: :request do
     it 'does not duplicate an existing attendance' do
       user = create(:user)
       create(:attendance, user: user, event: event)
-      sign_in user
+      login_user(user)
 
       expect do
         post attend_event_path(event)
@@ -116,11 +120,13 @@ RSpec.describe 'Events', type: :request do
     it 'removes the attendance for the current user' do
       user = create(:user)
       attendance = create(:attendance, user: user, event: event)
-      sign_in user
+      login_user(user)
 
-      expect do
-        delete cancel_attendance_event_path(event)
-      end.to change { Attendance.exists?(attendance.id) }.from(true).to(false)
+      perform_enqueued_jobs do
+        expect do
+          delete cancel_attendance_event_path(event)
+        end.to change { Attendance.exists?(attendance.id) }.from(true).to(false)
+      end
 
       expect(response).to redirect_to(event_path(event))
       expect(flash[:notice]).to eq('Inscription annulée.')

@@ -33,12 +33,15 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
   web bash -lc "bundle exec rails db:drop db:create db:schema:load"
 ```
 
-## Couverture actuelle (10/11/2025)
+## Couverture actuelle (Nov 2025)
 
-- **Total** : 166 exemples, 0 échec
+- **Total** : 154 exemples unitaires, 0 échec ✅
 - **Models** : 135 exemples (validations, associations, scopes, counter cache, max_participants)
 - **Policies** : 12 exemples (EventPolicy - permissions, scopes, attend, can_attend)
 - **Requests** : 19 exemples (Events, Attendances, Pages)
+- **Mailers** : 19 exemples (EventMailer - attendance_confirmed, attendance_cancelled, event_reminder)
+
+**Note** : 10 tests Capybara (system/feature) nécessitent ChromeDriver dans Docker (non configuré - priorité basse)
 
 ### Détails par catégorie
 
@@ -66,9 +69,12 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
 - `spec/policies/event_policy_spec.rb` - Permissions (show, create, update, destroy, attend, can_attend, user_has_attendance?), scopes par rôle, validation max_participants
 
 #### Requests (19 exemples)
-- `spec/requests/events_spec.rb` - CRUD public, inscriptions/désinscriptions
+- `spec/requests/events_spec.rb` - CRUD public, inscriptions/désinscriptions (avec emails)
 - `spec/requests/attendances_spec.rb` - Page "Mes sorties", authentification
 - `spec/requests/pages_spec.rb` - Pages publiques (home, association)
+
+#### Mailers (19 exemples)
+- `spec/mailers/event_mailer_spec.rb` - Emails de confirmation d'inscription/désinscription, rappels
 
 ### Prochaines étapes
 - Tests Capybara pour parcours utilisateur complet
@@ -112,7 +118,26 @@ attendance = create(:attendance, user: user, event: event)
 - Utiliser `build` au lieu de `create` quand la persistance n'est pas nécessaire
 
 ## Bonnes pratiques
+
+### Général
 - 1 scénario = 1 comportement validé (matcher explicite).
 - Données réalistes et proches des cas d’usage.
 - Tenir la base de test isolée de `db/seeds` (utiliser `db:schema:load`).
 - Ajouter systématiquement la commande RSpec exécutée dans les PRs / docs de livraison.
+
+### Authentification dans les Tests
+- **Request Specs** : Utiliser `login_user(user)` helper (utilise `post user_session_path`)
+- **System Specs** : Utiliser `login_as(user)` helper (simule la connexion via l'UI)
+- **Controller Specs** : Utiliser `sign_in user` (fonctionne)
+
+### Tests avec ActiveJob / ActionMailer
+- Inclure `ActiveJob::TestHelper` dans les tests request qui utilisent `deliver_later`
+- Utiliser `perform_enqueued_jobs` pour exécuter les jobs enqueued
+- Vérifier les emails avec `ActionMailer::Base.deliveries`
+
+### FactoryBot
+- Toujours définir les traits de date (`:upcoming`, `:past`) dans les factories
+- Utiliser les traits au lieu de spécifier manuellement les valeurs
+- Créer des traits réutilisables pour les cas courants
+
+**Documentation complète** : Voir `docs/05-testing/rspec-best-practices.md` pour plus de détails.

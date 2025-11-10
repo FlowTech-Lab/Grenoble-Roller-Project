@@ -20,6 +20,10 @@ FactoryBot.define do
       status { 'published' }
     end
 
+    trait :upcoming do
+      start_at { 1.week.from_now }
+    end
+
     trait :past do
       start_at { 2.days.ago }
     end

@@ -84,7 +84,7 @@ class EventsController < ApplicationController
       EventMailer.attendance_cancelled(current_user, @event).deliver_later
       redirect_to @event, notice: 'Inscription annulée.'
     else
-      redirect_to @event, alert: 'Impossible d'annuler votre participation.'
+      redirect_to @event, alert: "Impossible d'annuler votre participation."
     end
   end
 
