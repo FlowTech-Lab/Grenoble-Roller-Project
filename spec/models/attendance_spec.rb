@@ -34,6 +34,35 @@ RSpec.describe Attendance, type: :model do
       attendance.save!
       expect(attendance.payment).to eq(payment)
     end
+
+    describe 'counter cache' do
+      it 'increments event.attendances_count when attendance is created' do
+        expect(event.attendances_count).to eq(0)
+        
+        create_attendance(user: user, event: event)
+        event.reload
+        
+        expect(event.attendances_count).to eq(1)
+      end
+
+      it 'decrements event.attendances_count when attendance is destroyed' do
+        attendance = create_attendance(user: user, event: event)
+        event.reload
+        expect(event.attendances_count).to eq(1)
+        
+        attendance.destroy
+        event.reload
+        
+        expect(event.attendances_count).to eq(0)
+      end
+
+      it 'does not increment counter when attendance creation fails' do
+        invalid_attendance = build_attendance(user: user, event: event, status: nil)
+        initial_count = event.attendances_count
+        
+        expect { invalid_attendance.save }.not_to change { event.reload.attendances_count }
+      end
+    end
   end
 
   describe 'scopes' do

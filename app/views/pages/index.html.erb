@@ -86,7 +86,7 @@
                   <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
                   <%= @highlighted_event.location_text %>
                 </p>
-                <% attendance_count = @highlighted_event.attendances.count %>
+                <% attendance_count = @highlighted_event.attendances_count %>
                 <p class="mb-0">
                   <i class="bi bi-people text-liquid-primary me-2"></i>
                   <%= pluralize(attendance_count, "inscrit") %>
