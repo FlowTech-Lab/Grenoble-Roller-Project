@@ -14,10 +14,10 @@
                         avec d'autres riders à Grenoble
                     </p>
                     <div class="banner-actions">
-                        <a href="#" class="btn btn-liquid-primary btn-lg">
+                        <%= link_to events_path, class: "btn btn-liquid-primary btn-lg" do %>
                             <i class="bi bi-calendar-event me-2"></i>
                             Découvrir les événements
-                        </a>
+                        <% end %>
                         <% if !user_signed_in? %>
                         <%= link_to new_user_session_path, class: "btn btn-outline-light btn-lg" do %>
                             <i class="bi bi-box-arrow-in-right me-2"></i>
@@ -39,3 +39,109 @@
         </div>
     </div>
 </div>
+
+<section class="container pb-5">
+  <% if @highlighted_event.present? %>
+    <div class="mb-5">
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between mb-4">
+        <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+          <i class="bi bi-star-fill text-warning fs-5"></i>
+          <h2 class="h3 fw-bold mb-0">Prochain rendez-vous</h2>
+        </div>
+        <%= link_to events_path, class: "btn btn-outline-primary btn-sm" do %>
+          <i class="bi bi-calendar-event me-1"></i>
+          Voir tous les événements
+        <% end %>
+      </div>
+      
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+          <article class="card card-event card-event-featured card-liquid rounded-liquid shadow-liquid">
+            <div class="card-event-image card-event-image-featured">
+              <%= image_tag(event_cover_image_url(@highlighted_event),
+                            alt: @highlighted_event.title,
+                            loading: 'lazy',
+                            class: 'w-100 h-100 object-fit-cover') %>
+              <span class="card-event-date badge badge-liquid-success">
+                <i class="bi bi-calendar3 me-1"></i>
+                <%= l @highlighted_event.start_at, format: :day_month, locale: :fr %>
+              </span>
+            </div>
+
+            <div class="card-body p-4 p-lg-5">
+              <h2 class="card-title h3 fw-bold mb-3">
+                <%= link_to @highlighted_event.title, event_path(@highlighted_event), class: 'text-decoration-none text-body' %>
+              </h2>
+
+              <div class="card-event-info mb-4 text-body-secondary">
+                <p class="mb-2">
+                  <i class="bi bi-calendar-week text-liquid-primary me-2"></i>
+                  <strong><%= l @highlighted_event.start_at, format: :event_long, locale: :fr %></strong>
+                </p>
+                <p class="mb-2">
+                  <i class="bi bi-clock text-liquid-primary me-2"></i>
+                  <%= @highlighted_event.duration_min %> minutes
+                </p>
+                <p class="mb-2">
+                  <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+                  <%= @highlighted_event.location_text %>
+                </p>
+                <% attendance_count = @highlighted_event.attendances.count %>
+                <p class="mb-0">
+                  <i class="bi bi-people text-liquid-primary me-2"></i>
+                  <%= pluralize(attendance_count, "inscrit") %>
+                  <% if user_signed_in? && policy(@highlighted_event).attend? && current_user_has_attendance?(@highlighted_event) %>
+                    · <span class="text-success fw-semibold">Vous êtes inscrit(e)</span>
+                  <% end %>
+                </p>
+              </div>
+
+              <p class="lead text-body-secondary mb-4"><%= truncate(@highlighted_event.description, length: 250) %></p>
+
+              <div class="d-flex flex-wrap gap-2 action-row">
+                <% if user_signed_in? && policy(@highlighted_event).attend? %>
+                  <% if current_user_has_attendance?(@highlighted_event) %>
+                    <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, class: "btn btn-outline-secondary", data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
+                      <i class="bi bi-calendar-x me-1"></i>
+                      <span>Se désinscrire</span>
+                    <% end %>
+                  <% else %>
+                    <%= button_to attend_event_path(@highlighted_event), method: :post, class: "btn btn-liquid-primary", data: { turbo: false } do %>
+                      <i class="bi bi-calendar-plus me-1"></i>
+                      <span>S'inscrire</span>
+                    <% end %>
+                  <% end %>
+                <% end %>
+
+                <%= link_to(event_path(@highlighted_event), class: "btn btn-outline-primary") do %>
+                  <i class="bi bi-eye me-1"></i>
+                  <span>Voir plus</span>
+                <% end %>
+
+                <% if user_signed_in? && policy(@highlighted_event).edit? %>
+                  <%= link_to(edit_event_path(@highlighted_event), class: "btn btn-outline-secondary") do %>
+                    <i class="bi bi-pencil-square me-1"></i>
+                    <span>Modifier</span>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="text-center py-5 mb-5">
+      <div class="card card-liquid rounded-liquid shadow-liquid p-5">
+        <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+        <h3 class="h4 fw-bold mt-3 mb-2">Aucun événement à venir</h3>
+        <p class="text-body-secondary mb-4">
+          Les prochains événements apparaîtront ici dès qu'ils seront programmés.
+        </p>
+        <%= link_to events_path, class: "btn btn-liquid-primary" do %>
+          <i class="bi bi-calendar-event me-2"></i>
+          Voir tous les événements
+        <% end %>
+      </div>
+    </div>
+  <% end %>

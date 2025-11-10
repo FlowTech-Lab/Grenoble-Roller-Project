@@ -850,6 +850,19 @@
   .card-event:hover .card-event-image img {
     transform: scale(1.05);
   }
+
+  /* Featured Event Card - Larger image for highlighted events */
+  .card-event-featured {
+    max-width: 100%;
+  }
+
+  .card-event-image-featured {
+    height: 350px;
+    
+    @media (max-width: 768px) {
+      height: 250px;
+    }
+  }
   
   .card-event-date {
     position: absolute;
