@@ -50,14 +50,23 @@ docker compose -f ops/dev/docker-compose.yml up -d
 
 Wait for containers to be healthy (check with `docker ps`).
 
-### Step 4: Initialize Database
+### Step 4: Install Dependencies and Initialize Database
 
 ```bash
+# Install gems (required for first setup)
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle install
+
 # Run migrations
-docker exec grenoble-roller-dev bin/rails db:migrate
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle exec rails db:migrate
 
 # Seed database
-docker exec grenoble-roller-dev bin/rails db:seed
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle exec rails db:seed
 ```
 
 ### Step 5: Verify Setup
@@ -84,19 +93,35 @@ docker logs -f grenoble-roller-db-dev
 ### Rails Console
 
 ```bash
-docker exec -it grenoble-roller-dev bin/rails console
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle exec rails console
 ```
 
 ### Run Migrations
 
 ```bash
-docker exec grenoble-roller-dev bin/rails db:migrate
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle exec rails db:migrate
 ```
 
 ### Reset Database
 
 ```bash
-docker exec grenoble-roller-dev bin/rails db:reset
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle exec rails db:reset
+```
+
+### Run Tests
+
+```bash
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+  -e RAILS_ENV=test \
+  web bundle exec rspec
 ```
 
 ### Stop Containers
@@ -108,7 +133,50 @@ docker compose -f ops/dev/docker-compose.yml down
 ### Rebuild Containers
 
 ```bash
+# Quick rebuild (with cache)
 docker compose -f ops/dev/docker-compose.yml up -d --build
+```
+
+### Clean Rebuild (Fresh Start)
+
+For a complete clean rebuild from scratch:
+
+```bash
+# Stop and remove all containers and volumes
+docker compose -f ops/dev/docker-compose.yml down --volumes
+
+# Rebuild containers (no cache)
+docker compose -f ops/dev/docker-compose.yml build --no-cache web
+
+# Start database
+docker compose -f ops/dev/docker-compose.yml up -d db
+
+# Install gems
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle install
+
+# Setup database (create, migrate, seed)
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  web bundle exec rails db:setup
+
+# Setup test database
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+  -e RAILS_ENV=test \
+  web bash -lc "bundle exec rails db:drop db:create db:schema:load"
+
+# Restore Bootstrap assets (if needed)
+cp node_modules/bootstrap/dist/js/bootstrap.bundle.min.js vendor/javascript/bootstrap.bundle.min.js
+mkdir -p app/assets/builds/fonts
+cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 app/assets/builds/fonts/bootstrap-icons.woff2
+cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff app/assets/builds/fonts/bootstrap-icons.woff
+npm run build:css
+
+# Start application
+docker compose -f ops/dev/docker-compose.yml up web
 ```
 
 ## Troubleshooting

@@ -47,7 +47,14 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - Secrets: `04-rails/setup/credentials.md` + rotation régulière.
 - Performances: traquer N+1, cache, jobs idempotents.
 
-## Documentation actuelle (État du projet - Jan 2025)
+## Documentation actuelle (État du projet - Nov 2025)
+
+### Versions
+- **Ruby** : 3.4.2
+- **Rails** : 8.1.1
+- **PostgreSQL** : 16
+- **Bootstrap** : 5.3.2
+- **Bootstrap Icons** : 1.11.1
 
 ### Setup & Configuration
 - ✅ `04-rails/setup/local-development.md` - Guide de setup avec Docker (dev)
@@ -70,10 +77,15 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 
 ### Tests
 - ✅ `05-testing/strategy.md` - Stratégie de tests (RSpec configuré)
+- ✅ **106 exemples, 0 échec** (75 models + 12 policies + 19 requests)
+- ✅ FactoryBot factories pour tous les modèles
+
+### Changelog
+- ✅ `10-decisions-and-changelog/CHANGELOG.md` - Changelog des modifications significatives
 
 ### À compléter
 - `08-security-privacy/` - Approfondir modèle de menace & RGPD
-- `10-decisions-and-changelog/` - ADRs et changelog à enrichir
+- `10-decisions-and-changelog/` - ADRs à créer pour décisions structurantes
 
 ## Mise à jour continue
 - À chaque PR significative: mettre à jour la section concernée.
