@@ -85,11 +85,36 @@
 
         <div class="detail-row">
           <div class="detail-icon">
-            <i class="bi bi-geo-alt"></i>
+            <i class="bi bi-geo-alt<%= @event.has_gps_coordinates? ? '-fill text-success' : '' %>"></i>
           </div>
           <div class="detail-content">
-            <p class="detail-label">Lieu</p>
-            <p class="detail-value"><%= @event.location_text %></p>
+            <p class="detail-label">Rendez-vous</p>
+            <p class="detail-value mb-2">
+              <strong><%= @event.location_text %></strong>
+            </p>
+            
+            <% if @event.has_gps_coordinates? %>
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <a href="<%= @event.google_maps_url %>" 
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-map me-1"></i>Ouvrir dans Google Maps
+                </a>
+                
+                <a href="<%= @event.waze_url %>"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-sm btn-outline-info">
+                  <i class="bi bi-compass me-1"></i>Ouvrir dans Waze
+                </a>
+              </div>
+              
+              <p class="text-muted small mb-0">
+                <i class="bi bi-pin-map me-1"></i>
+                Coordonnées: <%= @event.meeting_lat %>, <%= @event.meeting_lng %>
+              </p>
+            <% end %>
           </div>
         </div>
 
@@ -161,26 +186,6 @@
         </div>
       </div>
 
-      <!-- Point de rendez-vous (si coordonnées) -->
-      <% if @event.meeting_lat.present? && @event.meeting_lng.present? %>
-        <div class="event-meeting-point mb-4">
-          <h2 class="h5 fw-semibold mb-3">
-            <i class="bi bi-map text-liquid-primary me-2"></i>Point de rendez-vous
-          </h2>
-          <div class="d-flex flex-column gap-2">
-            <p class="text-body-secondary mb-2">
-              <strong>Coordonnées :</strong> Latitude <%= @event.meeting_lat %> — Longitude <%= @event.meeting_lng %>
-            </p>
-            <a class="btn btn-outline-primary btn-sm align-self-start" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               href="https://www.openstreetmap.org/?mlat=<%= @event.meeting_lat %>&mlon=<%= @event.meeting_lng %>#map=16/<%= @event.meeting_lat %>/<%= @event.meeting_lng %>"
-               aria-label="Voir le point de rendez-vous sur la carte OpenStreetMap">
-              <i class="bi bi-map-fill me-1"></i>Voir sur la carte
-            </a>
-          </div>
-        </div>
-      <% end %>
 
       <!-- Actions avec hiérarchie claire et sticky sur mobile -->
       <div class="event-actions-sticky">
