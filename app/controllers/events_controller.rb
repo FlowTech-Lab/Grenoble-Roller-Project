@@ -6,9 +6,11 @@ class EventsController < ApplicationController
   def index
     scoped_events = policy_scope(Event.includes(:route, :creator_user))
     # Seuls les événements publiés sont visibles pour les utilisateurs normaux
-    @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
+    upcoming_events_all = scoped_events.visible.upcoming.order(:start_at)
+    @highlighted_event = upcoming_events_all.first
+    # Exclure le highlighted_event de la liste "À venir" pour éviter la duplication
+    @upcoming_events = @highlighted_event.present? ? upcoming_events_all.where.not(id: @highlighted_event.id) : upcoming_events_all
     @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
-    @highlighted_event = @upcoming_events.first
   end
 
   def show

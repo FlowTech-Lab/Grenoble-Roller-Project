@@ -39,7 +39,9 @@ ActiveAdmin.register Event do
     end
     column :attendances_count
     column :route
-    column :creator_user
+    column :creator_user do |event|
+      event.creator_user&.email || 'N/A'
+    end
     column :price_cents do |event|
       number_to_currency(event.price_cents / 100.0, unit: event.currency)
     end
@@ -77,7 +79,9 @@ ActiveAdmin.register Event do
           "#{event.remaining_spots} places restantes"
         end
       end
-      row :creator_user
+      row :creator_user do |event|
+        event.creator_user&.email || 'N/A'
+      end
       row :route
       row :price_cents do |event|
         number_to_currency(event.price_cents / 100.0, unit: event.currency)
@@ -120,7 +124,10 @@ ActiveAdmin.register Event do
         prompt: 'Sélectionnez un statut',
         hint: 'Changer le statut pour valider, publier, refuser ou annuler l\'événement'
       f.input :route
-      f.input :creator_user, collection: User.order(:email)
+      f.input :creator_user, 
+        collection: User.order(:email).map { |u| [u.email, u.id] },
+        label_method: :email,
+        value_method: :id
       f.input :start_at, as: :datetime_select
       f.input :duration_min
       f.input :max_participants, label: 'Nombre maximum de participants', hint: 'Mettez 0 pour un nombre illimité de participants.'
