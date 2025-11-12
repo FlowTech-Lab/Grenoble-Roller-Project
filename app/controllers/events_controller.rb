@@ -112,7 +112,7 @@ class EventsController < ApplicationController
 
     send_data calendar.to_ical,
               filename: "#{@event.title.parameterize}.ics",
-              type: 'text/calendar',
+              type: 'text/calendar; charset=utf-8',
               disposition: 'attachment'
   end
 

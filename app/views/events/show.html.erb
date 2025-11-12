@@ -97,7 +97,7 @@
           </button>
         <% end %>
 
-        <%= link_to ical_event_path(@event, format: :ics), class: 'btn btn-outline-primary flex-fill flex-md-grow-0', title: 'Ajouter au calendrier' do %>
+        <%= link_to ical_event_path(@event, format: :ics), class: 'btn btn-outline-primary flex-fill flex-md-grow-0', title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier (double-cliquez sur le fichier téléchargé)', data: { bs_toggle: 'tooltip', bs_placement: 'top' } do %>
           <i class="bi bi-calendar-event me-2"></i>Ajouter au calendrier
         <% end %>
 
