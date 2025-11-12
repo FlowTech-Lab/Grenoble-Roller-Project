@@ -5,12 +5,13 @@ ActiveAdmin.register Event do
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
                 :description, :price_cents, :currency, :location_text,
                 :meeting_lat, :meeting_lng, :route_id, :cover_image_url,
-                :max_participants
+                :max_participants, :level, :distance_km
 
   scope :all, default: true
   scope('À venir') { |events| events.upcoming }
-  scope('Publies') { |events| events.published }
-  scope('Brouillons') { |events| events.where(status: 'draft') }
+  scope('Publiés') { |events| events.published }
+  scope('En attente de validation', default: true) { |events| events.pending_validation }
+  scope('Refusés') { |events| events.rejected }
   scope('Annulés') { |events| events.where(status: 'canceled') }
 
   index do
@@ -18,7 +19,18 @@ ActiveAdmin.register Event do
     id_column
     column :title
     column :status do |event|
-      status_tag(event.status)
+      case event.status
+      when 'draft'
+        status_tag('En attente', class: 'warning')
+      when 'published'
+        status_tag('Publié', class: 'ok')
+      when 'rejected'
+        status_tag('Refusé', class: 'error')
+      when 'canceled'
+        status_tag('Annulé', class: 'error')
+      else
+        status_tag(event.status)
+      end
     end
     column :start_at
     column :duration_min
@@ -35,7 +47,12 @@ ActiveAdmin.register Event do
   end
 
   filter :title
-  filter :status, as: :select, collection: Event.statuses.keys
+  filter :status, as: :select, collection: {
+    'En attente de validation' => 'draft',
+    'Publié' => 'published',
+    'Refusé' => 'rejected',
+    'Annulé' => 'canceled'
+  }
   filter :route
   filter :creator_user, collection: -> { User.order(:email) }
   filter :start_at
@@ -92,12 +109,30 @@ ActiveAdmin.register Event do
 
     f.inputs 'Informations générales' do
       f.input :title
-      f.input :status, as: :select, collection: Event.statuses.keys
+      f.input :status, 
+        as: :select, 
+        collection: {
+          'En attente de validation' => 'draft',
+          'Publié' => 'published',
+          'Refusé' => 'rejected',
+          'Annulé' => 'canceled'
+        },
+        prompt: 'Sélectionnez un statut',
+        hint: 'Changer le statut pour valider, publier, refuser ou annuler l\'événement'
       f.input :route
       f.input :creator_user, collection: User.order(:email)
       f.input :start_at, as: :datetime_select
       f.input :duration_min
       f.input :max_participants, label: 'Nombre maximum de participants', hint: 'Mettez 0 pour un nombre illimité de participants.'
+      f.input :level, 
+        as: :select, 
+        collection: {
+          'Débutant' => 'beginner',
+          'Intermédiaire' => 'intermediate',
+          'Confirmé' => 'advanced',
+          'Tous niveaux' => 'all_levels'
+        }
+      f.input :distance_km, label: 'Distance (km)', input_html: { min: 0.1, step: 0.1 }
       f.input :location_text
       f.input :description
     end

@@ -5,18 +5,28 @@ class EventsController < ApplicationController
 
   def index
     scoped_events = policy_scope(Event.includes(:route, :creator_user))
-    @upcoming_events = scoped_events.upcoming.order(:start_at)
-    @past_events = scoped_events.past.order(start_at: :desc).limit(6)
+    # Seuls les événements publiés sont visibles pour les utilisateurs normaux
+    @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
+    @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
     @highlighted_event = @upcoming_events.first
   end
 
   def show
     authorize @event
+    # Rediriger si l'événement n'est pas visible (publié ou annulé) et que l'utilisateur n'est pas modo+ ou créateur
+    unless @event.published? || @event.canceled? || can_moderate? || @event.creator_user_id == current_user&.id
+      redirect_to events_path, alert: 'Cet événement n\'est pas encore publié.'
+    end
   end
+  
+  def can_moderate?
+    current_user.present? && current_user.role&.level.to_i >= 50 # MODERATOR = 50
+  end
+  helper_method :can_moderate?
 
   def new
     @event = current_user.created_events.build(
-      status: 'draft',
+      status: 'draft', # Toujours en brouillon à la création (en attente de validation)
       start_at: Time.zone.now.change(min: 0),
       duration_min: 60,
       max_participants: 0, # 0 = illimité par défaut
@@ -32,13 +42,15 @@ class EventsController < ApplicationController
     event_params = permitted_attributes(@event)
     # Toujours EUR
     event_params[:currency] = 'EUR'
+    # Toujours en draft à la création (en attente de validation par un modérateur)
+    event_params[:status] = 'draft'
     # Convertir le prix en euros en centimes
     if params[:price_euros].present?
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
     if @event.update(event_params)
-      redirect_to @event, notice: 'Événement créé avec succès.'
+      redirect_to @event, notice: 'Événement créé avec succès. Il est en attente de validation par un modérateur.'
     else
       render :new, status: :unprocessable_entity
     end
@@ -54,6 +66,12 @@ class EventsController < ApplicationController
     event_params = permitted_attributes(@event)
     # Toujours EUR
     event_params[:currency] = 'EUR'
+    
+    # Seuls les modérateurs+ peuvent changer le statut
+    unless current_user.role&.level.to_i >= 50 # MODERATOR = 50
+      event_params.delete(:status) # Retirer le statut des params si l'utilisateur n'est pas modo+
+    end
+    
     # Convertir le prix en euros en centimes
     if params[:price_euros].present?
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round

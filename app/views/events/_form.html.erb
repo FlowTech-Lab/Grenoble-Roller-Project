@@ -29,10 +29,37 @@
             <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble" %>
           </div>
 
-          <div class="col-12 col-md-6">
-            <%= f.label :status, "Statut", class: "form-label" %>
-            <%= f.select :status, Event.statuses.keys.map { |status| [status.humanize, status] }, {}, class: "form-select form-select-liquid" %>
-          </div>
+          <!-- Le statut n'est pas modifiable par l'organisateur, seulement par les modérateurs dans Active Admin -->
+          <% if can_moderate? %>
+            <div class="col-12 col-md-6">
+              <%= f.label :status, "Statut", class: "form-label" %>
+              <%= f.select :status, 
+                  Event.statuses.keys.map { |status| 
+                    label = case status
+                            when 'draft' then 'En attente de validation'
+                            when 'published' then 'Publié'
+                            when 'rejected' then 'Refusé'
+                            when 'canceled' then 'Annulé'
+                            else status.humanize
+                            end
+                    [label, status]
+                  }, 
+                  {}, 
+                  class: "form-select form-select-liquid" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Seuls les modérateurs peuvent changer le statut.
+              </div>
+            </div>
+          <% else %>
+            <%= f.hidden_field :status, value: 'draft' %>
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>En attente de validation</strong> : Votre événement sera soumis à validation par un modérateur avant d'être publié.
+              </div>
+            </div>
+          <% end %>
 
           <div class="col-12 col-md-6">
             <%= f.label :route_id, "Parcours associé", class: "form-label" %>
@@ -98,7 +125,7 @@
             <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0 %>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
-              Mettez <strong>0</strong> pour un nombre illimité de participants.
+              Mettez <strong>0</strong> pour un illimité.
             </div>
           </div>
 
@@ -113,10 +140,6 @@
                 step: 0.01,
                 placeholder: "Ex: 5.00",
                 required: true %>
-            <div class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              Le prix sera automatiquement converti en centimes pour l'enregistrement.
-            </div>
             <%= f.hidden_field :currency, value: "EUR" %>
           </div>
 
@@ -150,7 +173,7 @@
             </button>
             
             <div class="collapse<%= ' show' if event.has_gps_coordinates? %> mt-2" id="gpsCoordinates">
-              <div class="card card-body bg-light">
+              <div class="card card-body bg-light gps-coordinates-card">
                 <p class="small text-muted mb-3">
                   <i class="bi bi-lightbulb me-1"></i>
                   <strong>Bonus:</strong> Les coordonnées GPS permettent d'afficher une carte interactive et un lien Google Maps.

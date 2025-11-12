@@ -282,6 +282,8 @@
           <% @past_events.each do |event| %>
             <%= render 'events/event_card',
                        event: event,
+                       render_signup_button: false,
+                       current_user: current_user,
                        past: true %>
           <% end %>
         </div>

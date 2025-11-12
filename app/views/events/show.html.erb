@@ -8,10 +8,11 @@
         <%= image_tag(event_cover_image_url(@event), alt: @event.title, class: "hero-image", loading: "eager") %>
         <div class="hero-overlay"></div>
         
-        <!-- Badge de statut en haut à droite (z-index élevé) -->
+        <!-- Badge de date en haut à droite (z-index élevé) -->
         <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
-          <span class="badge badge-liquid-<%= @event.published? ? 'success' : @event.draft? ? 'warning' : 'danger' %> text-uppercase shadow-sm">
-            <%= @event.status.humanize %>
+          <span class="badge badge-liquid-primary text-uppercase shadow-sm">
+            <i class="bi bi-calendar3 me-1"></i>
+            <%= l @event.start_at, format: :day_month, locale: :fr %>
           </span>
         </div>
         
@@ -37,6 +38,13 @@
           </div>
           
           <div class="hero-badges">
+            <!-- Badge Annulé (prioritaire) -->
+            <% if @event.canceled? %>
+              <span class="badge bg-danger">
+                <i class="bi bi-x-octagon me-1"></i>Annulé
+              </span>
+            <% end %>
+            
             <span class="badge bg-primary">
               <i class="bi bi-people-fill me-1"></i>
               <%= pluralize(@event.attendances_count, "inscrit") %>

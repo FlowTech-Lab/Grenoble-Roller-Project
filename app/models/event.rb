@@ -4,7 +4,28 @@ class Event < ApplicationRecord
   has_many :attendances, dependent: :destroy
   has_many :users, through: :attendances
 
-  enum :status, { draft: 'draft', published: 'published', canceled: 'canceled' }, validate: true
+  enum :status, { 
+    draft: 'draft',      # Brouillon / En attente de validation
+    published: 'published', # Publié / Validé
+    rejected: 'rejected',   # Refusé (demande non aboutie)
+    canceled: 'canceled'    # Annulé
+  }, validate: true
+  
+  # Traductions des statuts en français
+  def status_label
+    case status
+    when 'draft'
+      'En attente de validation'
+    when 'published'
+      'Publié'
+    when 'rejected'
+      'Refusé'
+    when 'canceled'
+      'Annulé'
+    else
+      status.humanize
+    end
+  end
   enum :level, { beginner: 'beginner', intermediate: 'intermediate', advanced: 'advanced', all_levels: 'all_levels' }, validate: true, prefix: true
 
   validates :status, presence: true
@@ -26,11 +47,20 @@ class Event < ApplicationRecord
   
   # Niveau et distance toujours requis
   validates :level, presence: true
-  validates :distance_km, presence: true, numericality: { greater_than: 0 }
+  validates :distance_km, presence: true, numericality: { greater_than_or_equal_to: 0.1 }
 
   scope :upcoming, -> { where('start_at > ?', Time.current) }
   scope :past, -> { where('start_at <= ?', Time.current) }
   scope :published, -> { where(status: 'published') }
+  
+  # Événements visibles pour les utilisateurs (publiés + annulés pour information)
+  scope :visible, -> { where(status: ['published', 'canceled']) }
+  
+  # Événements en attente de validation (pour les modérateurs)
+  scope :pending_validation, -> { where(status: 'draft') }
+  
+  # Événements refusés (pour les modérateurs)
+  scope :rejected, -> { where(status: 'rejected') }
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[
@@ -87,6 +117,11 @@ class Event < ApplicationRecord
   # Compte les inscriptions actives (non annulées)
   def active_attendances_count
     attendances.active.count
+  end
+
+  # Vérifie si l'événement est passé
+  def past?
+    start_at <= Time.current
   end
 
   # Vérifie si l'événement a des coordonnées GPS

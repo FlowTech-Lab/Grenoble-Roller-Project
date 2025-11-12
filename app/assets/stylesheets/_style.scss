@@ -302,6 +302,12 @@
     border: none;
   }
   
+  .badge-liquid-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+  }
+  
   .badge-liquid-success {
     background: var(--gradient-liquid-success);
     color: white;
@@ -311,6 +317,12 @@
   .badge-liquid-danger {
     background: var(--gradient-liquid-danger);
     color: white;
+    border: none;
+  }
+  
+  .badge-liquid-warning {
+    background: #ffc107;
+    color: #000;
     border: none;
   }
   
@@ -893,6 +905,25 @@
     right: 1rem;
     z-index: 10;
     font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    /* Arrière-plan par défaut pour garantir la visibilité */
+    background: rgba(0, 0, 0, 0.6) !important;
+    color: white !important;
+    
+    /* Assurer la visibilité en mode sombre */
+    [data-bs-theme="dark"] & {
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.8) !important;
+    }
+  }
+  
+  /* Les classes badge-liquid-* surchargent l'arrière-plan par défaut */
+  .card-event-date.badge-liquid-primary,
+  .card-event-date.badge-liquid-secondary {
+    background: inherit !important;
   }
   
   .card-event-info p {
@@ -2463,4 +2494,15 @@
   
   [data-bs-theme="dark"] .navbar-logo-dark {
     display: block;
+  }
+  
+  /* Section GPS coordinates - Mode sombre */
+  [data-bs-theme="dark"] .gps-coordinates-card {
+    background: rgba(30, 30, 30, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--bs-body-color);
+  }
+  
+  [data-bs-theme="dark"] .gps-coordinates-card .text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
   }

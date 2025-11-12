@@ -4,7 +4,8 @@ class EventPolicy < ApplicationPolicy
   end
 
   def show?
-    record.published? || organizer? || owner?
+    # Visible si publié ou annulé, ou si l'utilisateur est modo+, ou si c'est le créateur
+    record.published? || record.canceled? || admin? || moderator? || owner?
   end
 
   def create?
@@ -16,7 +17,8 @@ class EventPolicy < ApplicationPolicy
   end
 
   def update?
-    organizer? && (owner? || admin?)
+    # L'organisateur peut modifier son événement, mais pas le statut (sauf modos+)
+    owner? || admin? || moderator?
   end
 
   def edit?
@@ -51,9 +53,8 @@ class EventPolicy < ApplicationPolicy
   end
 
   def permitted_attributes
-    [
+    attrs = [
       :title,
-      :status,
       :start_at,
       :duration_min,
       :description,
@@ -68,18 +69,27 @@ class EventPolicy < ApplicationPolicy
       :level,
       :distance_km
     ]
+    
+    # Seuls les modérateurs+ peuvent modifier le statut
+    attrs << :status if admin? || moderator?
+    
+    attrs
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      if admin?
+      if admin? || moderator?
+        # Admins et modérateurs voient tous les événements
         scope.all
       elsif organizer?
-        scope.where(creator_user_id: user.id).or(scope.published)
+        # Organisateurs voient leurs événements + les événements publiés et annulés
+        scope.where(creator_user_id: user.id).or(scope.visible)
       elsif user.present?
-        scope.published.or(scope.where(creator_user_id: user.id))
+        # Utilisateurs connectés voient les événements publiés/annulés + leurs propres événements
+        scope.visible.or(scope.where(creator_user_id: user.id))
       else
-        scope.published
+        # Utilisateurs non connectés voient les événements publiés et annulés
+        scope.visible
       end
     end
 
@@ -91,6 +101,10 @@ class EventPolicy < ApplicationPolicy
 
     def admin?
       user.present? && user.role&.level.to_i >= 60
+    end
+    
+    def moderator?
+      user.present? && user.role&.level.to_i >= 50
     end
   end
 
@@ -106,6 +120,10 @@ class EventPolicy < ApplicationPolicy
 
   def admin?
     user.present? && user.role&.level.to_i >= 60
+  end
+  
+  def moderator?
+    user.present? && user.role&.level.to_i >= 50
   end
 end
 
