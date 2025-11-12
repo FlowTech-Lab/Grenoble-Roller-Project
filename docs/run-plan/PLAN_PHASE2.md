@@ -3,7 +3,7 @@
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
 **Dernière mise à jour** : Jan 2025  
-**État** : Tests complets (166+ exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ✅ → Job de rappel la veille à 19h ✅ → Tests Capybara ⏳
+**État** : Tests complets (166+ exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ✅ → Job de rappel la veille à 19h ✅ → Phase 2 DEV terminée ✅ → Tests Capybara reportés en PRÉPROD 📅
 
 ---
 
@@ -49,13 +49,49 @@
   - Tests RSpec complets (8 exemples pour le job, 4 exemples pour `toggle_reminder`)
   - Migration pour ajouter `wants_reminder` à `attendances` avec index
 
-### 🔜 EN COURS / PRIORITÉ 1
-- [ ] **Tests Capybara** : Parcours utilisateur complet (inscription/désinscription)
+### ✅ PRÊT POUR PRÉPROD / PRODUCTION
+- [x] **Phase 2 DEV terminée** : Toutes les fonctionnalités critiques implémentées et testées ✅
+  - [x] Tests RSpec complets (166+ exemples, 0 échec) ✅
+  - [x] CRUD Events public fonctionnel ✅
+  - [x] Inscriptions/désinscriptions fonctionnelles ✅
+  - [x] Notifications e-mail implémentées ✅
+  - [x] Job de rappel la veille à 19h implémenté ✅
+  - [x] Export iCal fonctionnel ✅
+  - [x] Optimisations DB (counter cache, max_participants) ✅
+  - [x] Documentation complète ✅
+
+### 📅 REPORTÉ EN PRÉPROD
+- [ ] **Tests Capybara** : Parcours utilisateur complet (inscription/désinscription) - **Reporté en préprod**
   - ✅ Configuration Capybara avec driver Selenium headless Chrome
   - ✅ Helper d'authentification pour les tests system
   - ✅ Tests de features créés (event_attendance_spec.rb, event_management_spec.rb, mes_sorties_spec.rb)
   - ✅ 30/40 tests passent (75%)
   - ❌ 10 tests à corriger (tests JavaScript avec modals, formulaires, confirmations)
+  - **Justification** : Reporté en préprod car les fonctionnalités sont testées avec RSpec (166+ exemples, 0 échec)
+  - **Priorité préprod** : Finaliser les tests Capybara avant passage en production
+
+### 📅 PRÉPROD - AVANT PRODUCTION
+
+#### Tests Capybara (Parcours Utilisateur)
+**Objectif** : Valider les parcours utilisateur complets avant passage en production
+
+**Tâches** :
+- [ ] Corriger les 10 tests Capybara restants (tests JavaScript avec modals, formulaires, confirmations)
+- [ ] Valider les parcours utilisateur complets (inscription/désinscription, création événement, etc.)
+- [ ] Tests d'intégration pour les modals Bootstrap
+- [ ] Tests d'intégration pour les formulaires JavaScript
+- [ ] Tests d'intégration pour les confirmations de suppression
+
+**Fichiers à modifier** :
+- `spec/features/event_attendance_spec.rb`
+- `spec/features/event_management_spec.rb`
+- `spec/features/mes_sorties_spec.rb`
+
+**Justification du report** :
+- Les fonctionnalités sont testées avec RSpec (166+ exemples, 0 échec)
+- Les tests Capybara sont complémentaires mais non bloquants pour le passage en préprod
+- Permet de tester en conditions réelles (préprod) avant production
+- Priorité préprod : Finaliser les tests Capybara avant passage en production
 
 ### 📅 À VENIR
 
@@ -650,10 +686,10 @@ production:
 
 ## 📅 CALENDRIER RECOMMANDÉ
 
-- **Semaine 1** : Optimisations DB (counter cache, max_participants) + Tests Capybara
-- **Semaine 2** : Améliorations ActiveAdmin + Tests admin
-- **Semaine 3** : Notifications email + Export iCal
-- **Semaine 4** : Accessibilité + Audit performance + Pagination
+- **Semaine 1** : Optimisations DB (counter cache, max_participants) ✅ TERMINÉ
+- **Semaine 2** : Notifications email + Export iCal + Job de rappel ✅ TERMINÉ
+- **PRÉPROD** : Tests Capybara (parcours utilisateur complet) 📅
+- **Semaine 3-4** : Améliorations ActiveAdmin + Accessibilité + Audit performance + Pagination (optionnel)
 
 ---
 
@@ -667,6 +703,6 @@ production:
 ---
 
 **Document créé le** : 2025-01-20  
-**Dernière mise à jour** : 2025-11-10  
-**Version** : 2.1 (Optimisations DB et max_participants terminées)
+**Dernière mise à jour** : 2025-01-20  
+**Version** : 2.2 (Phase 2 DEV terminée, tests Capybara reportés en préprod)
 
