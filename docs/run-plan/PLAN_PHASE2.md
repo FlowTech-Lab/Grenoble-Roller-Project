@@ -2,8 +2,8 @@
 
 **Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
 **Date** : Jan 2025  
-**Dernière mise à jour** : Nov 2025  
-**État** : Tests complets (166 exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ✅ → Tests Capybara ⏳
+**Dernière mise à jour** : Jan 2025  
+**État** : Tests complets (166+ exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ✅ → Job de rappel la veille à 19h ✅ → Tests Capybara ⏳
 
 ---
 
@@ -69,11 +69,17 @@
   - [x] Configuration ActionMailer (dev/staging/prod) ✅
   - [x] Tests des mailers (16 exemples RSpec) ✅
   - [ ] Tests d'intégration (vérifier que l'email est envoyé) ⏳
-- [ ] **Job de rappel 24h avant** (Optionnel - Haute Valeur) 💡 :
-  - Job `EventReminderJob` pour envoyer automatiquement des rappels
-  - Planification avec `whenever` ou `sidekiq-cron`
-  - Template email déjà créé (`event_reminder`)
-  - Réduit le taux d'absence, améliore l'expérience utilisateur
+- [x] **Job de rappel la veille à 19h** : ✅ TERMINÉ
+  - [x] Job `EventReminderJob` pour envoyer automatiquement des rappels ✅
+  - [x] Planification avec Solid Queue (`config/recurring.yml`) : exécution quotidienne à 19h ✅
+  - [x] Rappels envoyés pour les événements du lendemain (toute la journée) ✅
+  - [x] Option `wants_reminder` dans les attendances (case à cocher à l'inscription) ✅
+  - [x] Affichage du statut du rappel sur la page événement ✅
+  - [x] Bouton pour activer/désactiver le rappel après inscription ✅
+  - [x] Template email déjà créé (`event_reminder`) ✅
+  - [x] Tests RSpec complets (8 exemples) ✅
+  - [x] Migration pour ajouter `wants_reminder` à `attendances` ✅
+  - [x] Réduit le taux d'absence, améliore l'expérience utilisateur ✅
 - [x] **Export iCal** : ✅ TERMINÉ
   - [x] Gem `icalendar` installée ✅
   - [x] Action `EventsController#ical` implémentée ✅
@@ -458,8 +464,8 @@ rspec spec/models
 - `spec/mailers/event_mailer_spec.rb` ✅
 - `docs/06-events/email-notifications-implementation.md` ✅
 
-#### 6.1. Job de Rappel 24h Avant (Optionnel - Haute Valeur) 💡
-**Objectif** : Envoyer automatiquement un email de rappel 24h avant chaque événement aux participants inscrits
+#### 6.1. Job de Rappel la Veille à 19h ✅ TERMINÉ
+**Objectif** : Envoyer automatiquement un email de rappel la veille à 19h pour les événements du lendemain aux participants inscrits
 
 **Pourquoi cette feature** :
 - ✅ Réduit le taux d'absence (les participants se souviennent de l'événement)
@@ -468,52 +474,91 @@ rspec spec/models
 - ✅ Facile à implémenter (template email déjà créé)
 
 **Tâches** :
-- [ ] Créer `app/jobs/event_reminder_job.rb`
-- [ ] Implémenter la logique de sélection des événements (24-48h avant)
-- [ ] Envoyer les emails via `EventMailer.event_reminder(attendance)`
-- [ ] Configurer la planification (gem `whenever` ou `sidekiq-cron`)
-- [ ] Créer template `app/views/event_mailer/event_reminder.html.erb` (déjà créé ✅)
-- [ ] Créer template `app/views/event_mailer/event_reminder.text.erb`
-- [ ] Tests du job (RSpec)
-- [ ] Tests d'intégration (vérifier que le job s'exécute correctement)
+- [x] Créer `app/jobs/event_reminder_job.rb` ✅
+- [x] Implémenter la logique de sélection des événements (événements du lendemain) ✅
+- [x] Envoyer les emails via `EventMailer.event_reminder(attendance)` uniquement pour les utilisateurs avec `wants_reminder = true` ✅
+- [x] Configurer la planification avec Solid Queue (`config/recurring.yml`) : exécution quotidienne à 19h ✅
+- [x] Créer template `app/views/event_mailer/event_reminder.html.erb` ✅
+- [x] Créer template `app/views/event_mailer/event_reminder.text.erb` ✅
+- [x] Migration pour ajouter `wants_reminder` à `attendances` (boolean, default: false, avec index) ✅
+- [x] Case à cocher dans les modales d'inscription pour activer le rappel (cochée par défaut) ✅
+- [x] Affichage du statut du rappel sur la page événement (alerte Bootstrap) ✅
+- [x] Action `toggle_reminder` dans `EventsController` pour activer/désactiver le rappel ✅
+- [x] Tests du job (RSpec - 8 exemples, 0 échec) ✅
+- [x] Tests de l'action `toggle_reminder` (4 exemples, 0 échec) ✅
 
-**Fichiers à créer** :
-- `app/jobs/event_reminder_job.rb`
-- `app/views/event_mailer/event_reminder.text.erb`
-- `spec/jobs/event_reminder_job_spec.rb`
-- `config/schedule.rb` (si utilisation de `whenever`)
+**Fichiers créés/modifiés** :
+- `app/jobs/event_reminder_job.rb` ✅
+- `app/views/event_mailer/event_reminder.html.erb` ✅
+- `app/views/event_mailer/event_reminder.text.erb` ✅
+- `spec/jobs/event_reminder_job_spec.rb` ✅
+- `config/recurring.yml` (planification avec Solid Queue) ✅
+- `db/migrate/20250120140000_add_wants_reminder_to_attendances.rb` ✅
+- `app/models/attendance.rb` (ajout `wants_reminder` dans `ransackable_attributes`) ✅
+- `app/controllers/events_controller.rb` (actions `attend` et `toggle_reminder`) ✅
+- `config/routes.rb` (route `PATCH /events/:id/toggle_reminder`) ✅
+- `app/views/events/show.html.erb` (affichage statut rappel + case à cocher dans modal) ✅
+- `app/views/events/index.html.erb` (case à cocher dans modal) ✅
+- `app/views/events/_event_card.html.erb` (case à cocher dans modal) ✅
+- `spec/factories/attendances.rb` (ajout `wants_reminder` et trait `:with_reminder`) ✅
 
-**Configuration requise** :
-- Active Job configuré (déjà fait avec Rails)
-- Queue adapter (Sidekiq recommandé pour production, ou `async` pour dev)
-- Planification cron (gem `whenever` ou `sidekiq-cron`)
+**Configuration** :
+- Solid Queue configuré (Rails 8.1.1)
+- Planification via `config/recurring.yml` : exécution quotidienne à 19h (dev et prod)
+- Queue adapter : Solid Queue (par défaut avec Rails 8.1.1)
 
-**Exemple d'implémentation** :
+**Implémentation actuelle** :
 ```ruby
 # app/jobs/event_reminder_job.rb
 class EventReminderJob < ApplicationJob
   queue_as :default
 
   def perform
-    # Événements qui démarrent dans 24-48h
-    Event.upcoming
-      .published
-      .where(start_at: 24.hours.from_now..48.hours.from_now)
-      .each do |event|
-        event.attendances.active.each do |attendance|
-          EventMailer.event_reminder(attendance).deliver_later
-        end
+    # Définir le début et la fin de demain (00:00:00 à 23:59:59)
+    tomorrow_start = Time.zone.now.beginning_of_day + 1.day
+    tomorrow_end = tomorrow_start.end_of_day
+
+    # Trouver les événements publiés qui ont lieu demain (dans toute la journée)
+    events = Event.published
+                  .upcoming
+                  .where(start_at: tomorrow_start..tomorrow_end)
+
+    events.find_each do |event|
+      # Envoyer un rappel uniquement aux participants actifs qui ont activé le rappel
+      event.attendances.active
+           .where(wants_reminder: true)
+           .includes(:user, :event)
+           .find_each do |attendance|
+        next unless attendance.user&.email.present?
+        EventMailer.event_reminder(attendance).deliver_later
       end
+    end
   end
 end
 
-# config/schedule.rb (gem whenever)
-every 1.day, at: '9:00 am' do
-  runner "EventReminderJob.perform_later"
-end
+# config/recurring.yml
+development:
+  event_reminder:
+    class: EventReminderJob
+    queue: default
+    schedule: every day at 7:00pm
+
+production:
+  event_reminder:
+    class: EventReminderJob
+    queue: default
+    schedule: every day at 7:00pm
 ```
 
-**Priorité** : 🟡 Moyenne (après export iCal et améliorations ActiveAdmin)
+**Fonctionnalités** :
+- ✅ Rappels envoyés la veille à 19h pour les événements du lendemain
+- ✅ Option `wants_reminder` dans les attendances (case à cocher à l'inscription, activée par défaut)
+- ✅ Affichage du statut du rappel sur la page événement (alerte Bootstrap avec icône)
+- ✅ Bouton pour activer/désactiver le rappel après inscription
+- ✅ Rappels envoyés uniquement aux utilisateurs avec `wants_reminder = true`
+- ✅ Tests RSpec complets (8 exemples pour le job, 4 exemples pour `toggle_reminder`)
+
+**Priorité** : ✅ TERMINÉ
 
 #### 7. Export iCal ✅ TERMINÉ
 **Objectif** : Permettre aux utilisateurs d'ajouter les événements à leur calendrier

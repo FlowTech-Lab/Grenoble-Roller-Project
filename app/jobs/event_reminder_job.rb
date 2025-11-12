@@ -1,13 +1,18 @@
-# Job pour envoyer des rappels 24h avant les événements
+# Job pour envoyer des rappels la veille à 19h pour les événements du lendemain
 class EventReminderJob < ApplicationJob
   queue_as :default
 
-  # Envoie des rappels pour tous les événements qui ont lieu dans 24h
+  # Envoie des rappels pour tous les événements qui ont lieu le lendemain
+  # Exécuté chaque jour à 19h, envoie des rappels pour les événements du jour suivant
   def perform
-    # Trouver les événements publiés qui ont lieu dans 24h (±1h de fenêtre)
+    # Définir le début et la fin de demain (00:00:00 à 23:59:59)
+    tomorrow_start = Time.zone.now.beginning_of_day + 1.day
+    tomorrow_end = tomorrow_start.end_of_day
+
+    # Trouver les événements publiés qui ont lieu demain (dans toute la journée)
     events = Event.published
                   .upcoming
-                  .where(start_at: 23.hours.from_now..25.hours.from_now)
+                  .where(start_at: tomorrow_start..tomorrow_end)
 
     events.find_each do |event|
       # Envoyer un rappel uniquement aux participants actifs qui ont activé le rappel

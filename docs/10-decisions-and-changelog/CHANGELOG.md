@@ -2,6 +2,69 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-01-20] - Job de rappel la veille à 19h + Option wants_reminder
+
+### Ajouté
+- **Job de rappel la veille à 19h** :
+  - Job `EventReminderJob` exécuté quotidiennement à 19h via Solid Queue
+  - Rappels envoyés pour les événements du lendemain (toute la journée, 00:00:00 à 23:59:59)
+  - Planification via `config/recurring.yml` (Solid Queue native)
+  - **Impact UX** : Réduction du taux d'absence, amélioration de l'expérience utilisateur
+
+- **Option `wants_reminder` dans les attendances** :
+  - Migration pour ajouter `wants_reminder` (boolean, default: false) à `attendances`
+  - Index sur `wants_reminder` pour optimiser les requêtes
+  - Case à cocher dans les modales d'inscription (activée par défaut)
+  - Affichage du statut du rappel sur la page événement (alerte Bootstrap)
+  - Bouton pour activer/désactiver le rappel après inscription
+  - Action `toggle_reminder` dans `EventsController` pour gérer le rappel
+  - Route `PATCH /events/:id/toggle_reminder`
+  - Rappels envoyés uniquement aux utilisateurs avec `wants_reminder = true`
+
+- **Tests** :
+  - 8 tests pour le job de rappel (événements demain, aujourd'hui, après-demain, brouillons, multiple attendees)
+  - 4 tests pour l'action `toggle_reminder` (activation, désactivation, erreur si non inscrit)
+  - Trait `:with_reminder` dans la factory `Attendance`
+  - **Total : 12 nouveaux tests, 0 échec** ✅
+
+### Modifié
+- **Job `EventReminderJob`** :
+  - Modification de la logique : rappels pour les événements du lendemain (au lieu de 24h avant)
+  - Filtrage par `wants_reminder = true` pour ne rappeler que les utilisateurs qui ont activé le rappel
+  - Utilisation de `Time.zone.now.beginning_of_day + 1.day` pour définir la journée du lendemain
+
+- **Configuration `config/recurring.yml`** :
+  - Modification du schedule : exécution quotidienne à 19h (au lieu de 9h)
+  - Configuration pour development et production
+
+- **Vues** :
+  - Mise à jour des messages : "la veille à 19h" au lieu de "24h avant"
+  - Affichage du statut du rappel sur la page événement (alerte Bootstrap avec icône)
+  - Case à cocher dans les modales d'inscription (show, index, _event_card)
+
+- **Controller `EventsController`** :
+  - Action `attend` : accepte le paramètre `wants_reminder` à l'inscription
+  - Action `toggle_reminder` : active/désactive le rappel pour un utilisateur inscrit
+  - Chargement de `@user_attendance` dans `set_event` pour la vue
+
+- **Modèle `Attendance`** :
+  - Ajout de `wants_reminder` dans `ransackable_attributes` pour ActiveAdmin
+
+### Fichiers modifiés
+- `app/jobs/event_reminder_job.rb`
+- `config/recurring.yml`
+- `app/controllers/events_controller.rb`
+- `app/models/attendance.rb`
+- `app/views/events/show.html.erb`
+- `app/views/events/index.html.erb`
+- `app/views/events/_event_card.html.erb`
+- `config/routes.rb`
+- `spec/jobs/event_reminder_job_spec.rb`
+- `spec/factories/attendances.rb`
+
+### Fichiers créés
+- `db/migrate/20250120140000_add_wants_reminder_to_attendances.rb`
+
 ## [2025-11-10] - Optimisations DB + Feature max_participants + Correction bug boutons
 
 ### Ajouté

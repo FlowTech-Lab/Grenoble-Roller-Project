@@ -6,13 +6,21 @@ RSpec.describe EventReminderJob, type: :job do
 
   describe '#perform' do
     let!(:user) { create(:user, email: 'test@example.com') }
-    let!(:event_tomorrow) { create(:event, :published, start_at: 24.hours.from_now, title: 'Event Tomorrow') }
+    # Événement demain matin (10h)
+    let!(:event_tomorrow_morning) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Event Tomorrow Morning') }
+    # Événement demain après-midi (15h)
+    let!(:event_tomorrow_afternoon) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 1.day + 15.hours, title: 'Event Tomorrow Afternoon') }
+    # Événement demain soir (20h)
+    let!(:event_tomorrow_evening) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 1.day + 20.hours, title: 'Event Tomorrow Evening') }
+    # Événement aujourd'hui
     let!(:event_today) { create(:event, :published, start_at: 2.hours.from_now, title: 'Event Today') }
-    let!(:event_next_week) { create(:event, :published, start_at: 1.week.from_now, title: 'Event Next Week') }
-    let!(:draft_event) { create(:event, :draft, start_at: 24.hours.from_now, title: 'Draft Event') }
+    # Événement après-demain
+    let!(:event_day_after_tomorrow) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 2.days + 10.hours, title: 'Event Day After Tomorrow') }
+    # Événement brouillon demain
+    let!(:draft_event) { create(:event, :draft, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Draft Event') }
 
-    context 'when event is in 24h window' do
-      let!(:attendance) { create(:attendance, user: user, event: event_tomorrow, status: 'registered', wants_reminder: true) }
+    context 'when event is tomorrow' do
+      let!(:attendance) { create(:attendance, user: user, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
 
       it 'sends reminder email to active attendees with wants_reminder = true' do
         expect do
@@ -24,7 +32,18 @@ RSpec.describe EventReminderJob, type: :job do
         mail = ActionMailer::Base.deliveries.last
         expect(mail.to).to eq([user.email])
         expect(mail.subject).to include('Rappel')
-        expect(mail.subject).to include(event_tomorrow.title)
+        expect(mail.subject).to include(event_tomorrow_morning.title)
+      end
+
+      it 'sends reminder for events at different times tomorrow' do
+        create(:attendance, user: user, event: event_tomorrow_afternoon, status: 'registered', wants_reminder: true)
+        create(:attendance, user: user, event: event_tomorrow_evening, status: 'registered', wants_reminder: true)
+
+        expect do
+          perform_enqueued_jobs do
+            EventReminderJob.perform_now
+          end
+        end.to change { ActionMailer::Base.deliveries.count }.by(3)
       end
 
       it 'does not send reminder for canceled attendance' do
@@ -48,9 +67,9 @@ RSpec.describe EventReminderJob, type: :job do
       end
     end
 
-    context 'when event is not in 24h window' do
+    context 'when event is not tomorrow' do
       let!(:attendance_today) { create(:attendance, user: user, event: event_today, status: 'registered', wants_reminder: true) }
-      let!(:attendance_next_week) { create(:attendance, user: user, event: event_next_week, status: 'registered', wants_reminder: true) }
+      let!(:attendance_day_after) { create(:attendance, user: user, event: event_day_after_tomorrow, status: 'registered', wants_reminder: true) }
 
       it 'does not send reminder for events today' do
         expect do
@@ -60,7 +79,7 @@ RSpec.describe EventReminderJob, type: :job do
         end.not_to change { ActionMailer::Base.deliveries.count }
       end
 
-      it 'does not send reminder for events next week' do
+      it 'does not send reminder for events day after tomorrow' do
         expect do
           perform_enqueued_jobs do
             EventReminderJob.perform_now
@@ -84,9 +103,9 @@ RSpec.describe EventReminderJob, type: :job do
     context 'with multiple attendees' do
       let!(:user2) { create(:user, email: 'test2@example.com') }
       let!(:user3) { create(:user, email: 'test3@example.com') }
-      let!(:attendance1) { create(:attendance, user: user, event: event_tomorrow, status: 'registered', wants_reminder: true) }
-      let!(:attendance2) { create(:attendance, user: user2, event: event_tomorrow, status: 'registered', wants_reminder: true) }
-      let!(:attendance3) { create(:attendance, user: user3, event: event_tomorrow, status: 'registered', wants_reminder: false) }
+      let!(:attendance1) { create(:attendance, user: user, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
+      let!(:attendance2) { create(:attendance, user: user2, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
+      let!(:attendance3) { create(:attendance, user: user3, event: event_tomorrow_morning, status: 'registered', wants_reminder: false) }
 
       it 'sends reminder only to attendees with wants_reminder = true' do
         expect do

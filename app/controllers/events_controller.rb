@@ -90,7 +90,7 @@ class EventsController < ApplicationController
     end
   end
 
-  # Active/désactive le rappel 24h avant pour l'utilisateur inscrit
+  # Active/désactive le rappel la veille à 19h pour l'utilisateur inscrit
   def toggle_reminder
     authenticate_user!
     authorize @event, :cancel_attendance? # Même permission que cancel_attendance
@@ -98,7 +98,7 @@ class EventsController < ApplicationController
     attendance = @event.attendances.find_by(user: current_user)
     if attendance
       attendance.update(wants_reminder: !attendance.wants_reminder)
-      message = attendance.wants_reminder? ? 'Rappel activé. Vous recevrez un email 24h avant l\'événement.' : 'Rappel désactivé.'
+      message = attendance.wants_reminder? ? 'Rappel activé. Vous recevrez un email la veille à 19h pour vous rappeler l\'événement.' : 'Rappel désactivé.'
       redirect_to @event, notice: message
     else
       redirect_to @event, alert: 'Vous n\'êtes pas inscrit(e) à cet événement.'
