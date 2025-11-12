@@ -519,6 +519,22 @@ admin_user = User.find_by(email: "admin@roller.com")
 
 # 🎪 Events (événements)
 puts "🎪 Création des événements..."
+# Helper pour mapper la difficulté de la route vers le niveau de l'événement
+def map_route_difficulty_to_level(route)
+  return 'all_levels' unless route
+  
+  case route.difficulty
+  when 'easy'
+    'beginner'
+  when 'medium'
+    'intermediate'
+  when 'hard'
+    'advanced'
+  else
+    'all_levels'
+  end
+end
+
 events_data = [
   {
     creator_user: florian || admin_user,
@@ -533,7 +549,10 @@ events_data = [
     location_text: "Place de la Bastille, Grenoble",
     meeting_lat: 45.1917,
     meeting_lng: 5.7278,
-    cover_image_url: "events/bastille.jpg"
+    cover_image_url: "events/bastille.jpg",
+    level: map_route_difficulty_to_level(routes[0]),
+    distance_km: routes[0]&.distance_km || 8.5,
+    max_participants: 0
   },
   {
     creator_user: florian || admin_user,
@@ -548,7 +567,10 @@ events_data = [
     location_text: "Parking du Vercors, Villard-de-Lans",
     meeting_lat: 45.0736,
     meeting_lng: 5.5536,
-    cover_image_url: "events/vercors.jpg"
+    cover_image_url: "events/vercors.jpg",
+    level: map_route_difficulty_to_level(routes[1]),
+    distance_km: routes[1]&.distance_km || 45.0,
+    max_participants: 20
   },
   {
     creator_user: admin_user || florian,
@@ -563,7 +585,10 @@ events_data = [
     location_text: "Parc Paul Mistral, Grenoble",
     meeting_lat: 45.1885,
     meeting_lng: 5.7245,
-    cover_image_url: "events/isere.jpg"
+    cover_image_url: "events/isere.jpg",
+    level: 'all_levels',
+    distance_km: routes[2]&.distance_km || 12.0,
+    max_participants: 0
   },
   {
     creator_user: florian || admin_user,
@@ -578,7 +603,10 @@ events_data = [
     location_text: "Départ Grenoble centre",
     meeting_lat: 45.1885,
     meeting_lng: 5.7245,
-    cover_image_url: nil
+    cover_image_url: nil,
+    level: map_route_difficulty_to_level(routes[3]),
+    distance_km: routes[3]&.distance_km || 22.0,
+    max_participants: 15
   },
   {
     creator_user: admin_user || florian,
@@ -593,7 +621,10 @@ events_data = [
     location_text: "Parking Polygone, Grenoble",
     meeting_lat: 45.1789,
     meeting_lng: 5.7123,
-    cover_image_url: "events/polygone.jpg"
+    cover_image_url: "events/polygone.jpg",
+    level: map_route_difficulty_to_level(routes[4]),
+    distance_km: routes[4]&.distance_km || 15.5,
+    max_participants: 0
   },
   {
     creator_user: florian || admin_user,
@@ -608,7 +639,10 @@ events_data = [
     location_text: "Place de la Bastille, Grenoble",
     meeting_lat: 45.1917,
     meeting_lng: 5.7278,
-    cover_image_url: nil
+    cover_image_url: nil,
+    level: map_route_difficulty_to_level(routes[0]),
+    distance_km: routes[0]&.distance_km || 8.5,
+    max_participants: 0
   }
 ]
 
