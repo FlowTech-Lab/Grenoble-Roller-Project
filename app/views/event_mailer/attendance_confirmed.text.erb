@@ -1,0 +1,33 @@
+✅ INSCRIPTION CONFIRMÉE
+
+Bonjour <%= @user.first_name %>,
+
+Votre inscription à l'événement <%= @event.title %> a bien été enregistrée.
+
+📅 DÉTAILS DE L'ÉVÉNEMENT
+─────────────────────────
+
+📍 Lieu : <%= @event.location_text %>
+🕐 Date : <%= l @event.start_at, format: :event_long, locale: :fr %>
+⏱️ Durée : <%= @event.duration_min %> minutes
+<% if @event.price_cents > 0 %>
+💰 Prix : <%= number_to_currency(@event.price_cents / 100.0, unit: '€') %>
+<% end %>
+<% if @event.route.present? %>
+🗺️ Parcours : <%= @event.route.name %>
+<% end %>
+<% unless @event.unlimited? %>
+👥 Participants : <%= @event.active_attendances_count %> / <%= @event.max_participants %>
+  <% if @event.remaining_spots > 0 %>
+    (<%= pluralize(@event.remaining_spots, 'place disponible') %>)
+  <% end %>
+<% end %>
+
+Voir l'événement : <%= event_url(@event) %>
+
+─────────────────────────
+
+À bientôt sur les routes de Grenoble ! 🛼
+
+💡 Rappel : Vous pouvez annuler votre inscription à tout moment depuis la page de l'événement ou depuis "Mes sorties".
+

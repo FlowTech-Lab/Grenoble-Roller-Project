@@ -37,6 +37,18 @@ RSpec.describe Event, type: :model do
       expect(event).to be_invalid
       expect(event.errors[:price_cents]).to include('must be greater than or equal to 0')
     end
+
+    it 'requires max_participants to be non-negative' do
+      event = build_event(creator_user: creator, max_participants: -1)
+      expect(event).to be_invalid
+      expect(event.errors[:max_participants]).to be_present
+    end
+
+    it 'allows max_participants to be 0 (unlimited)' do
+      event = build_event(creator_user: creator, max_participants: 0)
+      expect(event).to be_valid
+      expect(event.unlimited?).to be true
+    end
   end
 
   describe 'scopes' do
@@ -62,10 +74,102 @@ RSpec.describe Event, type: :model do
     end
   end
 
+  describe '#unlimited?' do
+    it 'returns true when max_participants is 0' do
+      event = create_event(creator_user: creator, max_participants: 0)
+      expect(event.unlimited?).to be true
+    end
+
+    it 'returns false when max_participants is greater than 0' do
+      event = create_event(creator_user: creator, max_participants: 10)
+      expect(event.unlimited?).to be false
+    end
+  end
+
   describe '#full?' do
-    it 'returns false by default' do
-      event = build_event(creator_user: creator)
+    it 'returns false when unlimited (max_participants = 0)' do
+      event = create_event(creator_user: creator, max_participants: 0)
       expect(event.full?).to be false
+    end
+
+    it 'returns false when not at capacity' do
+      event = create_event(creator_user: creator, max_participants: 10)
+      create_attendance(event: event)
+      expect(event.full?).to be false
+    end
+
+    it 'returns true when at capacity' do
+      event = create_event(creator_user: creator, max_participants: 2)
+      create_attendance(event: event, user: create_user)
+      create_attendance(event: event, user: create_user)
+      event.reload
+      expect(event.full?).to be true
+    end
+
+    it 'does not count canceled attendances' do
+      event = create_event(creator_user: creator, max_participants: 1)
+      # Create canceled attendance first (should not count toward limit)
+      canceled_attendance = create_attendance(event: event, user: create_user, status: 'canceled')
+      # Then create active attendance (should work because only canceled exists)
+      active_attendance = create_attendance(event: event, user: create_user, status: 'registered')
+      event.reload
+      expect(event.full?).to be true # 1 active attendance, event is full
+      # But if we cancel the active one, event should not be full anymore
+      active_attendance.update(status: 'canceled')
+      event.reload
+      expect(event.full?).to be false # Only canceled attendances remain
+    end
+  end
+
+  describe '#remaining_spots' do
+    it 'returns nil when unlimited' do
+      event = create_event(creator_user: creator, max_participants: 0)
+      expect(event.remaining_spots).to be_nil
+    end
+
+    it 'returns correct number of remaining spots' do
+      event = create_event(creator_user: creator, max_participants: 10)
+      create_attendance(event: event, user: create_user)
+      event.reload
+      expect(event.remaining_spots).to eq(9)
+    end
+
+    it 'returns 0 when full' do
+      event = create_event(creator_user: creator, max_participants: 2)
+      create_attendance(event: event, user: create_user)
+      create_attendance(event: event, user: create_user)
+      event.reload
+      expect(event.remaining_spots).to eq(0)
+    end
+
+    it 'does not count canceled attendances' do
+      event = create_event(creator_user: creator, max_participants: 2)
+      create_attendance(event: event, user: create_user, status: 'registered')
+      create_attendance(event: event, user: create_user, status: 'canceled')
+      event.reload
+      expect(event.remaining_spots).to eq(1) # Only 1 active attendance
+    end
+  end
+
+  describe '#has_available_spots?' do
+    it 'returns true when unlimited' do
+      event = create_event(creator_user: creator, max_participants: 0)
+      expect(event.has_available_spots?).to be true
+    end
+
+    it 'returns true when not at capacity' do
+      event = create_event(creator_user: creator, max_participants: 10)
+      create_attendance(event: event, user: create_user)
+      event.reload
+      expect(event.has_available_spots?).to be true
+    end
+
+    it 'returns false when at capacity' do
+      event = create_event(creator_user: creator, max_participants: 2)
+      create_attendance(event: event, user: create_user)
+      create_attendance(event: event, user: create_user)
+      event.reload
+      expect(event.has_available_spots?).to be false
     end
   end
 end

@@ -10,6 +10,7 @@ services:
     # env_file:
     #   - ../../.env  # Uncomment if .env file exists
     environment:
+      BUNDLE_PATH: /rails/vendor/bundle
       DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_development
       DATABASE_HOST: db
       DATABASE_PORT: 5432
@@ -37,6 +38,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: grenoble-roller-css-watcher
     environment:
+      BUNDLE_PATH: /rails/vendor/bundle
       RAILS_ENV: development
     volumes:
       - ../../:/rails

@@ -34,6 +34,73 @@ RSpec.describe Attendance, type: :model do
       attendance.save!
       expect(attendance.payment).to eq(payment)
     end
+
+    describe 'counter cache' do
+      it 'increments event.attendances_count when attendance is created' do
+        expect(event.attendances_count).to eq(0)
+        
+        create_attendance(user: user, event: event)
+        event.reload
+        
+        expect(event.attendances_count).to eq(1)
+      end
+
+      it 'decrements event.attendances_count when attendance is destroyed' do
+        attendance = create_attendance(user: user, event: event)
+        event.reload
+        expect(event.attendances_count).to eq(1)
+        
+        attendance.destroy
+        event.reload
+        
+        expect(event.attendances_count).to eq(0)
+      end
+
+      it 'does not increment counter when attendance creation fails' do
+        invalid_attendance = build_attendance(user: user, event: event, status: nil)
+        initial_count = event.attendances_count
+        
+        expect { invalid_attendance.save }.not_to change { event.reload.attendances_count }
+      end
+    end
+
+    describe 'max_participants validation' do
+      let(:limited_event) { create_event(creator_user: create_user, max_participants: 2) }
+
+      it 'allows attendance when event has available spots' do
+        attendance = build_attendance(user: user, event: limited_event)
+        expect(attendance).to be_valid
+      end
+
+      it 'allows attendance when event is unlimited (max_participants = 0)' do
+        unlimited_event = create_event(creator_user: create_user, max_participants: 0)
+        attendance = build_attendance(user: user, event: unlimited_event)
+        expect(attendance).to be_valid
+      end
+
+      it 'prevents attendance when event is full' do
+        # Fill the event to capacity
+        create_attendance(event: limited_event, user: create_user, status: 'registered')
+        create_attendance(event: limited_event, user: create_user, status: 'registered')
+        limited_event.reload
+        
+        # Try to create another attendance
+        attendance = build_attendance(user: user, event: limited_event)
+        expect(attendance).to be_invalid
+        expect(attendance.errors[:event]).to include(match(/complet/))
+      end
+
+      it 'does not count canceled attendances when checking capacity' do
+        # Fill with one active and one canceled
+        create_attendance(event: limited_event, user: create_user, status: 'registered')
+        create_attendance(event: limited_event, user: create_user, status: 'canceled')
+        limited_event.reload
+        
+        # Should still allow new attendance (only 1 active)
+        attendance = build_attendance(user: user, event: limited_event)
+        expect(attendance).to be_valid
+      end
+    end
   end
 
   describe 'scopes' do

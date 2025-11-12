@@ -38,4 +38,16 @@ Rails.application.routes.draw do
       patch :cancel
     end
   end
+
+  # Events (Phase 2)
+  resources :events do
+    member do
+      post :attend
+      delete :cancel_attendance
+      get :ical, defaults: { format: 'ics' }
+      patch :toggle_reminder
+    end
+  end
+
+  resources :attendances, only: :index
 end

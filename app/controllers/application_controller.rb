@@ -39,4 +39,12 @@ class ApplicationController < ActionController::Base
   def active_admin_access_denied(exception)
     user_not_authorized(exception)
   end
+
+  helper_method :current_user_has_attendance?
+
+  def current_user_has_attendance?(event)
+    return false unless current_user
+
+    event.attendances.exists?(user_id: current_user.id)
+  end
 end

@@ -1,0 +1,139 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card card-liquid rounded-liquid shadow-liquid auth-form auth-form--wide">
+      <div class="card-body p-4 p-lg-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-calendar-event fs-1 text-liquid-primary"></i>
+          <h3 class="mt-2"><%= event.persisted? ? 'Modifier l’événement' : 'Créer un événement' %></h3>
+          <p class="text-muted small">
+            Complétez les informations nécessaires pour publier votre sortie.
+          </p>
+        </div>
+
+        <% if event.errors.any? %>
+          <div class="alert alert-liquid-danger rounded-liquid mb-4">
+            <h4 class="h6 fw-semibold mb-2">
+              <%= pluralize(event.errors.count, "erreur") %> empêchent l’enregistrement :
+            </h4>
+            <ul class="mb-0 small">
+              <% event.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= form_with(model: event, html: { class: 'row g-3' }) do |f| %>
+          <div class="col-12">
+            <%= f.label :title, "Titre", class: "form-label" %>
+            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble" %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :status, "Statut", class: "form-label" %>
+            <%= f.select :status, Event.statuses.keys.map { |status| [status.humanize, status] }, {}, class: "form-select form-select-liquid" %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :route_id, "Parcours associé", class: "form-label" %>
+            <%= f.collection_select :route_id, @routes, :id, :name, { include_blank: "Sans parcours" }, class: "form-select form-select-liquid" %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :start_at, "Date et heure de début", class: "form-label" %>
+            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :duration_min, "Durée (minutes)", class: "form-label" %>
+            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 30, step: 5, required: true %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
+            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0 %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Mettez <strong>0</strong> pour un nombre illimité de participants.
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :price_cents, "Prix (centimes)", class: "form-label" %>
+            <%= f.number_field :price_cents, class: "form-control form-control-liquid", min: 0, step: 50, required: true %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :currency, "Devise", class: "form-label" %>
+            <%= f.text_field :currency, class: "form-control form-control-liquid", maxlength: 3, required: true, value: event.currency || "EUR" %>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :location_text, "Lieu / point de rendez-vous", class: "form-label" %>
+            <%= f.text_field :location_text, class: "form-control form-control-liquid", maxlength: 255, required: true, placeholder: "Parc Paul Mistral, Grenoble" %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :meeting_lat, "Latitude", class: "form-label" %>
+            <%= f.number_field :meeting_lat, class: "form-control form-control-liquid", step: 0.000001 %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :meeting_lng, "Longitude", class: "form-label" %>
+            <%= f.number_field :meeting_lng, class: "form-control form-control-liquid", step: 0.000001 %>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :cover_image_url, "Image de couverture (URL)", class: "form-label" %>
+            <%= f.url_field :cover_image_url, class: "form-control form-control-liquid", placeholder: "https://..." %>
+            <div class="form-text">
+              Utilisez une image paysage (1200x800 recommandé) ou laissez vide pour le visuel par défaut.
+            </div>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :description, "Description détaillée", class: "form-label" %>
+            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez le parcours, le niveau requis, le matériel conseillé..." %>
+          </div>
+
+          <div class="col-12 mt-3 d-grid gap-2">
+            <%= f.submit (event.persisted? ? "Mettre à jour l’événement" : "Créer l’événement"), class: "btn btn-liquid-primary btn-lg w-100" %>
+            <%= link_to 'Annuler', events_path, class: "btn btn-outline-secondary w-100" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if event.persisted? && policy(event).destroy? %>
+  <div class="text-center mt-3">
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+      <i class="bi bi-trash me-2"></i>Supprimer l’événement
+    </button>
+  </div>
+
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteModalLabel">Supprimer l’événement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">
+            Cette action est irréversible. Confirmez-vous la suppression de
+            <strong><%= event.title %></strong> ?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <%= button_to event_path(event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
+            <i class="bi bi-trash me-2"></i>Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+

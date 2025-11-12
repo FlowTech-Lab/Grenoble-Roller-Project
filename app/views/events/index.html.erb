@@ -1,0 +1,252 @@
+<% content_for :title, 'Événements Grenoble Roller' %>
+
+<section class="banner-page mb-4">
+  <div class="banner-overlay"></div>
+  <div class="banner-content">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 text-center">
+          <i class="bi bi-calendar-event banner-icon-small mb-2" aria-hidden="true"></i>
+          <h1 class="banner-title-page mb-3">Nos Événements</h1>
+          <p class="banner-subtitle-page mb-4">
+            Découvrez toutes nos sorties roller
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container pb-5">
+  <% if @highlighted_event.present? %>
+    <div class="mb-5">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-star-fill text-warning fs-5"></i>
+        <h2 class="h3 fw-bold mb-0">Prochain rendez-vous</h2>
+      </div>
+      <div class="col-12 col-lg-10 col-xl-8 mx-auto">
+        <article class="card card-event card-event-featured card-liquid rounded-liquid shadow-liquid">
+          <div class="card-event-image card-event-image-featured">
+            <%= image_tag(event_cover_image_url(@highlighted_event),
+                          alt: @highlighted_event.title,
+                          loading: 'lazy',
+                          class: 'w-100 h-100 object-fit-cover') %>
+            <span class="card-event-date badge badge-liquid-success">
+              <i class="bi bi-calendar3 me-1"></i>
+              <%= l @highlighted_event.start_at, format: :day_month, locale: :fr %>
+            </span>
+          </div>
+
+          <div class="card-body p-4 p-lg-5 d-flex flex-column">
+            <div class="mb-4">
+              <h2 class="card-title h3 fw-bold mb-3">
+                <%= link_to @highlighted_event.title, event_path(@highlighted_event), class: 'text-decoration-none text-body' %>
+              </h2>
+
+              <div class="card-event-info mb-4 text-body-secondary">
+                <p class="mb-2">
+                  <i class="bi bi-calendar-week text-liquid-primary me-2"></i>
+                  <strong><%= l @highlighted_event.start_at, format: :event_long, locale: :fr %></strong>
+                </p>
+                <p class="mb-2">
+                  <i class="bi bi-clock text-liquid-primary me-2"></i>
+                  <%= @highlighted_event.duration_min %> minutes
+                </p>
+                <p class="mb-2">
+                  <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+                  <%= @highlighted_event.location_text %>
+                </p>
+                <% attendance_count = @highlighted_event.attendances_count %>
+                <% is_full = @highlighted_event.full? %>
+                <% is_unlimited = @highlighted_event.unlimited? %>
+                <% remaining_spots = @highlighted_event.remaining_spots %>
+                <p class="mb-2">
+                  <i class="bi bi-people text-liquid-primary me-2"></i>
+                  <%= pluralize(attendance_count, "inscrit") %>
+                  <% if policy(@highlighted_event).attend? && current_user_has_attendance?(@highlighted_event) %>
+                    · <span class="text-success fw-semibold">Vous êtes inscrit(e)</span>
+                  <% end %>
+                </p>
+                <% unless is_unlimited %>
+                  <p class="mb-0">
+                    <% if is_full %>
+                      <span class="badge bg-danger text-white">
+                        <i class="bi bi-x-circle me-1"></i>Complet
+                      </span>
+                    <% else %>
+                      <span class="badge bg-success text-white">
+                        <i class="bi bi-check-circle me-1"></i><%= pluralize(remaining_spots, "place disponible") %>
+                      </span>
+                    <% end %>
+                  </p>
+                <% else %>
+                  <p class="mb-0">
+                    <span class="badge bg-info text-white">
+                      <i class="bi bi-infinity me-1"></i>Places illimitées
+                    </span>
+                  </p>
+                <% end %>
+              </div>
+
+              <p class="lead text-body-secondary mb-0"><%= truncate(@highlighted_event.description, length: 250) %></p>
+            </div>
+
+            <div class="mt-auto">
+              <div class="d-flex flex-wrap gap-2">
+                <% if current_user_has_attendance?(@highlighted_event) %>
+                  <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, class: "btn btn-outline-secondary", data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
+                    <i class="bi bi-calendar-x me-1"></i>
+                    <span>Se désinscrire</span>
+                  <% end %>
+                <% elsif policy(@highlighted_event).can_attend? && !is_full %>
+                  <button type="button" class="btn btn-liquid-primary" data-bs-toggle="modal" data-bs-target="#confirmAttendModalIndex">
+                    <i class="bi bi-calendar-plus me-1"></i>
+                    <span>S'inscrire</span>
+                  </button>
+                <% elsif is_full %>
+                  <button type="button" class="btn btn-outline-secondary" disabled>
+                    <i class="bi bi-x-circle me-1"></i>
+                    <span>Complet</span>
+                  </button>
+                <% end %>
+
+                <%= link_to ical_event_path(@highlighted_event, format: :ics), class: "btn btn-outline-primary", title: 'Ajouter au calendrier' do %>
+                  <i class="bi bi-calendar-event me-1"></i>
+                  <span>Ajouter au calendrier</span>
+                <% end %>
+
+                <%= link_to(event_path(@highlighted_event), class: "btn btn-outline-secondary") do %>
+                  <i class="bi bi-eye me-1"></i>
+                  <span>Voir plus</span>
+                <% end %>
+
+                <% if policy(@highlighted_event).edit? %>
+                  <%= link_to(edit_event_path(@highlighted_event), class: "btn btn-outline-secondary") do %>
+                    <i class="bi bi-pencil-square me-1"></i>
+                    <span>Modifier</span>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <% if policy(@highlighted_event).can_attend? && !is_full %>
+        <!-- Modal de confirmation d'inscription -->
+        <div class="modal fade" id="confirmAttendModalIndex" tabindex="-1" aria-labelledby="confirmAttendModalIndexLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="confirmAttendModalIndexLabel">
+                  <i class="bi bi-calendar-check me-2"></i>Confirmer votre inscription
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+              </div>
+              <%= form_with url: attend_event_path(@highlighted_event), method: :post, data: { turbo: false } do |f| %>
+                <div class="modal-body">
+                  <p class="mb-3">
+                    Vous êtes sur le point de vous inscrire à l'événement :
+                  </p>
+                  <div class="card card-liquid rounded-liquid shadow-sm mb-3">
+                    <div class="card-body">
+                      <h6 class="card-title fw-bold"><%= @highlighted_event.title %></h6>
+                      <p class="card-text small mb-2">
+                        <i class="bi bi-calendar-week me-2"></i>
+                        <%= l @highlighted_event.start_at, format: :event_long, locale: :fr %>
+                      </p>
+                      <p class="card-text small mb-2">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        <%= @highlighted_event.location_text %>
+                      </p>
+                      <% unless is_unlimited %>
+                        <p class="card-text small mb-0">
+                          <i class="bi bi-people me-2"></i>
+                          <%= pluralize(attendance_count, "inscrit") %> / <%= @highlighted_event.max_participants %> participants
+                          <% if remaining_spots > 0 %>
+                            · <span class="text-success fw-semibold"><%= pluralize(remaining_spots, "place disponible") %></span>
+                          <% end %>
+                        </p>
+                      <% else %>
+                        <p class="card-text small mb-0">
+                          <i class="bi bi-people me-2"></i>
+                          <%= pluralize(attendance_count, "inscrit") %> (illimité)
+                        </p>
+                      <% end %>
+                    </div>
+                  </div>
+                  <div class="form-check mb-3">
+                    <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
+                    <label class="form-check-label" for="wants_reminder">
+                      <i class="bi bi-bell me-1"></i>
+                      Recevoir un rappel par email la veille à 19h
+                    </label>
+                  </div>
+                  <p class="mb-0 text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Vous recevrez une confirmation par email et pourrez annuler votre inscription à tout moment.
+                  </p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                  <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", data: { bs_dismiss: "modal" } %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div id="events-upcoming" class="mb-5">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1"><i class="bi bi-stars me-2"></i>À venir</h2>
+        <p class="text-body-secondary mb-0">
+          Les prochains rendez-vous roller ouverts à la communauté.
+        </p>
+      </div>
+      <span class="badge badge-liquid-primary fs-6"><%= @upcoming_events.size %> événements</span>
+    </div>
+
+    <% if @upcoming_events.any? %>
+        <div class="event-grid">
+          <div class="row g-4">
+            <%= render partial: 'event_card',
+                       collection: @upcoming_events,
+                       as: :event,
+                   locals: { render_signup_button: true, current_user: current_user } %>
+          </div>
+      </div>
+    <% else %>
+      <div class="alert alert-info border-0 shadow-sm">
+        <i class="bi bi-info-circle me-2"></i>Aucun événement planifié pour le moment — une annonce arrive bientôt !
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1"><i class="bi bi-archive me-2"></i>Événements passés</h2>
+        <p class="text-body-secondary mb-0">
+          Un aperçu des dernières sorties et initiations organisées.
+        </p>
+      </div>
+    </div>
+
+    <% if @past_events.any? %>
+      <div class="event-grid">
+        <div class="row g-4">
+          <%= render partial: 'event_card', collection: @past_events, as: :event, locals: { past: true } %>
+        </div>
+      </div>
+    <% else %>
+      <div class="alert alert-secondary border-0 shadow-sm">
+        Les événements passés apparaîtront ici prochainement.
+      </div>
+    <% end %>
+  </div>
+</section>
+

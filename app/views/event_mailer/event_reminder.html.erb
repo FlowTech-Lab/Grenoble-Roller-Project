@@ -1,0 +1,49 @@
+<h1 style="color: #ffc107; margin-top: 0;">📅 Rappel : Événement demain !</h1>
+
+<p>Bonjour <%= @user.first_name %>,</p>
+
+<p>Nous vous rappelons que vous êtes inscrit(e) à l'événement <strong><%= @event.title %></strong> qui aura lieu <strong>demain</strong> !</p>
+
+<div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107;">
+  <h3 style="margin-top: 0; color: #333; font-size: 18px;">📅 Détails de l'événement</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #666; width: 120px;">📍 Lieu :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.location_text %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">🕐 Date :</td>
+      <td style="padding: 8px 0;"><strong><%= l @event.start_at, format: :event_long, locale: :fr %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">⏱️ Durée :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.duration_min %> minutes</strong></td>
+    </tr>
+    <% if @event.price_cents > 0 %>
+      <tr>
+        <td style="padding: 8px 0; color: #666;">💰 Prix :</td>
+        <td style="padding: 8px 0;"><strong><%= number_to_currency(@event.price_cents / 100.0, unit: '€') %></strong></td>
+      </tr>
+    <% end %>
+    <% if @event.route.present? %>
+      <tr>
+        <td style="padding: 8px 0; color: #666;">🗺️ Parcours :</td>
+        <td style="padding: 8px 0;"><strong><%= @event.route.name %></strong></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+
+<div style="margin: 30px 0; text-align: center;">
+  <%= link_to 'Voir l\'événement', event_url(@event), 
+      style: 'display: inline-block; background: #ffc107; color: #333; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+  À demain sur les routes de Grenoble ! 🛼
+</p>
+
+<p style="color: #6c757d; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+  <strong>💡 Rappel :</strong> Si vous ne pouvez pas venir, n'oubliez pas d'annuler votre inscription depuis la page de l'événement ou depuis "Mes sorties".
+</p>
+

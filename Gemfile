@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.4"
+gem "rails", "~> 8.1.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
@@ -60,6 +60,15 @@ group :development, :test do
 
   # RSpec testing framework
   gem "rspec-rails"
+  gem "factory_bot_rails"
+  
+  # N+1 query detection [https://github.com/flyerhzm/bullet]
+  gem "bullet", require: false
+end
+
+group :development, :test, :production do
+  # iCalendar file generation [https://github.com/icalendar/icalendar]
+  gem "icalendar"
 end
 
 group :development do

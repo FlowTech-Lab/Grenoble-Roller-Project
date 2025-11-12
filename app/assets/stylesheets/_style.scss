@@ -619,6 +619,16 @@
     margin: 0 auto;
   }
   
+  .auth-form--wide {
+    max-width: min(720px, 100%);
+  }
+
+  @media (min-width: 992px) {
+    .ratio-lg-21x9 {
+      --bs-aspect-ratio: calc(9 / 21 * 100%);
+    }
+  }
+
   .auth-form .card-body {
     backdrop-filter: var(--liquid-blur);
     -webkit-backdrop-filter: var(--liquid-blur);
@@ -840,6 +850,19 @@
   .card-event:hover .card-event-image img {
     transform: scale(1.05);
   }
+
+  /* Featured Event Card - Larger image for highlighted events */
+  .card-event-featured {
+    max-width: 100%;
+  }
+
+  .card-event-image-featured {
+    height: 350px;
+    
+    @media (max-width: 768px) {
+      height: 250px;
+    }
+  }
   
   .card-event-date {
     position: absolute;
@@ -855,6 +878,40 @@
   
   .card-event-info i {
     font-size: 1rem;
+  }
+
+  // Zone cliquable pour le stretched-link (titre, description, infos)
+  // Le stretched-link de Bootstrap ne couvre que .card-clickable-area (parent avec position: relative)
+  // Les boutons dans .action-row-wrapper sont en dehors et fonctionnent normalement
+  .card-event .card-body {
+    .card-clickable-area {
+      position: relative;
+    }
+    
+    // La zone des boutons est en dehors du stretched-link
+    .action-row-wrapper {
+      position: relative;
+    }
+  }
+
+  .action-row {
+    .btn {
+      min-width: 0;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .action-row {
+      flex-direction: column;
+      .btn {
+        width: 100%;
+      }
+    }
   }
   
   /* User Card (Horizontal) */
@@ -1110,13 +1167,56 @@
     font-weight: 600;
   }
   
-  /* Sticky sidebar on desktop */
-  @media (min-width: 992px) {
-    .resource-presentation .sticky-top {
-      position: sticky;
-      top: 2rem;
-    }
+.event-summary-grid,
+.event-summary-secondary,
+.event-detail-card {
+  .event-summary-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    min-height: 72px;
   }
+
+  .event-summary-item .label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gr-muted);
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+  }
+
+  .event-summary-item .value {
+    font-weight: 600;
+    color: inherit;
+    display: block;
+  }
+
+  .event-summary-item .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+[data-bs-theme="dark"] .event-summary-grid .event-summary-item,
+[data-bs-theme="dark"] .event-summary-secondary .event-summary-item,
+[data-bs-theme="dark"] .event-detail-card .event-summary-item {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.event-detail-card {
+  max-width: min(64rem, 100%);
+  margin: 0 auto;
+}
+
   
   /* === ELEMENT PRESENTATION MOLECULES === */
   .element-presentation {
