@@ -61,12 +61,15 @@ Rails.application.configure do
 
   # Bullet gem configuration for N+1 query detection
   config.after_initialize do
+    require 'bullet'
     Bullet.enable = true
     Bullet.alert = true
     Bullet.bullet_logger = true
     Bullet.console = true
     Bullet.rails_logger = true
     Bullet.add_footer = true
+  rescue LoadError
+    # Bullet not available (not in Gemfile or bundle install not run)
   end
 
   # Highlight code that triggered redirect in logs.

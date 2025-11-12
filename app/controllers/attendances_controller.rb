@@ -4,7 +4,7 @@ class AttendancesController < ApplicationController
   def index
     @attendances = current_user.attendances
                                 .active
-                                .includes(event: :route)
+                                .includes(event: [:route, :creator_user])
                                 .order('events.start_at ASC')
   end
 end

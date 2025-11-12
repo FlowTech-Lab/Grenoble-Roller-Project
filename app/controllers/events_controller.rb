@@ -1,6 +1,6 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance]
-  before_action :authenticate_user!, except: %i[index show]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical]
+  before_action :authenticate_user!, except: %i[index show ical]
   before_action :load_supporting_data, only: %i[new create edit update]
 
   def index
@@ -86,6 +86,34 @@ class EventsController < ApplicationController
     else
       redirect_to @event, alert: "Impossible d'annuler votre participation."
     end
+  end
+
+  # Export iCal pour un événement
+  def ical
+    authorize @event, :show?
+
+    calendar = Icalendar::Calendar.new
+    calendar.prodid = '-//Grenoble Roller//Events//FR'
+
+    event_ical = Icalendar::Event.new
+    event_ical.dtstart = Icalendar::Values::DateTime.new(@event.start_at)
+    event_ical.dtend = Icalendar::Values::DateTime.new(@event.start_at + @event.duration_min.minutes)
+    event_ical.summary = @event.title
+    event_ical.description = @event.description.presence || "Événement organisé par #{@event.creator_user.first_name}"
+    event_ical.location = @event.location_text
+    event_ical.url = event_url(@event)
+    event_ical.uid = "event-#{@event.id}@grenobleroller.fr"
+    event_ical.last_modified = @event.updated_at
+    event_ical.created = @event.created_at
+    event_ical.organizer = Icalendar::Values::CalAddress.new("mailto:noreply@grenobleroller.fr", cn: 'Grenoble Roller')
+
+    calendar.add_event(event_ical)
+    calendar.publish
+
+    send_data calendar.to_ical,
+              filename: "#{@event.title.parameterize}.ics",
+              type: 'text/calendar',
+              disposition: 'attachment'
   end
 
   private

@@ -97,7 +97,11 @@
           </button>
         <% end %>
 
-        <%= link_to 'Voir tous les événements', events_path, class: 'btn btn-outline-primary flex-fill flex-md-grow-0' %>
+        <%= link_to ical_event_path(@event, format: :ics), class: 'btn btn-outline-primary flex-fill flex-md-grow-0', title: 'Ajouter au calendrier' do %>
+          <i class="bi bi-calendar-event me-2"></i>Ajouter au calendrier
+        <% end %>
+
+        <%= link_to 'Voir tous les événements', events_path, class: 'btn btn-outline-secondary flex-fill flex-md-grow-0' %>
 
         <% if policy(@event).edit? %>
           <%= link_to edit_event_path(@event), class: 'btn btn-outline-secondary flex-fill flex-md-grow-0' do %>

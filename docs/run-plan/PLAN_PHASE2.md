@@ -74,10 +74,13 @@
   - Planification avec `whenever` ou `sidekiq-cron`
   - Template email déjà créé (`event_reminder`)
   - Réduit le taux d'absence, améliore l'expérience utilisateur
-- [ ] **Export iCal** :
-  - Génération de fichiers .ics pour chaque événement
-  - Lien "Ajouter au calendrier" sur les pages événements
-  - Export de tous les événements de l'utilisateur
+- [x] **Export iCal** : ✅ TERMINÉ
+  - [x] Gem `icalendar` installée ✅
+  - [x] Action `EventsController#ical` implémentée ✅
+  - [x] Route `/events/:id/ical.ics` créée ✅
+  - [x] Lien "Ajouter au calendrier" sur les pages événements (show, index, cards) ✅
+  - [x] Tests RSpec pour l'export iCal (3 exemples) ✅
+  - [ ] Export de tous les événements de l'utilisateur (optionnel - futur)
 
 #### Priorité 4 : Performance et Qualité
 - [ ] **Accessibilité** :
@@ -85,10 +88,11 @@
   - Navigation clavier complète
   - Tests avec screen reader
   - Amélioration du contraste et des focus states
-- [ ] **Performance** :
-  - Audit N+1 queries avec Bullet gem
-  - Optimisation des requêtes (eager loading, index DB)
-  - Audit de sécurité avec Brakeman
+- [x] **Performance** : ✅ TERMINÉ (Partiellement)
+  - [x] Audit N+1 queries avec Bullet gem ✅
+  - [x] Optimisation des requêtes (eager loading dans AttendancesController, EventsController, PagesController) ✅
+  - [x] Configuration Bullet dans development.rb ✅
+  - [ ] Audit de sécurité avec Brakeman ⏳
 - [ ] **Pagination** :
   - Pagination sur "Mes sorties" si >20 événements
   - Pagination sur la liste des événements (optionnel)
@@ -511,24 +515,28 @@ end
 
 **Priorité** : 🟡 Moyenne (après export iCal et améliorations ActiveAdmin)
 
-#### 7. Export iCal
+#### 7. Export iCal ✅ TERMINÉ
 **Objectif** : Permettre aux utilisateurs d'ajouter les événements à leur calendrier
 
 **Tâches** :
-- [ ] Installer gem `icalendar` ou `ri_cal`
-- [ ] Créer `app/controllers/events_controller.rb#ical` (action pour générer .ics)
-- [ ] Ajouter route pour l'export iCal
-- [ ] Créer helper pour générer le fichier .ics
-- [ ] Ajouter lien "Ajouter au calendrier" sur les pages événements
-- [ ] Créer action pour exporter tous les événements de l'utilisateur
-- [ ] Tests pour la génération du fichier .ics
+- [x] Installer gem `icalendar` ✅
+- [x] Créer `app/controllers/events_controller.rb#ical` (action pour générer .ics) ✅
+- [x] Ajouter route pour l'export iCal (`GET /events/:id/ical.ics`) ✅
+- [x] Génération du fichier .ics avec toutes les informations (titre, description, lieu, dates, URL, organizer) ✅
+- [x] Ajouter lien "Ajouter au calendrier" sur les pages événements (show, index, cards) ✅
+- [x] Tests RSpec pour l'action `ical` (3 exemples) ✅
+- [ ] Créer action pour exporter tous les événements de l'utilisateur (optionnel - futur)
+- [ ] Tests manuels avec différents clients calendrier (Google Calendar, Outlook, Apple Calendar) ⏳
 
-**Fichiers à créer/modifier** :
-- `app/controllers/events_controller.rb` (ajouter action `ical`)
-- `app/helpers/events_helper.rb` (méthode pour générer .ics)
-- `config/routes.rb` (ajouter route)
-- `app/views/events/show.html.erb` (ajouter lien)
-- `spec/requests/events_spec.rb` (tests)
+**Fichiers créés/modifiés** :
+- `Gemfile` (ajout gem `icalendar`)
+- `app/controllers/events_controller.rb` (ajout action `ical`)
+- `config/routes.rb` (ajout route `get :ical, defaults: { format: 'ics' }`)
+- `app/views/events/show.html.erb` (ajout lien "Ajouter au calendrier")
+- `app/views/events/index.html.erb` (ajout lien dans la section "Prochain rendez-vous")
+- `app/views/events/_event_card.html.erb` (ajout lien dans les cards d'événements)
+- `spec/requests/events_spec.rb` (ajout 3 tests pour l'export iCal)
+- `Dockerfile.dev` (rebuild avec nouvelles gems)
 
 ### 📌 PRIORITÉ 4 : Performance et Qualité (Semaine 4)
 

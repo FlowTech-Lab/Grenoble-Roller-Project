@@ -132,5 +132,42 @@ RSpec.describe 'Events', type: :request do
       expect(flash[:notice]).to eq('Inscription annulée.')
     end
   end
+
+  describe 'GET /events/:id/ical' do
+    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller') }
+
+    it 'exports event as iCal file for published event' do
+      get ical_event_path(event, format: :ics)
+
+      expect(response).to have_http_status(:success)
+      expect(response.content_type).to include('text/calendar')
+      expect(response.headers['Content-Disposition']).to include('attachment')
+      expect(response.headers['Content-Disposition']).to include('sortie-roller.ics')
+      expect(response.body).to include('BEGIN:VCALENDAR')
+      expect(response.body).to include('BEGIN:VEVENT')
+      expect(response.body).to include('SUMMARY:Sortie Roller')
+      expect(response.body).to include('END:VEVENT')
+      expect(response.body).to include('END:VCALENDAR')
+    end
+
+    it 'redirects to root for draft event when not authenticated' do
+      draft_event = create(:event, :draft, :upcoming)
+      get ical_event_path(draft_event, format: :ics)
+
+      expect(response).to redirect_to(root_path)
+      expect(flash[:alert]).to be_present
+    end
+
+    it 'allows organizer to export draft event' do
+      organizer = create(:user, :organizer)
+      draft_event = create(:event, :draft, :upcoming, creator_user: organizer)
+      login_user(organizer)
+
+      get ical_event_path(draft_event, format: :ics)
+
+      expect(response).to have_http_status(:success)
+      expect(response.content_type).to include('text/calendar')
+    end
+  end
 end
 
