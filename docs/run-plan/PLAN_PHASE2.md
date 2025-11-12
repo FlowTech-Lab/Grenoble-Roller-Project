@@ -40,6 +40,14 @@
   - Restructuration HTML : zone cliquable séparée (`.card-clickable-area`) et zone des boutons (`.action-row-wrapper`)
   - Le `stretched-link` ne couvre plus que le contenu, pas les boutons
   - Tous les boutons fonctionnent correctement (S'inscrire, Voir plus, Modifier, Supprimer)
+- [x] **Job de rappel la veille à 19h** : ✅ TERMINÉ
+  - Job `EventReminderJob` exécuté quotidiennement à 19h via Solid Queue
+  - Rappels envoyés pour les événements du lendemain (toute la journée)
+  - Option `wants_reminder` dans les attendances (case à cocher à l'inscription, activée par défaut)
+  - Affichage du statut du rappel sur la page événement (alerte Bootstrap)
+  - Bouton pour activer/désactiver le rappel après inscription
+  - Tests RSpec complets (8 exemples pour le job, 4 exemples pour `toggle_reminder`)
+  - Migration pour ajouter `wants_reminder` à `attendances` avec index
 
 ### 🔜 EN COURS / PRIORITÉ 1
 - [ ] **Tests Capybara** : Parcours utilisateur complet (inscription/désinscription)
