@@ -1,6 +1,6 @@
 class EventsController < ApplicationController
   before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder]
-  before_action :authenticate_user!, except: %i[index show ical]
+  before_action :authenticate_user!, except: %i[index show]
   before_action :load_supporting_data, only: %i[new create edit update]
 
   def index
@@ -105,8 +105,9 @@ class EventsController < ApplicationController
     end
   end
 
-  # Export iCal pour un événement
+  # Export iCal pour un événement (réservé aux utilisateurs connectés)
   def ical
+    authenticate_user!
     authorize @event, :show?
 
     calendar = Icalendar::Calendar.new
