@@ -38,93 +38,68 @@
           </div>
 
           <div class="card-body p-3 p-md-4 p-lg-5 d-flex flex-column">
-            <!-- En-tête avec titre et badges de statut -->
-            <header class="mb-4">
-              <h2 class="card-title h3 fw-bold mb-3">
-                <%= link_to @highlighted_event.title, event_path(@highlighted_event), class: 'text-decoration-none text-body' %>
-              </h2>
+            <!-- Titre (hiérarchie visuelle claire) -->
+            <h2 class="card-title h2 fw-bold mb-3">
+              <%= link_to @highlighted_event.title, event_path(@highlighted_event), class: 'text-decoration-none text-body' %>
+            </h2>
 
-              <!-- Badges de statut groupés (route, durée) -->
-              <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                <% if @highlighted_event.route.present? %>
-                  <span class="badge bg-body-secondary text-body-secondary">
-                    <i class="bi bi-geo-alt me-1"></i><%= @highlighted_event.route.name %>
-                  </span>
-                <% end %>
-                <span class="badge bg-body-secondary text-body-secondary">
-                  <i class="bi bi-clock me-1"></i><%= @highlighted_event.duration_min %> min
-                </span>
-              </div>
-
-              <!-- Badges d'inscription (essentiels) -->
-              <% attendance_count = @highlighted_event.attendances_count %>
-              <% is_full = @highlighted_event.full? %>
-              <% is_unlimited = @highlighted_event.unlimited? %>
-              <% remaining_spots = @highlighted_event.remaining_spots %>
-              <div class="d-flex flex-wrap gap-2 mb-4">
-                <span class="badge bg-primary">
-                  <i class="bi bi-people-fill me-1"></i>
-                  <%= pluralize(attendance_count, "inscrit") %>
-                </span>
-                
-                <% unless is_unlimited %>
-                  <% if is_full %>
-                    <span class="badge bg-danger">
-                      <i class="bi bi-x-circle me-1"></i>Complet
-                    </span>
-                  <% else %>
-                    <span class="badge bg-success">
-                      <i class="bi bi-check-circle me-1"></i><%= pluralize(remaining_spots, "place disponible") %>
-                    </span>
-                  <% end %>
-                <% else %>
-                  <span class="badge bg-info">
-                    <i class="bi bi-infinity me-1"></i>Illimité
-                  </span>
-                <% end %>
-                
-                <% if user_signed_in? && current_user_has_attendance?(@highlighted_event) %>
-                  <span class="badge bg-success">
-                    <i class="bi bi-check-circle me-1"></i>Vous êtes inscrit(e)
-                  </span>
-                <% end %>
-              </div>
-            </header>
-
-            <!-- Informations essentielles (What, When, Where) -->
-            <section class="event-details-section mb-4">
-              <div class="detail-row">
-                <div class="detail-icon">
-                  <i class="bi bi-calendar-event"></i>
-                </div>
-                <div class="detail-content">
-                  <p class="detail-label">Quand</p>
-                  <p class="detail-value">
-                    <strong><%= l @highlighted_event.start_at, format: :event_long, locale: :fr %></strong>
-                  </p>
-                </div>
-              </div>
-
-              <div class="detail-row">
-                <div class="detail-icon">
-                  <i class="bi bi-geo-alt"></i>
-                </div>
-                <div class="detail-content">
-                  <p class="detail-label">Lieu</p>
-                  <p class="detail-value"><%= @highlighted_event.location_text %></p>
-                </div>
-              </div>
-            </section>
-
-            <!-- Description tronquée à 150 caractères avec "Lire la suite" -->
-            <div class="event-description mb-4">
-              <p class="text-body-secondary mb-0">
-                <%= truncate(@highlighted_event.description, length: 150, omission: '...') %>
+            <!-- Informations essentielles (scannables, alignées avec la card) -->
+            <div class="card-event-info mb-3 text-body-secondary">
+              <p class="mb-2">
+                <i class="bi bi-calendar-week text-liquid-primary me-2"></i>
+                <%= l @highlighted_event.start_at, format: :event_long, locale: :fr %>
               </p>
-              <% if @highlighted_event.description.length > 150 %>
-                <%= link_to event_path(@highlighted_event), class: 'btn btn-link text-decoration-none p-0 mt-2', aria: { label: 'Lire la suite de la description' } do %>
-                  Lire la suite <i class="bi bi-arrow-right ms-1"></i>
+              <p class="mb-2">
+                <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+                <%= @highlighted_event.location_text %>
+              </p>
+              <p class="mb-2">
+                <i class="bi bi-signpost-2 text-liquid-primary me-2"></i>
+                <%= number_with_precision(@highlighted_event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+              </p>
+              <p class="mb-0">
+                <i class="bi bi-clock text-liquid-primary me-2"></i>
+                <%= @highlighted_event.duration_min %> min
+              </p>
+            </div>
+
+            <!-- Description (concis, max 120 caractères pour hero) -->
+            <p class="text-muted mb-3"><%= truncate(@highlighted_event.description, length: 120, omission: '...') %></p>
+
+            <!-- Badges d'inscription (groupés, visibilité claire) -->
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <!-- Badge Annulé (prioritaire, haute visibilité) -->
+              <% if @highlighted_event.canceled? %>
+                <span class="badge bg-danger">
+                  <i class="bi bi-x-octagon me-1"></i>Annulé
+                </span>
+              <% end %>
+              
+              <span class="badge bg-primary">
+                <i class="bi bi-people-fill me-1"></i>
+                <%= pluralize(@highlighted_event.attendances_count, "inscrit") %>
+              </span>
+              
+              <% unless @highlighted_event.unlimited? %>
+                <% if @highlighted_event.full? %>
+                  <span class="badge bg-danger">
+                    <i class="bi bi-x-circle me-1"></i>Complet
+                  </span>
+                <% else %>
+                  <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i><%= pluralize(@highlighted_event.remaining_spots, "place disponible") %>
+                  </span>
                 <% end %>
+              <% else %>
+                <span class="badge bg-info">
+                  <i class="bi bi-infinity me-1"></i>Illimité
+                </span>
+              <% end %>
+              
+              <% if user_signed_in? && current_user_has_attendance?(@highlighted_event) %>
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle me-1"></i>Vous êtes inscrit(e)
+                </span>
               <% end %>
             </div>
 
@@ -140,7 +115,7 @@
                     <i class="bi bi-calendar-x me-2"></i>Se désinscrire
                   <% end %>
                 </div>
-              <% elsif policy(@highlighted_event).can_attend? && !is_full %>
+              <% elsif policy(@highlighted_event).can_attend? && !@highlighted_event.full? %>
                 <div class="d-grid mb-3">
                   <button type="button" 
                           class="btn btn-liquid-primary btn-lg" 
@@ -150,7 +125,7 @@
                     <i class="bi bi-calendar-plus me-2"></i>S'inscrire maintenant
                   </button>
                 </div>
-              <% elsif is_full %>
+              <% elsif @highlighted_event.full? %>
                 <div class="d-grid mb-3">
                   <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-label="Événement complet">
                     <i class="bi bi-x-circle me-2"></i>Complet

@@ -27,6 +27,10 @@
             <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
             <%= truncate(event.location_text, length: 35) %>
           </p>
+          <p class="mb-1">
+            <i class="bi bi-signpost-2 text-liquid-primary me-2"></i>
+            <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+          </p>
           <p class="mb-0">
             <i class="bi bi-clock text-liquid-primary me-2"></i>
             <%= event.duration_min %> min
