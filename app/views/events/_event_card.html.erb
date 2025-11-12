@@ -12,13 +12,9 @@
     </div>
 
     <div class="card-body d-flex flex-column">
-      <div class="card-clickable-area position-relative flex-grow-1">
-        <%= link_to event_path(event), class: 'stretched-link text-decoration-none', aria: { label: "Voir les détails de #{event.title}" } do %>
-          <span class="visually-hidden">Voir les détails</span>
-        <% end %>
-        
+      <div class="flex-grow-1 mb-3">
         <h5 class="card-title mb-2 text-body">
-          <%= event.title %>
+          <%= link_to event.title, event_path(event), class: 'text-decoration-none text-body', aria: { label: "Voir les détails de #{event.title}" } %>
         </h5>
 
         <div class="card-event-info mb-3 text-body-secondary small">
@@ -69,8 +65,8 @@
         </div>
       </div>
 
-      <div class="mt-auto action-row-wrapper">
-        <div class="d-flex flex-wrap gap-2 action-row">
+      <div class="mt-auto">
+        <div class="d-flex flex-wrap gap-2">
           <% if defined?(render_signup_button) && render_signup_button %>
             <% if current_user_has_attendance?(event) %>
               <%= button_to cancel_attendance_event_path(event), method: :delete, class: "btn btn-outline-secondary flex-fill", data: { turbo_confirm: 'Annuler votre inscription ?' } do %>

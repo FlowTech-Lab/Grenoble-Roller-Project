@@ -37,87 +37,91 @@
             </span>
           </div>
 
-          <div class="card-body p-4 p-lg-5">
-            <h2 class="card-title h3 fw-bold mb-3">
-              <%= link_to @highlighted_event.title, event_path(@highlighted_event), class: 'text-decoration-none text-body stretched-link' %>
-            </h2>
+          <div class="card-body p-4 p-lg-5 d-flex flex-column">
+            <div class="mb-4">
+              <h2 class="card-title h3 fw-bold mb-3">
+                <%= link_to @highlighted_event.title, event_path(@highlighted_event), class: 'text-decoration-none text-body' %>
+              </h2>
 
-            <div class="card-event-info mb-4 text-body-secondary">
-              <p class="mb-2">
-                <i class="bi bi-calendar-week text-liquid-primary me-2"></i>
-                <strong><%= l @highlighted_event.start_at, format: :event_long, locale: :fr %></strong>
-              </p>
-              <p class="mb-2">
-                <i class="bi bi-clock text-liquid-primary me-2"></i>
-                <%= @highlighted_event.duration_min %> minutes
-              </p>
-              <p class="mb-2">
-                <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
-                <%= @highlighted_event.location_text %>
-              </p>
-              <% attendance_count = @highlighted_event.attendances_count %>
-              <% is_full = @highlighted_event.full? %>
-              <% is_unlimited = @highlighted_event.unlimited? %>
-              <% remaining_spots = @highlighted_event.remaining_spots %>
-              <p class="mb-2">
-                <i class="bi bi-people text-liquid-primary me-2"></i>
-                <%= pluralize(attendance_count, "inscrit") %>
-                <% if policy(@highlighted_event).attend? && current_user_has_attendance?(@highlighted_event) %>
-                  · <span class="text-success fw-semibold">Vous êtes inscrit(e)</span>
-                <% end %>
-              </p>
-              <% unless is_unlimited %>
-                <p class="mb-0">
-                  <% if is_full %>
-                    <span class="badge bg-danger text-white">
-                      <i class="bi bi-x-circle me-1"></i>Complet
-                    </span>
-                  <% else %>
-                    <span class="badge bg-success text-white">
-                      <i class="bi bi-check-circle me-1"></i><%= pluralize(remaining_spots, "place disponible") %>
-                    </span>
+              <div class="card-event-info mb-4 text-body-secondary">
+                <p class="mb-2">
+                  <i class="bi bi-calendar-week text-liquid-primary me-2"></i>
+                  <strong><%= l @highlighted_event.start_at, format: :event_long, locale: :fr %></strong>
+                </p>
+                <p class="mb-2">
+                  <i class="bi bi-clock text-liquid-primary me-2"></i>
+                  <%= @highlighted_event.duration_min %> minutes
+                </p>
+                <p class="mb-2">
+                  <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+                  <%= @highlighted_event.location_text %>
+                </p>
+                <% attendance_count = @highlighted_event.attendances_count %>
+                <% is_full = @highlighted_event.full? %>
+                <% is_unlimited = @highlighted_event.unlimited? %>
+                <% remaining_spots = @highlighted_event.remaining_spots %>
+                <p class="mb-2">
+                  <i class="bi bi-people text-liquid-primary me-2"></i>
+                  <%= pluralize(attendance_count, "inscrit") %>
+                  <% if policy(@highlighted_event).attend? && current_user_has_attendance?(@highlighted_event) %>
+                    · <span class="text-success fw-semibold">Vous êtes inscrit(e)</span>
                   <% end %>
                 </p>
-              <% else %>
-                <p class="mb-0">
-                  <span class="badge bg-info text-white">
-                    <i class="bi bi-infinity me-1"></i>Places illimitées
-                  </span>
-                </p>
-              <% end %>
+                <% unless is_unlimited %>
+                  <p class="mb-0">
+                    <% if is_full %>
+                      <span class="badge bg-danger text-white">
+                        <i class="bi bi-x-circle me-1"></i>Complet
+                      </span>
+                    <% else %>
+                      <span class="badge bg-success text-white">
+                        <i class="bi bi-check-circle me-1"></i><%= pluralize(remaining_spots, "place disponible") %>
+                      </span>
+                    <% end %>
+                  </p>
+                <% else %>
+                  <p class="mb-0">
+                    <span class="badge bg-info text-white">
+                      <i class="bi bi-infinity me-1"></i>Places illimitées
+                    </span>
+                  </p>
+                <% end %>
+              </div>
+
+              <p class="lead text-body-secondary mb-0"><%= truncate(@highlighted_event.description, length: 250) %></p>
             </div>
 
-            <p class="lead text-body-secondary mb-4"><%= truncate(@highlighted_event.description, length: 250) %></p>
-
-            <div class="d-flex flex-wrap gap-2 action-row">
-              <% if current_user_has_attendance?(@highlighted_event) %>
-                <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, class: "btn btn-outline-secondary", data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
-                  <i class="bi bi-calendar-x me-1"></i>
-                  <span>Se désinscrire</span>
+            <div class="mt-auto">
+              <div class="d-flex flex-wrap gap-2">
+                <% if current_user_has_attendance?(@highlighted_event) %>
+                  <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, class: "btn btn-outline-secondary", data: { turbo_confirm: 'Annuler votre inscription ?' } do %>
+                    <i class="bi bi-calendar-x me-1"></i>
+                    <span>Se désinscrire</span>
+                  <% end %>
+                <% elsif policy(@highlighted_event).can_attend? && !is_full %>
+                  <button type="button" class="btn btn-liquid-primary" data-bs-toggle="modal" data-bs-target="#confirmAttendModalIndex">
+                    <i class="bi bi-calendar-plus me-1"></i>
+                    <span>S'inscrire</span>
+                  </button>
+                <% elsif is_full %>
+                  <button type="button" class="btn btn-outline-secondary" disabled>
+                    <i class="bi bi-x-circle me-1"></i>
+                    <span>Complet</span>
+                  </button>
                 <% end %>
-              <% elsif policy(@highlighted_event).can_attend? && !is_full %>
-                <button type="button" class="btn btn-liquid-primary" data-bs-toggle="modal" data-bs-target="#confirmAttendModalIndex">
-                  <i class="bi bi-calendar-plus me-1"></i>
-                  <span>S'inscrire</span>
-                </button>
-              <% elsif is_full %>
-                <button type="button" class="btn btn-outline-secondary" disabled>
-                  <i class="bi bi-x-circle me-1"></i>
-                  <span>Complet</span>
-                </button>
-              <% end %>
 
-              <%= link_to(event_path(@highlighted_event), class: "btn btn-outline-primary") do %>
-                <i class="bi bi-eye me-1"></i>
-                <span>Voir plus</span>
-              <% end %>
-
-              <% if policy(@highlighted_event).edit? %>
-                <%= link_to(edit_event_path(@highlighted_event), class: "btn btn-outline-secondary") do %>
-                  <i class="bi bi-pencil-square me-1"></i>
-                  <span>Modifier</span>
+                <%= link_to(event_path(@highlighted_event), class: "btn btn-outline-primary") do %>
+                  <i class="bi bi-eye me-1"></i>
+                  <span>Voir plus</span>
                 <% end %>
-              <% end %>
+
+                <% if policy(@highlighted_event).edit? %>
+                  <%= link_to(edit_event_path(@highlighted_event), class: "btn btn-outline-secondary") do %>
+                    <i class="bi bi-pencil-square me-1"></i>
+                    <span>Modifier</span>
+                  <% end %>
+                <% end %>
+              </div>
             </div>
           </div>
         </article>
