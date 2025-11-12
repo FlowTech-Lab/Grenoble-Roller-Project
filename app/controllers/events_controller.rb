@@ -20,7 +20,7 @@ class EventsController < ApplicationController
       start_at: Time.zone.now.change(min: 0),
       duration_min: 60,
       max_participants: 0, # 0 = illimité par défaut
-      currency: 'EUR'
+      currency: 'EUR' # Toujours EUR
     )
     authorize @event
   end
@@ -28,8 +28,16 @@ class EventsController < ApplicationController
   def create
     @event = current_user.created_events.build
     authorize @event
+    
+    event_params = permitted_attributes(@event)
+    # Toujours EUR
+    event_params[:currency] = 'EUR'
+    # Convertir le prix en euros en centimes
+    if params[:price_euros].present?
+      event_params[:price_cents] = (params[:price_euros].to_f * 100).round
+    end
 
-    if @event.update(permitted_attributes(@event))
+    if @event.update(event_params)
       redirect_to @event, notice: 'Événement créé avec succès.'
     else
       render :new, status: :unprocessable_entity
@@ -42,8 +50,16 @@ class EventsController < ApplicationController
 
   def update
     authorize @event
+    
+    event_params = permitted_attributes(@event)
+    # Toujours EUR
+    event_params[:currency] = 'EUR'
+    # Convertir le prix en euros en centimes
+    if params[:price_euros].present?
+      event_params[:price_cents] = (params[:price_euros].to_f * 100).round
+    end
 
-    if @event.update(permitted_attributes(@event))
+    if @event.update(event_params)
       redirect_to @event, notice: 'Événement mis à jour avec succès.'
     else
       render :edit, status: :unprocessable_entity

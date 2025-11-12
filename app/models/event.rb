@@ -5,6 +5,7 @@ class Event < ApplicationRecord
   has_many :users, through: :attendances
 
   enum :status, { draft: 'draft', published: 'published', canceled: 'canceled' }, validate: true
+  enum :level, { beginner: 'beginner', intermediate: 'intermediate', advanced: 'advanced', all_levels: 'all_levels' }, validate: true, prefix: true
 
   validates :status, presence: true
   validates :start_at, presence: true
@@ -22,6 +23,10 @@ class Event < ApplicationRecord
   validates :meeting_lng, presence: true, if: :meeting_lat?
   validates :meeting_lat, numericality: { greater_than_or_equal_to: -90, less_than_or_equal_to: 90 }, allow_nil: true
   validates :meeting_lng, numericality: { greater_than_or_equal_to: -180, less_than_or_equal_to: 180 }, allow_nil: true
+  
+  # Niveau et distance toujours requis
+  validates :level, presence: true
+  validates :distance_km, presence: true, numericality: { greater_than: 0 }
 
   scope :upcoming, -> { where('start_at > ?', Time.current) }
   scope :past, -> { where('start_at <= ?', Time.current) }
@@ -40,6 +45,8 @@ class Event < ApplicationRecord
       meeting_lat
       meeting_lng
       route_id
+      level
+      distance_km
       creator_user_id
       cover_image_url
       max_participants
