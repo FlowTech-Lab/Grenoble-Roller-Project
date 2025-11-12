@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder]
   before_action :authenticate_user!, except: %i[index show ical]
   before_action :load_supporting_data, only: %i[new create edit update]
 
@@ -66,6 +66,8 @@ class EventsController < ApplicationController
       redirect_to @event, notice: "Vous êtes déjà inscrit(e) à cet événement."
     else
       attendance.status = 'registered'
+      # Accepter wants_reminder depuis les params (formulaire ou paramètre direct)
+      attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == '1' : false
       if attendance.save
         EventMailer.attendance_confirmed(attendance).deliver_later
         redirect_to @event, notice: 'Inscription confirmée.'
@@ -85,6 +87,21 @@ class EventsController < ApplicationController
       redirect_to @event, notice: 'Inscription annulée.'
     else
       redirect_to @event, alert: "Impossible d'annuler votre participation."
+    end
+  end
+
+  # Active/désactive le rappel 24h avant pour l'utilisateur inscrit
+  def toggle_reminder
+    authenticate_user!
+    authorize @event, :cancel_attendance? # Même permission que cancel_attendance
+
+    attendance = @event.attendances.find_by(user: current_user)
+    if attendance
+      attendance.update(wants_reminder: !attendance.wants_reminder)
+      message = attendance.wants_reminder? ? 'Rappel activé. Vous recevrez un email 24h avant l\'événement.' : 'Rappel désactivé.'
+      redirect_to @event, notice: message
+    else
+      redirect_to @event, alert: 'Vous n\'êtes pas inscrit(e) à cet événement.'
     end
   end
 
@@ -120,6 +137,8 @@ class EventsController < ApplicationController
 
   def set_event
     @event = Event.includes(:route, :creator_user).find(params[:id])
+    # Charger l'attendance de l'utilisateur connecté si présent
+    @user_attendance = current_user&.attendances&.find_by(event: @event) if user_signed_in?
   end
 
   def load_supporting_data

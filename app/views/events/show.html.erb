@@ -116,6 +116,30 @@
         <% end %>
       </div>
 
+      <% if current_user_has_attendance?(@event) && @user_attendance %>
+        <!-- Statut du rappel pour les utilisateurs inscrits -->
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-4" role="alert">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-bell<%= @user_attendance.wants_reminder? ? '-fill' : '' %> me-2 fs-5"></i>
+            <div>
+              <% if @user_attendance.wants_reminder? %>
+                <strong>Rappel activé</strong>
+                <p class="mb-0 small">Vous recevrez un email 24h avant l'événement.</p>
+              <% else %>
+                <strong>Rappel désactivé</strong>
+                <p class="mb-0 small">Vous ne recevrez pas de rappel pour cet événement.</p>
+              <% end %>
+            </div>
+          </div>
+          <%= button_to toggle_reminder_event_path(@event), method: :patch, 
+              class: "btn btn-sm #{@user_attendance.wants_reminder? ? 'btn-outline-secondary' : 'btn-outline-primary'}", 
+              data: { turbo: false } do %>
+            <i class="bi bi-bell<%= @user_attendance.wants_reminder? ? '' : '-fill' %> me-1"></i>
+            <%= @user_attendance.wants_reminder? ? 'Désactiver' : 'Activer' %> le rappel
+          <% end %>
+        </div>
+      <% end %>
+
       <div class="mb-4">
         <h2 class="h4 fw-semibold mb-3">À propos</h2>
         <div class="text-body">
@@ -150,48 +174,55 @@
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <div class="modal-body">
-          <p class="mb-3">
-            Vous êtes sur le point de vous inscrire à l'événement :
-          </p>
-          <div class="card card-liquid rounded-liquid shadow-sm mb-3">
-            <div class="card-body">
-              <h6 class="card-title fw-bold"><%= @event.title %></h6>
-              <p class="card-text small mb-2">
-                <i class="bi bi-calendar-week me-2"></i>
-                <%= l @event.start_at, format: :event_long, locale: :fr %>
-              </p>
-              <p class="card-text small mb-2">
-                <i class="bi bi-geo-alt me-2"></i>
-                <%= @event.location_text %>
-              </p>
-              <% unless @event.unlimited? %>
-                <p class="card-text small mb-0">
-                  <i class="bi bi-people me-2"></i>
-                  <%= pluralize(@event.attendances_count, "inscrit") %> / <%= @event.max_participants %> participants
-                  <% if @event.remaining_spots > 0 %>
-                    · <span class="text-success fw-semibold"><%= pluralize(@event.remaining_spots, "place disponible") %></span>
-                  <% end %>
+        <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false } do |f| %>
+          <div class="modal-body">
+            <p class="mb-3">
+              Vous êtes sur le point de vous inscrire à l'événement :
+            </p>
+            <div class="card card-liquid rounded-liquid shadow-sm mb-3">
+              <div class="card-body">
+                <h6 class="card-title fw-bold"><%= @event.title %></h6>
+                <p class="card-text small mb-2">
+                  <i class="bi bi-calendar-week me-2"></i>
+                  <%= l @event.start_at, format: :event_long, locale: :fr %>
                 </p>
-              <% else %>
-                <p class="card-text small mb-0">
-                  <i class="bi bi-people me-2"></i>
-                  <%= pluralize(@event.attendances_count, "inscrit") %> (illimité)
+                <p class="card-text small mb-2">
+                  <i class="bi bi-geo-alt me-2"></i>
+                  <%= @event.location_text %>
                 </p>
-              <% end %>
+                <% unless @event.unlimited? %>
+                  <p class="card-text small mb-0">
+                    <i class="bi bi-people me-2"></i>
+                    <%= pluralize(@event.attendances_count, "inscrit") %> / <%= @event.max_participants %> participants
+                    <% if @event.remaining_spots > 0 %>
+                      · <span class="text-success fw-semibold"><%= pluralize(@event.remaining_spots, "place disponible") %></span>
+                    <% end %>
+                  </p>
+                <% else %>
+                  <p class="card-text small mb-0">
+                    <i class="bi bi-people me-2"></i>
+                    <%= pluralize(@event.attendances_count, "inscrit") %> (illimité)
+                  </p>
+                <% end %>
+              </div>
             </div>
+            <div class="form-check mb-3">
+              <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
+              <label class="form-check-label" for="wants_reminder">
+                <i class="bi bi-bell me-1"></i>
+                Recevoir un rappel par email 24h avant l'événement
+              </label>
+            </div>
+            <p class="mb-0 text-muted small">
+              <i class="bi bi-info-circle me-1"></i>
+              Vous recevrez une confirmation par email et pourrez annuler votre inscription à tout moment.
+            </p>
           </div>
-          <p class="mb-0 text-muted small">
-            <i class="bi bi-info-circle me-1"></i>
-            Vous recevrez une confirmation par email et pourrez annuler votre inscription à tout moment.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-          <%= button_to attend_event_path(@event), method: :post, class: "btn btn-liquid-primary", data: { turbo: false } do %>
-            <i class="bi bi-calendar-plus me-2"></i>Confirmer l'inscription
-          <% end %>
-        </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", data: { bs_dismiss: "modal" } %>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>

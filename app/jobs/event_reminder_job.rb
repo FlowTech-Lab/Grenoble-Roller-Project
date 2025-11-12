@@ -10,8 +10,11 @@ class EventReminderJob < ApplicationJob
                   .where(start_at: 23.hours.from_now..25.hours.from_now)
 
     events.find_each do |event|
-      # Envoyer un rappel à tous les participants actifs
-      event.attendances.active.includes(:user, :event).find_each do |attendance|
+      # Envoyer un rappel uniquement aux participants actifs qui ont activé le rappel
+      event.attendances.active
+           .where(wants_reminder: true)
+           .includes(:user, :event)
+           .find_each do |attendance|
         # Vérifier que l'utilisateur existe et a un email
         next unless attendance.user&.email.present?
 

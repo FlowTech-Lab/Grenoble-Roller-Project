@@ -12,9 +12,9 @@ RSpec.describe EventReminderJob, type: :job do
     let!(:draft_event) { create(:event, :draft, start_at: 24.hours.from_now, title: 'Draft Event') }
 
     context 'when event is in 24h window' do
-      let!(:attendance) { create(:attendance, user: user, event: event_tomorrow, status: 'registered') }
+      let!(:attendance) { create(:attendance, user: user, event: event_tomorrow, status: 'registered', wants_reminder: true) }
 
-      it 'sends reminder email to active attendees' do
+      it 'sends reminder email to active attendees with wants_reminder = true' do
         expect do
           perform_enqueued_jobs do
             EventReminderJob.perform_now
@@ -36,11 +36,21 @@ RSpec.describe EventReminderJob, type: :job do
           end
         end.not_to change { ActionMailer::Base.deliveries.count }
       end
+
+      it 'does not send reminder if wants_reminder is false' do
+        attendance.update(wants_reminder: false)
+
+        expect do
+          perform_enqueued_jobs do
+            EventReminderJob.perform_now
+          end
+        end.not_to change { ActionMailer::Base.deliveries.count }
+      end
     end
 
     context 'when event is not in 24h window' do
-      let!(:attendance_today) { create(:attendance, user: user, event: event_today, status: 'registered') }
-      let!(:attendance_next_week) { create(:attendance, user: user, event: event_next_week, status: 'registered') }
+      let!(:attendance_today) { create(:attendance, user: user, event: event_today, status: 'registered', wants_reminder: true) }
+      let!(:attendance_next_week) { create(:attendance, user: user, event: event_next_week, status: 'registered', wants_reminder: true) }
 
       it 'does not send reminder for events today' do
         expect do
@@ -60,7 +70,7 @@ RSpec.describe EventReminderJob, type: :job do
     end
 
     context 'when event is draft' do
-      let!(:attendance_draft) { create(:attendance, user: user, event: draft_event, status: 'registered') }
+      let!(:attendance_draft) { create(:attendance, user: user, event: draft_event, status: 'registered', wants_reminder: true) }
 
       it 'does not send reminder for draft events' do
         expect do
@@ -74,19 +84,20 @@ RSpec.describe EventReminderJob, type: :job do
     context 'with multiple attendees' do
       let!(:user2) { create(:user, email: 'test2@example.com') }
       let!(:user3) { create(:user, email: 'test3@example.com') }
-      let!(:attendance1) { create(:attendance, user: user, event: event_tomorrow, status: 'registered') }
-      let!(:attendance2) { create(:attendance, user: user2, event: event_tomorrow, status: 'registered') }
-      let!(:attendance3) { create(:attendance, user: user3, event: event_tomorrow, status: 'registered') }
+      let!(:attendance1) { create(:attendance, user: user, event: event_tomorrow, status: 'registered', wants_reminder: true) }
+      let!(:attendance2) { create(:attendance, user: user2, event: event_tomorrow, status: 'registered', wants_reminder: true) }
+      let!(:attendance3) { create(:attendance, user: user3, event: event_tomorrow, status: 'registered', wants_reminder: false) }
 
-      it 'sends reminder to all active attendees' do
+      it 'sends reminder only to attendees with wants_reminder = true' do
         expect do
           perform_enqueued_jobs do
             EventReminderJob.perform_now
           end
-        end.to change { ActionMailer::Base.deliveries.count }.by(3)
+        end.to change { ActionMailer::Base.deliveries.count }.by(2)
 
-        emails = ActionMailer::Base.deliveries.last(3)
-        expect(emails.map(&:to).flatten).to contain_exactly(user.email, user2.email, user3.email)
+        emails = ActionMailer::Base.deliveries.last(2)
+        expect(emails.map(&:to).flatten).to contain_exactly(user.email, user2.email)
+        expect(emails.map(&:to).flatten).not_to include(user3.email)
       end
     end
   end

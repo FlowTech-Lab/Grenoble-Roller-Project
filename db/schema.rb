@@ -36,10 +36,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_10_142027) do
     t.string "stripe_customer_id", limit: 255
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.boolean "wants_reminder", default: false, null: false
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
     t.index ["user_id", "event_id"], name: "index_attendances_on_user_id_and_event_id", unique: true
     t.index ["user_id"], name: "index_attendances_on_user_id"
+    t.index ["wants_reminder"], name: "index_attendances_on_wants_reminder"
   end
 
   create_table "audit_logs", force: :cascade do |t|

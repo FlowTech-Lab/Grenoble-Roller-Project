@@ -19,7 +19,7 @@ class Attendance < ApplicationRecord
   scope :canceled, -> { where(status: 'canceled') }
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id user_id event_id status payment_id stripe_customer_id created_at updated_at]
+    %w[id user_id event_id status payment_id stripe_customer_id wants_reminder created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
