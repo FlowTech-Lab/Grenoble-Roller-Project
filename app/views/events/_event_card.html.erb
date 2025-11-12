@@ -57,6 +57,10 @@
               <span class="badge bg-danger">
                 <i class="bi bi-x-circle me-1"></i>Complet
               </span>
+            <% elsif event.remaining_spots <= 5 %>
+              <span class="badge bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle me-1"></i><%= pluralize(event.remaining_spots, "place disponible") %>
+              </span>
             <% else %>
               <span class="badge bg-success">
                 <i class="bi bi-check-circle me-1"></i><%= pluralize(event.remaining_spots, "place disponible") %>

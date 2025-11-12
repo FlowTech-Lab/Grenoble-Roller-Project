@@ -74,14 +74,14 @@ florian = User.create!(
 puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 
 # 👥 Utilisateurs de test
-5.times do |i|
+20.times do |i|
   User.create!(
     email: "client#{i + 1}@example.com",
     password: "password123",
     password_confirmation: "password123",
-    first_name: "Client",
-    last_name: "Test #{i + 1}",
-    bio: "Client de test numéro #{i + 1}",
+    first_name: ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry", "Iris", "Jack", "Kate", "Leo", "Mia", "Noah", "Olivia", "Paul", "Quinn", "Ruby", "Sam", "Tina"][i],
+    last_name: ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel"][i],
+    bio: "Membre passionné de la communauté roller grenobloise",
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
     created_at: Time.now - rand(1..30).days,
@@ -629,6 +629,24 @@ events_data = [
   {
     creator_user: florian || admin_user,
     route: routes[0],
+    status: "published",
+    start_at: 1.week.from_now + 5.days,
+    duration_min: 90,
+    title: "Rando du samedi matin - Bastille",
+    description: "Randonnée populaire du samedi matin sur le parcours de la Bastille. Parfait pour commencer le week-end en douceur. Places limitées.",
+    price_cents: 0,
+    currency: "EUR",
+    location_text: "Place de la Bastille, Grenoble",
+    meeting_lat: 45.1917,
+    meeting_lng: 5.7278,
+    cover_image_url: "events/bastille.jpg",
+    level: map_route_difficulty_to_level(routes[0]),
+    distance_km: routes[0]&.distance_km || 8.5,
+    max_participants: 10  # Limité à 10 participants pour créer un événement complet
+  },
+  {
+    creator_user: florian || admin_user,
+    route: routes[0],
     status: "canceled",
     start_at: 2.days.ago,
     duration_min: 90,
@@ -652,19 +670,35 @@ puts "✅ #{Event.count} événements créés !"
 # 📝 Attendances (inscriptions aux événements)
 puts "📝 Création des inscriptions..."
 published_events = Event.where(status: "published")
-regular_users = users.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"]).limit(5)
+regular_users = users.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"])
 
 if published_events.any? && regular_users.any?
   published_events.each do |event|
-    # Inscription de quelques utilisateurs à chaque événement publié
-    subscribers = regular_users.sample(rand(2..4))
-    subscribers.each do |user|
-      Attendance.create!(
-        user: user,
-        event: event,
-        status: event.price_cents > 0 ? "registered" : "registered",
-        created_at: event.created_at + rand(1..5).hours
-      )
+    # Pour l'événement avec max_participants limité, on le remplit complètement
+    if event.max_participants > 0 && event.max_participants <= regular_users.count
+      # Inscrire exactement le nombre maximum de participants pour rendre l'événement complet
+      subscribers = regular_users.sample(event.max_participants)
+      subscribers.each do |user|
+        Attendance.create!(
+          user: user,
+          event: event,
+          status: event.price_cents > 0 ? "registered" : "registered",
+          created_at: event.created_at + rand(1..5).hours
+        )
+      end
+      puts "  ✅ Événement '#{event.title}' : #{event.max_participants} participants (COMPLET)"
+    else
+      # Pour les autres événements, inscription de quelques utilisateurs
+      num_subscribers = event.unlimited? ? rand(3..8) : [rand(2..6), event.max_participants].min
+      subscribers = regular_users.sample(num_subscribers)
+      subscribers.each do |user|
+        Attendance.create!(
+          user: user,
+          event: event,
+          status: event.price_cents > 0 ? "registered" : "registered",
+          created_at: event.created_at + rand(1..5).hours
+        )
+      end
     end
   end
   

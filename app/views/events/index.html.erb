@@ -85,6 +85,10 @@
                   <span class="badge bg-danger">
                     <i class="bi bi-x-circle me-1"></i>Complet
                   </span>
+                <% elsif @highlighted_event.remaining_spots <= 5 %>
+                  <span class="badge bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle me-1"></i><%= pluralize(@highlighted_event.remaining_spots, "place disponible") %>
+                  </span>
                 <% else %>
                   <span class="badge bg-success">
                     <i class="bi bi-check-circle me-1"></i><%= pluralize(@highlighted_event.remaining_spots, "place disponible") %>
@@ -170,7 +174,7 @@
         </article>
       </div>
 
-      <% if policy(@highlighted_event).can_attend? && !is_full %>
+      <% if policy(@highlighted_event).can_attend? && !@highlighted_event.full? %>
         <!-- Modal de confirmation d'inscription -->
         <div class="modal fade" id="confirmAttendModalIndex" tabindex="-1" aria-labelledby="confirmAttendModalIndexLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
