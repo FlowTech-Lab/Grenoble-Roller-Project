@@ -1,0 +1,265 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card card-liquid rounded-liquid shadow-liquid auth-form auth-form--wide">
+      <div class="card-body p-4 p-lg-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-calendar-event fs-1 text-liquid-primary"></i>
+          <h3 class="mt-2"><%= event.persisted? ? 'Modifier l’événement' : 'Créer un événement' %></h3>
+          <p class="text-muted small">
+            Complétez les informations nécessaires pour publier votre sortie.
+          </p>
+        </div>
+
+        <% if event.errors.any? %>
+          <div class="alert alert-liquid-danger rounded-liquid mb-4">
+            <h4 class="h6 fw-semibold mb-2">
+              <%= pluralize(event.errors.count, "erreur") %> empêchent l’enregistrement :
+            </h4>
+            <ul class="mb-0 small">
+              <% event.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= form_with(model: event, html: { class: 'row g-3', data: { controller: 'event-form' } }) do |f| %>
+          <div class="col-12">
+            <%= f.label :title, "Titre", class: "form-label" %>
+            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble" %>
+          </div>
+
+          <!-- Le statut n'est pas modifiable par l'organisateur, seulement par les modérateurs dans Active Admin -->
+          <% if can_moderate? %>
+            <div class="col-12 col-md-6">
+              <%= f.label :status, "Statut", class: "form-label" %>
+              <%= f.select :status, 
+                  Event.statuses.keys.map { |status| 
+                    label = case status
+                            when 'draft' then 'En attente de validation'
+                            when 'published' then 'Publié'
+                            when 'rejected' then 'Refusé'
+                            when 'canceled' then 'Annulé'
+                            else status.humanize
+                            end
+                    [label, status]
+                  }, 
+                  {}, 
+                  class: "form-select form-select-liquid" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Seuls les modérateurs peuvent changer le statut.
+              </div>
+            </div>
+          <% else %>
+            <%= f.hidden_field :status, value: 'draft' %>
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>En attente de validation</strong> : Votre événement sera soumis à validation par un modérateur avant d'être publié.
+              </div>
+            </div>
+          <% end %>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :route_id, "Parcours associé", class: "form-label" %>
+            <%= f.collection_select :route_id, @routes, :id, :name, { include_blank: "Sans parcours" }, 
+                class: "form-select form-select-liquid",
+                data: { 
+                  event_form_target: "routeSelect",
+                  action: "change->event-form#routeChanged" 
+                } %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Si vous sélectionnez un parcours, le niveau et la distance seront pré-remplis automatiquement.
+            </div>
+          </div>
+          
+          <!-- Niveau et distance (toujours visibles, pré-remplis si parcours sélectionné) -->
+          <div class="col-12 col-md-6">
+            <%= f.label :level, "Niveau", class: "form-label" do %>
+              Niveau <span class="text-danger">*</span>
+            <% end %>
+            <%= f.select :level, 
+                options_for_select([
+                  ['Débutant', 'beginner'],
+                  ['Intermédiaire', 'intermediate'],
+                  ['Confirmé', 'advanced'],
+                  ['Tous niveaux', 'all_levels']
+                ], event.level),
+                { include_blank: "Sélectionnez un niveau" },
+                class: "form-select form-select-liquid",
+                data: { event_form_target: "levelSelect" },
+                required: true %>
+          </div>
+          
+          <div class="col-12 col-md-6">
+            <%= f.label :distance_km, "Distance (km)", class: "form-label" do %>
+              Distance (km) <span class="text-danger">*</span>
+            <% end %>
+            <%= f.number_field :distance_km, 
+                class: "form-control form-control-liquid", 
+                min: 0.1, 
+                step: 0.1,
+                placeholder: "Ex: 15.5",
+                data: { event_form_target: "distanceInput" },
+                required: true %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Distance totale du parcours en kilomètres.
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :start_at, "Date et heure de début", class: "form-label" %>
+            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :duration_min, "Durée (minutes)", class: "form-label" %>
+            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 30, step: 5, required: true %>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
+            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0 %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Mettez <strong>0</strong> pour un illimité.
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :price_euros, "Prix (€)", class: "form-label" do %>
+              Prix (€) <span class="text-danger">*</span>
+            <% end %>
+            <%= number_field_tag :price_euros, 
+                (event.price_cents / 100.0 if event.price_cents.present?),
+                class: "form-control form-control-liquid", 
+                min: 0, 
+                step: 0.01,
+                placeholder: "Ex: 5.00",
+                required: true %>
+            <%= f.hidden_field :currency, value: "EUR" %>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :location_text, "Lieu / Point de rendez-vous", class: "form-label" do %>
+              Lieu / Point de rendez-vous <span class="text-danger">*</span>
+            <% end %>
+            <%= f.text_field :location_text, 
+                class: "form-control form-control-liquid", 
+                maxlength: 255, 
+                required: true, 
+                placeholder: "Ex: Parc Paul Mistral, Grenoble",
+                aria: { describedby: 'locationHelp' } %>
+            <div id="locationHelp" class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Indiquez où se retrouver (parc, place, adresse...)
+            </div>
+          </div>
+
+          <!-- Coordonnées GPS optionnelles (collapsed par défaut) -->
+          <div class="col-12">
+            <button class="btn btn-link text-decoration-none p-0" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#gpsCoordinates"
+                    aria-expanded="<%= event.has_gps_coordinates? ? 'true' : 'false' %>"
+                    aria-controls="gpsCoordinates">
+              <i class="bi bi-geo-alt me-1"></i>
+              <span class="text-muted">(Optionnel) Ajouter les coordonnées GPS précises</span>
+              <i class="bi bi-chevron-<%= event.has_gps_coordinates? ? 'up' : 'down' %> ms-1"></i>
+            </button>
+            
+            <div class="collapse<%= ' show' if event.has_gps_coordinates? %> mt-2" id="gpsCoordinates">
+              <div class="card card-body bg-light gps-coordinates-card">
+                <p class="small text-muted mb-3">
+                  <i class="bi bi-lightbulb me-1"></i>
+                  <strong>Bonus:</strong> Les coordonnées GPS permettent d'afficher une carte interactive et un lien Google Maps.
+                </p>
+                
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <%= f.label :meeting_lat, "Latitude", class: "form-label small" %>
+                    <%= f.number_field :meeting_lat, 
+                        class: "form-control form-control-sm", 
+                        step: "any",
+                        placeholder: "45.1885" %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= f.label :meeting_lng, "Longitude", class: "form-label small" %>
+                    <%= f.number_field :meeting_lng, 
+                        class: "form-control form-control-sm", 
+                        step: "any",
+                        placeholder: "5.7245" %>
+                  </div>
+                </div>
+                
+                <div class="mt-2">
+                  <a href="https://www.google.com/maps" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-map me-1"></i>
+                    Trouver les coordonnées sur Google Maps
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :cover_image_url, "Image de couverture (URL)", class: "form-label" %>
+            <%= f.url_field :cover_image_url, class: "form-control form-control-liquid", placeholder: "https://..." %>
+            <div class="form-text">
+              Utilisez une image paysage (1200x800 recommandé) ou laissez vide pour le visuel par défaut.
+            </div>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :description, "Description détaillée", class: "form-label" %>
+            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez le parcours, le niveau requis, le matériel conseillé..." %>
+          </div>
+
+          <div class="col-12 mt-3 d-grid gap-2">
+            <%= f.submit (event.persisted? ? "Mettre à jour l’événement" : "Créer l’événement"), class: "btn btn-liquid-primary btn-lg w-100" %>
+            <%= link_to 'Annuler', events_path, class: "btn btn-outline-secondary w-100" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if event.persisted? && policy(event).destroy? %>
+  <div class="text-center mt-3">
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+      <i class="bi bi-trash me-2"></i>Supprimer l’événement
+    </button>
+  </div>
+
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteModalLabel">Supprimer l’événement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">
+            Cette action est irréversible. Confirmez-vous la suppression de
+            <strong><%= event.title %></strong> ?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <%= button_to event_path(event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
+            <i class="bi bi-trash me-2"></i>Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+

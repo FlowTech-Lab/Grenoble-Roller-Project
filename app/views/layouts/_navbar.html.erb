@@ -19,6 +19,18 @@
           <% end %>
         </li>
         <li class="nav-item">
+          <%= link_to events_path, class: "nav-link" do %>
+            <i class="bi bi-calendar-event me-1"></i>Événements
+          <% end %>
+        </li>
+        <% if user_signed_in? && policy(Event.new).create? %>
+          <li class="nav-item">
+            <%= link_to new_event_path, class: "nav-link fw-semibold text-liquid-primary" do %>
+              <i class="bi bi-plus-circle me-1"></i>Créer un événement
+            <% end %>
+          </li>
+        <% end %>
+        <li class="nav-item">
           <%= link_to shop_path, class: "nav-link" do %>
             <i class="bi bi-bag me-1"></i>Boutique
           <% end %>
@@ -62,10 +74,15 @@
                   <i class="bi bi-box-seam me-2"></i>Mes commandes
                 <% end %>
               </li>
-              <% if current_user.role&.name == 'admin' %>
+              <li>
+                <%= link_to attendances_path, class: "dropdown-item" do %>
+                  <i class="bi bi-calendar-check me-2"></i>Mes sorties
+                <% end %>
+              </li>
+              <% if current_user.role&.name == 'admin' || current_user.role&.level.to_i >= 60 %>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                  <%= link_to "#", class: "dropdown-item" do %>
+                  <%= link_to admin_root_path, class: "dropdown-item" do %>
                     <i class="bi bi-shield-check me-2"></i>Administration
                   <% end %>
                 </li>

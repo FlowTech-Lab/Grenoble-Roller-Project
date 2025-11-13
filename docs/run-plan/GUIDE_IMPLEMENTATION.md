@@ -13,27 +13,29 @@
 - ✅ Seeds complets (rôles, utilisateurs, produits, commandes, paiements)
 - ✅ Documentation complète mise à jour
 
-### 🔜 Phase 2 - Événements (À VENIR)
-- 🔜 CRUD événements
-- 🔜 Inscriptions aux événements
-- 🔜 Calendrier interactif
-- 🔜 Upload photos (Active Storage)
-- 🔜 Permissions fines (Pundit)
-- 🔜 Interface admin
-- 🔜 Notifications email
+### 🔜 Phase 2 - Événements (À VENIR - 15 jours)
+- 🔜 CRUD événements (Jour 6-8)
+- 🔜 Inscriptions aux événements (Jour 9)
+- 🔜 Calendrier interactif (Jour 9)
+- ✅ Tests TDD >70% coverage (Jour 10)
+- ✅ Permissions fines Pundit (Jour 11)
+- ✅ Interface admin ActiveAdmin (Jour 12-13)
+- 🔜 Upload photos (Active Storage) (Jour 14)
+- 🔜 Notifications email (Jour 14)
+- 🔜 Performance & Sécurité (Jour 15)
 
 ---
 
 ## 🎯 MÉTHODOLOGIE SHAPE UP
 
 ### Principe Fondamental
-**Appetite fixe (6 semaines), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
+**Appetite fixe (3 semaines Building + 1 semaine Cooldown), scope flexible** - Si pas fini → réduire scope, pas étendre deadline.
 
 ### 4 Phases Shape Up
 1. **SHAPING** (Semaine -2 à 0) : Définir les limites
 2. **BETTING TABLE** (Semaine 0) : Priorisation brutale  
-3. **BUILDING** (Semaine 1-6) : Livrer feature shippable
-4. **COOLDOWN** (Semaine 7-8) : Repos obligatoire
+3. **BUILDING** (Semaine 1-3, 15 jours) : Livrer feature shippable
+4. **COOLDOWN** (Semaine 4) : Repos obligatoire
 
 ### Rabbit Holes Évités
 - ❌ Microservices → Monolithe Rails d'abord
@@ -645,6 +647,42 @@ end
 
 ---
 
+## ✅ CHECKLIST PHASE 2
+
+> **📋 Checklist complète** : Voir [`CHECKLIST_PHASE2.md`](../ressources/CHECKLIST_PHASE2.md)
+
+### ✅ PRÉ-REQUIS (Avant Jour 1)
+- [ ] ER Diagram créé (Event → Route, User, Attendance)
+- [ ] Branching strategy définie (main/develop/feature branches)
+- [ ] Database.yml configuré pour 3 envs (dev/staging/prod)
+- [ ] `dbdiagram.md` à jour avec tous les modèles
+
+### ✅ SEMAINE 1 (Jour 1-5) - Setup & Infrastructure
+- [ ] Jour 1 : Infrastructure ✓ (déjà fait)
+- [ ] Jour 2-3 : Authentification & Rôles
+- [ ] Jour 4 : Autorisation & Tests Setup
+- [ ] Jour 5 : CI/CD GitHub Actions
+
+### ✅ SEMAINE 2 (Jour 6-10) - CRUD Événements
+- [ ] Jour 6-7 : Models CRUD + Tests (TDD) ⚠️ **Routes AVANT Events**
+- [ ] Jour 8 : Controllers & Routes
+- [ ] Jour 9 : Inscriptions & Calendrier
+- [ ] Jour 10 : Tests Unitaires & Intégration (Coverage >70%)
+
+### ✅ SEMAINE 3 (Jour 11-15) - Admin Panel & Finalisation
+- [x] Jour 11 : Pundit Policies + Finalisation Modèles (policies + accès sécurisés)
+- [x] Jour 12 : Installation ActiveAdmin ⚠️ **APRÈS modèles stables**
+- [x] Génération ressources ActiveAdmin : Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog, User, Product, Order
+- [ ] Jour 13 : Customisation ActiveAdmin
+- [ ] Jour 14 : Tests Admin Panel & Notifications
+- [ ] Jour 15 : Performance & Sécurité (Brakeman)
+
+> ℹ️ `bin/docker-entrypoint` reconstruit automatiquement les CSS (application + ActiveAdmin) à chaque `docker compose up web`.  
+> Accès back-office validé : http://localhost:3000/admin (`admin@roller.com` / `admin123`).
+> Accès admin vérifié : http://localhost:3000/admin (`admin@roller.com` / `admin123`).
+
+---
+
 ## 🎯 PROCHAINES ÉTAPES
 
 ### ✅ Phase 1 - E-commerce (TERMINÉE)
@@ -655,12 +693,12 @@ end
 5. **✅ E-commerce complet**
 6. **✅ Documentation complète**
 
-### 🔜 Phase 2 - Événements (À VENIR)
-1. **🔜 Développement module événements**
-2. **🔜 Mise en place des tests (RSpec + Capybara)**
-3. **🔜 Configuration CI/CD**
-4. **🔜 Développement des composants Bootstrap pour événements**
-5. **🔜 Déploiement production finalisé**
+### 🔜 Phase 2 - Événements (15 jours - À VENIR)
+1. **🔜 Checklist complète** : Voir [`CHECKLIST_PHASE2.md`](../ressources/CHECKLIST_PHASE2.md)
+2. **🔜 Développement module événements** (Jour 6-9)
+3. **✅ Tests TDD >70% coverage** (Jour 10)
+4. **✅ ActiveAdmin** (Jour 12-13)
+5. **🔜 Performance & Sécurité** (Jour 15)
 
 ---
 

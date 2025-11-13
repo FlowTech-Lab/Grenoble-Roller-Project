@@ -3,6 +3,15 @@
 require "securerandom"
 
 # 🧹 Nettoyage (dans l'ordre pour éviter les erreurs FK)
+# Phase 2 - Events
+Attendance.destroy_all
+Event.destroy_all
+Route.destroy_all
+OrganizerApplication.destroy_all
+AuditLog.destroy_all
+ContactMessage.destroy_all
+Partner.destroy_all
+# Phase 1 - E-commerce
 OrderItem.destroy_all
 Order.destroy_all
 Payment.destroy_all
@@ -65,14 +74,14 @@ florian = User.create!(
 puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 
 # 👥 Utilisateurs de test
-5.times do |i|
+20.times do |i|
   User.create!(
     email: "client#{i + 1}@example.com",
     password: "password123",
     password_confirmation: "password123",
-    first_name: "Client",
-    last_name: "Test #{i + 1}",
-    bio: "Client de test numéro #{i + 1}",
+    first_name: ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry", "Iris", "Jack", "Kate", "Leo", "Mia", "Noah", "Olivia", "Paul", "Quinn", "Ruby", "Sam", "Tina"][i],
+    last_name: ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel"][i],
+    bio: "Membre passionné de la communauté roller grenobloise",
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
     created_at: Time.now - rand(1..30).days,
@@ -447,4 +456,437 @@ else
   puts "✅ #{OrderItem.count} articles de commande créés avec succès."
 end
 
-puts "🌱 Seed terminé avec succès !"
+# ========================================
+# 🌟 PHASE 2 - EVENTS & ADMIN
+# ========================================
+
+puts "\n🌟 Création des données Phase 2 (Events & Admin)..."
+
+# 🗺️ Routes (parcours prédéfinis)
+puts "🗺️ Création des routes..."
+routes_data = [
+  {
+    name: "Boucle de la Bastille",
+    description: "Parcours urbain avec vue panoramique sur Grenoble. Idéal pour débutants.",
+    distance_km: 8.5,
+    elevation_m: 120,
+    difficulty: "easy",
+    safety_notes: "Attention aux voitures dans les descentes. Port du casque obligatoire."
+  },
+  {
+    name: "Tour du Vercors",
+    description: "Randonnée longue distance à travers le massif du Vercors. Parcours technique.",
+    distance_km: 45.0,
+    elevation_m: 850,
+    difficulty: "hard",
+    safety_notes: "Parcours réservé aux skateurs confirmés. Vérifier la météo avant de partir."
+  },
+  {
+    name: "Bord de l'Isère",
+    description: "Parcours plat le long de l'Isère. Parfait pour l'entraînement.",
+    distance_km: 12.0,
+    elevation_m: 50,
+    difficulty: "easy",
+    safety_notes: "Piste cyclable partagée. Respecter les piétons."
+  },
+  {
+    name: "Montée vers Chamrousse",
+    description: "Ascension vers la station de ski. Défi pour les experts.",
+    distance_km: 22.0,
+    elevation_m: 1200,
+    difficulty: "hard",
+    safety_notes: "Route de montagne avec circulation. Équipement de sécurité recommandé."
+  },
+  {
+    name: "Parcours du Polygone",
+    description: "Parcours mixte entre ville et nature. Niveau intermédiaire.",
+    distance_km: 15.5,
+    elevation_m: 200,
+    difficulty: "medium",
+    safety_notes: "Quelques passages techniques. Vérifier l'état du terrain."
+  }
+]
+
+routes = routes_data.map { |attrs| Route.create!(attrs) }
+puts "✅ #{Route.count} routes créées !"
+
+# 👥 Récupération des utilisateurs et rôles pour Phase 2
+organizer_role = Role.find_by(code: "ORGANIZER")
+admin_role = Role.find_by(code: "ADMIN")
+users = User.all
+florian = User.find_by(email: "T3rorX@hotmail.fr")
+admin_user = User.find_by(email: "admin@roller.com")
+
+# 🎪 Events (événements)
+puts "🎪 Création des événements..."
+# Helper pour mapper la difficulté de la route vers le niveau de l'événement
+def map_route_difficulty_to_level(route)
+  return 'all_levels' unless route
+  
+  case route.difficulty
+  when 'easy'
+    'beginner'
+  when 'medium'
+    'intermediate'
+  when 'hard'
+    'advanced'
+  else
+    'all_levels'
+  end
+end
+
+events_data = [
+  {
+    creator_user: florian || admin_user,
+    route: routes[0],
+    status: "published",
+    start_at: 1.week.from_now + 2.days,
+    duration_min: 90,
+    title: "Rando du vendredi soir - Boucle Bastille",
+    description: "Randonnée conviviale du vendredi soir sur le parcours de la Bastille. Départ à 19h30, retour vers 21h. Niveau débutant accepté. N'oubliez pas vos protections !",
+    price_cents: 0,
+    currency: "EUR",
+    location_text: "Place de la Bastille, Grenoble",
+    meeting_lat: 45.1917,
+    meeting_lng: 5.7278,
+    cover_image_url: "events/bastille.jpg",
+    level: map_route_difficulty_to_level(routes[0]),
+    distance_km: routes[0]&.distance_km || 8.5,
+    max_participants: 0
+  },
+  {
+    creator_user: florian || admin_user,
+    route: routes[1],
+    status: "published",
+    start_at: 2.weeks.from_now,
+    duration_min: 240,
+    title: "Challenge Vercors - Tour complet",
+    description: "Événement exceptionnel : tour complet du Vercors en roller. Parcours de 45km avec dénivelé important. Réservé aux skateurs confirmés. Inscription obligatoire. Pique-nique prévu au retour.",
+    price_cents: 1000,
+    currency: "EUR",
+    location_text: "Parking du Vercors, Villard-de-Lans",
+    meeting_lat: 45.0736,
+    meeting_lng: 5.5536,
+    cover_image_url: "events/vercors.jpg",
+    level: map_route_difficulty_to_level(routes[1]),
+    distance_km: routes[1]&.distance_km || 45.0,
+    max_participants: 20
+  },
+  {
+    creator_user: admin_user || florian,
+    route: routes[2],
+    status: "published",
+    start_at: 3.days.from_now,
+    duration_min: 60,
+    title: "Sortie détente - Bord de l'Isère",
+    description: "Sortie détente le long de l'Isère. Parfait pour découvrir le roller ou se remettre en jambe. Tous niveaux bienvenus. Ambiance conviviale garantie !",
+    price_cents: 0,
+    currency: "EUR",
+    location_text: "Parc Paul Mistral, Grenoble",
+    meeting_lat: 45.1885,
+    meeting_lng: 5.7245,
+    cover_image_url: "events/isere.jpg",
+    level: 'all_levels',
+    distance_km: routes[2]&.distance_km || 12.0,
+    max_participants: 0
+  },
+  {
+    creator_user: florian || admin_user,
+    route: routes[3],
+    status: "draft",
+    start_at: 1.month.from_now,
+    duration_min: 180,
+    title: "Montée Chamrousse - À venir",
+    description: "Événement en préparation. Ascension vers Chamrousse pour les plus courageux. Détails à venir.",
+    price_cents: 1500,
+    currency: "EUR",
+    location_text: "Départ Grenoble centre",
+    meeting_lat: 45.1885,
+    meeting_lng: 5.7245,
+    cover_image_url: nil,
+    level: map_route_difficulty_to_level(routes[3]),
+    distance_km: routes[3]&.distance_km || 22.0,
+    max_participants: 15
+  },
+  {
+    creator_user: admin_user || florian,
+    route: routes[4],
+    status: "published",
+    start_at: 5.days.from_now,
+    duration_min: 120,
+    title: "Rando Polygone - Niveau intermédiaire",
+    description: "Randonnée sur le parcours du Polygone. Parfait pour les skateurs de niveau intermédiaire souhaitant progresser. Passage par des chemins variés avec quelques défis techniques.",
+    price_cents: 500,
+    currency: "EUR",
+    location_text: "Parking Polygone, Grenoble",
+    meeting_lat: 45.1789,
+    meeting_lng: 5.7123,
+    cover_image_url: "events/polygone.jpg",
+    level: map_route_difficulty_to_level(routes[4]),
+    distance_km: routes[4]&.distance_km || 15.5,
+    max_participants: 0
+  },
+  {
+    creator_user: florian || admin_user,
+    route: routes[0],
+    status: "published",
+    start_at: 1.week.from_now + 5.days,
+    duration_min: 90,
+    title: "Rando du samedi matin - Bastille",
+    description: "Randonnée populaire du samedi matin sur le parcours de la Bastille. Parfait pour commencer le week-end en douceur. Places limitées.",
+    price_cents: 0,
+    currency: "EUR",
+    location_text: "Place de la Bastille, Grenoble",
+    meeting_lat: 45.1917,
+    meeting_lng: 5.7278,
+    cover_image_url: "events/bastille.jpg",
+    level: map_route_difficulty_to_level(routes[0]),
+    distance_km: routes[0]&.distance_km || 8.5,
+    max_participants: 10  # Limité à 10 participants pour créer un événement complet
+  },
+  {
+    creator_user: florian || admin_user,
+    route: routes[0],
+    status: "canceled",
+    start_at: 2.days.ago,
+    duration_min: 90,
+    title: "Rando annulée - Mauvais temps",
+    description: "Événement annulé à cause des conditions météorologiques défavorables.",
+    price_cents: 0,
+    currency: "EUR",
+    location_text: "Place de la Bastille, Grenoble",
+    meeting_lat: 45.1917,
+    meeting_lng: 5.7278,
+    cover_image_url: nil,
+    level: map_route_difficulty_to_level(routes[0]),
+    distance_km: routes[0]&.distance_km || 8.5,
+    max_participants: 0
+  }
+]
+
+events = events_data.map { |attrs| Event.create!(attrs) }
+puts "✅ #{Event.count} événements créés !"
+
+# 📝 Attendances (inscriptions aux événements)
+puts "📝 Création des inscriptions..."
+published_events = Event.where(status: "published")
+regular_users = users.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"])
+
+if published_events.any? && regular_users.any?
+  published_events.each do |event|
+    # Pour l'événement avec max_participants limité, on le remplit complètement
+    if event.max_participants > 0 && event.max_participants <= regular_users.count
+      # Inscrire exactement le nombre maximum de participants pour rendre l'événement complet
+      subscribers = regular_users.sample(event.max_participants)
+      subscribers.each do |user|
+        Attendance.create!(
+          user: user,
+          event: event,
+          status: event.price_cents > 0 ? "registered" : "registered",
+          created_at: event.created_at + rand(1..5).hours
+        )
+      end
+      puts "  ✅ Événement '#{event.title}' : #{event.max_participants} participants (COMPLET)"
+    else
+      # Pour les autres événements, inscription de quelques utilisateurs
+      num_subscribers = event.unlimited? ? rand(3..8) : [rand(2..6), event.max_participants].min
+      subscribers = regular_users.sample(num_subscribers)
+      subscribers.each do |user|
+        Attendance.create!(
+          user: user,
+          event: event,
+          status: event.price_cents > 0 ? "registered" : "registered",
+          created_at: event.created_at + rand(1..5).hours
+        )
+      end
+    end
+  end
+  
+  # Quelques inscriptions payées
+  paid_event = published_events.find { |e| e.price_cents > 0 }
+  if paid_event && regular_users.any?
+    payment = Payment.where(status: "succeeded").first
+    attendance = paid_event.attendances.first
+    if attendance && payment
+      attendance.update!(
+        status: "paid",
+        payment: payment
+      )
+    end
+  end
+end
+
+puts "✅ #{Attendance.count} inscriptions créées !"
+
+# 📋 OrganizerApplications (candidatures organisateur)
+puts "📋 Création des candidatures organisateur..."
+regular_users_for_apps = users.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"]).where(role: user_role).limit(5)
+if regular_users_for_apps.any? && (admin_user || florian)
+  organizer_apps_data = [
+    {
+      user: regular_users_for_apps[0],
+      motivation: "Passionné de roller depuis 10 ans, j'aimerais organiser des événements réguliers pour la communauté. J'ai de l'expérience dans l'organisation d'événements sportifs.",
+      status: "pending"
+    }
+  ]
+  
+  # Ajouter une candidature approuvée si on a assez d'utilisateurs
+  if regular_users_for_apps.count >= 2
+    organizer_apps_data << {
+      user: regular_users_for_apps[1],
+      motivation: "Je souhaite devenir organisateur pour proposer des randos adaptées aux débutants et créer une communauté plus inclusive.",
+      status: "approved",
+      reviewed_by: admin_user || florian,
+      reviewed_at: 1.week.ago
+    }
+  end
+  
+  # Ajouter une candidature rejetée si on a assez d'utilisateurs
+  if regular_users_for_apps.count >= 3
+    organizer_apps_data << {
+      user: regular_users_for_apps[2],
+      motivation: "Je veux organiser des événements mais je n'ai pas assez d'expérience.",
+      status: "rejected",
+      reviewed_by: admin_user || florian,
+      reviewed_at: 3.days.ago
+    }
+  end
+  
+  organizer_apps_data.each { |attrs| OrganizerApplication.create!(attrs) }
+  puts "✅ #{OrganizerApplication.count} candidatures créées !"
+end
+
+# 🤝 Partners (partenaires)
+puts "🤝 Création des partenaires..."
+partners_data = [
+  {
+    name: "Roller Shop Grenoble",
+    url: "https://www.rollershop-grenoble.fr",
+    logo_url: "partners/roller-shop.png",
+    description: "Magasin spécialisé en rollers et équipements de protection à Grenoble.",
+    is_active: true
+  },
+  {
+    name: "Ville de Grenoble",
+    url: "https://www.grenoble.fr",
+    logo_url: "partners/ville-grenoble.png",
+    description: "Partenariat avec la mairie de Grenoble pour l'organisation d'événements sportifs.",
+    is_active: true
+  },
+  {
+    name: "FFRS - Fédération Française de Roller et Skateboard",
+    url: "https://www.ffroller.fr",
+    logo_url: "partners/ffrs.png",
+    description: "Fédération officielle du roller en France. Partenaire pour les licences et assurances.",
+    is_active: true
+  },
+  {
+    name: "Ancien Partenaire",
+    url: "https://www.example.com",
+    logo_url: nil,
+    description: "Partenaire inactif (pour test).",
+    is_active: false
+  }
+]
+
+partners_data.each { |attrs| Partner.create!(attrs) }
+puts "✅ #{Partner.count} partenaires créés !"
+
+# 📧 ContactMessages (messages de contact)
+puts "📧 Création des messages de contact..."
+contact_messages_data = [
+  {
+    name: "Jean Dupont",
+    email: "jean.dupont@example.com",
+    subject: "Question sur les événements",
+    message: "Bonjour, je souhaiterais savoir comment m'inscrire aux randos du vendredi soir. Merci !",
+    created_at: 5.days.ago
+  },
+  {
+    name: "Marie Martin",
+    email: "marie.martin@example.com",
+    subject: "Devenir membre",
+    message: "Bonjour, j'aimerais devenir membre de l'association. Pouvez-vous me renseigner sur les tarifs et les démarches ?",
+    created_at: 3.days.ago
+  },
+  {
+    name: "Pierre Durand",
+    email: "pierre.durand@example.com",
+    subject: "Suggestion de parcours",
+    message: "J'ai découvert un superbe parcours vers le lac de Laffrey. Serait-il possible de l'ajouter à vos routes ?",
+    created_at: 1.day.ago
+  },
+  {
+    name: "Sophie Bernard",
+    email: "sophie.bernard@example.com",
+    subject: "Problème avec ma commande",
+    message: "Bonjour, j'ai commandé un casque il y a 5 jours mais je n'ai toujours pas reçu de confirmation. Pouvez-vous vérifier ?",
+    created_at: 2.hours.ago
+  }
+]
+
+contact_messages_data.each { |attrs| ContactMessage.create!(attrs) }
+puts "✅ #{ContactMessage.count} messages de contact créés !"
+
+# 📊 AuditLogs (logs d'audit)
+puts "📊 Création des logs d'audit..."
+if admin_user || florian
+  actor = admin_user || florian
+  audit_logs_data = [
+    {
+      actor_user: actor,
+      action: "event.publish",
+      target_type: "Event",
+      target_id: published_events.first&.id || events.first&.id || 1,
+      metadata: { status: "published", published_at: 1.week.ago.iso8601 },
+      created_at: 1.week.ago
+    },
+    {
+      actor_user: actor,
+      action: "organizer_application.approve",
+      target_type: "OrganizerApplication",
+      target_id: OrganizerApplication.where(status: "approved").first&.id || 1,
+      metadata: { reviewed_by: actor.email },
+      created_at: 1.week.ago
+    },
+    {
+      actor_user: actor,
+      action: "user.promote",
+      target_type: "User",
+      target_id: regular_users.first&.id || 1,
+      metadata: { role: "ORGANIZER", previous_role: "USER" },
+      created_at: 5.days.ago
+    },
+    {
+      actor_user: actor,
+      action: "event.cancel",
+      target_type: "Event",
+      target_id: events.find { |e| e.status == "canceled" }&.id || events.first&.id || 1,
+      metadata: { reason: "Mauvais temps", canceled_at: 2.days.ago.iso8601 },
+      created_at: 2.days.ago
+    },
+    {
+      actor_user: actor,
+      action: "product.create",
+      target_type: "Product",
+      target_id: Product.first&.id || 1,
+      metadata: { name: "Casque LED", category: "Protections" },
+      created_at: 1.day.ago
+    }
+  ]
+  
+  audit_logs_data.each { |attrs| AuditLog.create!(attrs) }
+  puts "✅ #{AuditLog.count} logs d'audit créés !"
+end
+
+puts "\n🌱 Seed Phase 2 terminé avec succès !"
+puts "📊 Résumé Phase 2 :"
+puts "   - Routes : #{Route.count}"
+puts "   - Événements : #{Event.count} (#{Event.where(status: 'published').count} publiés)"
+puts "   - Inscriptions : #{Attendance.count}"
+puts "   - Candidatures organisateur : #{OrganizerApplication.count}"
+puts "   - Partenaires : #{Partner.count} (#{Partner.where(is_active: true).count} actifs)"
+puts "   - Messages de contact : #{ContactMessage.count}"
+puts "   - Logs d'audit : #{AuditLog.count}"
+
+puts "\n🌱 Seed complet terminé avec succès !"

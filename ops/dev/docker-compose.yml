@@ -10,6 +10,7 @@ services:
     # env_file:
     #   - ../../.env  # Uncomment if .env file exists
     environment:
+      BUNDLE_PATH: /rails/vendor/bundle
       DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_development
       DATABASE_HOST: db
       DATABASE_PORT: 5432
@@ -19,12 +20,15 @@ services:
       RAILS_ENV: development
     ports:
       - "3000:3000"
+    entrypoint: ["./bin/docker-entrypoint"]
     command: ["./bin/rails", "server", "-b", "0.0.0.0"]
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ../../:/rails
+      - grenoble-roller-dev-bundle:/rails/vendor/bundle
+      - grenoble-roller-dev-node-modules:/rails/node_modules
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -37,9 +41,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: grenoble-roller-css-watcher
     environment:
+      BUNDLE_PATH: /rails/vendor/bundle
       RAILS_ENV: development
     volumes:
       - ../../:/rails
+      - grenoble-roller-dev-bundle:/rails/vendor/bundle
+      - grenoble-roller-dev-node-modules:/rails/node_modules
     command: ["npm", "run", "watch:css"]
     depends_on:
       - web
@@ -64,3 +71,5 @@ services:
 
 volumes:
   grenoble-roller-dev-data:
+  grenoble-roller-dev-bundle:
+  grenoble-roller-dev-node-modules:

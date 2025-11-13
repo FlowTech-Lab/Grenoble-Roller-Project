@@ -1,0 +1,21 @@
+❌ DÉSINSCRIPTION CONFIRMÉE
+
+Bonjour <%= @user.first_name %>,
+
+Votre désinscription de l'événement <%= @event.title %> a bien été enregistrée.
+
+📅 DÉTAILS DE L'ÉVÉNEMENT
+─────────────────────────
+
+📍 Lieu : <%= @event.location_text %>
+🕐 Date : <%= l @event.start_at, format: :event_long, locale: :fr %>
+⏱️ Durée : <%= @event.duration_min %> minutes
+
+Voir l'événement : <%= event_url(@event) %>
+
+─────────────────────────
+
+Nous espérons vous revoir bientôt sur une autre sortie ! 🛼
+
+💡 Rappel : Vous pouvez vous réinscrire à cet événement à tout moment depuis la page de l'événement.
+

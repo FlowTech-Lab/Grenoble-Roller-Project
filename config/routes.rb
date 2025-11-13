@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  ActiveAdmin.routes(self)
   devise_for :users, controllers: {
     passwords: 'passwords'
   }
@@ -37,4 +38,19 @@ Rails.application.routes.draw do
       patch :cancel
     end
   end
+
+  # Events (Phase 2)
+  resources :events do
+    member do
+      post :attend
+      delete :cancel_attendance
+      get :ical, defaults: { format: 'ics' }
+      patch :toggle_reminder
+    end
+  end
+  
+  # Routes pour pré-remplir les champs niveau et distance
+  get '/routes/:id/info', to: 'routes#info', as: 'route_info', defaults: { format: 'json' }
+
+  resources :attendances, only: :index
 end

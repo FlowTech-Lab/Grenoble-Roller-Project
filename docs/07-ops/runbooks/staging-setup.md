@@ -387,7 +387,6 @@ After staging is set up:
 
 ## Related Documentation
 
-- [Local Development Setup](../04-rails/setup/local-development.md) - Development environment
-- [Production Setup](production-setup.md) - Production deployment (if exists)
-- [Credentials Management](../04-rails/setup/credentials.md) - Secrets handling
-
+- [Local Development Setup](../../04-rails/setup/local-development.md) - Development environment
+- [Production Setup](./production-setup.md) - Production deployment
+- [Credentials Management](../../04-rails/setup/credentials.md) - Secrets handling

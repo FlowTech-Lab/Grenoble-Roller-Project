@@ -15,11 +15,33 @@ fi
 # This ensures CSS is up-to-date after git pull
 # Note: This runs AFTER volume mount, so it compiles CSS in the mounted directory
 if [ "${RAILS_ENV}" == "development" ] && [ -f "package.json" ]; then
+  echo "Preparing development environment..."
+  
+  # Install node_modules if they don't exist (first run or volume is empty)
+  if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+    echo "Installing node_modules (this may take a moment on first run)..."
+    PATH="/usr/local/node/bin:$PATH" npm install || echo "Warning: npm install failed, continuing anyway..."
+  fi
+  
   echo "Rebuilding CSS to ensure latest changes are applied..."
   # Ensure builds directory exists
-  mkdir -p app/assets/builds
-  # Build CSS
-  npm run build:css || echo "Warning: CSS rebuild failed, continuing anyway..."
+  mkdir -p app/assets/builds/fonts
+  # Build CSS (application + ActiveAdmin) with proper SASS_PATH and npm path
+  ACTIVEADMIN_STYLES_PATH=$(bundle exec ruby -e 'spec = Gem.loaded_specs["activeadmin"]; print spec&.full_gem_path ? spec.full_gem_path + "/app/assets/stylesheets" : ""')
+  if [ -n "$ACTIVEADMIN_STYLES_PATH" ]; then
+    export SASS_PATH="node_modules:${ACTIVEADMIN_STYLES_PATH}"
+  else
+    echo "Warning: Could not resolve ActiveAdmin styles path, fallback to node_modules only."
+    export SASS_PATH="node_modules"
+  fi
+  PATH="/usr/local/node/bin:$PATH" npm run build:css || echo "Warning: CSS rebuild failed, continuing anyway..."
+  
+  # Vérifier que les fonts sont bien copiées
+  if [ ! -f "app/assets/builds/fonts/bootstrap-icons.woff2" ]; then
+    echo "Warning: Bootstrap Icons fonts not found, attempting to copy manually..."
+    mkdir -p app/assets/builds/fonts
+    cp -r node_modules/bootstrap-icons/font/*.woff* app/assets/builds/fonts/ 2>/dev/null || echo "Warning: Could not copy Bootstrap Icons fonts"
+  fi
 fi
 
 exec "${@}"
