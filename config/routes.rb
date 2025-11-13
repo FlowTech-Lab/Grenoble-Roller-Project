@@ -48,6 +48,9 @@ Rails.application.routes.draw do
       patch :toggle_reminder
     end
   end
+  
+  # Routes pour pré-remplir les champs niveau et distance
+  get '/routes/:id/info', to: 'routes#info', as: 'route_info', defaults: { format: 'json' }
 
   resources :attendances, only: :index
 end

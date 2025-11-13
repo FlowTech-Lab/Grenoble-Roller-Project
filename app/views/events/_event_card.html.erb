@@ -5,7 +5,7 @@
                     alt: event.title,
                     loading: 'lazy',
                     class: 'w-100 h-100 object-fit-cover') %>
-      <span class="card-event-date badge <%= defined?(past) && past ? 'badge-liquid-secondary' : 'badge-liquid-primary' %>">
+      <span class="card-event-date badge <%= (defined?(past) && past) || event.past? ? 'badge-liquid-secondary' : 'badge-liquid-primary' %>">
         <i class="bi bi-calendar3 me-1"></i>
         <%= l event.start_at, format: :day_month, locale: :fr %>
       </span>
@@ -27,6 +27,10 @@
             <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
             <%= truncate(event.location_text, length: 35) %>
           </p>
+          <p class="mb-1">
+            <i class="bi bi-signpost-2 text-liquid-primary me-2"></i>
+            <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+          </p>
           <p class="mb-0">
             <i class="bi bi-clock text-liquid-primary me-2"></i>
             <%= event.duration_min %> min
@@ -36,6 +40,13 @@
         <p class="text-muted small mb-3"><%= truncate(event.description, length: 100, omission: '...') %></p>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Annulé (prioritaire) -->
+          <% if event.canceled? %>
+            <span class="badge bg-danger">
+              <i class="bi bi-x-octagon me-1"></i>Annulé
+            </span>
+          <% end %>
+          
           <span class="badge bg-primary">
             <i class="bi bi-people-fill me-1"></i>
             <%= pluralize(event.attendances_count, "inscrit") %>
@@ -45,6 +56,10 @@
             <% if event.full? %>
               <span class="badge bg-danger">
                 <i class="bi bi-x-circle me-1"></i>Complet
+              </span>
+            <% elsif event.remaining_spots <= 5 %>
+              <span class="badge bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle me-1"></i><%= pluralize(event.remaining_spots, "place disponible") %>
               </span>
             <% else %>
               <span class="badge bg-success">
@@ -69,6 +84,16 @@
         <div class="action-row d-flex flex-wrap gap-2">
             <% if defined?(render_signup_button) && render_signup_button %>
               <% if current_user_has_attendance?(event) %>
+                <!-- Calendrier en premier (action positive) -->
+                <% if user_signed_in? %>
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <% end %>
+                <% end %>
+                <!-- Se désinscrire en second (action destructive) -->
                 <%= button_to cancel_attendance_event_path(event), method: :delete, 
                     class: "btn btn-outline-secondary btn-sm", 
                     data: { turbo_confirm: 'Annuler votre inscription ?' },
@@ -83,25 +108,44 @@
                         aria-label="S'inscrire à cet événement">
                   <i class="bi bi-calendar-plus me-1"></i>S'inscrire
                 </button>
+                <!-- Calendrier après S'inscrire -->
+                <% if user_signed_in? %>
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <% end %>
+                <% end %>
               <% elsif event.full? %>
                 <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Événement complet">
                   <i class="bi bi-x-circle me-1"></i>Complet
                 </button>
-              <% end %>
-            <% end %>
-
-            <% if user_signed_in? %>
-              <%= link_to ical_event_path(event, format: :ics), 
-                  class: "btn btn-outline-primary btn-sm", 
-                  title: 'Ajouter au calendrier',
-                  aria: { label: 'Ajouter au calendrier' } do %>
-                <i class="bi bi-calendar-event me-1"></i>Calendrier
+                <!-- Calendrier même si complet -->
+                <% if user_signed_in? %>
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <% end %>
+                <% end %>
               <% end %>
             <% else %>
-              <%= link_to new_user_session_path, 
-                  class: "btn btn-outline-primary btn-sm",
-                  aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-                <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+              <!-- Si pas de bouton d'inscription, afficher Calendrier/Connexion -->
+              <% if user_signed_in? %>
+                <%= link_to ical_event_path(event, format: :ics), 
+                    class: "btn btn-outline-primary btn-sm", 
+                    title: 'Ajouter au calendrier',
+                    aria: { label: 'Ajouter au calendrier' } do %>
+                  <i class="bi bi-calendar-event me-1"></i>Calendrier
+                <% end %>
+              <% else %>
+                <%= link_to new_user_session_path, 
+                    class: "btn btn-outline-primary btn-sm",
+                    aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+                <% end %>
               <% end %>
             <% end %>
 
