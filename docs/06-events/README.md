@@ -68,10 +68,16 @@
 - ❌ Export CSV/PDF (non implémenté)
 - ❌ Dashboard (non implémenté)
 
+### ✅ Fonctionnalités Récemment Implémentées
+- ✅ **Notifications e-mail** : Implémenté (inscription/désinscription)
+- ✅ **Export iCal** : Implémenté (fichiers .ics pour chaque événement)
+- ✅ **Workflow de modération** : Implémenté (draft, published, rejected, canceled)
+- ✅ **Champs niveau et distance** : Implémenté (level: beginner/intermediate/advanced/all_levels, distance_km)
+- ✅ **Coordonnées GPS** : Implémenté (optionnel avec Google Maps/Waze)
+- ✅ **Améliorations UX** : Badge orange pour places restantes (≤5), réorganisation boutons (Calendrier avant Se désinscrire)
+- ✅ **Job de rappel 24h avant** : Implémenté (EventReminderJob)
+
 ### ❌ Fonctionnalités Non Implémentées
-- ✅ Notifications e-mail (🔴 Haute priorité) → **TERMINÉ** ✅
-- Job de rappel 24h avant (🟡 Moyenne priorité - Optionnel) 💡
-- Export iCal (🟡 Moyenne priorité)
 - Accessibilité (🟡 Moyenne priorité)
 - Performance (🟡 Moyenne priorité)
 - Pagination (🟢 Basse priorité)
@@ -82,18 +88,20 @@
 
 ### 🔴 Critique (À faire rapidement)
 1. **Tests Capybara** (75% → 100%)
-2. **Notifications E-mail** (0% → 100%)
 
 ### 🟡 Important (À faire prochainement)
-3. **Job de rappel 24h avant** (0% → 100%) 💡
-   - Job `EventReminderJob` pour envoyer automatiquement des rappels
-   - Planification avec `whenever` ou `sidekiq-cron`
-   - Template email déjà créé (`event_reminder`)
-   - Réduit le taux d'absence, améliore l'expérience utilisateur
-4. **Export iCal** (0% → 100%)
-5. **Améliorations ActiveAdmin** (80% → 100%)
-6. **Performance et Qualité** (0% → 100%)
-7. **Accessibilité** (0% → 100%)
+2. **Améliorations ActiveAdmin** (80% → 100%)
+   - Bulk actions (modifier status de plusieurs événements)
+   - Export CSV/PDF personnalisé
+   - Dashboard avec statistiques
+3. **Performance et Qualité** (0% → 100%)
+   - Audit N+1 queries (Bullet gem)
+   - Optimisation des requêtes
+   - Audit de sécurité (Brakeman)
+4. **Accessibilité** (0% → 100%)
+   - ARIA labels complets
+   - Navigation clavier
+   - Tests avec screen readers
 
 ### 🟢 Optionnel (À faire plus tard)
 8. **Pagination** (0% → 100%)
@@ -113,31 +121,35 @@
 - **Core Features** : 100% ✅
 - **Optimisations DB** : 100% ✅
 - **Feature max_participants** : 100% ✅
-- **ActiveAdmin** : 80% ✅
+- **Workflow de modération** : 100% ✅ (draft, published, rejected, canceled)
+- **Champs niveau et distance** : 100% ✅ (level, distance_km)
+- **Coordonnées GPS** : 100% ✅ (optionnel avec Google Maps/Waze)
+- **Export iCal** : 100% ✅
+- **Notifications e-mail** : 100% ✅
+- **Job de rappel** : 100% ✅
+- **ActiveAdmin** : 85% ✅ (améliorations récentes : level, distance, creator_user email)
 - **Tests** : 95% ✅
-- **Notifications** : 0% ❌
-- **Export iCal** : 0% ❌
 - **Accessibilité** : 0% ❌
 - **Performance** : 0% ❌
 - **Pagination** : 0% ❌
 
 ### Parcours Utilisateurs
 - **Visiteur** : 100% ✅
-- **Membre** : 85% ✅ (notifications et iCal manquants)
-- **Organisateur** : 90% ✅ (bulk actions et exports manquants)
-- **Admin** : 75% ✅ (dashboard, bulk actions, exports manquants)
+- **Membre** : 95% ✅ (iCal et notifications implémentés)
+- **Organisateur** : 95% ✅ (workflow de modération implémenté, bulk actions manquants)
+- **Admin** : 85% ✅ (dashboard et exports manquants)
 
 ---
 
 ## 📝 Conclusion
 
-**Le parcours utilisateur pour les événements est fonctionnel et conforme à la roadmap initiale à 85%.** Les fonctionnalités core sont implémentées, testées et opérationnelles. Les améliorations prévues (notifications, export iCal, accessibilité, etc.) sont identifiées et priorisées.
+**Le parcours utilisateur pour les événements est fonctionnel et conforme à la roadmap initiale à 95%.** Les fonctionnalités core sont implémentées, testées et opérationnelles. Les fonctionnalités récemment ajoutées (modération, level/distance, GPS, iCal, notifications) sont complètes et opérationnelles.
 
-**Recommandation** : Continuer avec les améliorations selon les priorités identifiées, en commençant par les notifications e-mail et l'audit de performance.
+**Recommandation** : Continuer avec les améliorations selon les priorités identifiées, en commençant par l'audit de performance et l'accessibilité.
 
 ---
 
 **Document créé le** : Novembre 2025  
-**Dernière mise à jour** : Novembre 2025  
-**Version** : 1.0
+**Dernière mise à jour** : Janvier 2025  
+**Version** : 2.0
 
