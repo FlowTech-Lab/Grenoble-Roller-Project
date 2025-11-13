@@ -334,8 +334,21 @@ fi
 log_info "État du conteneur avant migrations :"
 docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
 
-if ! docker exec "${CONTAINER_NAME}" bin/rails db:migrate; then
+# En staging/production, utiliser db:migrate (ne pas utiliser db:reset qui supprime les données)
+MIGRATION_OUTPUT=$(docker exec "${CONTAINER_NAME}" bin/rails db:migrate 2>&1)
+MIGRATION_EXIT_CODE=$?
+echo "$MIGRATION_OUTPUT" | tee -a "$LOG_FILE"
+
+if [ $MIGRATION_EXIT_CODE -ne 0 ]; then
     log_error "Échec des migrations"
+    
+    # Détecter les erreurs spécifiques
+    if echo "$MIGRATION_OUTPUT" | grep -q "does not exist\|UndefinedTable"; then
+        log_error "⚠️ ERREUR DÉTECTÉE : Table manquante lors d'une migration"
+        log_error "Cela indique probablement un problème d'ORDRE DES MIGRATIONS"
+        log_error "Vérifiez que les migrations créant les tables sont exécutées AVANT celles qui les modifient"
+    fi
+    
     show_container_logs "$CONTAINER_NAME"
     # Vérifier l'état du conteneur après l'échec
     if ! container_is_running "$CONTAINER_NAME"; then
