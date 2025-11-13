@@ -158,6 +158,9 @@ cd "$REPO_DIR" || exit 1
 mkdir -p "$BACKUP_DIR"
 mkdir -p "$(dirname "$LOG_FILE")"
 
+# Initialiser SLACK_WEBHOOK (évite l'erreur "unbound variable" avec set -u)
+SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
+
 # Charger les variables d'environnement du serveur (optionnel)
 if [ -f "${REPO_DIR}/.env.server" ]; then
     source "${REPO_DIR}/.env.server"
