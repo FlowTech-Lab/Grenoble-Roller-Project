@@ -64,13 +64,26 @@ wait_for_container_running() {
     local container_name=$1
     local max_wait=${2:-60}  # 60 secondes par défaut
     local wait_time=0
+    local stable_time=0
+    local stable_required=5  # Le conteneur doit rester running pendant 5 secondes
     
     log_info "Attente que le conteneur ${container_name} soit running..."
     
     while [ $wait_time -lt $max_wait ]; do
         if container_is_running "$container_name"; then
-            log_success "Conteneur ${container_name} est running"
-            return 0
+            stable_time=$((stable_time + 2))
+            if [ $stable_time -ge $stable_required ]; then
+                log_success "Conteneur ${container_name} est running et stable (${stable_time}s)"
+                return 0
+            fi
+            log_info "Conteneur running, vérification stabilité... (${stable_time}s/${stable_required}s)"
+        else
+            # Le conteneur s'est arrêté, réinitialiser le compteur
+            if [ $stable_time -gt 0 ]; then
+                log_warning "Le conteneur ${container_name} s'est arrêté après avoir démarré (était stable ${stable_time}s)"
+                show_container_logs "$container_name" 30
+            fi
+            stable_time=0
         fi
         sleep 2
         wait_time=$((wait_time + 2))
@@ -78,6 +91,10 @@ wait_for_container_running() {
     done
     
     log_error "Timeout : le conteneur ${container_name} n'est pas running après ${max_wait}s"
+    # Afficher les logs si le conteneur existe mais n'est pas running
+    if docker ps -a --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null; then
+        show_container_logs "$container_name" 50
+    fi
     return 1
 }
 
@@ -283,8 +300,16 @@ if docker inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | g
         exit 1
     fi
 else
-    log_info "Pas de healthcheck configuré, attente supplémentaire de 10s..."
-    sleep 10
+    log_info "Pas de healthcheck configuré, attente supplémentaire de 10s avec vérification continue..."
+    for i in {1..10}; do
+        if ! container_is_running "$CONTAINER_NAME"; then
+            log_error "Le conteneur web s'est arrêté pendant l'attente"
+            show_container_logs "$CONTAINER_NAME"
+            rollback "$CURRENT_COMMIT"
+            exit 1
+        fi
+        sleep 1
+    done
 fi
 
 # 9. Vérifier que le conteneur est toujours running avant migrations
@@ -295,11 +320,29 @@ if ! container_is_running "$CONTAINER_NAME"; then
     exit 1
 fi
 
-# 10. Migrations
+# 10. Migrations - Vérification finale avant exécution
 log "🗄️ Exécution des migrations..."
+# Double vérification juste avant l'exécution
+if ! container_is_running "$CONTAINER_NAME"; then
+    log_error "Le conteneur web s'est arrêté juste avant les migrations"
+    show_container_logs "$CONTAINER_NAME"
+    rollback "$CURRENT_COMMIT"
+    exit 1
+fi
+
+# Afficher les logs récents pour debug
+log_info "État du conteneur avant migrations :"
+docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
+
 if ! docker exec "${CONTAINER_NAME}" bin/rails db:migrate; then
     log_error "Échec des migrations"
     show_container_logs "$CONTAINER_NAME"
+    # Vérifier l'état du conteneur après l'échec
+    if ! container_is_running "$CONTAINER_NAME"; then
+        log_error "Le conteneur s'est arrêté pendant les migrations"
+        log_info "État du conteneur après échec :"
+        docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
+    fi
     rollback "$CURRENT_COMMIT"
     exit 1
 fi
