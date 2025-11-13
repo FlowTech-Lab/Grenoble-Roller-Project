@@ -38,3 +38,7 @@
 
 /node_modules
 /vendor/bundle
+
+# Backups et logs locaux (créés automatiquement par les scripts)
+/backups/
+/logs/
