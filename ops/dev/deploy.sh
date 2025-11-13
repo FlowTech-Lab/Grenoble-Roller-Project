@@ -280,7 +280,7 @@ if ! container_is_running "$CONTAINER_NAME"; then
 fi
 
 # 10. Migrations - Vérification finale avant exécution
-log "🗄️ Exécution des migrations..."
+log "🗄️ Préparation de la base de données..."
 # Double vérification juste avant l'exécution
 if ! container_is_running "$CONTAINER_NAME"; then
     log_error "Le conteneur web s'est arrêté juste avant les migrations"
@@ -293,17 +293,29 @@ fi
 log_info "État du conteneur avant migrations :"
 docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
 
-if ! docker exec "${CONTAINER_NAME}" bin/rails db:migrate; then
-    log_error "Échec des migrations"
-    show_container_logs "$CONTAINER_NAME"
-    # Vérifier l'état du conteneur après l'échec
-    if ! container_is_running "$CONTAINER_NAME"; then
-        log_error "Le conteneur s'est arrêté pendant les migrations"
-        log_info "État du conteneur après échec :"
-        docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
+# En dev, utiliser db:reset pour éviter les problèmes d'ordre de migrations
+# db:reset fait : db:drop, db:create, db:schema:load, db:seed
+log "🔄 Réinitialisation de la base de données (dev) avec db:reset..."
+if ! docker exec "${CONTAINER_NAME}" bin/rails db:reset; then
+    log_error "Échec de db:reset"
+    log_warning "Tentative avec db:migrate en fallback..."
+    
+    # Fallback : essayer db:migrate si db:reset échoue
+    if ! docker exec "${CONTAINER_NAME}" bin/rails db:migrate; then
+        log_error "Échec des migrations (fallback)"
+        show_container_logs "$CONTAINER_NAME"
+        # Vérifier l'état du conteneur après l'échec
+        if ! container_is_running "$CONTAINER_NAME"; then
+            log_error "Le conteneur s'est arrêté pendant les migrations"
+            log_info "État du conteneur après échec :"
+            docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
+        fi
+        log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+        exit 1
     fi
-    log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
-    exit 1
+    log_success "Migrations appliquées (fallback db:migrate)"
+else
+    log_success "Base de données réinitialisée avec succès (db:reset)"
 fi
 
 # 11. Health check HTTP (double vérification)
