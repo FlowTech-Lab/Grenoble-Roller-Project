@@ -109,52 +109,64 @@
 
             <!-- Actions avec hiérarchie claire -->
             <div class="event-actions mt-auto">
-              <!-- Boutons secondaires groupés (Calendrier en premier) -->
-              <div class="d-flex flex-wrap gap-2 mb-3">
-                <% if user_signed_in? %>
-                  <%= link_to ical_event_path(@highlighted_event, format: :ics), 
-                      class: 'btn btn-outline-primary', 
-                      title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
-                      data: { bs_toggle: 'tooltip', bs_placement: 'top' },
-                      aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-2"></i>Calendrier
+              <!-- Boutons d'action groupés sur la même ligne -->
+              <div class="action-row d-flex flex-wrap gap-2 mb-3">
+                <% if current_user_has_attendance?(@highlighted_event) %>
+                  <!-- Calendrier en premier (action positive, un peu plus gros) -->
+                  <% if user_signed_in? %>
+                    <%= link_to ical_event_path(@highlighted_event, format: :ics), 
+                        class: 'btn btn-outline-primary', 
+                        title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
+                        data: { bs_toggle: 'tooltip', bs_placement: 'top' },
+                        aria: { label: 'Ajouter au calendrier' } do %>
+                      <i class="bi bi-calendar-event me-2"></i>Calendrier
+                    <% end %>
                   <% end %>
-                <% else %>
-                  <%= link_to new_user_session_path, 
-                      class: 'btn btn-outline-primary',
-                      aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
-                  <% end %>
-                <% end %>
-              </div>
-
-              <!-- Bouton primaire séparé et proéminent -->
-              <% if current_user_has_attendance?(@highlighted_event) %>
-                <div class="d-grid mb-3">
+                  <!-- Se désinscrire en second (action destructive, un peu plus petit) -->
                   <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, 
-                      class: 'btn btn-outline-secondary btn-lg', 
+                      class: 'btn btn-outline-secondary btn-sm', 
                       data: { turbo_confirm: 'Annuler votre inscription ?' },
                       aria: { label: 'Se désinscrire de cet événement' } do %>
                     <i class="bi bi-calendar-x me-2"></i>Se désinscrire
                   <% end %>
-                </div>
-              <% elsif policy(@highlighted_event).can_attend? && !@highlighted_event.full? %>
-                <div class="d-grid mb-3">
-                  <button type="button" 
-                          class="btn btn-liquid-primary btn-lg" 
-                          data-bs-toggle="modal" 
-                          data-bs-target="#confirmAttendModalIndex"
-                          aria-label="S'inscrire à cet événement">
-                    <i class="bi bi-calendar-plus me-2"></i>S'inscrire maintenant
-                  </button>
-                </div>
-              <% elsif @highlighted_event.full? %>
-                <div class="d-grid mb-3">
-                  <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-label="Événement complet">
-                    <i class="bi bi-x-circle me-2"></i>Complet
-                  </button>
-                </div>
-              <% end %>
+                <% elsif policy(@highlighted_event).can_attend? && !@highlighted_event.full? %>
+                  <div class="d-grid w-100">
+                    <button type="button" 
+                            class="btn btn-liquid-primary btn-lg" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#confirmAttendModalIndex"
+                            aria-label="S'inscrire à cet événement">
+                      <i class="bi bi-calendar-plus me-2"></i>S'inscrire maintenant
+                    </button>
+                  </div>
+                  <!-- Calendrier après S'inscrire -->
+                  <% if user_signed_in? %>
+                    <%= link_to ical_event_path(@highlighted_event, format: :ics), 
+                        class: 'btn btn-outline-primary', 
+                        title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
+                        data: { bs_toggle: 'tooltip', bs_placement: 'top' },
+                        aria: { label: 'Ajouter au calendrier' } do %>
+                      <i class="bi bi-calendar-event me-2"></i>Calendrier
+                    <% end %>
+                  <% end %>
+                <% elsif @highlighted_event.full? %>
+                  <div class="d-grid w-100">
+                    <button type="button" class="btn btn-outline-secondary btn-lg" disabled aria-label="Événement complet">
+                      <i class="bi bi-x-circle me-2"></i>Complet
+                    </button>
+                  </div>
+                  <!-- Calendrier même si complet -->
+                  <% if user_signed_in? %>
+                    <%= link_to ical_event_path(@highlighted_event, format: :ics), 
+                        class: 'btn btn-outline-primary', 
+                        title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
+                        data: { bs_toggle: 'tooltip', bs_placement: 'top' },
+                        aria: { label: 'Ajouter au calendrier' } do %>
+                      <i class="bi bi-calendar-event me-2"></i>Calendrier
+                    <% end %>
+                  <% end %>
+                <% end %>
+              </div>
 
               <!-- Autres boutons secondaires -->
               <div class="d-flex flex-wrap gap-2">
