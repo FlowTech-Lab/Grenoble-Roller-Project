@@ -280,6 +280,17 @@ if ! container_is_running "$CONTAINER_NAME"; then
     exit 1
 fi
 
+# 9.5. Nettoyage des logs Rails (garder seulement les 100 dernières lignes)
+log "🧹 Nettoyage des logs Rails..."
+if container_is_running "$CONTAINER_NAME"; then
+    docker exec "$CONTAINER_NAME" bash -c "
+        if [ -f /rails/log/development.log ]; then
+            tail -100 /rails/log/development.log > /tmp/dev.log.tmp && \
+            mv /tmp/dev.log.tmp /rails/log/development.log || true
+        fi
+    " 2>/dev/null || log_info "Nettoyage des logs ignoré (non critique)"
+fi
+
 # 10. Migrations - Vérification finale avant exécution
 log "🗄️ Préparation de la base de données..."
 # Double vérification juste avant l'exécution
