@@ -40,7 +40,7 @@ if [ "${RAILS_ENV}" == "development" ] && [ -f "package.json" ]; then
   if [ ! -f "app/assets/builds/fonts/bootstrap-icons.woff2" ]; then
     echo "Warning: Bootstrap Icons fonts not found, attempting to copy manually..."
     mkdir -p app/assets/builds/fonts
-    cp -r node_modules/bootstrap-icons/font/*.woff* app/assets/builds/fonts/ 2>/dev/null || echo "Warning: Could not copy Bootstrap Icons fonts"
+    cp -r node_modules/bootstrap-icons/font/fonts/*.woff* app/assets/builds/fonts/ 2>/dev/null || echo "Warning: Could not copy Bootstrap Icons fonts"
   fi
 fi
 
