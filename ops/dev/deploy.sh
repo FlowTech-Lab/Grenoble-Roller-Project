@@ -3,7 +3,7 @@
 # Usage: ./ops/dev/deploy.sh
 # Auto-configuré pour l'environnement DEV
 
-set -e
+set -euo pipefail  # Mode strict : erreur, variable non définie, pipefail
 
 # Configuration DEV
 ENV="dev"
@@ -37,6 +37,87 @@ log_error() {
 
 log_success() {
     echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')] SUCCESS: $1${NC}" | tee -a "$LOG_FILE"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[$(date '+%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}" | tee -a "$LOG_FILE"
+}
+
+log_info() {
+    echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] INFO: $1" | tee -a "$LOG_FILE"
+}
+
+# Fonction pour vérifier l'état d'un conteneur
+container_is_running() {
+    local container_name=$1
+    docker ps --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null || return 1
+}
+
+container_is_healthy() {
+    local container_name=$1
+    local health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container_name" 2>/dev/null || echo "none")
+    [ "$health_status" = "healthy" ]
+}
+
+# Fonction pour attendre qu'un conteneur soit running
+wait_for_container_running() {
+    local container_name=$1
+    local max_wait=${2:-60}  # 60 secondes par défaut
+    local wait_time=0
+    
+    log_info "Attente que le conteneur ${container_name} soit running..."
+    
+    while [ $wait_time -lt $max_wait ]; do
+        if container_is_running "$container_name"; then
+            log_success "Conteneur ${container_name} est running"
+            return 0
+        fi
+        sleep 2
+        wait_time=$((wait_time + 2))
+        log_info "Attente... (${wait_time}s/${max_wait}s)"
+    done
+    
+    log_error "Timeout : le conteneur ${container_name} n'est pas running après ${max_wait}s"
+    return 1
+}
+
+# Fonction pour attendre qu'un conteneur soit healthy
+wait_for_container_healthy() {
+    local container_name=$1
+    local max_wait=${2:-120}  # 120 secondes par défaut
+    local wait_time=0
+    
+    log_info "Attente que le conteneur ${container_name} soit healthy..."
+    
+    while [ $wait_time -lt $max_wait ]; do
+        if container_is_healthy "$container_name"; then
+            log_success "Conteneur ${container_name} est healthy"
+            return 0
+        fi
+        
+        # Vérifier si le conteneur est toujours running
+        if ! container_is_running "$container_name"; then
+            log_error "Le conteneur ${container_name} s'est arrêté"
+            return 1
+        fi
+        
+        sleep 5
+        wait_time=$((wait_time + 5))
+        log_info "Attente healthcheck... (${wait_time}s/${max_wait}s)"
+    done
+    
+    log_error "Timeout : le conteneur ${container_name} n'est pas healthy après ${max_wait}s"
+    return 1
+}
+
+# Fonction pour afficher les logs d'un conteneur en cas d'erreur
+show_container_logs() {
+    local container_name=$1
+    local lines=${2:-50}
+    
+    log_error "=== Dernières ${lines} lignes des logs de ${container_name} ==="
+    docker logs --tail "$lines" "$container_name" 2>&1 | tee -a "$LOG_FILE" || true
+    log_error "=== Fin des logs ==="
 }
 
 # Notification Slack (optionnel)
@@ -139,30 +220,57 @@ fi
 log "🔨 Build et redémarrage..."
 if ! docker compose -f "$COMPOSE_FILE" up -d --build; then
     log_error "Échec du build/restart"
-    log "⚠️ Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+    log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
     exit 1
 fi
 
-# 7. Attendre que le conteneur démarre
+# 7. Attendre que le conteneur web démarre
 log "⏳ Attente du démarrage du conteneur..."
-sleep 15
+if ! wait_for_container_running "$CONTAINER_NAME" 60; then
+    log_error "Le conteneur web n'a pas démarré"
+    show_container_logs "$CONTAINER_NAME"
+    log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+    exit 1
+fi
 
-# 8. Migrations
+# 8. Attendre que le conteneur soit healthy (si healthcheck configuré)
+if docker inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
+    if ! wait_for_container_healthy "$CONTAINER_NAME" 120; then
+        log_error "Le conteneur web n'est pas devenu healthy"
+        show_container_logs "$CONTAINER_NAME"
+        log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+        exit 1
+    fi
+else
+    log_info "Pas de healthcheck configuré, attente supplémentaire de 10s..."
+    sleep 10
+fi
+
+# 9. Vérifier que le conteneur est toujours running avant migrations
+if ! container_is_running "$CONTAINER_NAME"; then
+    log_error "Le conteneur web s'est arrêté avant les migrations"
+    show_container_logs "$CONTAINER_NAME"
+    log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+    exit 1
+fi
+
+# 10. Migrations
 log "🗄️ Exécution des migrations..."
 if ! docker exec "${CONTAINER_NAME}" bin/rails db:migrate; then
     log_error "Échec des migrations"
-    log "⚠️ Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+    show_container_logs "$CONTAINER_NAME"
+    log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
     exit 1
 fi
 
-# 9. Health check
-log "🏥 Health check (port: ${PORT})..."
+# 11. Health check HTTP (double vérification)
+log "🏥 Health check HTTP (port: ${PORT})..."
 MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     if curl -f "http://localhost:${PORT}/up" > /dev/null 2>&1; then
-        log_success "Health check réussi !"
+        log_success "Health check HTTP réussi !"
         log_success "✅ Déploiement ${ENV} terminé avec succès (commit: ${REMOTE:0:7})"
         log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         log "✅ DEPLOYMENT SUCCESS"
@@ -170,14 +278,24 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
         notify_slack "✅" "Deployment successful (commit: ${REMOTE:0:7})"
         exit 0
     fi
+    
+    # Vérifier que le conteneur est toujours running
+    if ! container_is_running "$CONTAINER_NAME"; then
+        log_error "Le conteneur web s'est arrêté pendant le health check"
+        show_container_logs "$CONTAINER_NAME"
+        log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+        exit 1
+    fi
+    
     RETRY_COUNT=$((RETRY_COUNT + 1))
-    log "⏳ Tentative $RETRY_COUNT/$MAX_RETRIES..."
+    log_info "Tentative health check HTTP $RETRY_COUNT/$MAX_RETRIES..."
     sleep 2
 done
 
-# 10. Pas de rollback en dev
-log_error "Health check échoué après $MAX_RETRIES tentatives"
-log "⚠️ Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
+# 12. Pas de rollback en dev
+log_error "Health check HTTP échoué après $MAX_RETRIES tentatives"
+show_container_logs "$CONTAINER_NAME"
+log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
 log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 log "❌ DEPLOYMENT FAILED - NO ROLLBACK (dev environment)"
 log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
