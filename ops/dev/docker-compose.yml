@@ -20,6 +20,7 @@ services:
       RAILS_ENV: development
     ports:
       - "3000:3000"
+    entrypoint: ["./bin/docker-entrypoint"]
     command: ["./bin/rails", "server", "-b", "0.0.0.0"]
     depends_on:
       db:
@@ -27,6 +28,7 @@ services:
     volumes:
       - ../../:/rails
       - grenoble-roller-dev-bundle:/rails/vendor/bundle
+      - grenoble-roller-dev-node-modules:/rails/node_modules
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -44,6 +46,7 @@ services:
     volumes:
       - ../../:/rails
       - grenoble-roller-dev-bundle:/rails/vendor/bundle
+      - grenoble-roller-dev-node-modules:/rails/node_modules
     command: ["npm", "run", "watch:css"]
     depends_on:
       - web
@@ -69,3 +72,4 @@ services:
 volumes:
   grenoble-roller-dev-data:
   grenoble-roller-dev-bundle:
+  grenoble-roller-dev-node-modules:

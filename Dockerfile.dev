@@ -40,14 +40,18 @@ RUN bundle install
 
 # Install node modules
 COPY package.json package-lock.json* ./
-RUN npm install || yarn install
+RUN npm install || yarn install && \
+    # Clean npm cache to reduce image size
+    npm cache clean --force || true
 
 # Copy application code
 COPY . .
 
 # Build CSS initially (cssbundling-rails will handle this)
 # This ensures CSS is compiled on first container start
-RUN npm run build:css || echo "Warning: CSS build failed, will be compiled on first request"
+RUN npm run build:css || echo "Warning: CSS build failed, will be compiled on first request" && \
+    # Clean npm cache after build
+    npm cache clean --force || true
 
 # Create user for development
 RUN groupadd --system --gid 1000 rails && \

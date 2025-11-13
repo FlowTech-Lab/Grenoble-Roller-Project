@@ -142,8 +142,9 @@ notify_slack() {
     local status=$1
     local message=$2
     
-    if [ -n "$SLACK_WEBHOOK" ]; then
-        curl -X POST "$SLACK_WEBHOOK" \
+    # Utiliser ${SLACK_WEBHOOK:-} pour éviter l'erreur "unbound variable" avec set -u
+    if [ -n "${SLACK_WEBHOOK:-}" ]; then
+        curl -X POST "${SLACK_WEBHOOK}" \
             -H 'Content-type: application/json' \
             -d "{\"text\":\"[${ENV}] ${status}: ${message}\"}" \
             --silent --show-error > /dev/null 2>&1 || true
@@ -277,6 +278,17 @@ if ! container_is_running "$CONTAINER_NAME"; then
     show_container_logs "$CONTAINER_NAME"
     log_warning "Rollback désactivé en dev - laissez le conteneur en erreur pour debug"
     exit 1
+fi
+
+# 9.5. Nettoyage des logs Rails (garder seulement les 100 dernières lignes)
+log "🧹 Nettoyage des logs Rails..."
+if container_is_running "$CONTAINER_NAME"; then
+    docker exec "$CONTAINER_NAME" bash -c "
+        if [ -f /rails/log/development.log ]; then
+            tail -100 /rails/log/development.log > /tmp/dev.log.tmp && \
+            mv /tmp/dev.log.tmp /rails/log/development.log || true
+        fi
+    " 2>/dev/null || log_info "Nettoyage des logs ignoré (non critique)"
 fi
 
 # 10. Migrations - Vérification finale avant exécution
