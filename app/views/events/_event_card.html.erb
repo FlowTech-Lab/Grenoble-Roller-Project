@@ -84,6 +84,16 @@
         <div class="action-row d-flex flex-wrap gap-2">
             <% if defined?(render_signup_button) && render_signup_button %>
               <% if current_user_has_attendance?(event) %>
+                <!-- Calendrier en premier (action positive) -->
+                <% if user_signed_in? %>
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <% end %>
+                <% end %>
+                <!-- Se désinscrire en second (action destructive) -->
                 <%= button_to cancel_attendance_event_path(event), method: :delete, 
                     class: "btn btn-outline-secondary btn-sm", 
                     data: { turbo_confirm: 'Annuler votre inscription ?' },
@@ -98,25 +108,44 @@
                         aria-label="S'inscrire à cet événement">
                   <i class="bi bi-calendar-plus me-1"></i>S'inscrire
                 </button>
+                <!-- Calendrier après S'inscrire -->
+                <% if user_signed_in? %>
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <% end %>
+                <% end %>
               <% elsif event.full? %>
                 <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Événement complet">
                   <i class="bi bi-x-circle me-1"></i>Complet
                 </button>
-              <% end %>
-            <% end %>
-
-            <% if user_signed_in? %>
-              <%= link_to ical_event_path(event, format: :ics), 
-                  class: "btn btn-outline-primary btn-sm", 
-                  title: 'Ajouter au calendrier',
-                  aria: { label: 'Ajouter au calendrier' } do %>
-                <i class="bi bi-calendar-event me-1"></i>Calendrier
+                <!-- Calendrier même si complet -->
+                <% if user_signed_in? %>
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <% end %>
+                <% end %>
               <% end %>
             <% else %>
-              <%= link_to new_user_session_path, 
-                  class: "btn btn-outline-primary btn-sm",
-                  aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-                <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+              <!-- Si pas de bouton d'inscription, afficher Calendrier/Connexion -->
+              <% if user_signed_in? %>
+                <%= link_to ical_event_path(event, format: :ics), 
+                    class: "btn btn-outline-primary btn-sm", 
+                    title: 'Ajouter au calendrier',
+                    aria: { label: 'Ajouter au calendrier' } do %>
+                  <i class="bi bi-calendar-event me-1"></i>Calendrier
+                <% end %>
+              <% else %>
+                <%= link_to new_user_session_path, 
+                    class: "btn btn-outline-primary btn-sm",
+                    aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+                <% end %>
               <% end %>
             <% end %>
 

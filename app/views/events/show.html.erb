@@ -209,6 +209,24 @@
 
       <!-- Zone 5 - Actions principales -->
       <div class="event-actions-sticky">
+        <!-- Boutons secondaires (Calendrier en premier) -->
+        <div class="secondary-actions mb-3">
+          <% if user_signed_in? %>
+            <%= link_to ical_event_path(@event, format: :ics), 
+                class: 'btn btn-outline-primary btn-sm', 
+                title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
+                aria: { label: 'Ajouter au calendrier' } do %>
+              <i class="bi bi-calendar-event me-1"></i>Calendrier
+            <% end %>
+          <% else %>
+            <%= link_to new_user_session_path, 
+                class: 'btn btn-outline-primary btn-sm',
+                aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
+              <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+            <% end %>
+          <% end %>
+        </div>
+
         <!-- Bouton primaire (grande, couleur) -->
         <div class="primary-action">
           <% if current_user_has_attendance?(@event) %>
@@ -233,22 +251,8 @@
           <% end %>
         </div>
 
-        <!-- Boutons secondaires (outline) -->
+        <!-- Autres boutons secondaires -->
         <div class="secondary-actions">
-          <% if user_signed_in? %>
-            <%= link_to ical_event_path(@event, format: :ics), 
-                class: 'btn btn-outline-primary btn-sm', 
-                title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
-                aria: { label: 'Ajouter au calendrier' } do %>
-              <i class="bi bi-calendar-event me-1"></i>Calendrier
-            <% end %>
-          <% else %>
-            <%= link_to new_user_session_path, 
-                class: 'btn btn-outline-primary btn-sm',
-                aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-              <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
-            <% end %>
-          <% end %>
 
           <%= link_to events_path, 
               class: 'btn btn-outline-secondary btn-sm',
@@ -260,24 +264,24 @@
         <!-- Boutons tertiaires (link) -->
         <% if policy(@event).edit? || policy(@event).destroy? %>
           <div class="tertiary-actions">
-            <% if policy(@event).edit? %>
-              <%= link_to edit_event_path(@event), 
-                  class: 'btn btn-link text-decoration-none btn-sm',
-                  aria: { label: 'Modifier cet événement' } do %>
-                <i class="bi bi-pencil-square me-1"></i>Modifier
-              <% end %>
+          <% if policy(@event).edit? %>
+            <%= link_to edit_event_path(@event), 
+                class: 'btn btn-link text-decoration-none btn-sm',
+                aria: { label: 'Modifier cet événement' } do %>
+              <i class="bi bi-pencil-square me-1"></i>Modifier
             <% end %>
+          <% end %>
 
-            <% if policy(@event).destroy? %>
-              <button type="button" 
-                      class="btn btn-link text-danger text-decoration-none btn-sm" 
-                      data-bs-toggle="modal" 
-                      data-bs-target="#confirmDeleteModalShow"
-                      aria-label="Supprimer cet événement">
-                <i class="bi bi-trash me-1"></i>Supprimer
-              </button>
-            <% end %>
-          </div>
+          <% if policy(@event).destroy? %>
+            <button type="button" 
+                    class="btn btn-link text-danger text-decoration-none btn-sm" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#confirmDeleteModalShow"
+                    aria-label="Supprimer cet événement">
+              <i class="bi bi-trash me-1"></i>Supprimer
+            </button>
+          <% end %>
+        </div>
         <% end %>
       </div>
     </div>
