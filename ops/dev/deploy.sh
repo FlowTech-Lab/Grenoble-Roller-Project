@@ -142,8 +142,9 @@ notify_slack() {
     local status=$1
     local message=$2
     
-    if [ -n "$SLACK_WEBHOOK" ]; then
-        curl -X POST "$SLACK_WEBHOOK" \
+    # Utiliser ${SLACK_WEBHOOK:-} pour éviter l'erreur "unbound variable" avec set -u
+    if [ -n "${SLACK_WEBHOOK:-}" ]; then
+        curl -X POST "${SLACK_WEBHOOK}" \
             -H 'Content-type: application/json' \
             -d "{\"text\":\"[${ENV}] ${status}: ${message}\"}" \
             --silent --show-error > /dev/null 2>&1 || true
