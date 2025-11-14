@@ -563,6 +563,56 @@ L'admin clique sur "Administration" dans le menu dropdown (visible si rôle ADMI
 
 ---
 
+### 📍 **Parcours 9 : Navigation via Footer (Tous Utilisateurs)**
+
+**Objectif** : Accéder aux pages d'information via le footer
+
+**Étapes** :
+1. Scroll vers le bas de la page
+2. Consultation du footer
+3. Clic sur un lien d'intérêt (FAQ, Contact, CGU, etc.)
+4. Arrivée sur la page demandée
+
+**Récit du parcours actuel** :
+L'utilisateur scroll vers le bas de n'importe quelle page et découvre un footer complet avec 4 colonnes : "À propos" (Qui sommes-nous, Équipe, Carrières, Blog), "Événements" (Parcourir, Catégories, Villes, Créer un événement), "Support" (FAQ, Contact, CGU, Confidentialité), "Suivez-nous" (réseaux sociaux + newsletter). Tous les liens pointent vers `#` (non fonctionnels). Clic sur un lien → rien ne se passe (reste sur la même page) ou scroll vers le haut. Newsletter : formulaire présent mais non fonctionnel (pas de traitement backend). Réseaux sociaux : tous pointent vers `#`.
+
+**Points forts actuels** :
+- ✅ Footer visuellement complet et professionnel
+- ✅ Structure claire avec 4 sections logiques
+- ✅ Design cohérent avec le reste de l'application
+- ✅ Responsive (colonnes adaptées mobile)
+
+**Points de friction identifiés** :
+- [ ] **⚠️ CRITIQUE : Tous les liens sont morts** : Tous les liens pointent vers `#`, créant une frustration majeure
+- [ ] **Newsletter non fonctionnelle** : Formulaire présent mais pas de traitement backend
+- [ ] **Réseaux sociaux non liés** : Tous pointent vers `#` au lieu des vraies URLs
+- [ ] **Pages manquantes** : Aucune page pour FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe, Carrières, Blog
+- [ ] **Liens redondants** : "Parcourir" et "Créer un événement" existent déjà dans la navbar mais pointent vers `#` dans le footer
+- [ ] **Pas de feedback** : Clic sur lien mort → aucun message d'erreur ou indication que la page n'existe pas
+
+**Améliorations identifiées** :
+
+#### 🟢 **Quick Wins (Impact Haut, Effort Faible) - URGENT**
+- [ ] **⚠️ URGENT : Masquer temporairement les sections non implémentées** : Utiliser `display: none` ou conditionnel Rails pour masquer les liens morts jusqu'à implémentation
+- [ ] **⚠️ URGENT : Corriger les liens existants** : "Parcourir" → `/events`, "Créer un événement" → `/events/new` (si organisateur)
+- [ ] **Désactiver newsletter temporairement** : Masquer le formulaire ou ajouter message "Bientôt disponible"
+
+#### 🟡 **Améliorations Importantes (Impact Haut, Effort Moyen)**
+- [ ] **Créer pages statiques essentielles** : FAQ, Contact (formulaire), CGU, Confidentialité (RGPD)
+- [ ] **Créer pages "À propos"** : Qui sommes-nous (rediriger vers `/association` ou créer section dédiée), Équipe (si applicable)
+- [ ] **Implémenter newsletter fonctionnelle** : Backend avec modèle `NewsletterSubscription`, intégration service email (SendGrid, Mailchimp)
+- [ ] **Lier réseaux sociaux** : Ajouter vraies URLs Facebook, Instagram, etc. dans variables d'environnement
+- [ ] **Créer page Blog** : Si blog prévu, créer structure de base (ou masquer le lien)
+- [ ] **Gérer liens "Carrières" et "Villes"** : Si non applicables, masquer ou créer pages placeholder
+
+#### 🔴 **Améliorations Futures (Impact Moyen, Effort Élevé)**
+- [ ] **Système de blog complet** : Si blog prévu, implémenter avec articles, catégories, commentaires
+- [ ] **Page Carrières** : Si recrutement prévu, créer page avec offres d'emploi
+- [ ] **Filtres "Catégories" et "Villes"** : Si filtres événements prévus, créer pages dédiées
+- [ ] **Newsletter avancée** : Segmentation, templates, analytics
+
+---
+
 ## 🔍 Analyse des Points de Friction
 
 ### **Critères d'Analyse**

@@ -10,20 +10,21 @@
 
 ## 📋 Vue d'Ensemble
 
-**8 parcours utilisateur analysés** avec identification de **points de friction** et **améliorations possibles**.
+**9 parcours utilisateur analysés** avec identification de **points de friction** et **améliorations possibles**.
 
 **Total des améliorations identifiées** :
-- 🟢 **Quick Wins** : 35 améliorations (Impact Haut, Effort Faible)
-- 🟡 **Améliorations Importantes** : 42 améliorations (Impact Haut, Effort Moyen)
-- 🔴 **Améliorations Futures** : 30 améliorations (Impact Moyen, Effort Élevé)
+- 🟢 **Quick Wins** : 38 améliorations (Impact Haut, Effort Faible) - **+3 URGENTES (liens footer)**
+- 🟡 **Améliorations Importantes** : 48 améliorations (Impact Haut, Effort Moyen) - **+6 (pages footer)**
+- 🔴 **Améliorations Futures** : 33 améliorations (Impact Moyen, Effort Élevé) - **+3 (blog, carrières)**
 
-**Total** : **107 améliorations** identifiées
+**Total** : **119 améliorations** identifiées (**+12 nouvelles** liées au footer)
 
 ---
 
 ## 🟢 QUICK WINS (Impact Haut, Effort Faible)
 
 ### **Parcours 1 : Découverte de l'Association**
+- [ ] ⚠️ **URGENT : Corriger les liens morts du footer** (Remplacer `#` par routes fonctionnelles ou masquer temporairement)
 - [ ] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus")
 - [ ] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer")
 - [ ] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés")
@@ -71,11 +72,19 @@
 - [ ] Vue "À valider" améliorée (Panel dédié sur dashboard avec liste + actions rapides)
 - [ ] Exports CSV basiques (Bouton "Exporter CSV" sur chaque resource - ActiveAdmin natif)
 
+### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
+- [ ] ⚠️ **URGENT : Masquer temporairement sections non implémentées** (Liens morts vers `#`)
+- [ ] ⚠️ **URGENT : Corriger liens existants** ("Parcourir" → `/events`, "Créer événement" → `/events/new`)
+- [ ] Désactiver newsletter temporairement (Masquer ou message "Bientôt disponible")
+
 ---
 
 ## 🟡 AMÉLIORATIONS IMPORTANTES (Impact Haut, Effort Moyen)
 
 ### **Parcours 1 : Découverte de l'Association**
+- [ ] Créer les pages manquantes du footer (Pages statiques : FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe)
+- [ ] Implémenter newsletter fonctionnelle (Formulaire footer + backend avec service email)
+- [ ] Lier réseaux sociaux (Ajouter vraies URLs dans variables d'environnement)
 - [ ] Section "Pourquoi nous rejoindre ?" (3-4 cards avec valeurs + icônes)
 - [ ] Section "Derniers événements" (Carrousel ou grille avec 3-4 derniers événements passés)
 - [ ] Section "Tarifs d'adhésion" (Tableau simple avec 3 tarifs + CTA)
@@ -137,6 +146,12 @@
 - [ ] Exports avancés (Exports CSV personnalisés avec colonnes choisies, exports PDF)
 - [ ] Filtres sauvegardés (Permettre de sauvegarder des filtres fréquents)
 
+### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
+- [ ] Créer pages statiques essentielles (FAQ, Contact avec formulaire, CGU, Confidentialité RGPD)
+- [ ] Créer pages "À propos" (Qui sommes-nous → `/association` ou section dédiée, Équipe si applicable)
+- [ ] Gérer liens "Carrières" et "Villes" (Masquer si non applicables ou créer pages placeholder)
+- [ ] Créer page Blog (Si blog prévu, créer structure de base ou masquer le lien)
+
 ---
 
 ## 🔴 AMÉLIORATIONS FUTURES (Impact Moyen, Effort Élevé)
@@ -192,6 +207,12 @@
 - [ ] Rapports automatiques (Génération automatique de rapports par email)
 - [ ] Audit trail visuel (Voir l'historique des modifications avec qui/quand)
 
+### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
+- [ ] Système de blog complet (Si blog prévu : articles, catégories, commentaires)
+- [ ] Page Carrières (Si recrutement prévu : offres d'emploi)
+- [ ] Filtres "Catégories" et "Villes" (Si filtres événements prévus : pages dédiées)
+- [ ] Newsletter avancée (Segmentation, templates, analytics)
+
 ---
 
 ## 📊 Statistiques par Parcours
@@ -206,51 +227,56 @@
 | **Parcours 6** : Création Événement | 4 | 7 | 5 | **16** |
 | **Parcours 7** : Achat Boutique | 5 | 7 | 6 | **18** |
 | **Parcours 8** : Administration | 4 | 6 | 5 | **15** |
-| **TOTAL** | **35** | **42** | **30** | **107** |
+| **Parcours 9** : Navigation Footer | 3 | 4 | 3 | **10** |
+| **TOTAL** | **38** | **48** | **33** | **119** |
 
 ---
 
-## 🎯 Priorisation Globale (Top 10 Quick Wins)
+## 🎯 Priorisation Globale (Top 11 Quick Wins)
 
-### **Top 10 des Quick Wins à implémenter en priorité** :
+### **Top 11 des Quick Wins à implémenter en priorité** :
 
-1. **Dashboard admin avec statistiques** (Parcours 8)
+1. **⚠️ URGENT : Corriger liens morts du footer** (Parcours 9)
+   - Impact : Très haut (frustration majeure utilisateurs)
+   - Effort : Très faible (masquer sections ou corriger liens existants)
+
+2. **Dashboard admin avec statistiques** (Parcours 8)
    - Impact : Très haut (admin voit l'état de l'app en un coup d'œil)
    - Effort : Faible (cards simples avec compteurs)
 
-2. **Section "À propos" sur homepage** (Parcours 1)
+3. **Section "À propos" sur homepage** (Parcours 1)
    - Impact : Haut (visiteurs comprennent mieux l'association)
    - Effort : Faible (2-3 lignes + lien)
 
-3. **Astérisques champs obligatoires** (Parcours 2)
+4. **Astérisques champs obligatoires** (Parcours 2)
    - Impact : Haut (clarté immédiate pour utilisateurs)
    - Effort : Très faible (ajout `*` dans labels)
 
-4. **Séparer événements à venir/passés** (Parcours 5)
+5. **Séparer événements à venir/passés** (Parcours 5)
    - Impact : Haut (organisation claire de "Mes sorties")
    - Effort : Faible (2 sections avec filtres)
 
-5. **Filtres par catégories boutique** (Parcours 7)
+6. **Filtres par catégories boutique** (Parcours 7)
    - Impact : Haut (navigation facilitée dans le catalogue)
    - Effort : Faible (sidebar ou tabs avec catégories existantes)
 
-6. **Résumé dans modal inscription** (Parcours 4)
+7. **Résumé dans modal inscription** (Parcours 4)
    - Impact : Haut (rassure l'utilisateur avant confirmation)
    - Effort : Faible (afficher date/heure/lieu dans modal)
 
-7. **Message de bienvenue après inscription** (Parcours 2)
+8. **Message de bienvenue après inscription** (Parcours 2)
    - Impact : Haut (première impression positive)
    - Effort : Faible (toast/alerte avec message personnalisé)
 
-8. **Badge "Nouveau" sur événements** (Parcours 3)
+9. **Badge "Nouveau" sur événements** (Parcours 3)
    - Impact : Moyen-Haut (mise en avant des nouveautés)
    - Effort : Très faible (badge conditionnel)
 
-9. **Actions rapides dans liste Events admin** (Parcours 8)
+10. **Actions rapides dans liste Events admin** (Parcours 8)
    - Impact : Très haut (gain de temps pour modération)
    - Effort : Faible (boutons "Publier"/"Refuser" dans colonne Actions)
 
-10. **Sauvegarde automatique formulaire événement** (Parcours 6)
+11. **Sauvegarde automatique formulaire événement** (Parcours 6)
     - Impact : Haut (évite perte de données)
     - Effort : Faible (localStorage JavaScript)
 
@@ -259,19 +285,19 @@
 ## 📈 Matrice Impact vs Effort (Synthèse)
 
 ### **🟢 Zone Quick Wins (Priorité 1)**
-**35 améliorations** - À implémenter en premier
+**38 améliorations** - À implémenter en premier (**+3 URGENTES footer**)
 - Impact : Haut à Très Haut
 - Effort : Faible
 - ROI : Très élevé
 
 ### **🟡 Zone Importantes (Priorité 2)**
-**42 améliorations** - À planifier après Quick Wins
+**48 améliorations** - À planifier après Quick Wins (**+6 pages footer**)
 - Impact : Haut
 - Effort : Moyen
 - ROI : Élevé
 
 ### **🔴 Zone Futures (Priorité 3)**
-**30 améliorations** - À considérer selon besoins
+**33 améliorations** - À considérer selon besoins (**+3 blog/carrières**)
 - Impact : Moyen
 - Effort : Élevé
 - ROI : Variable
@@ -284,11 +310,11 @@
 **Objectif** : Implémenter les 10-15 Quick Wins les plus impactants
 
 **Sprint 1 (Semaine 1)** :
+- ⚠️ **URGENT : Corriger liens morts footer** (Masquer sections ou corriger liens existants)
 - Dashboard admin avec statistiques
 - Section "À propos" homepage
 - Astérisques champs obligatoires
 - Message de bienvenue après inscription
-- Badge "Nouveau" événements
 
 **Sprint 2 (Semaine 2)** :
 - Séparer événements à venir/passés
