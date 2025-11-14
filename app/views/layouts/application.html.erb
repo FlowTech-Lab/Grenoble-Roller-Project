@@ -21,15 +21,15 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <%= render 'layouts/navbar' %>
 
-    <main>
+    <main class="flex-grow-1">
       <%= render 'layouts/flash' %>
       <%= yield %>
     </main>
 
-    <%= render 'layouts/footer-simple' %>
+    <%= render 'layouts/footer' %>
 
     <!-- Theme toggle script -->
     <script>
