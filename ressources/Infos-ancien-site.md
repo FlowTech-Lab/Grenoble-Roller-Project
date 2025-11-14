@@ -296,3 +296,35 @@ Envoyer une copie à votre adresse
 Captcha *
 
 Envoyer
+
+
+Reunion 14/11
+
+
+
+Afficher distance dans evenement
+Gestion parcours / création / double boucle
+Evenement passé limité par date. (pas afficher 50 000 truc)
+Initiation. dans evenement ou séparé ?
+
+Boutique gérer stock 
+
+Evenement caritatif ?
+Adhésion.
+
+Besoin :
+Smtp - Mail (mailer)
+acces sandbox helloasso
+Vps - SSH
+inverse calandrier et se desinscrire.
+
+Vue agenda.
+
+Reseau sociaux Liens
+CGU / CGV 
+Confidentialité / 
+
+Possibilité de commenter et recommenter. 
+Commenter Gens inscrits / evenement passé
+
+Evenement - Association - Partenariats - 
