@@ -18,6 +18,8 @@ services:
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: grenoble_roller_development
       RAILS_ENV: development
+      # Enable polling for file watcher (required for Docker volumes on Linux)
+      LISTEN_GEM_USE_POLLING: "true"
     ports:
       - "3000:3000"
     entrypoint: ["./bin/docker-entrypoint"]

@@ -74,6 +74,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  
+  # File watcher for auto-reload in development (required for Docker volumes)
+  gem "listen", "~> 3.8"
 end
 
 group :test do
