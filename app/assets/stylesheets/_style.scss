@@ -30,6 +30,9 @@
     --liquid-glass-border: rgba(255,255,255,0.2);
     --liquid-blur: blur(12px);
     
+    /* Card borders - Mode clair (noir) */
+    --card-border-color: rgba(0, 0, 0, 0.15); /* Noir avec transparence pour mode clair */
+    
     /* Organic gradients */
     --gradient-liquid-primary: linear-gradient(135deg, #1e8dff 0%, #1ea0ff 100%);
     --gradient-liquid-success: linear-gradient(135deg, var(--gr-success) 0%, #0d6322 100%);
@@ -58,6 +61,9 @@
     --shadow-hover: 0 2px 4px rgba(255, 255, 255, 0.15);
     --shadow-hover-lg: 0 4px 8px rgba(255, 255, 255, 0.2);
     --shadow-hover-card: 0 6px 12px rgba(255, 255, 255, 0.15);
+    
+    /* Card borders - Mode sombre (blanc) */
+    --card-border-color: rgba(255, 255, 255, 0.3); /* Blanc avec transparence pour mode sombre */
     
     /* Footer dual-theme colors (WCAG 2.1 AA compliant) */
     --gr-muted-dark: #a0a0a0;      /* Ratio 6.66:1 - conforme ✅ */
@@ -177,12 +183,24 @@
     border: 1px solid rgba(90, 169, 250, 0.2) !important;
   }
   
+  /* Cards borders - Appliqué à toutes les cards (Bootstrap + personnalisées) */
+  .card,
+  .card-liquid,
+  .card-event {
+    border: 1px solid var(--card-border-color) !important;
+  }
+  
+  .card .card-header,
+  .card-liquid .card-header {
+    border-bottom: 1px solid var(--card-border-color) !important;
+  }
+  
   /* Liquid cards with glass morphism */
   .card-liquid {
     background: var(--liquid-glass-bg);
     backdrop-filter: var(--liquid-blur);
     -webkit-backdrop-filter: var(--liquid-blur);
-    border: 1px solid var(--liquid-glass-border);
+    border: 1px solid var(--card-border-color);
     box-shadow: var(--bs-box-shadow);
     transition: var(--transition-liquid) !important;
   }
@@ -193,7 +211,7 @@
   
   .card-liquid .card-header {
     background: rgba(255, 255, 255, 0.4);
-    border-bottom: 1px solid var(--liquid-glass-border);
+    border-bottom: 1px solid var(--card-border-color);
   }
   
   .card-liquid-primary .card-header {
@@ -597,9 +615,9 @@
     display: inline-block;
   }
   
-  /* Footer mode sombre avec couleurs corrigées */
+  /* Footer mode sombre avec couleurs corrigées - Garde le glassmorphism */
   [data-bs-theme="dark"] .footer-grenoble-roller {
-    background: #0a0a0a; /* Near-black, pas pure black */
+    /* Garde le glassmorphism, ne change que les couleurs de texte */
     color: var(--gr-text-dark);
   }
   
