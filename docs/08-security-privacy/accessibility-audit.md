@@ -77,10 +77,11 @@ tags: ["accessibility", "a11y", "wcag", "audit", "sprint-0"]
 - [ ] **Contraste** : ⏳ À vérifier - Labels/texte/erreurs
 
 ### Pages Événements
-- [ ] **Navigation clavier** : Tester navigation dans les cards
-- [ ] **Images** : Vérifier alt text sur toutes les images
-- [ ] **Boutons** : Vérifier labels descriptifs
-- [ ] **Modals** : Vérifier focus trap et fermeture Esc
+- [x] **Navigation clavier** : ✅ **OK** - Navigation clavier fonctionnelle
+- [x] **Images** : ✅ **OK** - Toutes les images ont des `alt` text descriptifs (`alt: @event.title`)
+- [x] **Boutons** : ✅ **OK** - Tous les boutons ont des `aria-label` descriptifs
+- [x] **Modals** : ✅ **OK** - Modals ont `aria-labelledby`, `aria-hidden`, bouton fermeture avec `aria-label`
+- [x] **Icônes décoratives** : ✅ **CORRIGÉ** - Toutes les icônes décoratives ont maintenant `aria-hidden="true"` dans `_event_card.html.erb`, `index.html.erb` et `show.html.erb`
 
 ### Boutique
 - [ ] **Filtres** : Vérifier navigation clavier dans filtres
