@@ -58,6 +58,11 @@
     --shadow-hover: 0 2px 4px rgba(255, 255, 255, 0.15);
     --shadow-hover-lg: 0 4px 8px rgba(255, 255, 255, 0.2);
     --shadow-hover-card: 0 6px 12px rgba(255, 255, 255, 0.15);
+    
+    /* Footer dual-theme colors (WCAG 2.1 AA compliant) */
+    --gr-muted-dark: #a0a0a0;      /* Ratio 6.66:1 - conforme ✅ */
+    --gr-primary-dark: #4d94ff;    /* Ratio 5.80:1 - conforme ✅ */
+    --gr-text-dark: #e5e5e5;       /* Texte principal */
   }
   
   /* === LIQUID BODY BACKGROUND === */
@@ -577,9 +582,14 @@
     margin-bottom: 0.5rem;
   }
   
+  /* Corrections mode clair footer - meilleur contraste WCAG 2.1 AA */
+  .footer-grenoble-roller .text-muted {
+    color: #5a6268; /* Plus foncé que #6c757d, meilleur contraste */
+  }
+  
   .footer-grenoble-roller .footer-links a,
   .footer-grenoble-roller .footer-link {
-    color: inherit;
+    color: #0056b3; /* Bleu plus foncé pour meilleur contraste (au lieu de #007bff) */
     text-decoration: underline;
     text-underline-offset: 2px;
     text-decoration-color: rgba(0, 0, 0, 0.3);
@@ -587,10 +597,27 @@
     display: inline-block;
   }
   
-  /* Mode sombre - ajustement du soulignement */
+  /* Footer mode sombre avec couleurs corrigées */
+  [data-bs-theme="dark"] .footer-grenoble-roller {
+    background: #0a0a0a; /* Near-black, pas pure black */
+    color: var(--gr-text-dark);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .text-muted {
+    color: var(--gr-muted-dark) !important;
+  }
+  
+  /* Mode sombre - ajustement du soulignement et couleurs */
   [data-bs-theme="dark"] .footer-grenoble-roller .footer-links a,
   [data-bs-theme="dark"] .footer-grenoble-roller .footer-link {
+    color: var(--gr-text-dark);
     text-decoration-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-link:hover,
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-link:focus-visible {
+    color: var(--gr-primary-dark);
+    outline-color: var(--gr-primary-dark);
   }
   
   .footer-grenoble-roller .footer-links a:hover,
