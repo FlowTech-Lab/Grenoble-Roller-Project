@@ -1,7 +1,12 @@
 <% if resource.errors.any? %>
-  <div class="alert alert-liquid-danger rounded-liquid mb-4" id="error_explanation" data-turbo-cache="false">
+  <div class="alert alert-liquid-danger rounded-liquid mb-4" 
+       id="error_explanation" 
+       data-turbo-cache="false"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true">
     <h6 class="mb-2">
-      <i class="bi bi-exclamation-triangle me-2"></i>
+      <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
       <%= I18n.t("errors.messages.not_saved",
                  count: resource.errors.count,
                  resource: resource.class.model_name.human.downcase) %>

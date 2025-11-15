@@ -12,16 +12,21 @@
           <%= form_for(resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }) do |f| %>
             <%= render "devise/shared/error_messages", resource: resource %>
             
+            <!-- Légende champs obligatoires -->
+            <p class="form-required-legend">
+              <span class="required-marker">*</span> Champs obligatoires
+            </p>
+            
             <!-- Email -->
             <div class="mb-3">
-              <%= f.label :email, "Email", class: "form-label" %>
-              <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control form-control-liquid", placeholder: "votre@email.com", required: true %>
+              <%= f.label :email, "Email", class: "form-label required" %>
+              <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control form-control-liquid", placeholder: "votre@email.com", required: true, aria: { required: true } %>
             </div>
             
             <!-- Password -->
             <div class="mb-3">
-              <%= f.label :password, "Mot de passe", class: "form-label" %>
-              <%= f.password_field :password, autocomplete: "current-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true %>
+              <%= f.label :password, "Mot de passe", class: "form-label required" %>
+              <%= f.password_field :password, autocomplete: "current-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true, aria: { required: true } %>
             </div>
             
             <!-- Remember me -->

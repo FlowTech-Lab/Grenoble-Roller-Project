@@ -8,6 +8,11 @@ Rails.application.configure do
 
   # Do not eager load code on boot.
   config.eager_load = false
+  
+  # Configure file watcher for Docker volumes
+  # Use polling mode for better compatibility with Docker volumes on Linux
+  # This is set via environment variable in docker-compose.yml
+  # If auto-reload still doesn't work, ensure LISTEN_GEM_USE_POLLING=true is set
 
   # Show full error reports.
   config.consider_all_requests_local = true

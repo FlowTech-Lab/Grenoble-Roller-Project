@@ -10,10 +10,13 @@
           À propos
         </h5>
         <ul class="footer-links list-unstyled">
-          <li><a href="#">Qui sommes-nous</a></li>
-          <li><a href="#">Équipe</a></li>
-          <li><a href="#">Carrières</a></li>
-          <li><a href="#">Blog</a></li>
+          <li><%= link_to "Qui sommes-nous", association_path %></li>
+          <%# TODO: Créer pages Équipe, Carrières, Blog quand nécessaire %>
+          <% if false %>
+            <li><a href="#">Équipe</a></li>
+            <li><a href="#">Carrières</a></li>
+            <li><a href="#">Blog</a></li>
+          <% end %>
         </ul>
       </div>
       
@@ -24,10 +27,15 @@
           Événements
         </h5>
         <ul class="footer-links list-unstyled">
-          <li><a href="#">Parcourir</a></li>
-          <li><a href="#">Catégories</a></li>
-          <li><a href="#">Villes</a></li>
-          <li><a href="#">Créer un événement</a></li>
+          <li><%= link_to "Parcourir", events_path %></li>
+          <%# TODO: Créer pages Catégories et Villes quand filtres implémentés %>
+          <% if false %>
+            <li><a href="#">Catégories</a></li>
+            <li><a href="#">Villes</a></li>
+          <% end %>
+          <% if user_signed_in? && policy(Event).create? %>
+            <li><%= link_to "Créer un événement", new_event_path %></li>
+          <% end %>
         </ul>
       </div>
       
@@ -38,10 +46,14 @@
           Support
         </h5>
         <ul class="footer-links list-unstyled">
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">CGU</a></li>
-          <li><a href="#">Confidentialité</a></li>
+          <%# TODO: Créer pages FAQ, Contact, CGU, Confidentialité %>
+          <li class="text-muted small">Support bientôt disponible</li>
+          <% if false %>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">CGU</a></li>
+            <li><a href="#">Confidentialité</a></li>
+          <% end %>
         </ul>
       </div>
       
@@ -52,33 +64,51 @@
           Suivez-nous
         </h5>
         <div class="footer-social d-flex gap-3 flex-wrap">
-          <a href="#" class="social-link" aria-label="Facebook">
+          <a href="https://www.facebook.com/GrenobleRoller/" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             class="social-link" 
+             aria-label="Facebook">
             <i class="bi bi-facebook"></i>
           </a>
-          <a href="#" class="social-link" aria-label="Twitter">
-            <i class="bi bi-twitter"></i>
-          </a>
-          <a href="#" class="social-link" aria-label="Instagram">
+          <a href="https://www.instagram.com/grenoble_roller/" 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             class="social-link" 
+             aria-label="Instagram">
             <i class="bi bi-instagram"></i>
           </a>
-          <a href="#" class="social-link" aria-label="TikTok">
-            <i class="bi bi-tiktok"></i>
-          </a>
-          <a href="#" class="social-link" aria-label="YouTube">
-            <i class="bi bi-youtube"></i>
-          </a>
+          <%# Réseaux sociaux non utilisés masqués %>
+          <% if false %>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <i class="bi bi-twitter"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="TikTok">
+              <i class="bi bi-tiktok"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="YouTube">
+              <i class="bi bi-youtube"></i>
+            </a>
+          <% end %>
         </div>
         
         <!-- Newsletter -->
         <div class="mt-4">
           <p class="small text-muted mb-2">Restez informé</p>
-          <form class="d-flex gap-2">
-            <input type="email" class="form-control form-control-sm" 
-                    placeholder="Email" aria-label="Email">
-            <button class="btn btn-liquid-primary btn-sm" type="submit">
-              <i class="bi bi-arrow-right"></i>
-            </button>
-          </form>
+          <%# TODO: Implémenter backend newsletter (modèle NewsletterSubscription + service email) %>
+          <div class="alert alert-info small mb-0" role="alert">
+            <i class="bi bi-info-circle me-1"></i>
+            Newsletter bientôt disponible
+          </div>
+          <% if false %>
+            <form class="d-flex gap-2">
+              <input type="email" class="form-control form-control-sm" 
+                      placeholder="Email" aria-label="Email">
+              <button class="btn btn-liquid-primary btn-sm" type="submit">
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </form>
+          <% end %>
         </div>
       </div>
     </div>
