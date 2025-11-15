@@ -9,4 +9,12 @@ class PagesController < ApplicationController
   end
 
   def association; end
+
+  def about
+    # Statistiques pour la page "À propos"
+    @users_count = User.count
+    @events_count = Event.published.count
+    @upcoming_events_count = Event.published.upcoming.count
+    @attendances_count = Attendance.count
+  end
 end
