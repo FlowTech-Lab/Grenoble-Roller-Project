@@ -125,8 +125,8 @@ tags: ["accessibility", "a11y", "wcag", "audit", "sprint-0"]
 
 ### 🟡 Important (Impact élevé) - À corriger cette semaine
 1. [x] **Icônes navbar : aria-hidden manquant** - ✅ **CORRIGÉ** - Ajouté `aria-hidden="true"` sur toutes les icônes décoratives
-2. [ ] **Messages d'erreur : Annonces ARIA** - Ajouter `role="alert"` sur messages d'erreur
-3. [ ] **Navigation clavier** - Tester et corriger si nécessaire
+2. [x] **Messages d'erreur : Annonces ARIA** - ✅ **CORRIGÉ** - Ajouté `role="alert"`, `aria-live="assertive"`, `aria-atomic="true"` sur messages d'erreur Devise
+3. [x] **Navigation clavier** - ✅ **VALIDÉ** - Tests manuels effectués, navigation clavier fonctionnelle
 
 ### 🟢 Mineur (Améliorations) - À planifier
 1. [ ] **Contraste insuffisant** (si détecté lors de l'audit)
@@ -138,7 +138,7 @@ tags: ["accessibility", "a11y", "wcag", "audit", "sprint-0"]
 ## 📝 Notes d'Audit
 
 ### Tests Manuels Effectués
-- [ ] Navigation clavier complète (Tab, Shift+Tab, Enter, Esc)
+- [x] Navigation clavier complète (Tab, Shift+Tab, Enter, Esc) - ✅ **VALIDÉ**
 - [ ] Test lecteur d'écran (NVDA) sur parcours principaux
 - [ ] Vérification contrastes (WebAIM Contrast Checker)
 - [ ] Test responsive mobile (zoom 200%, tailles tactiles)
