@@ -2827,20 +2827,94 @@
      Texte noir/gris foncé pour contraste AAA
      ==================================== */
   
-  /* Section Stats : Glassmorphism avec accent bleu subtil */
+  /* ========================================
+     SECTION STATS : AMÉLIORATIONS COMPLÈTES
+     ======================================== */
+  
+  /* Section Stats : Glassmorphism avec overlay léger */
   .section-stats {
-    /* Fond proche de section-alt avec très légère teinte bleue */
+    /* Mode clair : overlay glassmorphism léger */
     background: linear-gradient(135deg,
-      rgba(248, 250, 252, 0.95) 0%,    /* Blanc cassé très léger */
-      rgba(240, 245, 250, 0.98) 50%,   /* Légère teinte bleue */
+      rgba(248, 250, 252, 0.95) 0%,
+      rgba(240, 245, 250, 0.98) 50%,
       rgba(248, 250, 252, 0.95) 100%);
-    backdrop-filter: blur(12px) saturate(105%);
-    -webkit-backdrop-filter: blur(12px) saturate(105%);
-    color: #212529;  /* Texte noir pour contraste AAA (21:1) */
+    backdrop-filter: blur(20px) saturate(105%);
+    -webkit-backdrop-filter: blur(20px) saturate(105%);
+    color: #212529;
     box-shadow: 
       0 2px 8px rgba(0, 0, 0, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -1px 0 rgba(0, 123, 255, 0.05); /* Accent bleu subtil en bas */
+      inset 0 0 100px rgba(0, 123, 255, 0.03); /* Overlay glassmorphism léger */
+    
+    /* Padding responsive */
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    
+    @media (min-width: 992px) {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+  }
+  
+  /* Gradient séparateur décoratif */
+  .stats-gradient-separator {
+    width: 100px;
+    height: 2px;
+    margin: 0 auto;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      currentColor 50%,
+      transparent 100%
+    );
+    opacity: 0.3;
+  }
+  
+  /* Items de stats */
+  .stat-item {
+    transition: transform 0.3s ease;
+    cursor: default;
+  }
+  
+  .stat-item:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Wrapper icône avec cercle glassmorphism */
+  .stat-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s ease;
+  }
+  
+  .stat-item:hover .stat-icon-wrapper {
+    transform: scale(1.1);
+  }
+  
+  /* Icônes */
+  .stat-icon {
+    font-size: 2.5rem;
+    color: var(--gr-primary);
+    transition: transform 0.3s ease;
+  }
+  
+  .stat-item:hover .stat-icon {
+    transform: scale(1.1);
+  }
+  
+  /* Labels */
+  .stat-label {
+    font-size: 1rem;
+    line-height: 1.5;
   }
   
   /* Titres en noir/gris foncé */
@@ -2850,8 +2924,27 @@
   }
   
   /* Nombres en bleu pour visibilité et différenciation */
-  .section-stats .display-4.fw-bold {
+  .section-stats .display-3.fw-bold,
+  .section-stats .display-4.fw-bold,
+  .section-stats .display-5.fw-bold {
     color: var(--gr-primary);  /* #007bff - contraste 4.5:1+ */
+  }
+  
+  /* Responsive mobile : icônes et chiffres */
+  @media (max-width: 767px) {
+    .stat-icon-wrapper {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .stat-icon {
+      font-size: 1.875rem; /* 30px */
+    }
+    
+    .section-stats .display-3.fw-bold,
+    .section-stats .display-4.fw-bold {
+      font-size: 2.5rem; /* display-5 size */
+    }
   }
   
   /* Texte secondaire en gris foncé - override Bootstrap text-light */
@@ -2942,15 +3035,27 @@
     backdrop-filter: blur(50px) saturate(130%);
     -webkit-backdrop-filter: blur(50px) saturate(130%);
     color: #e5e5e5;  /* Texte clair */
-    border-top: 1px solid rgba(77, 148, 255, 0.15);
-    border-bottom: 1px solid rgba(77, 148, 255, 0.08);
+    border-top: 1px solid rgba(77, 148, 255, 0.1);
+    border-bottom: 1px solid rgba(77, 148, 255, 0.1);
     box-shadow: 
       0 4px 24px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(77, 148, 255, 0.1);
   }
   
+  /* Mode sombre : cercles glassmorphism */
+  [data-bs-theme="dark"] .stat-icon-wrapper {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Mode sombre : gradient séparateur */
+  [data-bs-theme="dark"] .stats-gradient-separator {
+    opacity: 0.5;
+  }
+  
   /* Texte blanc en mode sombre - override mode clair */
   [data-bs-theme="dark"] .section-stats h2,
+  [data-bs-theme="dark"] .section-stats .display-3,
+  [data-bs-theme="dark"] .section-stats .display-3.fw-bold,
   [data-bs-theme="dark"] .section-stats .display-4,
   [data-bs-theme="dark"] .section-stats .display-4.fw-bold,
   [data-bs-theme="dark"] .section-stats p,

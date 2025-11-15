@@ -1,6 +1,7 @@
 <% content_for :title, "À propos - Grenoble Roller" %>
 <% content_for :description, "Découvrez Grenoble Roller, association loi 1901 depuis plus de 15 ans. Notre histoire, mission, valeurs, équipe et activités pour promouvoir le roller à Grenoble." %>
 
+
 <!-- ========================================
      SECTION HERO : VIDÉO + TEXTE + CTA (FUSION)
      ======================================== -->
@@ -517,7 +518,7 @@
 <!-- ========================================
      SECTION CHIFFRES CLÉS
      ======================================== -->
-<section class="py-5 section-stats">
+<section class="section-stats" id="stats-section">
   <div class="container">
     <div class="row mb-5">
       <div class="col-12 text-center">
@@ -525,42 +526,118 @@
           <i class="bi bi-graph-up-arrow me-3" aria-hidden="true"></i>
           Grenoble Roller en Chiffres
         </h2>
-        <hr class="w-50 mx-auto">
+        <div class="stats-gradient-separator"></div>
       </div>
     </div>
 
-    <div class="row g-4 text-center">
-      <div class="col-6 col-md-3">
-        <div class="p-4">
-          <i class="bi bi-people fs-1 mb-3 d-block" aria-hidden="true"></i>
-          <div class="display-4 fw-bold mb-2"><%= @users_count %></div>
-          <p class="mb-0 text-light">Membres actifs</p>
+    <ul class="row g-4 text-center list-unstyled mb-0" aria-label="Statistiques">
+      <li class="col-6 col-md-3">
+        <div class="stat-item p-4">
+          <div class="stat-icon-wrapper">
+            <i class="bi bi-people stat-icon" aria-hidden="true"></i>
+          </div>
+          <div class="display-3 fw-bold mb-2 stat-number" data-target="<%= @users_count %>">0</div>
+          <p class="mb-0 text-light stat-label">Membres actifs</p>
         </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="p-4">
-          <i class="bi bi-calendar-event fs-1 mb-3 d-block" aria-hidden="true"></i>
-          <div class="display-4 fw-bold mb-2"><%= @events_count %></div>
-          <p class="mb-0 text-light">Événements organisés</p>
+      </li>
+      <li class="col-6 col-md-3">
+        <div class="stat-item p-4">
+          <div class="stat-icon-wrapper">
+            <i class="bi bi-calendar-event stat-icon" aria-hidden="true"></i>
+          </div>
+          <div class="display-4 fw-bold mb-2 stat-number" data-target="<%= @events_count %>">0</div>
+          <p class="mb-0 text-light stat-label">Événements organisés</p>
         </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="p-4">
-          <i class="bi bi-calendar-check fs-1 mb-3 d-block" aria-hidden="true"></i>
-          <div class="display-4 fw-bold mb-2"><%= @upcoming_events_count %></div>
-          <p class="mb-0 text-light">Événements à venir</p>
+      </li>
+      <li class="col-6 col-md-3">
+        <div class="stat-item p-4">
+          <div class="stat-icon-wrapper">
+            <i class="bi bi-calendar-check stat-icon" aria-hidden="true"></i>
+          </div>
+          <div class="display-4 fw-bold mb-2 stat-number" data-target="<%= @upcoming_events_count %>">0</div>
+          <p class="mb-0 text-light stat-label">Événements à venir</p>
         </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="p-4">
-          <i class="bi bi-person-check fs-1 mb-3 d-block" aria-hidden="true"></i>
-          <div class="display-4 fw-bold mb-2"><%= @attendances_count %></div>
-          <p class="mb-0 text-light">Inscriptions totales</p>
+      </li>
+      <li class="col-6 col-md-3">
+        <div class="stat-item p-4">
+          <div class="stat-icon-wrapper">
+            <i class="bi bi-person-check stat-icon" aria-hidden="true"></i>
+          </div>
+          <div class="display-4 fw-bold mb-2 stat-number" data-target="<%= @attendances_count %>">0</div>
+          <p class="mb-0 text-light stat-label">Inscriptions totales</p>
         </div>
-      </div>
-    </div>
+      </li>
+    </ul>
   </div>
 </section>
+
+<script>
+  // Stats Counter Animation with Intersection Observer
+  document.addEventListener('DOMContentLoaded', () => {
+    const statsSection = document.getElementById('stats-section');
+    if (!statsSection) return;
+
+    const statNumbers = statsSection.querySelectorAll('.stat-number');
+    if (statNumbers.length === 0) return;
+
+    // Animation function
+    function animateValue(element, start, end, duration) {
+      const startTime = performance.now();
+      const isInteger = Number.isInteger(end);
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Ease-out easing function
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        let current = start + (end - start) * easeOut;
+        
+        if (isInteger) {
+          current = Math.floor(current);
+        } else {
+          current = parseFloat(current.toFixed(1));
+        }
+        
+        element.textContent = current;
+        
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          element.textContent = end; // Ensure final value is exact
+        }
+      }
+      
+      requestAnimationFrame(update);
+    }
+
+    // Intersection Observer
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.3 // Trigger when 30% of section is visible
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          statNumbers.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'), 10);
+            if (target && stat.textContent === '0') {
+              animateValue(stat, 0, target, 1500); // 1.5s duration
+            }
+          });
+          
+          // Unobserve after animation starts
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    observer.observe(statsSection);
+  });
+</script>
 
 <!-- ========================================
      SECTION ÉQUIPE + BÉNÉVOLAT
