@@ -12,10 +12,15 @@
           <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }) do |f| %>
             <%= render "devise/shared/error_messages", resource: resource %>
 
+            <!-- Légende champs obligatoires -->
+            <p class="form-required-legend">
+              <span class="required-marker">*</span> Champs obligatoires
+            </p>
+
             <!-- First Name -->
             <div class="mb-3">
-              <%= f.label :first_name, "Prénom", class: "form-label" %>
-              <%= f.text_field :first_name, class: "form-control form-control-liquid", placeholder: "Jean", required: true %>
+              <%= f.label :first_name, "Prénom", class: "form-label required" %>
+              <%= f.text_field :first_name, class: "form-control form-control-liquid", placeholder: "Jean", required: true, aria: { required: true } %>
             </div>
             
             <!-- Last Name -->
@@ -26,8 +31,8 @@
             
             <!-- Email -->
             <div class="mb-3">
-              <%= f.label :email, "Email", class: "form-label" %>
-              <%= f.email_field :email, autocomplete: "email", class: "form-control form-control-liquid", placeholder: "votre@email.com", required: true %>
+              <%= f.label :email, "Email", class: "form-label required" %>
+              <%= f.email_field :email, autocomplete: "email", class: "form-control form-control-liquid", placeholder: "votre@email.com", required: true, aria: { required: true } %>
             </div>
             
             <!-- Phone -->
@@ -38,8 +43,8 @@
             
             <!-- Password -->
             <div class="mb-3">
-              <%= f.label :password, "Mot de passe", class: "form-label" %>
-              <%= f.password_field :password, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true %>
+              <%= f.label :password, "Mot de passe", class: "form-label required" %>
+              <%= f.password_field :password, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true, aria: { required: true } %>
               <% if @minimum_password_length %>
                 <div class="form-text">Au moins <%= @minimum_password_length %> caractères</div>
               <% end %>
@@ -47,8 +52,8 @@
             
             <!-- Confirm Password -->
             <div class="mb-3">
-              <%= f.label :password_confirmation, "Confirmer le mot de passe", class: "form-label" %>
-              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true %>
+              <%= f.label :password_confirmation, "Confirmer le mot de passe", class: "form-label required" %>
+              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true, aria: { required: true } %>
             </div>
             
             <!-- Bio -->

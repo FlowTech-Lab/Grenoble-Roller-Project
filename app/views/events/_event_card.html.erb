@@ -6,7 +6,7 @@
                     loading: 'lazy',
                     class: 'w-100 h-100 object-fit-cover') %>
       <span class="card-event-date badge <%= (defined?(past) && past) || event.past? ? 'badge-liquid-secondary' : 'badge-liquid-primary' %>">
-        <i class="bi bi-calendar3 me-1"></i>
+        <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
         <%= l event.start_at, format: :day_month, locale: :fr %>
       </span>
     </div>
@@ -20,19 +20,19 @@
 
         <div class="card-event-info mb-3 text-body-secondary small">
           <p class="mb-1">
-            <i class="bi bi-calendar-week text-liquid-primary me-2"></i>
+            <i class="bi bi-calendar-week text-liquid-primary me-2" aria-hidden="true"></i>
             <%= l event.start_at, format: :event_long, locale: :fr %>
           </p>
           <p class="mb-1">
-            <i class="bi bi-geo-alt text-liquid-primary me-2"></i>
+            <i class="bi bi-geo-alt text-liquid-primary me-2" aria-hidden="true"></i>
             <%= truncate(event.location_text, length: 35) %>
           </p>
           <p class="mb-1">
-            <i class="bi bi-signpost-2 text-liquid-primary me-2"></i>
+            <i class="bi bi-signpost-2 text-liquid-primary me-2" aria-hidden="true"></i>
             <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
           </p>
           <p class="mb-0">
-            <i class="bi bi-clock text-liquid-primary me-2"></i>
+            <i class="bi bi-clock text-liquid-primary me-2" aria-hidden="true"></i>
             <%= event.duration_min %> min
           </p>
         </div>
@@ -43,38 +43,38 @@
           <!-- Badge Annulé (prioritaire) -->
           <% if event.canceled? %>
             <span class="badge bg-danger">
-              <i class="bi bi-x-octagon me-1"></i>Annulé
+              <i class="bi bi-x-octagon me-1" aria-hidden="true"></i>Annulé
             </span>
           <% end %>
           
           <span class="badge bg-primary">
-            <i class="bi bi-people-fill me-1"></i>
+            <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
             <%= pluralize(event.attendances_count, "inscrit") %>
           </span>
           
           <% unless event.unlimited? %>
             <% if event.full? %>
               <span class="badge bg-danger">
-                <i class="bi bi-x-circle me-1"></i>Complet
+                <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
               </span>
             <% elsif event.remaining_spots <= 5 %>
               <span class="badge bg-warning text-dark">
-                <i class="bi bi-exclamation-triangle me-1"></i><%= pluralize(event.remaining_spots, "place disponible") %>
+                <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i><%= pluralize(event.remaining_spots, "place disponible") %>
               </span>
             <% else %>
               <span class="badge bg-success">
-                <i class="bi bi-check-circle me-1"></i><%= pluralize(event.remaining_spots, "place disponible") %>
+                <i class="bi bi-check-circle me-1" aria-hidden="true"></i><%= pluralize(event.remaining_spots, "place disponible") %>
               </span>
             <% end %>
           <% else %>
             <span class="badge bg-info">
-              <i class="bi bi-infinity me-1"></i>Illimité
+              <i class="bi bi-infinity me-1" aria-hidden="true"></i>Illimité
             </span>
           <% end %>
           
           <% if defined?(render_signup_button) && render_signup_button && user_signed_in? && current_user_has_attendance?(event) %>
             <span class="badge bg-success">
-              <i class="bi bi-check-circle me-1"></i>Vous êtes inscrit(e)
+              <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Vous êtes inscrit(e)
             </span>
           <% end %>
         </div>
@@ -90,7 +90,7 @@
                       class: "btn btn-outline-primary btn-sm", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
                   <% end %>
                 <% end %>
                 <!-- Se désinscrire en second (action destructive) -->
@@ -98,7 +98,7 @@
                     class: "btn btn-outline-secondary btn-sm", 
                     data: { turbo_confirm: 'Annuler votre inscription ?' },
                     aria: { label: 'Se désinscrire de cet événement' } do %>
-                  <i class="bi bi-calendar-x me-1"></i>Se désinscrire
+                  <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
                 <% end %>
               <% elsif policy(event).can_attend? && !event.full? %>
                 <button type="button" 
@@ -106,7 +106,7 @@
                         data-bs-toggle="modal" 
                         data-bs-target="#confirmAttendModal<%= event.id %>"
                         aria-label="S'inscrire à cet événement">
-                  <i class="bi bi-calendar-plus me-1"></i>S'inscrire
+                  <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>S'inscrire
                 </button>
                 <!-- Calendrier après S'inscrire -->
                 <% if user_signed_in? %>
@@ -114,12 +114,12 @@
                       class: "btn btn-outline-primary btn-sm", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
                   <% end %>
                 <% end %>
               <% elsif event.full? %>
                 <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Événement complet">
-                  <i class="bi bi-x-circle me-1"></i>Complet
+                  <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
                 </button>
                 <!-- Calendrier même si complet -->
                 <% if user_signed_in? %>
@@ -127,7 +127,7 @@
                       class: "btn btn-outline-primary btn-sm", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-1"></i>Calendrier
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
                   <% end %>
                 <% end %>
               <% end %>
@@ -144,18 +144,18 @@
                 <%= link_to new_user_session_path, 
                     class: "btn btn-outline-primary btn-sm",
                     aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-                  <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+                  <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Connexion
                 <% end %>
               <% end %>
             <% end %>
 
             <%= link_to(event_path(event), class: "btn btn-outline-secondary btn-sm", aria: { label: "Voir les détails de #{event.title}" }) do %>
-              <i class="bi bi-eye me-1"></i>Voir plus
+              <i class="bi bi-eye me-1" aria-hidden="true"></i>Voir plus
             <% end %>
 
             <% if policy(event).edit? %>
               <%= link_to(edit_event_path(event), class: "btn btn-link text-decoration-none btn-sm", aria: { label: 'Modifier cet événement' }) do %>
-                <i class="bi bi-pencil-square me-1"></i>Modifier
+                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Modifier
               <% end %>
             <% end %>
 
@@ -165,7 +165,7 @@
                       data-bs-toggle="modal" 
                       data-bs-target="#confirmDeleteModal<%= event.id %>"
                       aria-label="Supprimer cet événement">
-                <i class="bi bi-trash me-1"></i>Supprimer
+                <i class="bi bi-trash me-1" aria-hidden="true"></i>Supprimer
               </button>
             <% end %>
           </div>
@@ -180,7 +180,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="confirmAttendModalLabel<%= event.id %>">
-              <i class="bi bi-calendar-check me-2"></i>Confirmer votre inscription
+              <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>Confirmer votre inscription
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
           </div>
@@ -193,13 +193,13 @@
               <div class="form-check mb-3">
                 <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
                 <label class="form-check-label" for="wants_reminder">
-                  <i class="bi bi-bell me-1"></i>
+                  <i class="bi bi-bell me-1" aria-hidden="true"></i>
                   Recevoir un rappel par email la veille à 19h
                 </label>
               </div>
               
               <p class="mb-0 text-muted small">
-                <i class="bi bi-info-circle me-1"></i>
+                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
                 Vous recevrez une confirmation par email et pourrez annuler votre inscription à tout moment.
               </p>
             </div>
@@ -230,7 +230,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
             <%= button_to event_path(event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
-              <i class="bi bi-trash me-2"></i>Oui, supprimer
+              <i class="bi bi-trash me-2" aria-hidden="true"></i>Oui, supprimer
             <% end %>
           </div>
         </div>

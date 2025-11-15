@@ -21,10 +21,15 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="d-flex flex-column min-vh-100">
+    <!-- Skip link - WCAG 2.4.1 Level A -->
+    <a href="#main-content" class="skip-link">
+      Aller au contenu principal
+    </a>
+
     <%= render 'layouts/navbar' %>
 
-    <main>
+    <main id="main-content" class="flex-grow-1" tabindex="-1">
       <%= render 'layouts/flash' %>
       <%= yield %>
     </main>
@@ -40,13 +45,27 @@
         
         html.setAttribute('data-bs-theme', newTheme);
         
-        const icons = ['theme-icon', 'theme-icon-fixed'];
-        icons.forEach(id => {
-          const icon = document.getElementById(id);
-          if (icon) {
-            icon.className = newTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-          }
-        });
+        // Mettre à jour les icônes
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+        const toggle = document.getElementById('theme-toggle');
+        
+        if (sunIcon && moonIcon) {
+          const isDark = newTheme === 'dark';
+          sunIcon.classList.toggle('d-none', !isDark);
+          moonIcon.classList.toggle('d-none', isDark);
+        }
+        
+        // Mettre à jour ARIA
+        if (toggle) {
+          const isDark = newTheme === 'dark';
+          toggle.setAttribute('aria-pressed', isDark);
+          toggle.setAttribute('aria-label', 
+            isDark 
+              ? 'Basculer vers le thème clair' 
+              : 'Basculer vers le thème sombre'
+          );
+        }
         
         localStorage.setItem('theme', newTheme);
       }
@@ -58,13 +77,27 @@
         
         html.setAttribute('data-bs-theme', savedTheme);
         
-        const icons = ['theme-icon', 'theme-icon-fixed'];
-        icons.forEach(id => {
-          const icon = document.getElementById(id);
-          if (icon) {
-            icon.className = savedTheme === 'light' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-          }
-        });
+        // Initialiser les icônes
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+        const toggle = document.getElementById('theme-toggle');
+        
+        if (sunIcon && moonIcon) {
+          const isDark = savedTheme === 'dark';
+          sunIcon.classList.toggle('d-none', !isDark);
+          moonIcon.classList.toggle('d-none', isDark);
+        }
+        
+        // Initialiser ARIA
+        if (toggle) {
+          const isDark = savedTheme === 'dark';
+          toggle.setAttribute('aria-pressed', isDark);
+          toggle.setAttribute('aria-label', 
+            isDark 
+              ? 'Basculer vers le thème clair' 
+              : 'Basculer vers le thème sombre'
+          );
+        }
       });
 
       // Cart count update function

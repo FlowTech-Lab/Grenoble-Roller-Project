@@ -1,10 +1,22 @@
-# 🚀 GUIDE SHAPE UP - Méthodologie et Configuration Trello
-## Référence complète de la méthodologie Shape Up et son implémentation avec Trello
+---
+title: "Shape Up Methodology"
+status: "active"
+version: "1.0"
+created: "2025-01-20"
+updated: "2025-11-14"
+authors: ["FlowTech"]
+tags: ["shape-up", "methodology", "agile", "trello"]
+---
 
-> **📋 Pour le planning détaillé du projet** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md)
+# Shape Up Methodology
 
-Ce document explique la **méthodologie Shape Up** et comment la mettre en pratique avec **Trello**.  
-Pour les détails de planning, sprints et état d'avancement, consultez le fil conducteur principal.
+**Complete reference** for Shape Up methodology and its implementation with Trello.
+
+> **Related Documents** :
+> - Current cycle planning : [`building/cycle-01-building-log.md`](building/cycle-01-building-log.md)
+
+This document explains the **Shape Up methodology** and how to implement it with **Trello**.  
+For detailed planning, sprints and progress tracking, see the main cycle log.
 
 ---
 
@@ -76,7 +88,7 @@ Pour les détails de planning, sprints et état d'avancement, consultez le fil c
 **Objectif : Livrer une feature shippable**
 
 #### Exemple de Structure Building (Référence)
-> **📋 Pour le planning détaillé** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) sections "PHASE 2 - ÉVÉNEMENTS"
+> **📋 Pour le planning détaillé** : Voir [`building/cycle-01-building-log.md`](../building/cycle-01-building-log.md) sections "PHASE 2 - ÉVÉNEMENTS"
 
 **Semaine 1-2** : Get One Piece Done (CRUD Événements, Inscriptions, Calendrier)  
 **Semaine 3** : Map Scopes (ActiveAdmin, Permissions, Notifications, ressources ecommerce secondaires + batch/exports)  
@@ -214,7 +226,7 @@ Pour les détails de planning, sprints et état d'avancement, consultez le fil c
 
 ### Exemples de Cartes par Phase
 
-> **📋 Pour les cartes détaillées et l'état d'avancement** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md)
+> **📋 Pour les cartes détaillées et l'état d'avancement** : Voir [`building/cycle-01-building-log.md`](../building/cycle-01-building-log.md)
 
 #### **PHASE 1 : SHAPING** (2-3 jours)
 Exemples de cartes :
@@ -230,7 +242,7 @@ Exemples de cartes :
 - Décision finale
 
 #### **PHASE 3 : BUILDING** (3 semaines)
-> **📋 Pour le détail des cartes et l'état** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) sections "PHASE 2 - ÉVÉNEMENTS"
+> **📋 Pour le détail des cartes et l'état** : Voir [`building/cycle-01-building-log.md`](../building/cycle-01-building-log.md) sections "PHASE 2 - ÉVÉNEMENTS"
 
 #### **PHASE 4 : COOLDOWN** (1 semaine)
 Exemples de cartes :
@@ -276,7 +288,7 @@ Downhill (Descente) = Exécution, certitude
 ```
 
 ### Exemple d'Utilisation
-> **📋 Pour l'état d'avancement actuel** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) section "SUIVI D'AVANCEMENT"
+> **📋 Pour l'état d'avancement actuel** : Voir [`building/cycle-01-building-log.md`](../building/cycle-01-building-log.md) section "SUIVI D'AVANCEMENT"
 
 **Principe** : Suivre la position sur la montée/descente pour chaque scope
 - **Uphill** = Découverte, incertitude (OK en début)
@@ -312,7 +324,7 @@ Downhill (Descente) = Exécution, certitude
 ## 🎯 CRITÈRES DE "DONE"
 
 ### Critères Généraux de "Done"
-> **📋 Pour les critères spécifiques au projet** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md)
+> **📋 Pour les critères spécifiques au projet** : Voir [`building/cycle-01-building-log.md`](../building/cycle-01-building-log.md)
 
 Une feature est "Done" quand :
 - ✅ Tests passent (coverage >70%)
@@ -338,7 +350,7 @@ Une feature est "Done" quand :
 - **Hill Chart** : Position montée/descente
 
 ### Exemple de Répartition
-> **📋 Pour l'état d'avancement actuel** : Voir [`FIL_CONDUCTEUR_PROJET.md`](FIL_CONDUCTEUR_PROJET.md) section "SUIVI D'AVANCEMENT"
+> **📋 Pour l'état d'avancement actuel** : Voir [`building/cycle-01-building-log.md`](../building/cycle-01-building-log.md) section "SUIVI D'AVANCEMENT"
 
 **Principe** : Suivre les points par semaine et ajuster le scope si nécessaire
 

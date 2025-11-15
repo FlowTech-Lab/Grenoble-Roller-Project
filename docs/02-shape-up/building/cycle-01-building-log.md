@@ -1,11 +1,25 @@
-# 🎯 FIL CONDUCTEUR - Projet Site Web Grenoble Roller
-## Rails 8 + Bootstrap - Plan de développement structuré
+---
+title: "Cycle 01 - Building Phase Log"
+status: "active"
+version: "1.0"
+created: "2025-01-20"
+updated: "2025-11-14"
+authors: ["FlowTech"]
+tags: ["shape-up", "building", "cycle-01", "roadmap"]
+---
 
-> **📋 Document unique Phase 2** : Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) - Planning, checklist et pièges à éviter  
-> **📋 Pour la méthodologie Shape Up et configuration Trello** : Voir [`GUIDE_SHAPE_UP.md`](GUIDE_SHAPE_UP.md)  
-> **📋 Pour le guide technique d'implémentation** : Voir [`GUIDE_IMPLEMENTATION.md`](GUIDE_IMPLEMENTATION.md)
+# Cycle 01 - Building Phase Log
 
-**Document principal** : Ce fichier contient le planning général, les sprints, l'état d'avancement et toutes les informations de suivi du projet.
+**Project** : Grenoble Roller Community Platform  
+**Technology Stack** : Rails 8.1.1 + Bootstrap 5.3.2  
+**Methodology** : Shape Up (6 weeks cycle)
+
+> **Related Documents** :
+> - Phase 2 detailed plan : [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md)
+> - Shape Up methodology : [`../shape-up-methodology.md`](../shape-up-methodology.md)
+> - Technical implementation guide : [`../technical-implementation-guide.md`](../technical-implementation-guide.md)
+
+This document contains the overall planning, sprints, progress tracking and project status.
 
 ---
 
@@ -259,7 +273,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 #### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)**
 
-> **📋 Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé complet**
+> **📋 Voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md) pour le plan détaillé complet**
 
 **Résumé** :
 - ✅ **Pré-requis** : Modèles Phase 2 créés et stables
@@ -268,7 +282,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - 🔜 **Jour 12-13** : Customisation ActiveAdmin
 - 🔜 **Jour 14-15** : Tests admin + finalisation
 
-**⚠️ IMPORTANT** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir `PLAN_PHASE2.md`)
+**⚠️ IMPORTANT** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md))
 
 #### 📋 **Sprint 6 : Initiation & Finalisation** (Phase 2 - Week 3)
 - [ ] Module initiation
@@ -505,7 +519,7 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - [✅] E-commerce CRUD (current state)
 
 #### ✅ Phase 2 Révisée (Semaines 3-4) - EN COURS
-> **📋 Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé**
+> **📋 Voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md) pour le plan détaillé**
 
 - [x] **EVENT models** (Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog) ✅
 - [x] **Migrations appliquées** (7 migrations Phase 2) ✅
@@ -599,7 +613,7 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 
 #### 📋 **SÉQUENCE DÉTAILLÉE - Phase 2**
 
-> **📋 Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé jour par jour avec checklist complète et pièges à éviter**
+> **📋 Voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md) pour le plan détaillé jour par jour avec checklist complète et pièges à éviter**
 
 **Résumé rapide** :
 - ✅ **Jour 1-2** : Modèles et migrations Phase 2 créés et appliqués
@@ -610,7 +624,7 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 - 🔜 **À programmer (Cooldown ou phase suivante)** : Exposer `payments`, `product_variants`, `option_types/values` dans ActiveAdmin + batch actions / exports avancés
 - 🔜 **Jour 14-15** : Tests admin + finalisation
 
-**⚠️ PIÈGE CRITIQUE** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir détails dans `PLAN_PHASE2.md`)
+**⚠️ PIÈGE CRITIQUE** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir détails dans [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md))
 
 | 5-6 | Building (S3) | Tests (>70%), Performance, Sécurité (Brakeman), Déploiement prod | Coverage OK, audit sécurité, déploiement finalisé | 🔜 À VENIR |
 
@@ -638,7 +652,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 11. 🔜 Exposition `Role` dans ActiveAdmin + policy Pundit
 12. 🔜 Tests admin + permissions (Jour 14-15)
 
-**⚠️ IMPORTANT** : Voir [`PLAN_PHASE2.md`](PLAN_PHASE2.md) pour le plan détaillé Phase 2 avec les pièges à éviter
+**⚠️ IMPORTANT** : Voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md) pour le plan détaillé Phase 2 avec les pièges à éviter
 
 ---
 

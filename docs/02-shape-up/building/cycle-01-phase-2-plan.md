@@ -1,9 +1,17 @@
-# 🎯 PLAN PHASE 2 - Événements & Admin
+---
+title: "Cycle 01 - Phase 2 Plan: Events & Admin"
+status: "completed"
+version: "1.0"
+created: "2025-01-20"
+updated: "2025-11-14"
+authors: ["FlowTech"]
+tags: ["shape-up", "building", "cycle-01", "phase-2", "events", "admin"]
+---
 
-**Document unique** : Planning, checklist et pièges à éviter pour Phase 2  
-**Date** : Jan 2025  
-**Dernière mise à jour** : Jan 2025  
-**État** : Tests complets (166+ exemples) ✅ → Homepage avec prochain événement ✅ → Optimisations DB & Features ✅ → Job de rappel la veille à 19h ✅ → Phase 2 DEV terminée ✅ → Tests Capybara reportés en PRÉPROD 📅
+# Cycle 01 - Phase 2 Plan: Events & Admin
+
+**Document Type** : Detailed planning, checklist and pitfalls for Phase 2  
+**Status** : ✅ Completed - Tests (166+ examples) → Homepage with featured event → DB optimizations → Reminder job → Phase 2 DEV completed → Capybara tests deferred to PREPROD
 
 ---
 
@@ -702,7 +710,7 @@ production:
 - **Schema DB** : `ressources/db/dbdiagram.md`
 - **Documentation modèles** : `docs/03-architecture/domain/models.md`
 - **Migrations Phase 2** : `docs/04-rails/phase2-migrations-models.md`
-- **Guide technique** : `GUIDE_IMPLEMENTATION.md`
+- **Guide technique** : [`../technical-implementation-guide.md`](../technical-implementation-guide.md)
 
 ---
 
