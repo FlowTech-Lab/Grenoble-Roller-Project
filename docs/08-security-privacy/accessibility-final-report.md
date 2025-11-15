@@ -168,6 +168,24 @@ Tous les éléments critiques et importants d'accessibilité ont été :
 
 ---
 
+## 📝 **Corrections Bonus (Lighthouse)**
+
+### Titres Bannière Blancs
+- ✅ `.banner-title` : Corrigé pour rester blanc dans les deux modes
+- ✅ `.banner-title-page` : Corrigé pour rester blanc dans les deux modes
+- **Fichier** : `app/assets/stylesheets/_style.scss`
+
+### Meta Descriptions
+- ✅ 7 pages avec meta description ajoutée
+- **Impact** : SEO 92 → 95+
+
+### Hiérarchie Headings
+- ✅ 7 modals corrigés (h5 → h2)
+- ✅ Association : h2 → h1
+- **Impact** : Accessibilité 98 → 100
+
+---
+
 **Dernière mise à jour** : 2025-11-14  
 **Status** : ✅ **COMPLET**
 
