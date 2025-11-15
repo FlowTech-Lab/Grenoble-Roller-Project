@@ -1,8 +1,11 @@
+<% content_for :title, "Boutique - Grenoble Roller" %>
+<% content_for :description, "Boutique officielle Grenoble Roller. Découvrez nos produits et accessoires Roller. Commandez en ligne et recevez vos articles rapidement !" %>
+
 <div class="container-fluid py-4">
   <div class="row mb-4">
     <div class="col-12 text-center">
       <h1 class="display-5 text-liquid-primary-white mb-2">
-        <i class="bi bi-bag-heart me-2"></i>Boutique
+        <i class="bi bi-bag-heart me-2" aria-hidden="true"></i>Boutique
       </h1>
     </div>
   </div>
@@ -80,7 +83,7 @@
                       <% end %>
                       
                       <% if size_options.empty? && color_options.empty? %>
-                        <select class="form-select form-select-sm" disabled>
+                        <select class="form-select form-select-sm" disabled aria-label="Taille unique">
                           <option selected>Taille unique</option>
                         </select>
                       <% end %>
@@ -102,7 +105,7 @@
                   <%= form_with url: add_item_cart_path, method: :post, class: "d-inline", data: { turbo: false } do |f| %>
                     <% if single_variant && single_variant.stock_qty > 0 %>
                       <%= hidden_field_tag :variant_id, single_variant.id, id: "variant-id-#{product.id}" %>
-                      <%= hidden_field_tag :quantity, 1 %>
+                      <%= hidden_field_tag :quantity, 1, id: "quantity-#{product.id}" %>
                       <button type="submit" 
                               class="btn btn-liquid-primary btn-add" 
                               aria-label="Ajouter <%= product.name %> au panier"
@@ -112,7 +115,7 @@
                       </button>
                     <% else %>
                       <%= hidden_field_tag :variant_id, "", id: "variant-id-#{product.id}", required: true %>
-                      <%= hidden_field_tag :quantity, 1 %>
+                      <%= hidden_field_tag :quantity, 1, id: "quantity-#{product.id}" %>
                       <button type="submit" 
                               class="btn btn-liquid-primary btn-add" 
                               aria-label="Ajouter <%= product.name %> au panier"

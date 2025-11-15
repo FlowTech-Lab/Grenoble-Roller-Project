@@ -354,7 +354,7 @@
   
   /* Liquid badges */
   .badge-liquid-primary {
-    background: #5aa9fa;
+    background: #2978c9; /* Corrigé pour contraste 4.5:1 (était #5aa9fa) */
     color: white;
     border: none;
   }
@@ -363,6 +363,12 @@
     background: #6c757d;
     color: white;
     border: none;
+  }
+  
+  /* Override Bootstrap bg-info pour contraste WCAG AA */
+  .badge.bg-info {
+    background-color: #00819b !important; /* Corrigé pour contraste 4.5:1 (Bootstrap default: #0dcaf0) */
+    color: white;
   }
   
   .badge-liquid-success {
@@ -980,7 +986,7 @@
     font-size: 3.5rem;
     font-weight: 700;
     line-height: 1.2;
-    color: var(--gr-primary-dark);
+    color: white; /* Blanc dans les deux modes (clair et sombre) */
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
@@ -1027,7 +1033,7 @@
   .banner-title-page {
     font-size: 2.5rem;
     font-weight: 800;
-    color: var(--gr-primary-dark);
+    color: white; /* Blanc dans les deux modes (clair et sombre) */
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     margin-bottom: 0.5rem;
   }

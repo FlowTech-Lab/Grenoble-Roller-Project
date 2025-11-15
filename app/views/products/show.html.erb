@@ -1,3 +1,6 @@
+<% content_for :title, "#{@product.name} - Boutique Grenoble Roller" %>
+<% content_for :description, "#{@product.name} - #{@product.description.presence || 'Produit disponible dans la boutique Grenoble Roller'}. Commandez en ligne !" %>
+
 <div class="container-fluid py-4">
   <div class="row mb-4">
     <div class="col-12">
@@ -21,7 +24,7 @@
               <%= image_tag @product.image_url, alt: @product.name, loading: "eager", decoding: "async", style: "object-fit: contain;" %>
             <% else %>
               <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                <i class="bi bi-image fs-1 text-muted"></i>
+                <i class="bi bi-image fs-1 text-muted" aria-hidden="true"></i>
               </div>
             <% end %>
           </div>
@@ -46,7 +49,7 @@
             <h1 class="product-title mb-2"><%= @product.name %></h1>
             <% if @product.category %>
               <p class="text-muted mb-0">
-                <i class="bi bi-tag me-1"></i><%= @product.category.name %>
+                <i class="bi bi-tag me-1" aria-hidden="true"></i><%= @product.category.name %>
               </p>
             <% end %>
           </div>
@@ -132,11 +135,11 @@
                 <label for="quantity_field" class="form-label mb-0">Quantité:</label>
                 <div class="qty-control">
                   <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQtyDetail()" do %>
-                    <i class="bi bi-dash"></i>
+                    <i class="bi bi-dash" aria-hidden="true"></i>
                   <% end %>
                   <%= number_field_tag :quantity, 1, min: 1, max: (single_variant&.stock_qty.to_i if single_variant), class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "quantity_field", style: "width: 3em;" %>
                   <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, onclick: "incrementQtyDetail()" do %>
-                    <i class="bi bi-plus"></i>
+                    <i class="bi bi-plus" aria-hidden="true"></i>
                   <% end %>
                 </div>
               </div>
@@ -152,7 +155,7 @@
 
             <div class="mt-3 text-center">
               <%= link_to cart_path, class: "btn btn-outline-primary btn-sm" do %>
-                <i class="bi bi-basket me-1"></i>Voir le panier
+                <i class="bi bi-basket me-1" aria-hidden="true"></i>Voir le panier
               <% end %>
             </div>
           </div>

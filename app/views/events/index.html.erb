@@ -1,4 +1,5 @@
 <% content_for :title, 'Événements Grenoble Roller' %>
+<% content_for :description, "Découvrez tous les événements Roller à Grenoble. Randonnées urbaines, cours d'initiation, événements à thème. Rejoignez la communauté et participez aux sorties !" %>
 
 <section class="banner-page mb-4">
   <div class="banner-overlay"></div>
@@ -196,9 +197,9 @@
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="confirmAttendModalIndexLabel">
+                <h2 class="modal-title h5" id="confirmAttendModalIndexLabel">
                   <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>Confirmer votre inscription
-                </h5>
+                </h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
               </div>
               <%= form_with url: attend_event_path(@highlighted_event), method: :post, data: { turbo: false } do |f| %>

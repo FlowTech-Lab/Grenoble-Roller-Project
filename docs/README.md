@@ -11,7 +11,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - 05-testing: stratégie de tests, RSpec, données de test, de bout en bout
 - 06-infrastructure: déploiement, CI/CD, observabilité
 - 07-ops: runbooks (setup local, backup/restore, incidents)
-- 08-security-privacy: modèle de menace, checklist Rails, secrets, RGPD
+- 08-security-privacy: modèle de menace, checklist Rails, secrets, RGPD, accessibilité - **Voir [`08-security-privacy/README.md`](08-security-privacy/README.md)**
 - 09-product: personas, parcours, critères d'acceptation, wireframes - **Voir [`09-product/README.md`](09-product/README.md)**
 - 10-decisions-and-changelog: décisions et changelog
 - 11-templates: gabarits (ADR, PR, issues, architectures)

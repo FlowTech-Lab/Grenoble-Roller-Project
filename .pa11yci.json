@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "timeout": 10000,
+    "wait": 1000,
+    "standard": "WCAG2AA",
+    "threshold": 0,
+    "chromeLaunchConfig": {
+      "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+    }
+  },
+  "urls": [
+    {
+      "url": "http://localhost:3000",
+      "name": "Homepage"
+    },
+    {
+      "url": "http://localhost:3000/association",
+      "name": "Association"
+    },
+    {
+      "url": "http://localhost:3000/shop",
+      "name": "Boutique"
+    },
+    {
+      "url": "http://localhost:3000/events",
+      "name": "Événements"
+    },
+    {
+      "url": "http://localhost:3000/users/sign_in",
+      "name": "Connexion"
+    },
+    {
+      "url": "http://localhost:3000/users/sign_up",
+      "name": "Inscription"
+    }
+  ]
+}
+
