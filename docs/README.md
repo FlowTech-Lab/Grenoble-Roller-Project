@@ -5,14 +5,14 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 ## Sommaire
 - 00-overview: vision, périmètre, glossaire, parties prenantes
 - 01-ways-of-working: règles d’équipe (branches, PRs, revues, commits, rituels)
-- 02-shape-up: cycles Shape Up (shaping, betting, building, cooldown)
+- 02-shape-up: cycles Shape Up (shaping, betting, building, cooldown) - **Voir [`02-shape-up/README.md`](02-shape-up/README.md)**
 - 03-architecture: vues C4, domaine, NFRs, ADRs
 - 04-rails: conventions, structure app, setup, sécurité, perf, API
 - 05-testing: stratégie de tests, RSpec, données de test, de bout en bout
 - 06-infrastructure: déploiement, CI/CD, observabilité
 - 07-ops: runbooks (setup local, backup/restore, incidents)
 - 08-security-privacy: modèle de menace, checklist Rails, secrets, RGPD
-- 09-product: personas, parcours, critères d’acceptation, wireframes
+- 09-product: personas, parcours, critères d'acceptation, wireframes - **Voir [`09-product/README.md`](09-product/README.md)**
 - 10-decisions-and-changelog: décisions et changelog
 - 11-templates: gabarits (ADR, PR, issues, architectures)
 
@@ -22,11 +22,40 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 3. Référencer les ADRs pour toute décision structurante (voir `03-architecture/adr`).
 4. Lier depuis `README.md` principal si un document devient critique.
 
-## Conventions
-- Nommage fichiers: kebab-case, en anglais sauf sections produit.
-- Cycles Shape Up: `cycle-01`, `cycle-02`, … dans `02-shape-up/*`.
-- ADRs: `ADR-XXX-titre-court.md` (voir template). Numérotation séquentielle.
-- Pas de docs obsolètes: si un doc est dépassé, soit le mettre à jour, soit le supprimer.
+## Conventions (2025 Standards)
+
+### File Naming
+- **kebab-case** only (no uppercase, no underscores)
+- **English** for technical files, French for product if needed
+- **Descriptive names** : `cycle-01-building-log.md` not `current-cycle.md`
+
+### Document Structure
+- **Frontmatter YAML** required for all documents:
+  ```yaml
+  ---
+  title: "Document Title"
+  status: "active|completed|deprecated"
+  version: "1.0"
+  created: "YYYY-MM-DD"
+  updated: "YYYY-MM-DD"
+  authors: ["Author Name"]
+  tags: ["tag1", "tag2"]
+  ---
+  ```
+
+### Shape Up Cycles
+- Cycles: `cycle-01`, `cycle-02`, … in `02-shape-up/building/`
+- Format: `cycle-XX-building-log.md` or `cycle-XX-phase-Y-plan.md`
+
+### Decision Records
+- **ADRs** (Architecture): `ADR-XXX-short-title.md` (see template in `11-templates/`)
+- **DRs** (Product/UX): `DR-XXX-short-title.md` (see template in `11-templates/`)
+- Sequential numbering, one decision per file
+
+### Documentation Lifecycle
+- No obsolete docs: update or delete outdated documents
+- Version tracking via frontmatter
+- Status tracking: `active`, `completed`, `deprecated`, `superseded`
 
 ## Flux recommandé (nouveau dev)
 1. Lire le `README.md` principal du projet pour une vue d'ensemble.

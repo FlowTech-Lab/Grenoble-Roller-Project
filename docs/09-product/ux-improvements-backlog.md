@@ -1,10 +1,18 @@
-# 📊 Récapitulatif Complet des Améliorations UX
+---
+title: "UX Improvements Backlog"
+status: "active"
+version: "1.1"
+created: "2025-11-14"
+updated: "2025-11-14"
+authors: ["FlowTech"]
+tags: ["product", "ux", "backlog", "improvements", "prioritization"]
+---
 
-**Document** : Synthèse de toutes les améliorations identifiées lors de l'analyse des parcours utilisateur  
-**Date de création** : 2025-11-14  
-**Dernière mise à jour** : 2025-11-14  
-**Statut** : 📋 Synthèse complète  
-**Source** : Analyse détaillée dans [`user-journeys-and-improvements.md`](user-journeys-and-improvements.md)
+# UX Improvements Backlog
+
+**Document Type** : Complete synthesis of all improvements identified during user journey analysis  
+**Status** : Complete backlog ready for implementation  
+**Source** : Detailed analysis in [`user-journeys-analysis.md`](user-journeys-analysis.md)
 
 ---
 
@@ -308,42 +316,241 @@
 
 ## 🎯 Plan d'Action Recommandé
 
+### **🔴 SPRINT 0 : Audit & Fondations Accessibilité (1 semaine) - NOUVEAU**
+**Objectif** : Établir baseline de conformité + corriger critiques  
+**Priorité** : 🔴 CRITIQUE - À faire AVANT Phase 1
+
+**Jour 1-2 : Audit automatisé complet**
+- WAVE, Axe DevTools, Lighthouse sur toutes les pages principales
+- Focus : Footer, Header, Forms, Navigation, Events, Shop
+- Identification problèmes critiques (contrastes, focus, navigation clavier)
+
+**Jour 3 : Corrections critiques**
+- ✅ Footer : Liens morts corrigés (déjà fait)
+- ✅ Footer : Focus states ajoutés (déjà fait)
+- ✅ Footer : Contraste couleurs amélioré (déjà fait)
+- 🔴 **Footer : Variables dual-theme mode clair/sombre** (à finaliser - voir section CSS ci-dessous)
+- 🔴 Header/Navigation : Audit contraste + focus states
+- 🔴 Formulaires : Labels, focus, erreurs accessibles
+
+**Jour 4 : Infrastructure tests continus**
+- Setup CI/CD accessibilité (Axe, Lighthouse, Pa11y)
+- Definition of Done accessibilité documentée
+- Checklist développeur accessibilité créée
+
+**Jour 5 : Documentation + formation**
+- Rapport d'audit complet
+- Guide accessibilité pour développeurs
+- Formation équipe sur bonnes pratiques
+
+**Livrables** :
+- ✅ Baseline conformité WCAG 2.1 AA établie
+- ✅ Corrections critiques appliquées
+- ✅ Infrastructure tests automatisés opérationnelle
+- ✅ Documentation accessibilité complète
+
+---
+
 ### **Phase 1 : Quick Wins (2-3 semaines)**
-**Objectif** : Implémenter les 10-15 Quick Wins les plus impactants
+**Objectif** : Implémenter les 10-15 Quick Wins les plus impactants  
+**Accessibilité** : Tests intégrés à chaque sprint (15-20% du temps)
 
 **Sprint 1 (Semaine 1)** :
-- ⚠️ **URGENT : Corriger liens morts footer** (Masquer sections ou corriger liens existants)
+**Développement** (3-4 jours) :
 - Dashboard admin avec statistiques
 - Section "À propos" homepage
 - Astérisques champs obligatoires
 - Message de bienvenue après inscription
 
+**Tests A11y intégrés** (1 jour) :
+- Contraste couleurs dashboard
+- Navigation clavier complète
+- Labels descriptifs statistiques
+- Test lecteur d'écran section "À propos"
+
 **Sprint 2 (Semaine 2)** :
+**Développement** (3-4 jours) :
 - Séparer événements à venir/passés
 - Filtres catégories boutique
 - Résumé dans modal inscription
 - Actions rapides admin
 - Sauvegarde automatique formulaire
 
+**Tests A11y intégrés** (1 jour) :
+- Navigation au clavier dans filtres
+- Annonces ARIA pour sections dynamiques
+- Modal accessible (focus trap, Esc pour fermer)
+- Labels filtres descriptifs
+
 **Sprint 3 (Semaine 3)** :
+**Développement** (2-3 jours) :
 - Améliorer messages d'erreur Devise
 - Indicateur force mot de passe
 - Compteurs d'événements/inscriptions
 - Zoom sur image produit
 - Exports CSV admin
 
-### **Phase 2 : Améliorations Importantes (4-6 semaines)**
-**Objectif** : Implémenter les améliorations à impact élevé
+**Tests A11y intégrés** (1 jour) :
+- Indicateur mot de passe accessible (annonces ARIA live)
+- Compteurs avec labels sémantiques
+- Boutons export avec labels descriptifs
 
-**Focus** :
+**Validation finale Phase 1** (1 jour) :
+- Audit complet nouvelles fonctionnalités
+- Régression testing (vérifier que rien n'a cassé)
+- Mise à jour rapport conformité
+
+---
+
+### **Phase 2 : Améliorations Importantes (4-6 semaines)**
+**Objectif** : Implémenter les améliorations à impact élevé  
+**Accessibilité** : Tests continus (15-20% temps) + audit intermédiaire
+
+**Sprints 4-9 : Améliorations Importantes**
+**Chaque sprint** (1-2 semaines) :
+- Développement fonctionnalités (70-80% temps)
+- Tests A11y intégrés (15-20% temps)
+- Tests régression (5-10% temps)
+
+**Focus fonctionnel** :
 - Filtres et recherche (Parcours 3, 5, 7)
 - Pagination (Parcours 3, 5)
 - Panier persistant (Parcours 7)
 - Bulk actions admin (Parcours 8)
 - Dashboard admin complet (Parcours 8)
 
+**Audit intermédiaire** (après Sprint 6 - mi-Phase 2) :
+- Durée : 2-3 jours
+- Objectif : Vérifier conformité globale avant fin Phase 2
+- Actions : Audit automatisé + tests manuels parcours complets
+
+**Validation finale Phase 2** (après Sprint 9) :
+- Audit complet toutes fonctionnalités
+- Tests utilisateurs avec technologies d'assistance
+- Rapport conformité final
+
+---
+
 ### **Phase 3 : Améliorations Futures (Selon besoins)**
-**Objectif** : Implémenter selon retours utilisateurs et priorités business
+**Objectif** : Implémenter selon retours utilisateurs et priorités business  
+**Accessibilité** : Intégrée dès la conception (15-20% temps)
+
+**Pour chaque nouvelle feature** :
+1. **Design accessible** dès le wireframe
+   - Vérifier contrastes couleurs
+   - Prévoir focus states
+   - Planifier navigation clavier
+
+2. **Développement avec tests continus**
+   - Linters accessibilité actifs
+   - Tests automatisés CI/CD
+   - Validation développeur avant PR
+
+3. **Validation A11y avant mise en prod**
+   - Tests manuels complets
+   - Validation lecteur d'écran
+   - Vérification WCAG 2.1 AA
+
+**Audits périodiques** :
+- Tous les 6-12 mois après lancement
+- Tests utilisateurs avec personnes en situation de handicap
+- Mise à jour documentation accessibilité
+
+---
+
+## ♿ Accessibilité : Approche Transversale
+
+### **Stratégie d'Intégration**
+L'accessibilité n'est **PAS une phase distincte**, c'est une **pratique continue** intégrée à chaque sprint.
+
+### **Répartition du Temps Accessibilité**
+
+| Phase | Durée totale | Temps A11y | % du temps | Activités A11y |
+|-------|--------------|------------|-------------|---------------|
+| **Sprint 0** : Audit initial | 1 semaine | 5 jours | 100% | Audit complet + corrections critiques |
+| **Phase 1** : Quick Wins | 3 semaines | 3 jours | 20% | Tests continus + validation finale |
+| **Phase 2** : Importantes | 6 semaines | 6-8 jours | 15-20% | Tests continus + audit intermédiaire |
+| **Phase 3** : Futures | Variable | 15-20% | 15-20% | Tests continus + audits périodiques |
+| **Maintenance** | Permanent | 1-2 jours/6 mois | N/A | Audits semestriels + monitoring |
+
+### **Definition of Done - Accessibilité**
+Une user story est "Done" quand :
+- ✅ **Contraste** : Tous ratios ≥ 4.5:1 (texte normal) ou ≥ 3:1 (texte large)
+- ✅ **Focus** : Outline visible 2px minimum sur tous éléments interactifs
+- ✅ **Clavier** : Navigation complète au clavier (Tab, Shift+Tab, Enter, Esc)
+- ✅ **ARIA** : Labels descriptifs sur éléments interactifs et annonces live si dynamique
+- ✅ **Sémantique** : HTML sémantique correct (headings, landmarks, listes)
+- ✅ **Tests auto** : Passage Axe, Lighthouse (score ≥90), Pa11y sans erreur
+- ✅ **Test manuel** : Validation navigation clavier + lecteur d'écran (NVDA)
+- ✅ **Responsive** : Fonctionnel à 200% zoom, cibles tactiles ≥44×44px mobile
+
+### **Infrastructure Accessibilité**
+- **CI/CD** : Tests automatisés (Axe, Lighthouse, Pa11y) sur chaque PR
+- **Outils** : WAVE Extension, Axe DevTools, WebAIM Contrast Checker
+- **Monitoring** : Audits automatisés hebdomadaires + rapports
+
+### **ROI Accessibilité**
+- ✅ **Réduction coûts** : Corriger un bug A11y après lancement coûte 10x plus cher
+- ✅ **Conformité légale** : Éviter amendes EAA (jusqu'à 4% CA)
+- ✅ **Qualité code** : Code sémantique = code maintenable
+- ✅ **UX améliorée** : Bénéficie à 100% des utilisateurs
+- ✅ **Moins de dette technique** : Pas de gros chantier de remédiation plus tard
+
+### **🔴 Corrections CSS Critiques - Sprint 0**
+
+**Problème identifié** : Variables CSS non optimisées pour mode clair ET sombre simultanément
+
+**Corrections à appliquer** :
+
+1. **Variables dual-theme pour footer** :
+   ```scss
+   /* Mode clair - valeurs corrigées */
+   :root {
+     --gr-muted: #5a6268;        /* Corrigé de #6c757d - meilleur contraste */
+     --gr-primary: #0056b3;      /* Corrigé de #007bff - meilleur contraste */
+   }
+   
+   /* Mode sombre - overrides complets */
+   [data-bs-theme="dark"] {
+     --gr-muted-dark: #a0a0a0;   /* Ratio 6.66:1 - conforme ✅ */
+     --gr-primary-dark: #4d94ff; /* Ratio 5.80:1 - conforme ✅ */
+     --gr-text-dark: #e5e5e5;    /* Texte principal */
+   }
+   
+   /* Footer mode sombre avec couleurs corrigées */
+   [data-bs-theme="dark"] .footer-grenoble-roller {
+     background: #0a0a0a; /* Near-black, pas pure black */
+     color: var(--gr-text-dark);
+   }
+   
+   [data-bs-theme="dark"] .footer-grenoble-roller .text-muted {
+     color: var(--gr-muted-dark) !important;
+   }
+   
+   [data-bs-theme="dark"] .footer-grenoble-roller .footer-link {
+     color: var(--gr-text-dark);
+   }
+   
+   [data-bs-theme="dark"] .footer-grenoble-roller .footer-link:hover,
+   [data-bs-theme="dark"] .footer-grenoble-roller .footer-link:focus-visible {
+     color: var(--gr-primary-dark);
+     outline-color: var(--gr-primary-dark);
+   }
+   ```
+
+2. **Audit systématique autres sections** (Semaine 2-3) :
+   - Navigation principale (header/navbar)
+   - Boutons et CTAs
+   - Formulaires
+   - Cards et conteneurs
+   - Texte de contenu principal
+
+3. **Design system cohérent** (Moyen terme) :
+   - Variables CSS systématiques pour tous les composants
+   - Documentation des ratios de contraste
+   - Tests automatisés de contraste en CI/CD
+
+**Priorité** : 🔴 CRITIQUE - À faire en Sprint 0 (Jour 3)
 
 ---
 
@@ -351,7 +558,7 @@
 
 ### **Points d'Attention**
 - **Cohérence** : Maintenir la cohérence visuelle entre tous les parcours
-- **Accessibilité** : Vérifier que toutes les améliorations respectent WCAG 2.1
+- **Accessibilité** : ✅ **Intégrée transversalement** - Tests A11y à chaque sprint (15-20% temps)
 - **Performance** : S'assurer que les améliorations ne dégradent pas les performances
 - **Tests** : Ajouter des tests pour chaque amélioration implémentée
 
@@ -359,12 +566,13 @@
 - **Appetite fixe** : 2-3 semaines pour Phase 1 (Quick Wins)
 - **Scope flexible** : Si pas fini → réduire scope, pas étendre deadline
 - **Cooldown** : Prévoir cooldown après Phase 1 pour intégrer retours utilisateurs
+- **Accessibilité** : Sprint 0 obligatoire AVANT Phase 1 (audit + fondations)
 
 ---
 
 ## 🔗 Références
 
-- **Analyse détaillée** : [`user-journeys-and-improvements.md`](user-journeys-and-improvements.md)
+- **Detailed analysis** : [`user-journeys-analysis.md`](user-journeys-analysis.md)
 - **Méthodologie** : [`../02-shape-up/`](../02-shape-up/)
 - **Pièges à éviter** : [`../../ressources/Pieges_A_Eviter.md`](../../ressources/Pieges_A_Eviter.md)
 
@@ -372,5 +580,5 @@
 
 **Document créé le** : 2025-11-14  
 **Dernière mise à jour** : 2025-11-14  
-**Version** : 1.0
+**Version** : 1.1 (Intégration accessibilité transversale)
 

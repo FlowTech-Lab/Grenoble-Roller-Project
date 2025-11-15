@@ -1,10 +1,17 @@
-# 🎯 Parcours Utilisateur & Améliorations UX
+---
+title: "User Journeys Analysis"
+status: "active"
+version: "1.0"
+created: "2025-11-14"
+updated: "2025-11-14"
+authors: ["FlowTech"]
+tags: ["product", "ux", "user-journeys", "analysis", "shape-up"]
+---
 
-**Document** : Analyse des parcours utilisateur et détection des améliorations possibles  
-**Date de création** : 2025-11-14  
-**Dernière mise à jour** : 2025-11-14  
-**Statut** : 🔄 En cours d'analyse  
-**Méthodologie** : Shape Up - Building Phase (Cooldown)
+# User Journeys Analysis
+
+**Document Type** : User journey analysis and improvement opportunities identification  
+**Methodology** : Shape Up - Building Phase (Cooldown)
 
 ---
 

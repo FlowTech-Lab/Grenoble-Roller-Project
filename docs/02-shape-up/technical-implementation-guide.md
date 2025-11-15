@@ -1,5 +1,17 @@
-# 🚀 GUIDE D'IMPLÉMENTATION - Grenoble Roller
-## Rails 8 + Bootstrap - Guide technique Shape Up
+---
+title: "Technical Implementation Guide"
+status: "active"
+version: "1.0"
+created: "2025-01-20"
+updated: "2025-11-14"
+authors: ["FlowTech"]
+tags: ["shape-up", "technical", "rails", "bootstrap", "implementation"]
+---
+
+# Technical Implementation Guide
+
+**Project** : Grenoble Roller Community Platform  
+**Stack** : Rails 8 + Bootstrap - Shape Up Technical Guide
 
 ---
 
