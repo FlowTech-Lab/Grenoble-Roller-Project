@@ -1,4 +1,10 @@
-<div class="col-12 col-sm-6 col-lg-4">
+<div class="col-12 col-sm-6 col-lg-4<%= ' position-relative' if local_assigns[:is_first] %>">
+  <% if local_assigns[:is_first] %>
+    <!-- Badge "Prochain" sur le premier événement - aligné avec le badge de date -->
+    <span class="badge bg-warning text-dark position-absolute" style="left: 2rem; z-index: 10;">
+      <i class="bi bi-star-fill me-1" aria-hidden="true"></i>Prochain
+    </span>
+  <% end %>
   <article class="card card-event card-liquid rounded-liquid shadow-liquid h-100">
     <div class="card-event-image">
       <%= image_tag(event_cover_image_url(event),
@@ -44,6 +50,13 @@
           <% if event.canceled? %>
             <span class="badge bg-danger">
               <i class="bi bi-x-octagon me-1" aria-hidden="true"></i>Annulé
+            </span>
+          <% end %>
+          
+          <!-- Badge Nouveau (événements créés dans les 7 dernièr jours) -->
+          <% if event.recent? && !event.canceled? %>
+            <span class="badge badge-liquid-success">
+              <i class="bi bi-star-fill me-1" aria-hidden="true"></i>Nouveau
             </span>
           <% end %>
           
@@ -171,10 +184,10 @@
           </div>
         </div>
       </div>
-    </div>
   </article>
+</div>
 
-  <% if defined?(render_signup_button) && render_signup_button && policy(event).can_attend? && !event.full? %>
+<% if defined?(render_signup_button) && render_signup_button && policy(event).can_attend? && !event.full? %>
     <div class="modal fade" id="confirmAttendModal<%= event.id %>" tabindex="-1" aria-labelledby="confirmAttendModalLabel<%= event.id %>" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

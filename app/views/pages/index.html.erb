@@ -30,10 +30,10 @@
                             S'inscrire
                         <% end %>
                         <% else %>
-                        <a href="<%= new_user_registration_path %>" class="btn btn-outline-light btn-lg">
-                            <i class="bi bi-person-plus me-2"></i>
-                            Adhérer
-                        </a>
+                        <%= link_to new_user_registration_path, class: "btn btn-outline-light btn-lg" do %>
+                            <i class="bi bi-person-plus me-2" aria-hidden="true"></i>
+                            S'inscrire pour adhérer
+                        <% end %>
                         <% end %>
                     </div>
                 </div>

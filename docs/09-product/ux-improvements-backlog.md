@@ -38,19 +38,19 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ### **Parcours 1 : Découverte de l'Association**
 - [x] ⚠️ **URGENT : Corriger les liens morts du footer** (Liens "À propos" et "Événements" corrigés - Contact/CGU/Confidentialité toujours `#`)
 - [ ] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus")
-- [ ] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer")
+- [x] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer") ✅ Implémenté
 - [ ] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés")
 
 ### **Parcours 2 : Inscription**
-- [ ] Ajouter astérisques `*` aux champs obligatoires (Visuellement clair)
+- [x] Ajouter astérisques `*` aux champs obligatoires (Visuellement clair) ✅ Déjà implémenté avec classe `.required` et légende
 - [ ] Améliorer les messages d'erreur Devise (Traduire/customiser)
 - [ ] Message de bienvenue après inscription (Toast "Bienvenue [Prénom] ! Découvrez les événements")
 - [ ] Indicateur de force du mot de passe (Barre de progression visuelle)
 
 ### **Parcours 3 : Découverte des Événements**
-- [ ] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours)
+- [x] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours) ✅ Implémenté
 - [ ] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes)
-- [ ] Ajouter compteur d'événements ("X événements à venir" visible en haut)
+- [x] Ajouter compteur d'événements ("X événements à venir" visible en haut) ✅ Implémenté
 - [ ] Lien "Voir tous les événements passés" (Si >6 événements passés)
 
 ### **Parcours 4 : Inscription à un Événement**
