@@ -15,7 +15,7 @@
     --gr-white:    #f8f9fa;
     --gr-bg-light: #f2f4f6;
 
-    --gr-muted:    #6c757d;
+    --gr-muted:    #5a6268; /* Amélioré pour meilleur contraste WCAG 2.1 AA (≥4.5:1) */
     
     --gr-primary:  #007bff;
     --gr-primary-light: #5aa9fa;
@@ -580,15 +580,50 @@
   .footer-grenoble-roller .footer-links a,
   .footer-grenoble-roller .footer-link {
     color: inherit;
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(0, 0, 0, 0.3);
     transition: var(--transition-liquid-fast);
     display: inline-block;
+  }
+  
+  /* Mode sombre - ajustement du soulignement */
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-links a,
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-link {
+    text-decoration-color: rgba(255, 255, 255, 0.4);
   }
   
   .footer-grenoble-roller .footer-links a:hover,
   .footer-grenoble-roller .footer-link:hover {
     color: var(--gr-primary);
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--gr-primary);
     transform: translateX(5px);
+  }
+  
+  /* Focus states pour accessibilité WCAG 2.1 (European Accessibility Act 2025) */
+  .footer-grenoble-roller .footer-links a:focus-visible,
+  .footer-grenoble-roller .footer-link:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    color: var(--gr-primary);
+    /* Supprime la transformation au focus pour éviter les bugs */
+    transform: none;
+  }
+  
+  /* Fallback focus pour navigateurs plus anciens */
+  .footer-grenoble-roller .footer-links a:focus,
+  .footer-grenoble-roller .footer-link:focus {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    color: var(--gr-primary);
+    transform: none;
+  }
+  
+  /* Mode sombre - contraste renforcé pour les outlines */
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-links a:focus-visible,
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-link:focus-visible {
+    outline-color: var(--gr-primary-light);
   }
   
   /* Social links */
@@ -614,6 +649,26 @@
     box-shadow: var(--bs-box-shadow);
   }
   
+  /* Focus states pour icônes sociales (accessibilité) */
+  .footer-grenoble-roller .social-link:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    background: var(--gr-primary);
+    color: white;
+    transform: translateY(-3px) scale(1.1);
+  }
+  
+  /* Fallback focus pour navigateurs plus anciens */
+  .footer-grenoble-roller .social-link:focus {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+  }
+  
+  /* Mode sombre - contraste renforcé pour les outlines */
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link:focus-visible {
+    outline-color: var(--gr-primary-light);
+  }
+  
   /* Copyright */
   .footer-grenoble-roller .footer-copyright {
     color: inherit;
@@ -629,7 +684,7 @@
     padding: 1rem 0;
   }
   
-  /* Responsive */
+  /* Responsive - Mobile accessibility (tailles tactiles 44x44px minimum) */
   @media (max-width: 767px) {
     .footer-grenoble-roller .col-6 {
       margin-bottom: 2rem;
@@ -638,6 +693,20 @@
     .footer-grenoble-roller .footer-links a:hover,
     .footer-grenoble-roller .footer-link:hover {
       transform: none;
+    }
+    
+    /* Tailles de cibles tactiles accessibles (WCAG 2.5.5) */
+    .footer-grenoble-roller .footer-link {
+      padding: 0.5rem;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .footer-grenoble-roller .social-link {
+      min-width: 44px;
+      min-height: 44px;
     }
   }
   
@@ -701,7 +770,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border-radius: 0.01rem;
+    border-radius: 0.1rem;
     background-image: url('/img/Roller-Luminous2.png');
     background-size: cover;
     background-position: center;

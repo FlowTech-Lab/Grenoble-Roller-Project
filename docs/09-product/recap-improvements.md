@@ -19,6 +19,8 @@
 
 **Total** : **119 améliorations** identifiées (**+12 nouvelles** liées au footer)
 
+> **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
+
 ---
 
 ## 🟢 QUICK WINS (Impact Haut, Effort Faible)
