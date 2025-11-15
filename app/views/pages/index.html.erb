@@ -1,3 +1,5 @@
+<% content_for :description, "Découvrez la communauté Roller Grenobloise ! Participez à des événements, partagez vos sorties et connectez-vous avec d'autres riders à Grenoble. Randonnées urbaines, cours d'initiation, événements à thème." %>
+
 <!-- Hero Banner -->
 <div class="banner-hero mb-3">
     <div class="banner-overlay"></div>
@@ -28,7 +30,7 @@
                             S'inscrire
                         <% end %>
                         <% else %>
-                        <a href="#adhesion" class="btn btn-outline-light btn-lg">
+                        <a href="<%= new_user_registration_path %>" class="btn btn-outline-light btn-lg">
                             <i class="bi bi-person-plus me-2"></i>
                             Adhérer
                         </a>
@@ -243,9 +245,9 @@
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="confirmAttendModalHomepageLabel">
+                <h2 class="modal-title h5" id="confirmAttendModalHomepageLabel">
                   <i class="bi bi-calendar-check me-2"></i>Confirmer votre inscription
-                </h5>
+                </h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
               </div>
               <%= form_with url: attend_event_path(@highlighted_event), method: :post, data: { turbo: false } do |f| %>
