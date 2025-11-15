@@ -71,10 +71,44 @@
     --gr-text-dark: #e5e5e5;       /* Texte principal */
   }
   
+  /* === SKIP LINK - WCAG 2.4.1 Level A === */
+  .skip-link {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    z-index: 9999;
+    
+    padding: 0.75rem 1.5rem;
+    background: var(--gr-primary);
+    color: white;
+    
+    text-decoration: none;
+    font-weight: 600;
+    
+    border-radius: 0 0 0.25rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    transition: top 0.2s ease, left 0.2s ease;
+  }
+  
+  .skip-link:focus {
+    top: 0;
+    left: 0;
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+  
+  /* Mode sombre */
+  [data-bs-theme="dark"] .skip-link {
+    background: var(--gr-primary-dark);
+    color: var(--gr-text-dark);
+  }
+  
   /* === LIQUID BODY BACKGROUND === */
   body {
     background: var(--gradient-liquid-pastel);
     background-attachment: fixed;
+    position: relative; /* Pour le skip link */
   }
   
   /* Global link styles */
@@ -504,6 +538,51 @@
     transform: translateY(-2px);
   }
   
+  /* Focus states navbar - WCAG 2.4.7 Level AA */
+  .navbar .nav-link:focus-visible,
+  .navbar-brand:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+  
+  /* Fallback pour navigateurs plus anciens */
+  .navbar .nav-link:focus,
+  .navbar-brand:focus {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+  }
+  
+  /* Mode sombre */
+  [data-bs-theme="dark"] .navbar .nav-link:focus-visible,
+  [data-bs-theme="dark"] .navbar-brand:focus-visible {
+    outline-color: var(--gr-primary-dark);
+  }
+  
+  /* Boutons navbar (login, signup, etc.) */
+  .navbar .btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  
+  /* Dropdown toggle focus */
+  .navbar .dropdown-toggle:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+  
+  /* Mobile : Hamburger menu button */
+  .navbar-toggler:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    box-shadow: none; /* Retire le box-shadow Bootstrap par défaut */
+  }
+  
+  [data-bs-theme="dark"] .navbar-toggler:focus-visible {
+    outline-color: var(--gr-primary-dark);
+  }
+  
   .navbar-grenoble-roller .nav-link.active {
     color: var(--gr-primary);
     font-weight: 600;
@@ -753,6 +832,58 @@
       min-width: 44px;
       min-height: 44px;
     }
+  }
+  
+  /* === THEME TOGGLE BUTTON - Accessibilité === */
+  .theme-toggle {
+    padding: 0.5rem;
+    min-width: 44px;  /* Taille tactile minimale WCAG */
+    min-height: 44px;
+    
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    border-radius: 0.25rem;
+    transition: var(--transition-liquid-fast);
+  }
+  
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    background: rgba(0, 123, 255, 0.1);
+  }
+  
+  .theme-toggle:hover {
+    background: rgba(0, 123, 255, 0.1);
+    transform: scale(1.05);
+  }
+  
+  /* Mode sombre */
+  [data-bs-theme="dark"] .theme-toggle:focus-visible {
+    outline-color: var(--gr-primary-dark);
+    background: rgba(77, 148, 255, 0.1);
+  }
+  
+  /* === FORMULAIRES - Champs obligatoires WCAG 3.3.2 Level A === */
+  .form-label.required::after,
+  label.required::after {
+    content: " *";
+    color: var(--gr-danger);
+    font-weight: bold;
+    margin-left: 0.25rem;
+  }
+  
+  /* Légende en haut du formulaire */
+  .form-required-legend {
+    font-size: 0.875rem;
+    color: var(--gr-muted);
+    margin-bottom: 1rem;
+  }
+  
+  .form-required-legend .required-marker {
+    color: var(--gr-danger);
+    font-weight: bold;
   }
   
   /* === AUTH FORMS ORGANISM === */
