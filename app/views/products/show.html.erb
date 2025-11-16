@@ -1,7 +1,7 @@
 <% content_for :title, "#{@product.name} - Boutique Grenoble Roller" %>
 <% content_for :description, "#{@product.name} - #{@product.description.presence || 'Produit disponible dans la boutique Grenoble Roller'}. Commandez en ligne !" %>
 
-<div class="container-fluid py-4">
+<div class="container py-4 py-lg-5">
   <div class="row mb-4">
     <div class="col-12">
       <nav aria-label="breadcrumb">
@@ -14,11 +14,12 @@
     </div>
   </div>
 
-  <div class="row g-4">
-    <!-- Image principale -->
-    <div class="col-12 col-lg-6">
-      <div class="card card-liquid rounded-liquid">
-        <div class="card-product-image-wrapper" style="aspect-ratio: 1 / 1; max-height: 600px;">
+  <!-- Card unique : image à gauche, infos à droite -->
+  <div class="card card-liquid rounded-liquid product-show-card">
+    <div class="row g-4 align-items-stretch flex-column flex-lg-row">
+      <!-- Image principale -->
+      <div class="col-12 col-lg-5">
+        <div class="card-product-image-wrapper product-show-image-wrapper" style="aspect-ratio: 1 / 1; max-height: 600px;">
           <div class="card-product-image">
             <% if @product.image_url.present? %>
               <%= image_tag @product.image_url, alt: @product.name, loading: "eager", decoding: "async", style: "object-fit: contain;" %>
@@ -38,11 +39,9 @@
           <% end %>
         </div>
       </div>
-    </div>
 
-    <!-- Informations produit -->
-    <div class="col-12 col-lg-6">
-      <div class="card card-liquid rounded-liquid h-100">
+      <!-- Informations produit -->
+      <div class="col-12 col-lg-7 d-flex">
         <div class="card-body d-flex flex-column">
           <!-- Titre et catégorie -->
           <div class="mb-3">
@@ -63,23 +62,8 @@
             </div>
           <% end %>
 
-          <!-- Prix -->
-          <div class="mb-4">
-            <% 
-              min_price = @variants.minimum(:price_cents) || @product.price_cents
-              max_price = @variants.maximum(:price_cents) || @product.price_cents
-              has_multiple_prices = min_price != max_price
-            %>
-            <div class="price-section-vertical">
-              <div class="price-display">
-                <% if has_multiple_prices %>
-                  <span class="price">À partir de <%= format_price(min_price) %></span>
-                <% else %>
-                  <span class="price"><%= format_price(min_price) %></span>
-                <% end %>
-              </div>
-            </div>
-          </div>
+          <!-- pousse le bloc options + prix + CTA vers le bas -->
+          <div class="spacer"></div>
 
           <!-- Sélection variantes -->
           <% if @variants.any? %>
@@ -87,51 +71,95 @@
               size_options = @variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'size' } }.uniq
               color_options = @variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'color' } }.uniq
               single_variant = @variants.count == 1 ? @variants.first : nil
+
+              size_stock = Hash.new(0)
+              color_stock = Hash.new(0)
+              @variants.each do |v|
+                v.option_values.each do |ov|
+                  case ov.option_type.name
+                  when 'size'
+                    size_stock[ov.id] += v.stock_qty
+                  when 'color'
+                    color_stock[ov.id] += v.stock_qty
+                  end
+                end
+              end
             %>
-            <div class="product-options-section mb-4">
+            <% 
+              min_price = @variants.minimum(:price_cents) || @product.price_cents
+              max_price = @variants.maximum(:price_cents) || @product.price_cents
+              has_multiple_prices = min_price != max_price
+            %>
+            <div class="product-options-section mb-3">
               <div class="product-options">
-                <% if size_options.any? %>
+                <% if size_options.size > 1 %>
                   <select class="form-select form-select-sm product-size-select" 
                           aria-label="Choisir la taille" 
                           id="size-select-detail">
                     <option value="">Choisir taille</option>
                     <% size_options.each do |size_opt| %>
-                      <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == size_opt.id && ov.option_type.name == 'size' } %>
-                      <option value="<%= size_opt.id %>" <%= 'selected' if selected %>><%= size_opt.presentation %></option>
+                      <% 
+                        option_stock = size_stock[size_opt.id]
+                      %>
+                      <option value="<%= size_opt.id %>" <%= 'disabled' if option_stock <= 0 %>>
+                        <%= size_opt.presentation %><%= ' (épuisé)' if option_stock <= 0 %>
+                      </option>
                     <% end %>
                   </select>
+                <% elsif size_options.size == 1 %>
+                  <% size_opt = size_options.first %>
+                  <p class="small text-body-secondary mb-1">
+                    <strong>Taille :</strong> <%= size_opt.presentation %>
+                    <% if size_stock[size_opt.id] <= 0 %>
+                      <span class="text-danger ms-1">(plus en stock)</span>
+                    <% end %>
+                  </p>
                 <% end %>
                 
-                <% if color_options.any? %>
+                <% if color_options.size > 1 %>
                   <select class="form-select form-select-sm product-color-select" 
                           aria-label="Choisir la couleur" 
                           id="color-select-detail">
                     <option value="">Choisir couleur</option>
                     <% color_options.each do |color_opt| %>
-                      <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == color_opt.id && ov.option_type.name == 'color' } %>
-                      <option value="<%= color_opt.id %>" <%= 'selected' if selected %>><%= color_opt.presentation %></option>
+                      <% 
+                        option_stock = color_stock[color_opt.id]
+                      %>
+                      <option value="<%= color_opt.id %>" <%= 'disabled' if option_stock <= 0 %>>
+                        <%= color_opt.presentation %><%= ' (épuisé)' if option_stock <= 0 %>
+                      </option>
                     <% end %>
                   </select>
+                <% elsif color_options.size == 1 %>
+                  <% color_opt = color_options.first %>
+                  <p class="small text-body-secondary mb-1">
+                    <strong>Couleur :</strong> <%= color_opt.presentation %>
+                    <% if color_stock[color_opt.id] <= 0 %>
+                      <span class="text-danger ms-1">(plus en stock)</span>
+                    <% end %>
+                  </p>
                 <% end %>
                 
                 <% if size_options.empty? && color_options.empty? %>
-                  <select class="form-select form-select-sm" disabled>
-                    <option selected>Taille unique</option>
-                  </select>
+                  <p class="small text-body-secondary mb-1">
+                    <strong>Taille :</strong> Taille unique
+                  </p>
                 <% end %>
               </div>
               <small id="stock_hint" class="text-muted d-block mt-2" style="display: none;">
                 Stock: <span id="stock_value">0</span>
+                &mdash;
+                Prix unitaire: <span id="unit_price_value"><%= format_price(min_price) %></span>
               </small>
             </div>
           <% end %>
 
-          <!-- Quantité et ajout au panier -->
+          <!-- Prix + Quantité et ajout au panier -->
           <div class="mt-auto">
             <%= form_with url: add_item_cart_path, method: :post, class: "d-flex flex-column gap-3", id: "add-to-cart-form", data: { turbo: false } do |f| %>
               <%= hidden_field_tag :variant_id, single_variant ? single_variant.id : "", id: "variant-id-detail", required: true %>
               
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center justify-content-between gap-3 align-items-end flex-wrap product-qty-total-row">
                 <label for="quantity_field" class="form-label mb-0">Quantité:</label>
                 <div class="qty-control">
                   <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQtyDetail()" do %>
@@ -142,31 +170,36 @@
                     <i class="bi bi-plus" aria-hidden="true"></i>
                   <% end %>
                 </div>
+                <div class="text-end fw-semibold text-liquid-primary product-total">
+                  <span class="product-total-label">Total :</span>
+                  <span id="price_detail"><%= format_price(min_price) %></span>
+                </div>
               </div>
 
-              <button type="submit" 
-                      class="btn btn-liquid-primary btn-add w-100" 
-                      id="add-btn-detail"
-                      <%= 'disabled' unless single_variant && single_variant.stock_qty > 0 %>>
-                <i class="bi bi-cart-plus me-2" aria-hidden="true"></i>
-                <span>Ajouter au panier</span>
-              </button>
-            <% end %>
+              <div class="d-flex flex-column flex-md-row gap-2 mt-3 product-actions-row">
+                <%= link_to cart_path, class: "btn btn-outline-primary btn-sm w-100 w-md-auto product-cart-link" do %>
+                  <i class="bi bi-basket me-1" aria-hidden="true"></i>
+                  Voir le panier
+                <% end %>
 
-            <div class="mt-3 text-center">
-              <%= link_to cart_path, class: "btn btn-outline-primary btn-sm" do %>
-                <i class="bi bi-basket me-1" aria-hidden="true"></i>Voir le panier
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+                <button type="submit" 
+                        class="btn btn-liquid-primary w-100 product-add-btn" 
+                        id="add-btn-detail"
+                        <%= 'disabled' unless single_variant && single_variant.stock_qty > 0 %>>
+                  <i class="bi bi-cart-plus me-2" aria-hidden="true"></i>
+                  <span>Ajouter au panier</span>
+                </button>
+              </div>
+            <% end %>
+          </div> <!-- /.mt-auto -->
+        </div> <!-- /.card-body -->
+      </div> <!-- /.col infos -->
+    </div> <!-- /.row -->
+  </div> <!-- /.card product-show-card -->
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  function initProductShow() {
     // Map des variantes avec leurs options
     const productVariants = [
       <% @variants.each do |v| %>
@@ -186,7 +219,7 @@
     const addBtn = document.getElementById('add-btn-detail');
     const stockHint = document.getElementById('stock_hint');
     const qtyField = document.getElementById('quantity_field');
-    const priceDisplay = document.querySelector('.price');
+    const priceDisplay = document.getElementById('price_detail');
 
     function updateVariant() {
       const sizeId = sizeSelect && sizeSelect.value ? parseInt(sizeSelect.value) : null;
@@ -223,21 +256,27 @@
           if (stockValue) {
             stockValue.textContent = variant.stock;
           }
+          // on affiche le bloc stock + prix unitaire
           stockHint.style.display = 'block';
         }
         
         // Mettre à jour la quantité max
         if (qtyField) {
           qtyField.max = variant.stock;
-          const current = parseInt(qtyField.value || '1', 10);
+          let current = parseInt(qtyField.value || '1', 10);
           if (current > variant.stock) {
-            qtyField.value = variant.stock;
+            current = variant.stock;
           }
+          if (current < 1 || isNaN(current)) {
+            current = 1;
+          }
+          qtyField.value = current;
         }
         
-        // Mettre à jour le prix
+        // Mettre à jour le prix total en fonction de la quantité
         if (priceDisplay) {
-          priceDisplay.textContent = formatPriceFromCents(variant.price);
+          const qty = qtyField ? Math.max(1, parseInt(qtyField.value || '1', 10)) : 1;
+          priceDisplay.textContent = formatPriceFromCents(variant.price * qty);
         }
       } else {
         variantInput.value = '';
@@ -245,6 +284,11 @@
         
         // Cacher le stock si aucune variante sélectionnée
         if (stockHint) {
+          const stockValue = stockHint.querySelector('#stock_value');
+          if (stockValue) {
+            stockValue.textContent = '0';
+          }
+          // on masque complètement l'info stock quand aucune variante n'est sélectionnée
           stockHint.style.display = 'none';
         }
         
@@ -254,27 +298,11 @@
       }
     }
 
-    // Auto-sélection si une seule variante
-    <% if @variants.count == 1 && @variants.first.stock_qty > 0 %>
-      if (variantInput && addBtn) {
-        variantInput.value = <%= @variants.first.id %>;
-        addBtn.disabled = false;
-        // Afficher le stock pour la variante unique
-        if (stockHint) {
-          const stockValue = stockHint.querySelector('#stock_value');
-          if (stockValue) {
-            stockValue.textContent = <%= @variants.first.stock_qty %>;
-          }
-          stockHint.style.display = 'block';
-        }
-      }
-    <% end %>
-
     // Event listeners pour les sélecteurs
     if (sizeSelect) sizeSelect.addEventListener('change', updateVariant);
     if (colorSelect) colorSelect.addEventListener('change', updateVariant);
 
-    // Initial update
+    // Initial update (ne sélectionne rien par défaut si options présentes)
     updateVariant();
 
     // Fonctions pour la quantité
@@ -284,6 +312,7 @@
       const current = parseInt(qtyField.value || '1', 10);
       if (max > 0 && current < max) {
         qtyField.value = current + 1;
+        updateVariant();
       }
     };
 
@@ -292,6 +321,7 @@
       const current = parseInt(qtyField.value || '1', 10);
       if (current > 1) {
         qtyField.value = current - 1;
+        updateVariant();
       }
     };
 
@@ -319,5 +349,8 @@
         }
       });
     }
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', initProductShow);
+  document.addEventListener('turbo:load', initProductShow);
 </script>

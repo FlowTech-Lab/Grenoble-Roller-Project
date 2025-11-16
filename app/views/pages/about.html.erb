@@ -269,7 +269,7 @@
       <div class="row align-items-center g-4">
         <div class="col-lg-6">
           <div class="element-image rounded-liquid shadow-liquid">
-            <%= image_tag('img/1763122447223.jpg', 
+            <%= image_tag('img/1756840222082.jpg', 
                 alt: 'Équipe de Grenoble Roller accueillant de nouveaux membres avec bienveillance lors d\'une sortie', 
                 class: 'img-fluid rounded-liquid',
                 loading: 'lazy') %>
@@ -377,7 +377,7 @@
         </div>
         <div class="col-lg-6 order-lg-2">
           <div class="element-image rounded-liquid shadow-liquid">
-            <%= image_tag('img/staffeurs.jpeg', 
+            <%= image_tag('img/1745147959212.jpg', 
                 alt: 'Staffeurs de Grenoble Roller encadrant une randonnée nocturne sécurisée dans les rues de Grenoble', 
                 class: 'img-fluid rounded-liquid',
                 loading: 'lazy') %>
@@ -560,7 +560,7 @@
 
 <script>
   // Animation des chiffres - uniquement sur la page À propos
-  document.addEventListener('DOMContentLoaded', () => {
+  function initAboutStats() {
     const statsSection = document.getElementById('about-stats-section');
     if (!statsSection) return;
 
@@ -608,7 +608,10 @@
     });
 
     observer.observe(statsSection);
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', initAboutStats);
+  document.addEventListener('turbo:load', initAboutStats);
 </script>
 
 <!-- ========================================

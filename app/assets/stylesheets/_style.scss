@@ -19,7 +19,7 @@
     
     --gr-primary:  #007bff;
     --gr-primary-light: #5aa9fa;
-    --gr-primary-dark:  #ffffff;
+    --gr-primary-dark:  #0056b3; /* Bleu foncé pour mode clair (hover visible sur fond clair) */
     --gr-success: #0d6322;
     --gr-warning: #7e4900;
     --gr-danger: #911a14;
@@ -46,6 +46,8 @@
     /* Bootstrap shadow overrides */
     --bs-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     --bs-box-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --bs-btn-hover-color: black;
+    --bs-btn-hover-bg: var(--gr-primary-light);
     
     /* Hover shadows (light theme - dark shadows) */
     --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -120,12 +122,9 @@
   /* Mode clair : hover bleu foncé */
   a:hover {
     color: var(--gr-primary-light);
+    text-decoration: underline !important;
   }
   
-  /* Mode sombre : hover bleu clair */
-  [data-bs-theme="dark"] a:hover {
-    color: var(--gr-primary-dark); /* #4d94ff - bleu clair pour contraste en mode sombre */
-  }
   
   [data-bs-theme=dark] body {
     background: linear-gradient(120deg, rgba(0, 122, 255, 0.05) 0%, rgba(92, 90, 231, 0.185) 50%, rgba(138, 5, 226, 0.05) 100%);
@@ -176,12 +175,10 @@
   }
   
   .btn:hover {
-    transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
   }
   
   .btn-liquid-primary:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-hover-lg);
   }
   
@@ -219,7 +216,7 @@
     color: white;
   }
   
-  /* Outline liquid buttons */
+  /* Outline liquid buttons - Identiques dans les deux thèmes */
   .btn-outline-liquid-primary {
     background: transparent;
     border: 2px solid var(--gr-primary);
@@ -231,19 +228,7 @@
     background: var(--gr-primary);
     color: white;
     border-color: var(--gr-primary);
-    transform: translateY(-1px);
     box-shadow: var(--shadow-hover);
-  }
-  
-  [data-bs-theme="dark"] .btn-outline-liquid-primary {
-    border-color: var(--gr-primary-dark);
-    color: var(--gr-primary-dark);
-  }
-  
-  [data-bs-theme="dark"] .btn-outline-liquid-primary:hover {
-    background: var(--gr-primary-dark);
-    color: var(--gr-text-dark);
-    border-color: var(--gr-primary-dark);
   }
 
   /* Outline buttons - same color as navbar links (adapts to theme) */
@@ -586,7 +571,6 @@
   
   .navbar-grenoble-roller .nav-link:hover {
     color: var(--gr-primary);
-    transform: translateY(-2px);
   }
   
   /* Focus states navbar - WCAG 2.4.7 Level AA */
@@ -998,7 +982,6 @@
   
   .auth-form a:hover {
     color: var(--gr-primary-dark);
-    transform: translateX(3px);
   }
   
   /* ========================================
@@ -2470,7 +2453,21 @@
     aspect-ratio: 1 / 1;
     border-bottom: 1px solid var(--liquid-glass-border);
     overflow: hidden;
+    border-radius: 1.6rem 1.6rem 0 0; /* cartes produits : arrondi uniquement en haut */
   }
+
+/* Show produit : image avec arrondi adapté au layout */
+.product-show-image-wrapper {
+  border-radius: 1.6rem; /* par défaut (mobile : card verticale) */
+}
+
+@media (min-width: 992px) {
+  /* Sur desktop, card horizontale : arrondi seulement côté gauche,
+     côté droit aligné avec le contenu */
+  .product-show-card .product-show-image-wrapper {
+    border-radius: 1.6rem 0 0 1.6rem;
+  }
+}
 
   .card-product-image {
     position: absolute;
@@ -2515,9 +2512,22 @@
     border-top: 1px solid var(--liquid-glass-border);
   }
 
-  .spacer { 
-    flex: 1 1 auto; 
+.spacer { 
+  flex: 1 1 auto; 
+}
+
+/* Product show layout: card horizontale image + contenu */
+.product-show-card {
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .product-show-card {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
   }
+}
 
 .btn-add {
     display: inline-flex;
@@ -2540,10 +2550,43 @@
     border-top: 1px solid var(--liquid-glass-border);
   }
 
+.product-qty-total-row {
+  gap: 1rem;
+}
+
+.product-total {
+  font-size: 1.1rem;
+}
+
+@media (min-width: 992px) {
+  .product-total {
+    font-size: 1.25rem;
+  }
+}
+
 .product-options { 
   display: flex; 
   flex-wrap: wrap; 
   gap: 0.5rem; 
+}
+
+/* Actions fiche produit (Voir / Ajouter au panier) */
+.product-actions-row {
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .product-actions-row {
+    justify-content: flex-end;
+  }
+
+  .product-add-btn {
+    min-width: 230px;
+  }
+
+  .product-cart-link {
+    flex: 0 0 auto;
+  }
 }
 .product-options .form-select {
   min-width: 120px;
@@ -2552,6 +2595,13 @@
   .product-title {
     font-weight: 700;
     color: var(--gr-primary);
+    font-size: 1.5rem;
+  }
+
+  @media (min-width: 992px) {
+    .product-title {
+      font-size: 1.75rem;
+    }
   }
 
 .price-row {
@@ -3065,7 +3115,7 @@
   .section-cta .btn-outline-liquid-primary {
     background: transparent !important;
     border: 2px solid var(--gr-primary) !important;
-    color: var(--gr-primary) !important;
+    color: white !important; 
   }
   
   .section-cta .btn-outline-liquid-primary:hover {
@@ -3074,17 +3124,6 @@
     border-color: var(--gr-primary) !important;
     transform: translateY(-1px) !important;
     box-shadow: var(--shadow-hover) !important;
-  }
-  
-  [data-bs-theme="dark"] .section-cta .btn-outline-liquid-primary {
-    border-color: var(--gr-primary-dark) !important;
-    color: var(--gr-primary-dark) !important;
-  }
-  
-  [data-bs-theme="dark"] .section-cta .btn-outline-liquid-primary:hover {
-    background: var(--gr-primary-dark) !important;
-    color: var(--gr-text-dark) !important;
-    border-color: var(--gr-primary-dark) !important;
   }
   
   /* Les icônes dans les boutons gardent leur couleur par défaut (override) */
@@ -3165,13 +3204,6 @@
     color: white !important;
   }
   
-  /* Les icônes dans les boutons gardent leur couleur en mode sombre (override) */
-  [data-bs-theme="dark"] .section-cta .btn i,
-  [data-bs-theme="dark"] .section-cta .btn-liquid-primary i,
-  [data-bs-theme="dark"] .section-cta .btn-outline-liquid-primary i {
-    color: inherit !important; /* Hérite de la couleur du bouton */
-  }
-  
   /* Liens dans sections - adaptés aux thèmes */
   .section-stats a,
   .section-cta a {
@@ -3187,6 +3219,7 @@
   
   .section-stats a:hover {
     color: #0056b3;  /* Bleu plus foncé pour hover visible */
+    text-decoration: underline !important;
   }
   
   .section-cta a {
