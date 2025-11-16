@@ -15,46 +15,57 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo"]
 
 ## 📚 **Documents Disponibles**
 
+### Pages Légales
+
+1. **[Guide Complet - Pages Légales](legal-pages-guide.md)**
+   - Guide de référence pour créer toutes les pages légales obligatoires
+   - Contenu détaillé pour Mentions légales, RGPD, CGV, CGU, Contact
+   - Obligations légales et risques
+
+2. **[Informations à Collecter](informations-a-collecter.md)**
+   - Checklist des informations nécessaires avant création
+   - À compléter par l'association
+
 ### Accessibilité
 
-1. **[Accessibility Audit Report](accessibility-audit.md)**
+3. **[Accessibility Audit Report](accessibility-audit.md)**
    - Audit complet WCAG 2.1 AA
    - Problèmes identifiés et corrigés
    - Tests automatisés (Pa11y)
 
-2. **[Accessibility Summary](accessibility-summary.md)**
+4. **[Accessibility Summary](accessibility-summary.md)**
    - Récapitulatif exécutif
    - Statistiques et corrections
 
-3. **[Accessibility Final Report](accessibility-final-report.md)**
+5. **[Accessibility Final Report](accessibility-final-report.md)**
    - Rapport final complet
    - Tous les éléments corrigés et validés
 
 ### Performance & SEO (Lighthouse)
 
-4. **[Lighthouse Action Plan](lighthouse-action-plan.md)**
+6. **[Lighthouse Action Plan](lighthouse-action-plan.md)**
    - Plan d'action complet
    - Quick wins vs optimisations futures
 
-5. **[Lighthouse Quick Wins Completed](lighthouse-quick-wins-completed.md)**
+7. **[Lighthouse Quick Wins Completed](lighthouse-quick-wins-completed.md)**
    - Quick wins appliqués
    - Meta descriptions + hiérarchie headings
 
 ### Tests & Rapports
 
-6. **[A11Y Testing Guide](A11Y_TESTING.md)**
+8. **[A11Y Testing Guide](A11Y_TESTING.md)**
    - Guide d'utilisation des outils de test
    - Pa11y, Lighthouse, WAVE, Axe
 
-7. **[Pa11y Results Summary](a11y-reports/pa11y-results-summary.md)**
+9. **[Pa11y Results Summary](a11y-reports/pa11y-results-summary.md)**
    - Résultats initiaux des tests Pa11y
    - 20 erreurs détectées
 
-8. **[Pa11y Validation Success](a11y-reports/validation-success.md)**
+10. **[Pa11y Validation Success](a11y-reports/validation-success.md)**
    - Validation après corrections
    - 6/6 pages conformes ✅
 
-9. **[Corrections Applied](a11y-reports/corrections-applied.md)**
+11. **[Corrections Applied](a11y-reports/corrections-applied.md)**
    - Détails de toutes les corrections appliquées
 
 ---

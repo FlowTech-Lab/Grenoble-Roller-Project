@@ -111,14 +111,20 @@
     position: relative; /* Pour le skip link */
   }
   
-  /* Global link styles */
+  /* Global link styles - adaptés aux thèmes */
   a {
     color: var(--gr-primary);
     transition: var(--transition-liquid-fast);
   }
   
+  /* Mode clair : hover bleu foncé */
   a:hover {
-    color: var(--gr-primary-dark);
+    color: var(--gr-primary-light);
+  }
+  
+  /* Mode sombre : hover bleu clair */
+  [data-bs-theme="dark"] a:hover {
+    color: var(--gr-primary-dark); /* #4d94ff - bleu clair pour contraste en mode sombre */
   }
   
   [data-bs-theme=dark] body {
@@ -195,10 +201,49 @@
     color: white;
   }
   
+  .btn-liquid-success:disabled {
+    background: rgba(13, 99, 34, 0.3); /* Vert success très transparent */
+    color: rgba(255, 255, 255, 0.6); /* Blanc semi-transparent */
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  [data-bs-theme="dark"] .btn-liquid-success:disabled {
+    background: rgba(13, 99, 34, 0.4); /* Un peu plus visible en mode sombre */
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
   .btn-liquid-danger {
     background: var(--gradient-liquid-danger);
     border: none;
     color: white;
+  }
+  
+  /* Outline liquid buttons */
+  .btn-outline-liquid-primary {
+    background: transparent;
+    border: 2px solid var(--gr-primary);
+    color: var(--gr-primary);
+    transition: var(--transition-liquid);
+  }
+  
+  .btn-outline-liquid-primary:hover {
+    background: var(--gr-primary);
+    color: white;
+    border-color: var(--gr-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+  }
+  
+  [data-bs-theme="dark"] .btn-outline-liquid-primary {
+    border-color: var(--gr-primary-dark);
+    color: var(--gr-primary-dark);
+  }
+  
+  [data-bs-theme="dark"] .btn-outline-liquid-primary:hover {
+    background: var(--gr-primary-dark);
+    color: var(--gr-text-dark);
+    border-color: var(--gr-primary-dark);
   }
 
   /* Outline buttons - same color as navbar links (adapts to theme) */
@@ -871,6 +916,25 @@
     background: rgba(77, 148, 255, 0.1);
   }
   
+  /* === LIENS EMAIL - FOCUS STATES (Accessibilité) === */
+  a[href^="mailto:"]:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+  
+  /* Fallback pour navigateurs plus anciens */
+  a[href^="mailto:"]:focus {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+  
+  /* Mode sombre */
+  [data-bs-theme="dark"] a[href^="mailto:"]:focus-visible {
+    outline-color: var(--gr-primary-dark);
+  }
+  
   /* === FORMULAIRES - Champs obligatoires WCAG 3.3.2 Level A === */
   .form-label.required::after,
   label.required::after {
@@ -952,7 +1016,6 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border-radius: 0.1rem;
     background-image: url('/img/Roller-Luminous2.png');
     background-size: cover;
     background-position: center;
@@ -1019,7 +1082,6 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border-radius: 1rem;
     background-image: url('/img/Roller-Luminous.png');
     background-size: cover;
     background-position: center;
@@ -2390,6 +2452,12 @@
     overflow: hidden;
   }
 
+  /* Assurer pied aligné : contenu + spacer + footer collé en bas */
+  .card-product .card-body {
+    display: flex;
+    flex-direction: column;
+  }
+
   .card-product:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover-card) !important;
@@ -2439,15 +2507,17 @@
   }
 
   /* Flexible footer: price left, CTA right */
-.product-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--liquid-glass-border);
-}
+  .product-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--liquid-glass-border);
+  }
 
-  .spacer { flex: 1 1 auto; }
+  .spacer { 
+    flex: 1 1 auto; 
+  }
 
 .btn-add {
     display: inline-flex;
@@ -2465,11 +2535,10 @@
   }
 
 /* Options (taille / couleur) compacts */
-.product-options-section {
-  padding: 8px 0;
-  border-top: 1px solid var(--liquid-glass-border);
-  border-bottom: 1px solid var(--liquid-glass-border);
-}
+  .product-options-section {
+    padding: 4px 0;
+    border-top: 1px solid var(--liquid-glass-border);
+  }
 
 .product-options { 
   display: flex; 
@@ -2756,4 +2825,428 @@
   
   [data-bs-theme="dark"] .gps-coordinates-card .text-muted {
     color: rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  /* === SECTION BACKGROUNDS - DUAL THEME === */
+  /* Section avec fond alterné qui s'adapte au thème */
+  .section-alt {
+    background: rgba(248, 249, 250, 0.5); /* Légèrement plus clair que le body */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  [data-bs-theme="dark"] .section-alt {
+    background: rgba(0, 0, 0, 0.2); /* Légèrement plus foncé que le body en mode sombre */
+  }
+  
+  /* ========================================
+     SECTIONS PRIMARY : HARMONISATION GLASSMORPHISM
+     Mode clair = overlay léger
+     Mode sombre = overlay foncé cohérent
+     ======================================== */
+  
+  /* BASE COMMUNE */
+  .section-stats,
+  .section-cta {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  /* Bordures adaptatives - mode clair */
+  .section-stats {
+    border-top: 1px solid rgba(0, 123, 255, 0.12);
+    border-bottom: 1px solid rgba(0, 123, 255, 0.06);
+  }
+  
+  .section-cta {
+    border-top: 1px solid rgba(39, 130, 187, 0.12);
+    border-bottom: 1px solid rgba(39, 130, 187, 0.06);
+  }
+  
+  /* Contenu au-dessus de l'overlay */
+  .section-stats .container,
+  .section-cta .container {
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* ====================================
+     MODE CLAIR : Glassmorphism harmonisé avec section-alt
+     Fond proche de section-alt + accents colorés subtils
+     Texte noir/gris foncé pour contraste AAA
+     ==================================== */
+  
+  /* ========================================
+     SECTION STATS : AMÉLIORATIONS COMPLÈTES
+     ======================================== */
+  
+  /* Section Stats : Glassmorphism avec overlay léger */
+  .section-stats {
+    /* Mode clair : overlay glassmorphism léger */
+    background: linear-gradient(135deg,
+      rgba(248, 250, 252, 0.95) 0%,
+      rgba(240, 245, 250, 0.98) 50%,
+      rgba(248, 250, 252, 0.95) 100%);
+    backdrop-filter: blur(20px) saturate(105%);
+    -webkit-backdrop-filter: blur(20px) saturate(105%);
+    color: #212529;
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 0 100px rgba(0, 123, 255, 0.03); /* Overlay glassmorphism léger */
+    
+    /* Padding responsive */
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    
+    @media (min-width: 992px) {
+      padding-top: 4rem;
+      padding-bottom: 4rem;
+    }
+  }
+  
+  /* Gradient séparateur décoratif */
+  .stats-gradient-separator {
+    width: 100px;
+    height: 2px;
+    margin: 0 auto;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      currentColor 50%,
+      transparent 100%
+    );
+    opacity: 0.3;
+  }
+  
+  /* Items de stats */
+  .stat-item {
+    transition: transform 0.3s ease;
+    cursor: default;
+  }
+  
+  .stat-item:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Wrapper icône avec cercle glassmorphism */
+  .stat-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s ease;
+  }
+  
+  .stat-item:hover .stat-icon-wrapper {
+    transform: scale(1.1);
+  }
+  
+  /* Icônes */
+  .stat-icon {
+    font-size: 2.5rem;
+    color: var(--gr-primary);
+    transition: transform 0.3s ease;
+  }
+  
+  .stat-item:hover .stat-icon {
+    transform: scale(1.1);
+  }
+  
+  /* Labels */
+  .stat-label {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  /* Titres en noir/gris foncé */
+  .section-stats h2,
+  .section-stats .display-4:not(.fw-bold) {
+    color: #212529;  /* Noir pour contraste AAA */
+  }
+  
+  /* Nombres en bleu pour visibilité et différenciation */
+  .section-stats .display-3.fw-bold,
+  .section-stats .display-4.fw-bold,
+  .section-stats .display-5.fw-bold {
+    color: var(--gr-primary);  /* #007bff - contraste 4.5:1+ */
+  }
+  
+  /* Responsive mobile : icônes et chiffres */
+  @media (max-width: 767px) {
+    .stat-icon-wrapper {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .stat-icon {
+      font-size: 1.875rem; /* 30px */
+    }
+    
+    .section-stats .display-3.fw-bold,
+    .section-stats .display-4.fw-bold {
+      font-size: 2.5rem; /* display-5 size */
+    }
+  }
+  
+  /* Texte secondaire en gris foncé - override Bootstrap text-light */
+  .section-stats p,
+  .section-stats .text-light,
+  .section-stats small,
+  .section-stats p.text-light {
+    color: #495057 !important;  /* Gris foncé pour contraste AAA (12:1) */
+  }
+  
+  /* Icônes en bleu pour différenciation (accent) */
+  .section-stats i {
+    color: var(--gr-primary);  /* #007bff - accent coloré */
+  }
+  
+  /* Section CTA : Glassmorphism avec accent cyan subtil */
+  .section-cta {
+    /* Fond proche de section-alt avec très légère teinte cyan */
+    background: linear-gradient(135deg,
+      rgba(248, 250, 252, 0.95) 0%,    /* Blanc cassé très léger */
+      rgba(240, 248, 252, 0.98) 50%,   /* Légère teinte cyan */
+      rgba(248, 250, 252, 0.95) 100%);
+    backdrop-filter: blur(12px) saturate(105%);
+    -webkit-backdrop-filter: blur(12px) saturate(105%);
+    color: #212529;  /* Texte noir pour contraste AAA */
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(39, 130, 187, 0.05); /* Accent cyan subtil en bas */
+  }
+  
+  /* Titres en noir/gris foncé */
+  .section-cta h2,
+  .section-cta .display-4,
+  .section-cta .display-4.fw-bold {
+    color: #212529;  /* Noir pour contraste AAA */
+  }
+  
+  /* Texte secondaire en gris foncé - override Bootstrap text-light */
+  .section-cta p,
+  .section-cta .lead,
+  .section-cta .text-light,
+  .section-cta small,
+  .section-cta p.text-light {
+    color: #495057 !important;  /* Gris foncé pour contraste AAA */
+  }
+  
+  /* Icônes en cyan pour différenciation (accent) - SAUF dans les boutons */
+  .section-cta i {
+    color: var(--gr-info);  /* #2782bb - accent coloré */
+  }
+  
+  /* Les boutons dans section-cta doivent être identiques à ceux de la section Hero */
+  /* Isolation des boutons pour éviter toute interférence avec les styles de section-cta */
+  .section-cta .btn-liquid-primary {
+    background: var(--gradient-liquid-primary) !important;
+    border: none !important;
+    color: white !important;
+    backdrop-filter: var(--liquid-blur) !important;
+    -webkit-backdrop-filter: var(--liquid-blur) !important;
+  }
+  
+  .section-cta .btn-liquid-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-hover-lg) !important;
+  }
+  
+  .section-cta .btn-outline-liquid-primary {
+    background: transparent !important;
+    border: 2px solid var(--gr-primary) !important;
+    color: var(--gr-primary) !important;
+  }
+  
+  .section-cta .btn-outline-liquid-primary:hover {
+    background: var(--gr-primary) !important;
+    color: white !important;
+    border-color: var(--gr-primary) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-hover) !important;
+  }
+  
+  [data-bs-theme="dark"] .section-cta .btn-outline-liquid-primary {
+    border-color: var(--gr-primary-dark) !important;
+    color: var(--gr-primary-dark) !important;
+  }
+  
+  [data-bs-theme="dark"] .section-cta .btn-outline-liquid-primary:hover {
+    background: var(--gr-primary-dark) !important;
+    color: var(--gr-text-dark) !important;
+    border-color: var(--gr-primary-dark) !important;
+  }
+  
+  /* Les icônes dans les boutons gardent leur couleur par défaut (override) */
+  .section-cta .btn i,
+  .section-cta .btn-liquid-primary i,
+  .section-cta .btn-outline-liquid-primary i {
+    color: inherit !important; /* Hérite de la couleur du bouton */
+  }
+  
+  /* ====================================
+     MODE SOMBRE : Overlay foncé cohérent
+     ==================================== */
+  
+  [data-bs-theme="dark"] .section-stats {
+    background: linear-gradient(135deg,
+      rgba(13, 31, 58, 0.75) 0%,       /* Bleu très foncé */
+      rgba(20, 45, 85, 0.65) 50%,
+      rgba(30, 60, 110, 0.55) 100%);
+    backdrop-filter: blur(50px) saturate(130%);
+    -webkit-backdrop-filter: blur(50px) saturate(130%);
+    color: #e5e5e5;  /* Texte clair */
+    border-top: 1px solid rgba(77, 148, 255, 0.1);
+    border-bottom: 1px solid rgba(77, 148, 255, 0.1);
+    box-shadow: 
+      0 4px 24px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(77, 148, 255, 0.1);
+  }
+  
+  /* Mode sombre : cercles glassmorphism */
+  [data-bs-theme="dark"] .stat-icon-wrapper {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Mode sombre : gradient séparateur */
+  [data-bs-theme="dark"] .stats-gradient-separator {
+    opacity: 0.5;
+  }
+  
+  /* Texte blanc en mode sombre - override mode clair */
+  [data-bs-theme="dark"] .section-stats h2,
+  [data-bs-theme="dark"] .section-stats .display-3,
+  [data-bs-theme="dark"] .section-stats .display-3.fw-bold,
+  [data-bs-theme="dark"] .section-stats .display-4,
+  [data-bs-theme="dark"] .section-stats .display-4.fw-bold,
+  [data-bs-theme="dark"] .section-stats p,
+  [data-bs-theme="dark"] .section-stats .text-light,
+  [data-bs-theme="dark"] .section-stats p.text-light,
+  [data-bs-theme="dark"] .section-stats small,
+  [data-bs-theme="dark"] .section-stats i {
+    color: white !important;
+  }
+  
+  [data-bs-theme="dark"] .section-cta {
+    background: linear-gradient(135deg,
+      rgba(15, 35, 50, 0.75) 0%,       /* Cyan très foncé */
+      rgba(22, 50, 70, 0.65) 50%,
+      rgba(30, 65, 90, 0.55) 100%);
+    backdrop-filter: blur(50px) saturate(130%);
+    -webkit-backdrop-filter: blur(50px) saturate(130%);
+    color: #e5e5e5;
+    border-top: 1px solid rgba(80, 165, 215, 0.15);
+    border-bottom: 1px solid rgba(80, 165, 215, 0.08);
+    box-shadow: 
+      0 4px 24px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(80, 165, 215, 0.1);
+  }
+  
+  /* Texte blanc en mode sombre - override mode clair */
+  [data-bs-theme="dark"] .section-cta h2,
+  [data-bs-theme="dark"] .section-cta .display-4,
+  [data-bs-theme="dark"] .section-cta .display-4.fw-bold,
+  [data-bs-theme="dark"] .section-cta p,
+  [data-bs-theme="dark"] .section-cta .lead,
+  [data-bs-theme="dark"] .section-cta .text-light,
+  [data-bs-theme="dark"] .section-cta p.text-light,
+  [data-bs-theme="dark"] .section-cta small,
+  [data-bs-theme="dark"] .section-cta i {
+    color: white !important;
+  }
+  
+  /* Les icônes dans les boutons gardent leur couleur en mode sombre (override) */
+  [data-bs-theme="dark"] .section-cta .btn i,
+  [data-bs-theme="dark"] .section-cta .btn-liquid-primary i,
+  [data-bs-theme="dark"] .section-cta .btn-outline-liquid-primary i {
+    color: inherit !important; /* Hérite de la couleur du bouton */
+  }
+  
+  /* Liens dans sections - adaptés aux thèmes */
+  .section-stats a,
+  .section-cta a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+  }
+  
+  /* Mode clair */
+  .section-stats a {
+    color: var(--gr-primary);  /* Bleu pour contraste */
+  }
+  
+  .section-stats a:hover {
+    color: #0056b3;  /* Bleu plus foncé pour hover visible */
+  }
+  
+  .section-cta a {
+    color: var(--gr-info);  /* Cyan pour contraste */
+  }
+  
+  .section-cta a:hover {
+    color: #1e6a9a;  /* Cyan plus foncé pour hover visible */
+  }
+  
+  /* Mode sombre */
+  [data-bs-theme="dark"] .section-stats a,
+  [data-bs-theme="dark"] .section-cta a {
+    color: white;
+  }
+  
+  [data-bs-theme="dark"] .section-stats a:hover {
+    color: var(--gr-primary-dark);  /* Bleu clair pour hover visible */
+  }
+  
+  [data-bs-theme="dark"] .section-cta a:hover {
+    color: rgba(255, 255, 255, 0.8);  /* Blanc légèrement transparent pour hover visible */
+  }
+  
+  /* HR séparateurs - mode clair */
+  .section-stats hr,
+  .section-cta hr {
+    border-color: rgba(0, 0, 0, 0.1);
+    opacity: 1;
+  }
+  
+  /* Mode sombre - HR plus visible */
+  [data-bs-theme="dark"] .section-stats hr,
+  [data-bs-theme="dark"] .section-cta hr {
+    border-color: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+  }
+  
+  /* Legacy : section-primary (déprécié, utilise section-stats ou section-cta) */
+  .section-primary {
+    background: var(--gradient-liquid-primary);
+    color: white;
+  }
+  
+  [data-bs-theme="dark"] .section-primary {
+    background: linear-gradient(135deg, #1e8dff 0%, #1ea0ff 100%);
+    color: white;
+  }
+  
+  .section-primary .text-light,
+  .section-primary .text-white {
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  [data-bs-theme="dark"] .section-primary .text-light,
+  [data-bs-theme="dark"] .section-primary .text-white {
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  .section-primary hr {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    opacity: 1;
   }

@@ -124,6 +124,11 @@ class Event < ApplicationRecord
     start_at <= Time.current
   end
 
+  # Vérifie si l'événement a été créé récemment (dans les 4 dernières semaines)
+  def recent?
+    created_at >= 7.days.ago
+  end
+
   # Vérifie si l'événement a des coordonnées GPS
   def has_gps_coordinates?
     meeting_lat.present? && meeting_lng.present?
