@@ -37,9 +37,9 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 1 : Découverte de l'Association**
 - [x] ⚠️ **URGENT : Corriger les liens morts du footer** (Liens "À propos" et "Événements" corrigés - Contact/CGU/Confidentialité toujours `#`)
-- [ ] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus")
+- [x] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus") ✅ Section "Pourquoi nous rejoindre ?" + lien vers `/a-propos`
 - [x] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer") ✅ Implémenté
-- [ ] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés")
+- [x] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés") ✅ Bloc "Chiffres clés" (4 stats) sur la homepage et sur `/a-propos`
 
 ### **Parcours 2 : Inscription**
 - [x] Ajouter astérisques `*` aux champs obligatoires (Visuellement clair) ✅ Déjà implémenté avec classe `.required` et légende

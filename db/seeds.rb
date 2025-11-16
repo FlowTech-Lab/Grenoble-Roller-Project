@@ -287,37 +287,35 @@ variant_casquette = ProductVariant.create!(
 VariantOptionValue.create!(variant: variant_casquette, option_value: color_white)
 
 # ---------------------------
-# 3. SAC À DOS + ROLLER - 4 couleurs (noir/rouge/violet/bleu) - même image
+# 3. SAC À DOS + ROLLER - 1 produit, 4 variantes couleur
 # ---------------------------
-sac_couleurs = [
-  { color: color_black, name: "Sac à dos + Roller - Noir", slug: "sac-dos-roller-noir" },
-  { color: color_red, name: "Sac à dos + Roller - Rouge", slug: "sac-dos-roller-rouge" },
-  { color: color_violet, name: "Sac à dos + Roller - Violet", slug: "sac-dos-roller-violet" },
-  { color: color_blue, name: "Sac à dos + Roller - Bleu", slug: "sac-dos-roller-bleu" }
-]
+sac_roller = Product.create!(
+  name: "Sac à dos + Roller",
+  slug: "sac-dos-roller",
+  category: categories[2],
+  description: "Sac à dos pratique avec compartiment dédié pour transporter vos rollers.",
+  price_cents: 45_00,
+  stock_qty: 0,
+  currency: "EUR",
+  is_active: true,
+  image_url: "produits/Sac a dos roller.png"
+)
 
-sac_couleurs.each do |sac|
-  product = Product.create!(
-    name: sac[:name],
-    slug: sac[:slug],
-    category: categories[2],
-    description: "Sac à dos pratique avec compartiment dédié pour transporter vos rollers.",
-    price_cents: 45_00,
-    stock_qty: 0,
-    currency: "EUR",
-    is_active: true,
-    image_url: "produits/Sac a dos roller.png"
-  )
-  
+[
+  color_black,
+  color_red,
+  color_violet,
+  color_blue
+].each do |color_ov|
   variant = ProductVariant.create!(
-    product: product,
-    sku: "SAC-DOS-#{sac[:color].value.upcase}",
+    product: sac_roller,
+    sku: "SAC-DOS-#{color_ov.value.upcase}",
     price_cents: 45_00,
     stock_qty: 10,
     currency: "EUR",
     is_active: true
   )
-  VariantOptionValue.create!(variant:, option_value: sac[:color])
+  VariantOptionValue.create!(variant:, option_value: color_ov)
 end
 
 # ---------------------------
@@ -372,38 +370,39 @@ apparel_sizes.each do |size_ov|
 end
 
 # ---------------------------
-# 6. VESTE - 3 couleurs (noir/bleu/blanc), plusieurs tailles, 3 images différentes
+# 6. VESTE - 1 produit, 3 couleurs x plusieurs tailles
+#    (1 image principale commune pour l'instant)
 # ---------------------------
-vestes = [
-  { color: color_black, name: "Veste Grenoble Roller - Noir", slug: "veste-grenoble-roller-noir", image: "produits/veste noir.avif" },
-  { color: color_blue, name: "Veste Grenoble Roller - Bleu", slug: "veste-grenoble-roller-bleu", image: "produits/veste bleu.avif" },
-  { color: color_white, name: "Veste Grenoble Roller - Blanc", slug: "veste-grenoble-roller-blanc", image: "produits/veste.png" }
+veste_product = Product.create!(
+  name: "Veste Grenoble Roller",
+  slug: "veste-grenoble-roller",
+  category: categories[2],
+  description: "Veste Grenoble Roller, coupe unisexe, confortable et résistante.",
+  price_cents: 40_00,
+  stock_qty: 0,
+  currency: "EUR",
+  is_active: true,
+  image_url: "produits/veste.png"
+)
+
+vestes_colors = [
+  color_black,
+  color_blue,
+  color_white
 ]
 
-vestes.each do |v|
-  product = Product.create!(
-    name: v[:name],
-    slug: v[:slug],
-    category: categories[2],
-    description: "Veste Grenoble Roller, coupe unisexe, confortable et résistante.",
-    price_cents: 40_00,
-    stock_qty: 0,
-    currency: "EUR",
-    is_active: true,
-    image_url: v[:image]
-  )
-
+vestes_colors.each do |color_ov|
   apparel_sizes.each_with_index do |size_ov, idx|
     variant = ProductVariant.create!(
-      product: product,
-      sku: "VESTE-#{v[:color].value.upcase}-#{size_ov.value}",
+      product: veste_product,
+      sku: "VESTE-#{color_ov.value.upcase}-#{size_ov.value}",
       price_cents: 40_00,
       stock_qty: [5, 10, 7][idx],
       currency: "EUR",
       is_active: true
     )
     VariantOptionValue.create!(variant:, option_value: size_ov)
-    VariantOptionValue.create!(variant:, option_value: v[:color])
+    VariantOptionValue.create!(variant:, option_value: color_ov)
   end
 end
 

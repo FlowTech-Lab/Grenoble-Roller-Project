@@ -74,14 +74,14 @@ tags: ["product", "ux", "quick-wins", "plan"]
 
 ### **Phase 2 : Quick Wins Faciles (2-3h)**
 
-#### 2.1 Section "À propos" sur homepage
-- [ ] Analyser structure actuelle homepage
-- [ ] Déterminer emplacement (après hero, avant événements ?)
-- [ ] Créer section avec 2-3 lignes + valeurs + lien "En savoir plus"
-- [ ] Utiliser données dynamiques (stats depuis DB)
-- [ ] Tester responsive
+#### 2.1 Section "À propos" sur homepage ✅ TERMINÉ
+- [x] Analyser structure actuelle homepage
+- [x] Déterminer emplacement (après hero, avant événements)
+- [x] Créer section avec 2-3 valeurs clés ("Pourquoi nous rejoindre ?") + lien "En savoir plus"
+- [x] Utiliser données dynamiques (stats depuis DB) dans bloc "Chiffres clés"
+- [x] Tester responsive
 - **Fichier** : `app/views/pages/index.html.erb`
-- **Controller** : `app/controllers/pages_controller.rb` (stats déjà disponibles)
+- **Controller** : `app/controllers/pages_controller.rb`
 
 #### 2.2 Badge "Nouveau" sur événements ✅ TERMINÉ
 - [x] Ajouter méthode `recent?` dans modèle Event (créé dans les 7 derniers jours)
@@ -116,11 +116,11 @@ tags: ["product", "ux", "quick-wins", "plan"]
 - **Fichier** : `app/views/pages/index.html.erb`
 - **Date** : 2025-11-15
 
-#### 3.3 Compteur social proof
-- [ ] Ajouter compteur membres/événements sur homepage
-- [ ] Utiliser stats depuis `PagesController#about` (déjà disponibles)
-- [ ] Style discret mais visible
-- [ ] Placement : dans hero ou section dédiée
+#### 3.3 Compteur social proof ✅ TERMINÉ
+- [x] Ajouter compteur membres/événements sur homepage (section "Chiffres clés")
+- [x] Utiliser stats depuis `PagesController#index` / `about` (mêmes compteurs réutilisés)
+- [x] Style discret mais visible (4 chiffres colorés dans section-alt)
+- [x] Placement : sous "Pourquoi nous rejoindre ?"
 - **Fichier** : `app/views/pages/index.html.erb`
 - **Controller** : `app/controllers/pages_controller.rb`
 

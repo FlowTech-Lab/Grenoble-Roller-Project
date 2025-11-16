@@ -2452,6 +2452,12 @@
     overflow: hidden;
   }
 
+  /* Assurer pied aligné : contenu + spacer + footer collé en bas */
+  .card-product .card-body {
+    display: flex;
+    flex-direction: column;
+  }
+
   .card-product:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover-card) !important;
@@ -2501,15 +2507,17 @@
   }
 
   /* Flexible footer: price left, CTA right */
-.product-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--liquid-glass-border);
-}
+  .product-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--liquid-glass-border);
+  }
 
-  .spacer { flex: 1 1 auto; }
+  .spacer { 
+    flex: 1 1 auto; 
+  }
 
 .btn-add {
     display: inline-flex;
@@ -2527,11 +2535,10 @@
   }
 
 /* Options (taille / couleur) compacts */
-.product-options-section {
-  padding: 8px 0;
-  border-top: 1px solid var(--liquid-glass-border);
-  border-bottom: 1px solid var(--liquid-glass-border);
-}
+  .product-options-section {
+    padding: 4px 0;
+    border-top: 1px solid var(--liquid-glass-border);
+  }
 
 .product-options { 
   display: flex; 
