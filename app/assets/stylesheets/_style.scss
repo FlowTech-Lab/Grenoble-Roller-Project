@@ -2473,10 +2473,18 @@
     border-radius: 1.6rem 1.6rem 0 0; /* cartes produits : arrondi uniquement en haut */
   }
 
-  /* Show produit : image avec arrondi complet */
-  .product-show-image-wrapper {
-    border-radius: 1.6rem;
+/* Show produit : image avec arrondi adapté au layout */
+.product-show-image-wrapper {
+  border-radius: 1.6rem; /* par défaut (mobile : card verticale) */
+}
+
+@media (min-width: 992px) {
+  /* Sur desktop, card horizontale : arrondi seulement côté gauche,
+     côté droit aligné avec le contenu */
+  .product-show-card .product-show-image-wrapper {
+    border-radius: 1.6rem 0 0 1.6rem;
   }
+}
 
   .card-product-image {
     position: absolute;
@@ -2521,9 +2529,22 @@
     border-top: 1px solid var(--liquid-glass-border);
   }
 
-  .spacer { 
-    flex: 1 1 auto; 
+.spacer { 
+  flex: 1 1 auto; 
+}
+
+/* Product show layout: card horizontale image + contenu */
+.product-show-card {
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .product-show-card {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
   }
+}
 
 .btn-add {
     display: inline-flex;
@@ -2546,10 +2567,43 @@
     border-top: 1px solid var(--liquid-glass-border);
   }
 
+.product-qty-total-row {
+  gap: 1rem;
+}
+
+.product-total {
+  font-size: 1.1rem;
+}
+
+@media (min-width: 992px) {
+  .product-total {
+    font-size: 1.25rem;
+  }
+}
+
 .product-options { 
   display: flex; 
   flex-wrap: wrap; 
   gap: 0.5rem; 
+}
+
+/* Actions fiche produit (Voir / Ajouter au panier) */
+.product-actions-row {
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .product-actions-row {
+    justify-content: flex-end;
+  }
+
+  .product-add-btn {
+    min-width: 230px;
+  }
+
+  .product-cart-link {
+    flex: 0 0 auto;
+  }
 }
 .product-options .form-select {
   min-width: 120px;
