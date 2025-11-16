@@ -6,4 +6,12 @@ class ProductVariant < ApplicationRecord
   validates :sku, presence: true, uniqueness: true, length: { maximum: 80 }
   validates :price_cents, :currency, presence: true
   validates :currency, length: { is: 3 }
+
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id product_id sku price_cents currency stock_qty is_active created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[product option_values]
+  end
 end

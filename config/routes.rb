@@ -18,7 +18,9 @@ Rails.application.routes.draw do
   root 'pages#index'
   
   # Static pages
-  get '/association', to: 'pages#association', as: 'association'
+  get '/a-propos', to: 'pages#about', as: 'about'
+  # Redirection 301 de /association vers /a-propos (fusion des pages)
+  get '/association', to: redirect('/a-propos', status: 301), as: 'association'
 
   # Shop
   resources :products, only: [:index, :show]

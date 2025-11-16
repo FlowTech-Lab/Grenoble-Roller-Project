@@ -25,6 +25,20 @@
               # Group variants by option types (size, color)
               size_options = active_variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'size' } }.uniq
               color_options = active_variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'color' } }.uniq
+
+              # Stock par option (pour marquer les tailles/couleurs épuisées)
+              size_stock = Hash.new(0)
+              color_stock = Hash.new(0)
+              active_variants.each do |v|
+                v.option_values.each do |ov|
+                  case ov.option_type.name
+                  when 'size'
+                    size_stock[ov.id] += v.stock_qty
+                  when 'color'
+                    color_stock[ov.id] += v.stock_qty
+                  end
+                end
+              end
             %>
             <article class="card card-product card-liquid rounded-liquid" 
                      data-product-url="<%= product_path(product.slug.presence || product) %>" 
@@ -44,54 +58,81 @@
               <div class="card-body">
                 <div class="product-content">
                   <h5 class="product-title mb-2"><%= product.name %></h5>
-                  <p class="product-description mb-3 small text-muted">
+                  <p class="product-description mb-2 small text-muted">
                     <%= product.description.presence || "Porter les couleurs de Grenoble Roller !" %>
                   </p>
                 </div>
+
+                <!-- pousse le bloc options + footer en bas de la card -->
+                <div class="spacer"></div>
                 
                 <% if active_variants.any? %>
                   <% 
                     # Si une seule variante, on l'active automatiquement
                     single_variant = active_variants.count == 1 ? active_variants.first : nil
                   %>
-                  <div class="product-options-section mb-3">
+                  <div class="product-options-section mb-1">
                     <div class="product-options">
-                      <% if size_options.any? %>
+                      <% if size_options.size > 1 %>
                         <select class="form-select form-select-sm product-size-select" 
                                 aria-label="Choisir la taille" 
                                 data-product-id="<%= product.id %>"
                                 id="size-select-<%= product.id %>">
                           <option value="">Choisir taille</option>
                           <% size_options.each do |size_opt| %>
-                            <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == size_opt.id && ov.option_type.name == 'size' } %>
-                            <option value="<%= size_opt.id %>" <%= 'selected' if selected %>><%= size_opt.presentation %></option>
+                            <% 
+                              selected = single_variant && single_variant.option_values.any? { |ov| ov.id == size_opt.id && ov.option_type.name == 'size' }
+                              option_stock = size_stock[size_opt.id]
+                            %>
+                            <option value="<%= size_opt.id %>" <%= 'selected' if selected %> <%= 'disabled' if option_stock <= 0 %>>
+                              <%= size_opt.presentation %><%= ' (épuisé)' if option_stock <= 0 %>
+                            </option>
                           <% end %>
                         </select>
+                      <% elsif size_options.size == 1 %>
+                        <% size_opt = size_options.first %>
+                        <p class="small text-body-secondary mb-1">
+                          <strong>Taille :</strong> <%= size_opt.presentation %>
+                          <% if size_stock[size_opt.id] <= 0 %>
+                            <span class="text-danger ms-1">(plus en stock)</span>
+                          <% end %>
+                        </p>
                       <% end %>
                       
-                      <% if color_options.any? %>
+                      <% if color_options.size > 1 %>
                         <select class="form-select form-select-sm product-color-select" 
                                 aria-label="Choisir la couleur" 
                                 data-product-id="<%= product.id %>"
                                 id="color-select-<%= product.id %>">
                           <option value="">Choisir couleur</option>
                           <% color_options.each do |color_opt| %>
-                            <% selected = single_variant && single_variant.option_values.any? { |ov| ov.id == color_opt.id && ov.option_type.name == 'color' } %>
-                            <option value="<%= color_opt.id %>" <%= 'selected' if selected %>><%= color_opt.presentation %></option>
+                            <% 
+                              selected = single_variant && single_variant.option_values.any? { |ov| ov.id == color_opt.id && ov.option_type.name == 'color' }
+                              option_stock = color_stock[color_opt.id]
+                            %>
+                            <option value="<%= color_opt.id %>" <%= 'selected' if selected %> <%= 'disabled' if option_stock <= 0 %>>
+                              <%= color_opt.presentation %><%= ' (épuisé)' if option_stock <= 0 %>
+                            </option>
                           <% end %>
                         </select>
+                      <% elsif color_options.size == 1 %>
+                        <% color_opt = color_options.first %>
+                        <p class="small text-body-secondary mb-1">
+                          <strong>Couleur :</strong> <%= color_opt.presentation %>
+                          <% if color_stock[color_opt.id] <= 0 %>
+                            <span class="text-danger ms-1">(plus en stock)</span>
+                          <% end %>
+                        </p>
                       <% end %>
                       
                       <% if size_options.empty? && color_options.empty? %>
-                        <select class="form-select form-select-sm" disabled aria-label="Taille unique">
-                          <option selected>Taille unique</option>
-                        </select>
+                        <p class="small text-body-secondary mb-1">
+                          <strong>Taille :</strong> Taille unique
+                        </p>
                       <% end %>
                     </div>
                   </div>
                 <% end %>
-                
-                <div class="spacer"></div>
                 <div class="product-footer">
                   <div class="price-section-vertical">
                     <div class="price-display">
@@ -171,7 +212,8 @@
     
     document.querySelectorAll('.product-size-select, .product-color-select').forEach(select => {
       const productId = parseInt(select.dataset.productId);
-      
+      if (!productId) return;
+
       // Avoid processing the same product multiple times
       if (processedProducts.has(productId)) return;
       processedProducts.add(productId);
@@ -213,7 +255,7 @@
         }
       }
       
-      // Initial update for products with options
+      // Initial update pour synchroniser bouton + prix (ne sélectionne rien par défaut)
       updateVariant();
       
       if (sizeSelect) sizeSelect.addEventListener('change', updateVariant);

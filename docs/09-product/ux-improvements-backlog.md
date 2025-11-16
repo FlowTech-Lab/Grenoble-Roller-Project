@@ -27,6 +27,8 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Total** : **119 améliorations** identifiées (**+12 nouvelles** liées au footer)
 
+**Avancement** : **8/41 Quick Wins terminés** (20%) + **1 partiellement fait**
+
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
 ---
@@ -34,21 +36,22 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ## 🟢 QUICK WINS (Impact Haut, Effort Faible)
 
 ### **Parcours 1 : Découverte de l'Association**
-- [ ] ⚠️ **URGENT : Corriger les liens morts du footer** (Remplacer `#` par routes fonctionnelles ou masquer temporairement)
-- [ ] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus")
-- [ ] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer")
-- [ ] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés")
+- [x] ⚠️ **URGENT : Corriger les liens morts du footer** (Liens "À propos" et "Événements" corrigés - Contact/CGU/Confidentialité toujours `#`)
+- [x] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus") ✅ Section "Pourquoi nous rejoindre ?" + lien vers `/a-propos`
+- [x] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer") ✅ Implémenté
+- [x] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés") ✅ Bloc "Chiffres clés" (4 stats) sur la homepage et sur `/a-propos`
 
 ### **Parcours 2 : Inscription**
-- [ ] Ajouter astérisques `*` aux champs obligatoires (Visuellement clair)
+- [x] Ajouter astérisques `*` aux champs obligatoires (Visuellement clair) ✅ Déjà implémenté avec classe `.required` et légende
 - [ ] Améliorer les messages d'erreur Devise (Traduire/customiser)
 - [ ] Message de bienvenue après inscription (Toast "Bienvenue [Prénom] ! Découvrez les événements")
 - [ ] Indicateur de force du mot de passe (Barre de progression visuelle)
 
 ### **Parcours 3 : Découverte des Événements**
-- [ ] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours)
+- [x] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours) ✅ Implémenté
 - [ ] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes)
-- [ ] Ajouter compteur d'événements ("X événements à venir" visible en haut)
+- [x] Ajouter compteur d'événements ("X événements à venir" visible en haut) ✅ Implémenté
+- [x] Refactoriser highlighted_event : intégration dans la grille avec badge "Prochain" ✅ Implémenté (Badge "Prochain" aligné avec badge de date, grille Bootstrap fonctionnelle)
 - [ ] Lien "Voir tous les événements passés" (Si >6 événements passés)
 
 ### **Parcours 4 : Inscription à un Événement**
@@ -77,14 +80,14 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Message "Article ajouté" plus visible (Toast/notification persistante)
 
 ### **Parcours 8 : Administration**
-- [ ] Dashboard avec statistiques basiques (Cards avec compteurs : Événements à valider, Utilisateurs, Commandes, Revenus)
-- [ ] Actions rapides dans liste Events (Boutons "Publier", "Refuser" directement dans Actions)
-- [ ] Vue "À valider" améliorée (Panel dédié sur dashboard avec liste + actions rapides)
+- [x] Dashboard avec statistiques basiques (Cards avec compteurs : Événements à valider, Utilisateurs, Commandes, Revenus)
+- [x] Actions rapides dans liste Events (Boutons "Refuser", "Voir", "Accepter" directement dans Actions)
+- [x] Vue "À valider" améliorée (Panel dédié sur dashboard avec liste - actions rapides retirées à la demande)
 - [ ] Exports CSV basiques (Bouton "Exporter CSV" sur chaque resource - ActiveAdmin natif)
 
 ### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
-- [ ] ⚠️ **URGENT : Masquer temporairement sections non implémentées** (Liens morts vers `#`)
-- [ ] ⚠️ **URGENT : Corriger liens existants** ("Parcourir" → `/events`, "Créer événement" → `/events/new`)
+- [ ] ⚠️ **URGENT : Masquer temporairement sections non implémentées** (Liens Contact/CGU/Confidentialité toujours vers `#`)
+- [x] ⚠️ **URGENT : Corriger liens existants** ("À propos" → `/a-propos`, "Événements" → `/events`, "Créer événement" → `/events/new`)
 - [ ] Désactiver newsletter temporairement (Masquer ou message "Bientôt disponible")
 
 ---
@@ -246,21 +249,24 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Top 11 des Quick Wins à implémenter en priorité** :
 
-1. **⚠️ URGENT : Corriger liens morts du footer** (Parcours 9)
+1. **⚠️ URGENT : Corriger liens morts du footer** (Parcours 9) 🟡 **PARTIELLEMENT FAIT**
    - Impact : Très haut (frustration majeure utilisateurs)
    - Effort : Très faible (masquer sections ou corriger liens existants)
+   - **Status** : Liens "À propos" et "Événements" corrigés - Contact/CGU/Confidentialité toujours `#`
 
-2. **Dashboard admin avec statistiques** (Parcours 8)
+2. **Dashboard admin avec statistiques** (Parcours 8) ✅ **TERMINÉ**
    - Impact : Très haut (admin voit l'état de l'app en un coup d'œil)
    - Effort : Faible (cards simples avec compteurs)
+   - **Status** : Dashboard complet avec stats Événements, Utilisateurs, Commandes, Revenus, Boutique
 
 3. **Section "À propos" sur homepage** (Parcours 1)
    - Impact : Haut (visiteurs comprennent mieux l'association)
    - Effort : Faible (2-3 lignes + lien)
 
-4. **Astérisques champs obligatoires** (Parcours 2)
+4. **Astérisques champs obligatoires** (Parcours 2) ✅ **TERMINÉ**
    - Impact : Haut (clarté immédiate pour utilisateurs)
    - Effort : Très faible (ajout `*` dans labels)
+   - **Status** : Classe `.required` sur labels + légende "Champs obligatoires" avec `*`
 
 5. **Séparer événements à venir/passés** (Parcours 5)
    - Impact : Haut (organisation claire de "Mes sorties")
@@ -278,13 +284,15 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Impact : Haut (première impression positive)
    - Effort : Faible (toast/alerte avec message personnalisé)
 
-9. **Badge "Nouveau" sur événements** (Parcours 3)
+9. **Badge "Nouveau" sur événements** (Parcours 3) ✅ **TERMINÉ**
    - Impact : Moyen-Haut (mise en avant des nouveautés)
    - Effort : Très faible (badge conditionnel)
+   - **Status** : Méthode `recent?` (7 derniers jours) + badge `badge-liquid-success` dans `_event_card.html.erb`
 
-10. **Actions rapides dans liste Events admin** (Parcours 8)
+10. **Actions rapides dans liste Events admin** (Parcours 8) ✅ **TERMINÉ**
    - Impact : Très haut (gain de temps pour modération)
    - Effort : Faible (boutons "Publier"/"Refuser" dans colonne Actions)
+   - **Status** : Boutons "Refuser", "Voir", "Accepter" dans colonne Actions de la liste Events
 
 11. **Sauvegarde automatique formulaire événement** (Parcours 6)
     - Impact : Haut (évite perte de données)
@@ -579,6 +587,11 @@ Une user story est "Done" quand :
 ---
 
 **Document créé le** : 2025-11-14  
-**Dernière mise à jour** : 2025-11-14  
-**Version** : 1.1 (Intégration accessibilité transversale)
+**Dernière mise à jour** : 2025-11-15  
+**Version** : 1.3 (Mise à jour avancement - 8 Quick Wins terminés)
+
+**Avancement actuel** :
+- ✅ **8 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain"
+- 🟡 **1 partiellement fait** : Liens footer (Contact/CGU/Confidentialité restent `#`)
+- ⏳ **32 Quick Wins en attente**
 

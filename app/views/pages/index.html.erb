@@ -30,10 +30,10 @@
                             S'inscrire
                         <% end %>
                         <% else %>
-                        <a href="<%= new_user_registration_path %>" class="btn btn-outline-light btn-lg">
-                            <i class="bi bi-person-plus me-2"></i>
-                            Adhérer
-                        </a>
+                        <%= link_to new_user_registration_path, class: "btn btn-outline-light btn-lg" do %>
+                            <i class="bi bi-person-plus me-2" aria-hidden="true"></i>
+                            S'inscrire pour adhérer
+                        <% end %>
                         <% end %>
                     </div>
                 </div>
@@ -294,3 +294,91 @@
       </div>
     </div>
   <% end %>
+</section>
+
+<!-- Pourquoi nous rejoindre ? (version minimaliste) -->
+<section class="py-4 mb-4">
+  <div class="container">
+    <h2 class="h3 fw-bold text-center mb-4">
+      <i class="bi bi-heart-fill text-liquid-primary me-2" aria-hidden="true"></i>
+      Pourquoi nous rejoindre ?
+    </h2>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card card-liquid rounded-liquid shadow-sm h-100 border-0">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-people fs-1 text-liquid-primary mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-bold mb-2">Tous niveaux</h3>
+            <p class="small text-body-secondary mb-0">
+              Débutants et experts trouvent leur place
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card card-liquid rounded-liquid shadow-sm h-100 border-0">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-shield-check fs-1 text-liquid-success mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-bold mb-2">Sécurité</h3>
+            <p class="small text-body-secondary mb-0">
+              Parcours encadrés par staffeurs formés
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card card-liquid rounded-liquid shadow-sm h-100 border-0">
+          <div class="card-body text-center py-4">
+            <i class="bi bi-calendar-heart fs-1 text-liquid-danger mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-bold mb-2">15+ ans</h3>
+            <p class="small text-body-secondary mb-0">
+              Association active depuis 2010
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <%= link_to about_path, class: "btn btn-outline-liquid-primary" do %>
+        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
+        En savoir plus
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- Chiffres clés (version simplifiée) -->
+<section class="py-4 mb-4 section-alt">
+  <div class="container">
+    <div class="row g-3 text-center">
+      <div class="col-6 col-md-3">
+        <div class="p-3">
+          <div class="display-5 fw-bold text-liquid-primary"><%= @users_count %></div>
+          <p class="small text-body-secondary mb-0">Membres actifs</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3">
+          <div class="display-5 fw-bold text-liquid-success"><%= @events_count %></div>
+          <p class="small text-body-secondary mb-0">Événements organisés</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3">
+          <div class="display-5 fw-bold text-liquid-warning"><%= @upcoming_events_count %></div>
+          <p class="small text-body-secondary mb-0">À venir</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3">
+          <div class="display-5 fw-bold text-liquid-info"><%= @attendances_count %></div>
+          <p class="small text-body-secondary mb-0">Inscriptions</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

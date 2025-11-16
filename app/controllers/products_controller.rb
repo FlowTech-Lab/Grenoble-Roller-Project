@@ -1,9 +1,14 @@
 class ProductsController < ApplicationController
   def index
     @categories = ProductCategory.order(:name)
-    @products = Product.includes(:category, product_variants: { variant_option_values: :option_value })
-                        .where(is_active: true)
-                        .order(:name)
+    products = Product.includes(:category, product_variants: { variant_option_values: :option_value })
+                      .where(is_active: true)
+
+    # Trier : produits avec stock en premier, puis par nom
+    @products = products.to_a.sort_by do |product|
+      has_stock = product.product_variants.any? { |v| v.is_active && v.stock_qty.to_i > 0 }
+      [has_stock ? 0 : 1, product.name]
+    end
   end
 
   def show
