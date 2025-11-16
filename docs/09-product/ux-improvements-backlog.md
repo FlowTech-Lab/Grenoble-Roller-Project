@@ -27,7 +27,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Total** : **119 améliorations** identifiées (**+12 nouvelles** liées au footer)
 
-**Avancement** : **4/41 Quick Wins terminés** (10%) + **1 partiellement fait**
+**Avancement** : **8/41 Quick Wins terminés** (20%) + **1 partiellement fait**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -51,6 +51,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours) ✅ Implémenté
 - [ ] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes)
 - [x] Ajouter compteur d'événements ("X événements à venir" visible en haut) ✅ Implémenté
+- [x] Refactoriser highlighted_event : intégration dans la grille avec badge "Prochain" ✅ Implémenté (Badge "Prochain" aligné avec badge de date, grille Bootstrap fonctionnelle)
 - [ ] Lien "Voir tous les événements passés" (Si >6 événements passés)
 
 ### **Parcours 4 : Inscription à un Événement**
@@ -262,9 +263,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Impact : Haut (visiteurs comprennent mieux l'association)
    - Effort : Faible (2-3 lignes + lien)
 
-4. **Astérisques champs obligatoires** (Parcours 2)
+4. **Astérisques champs obligatoires** (Parcours 2) ✅ **TERMINÉ**
    - Impact : Haut (clarté immédiate pour utilisateurs)
    - Effort : Très faible (ajout `*` dans labels)
+   - **Status** : Classe `.required` sur labels + légende "Champs obligatoires" avec `*`
 
 5. **Séparer événements à venir/passés** (Parcours 5)
    - Impact : Haut (organisation claire de "Mes sorties")
@@ -282,9 +284,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Impact : Haut (première impression positive)
    - Effort : Faible (toast/alerte avec message personnalisé)
 
-9. **Badge "Nouveau" sur événements** (Parcours 3)
+9. **Badge "Nouveau" sur événements** (Parcours 3) ✅ **TERMINÉ**
    - Impact : Moyen-Haut (mise en avant des nouveautés)
    - Effort : Très faible (badge conditionnel)
+   - **Status** : Méthode `recent?` (7 derniers jours) + badge `badge-liquid-success` dans `_event_card.html.erb`
 
 10. **Actions rapides dans liste Events admin** (Parcours 8) ✅ **TERMINÉ**
    - Impact : Très haut (gain de temps pour modération)
@@ -585,10 +588,10 @@ Une user story est "Done" quand :
 
 **Document créé le** : 2025-11-14  
 **Dernière mise à jour** : 2025-11-15  
-**Version** : 1.2 (Mise à jour avancement - 4 Quick Wins terminés)
+**Version** : 1.3 (Mise à jour avancement - 8 Quick Wins terminés)
 
 **Avancement actuel** :
-- ✅ **4 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel)
+- ✅ **8 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain"
 - 🟡 **1 partiellement fait** : Liens footer (Contact/CGU/Confidentialité restent `#`)
-- ⏳ **36 Quick Wins en attente**
+- ⏳ **32 Quick Wins en attente**
 
