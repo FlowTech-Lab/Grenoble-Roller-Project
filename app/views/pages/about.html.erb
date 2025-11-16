@@ -560,7 +560,7 @@
 
 <script>
   // Animation des chiffres - uniquement sur la page À propos
-  document.addEventListener('DOMContentLoaded', () => {
+  function initAboutStats() {
     const statsSection = document.getElementById('about-stats-section');
     if (!statsSection) return;
 
@@ -608,7 +608,10 @@
     });
 
     observer.observe(statsSection);
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', initAboutStats);
+  document.addEventListener('turbo:load', initAboutStats);
 </script>
 
 <!-- ========================================

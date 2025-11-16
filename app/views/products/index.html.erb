@@ -178,7 +178,7 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  function initProductsIndex() {
     // Map to store variants by product and option combinations
     const productVariants = {};
     
@@ -283,5 +283,8 @@
         }
       });
     });
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', initProductsIndex);
+  document.addEventListener('turbo:load', initProductsIndex);
 </script>

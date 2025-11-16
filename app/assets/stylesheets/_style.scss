@@ -2470,6 +2470,12 @@
     aspect-ratio: 1 / 1;
     border-bottom: 1px solid var(--liquid-glass-border);
     overflow: hidden;
+    border-radius: 1.6rem 1.6rem 0 0; /* cartes produits : arrondi uniquement en haut */
+  }
+
+  /* Show produit : image avec arrondi complet */
+  .product-show-image-wrapper {
+    border-radius: 1.6rem;
   }
 
   .card-product-image {
@@ -2552,6 +2558,13 @@
   .product-title {
     font-weight: 700;
     color: var(--gr-primary);
+    font-size: 1.5rem;
+  }
+
+  @media (min-width: 992px) {
+    .product-title {
+      font-size: 1.75rem;
+    }
   }
 
 .price-row {
