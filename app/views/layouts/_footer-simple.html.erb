@@ -50,15 +50,15 @@
                     </a>
                 </div>
                 
-                <!-- Mentions légales (masquées temporairement) -->
-                <%# TODO: Créer pages Contact, CGU, Confidentialité pour conformité légale %>
-                <% if false %>
-                    <nav aria-label="Mentions légales" class="small">
-                        <%= link_to "Contact", "#", class: "footer-link me-2" %>
-                        <%= link_to "CGU", "#", class: "footer-link me-2" %>
-                        <%= link_to "Confidentialité", "#", class: "footer-link" %>
-                    </nav>
-                <% end %>
+                <!-- Mentions légales -->
+                <nav aria-label="Mentions légales" class="small mt-2">
+                    <%= link_to "Mentions Légales", mentions_legales_path, class: "footer-link me-2" %>
+                    <%= link_to "CGV", cgv_path, class: "footer-link me-2" %>
+                    <%= link_to "CGU", cgu_path, class: "footer-link me-2" %>
+                    <%= link_to "Confidentialité", politique_confidentialite_path, class: "footer-link me-2" %>
+                    <%= link_to "Contact", contact_path, class: "footer-link me-2" %>
+                    <%= link_to "Cookies", preferences_cookie_consent_path, class: "footer-link" %>
+                </nav>
             </div>
         </div>
     </div>

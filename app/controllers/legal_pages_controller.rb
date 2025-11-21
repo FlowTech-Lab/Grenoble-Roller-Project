@@ -3,8 +3,7 @@
 # Controller pour les pages légales du site
 # Conforme aux obligations légales françaises (RGPD, Code de la consommation)
 class LegalPagesController < ApplicationController
-  # Pas besoin d'authentification pour les pages légales
-  skip_before_action :authenticate_user!, only: [:mentions_legales, :politique_confidentialite, :cgv, :cgu, :contact]
+  # Pas besoin d'authentification pour les pages légales (accessibles à tous)
 
   # Mentions légales - Obligatoire (risque : 75 000€)
   def mentions_legales

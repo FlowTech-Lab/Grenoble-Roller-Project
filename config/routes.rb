@@ -55,4 +55,24 @@ Rails.application.routes.draw do
   get '/routes/:id/info', to: 'routes#info', as: 'route_info', defaults: { format: 'json' }
 
   resources :attendances, only: :index
+
+  # Legal pages
+  get '/mentions-legales', to: 'legal_pages#mentions_legales', as: 'mentions_legales'
+  get '/politique-confidentialite', to: 'legal_pages#politique_confidentialite', as: 'politique_confidentialite'
+  get '/rgpd', to: 'legal_pages#politique_confidentialite' # Alias pour RGPD
+  get '/cgv', to: 'legal_pages#cgv', as: 'cgv'
+  get '/conditions-generales-vente', to: 'legal_pages#cgv' # Alias pour CGV
+  get '/cgu', to: 'legal_pages#cgu', as: 'cgu'
+  get '/conditions-generales-utilisation', to: 'legal_pages#cgu' # Alias pour CGU
+  get '/contact', to: 'legal_pages#contact', as: 'contact'
+
+  # Cookie consent 
+  resource :cookie_consent, only: [] do
+    collection do
+      get :preferences
+      post :accept
+      post :reject
+      patch :update
+    end
+  end
 end

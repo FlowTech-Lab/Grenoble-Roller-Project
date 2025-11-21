@@ -1,0 +1,285 @@
+<% content_for :title, "Politique de Confidentialité - Grenoble Roller" %>
+<% content_for :description, "Politique de confidentialité et protection des données personnelles conformément au RGPD" %>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-shield-lock text-liquid-primary me-3" aria-hidden="true"></i>
+            Politique de Confidentialité
+          </h1>
+          <p class="lead text-muted">
+            Protection de vos données personnelles conformément au RGPD
+          </p>
+          <p class="text-muted small">
+            Dernière mise à jour : <%= Date.current.strftime("%d/%m/%Y") %>
+          </p>
+          <hr class="w-50 mx-auto">
+        </div>
+
+        <!-- Section 1 : Responsable du traitement -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-person-badge text-liquid-primary me-2" aria-hidden="true"></i>
+              1. Responsable du traitement
+            </h2>
+            <dl class="row mb-0">
+              <dt class="col-sm-4">Responsable :</dt>
+              <dd class="col-sm-8"><strong>Grenoble Roller</strong></dd>
+              
+              <dt class="col-sm-4">Adresse :</dt>
+              <dd class="col-sm-8">6 rue Berthe de Boissieux<br>38000 Grenoble<br>France</dd>
+              
+              <dt class="col-sm-4">Email :</dt>
+              <dd class="col-sm-8">
+                <a href="mailto:contact@grenoble-roller.org">contact@grenoble-roller.org</a>
+              </dd>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Section 2 : Données collectées -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-database text-liquid-primary me-2" aria-hidden="true"></i>
+              2. Données collectées
+            </h2>
+            <p class="mb-3">Nous collectons les données suivantes :</p>
+            <ul class="mb-0">
+              <li class="mb-2">
+                <strong>Inscription :</strong> Prénom, nom, email, téléphone (optionnel), mot de passe (hashé)
+              </li>
+              <li class="mb-2">
+                <strong>Commandes :</strong> Informations de paiement (pas d'adresse de livraison - récupération en main propre)
+              </li>
+              <li class="mb-2">
+                <strong>Panier d'achat :</strong> Contenu du panier stocké dans les cookies de session
+              </li>
+              <li class="mb-2">
+                <strong>Événements :</strong> Inscriptions aux événements, préférences de rappel
+              </li>
+              <li class="mb-2">
+                <strong>Cookies :</strong> Cookies de session Rails (authentification Devise et panier), cookies "remember me"
+              </li>
+              <li>
+                <strong>Navigation :</strong> Logs serveur (adresses IP, horodatage)
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 3 : Finalités du traitement -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-bullseye text-liquid-primary me-2" aria-hidden="true"></i>
+              3. Finalités du traitement
+            </h2>
+            <p class="mb-3">Vos données sont utilisées pour :</p>
+            <ul class="mb-0">
+              <li class="mb-2">Gestion des comptes utilisateurs</li>
+              <li class="mb-2">Traitement des commandes</li>
+              <li class="mb-2">Gestion des inscriptions aux événements</li>
+              <li class="mb-2">Communication avec les membres</li>
+              <li>Statistiques et amélioration du service</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 4 : Base légale -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-scale text-liquid-primary me-2" aria-hidden="true"></i>
+              4. Base légale
+            </h2>
+            <ul class="mb-0">
+              <li class="mb-2">
+                <strong>Consentement :</strong> Inscription, newsletter (si applicable)
+              </li>
+              <li class="mb-2">
+                <strong>Exécution contrat :</strong> Commandes, inscriptions événements
+              </li>
+              <li>
+                <strong>Intérêt légitime :</strong> Statistiques, sécurité
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 5 : Durée de conservation -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-clock-history text-liquid-primary me-2" aria-hidden="true"></i>
+              5. Durée de conservation
+            </h2>
+            <ul class="mb-0">
+              <li class="mb-2">
+                <strong>Comptes utilisateurs :</strong> Tant que le compte est actif + 3 ans après dernière connexion
+              </li>
+              <li class="mb-2">
+                <strong>Commandes :</strong> 10 ans (obligation comptable)
+              </li>
+              <li class="mb-2">
+                <strong>Cookies :</strong> Session (supprimés à la fermeture) ou 13 mois max (remember me)
+              </li>
+              <li>
+                <strong>Logs serveur :</strong> 12 mois maximum
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 6 : Droits des utilisateurs -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-person-check text-liquid-primary me-2" aria-hidden="true"></i>
+              6. Vos droits
+            </h2>
+            <p class="mb-3">Conformément au RGPD, vous disposez des droits suivants :</p>
+            <ul class="mb-4">
+              <li class="mb-2">
+                <strong>Droit d'accès :</strong> Obtenir une copie de vos données
+              </li>
+              <li class="mb-2">
+                <strong>Droit de rectification :</strong> Corriger vos données inexactes
+              </li>
+              <li class="mb-2">
+                <strong>Droit à l'effacement :</strong> Supprimer vos données ("droit à l'oubli")
+              </li>
+              <li class="mb-2">
+                <strong>Droit à la portabilité :</strong> Récupérer vos données dans un format structuré
+              </li>
+              <li class="mb-2">
+                <strong>Droit d'opposition :</strong> S'opposer au traitement
+              </li>
+              <li class="mb-2">
+                <strong>Droit à la limitation :</strong> Limiter le traitement
+              </li>
+              <li>
+                <strong>Droit de retirer le consentement :</strong> À tout moment
+              </li>
+            </ul>
+            <div class="alert alert-info rounded-liquid mb-0">
+              <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+              <strong>Pour exercer vos droits :</strong><br>
+              Contactez-nous à <a href="mailto:contact@grenoble-roller.org">contact@grenoble-roller.org</a><br>
+              ou par courrier à : 6 rue Berthe de Boissieux 38000 Grenoble
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 7 : Cookies -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-cookie text-liquid-primary me-2" aria-hidden="true"></i>
+              7. Cookies
+            </h2>
+            <p class="mb-3">Ce site utilise les cookies suivants :</p>
+            <ul class="mb-3">
+              <li class="mb-2">
+                <strong>Cookies strictement nécessaires :</strong> Cookies de session Rails pour l'authentification (Devise) et le panier d'achat (pas de consentement requis)
+              </li>
+              <li class="mb-2">
+                <strong>Cookies de préférence :</strong> "Remember me" pour mémoriser la connexion (consentement requis)
+              </li>
+              <li>
+                <strong>Cookies analytiques :</strong> Aucun actuellement
+              </li>
+            </ul>
+            <p class="mb-0">
+              Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur ou en utilisant notre 
+              <%= link_to "panneau de gestion des cookies", preferences_cookie_consent_path, class: "text-decoration-underline" %>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Section 8 : Sécurité des données -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-shield-check text-liquid-primary me-2" aria-hidden="true"></i>
+              8. Sécurité des données
+            </h2>
+            <p class="mb-3">Nous mettons en œuvre les mesures de sécurité suivantes :</p>
+            <ul class="mb-0">
+              <li class="mb-2">Chiffrement des mots de passe (bcrypt)</li>
+              <li class="mb-2">HTTPS (SSL/TLS)</li>
+              <li class="mb-2">Accès restreint aux données (authentification)</li>
+              <li class="mb-2">Sauvegardes régulières</li>
+              <li>Mises à jour de sécurité</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 9 : Partage des données -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-share text-liquid-primary me-2" aria-hidden="true"></i>
+              9. Partage des données
+            </h2>
+            <p class="mb-3">Vos données peuvent être partagées avec :</p>
+            <ul class="mb-3">
+              <li class="mb-2">
+                <strong>Sous-traitants :</strong> Hébergeur (IONOS SARL), service de paiement (HelloAsso si applicable)
+              </li>
+              <li>
+                <strong>Transferts hors UE :</strong> Aucun actuellement
+              </li>
+            </ul>
+            <div class="alert alert-success rounded-liquid mb-0">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <strong>Important :</strong> Vos données ne sont jamais vendues à des tiers.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 10 : Réclamation CNIL -->
+        <div class="card card-liquid rounded-liquid shadow-liquid">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-exclamation-triangle text-liquid-primary me-2" aria-hidden="true"></i>
+              10. Réclamation CNIL
+            </h2>
+            <p class="mb-3">
+              Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la CNIL :
+            </p>
+            <ul class="mb-0">
+              <li class="mb-2">
+                <strong>Site web :</strong> 
+                <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">https://www.cnil.fr</a>
+              </li>
+              <li>
+                <strong>Téléphone :</strong> 
+                <a href="tel:0153732222">01 53 73 22 22</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Footer avec liens vers autres pages légales -->
+        <div class="text-center mt-5">
+          <p class="text-muted mb-3">Autres pages légales :</p>
+          <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <%= link_to "Mentions Légales", mentions_legales_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+            <%= link_to "CGV", cgv_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+            <%= link_to "CGU", cgu_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+            <%= link_to "Contact", contact_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# Le lien vers les préférences de cookies utilise maintenant directement cookie_preferences_path %>
+
