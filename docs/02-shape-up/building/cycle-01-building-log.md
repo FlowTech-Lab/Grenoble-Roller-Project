@@ -692,6 +692,21 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] Documentation complète mise à jour (README, setup guides, architecture)
 - [✅] Credentials Rails configurés et régénérés
 
+#### Pages légales & Conformité RGPD (2025-11-21)
+- [✅] **Pages légales complètes** :
+  - [✅] Mentions Légales (`/mentions-legales`) - Conforme LCEN
+  - [✅] Politique de Confidentialité (`/politique-confidentialite`, `/rgpd`) - Conforme RGPD
+  - [✅] Conditions Générales de Vente (`/cgv`) - Conforme Code consommation
+  - [✅] Conditions Générales d'Utilisation (`/cgu`)
+  - [✅] Page Contact (`/contact`) - Email uniquement
+- [✅] **Gestion des cookies conforme RGPD 2025** :
+  - [✅] Banner de consentement automatique (Stimulus Controller)
+  - [✅] Page de préférences détaillée (`/cookie_consent/preferences`)
+  - [✅] Gestion granulaire (nécessaires, préférences, analytiques)
+  - [✅] Cookies de session Rails documentés (panier, authentification)
+- [✅] Routes RESTful modernes (`resource :cookie_consent`)
+- [✅] Footer mis à jour avec tous les liens légaux
+
 ### 🔜 PHASE 2 - ÉVÉNEMENTS (À VENIR)
 
 #### Améliorations E-commerce
