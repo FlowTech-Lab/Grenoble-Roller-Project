@@ -185,11 +185,16 @@ export default class extends Controller {
 
       // Afficher le prix minimum
       if (this.hasPriceDisplayTarget) {
-        const minPrice = Math.min(...this.variantsValue.map(v => v.price))
-        const hasMultiple = this.variantsValue.length > 1
-        this.priceDisplayTarget.textContent = hasMultiple 
-          ? 'À partir de ' + this.formatPrice(minPrice * qty) 
-          : this.formatPrice(minPrice * qty)
+        if (this.variantsValue && this.variantsValue.length > 0) {
+          const minPrice = Math.min(...this.variantsValue.map(v => v.price))
+          const hasMultiple = this.variantsValue.length > 1
+          this.priceDisplayTarget.textContent = hasMultiple 
+            ? 'À partir de ' + this.formatPrice(minPrice * qty) 
+            : this.formatPrice(minPrice * qty)
+        } else {
+          // Pas de variantes disponibles
+          this.priceDisplayTarget.textContent = 'Prix non disponible'
+        }
       }
 
       // Ne pas toucher à l'image si aucune variante n'est sélectionnée
