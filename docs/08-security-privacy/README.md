@@ -1,15 +1,15 @@
 ---
-title: "Documentation Accessibilité & Performance"
+title: "Documentation Accessibilité, Performance & Conformité Légale"
 status: "active"
-version: "1.0"
+version: "2.0"
 created: "2025-11-14"
-updated: "2025-11-14"
-tags: ["accessibility", "a11y", "performance", "lighthouse", "seo"]
+updated: "2025-11-21"
+tags: ["accessibility", "a11y", "performance", "lighthouse", "seo", "legal", "rgpd", "cookies"]
 ---
 
-# Documentation Accessibilité & Performance
+# Documentation Accessibilité, Performance & Conformité Légale
 
-**Dernière mise à jour** : 2025-11-14
+**Dernière mise à jour** : 2025-11-21
 
 ---
 
@@ -21,10 +21,33 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo"]
    - Guide de référence pour créer toutes les pages légales obligatoires
    - Contenu détaillé pour Mentions légales, RGPD, CGV, CGU, Contact
    - Obligations légales et risques
+   - ✅ **STATUS** : Guide mis à jour avec les informations réelles de l'association (2025-11-17)
 
 2. **[Informations à Collecter](informations-a-collecter.md)**
    - Checklist des informations nécessaires avant création
-   - À compléter par l'association
+   - ✅ **STATUS** : Formulaire complété avec toutes les informations de l'association (2025-11-17)
+   - Informations validées et intégrées dans les pages légales
+
+3. **[Implémentation Pages Légales & Cookies](legal-pages-implementation.md)** ⭐ NOUVEAU
+   - Documentation technique complète de l'implémentation
+   - Architecture Stimulus et Rails
+   - Routes RESTful
+   - Conformité RGPD 2025
+   - ✅ **STATUS** : Documentation complète (2025-11-21)
+
+4. **Pages légales créées** (2025-11-21)
+   - ✅ Mentions Légales (`/mentions-legales`) - Conforme
+   - ✅ Politique de Confidentialité (`/politique-confidentialite`, `/rgpd`) - Conforme RGPD
+   - ✅ Conditions Générales de Vente (`/cgv`) - Conforme Code de la consommation
+   - ✅ Conditions Générales d'Utilisation (`/cgu`) - Conforme
+   - ✅ Page Contact (`/contact`) - Email uniquement
+
+5. **Gestion des cookies** (2025-11-21)
+   - ✅ Banner de consentement automatique (Stimulus Controller)
+   - ✅ Page de préférences détaillée (`/cookie_consent/preferences`)
+   - ✅ Gestion granulaire (nécessaires, préférences, analytiques)
+   - ✅ Conforme RGPD 2025 et directive ePrivacy
+   - ✅ Cookies de session Rails (panier, authentification) documentés comme strictement nécessaires
 
 ### Accessibilité
 
@@ -71,6 +94,14 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo"]
 ---
 
 ## ✅ **État Actuel**
+
+### Pages Légales & Conformité
+- **Status** : ✅ **100% TERMINÉ** (2025-11-21)
+- **Pages créées** : 5 pages légales complètes et conformes
+- **Conformité RGPD** : ✅ Politique de confidentialité complète
+- **Conformité ePrivacy** : ✅ Gestion des cookies conforme
+- **Conformité Code consommation** : ✅ CGV complètes avec exception légale L221-28
+- **Conformité LCEN** : ✅ Mentions légales complètes
 
 ### Accessibilité
 - **Status** : ✅ **100% TERMINÉ**

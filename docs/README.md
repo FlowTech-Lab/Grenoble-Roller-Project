@@ -99,7 +99,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `07-ops/runbooks/local-setup.md` - Runbook setup local
 
 ### Rails
-- ✅ `04-rails/routes.md` - Routes et flux principaux
+- ✅ `04-rails/routes.md` - Routes et flux principaux (incluant pages légales et cookies)
 - ✅ `04-rails/conventions/README.md` - Conventions Rails du projet
 - ✅ `04-rails/admin-panel-research.md` - Recherche et recommandations pour le panel admin (Phase 2)
 - ✅ `04-rails/phase2-migrations-models.md` - Documentation Phase 2 (migrations et modèles)
@@ -113,8 +113,14 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 ### Changelog
 - ✅ `10-decisions-and-changelog/CHANGELOG.md` - Changelog des modifications significatives
 
+### Sécurité & Conformité
+- ✅ `08-security-privacy/README.md` - Documentation accessibilité, performance, pages légales
+- ✅ `08-security-privacy/legal-pages-guide.md` - Guide complet pages légales (mis à jour 2025-11-17)
+- ✅ `08-security-privacy/informations-a-collecter.md` - Formulaire complété (2025-11-17)
+- ✅ **Pages légales créées** : Mentions Légales, RGPD, CGV, CGU, Contact (2025-11-21)
+- ✅ **Gestion des cookies** : Système conforme RGPD 2025 avec Stimulus (2025-11-21)
+
 ### À compléter
-- `08-security-privacy/` - Approfondir modèle de menace & RGPD
 - `10-decisions-and-changelog/` - ADRs à créer pour décisions structurantes
 
 ## Mise à jour continue

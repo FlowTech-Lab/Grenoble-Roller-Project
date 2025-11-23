@@ -1,0 +1,130 @@
+<% content_for :title, "Contact - Grenoble Roller" %>
+<% content_for :description, "Contactez l'association Grenoble Roller" %>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-envelope text-liquid-primary me-3" aria-hidden="true"></i>
+            Contact
+          </h1>
+          <p class="lead text-muted">
+            Contactez l'association Grenoble Roller
+          </p>
+          <hr class="w-50 mx-auto">
+        </div>
+
+        <!-- Informations de contact -->
+        <div class="row g-4 mb-5">
+          <!-- Email -->
+          <div class="col-md-6">
+            <div class="card card-liquid rounded-liquid shadow-liquid h-100">
+              <div class="card-body p-4 text-center">
+                <i class="bi bi-envelope-at fs-1 text-liquid-primary mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h4 mb-3">Email</h3>
+                <p class="mb-3">
+                  Pour toute question, suggestion ou demande d'information, contactez-nous par email :
+                </p>
+                <a href="mailto:contact@grenoble-roller.org" class="btn btn-liquid-primary">
+                  <i class="bi bi-envelope me-2" aria-hidden="true"></i>
+                  contact@grenoble-roller.org
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adresse -->
+          <div class="col-md-6">
+            <div class="card card-liquid rounded-liquid shadow-liquid h-100">
+              <div class="card-body p-4 text-center">
+                <i class="bi bi-geo-alt fs-1 text-liquid-success mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h4 mb-3">Adresse</h3>
+                <p class="mb-3">
+                  Siège social de l'association :
+                </p>
+                <address class="mb-0">
+                  <strong>Grenoble Roller</strong><br>
+                  6 rue Berthe de Boissieux<br>
+                  38000 Grenoble<br>
+                  France
+                </address>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informations complémentaires -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-info-circle text-liquid-primary me-2" aria-hidden="true"></i>
+              Informations complémentaires
+            </h2>
+            <ul class="mb-0">
+              <li class="mb-2">
+                <strong>Réponse sous :</strong> Nous nous efforçons de répondre à toutes les demandes dans les meilleurs délais (généralement sous 48h)
+              </li>
+              <li class="mb-2">
+                <strong>Bénévolat :</strong> Pour toute question concernant le bénévolat, contactez-nous à 
+                <a href="mailto:benevolat@grenobleroller.fr">benevolat@grenobleroller.fr</a>
+              </li>
+              <li>
+                <strong>Staffeurs :</strong> Pour devenir staffeur, contactez-nous à 
+                <a href="mailto:staffeur@grenobleroller.fr">staffeur@grenobleroller.fr</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Réseaux sociaux -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-share text-liquid-primary me-2" aria-hidden="true"></i>
+              Suivez-nous sur les réseaux sociaux
+            </h2>
+            <p class="mb-3">Restez informé de nos actualités et événements :</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+              <a href="https://www.facebook.com/GrenobleRoller/" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 class="btn btn-outline-primary">
+                <i class="bi bi-facebook me-2" aria-hidden="true"></i>
+                Facebook
+              </a>
+              <a href="https://www.instagram.com/grenoble_roller/" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 class="btn btn-outline-danger">
+                <i class="bi bi-instagram me-2" aria-hidden="true"></i>
+                Instagram
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Note importante -->
+        <div class="alert alert-info rounded-liquid">
+          <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+          <strong>Note :</strong> L'association ne dispose pas de formulaire de contact en ligne. 
+          Veuillez utiliser l'adresse email ci-dessus pour nous contacter.
+        </div>
+
+        <!-- Footer avec liens vers autres pages légales -->
+        <div class="text-center mt-5">
+          <p class="text-muted mb-3">Autres pages légales :</p>
+          <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <%= link_to "Mentions Légales", mentions_legales_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+            <%= link_to "Politique de Confidentialité", politique_confidentialite_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+            <%= link_to "CGV", cgv_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+            <%= link_to "CGU", cgu_path, class: "btn btn-outline-liquid-primary btn-sm" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

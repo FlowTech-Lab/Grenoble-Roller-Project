@@ -133,53 +133,81 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    let donationAmount = 0;
-    const cartSubtotal = <%= @total_cents %> / 100.0;
-
-    function formatPrice(amount) {
-      const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
-      return formatted.replace('.', ',') + '€';
-    }
-
-    function setDonation(amount) {
-      donationAmount = Number(amount) || 0;
-      const customInput = document.getElementById('donationCustomInput');
-      if (customInput) customInput.disabled = true;
-      updateDonationDisplay();
-    }
-
-    function enableCustomDonation() {
-      const customInput = document.getElementById('donationCustomInput');
-      if (customInput) {
-        customInput.disabled = false;
-        customInput.focus();
-      }
-    }
-
-    function setDonationCustom(value) {
-      const val = parseFloat(String(value).replace(',', '.'));
-      donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
-      updateDonationDisplay();
-    }
-
-    function updateDonationDisplay() {
-      const donationDisplay = document.getElementById('donationDisplay');
-      const orderTotalWithDonation = document.getElementById('orderTotalWithDonation');
+  (function() {
+    // Utiliser un namespace pour éviter les conflits et les redéclarations
+    if (!window.orderDonation) {
+      window.orderDonation = {
+        donationAmount: 0,
+        cartSubtotal: <%= @total_cents %> / 100.0,
+        
+        formatPrice: function(amount) {
+          const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
+          return formatted.replace('.', ',') + '€';
+        },
+        
+        setDonation: function(amount) {
+          window.orderDonation.donationAmount = Number(amount) || 0;
+          const customInput = document.getElementById('donationCustomInput');
+          if (customInput) customInput.disabled = true;
+          window.orderDonation.updateDonationDisplay();
+        },
+        
+        enableCustomDonation: function() {
+          const customInput = document.getElementById('donationCustomInput');
+          if (customInput) {
+            customInput.disabled = false;
+            customInput.focus();
+          }
+        },
+        
+        setDonationCustom: function(value) {
+          const val = parseFloat(String(value).replace(',', '.'));
+          window.orderDonation.donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
+          window.orderDonation.updateDonationDisplay();
+        },
+        
+        updateDonationDisplay: function() {
+          const donationDisplay = document.getElementById('donationDisplay');
+          const orderTotalWithDonation = document.getElementById('orderTotalWithDonation');
+          
+          if (donationDisplay) {
+            donationDisplay.textContent = window.orderDonation.formatPrice(window.orderDonation.donationAmount);
+          }
+          
+          if (orderTotalWithDonation) {
+            const total = window.orderDonation.cartSubtotal + window.orderDonation.donationAmount;
+            orderTotalWithDonation.textContent = window.orderDonation.formatPrice(total);
+          }
+        },
+        
+        init: function() {
+          // Réinitialiser donationAmount à 0 au chargement de la page
+          window.orderDonation.donationAmount = 0;
+          window.orderDonation.updateDonationDisplay();
+        }
+      };
       
-      if (donationDisplay) {
-        donationDisplay.textContent = formatPrice(donationAmount);
-      }
-      
-      if (orderTotalWithDonation) {
-        const total = cartSubtotal + donationAmount;
-        orderTotalWithDonation.textContent = formatPrice(total);
-      }
+      // Expose functions globally pour compatibilité avec les attributs HTML
+      window.setDonation = window.orderDonation.setDonation;
+      window.enableCustomDonation = window.orderDonation.enableCustomDonation;
+      window.setDonationCustom = window.orderDonation.setDonationCustom;
+    } else {
+      // Mettre à jour cartSubtotal si la page est rechargée
+      window.orderDonation.cartSubtotal = <%= @total_cents %> / 100.0;
     }
-
-    // Expose functions globally
-    window.setDonation = setDonation;
-    window.enableCustomDonation = enableCustomDonation;
-    window.setDonationCustom = setDonationCustom;
-  });
+    
+    // Initialiser au chargement
+    function initDonation() {
+      window.orderDonation.init();
+    }
+    
+    // Écouter DOMContentLoaded et turbo:load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDonation);
+    } else {
+      initDonation();
+    }
+    
+    document.addEventListener('turbo:load', initDonation);
+  })();
 </script>

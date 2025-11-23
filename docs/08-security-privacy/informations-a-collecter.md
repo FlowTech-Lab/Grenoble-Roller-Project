@@ -1,18 +1,19 @@
 ---
 title: "Formulaire - Informations Légales à Compléter"
-status: "active"
-version: "2.0"
+status: "completed"
+version: "2.1"
 created: "2025-11-15"
-updated: "2025-11-15"
-tags: ["legal", "formulaire", "checklist"]
+updated: "2025-11-17"
+tags: ["legal", "formulaire", "checklist", "completed"]
 ---
 
 # Formulaire - Informations Légales à Compléter
 
 **Document Type** : Formulaire de collecte d'informations  
-**Usage** : À compléter par l'association avant création des pages légales  
-**Contexte** : Association loi 1901 - Site e-commerce  
-**Source** : [`legal-pages-guide.md`](legal-pages-guide.md)
+**Usage** : Formulaire complété - Prêt pour création des pages légales  
+**Contexte** : Association à but non lucrative (loi 1901) - Activité accessoire non lucrative  
+**Source** : [`legal-pages-guide.md`](legal-pages-guide.md)  
+**Statut** : ✅ Complété et validé le 17/11/2025 par Gauthier FOUSSE (Secrétaire)
 
 ---
 
@@ -21,9 +22,9 @@ tags: ["legal", "formulaire", "checklist"]
 Ce formulaire doit être complété **intégralement** avant la création des pages légales du site.  
 Toutes les informations sont **obligatoires** pour assurer la conformité légale.
 
-**Date de complétion** : ________________________  
-**Personne en charge** : ________________________  
-**Fonction** : ________________________
+**Date de complétion** : 17/11/2025  
+**Personne en charge** : Gauthier FOUSSE  
+**Fonction** : Secrétaire
 
 ---
 
@@ -34,32 +35,32 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 | Champ | Réponse |
 |-------|---------|
 | **Dénomination complète** | Grenoble Roller ✅ |
-| **Forme juridique** | Association loi 1901 ✅ |
-| **Date de création** | ________________________ |
+| **Forme juridique** | Association à but non lucrative (loi 1901) ✅ |
+| **Date de création** | 15/10/2005 |
 
 ### 1.2 Siège Social
 
 | Champ | Réponse |
 |-------|---------|
-| **Numéro et nom de rue** | ________________________ |
-| **Code postal** | ________________________ |
+| **Numéro et nom de rue** | 6 rue Berthe de Boissieux |
+| **Code postal** | 38000 |
 | **Ville** | Grenoble ✅ |
 | **Pays** | France ✅ |
-| **Adresse complète** | ________________________ |
+| **Adresse complète** | 6 rue Berthe de Boissieux 38000 Grenoble |
 
 ### 1.3 Coordonnées
 
 | Champ | Réponse |
 |-------|---------|
-| **Téléphone** | ________________________ |
-| **Email** | contact@grenobleroller.fr ✅ |
-| **Site web** | grenobleroller.fr ✅ |
+| **Téléphone** | N/A |
+| **Email** | contact@grenoble-roller.org ✅ |
+| **Site web** | grenoble-roller.org ✅ |
 
 ### 1.4 Direction
 
 | Champ | Réponse |
 |-------|---------|
-| **Nom du président** | ________________________ |
+| **Nom du président** | SAVORNIN Stéphane |
 | **Fonction** | Président / Directeur de publication |
 | **Responsable de la rédaction** | ________________________ (optionnel) |
 
@@ -77,6 +78,9 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 
 **Note** : Ces informations sont obligatoires si l'association exerce une activité commerciale (vente de produits).
 
+**Réponse** : Non applicable.  
+Vente de produits : L'association propose ponctuellement des produits floqués Grenoble Roller dans le cadre d'une activité accessoire non lucrative, destinée uniquement au financement de ses actions.
+
 ---
 
 ## 3. HÉBERGEUR DU SITE
@@ -85,9 +89,9 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 
 | Champ | Réponse |
 |-------|---------|
-| **Nom / Raison sociale** | ________________________ |
-| **Adresse complète** | ________________________ |
-| **Téléphone** | ________________________ |
+| **Nom / Raison sociale** | IONOS SARL |
+| **Adresse complète** | 7, place de la Gare, BP 70109, 57201 Sarreguemines Cedex |
+| **Téléphone** | +33 9 70 80 89 11 |
 | **Email contact** | ________________________ (optionnel) |
 
 **Comment trouver ces informations** :
@@ -106,28 +110,29 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 
 | Question | Réponse |
 |----------|---------|
-| **Modes de paiement acceptés** | ☐ HelloAsso<br>☐ Carte bancaire (via HelloAsso)<br>☐ Virement bancaire<br>☐ Chèque<br>☐ Autre : ________________________ |
-| **Sécurité des paiements** | ________________________ |
+| **Modes de paiement acceptés** | ✅ HelloAsso (carte bancaire)<br>✅ Chèque<br>✅ Autre : Espèce |
+| **Sécurité des paiements** | Oui |
 | **Délai de traitement** | ________________________ |
 
 ### 4.2 Livraison
 
 | Champ | Réponse |
 |-------|---------|
-| **Délais de livraison** | ________________________<br>Exemple : "5 à 7 jours ouvrés" |
-| **Frais de livraison** | ________________________<br>Exemple : "5€" ou "Gratuit dès 50€ d'achat" |
-| **Zones de livraison** | ________________________<br>Exemple : "France métropolitaine uniquement" |
-| **Mode de livraison** | ☐ Colissimo<br>☐ Mondial Relay<br>☐ Retrait sur place<br>☐ Autre : ________________________ |
-| **Suivi de commande** | ☐ Email automatique<br>☐ Numéro de suivi<br>☐ Autre : ________________________ |
+| **Délais de livraison** | 4 semaines |
+| **Frais de livraison** | N/A |
+| **Zones de livraison** | Les commandes ne font l'objet d'aucune livraison à domicile. Les produits sont à récupérer sur place, exclusivement : lors d'une randonnée roller du vendredi soir, ou lors d'une initiation du samedi matin, selon les dates et lieux communiqués par l'association. Un message de confirmation peut être envoyé pour informer de la disponibilité de la commande. |
+| **Mode de livraison** | ✅ Autre : En main propre |
+| **Suivi de commande** | Un e-mail de confirmation de commande est automatiquement envoyé par HelloAsso. Aucun système de suivi ou de traçabilité n'est disponible. |
+| **Retard de livraison** | En cas de retard anormal dépassant les délais indiqués, l'acheteur peut contacter l'association à l'adresse suivante : contact@grenoble-roller.org |
 
 ### 4.3 Retours et Rétractation
 
 | Champ | Réponse |
 |-------|---------|
-| **Délai de rétractation** | 14 jours calendaires ✅ (obligatoire) |
-| **Frais de retour** | ________________________<br>Exemple : "À la charge du client" ou "Gratuit si produit défectueux" |
-| **Modalités de retour** | ________________________<br>Exemple : "Email à contact@grenobleroller.fr avec numéro de commande" |
-| **Délai de remboursement** | ________________________<br>Exemple : "14 jours après réception du produit retourné" |
+| **Délai de rétractation** | Absence de droit de rétractation et de retour : Conformément à l'article L221-28 du Code de la consommation, les articles floqués ou personnalisés (textiles, accessoires Grenoble Roller) ne peuvent faire l'objet d'aucun droit de rétractation, de retour ou d'échange, sauf défaut de fabrication avéré imputable à l'association ou à son fournisseur. |
+| **Frais de retour** | N/A |
+| **Modalités de retour** | En procédant à la commande, l'acheteur reconnaît que : Les produits étant réalisés à la demande ou floqués spécifiquement aux couleurs de l'association, aucun remboursement, retour ou échange ne pourra être accepté, sauf en cas d'erreur imputable à l'association ou de produit non conforme à la commande. |
+| **Délai de remboursement** | N/A (voir modalités de retour ci-dessus) |
 
 ### 4.4 Garanties
 
@@ -145,17 +150,17 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 
 | Champ | Réponse |
 |-------|---------|
-| **Adresse postale complète** | ________________________ |
-| **Téléphone** | ________________________ |
-| **Email** | contact@grenobleroller.fr ✅ |
-| **Horaires de disponibilité** | ________________________<br>Exemple : "Lundi au vendredi, 9h-18h" (optionnel) |
+| **Adresse postale complète** | 6 rue Berthe de Boissieux 38000 Grenoble |
+| **Téléphone** | N/A |
+| **Email** | contact@grenoble-roller.org ✅ |
+| **Horaires de disponibilité** | ________________________ (optionnel) |
 
 ### 5.2 Formulaire de Contact
 
 | Question | Réponse |
 |----------|---------|
-| **Souhaitez-vous un formulaire de contact ?** | ☐ Oui ☐ Non |
-| **Si oui, champs souhaités** : | ☐ Nom<br>☐ Prénom<br>☐ Email<br>☐ Téléphone (optionnel)<br>☐ Sujet<br>☐ Message |
+| **Souhaitez-vous un formulaire de contact ?** | ☐ Oui ✅ Non |
+| **Si oui, champs souhaités** : | N/A (formulaire de contact non souhaité) |
 
 ---
 
@@ -172,8 +177,8 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 
 | Champ | Réponse |
 |-------|---------|
-| **Médiateur de la consommation** | ☐ Oui (nom : ________________________)<br>☐ Non (à mettre en place ?) |
-| **Procédure de réclamation** | ________________________ |
+| **Médiateur de la consommation** | ☐ Oui (nom : ________________________)<br>✅ Non (à mettre en place ?) |
+| **Procédure de réclamation** | N/A |
 
 ---
 
@@ -183,19 +188,19 @@ Toutes les informations sont **obligatoires** pour assurer la conformité légal
 
 Avant de valider ce formulaire, vérifier :
 
-- [ ] Toutes les sections obligatoires sont complétées
-- [ ] Les informations sont exactes et à jour
-- [ ] Les coordonnées sont vérifiables
-- [ ] Les modalités de vente sont claires et complètes
-- [ ] Le formulaire a été relu par une personne responsable
+- [x] Toutes les sections obligatoires sont complétées
+- [x] Les informations sont exactes et à jour
+- [x] Les coordonnées sont vérifiables
+- [x] Les modalités de vente sont claires et complètes
+- [x] Le formulaire a été relu par une personne responsable
 
 ### Signature
 
 | Champ | Réponse |
 |-------|---------|
-| **Nom et prénom** | ________________________ |
-| **Fonction** | ________________________ |
-| **Date** | ________________________ |
+| **Nom et prénom** | FOUSSE Gauthier |
+| **Fonction** | Secrétaire |
+| **Date** | 17/11/2025 |
 | **Signature** | ________________________ |
 
 ---
@@ -226,11 +231,12 @@ Avant de valider ce formulaire, vérifier :
 ## 📞 Contact pour Questions
 
 En cas de questions sur ce formulaire ou les obligations légales :
-- **Email** : contact@grenobleroller.fr
+- **Email** : contact@grenoble-roller.org
 - **Documentation** : `docs/08-security-privacy/`
 
 ---
 
-**Version** : 2.0  
-**Dernière mise à jour** : 2025-11-15  
-**Format** : Formulaire structuré prêt à compléter
+**Version** : 2.1  
+**Dernière mise à jour** : 2025-11-17  
+**Format** : Formulaire complété et validé  
+**Statut** : ✅ Complété par Gauthier FOUSSE (Secrétaire) le 17/11/2025

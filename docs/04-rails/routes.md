@@ -55,6 +55,25 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
 - `devise_for :users, controllers: { passwords: 'passwords' }`
   - routes standard: `/users/sign_in`, `/users/sign_out`, `/users/password`, etc.
 
+### Pages légales
+- `GET /mentions-legales` → `legal_pages#mentions_legales`
+- `GET /politique-confidentialite` → `legal_pages#politique_confidentialite`
+- `GET /rgpd` → `legal_pages#politique_confidentialite` (alias)
+- `GET /cgv` → `legal_pages#cgv`
+- `GET /conditions-generales-vente` → `legal_pages#cgv` (alias)
+- `GET /cgu` → `legal_pages#cgu`
+- `GET /conditions-generales-utilisation` → `legal_pages#cgu` (alias)
+- `GET /contact` → `legal_pages#contact`
+  - Toutes les pages sont publiques (pas d'authentification requise)
+
+### Gestion des cookies (RGPD 2025)
+- `resource :cookie_consent` (ressource singleton RESTful)
+  - `GET /cookie_consent/preferences` → `cookie_consents#preferences`
+  - `POST /cookie_consent/accept` → `cookie_consents#accept`
+  - `POST /cookie_consent/reject` → `cookie_consents#reject`
+  - `PATCH /cookie_consent` → `cookie_consents#update`
+  - Routes helpers : `preferences_cookie_consent_path`, `accept_cookie_consent_path`, `reject_cookie_consent_path`, `cookie_consent_path`
+
 ### Santé
 - `GET /up` → `rails/health#show` (200/500)
 
@@ -76,3 +95,5 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
 ## Notes
 - Administration back-office: `ActiveAdmin.routes(self)` expose `/admin/*` (accès restreint via Devise + Pundit).
 - Les contrôleurs utilisent `includes` pour éviter les N+1 (ex: produits/variantes/options).
+- Pages légales : Toutes publiques, conformes aux obligations légales françaises (RGPD, Code de la consommation).
+- Gestion des cookies : Système conforme RGPD 2025 avec banner automatique et préférences détaillées.

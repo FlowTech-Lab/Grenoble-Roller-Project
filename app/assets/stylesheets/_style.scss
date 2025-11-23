@@ -697,12 +697,14 @@
     -webkit-backdrop-filter: var(--liquid-blur);
     border-top: 1px solid var(--liquid-glass-border);
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    /* Optimisation hauteur 2025 : padding réduit de py-5 (40px) à py-4 (24px) */
   }
   
   .footer-grenoble-roller .footer-title {
     font-weight: 600;
     color: var(--gr-primary);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem; /* Réduit de 1rem à 0.75rem pour compacter */
+    font-size: 1rem; /* Légèrement réduit pour économiser l'espace */
   }
   
   .footer-grenoble-roller .footer-links {
@@ -711,7 +713,7 @@
   }
   
   .footer-grenoble-roller .footer-links li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem; /* Réduit de 0.5rem à 0.375rem (12px) pour compacter */
   }
   
   /* Corrections mode clair footer - meilleur contraste WCAG 2.1 AA */
@@ -843,6 +845,248 @@
     padding: 1rem 0;
   }
   
+  /* === FOOTER SIMPLE - Optimisé 2025 === */
+  
+  /* Animation entrée footer */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .footer-simple {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  /* Espacement vertical mobile */
+  .footer-simple .container > .row > div {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  @media (max-width: 767px) {
+    .footer-simple .container > .row > div:first-child {
+      padding-bottom: 2rem;
+    }
+  }
+  
+  /* Branding plus visible */
+  .footer-simple .footer-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gr-primary);
+    letter-spacing: -0.02em;
+  }
+  
+  @media (max-width: 767px) {
+    .footer-simple .footer-brand {
+      font-size: 1.5rem;
+    }
+  }
+  
+  /* Réseaux sociaux - Version avec couleurs de marque */
+  .footer-simple .social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1.3rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
+  }
+  
+  /* Halo au hover */
+  .footer-simple .social-link::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+  
+  .footer-simple .social-link:hover::before {
+    opacity: 0.15;
+  }
+  
+  .footer-simple .social-link:hover,
+  .footer-simple .social-link:focus {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .footer-simple .social-link:active {
+    transform: translateY(-1px) scale(1);
+    transition-duration: 0.1s;
+  }
+  
+  /* Focus amélioré pour accessibilité */
+  .footer-simple .social-link:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2), 
+                0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Animation entrée icônes sociales */
+  .footer-simple .social-link:nth-child(1) {
+    animation: fadeInUp 0.6s ease-out 0.1s both;
+  }
+  
+  .footer-simple .social-link:nth-child(2) {
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+  }
+  
+  /* Facebook - Couleur officielle */
+  .footer-simple .social-link-facebook {
+    background: #1877F2;
+  }
+  
+  .footer-simple .social-link-facebook:hover,
+  .footer-simple .social-link-facebook:focus {
+    background: #0c63d4;
+  }
+  
+  /* Instagram - Gradient officiel */
+  .footer-simple .social-link-instagram {
+    background: linear-gradient(45deg, 
+      #f09433 0%, 
+      #e6683c 25%, 
+      #dc2743 50%, 
+      #cc2366 75%, 
+      #bc1888 100%
+    );
+  }
+  
+  .footer-simple .social-link-instagram:hover,
+  .footer-simple .social-link-instagram:focus {
+    background: linear-gradient(45deg, 
+      #d87e2a 0%, 
+      #c95a33 25%, 
+      #b91e3a 50%, 
+      #a91a5d 75%, 
+      #9a0f7f 100%
+    );
+  }
+  
+  /* Mode sombre - Adapter les ombres */
+  [data-bs-theme="dark"] .footer-simple .social-link {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  [data-bs-theme="dark"] .footer-simple .social-link:hover,
+  [data-bs-theme="dark"] .footer-simple .social-link:focus {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Navigation + Socials wrapper - Fusion en 1 ligne */
+  .footer-simple .footer-nav-social {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-simple .footer-nav-social {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+    }
+  }
+  
+  /* Navigation principale dans wrapper - Réutilise styles .footer-link existants */
+  .footer-simple .footer-nav {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  
+  /* Socials dans wrapper - Réutilise styles .social-link existants */
+  .footer-simple .footer-nav-social .footer-social {
+    display: flex;
+    gap: 0.75rem;
+    margin: 0;
+    /* Les styles .social-link sont déjà définis plus haut (ligne 893+) */
+  }
+  
+  /* Mobile : Socials passent à la ligne suivante */
+  @media (max-width: 576px) {
+    .footer-simple .footer-nav-social {
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    
+    .footer-simple .footer-nav-social .footer-social {
+      flex-basis: 100%;
+      order: 3; /* Passer après navigation */
+      border-top: 1px solid var(--liquid-glass-border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+  }
+  
+  /* Desktop : Tout sur 1 ligne */
+  @media (min-width: 768px) {
+    .footer-simple .footer-nav-social .footer-social {
+      order: unset;
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+  }
+  
+  /* Liens légaux - police plus petite et espacement */
+  .footer-simple .footer-legal-links {
+    line-height: 1.8;
+    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 0.5rem;
+  }
+  
+  .footer-simple .footer-legal-links .footer-link {
+    font-size: 0.85rem;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-simple .footer-legal-links {
+      justify-content: flex-end;
+    }
+  }
+  
+  /* Responsive mobile - liens légaux */
+  @media (max-width: 767px) {
+    .footer-simple .footer-legal-links {
+      gap: 0.25rem 0;
+    }
+    
+    .footer-simple .footer-legal-links .mx-2 {
+      margin: 0 0.5rem !important;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .footer-simple .footer-legal-links .mx-2 {
+      margin: 0 0.25rem !important;
+    }
+  }
+  
   /* Responsive - Mobile accessibility (tailles tactiles 44x44px minimum) */
   @media (max-width: 767px) {
     .footer-grenoble-roller .col-6 {
@@ -867,6 +1111,194 @@
       min-width: 44px;
       min-height: 44px;
     }
+  }
+  
+  /* === AMÉLIORATIONS FOOTER 2025 === */
+  
+  /* Icônes sociales plus grandes avec labels visibles */
+  .footer-grenoble-roller .social-link-lg {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+    position: relative;
+  }
+  
+  /* Tooltips accessibles au hover ET au focus (navigation clavier) */
+  .footer-grenoble-roller .social-link-lg:hover::after,
+  .footer-grenoble-roller .social-link-lg:focus::after,
+  .footer-grenoble-roller .social-link-lg:focus-visible::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gr-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+  }
+  
+  .footer-grenoble-roller .social-link-lg:hover::before,
+  .footer-grenoble-roller .social-link-lg:focus::before,
+  .footer-grenoble-roller .social-link-lg:focus-visible::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--gr-primary);
+    z-index: 10;
+    pointer-events: none;
+  }
+  
+  /* Informations légales enrichies */
+  .footer-grenoble-roller .footer-legal-info {
+    line-height: 1.8;
+  }
+  
+  .footer-grenoble-roller .footer-legal-info a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  
+  .footer-grenoble-roller .footer-legal-info a:hover {
+    color: var(--gr-primary);
+  }
+  
+  /* Bordures de séparation améliorées */
+  .footer-grenoble-roller .border-top {
+    border-top-width: 1px !important;
+  }
+  
+  /* Responsive amélioré - Tablette (2 colonnes) */
+  @media (min-width: 768px) and (max-width: 991px) {
+    .footer-grenoble-roller .col-md-6 {
+      margin-bottom: 2.5rem;
+    }
+  }
+  
+  /* Espacement amélioré pour newsletter section */
+  .footer-grenoble-roller .newsletter-section {
+    margin-top: 1rem; /* Réduit de 1.5rem pour compacter */
+  }
+  
+  /* Optimisation hauteur : Réduction espacement vertical général */
+  .footer-grenoble-roller .container {
+    padding-top: 1.5rem; /* py-4 au lieu de py-5 */
+    padding-bottom: 1.5rem;
+  }
+  
+  /* Réduction espacement entre sections */
+  .footer-grenoble-roller .row.g-4 {
+    --bs-gutter-y: 1.5rem; /* Réduit de 1.5rem à 1rem sur mobile */
+  }
+  
+  @media (min-width: 992px) {
+    .footer-grenoble-roller .row.g-lg-5 {
+      --bs-gutter-y: 2rem; /* Réduit de 3rem à 2rem sur desktop */
+    }
+  }
+  
+  /* Réduction espacement divider */
+  .footer-grenoble-roller hr {
+    margin-top: 1.5rem !important; /* Réduit de my-5 (3rem) à 1.5rem */
+    margin-bottom: 1.5rem !important;
+  }
+  
+  /* Informations légales compactes */
+  .footer-grenoble-roller .footer-legal-info {
+    line-height: 1.6; /* Réduit de 1.8 à 1.6 */
+    font-size: 0.875rem; /* Légèrement plus petit */
+  }
+  
+  .footer-grenoble-roller .footer-legal-info p {
+    margin-bottom: 0.5rem; /* Réduit l'espacement entre paragraphes */
+  }
+  
+  .footer-grenoble-roller .footer-legal-info p:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Amélioration contraste liens légaux */
+  .footer-grenoble-roller .footer-links .border-top + li a {
+    margin-top: 0.5rem;
+  }
+  
+  /* Accessibilité - Labels visuels pour abbr */
+  .footer-grenoble-roller abbr {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    cursor: help;
+  }
+  
+  /* Mode sombre - Ajustements supplémentaires */
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link-lg:hover::after,
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link-lg:focus::after,
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link-lg:focus-visible::after {
+    background: var(--gr-primary-dark);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link-lg:hover::before,
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link-lg:focus::before,
+  [data-bs-theme="dark"] .footer-grenoble-roller .social-link-lg:focus-visible::before {
+    border-bottom-color: var(--gr-primary-dark);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-legal-info a {
+    color: var(--gr-text-dark);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-legal-info a:hover {
+    color: var(--gr-primary-dark);
+  }
+  
+  /* === ACCORDÉON MOBILE FOOTER (Tendance 2025) === */
+  
+  /* Bouton toggle accordéon mobile */
+  .footer-grenoble-roller .footer-title-toggle {
+    padding: 0.5rem 0;
+    color: var(--gr-primary);
+    transition: var(--transition-liquid-fast);
+    cursor: pointer;
+  }
+  
+  .footer-grenoble-roller .footer-title-toggle:hover {
+    color: var(--gr-primary);
+    opacity: 0.8;
+  }
+  
+  .footer-grenoble-roller .footer-title-toggle:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  
+  /* Animation chevron accordéon */
+  .footer-grenoble-roller .footer-title-toggle .footer-chevron {
+    transition: transform 0.3s ease;
+  }
+  
+  .footer-grenoble-roller .footer-title-toggle[aria-expanded="true"] .footer-chevron {
+    transform: rotate(180deg);
+  }
+  
+  /* Mode sombre - Accordéon */
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-title-toggle {
+    color: var(--gr-text-dark);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-title-toggle:hover {
+    color: var(--gr-primary-dark);
+  }
+  
+  [data-bs-theme="dark"] .footer-grenoble-roller .footer-title-toggle:focus-visible {
+    outline-color: var(--gr-primary-dark);
   }
   
   /* === THEME TOGGLE BUTTON - Accessibilité === */
@@ -2459,6 +2891,10 @@
 /* Show produit : image avec arrondi adapté au layout */
 .product-show-image-wrapper {
   border-radius: 1.6rem; /* par défaut (mobile : card verticale) */
+  position: relative;
+  /* Verrouiller l'aspect ratio pour éviter les sauts de layout */
+  min-height: 300px; /* hauteur minimale de sécurité */
+  overflow: hidden;
 }
 
 @media (min-width: 992px) {
@@ -2473,13 +2909,41 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+    background: var(--liquid-glass-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .card-product-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: var(--transition-liquid);
+    background: var(--liquid-glass-bg);
+    /* Pré-allouer l'espace pour éviter les sauts de layout */
+    min-height: 100%;
+    min-width: 100%;
+  }
+
+  /* Fallback si l'image ne charge pas */
+  .card-product-image img:not([src]),
+  .card-product-image img[src=""],
+  .card-product-image img[src="undefined"] {
+    opacity: 0;
+  }
+
+  /* Placeholder visible si image absente */
+  .card-product-image:has(img:not([src])),
+  .card-product-image:has(img[src=""]),
+  .card-product-image:has(img[src="undefined"]) {
+    &::before {
+      content: '\f03e'; /* bi-image icon */
+      font-family: 'bootstrap-icons';
+      font-size: 3rem;
+      color: var(--gr-muted);
+      opacity: 0.5;
+    }
   }
 
   .card-product:hover .card-product-image img {
@@ -2577,15 +3041,22 @@
 
 @media (min-width: 768px) {
   .product-actions-row {
-    justify-content: flex-end;
-  }
-
-  .product-add-btn {
-    min-width: 230px;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .product-cart-link {
     flex: 0 0 auto;
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: auto !important; /* Forcer la largeur auto sur desktop */
+    max-width: 180px; /* Limiter la largeur maximale */
+  }
+
+  .product-add-btn {
+    flex: 1 1 auto;
+    min-width: 200px;
+    max-width: none;
   }
 }
 .product-options .form-select {
