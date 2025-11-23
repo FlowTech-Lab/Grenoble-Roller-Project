@@ -1,0 +1,100 @@
+<!-- Cookie Consent Banner - Conforme RGPD 2025 et directive ePrivacy -->
+<div data-controller="cookie-consent"
+     data-cookie-consent-accept-url-value="<%= accept_cookie_consent_path %>"
+     data-cookie-consent-reject-url-value="<%= reject_cookie_consent_path %>"
+     id="cookie-consent-banner" 
+     class="cookie-banner" 
+     role="dialog" 
+     aria-labelledby="cookie-banner-title" 
+     aria-live="polite" 
+     aria-hidden="true" 
+     style="display: none;"
+     data-cookie-consent-target="banner">
+  <div class="container">
+    <div class="cookie-banner-content">
+      <div class="cookie-banner-text">
+        <h3 id="cookie-banner-title" class="h5 mb-2">
+          <i class="bi bi-cookie me-2" aria-hidden="true"></i>
+          Gestion des cookies
+        </h3>
+        <p class="mb-0 small">
+          Ce site utilise des cookies pour améliorer votre expérience de navigation. 
+          Les cookies strictement nécessaires (authentification, panier d'achat) sont toujours actifs. 
+          Vous pouvez accepter ou refuser les autres cookies.
+          <%= link_to "En savoir plus", politique_confidentialite_path, class: "text-decoration-underline ms-1" %>.
+        </p>
+      </div>
+      <div class="cookie-banner-actions">
+        <button type="button" 
+                class="btn btn-sm btn-liquid-success me-2" 
+                data-action="click->cookie-consent#accept"
+                data-cookie-consent-target="acceptButton"
+                data-turbo="false"
+                aria-label="Accepter tous les cookies">
+          Tout accepter
+        </button>
+        <button type="button" 
+                class="btn btn-sm btn-outline-liquid-secondary me-2" 
+                data-action="click->cookie-consent#reject"
+                data-cookie-consent-target="rejectButton"
+                data-turbo="false"
+                aria-label="Refuser les cookies non essentiels">
+          Tout refuser
+        </button>
+        <%= link_to "Personnaliser", preferences_cookie_consent_path, class: "btn btn-sm btn-outline-liquid-primary", aria: { label: "Personnaliser les préférences de cookies" } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bs-body-bg);
+    border-top: 2px solid var(--bs-border-color);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    padding: 1rem 0;
+  }
+
+  .cookie-banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .cookie-banner-text {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .cookie-banner-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+    .cookie-banner-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .cookie-banner-actions {
+      width: 100%;
+      justify-content: stretch;
+    }
+
+    .cookie-banner-actions .btn {
+      flex: 1;
+    }
+  }
+</style>
+
+<%# Le JavaScript est maintenant géré par le contrôleur Stimulus cookie_consent_controller.js %>
+

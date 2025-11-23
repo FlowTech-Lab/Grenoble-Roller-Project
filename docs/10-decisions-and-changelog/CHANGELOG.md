@@ -2,6 +2,86 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-11-21] - Pages légales complètes + Gestion des cookies RGPD 2025
+
+### Ajouté
+- **Pages légales complètes** :
+  - Mentions Légales (`/mentions-legales`) - Obligatoire (risque : 75 000€)
+  - Politique de Confidentialité / RGPD (`/politique-confidentialite`, `/rgpd`) - Obligatoire (risque : 4% CA)
+  - Conditions Générales de Vente (`/cgv`, `/conditions-generales-vente`) - Obligatoire (risque : 15 000€)
+  - Conditions Générales d'Utilisation (`/cgu`, `/conditions-generales-utilisation`) - Recommandé
+  - Page Contact (`/contact`) - Recommandé (email uniquement, pas de formulaire)
+  - Toutes les pages basées sur les informations collectées de l'association
+  - Contenu conforme aux obligations légales françaises (RGPD, Code de la consommation, loi pour la confiance en l'économie numérique)
+
+- **Système de gestion des cookies conforme RGPD 2025** :
+  - Banner de consentement automatique (Stimulus Controller)
+  - Page de préférences détaillée (`/cookie_consent/preferences`)
+  - Gestion granulaire des cookies (nécessaires, préférences, analytiques)
+  - Stockage des préférences dans un cookie permanent (13 mois, conforme RGPD)
+  - Compatibilité Turbo et Stimulus
+  - Accessibilité complète (ARIA labels, navigation clavier)
+
+- **Routes RESTful modernes** :
+  - `resource :cookie_consent` avec actions `collection` (preferences, accept, reject, update)
+  - Routes légales avec alias pour SEO (`/rgpd`, `/conditions-generales-vente`, etc.)
+  - Architecture conforme aux conventions Rails 8
+
+- **Helper Ruby** :
+  - `CookieConsentHelper` pour vérifier le consentement côté serveur
+  - Méthodes : `cookie_consent?(type)`, `has_cookie_consent?`, `cookie_preferences`
+
+- **Documentation légale** :
+  - Formulaire de collecte d'informations complété (`informations-a-collecter.md`)
+  - Guide mis à jour avec les informations réelles de l'association (`legal-pages-guide.md`)
+
+### Modifié
+- **Footer** :
+  - Ajout de tous les liens légaux dans le footer simple
+  - Footer complet mis à jour avec les liens légaux (prêt pour utilisation future)
+
+- **Documentation** :
+  - Mention des cookies de session Rails utilisés pour le panier d'achat
+  - Clarification que les cookies de session sont strictement nécessaires
+
+- **Architecture** :
+  - Contrôleur Stimulus `cookie_consent_controller.js` pour gestion moderne du banner
+  - Compatibilité Turbo avec gestion des événements `turbo:load`
+
+### Conformité
+- ✅ **RGPD** : Conforme (politique de confidentialité complète, gestion des cookies)
+- ✅ **Directive ePrivacy** : Conforme (banner de consentement, préférences détaillées)
+- ✅ **Code de la consommation** : Conforme (CGV complètes avec exception légale L221-28)
+- ✅ **Loi pour la confiance en l'économie numérique** : Conforme (mentions légales complètes)
+- ✅ **Accessibilité** : WCAG 2.1 AA (ARIA labels, navigation clavier)
+
+### Fichiers créés
+- `app/controllers/legal_pages_controller.rb`
+- `app/controllers/cookie_consents_controller.rb`
+- `app/helpers/cookie_consent_helper.rb`
+- `app/javascript/controllers/cookie_consent_controller.js`
+- `app/views/legal_pages/mentions_legales.html.erb`
+- `app/views/legal_pages/politique_confidentialite.html.erb`
+- `app/views/legal_pages/cgv.html.erb`
+- `app/views/legal_pages/cgu.html.erb`
+- `app/views/legal_pages/contact.html.erb`
+- `app/views/cookie_consents/preferences.html.erb`
+- `app/views/layouts/_cookie_banner.html.erb`
+
+### Fichiers modifiés
+- `config/routes.rb` (routes RESTful pour pages légales et cookies)
+- `app/views/layouts/application.html.erb` (intégration du banner de cookies)
+- `app/views/layouts/_footer-simple.html.erb` (liens légaux)
+- `app/views/layouts/_footer.html.erb` (liens légaux pour version complète)
+- `docs/08-security-privacy/informations-a-collecter.md` (formulaire complété)
+- `docs/08-security-privacy/legal-pages-guide.md` (guide mis à jour)
+
+### Notes techniques
+- Cookies de session Rails (panier, authentification) sont strictement nécessaires et toujours actifs
+- Durée de conservation des cookies de consentement : 13 mois (conforme RGPD)
+- Attributs de sécurité : `SameSite: Lax`, `Secure` en production
+- Timestamp du consentement pour traçabilité
+
 ## [2025-01-20] - Job de rappel la veille à 19h + Option wants_reminder
 
 ### Ajouté

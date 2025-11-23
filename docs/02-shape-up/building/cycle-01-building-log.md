@@ -149,14 +149,14 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - Planifier l'infrastructure
 
 #### 📋 **Livrables**
-- [ ] User Stories détaillées avec critères d'acceptation
-- [ ] **ER Diagram (Event → Route, User, Attendance)** ← **CRITIQUE avant Jour 1**
-- [ ] Diagrammes d'architecture technique
-- [ ] Personas et parcours utilisateurs
-- [ ] Plan d'infrastructure (serveur, DB, CI/CD)
-- [ ] **Branching strategy (main/develop/feature branches)** ← **CRITIQUE**
-- [ ] **Database.yml pour 3 envs (dev/staging/prod)** ← **CRITIQUE**
-- [ ] Conventions de développement
+- [✅] User Stories détaillées avec critères d'acceptation
+- [✅] **ER Diagram (Event → Route, User, Attendance)** ← **CRITIQUE avant Jour 1**
+- [✅] Diagrammes d'architecture technique
+- [✅] Personas et parcours utilisateurs
+- [✅] Plan d'infrastructure (serveur, DB, CI/CD)
+- [✅] **Branching strategy (main/develop/feature branches)** ← **CRITIQUE**
+- [✅] **Database.yml pour 3 envs (dev/staging/prod)** ← **CRITIQUE**
+- [✅] Conventions de développement
 
 #### 🛠️ **Actions**
 1. **Atelier de cadrage** (2 jours)
@@ -184,26 +184,28 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - Définir le design system
 
 #### 📋 **Livrables**
-- [ ] Wireframes desktop et mobile
-- [ ] Prototype interactif (Figma)
-- [ ] Design system Bootstrap
-- [ ] Validation UX/UI
+- [✅] Wireframes desktop et mobile
+- [✅] Prototype interactif (Figma)
+- [✅] Design system Bootstrap
+- [✅] Validation UX/UI
 
 #### 🛠️ **Actions**
 1. **Wireframes** (3 jours)
-   - Pages principales
-   - Responsive design
-   - Navigation
+   - [✅] Pages principales
+   - [✅] Responsive design
+   - [✅] Navigation
 
 2. **Prototype interactif** (4 jours)
-   - Interactions utilisateur
-   - Flux de navigation
-   - Validation
+   - [✅] Interactions utilisateur
+   - [✅] Flux de navigation
+   - [✅] Validation
 
 3. **Design system** (2 jours)
-   - Composants Bootstrap
-   - Thème personnalisé
-   - Guidelines
+   - [✅] Composants Bootstrap
+   - [✅] Thème personnalisé (Liquid Design 2025)
+   - [✅] Guidelines
+   - [✅] UI Kit complet (Atoms, Molecules, Organisms)
+   - [✅] Version staging déployée
 
 ---
 
@@ -217,34 +219,34 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - Implémenter le monitoring de base
 
 #### 📋 **Livrables**
-- [ ] Repository GitHub structuré
-- [ ] Pipeline CI (tests, linting, audit)
-- [ ] Pipeline CD (staging/prod)
+- [✅] Repository GitHub structuré
+- [✅] Pipeline CI (tests, linting, audit)
+- [✅] Pipeline CD (staging/prod)
 - [ ] Monitoring initial (Prometheus + Grafana basique)
 
 #### 🛠️ **Actions (Ordre Recommandé Rails 8)**
 
 **Jour 1-2 : Infrastructure de Base**
-- [ ] Rails 8 + Ruby 3.3+ + PostgreSQL ✓ (déjà fait)
-- [ ] Docker Compose (dev/staging/prod) ✓ (déjà fait)
-- [ ] Repository Git avec conventions (main/develop/feature branches) ✓
-- [ ] Credentials Rails configurés ✓
+- [✅] Rails 8 + Ruby 3.3+ + PostgreSQL ✓ (déjà fait)
+- [✅] Docker Compose (dev/staging/prod) ✓ (déjà fait)
+- [✅] Repository Git avec conventions (main/develop/feature branches) ✓
+- [✅] Credentials Rails configurés ✓
 
 **Jour 2-3 : Authentification & Rôles**
-- [ ] Devise + configuration initiale ✓ (déjà fait)
-- [ ] Modèle User avec enum rôles + validations Rails 8 : `enum role: [...], validate: true` + `validates :role, presence: true`
-- [ ] Tests fixtures/seeds en parallèle
+- [✅] Devise + configuration initiale ✓ (déjà fait)
+- [✅] Modèle User avec enum rôles + validations Rails 8 : `enum role: [...], validate: true` + `validates :role, presence: true`
+- [✅] Tests fixtures/seeds en parallèle
 
 **Jour 3-4 : Autorisation & Tests Setup**
-- [ ] Pundit (policies) **AVANT** les contrôleurs métier
-- [ ] ApplicationController avec includes Pundit complet (include Pundit::Authorization, verify_authorized, rescue_from)
-- [ ] RSpec setup + minitest configuration
-- [ ] FactoryBot (factories/) NOT fixtures
-- [ ] Database cleaner + Transaction rollback
+- [✅] Pundit (policies) **AVANT** les contrôleurs métier
+- [✅] ApplicationController avec includes Pundit complet (include Pundit::Authorization, verify_authorized, rescue_from)
+- [✅] RSpec setup + minitest configuration
+- [✅] FactoryBot (factories/) NOT fixtures
+- [✅] Database cleaner + Transaction rollback
 
 **Jour 5 : CI/CD GitHub Actions** ⚠️ **CRITIQUE - FAIRE MAINTENANT**
-- [ ] GitHub Actions workflow (tests, linting, security)
-- [ ] Tests automatisés dans CI (coverage >70% dès Week 2, pas Week 5)
+- [✅] GitHub Actions workflow (tests, linting, security)
+- [✅] Tests automatisés dans CI (coverage >70% dès Week 2, pas Week 5)
 - [ ] Prometheus + Grafana basique (optionnel MVP)
 - [ ] Let's Encrypt préconfiguré (optionnel MVP)
 
@@ -265,11 +267,11 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [✅] E-commerce complet
 
 #### 📋 **Sprint 3-4 : Événements & Paiement** (Phase 2 - Week 1-2)
-- [ ] **CRUD événements complet** (modèles stables d'abord)
+- [✅] **CRUD événements complet** (modèles stables d'abord)
 - [ ] **Calendrier interactif** (FullCalendar)
-- [ ] **Système d'inscription** aux événements
+- [✅] **Système d'inscription** aux événements
 - [ ] Intégration HelloAsso (optionnel Phase 2)
-- [ ] Gestion des inscriptions
+- [✅] Gestion des inscriptions
 
 #### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)**
 
@@ -279,8 +281,8 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - ✅ **Pré-requis** : Modèles Phase 2 créés et stables
 - ✅ **Jour 5-10** : Tests RSpec complets (>70% coverage)
 - ✅ **Jour 11** : Installation ActiveAdmin (génère automatiquement tout)
-- 🔜 **Jour 12-13** : Customisation ActiveAdmin
-- 🔜 **Jour 14-15** : Tests admin + finalisation
+- [✅] **Jour 12-13** : Customisation ActiveAdmin
+- [ ] **Jour 14-15** : Tests admin + finalisation
 
 **⚠️ IMPORTANT** : Ne pas créer contrôleurs/routes manuels avant ActiveAdmin (voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md))
 
@@ -289,8 +291,8 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [ ] Gestion des créneaux
 - [ ] Système de prêt matériel
 - [ ] Upload photos (Active Storage)
-- [ ] Notifications email
-- [ ] Tests de régression (coverage >70% maintenu)
+- [ ] Notifications email (code présent, non validé en production)
+- [✅] Tests de régression (coverage >70% maintenu)
 
 #### 🛠️ **Actions par Sprint (Rails 8 TDD)**
 
@@ -318,25 +320,25 @@ JOUR 1: Rails 8 + Docker ✓
   ↓
 JOUR 2-3: Devise (User model + auth) ✓
   ↓
-JOUR 4: Pundit setup + RSpec setup
+JOUR 4: Pundit setup + RSpec setup ✓
   ↓
-JOUR 5: CI/CD GitHub Actions
+JOUR 5: CI/CD GitHub Actions ✓
   ↓
-JOUR 6-7: Models Event/Route/Attendance (Routes AVANT Events!)
+JOUR 6-7: Models Event/Route/Attendance (Routes AVANT Events!) ✓
   ↓
-JOUR 8: Controllers CRUD Events
+JOUR 8: Controllers CRUD Events ✓
   ↓
-JOUR 9: Inscriptions + Calendrier
+JOUR 9: Inscriptions + Calendrier (Inscriptions ✓, Calendrier 🔜)
   ↓
-JOUR 10: Tests unitaires & intégration (Coverage >70%)
+JOUR 10: Tests unitaires & intégration (Coverage >70%) ✓
   ↓
-JOUR 11: Pundit Policies + Finalisation modèles (100% stables)
+JOUR 11: Pundit Policies + Finalisation modèles (100% stables) ✓
   ↓
-JOUR 12: ⚠️ INSTALL ACTIVEADMIN (après modèles garantis stables)
+JOUR 12: ⚠️ INSTALL ACTIVEADMIN (après modèles garantis stables) ✓
   ↓
-JOUR 13-14: ActiveAdmin customisation (filtres, bulk actions, exports)
+JOUR 13-14: ActiveAdmin customisation (filtres, bulk actions, exports) ✓
   ↓
-JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
+JOUR 15: Tests Admin + Notifications + Performance (Brakeman) (Notifications ✓, Tests Admin 🔜, Performance 🔜)
 ```
 
 ---
@@ -359,10 +361,10 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 #### 🛠️ **Actions (Réparties sur Phase 2)**
 
 **Week 1-2 : Tests TDD (en parallèle)**
-- [ ] Model tests (validations, associations, scopes)
-- [ ] Controller tests (RSpec avec let + factories)
-- [ ] Integration tests (Capybara)
-- [ ] **Coverage >70%** (unitaire + intégration) ← **OBLIGATOIRE dès Week 2**
+- [✅] Model tests (validations, associations, scopes)
+- [✅] Controller tests (RSpec avec let + factories)
+- [✅] Integration tests (Capybara)
+- [✅] **Coverage >70%** (unitaire + intégration) ← **OBLIGATOIRE dès Week 2**
 
 **Week 3 : Performance & Optimisation (OPTIONNEL pour MVP)**
 1. **Optimisation requêtes** (obligatoire)
@@ -521,13 +523,13 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 #### ✅ Phase 2 Révisée (Semaines 3-4) - EN COURS
 > **📋 Voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md) pour le plan détaillé**
 
-- [x] **EVENT models** (Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog) ✅
-- [x] **Migrations appliquées** (7 migrations Phase 2) ✅
-- [x] **Seeds créés et testés** (Phase 2) ✅
-- [x] **Modèles stables** (validations, associations, scopes) ✅
-- [x] **Tests RSpec complets (>70% coverage)** ← **OK (75 exemples, 0 échec)**
-- [x] **ActiveAdmin** (Jour 11, après tests >70%)
-- [ ] **Customisation ActiveAdmin** (Jour 12-13)
+- [✅] **EVENT models** (Route, Event, Attendance, OrganizerApplication, Partner, ContactMessage, AuditLog) ✅
+- [✅] **Migrations appliquées** (7 migrations Phase 2) ✅
+- [✅] **Seeds créés et testés** (Phase 2) ✅
+- [✅] **Modèles stables** (validations, associations, scopes) ✅
+- [✅] **Tests RSpec complets (>70% coverage)** ← **OK (75 exemples, 0 échec)**
+- [✅] **ActiveAdmin** (Jour 11, après tests >70%)
+- [✅] **Customisation ActiveAdmin** (Jour 12-13)
 - [ ] **Tests admin + finalisation** (Jour 14-15)
 
 #### ✅ Phase 3 (Semaine 5)
@@ -608,8 +610,8 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman)
 
 | Semaine | Phase | Objectifs | Livrables | État |
 |---------|-------|-----------|-----------|------|
-| 1-2 | Building (S1) | CRUD Événements, Inscriptions, Calendrier | Événements fonctionnels, système d'inscription | 🔜 À VENIR |
-| 3 | Building (S2) | **Modèles stables → ActiveAdmin (Jour 11+)**, Permissions fines (Pundit), Upload photos, Notifications | Rôles/permissions, gestion médias, admin minimal (ActiveAdmin), mails | 🔜 À VENIR |
+| 1-2 | Building (S1) | CRUD Événements, Inscriptions, Calendrier | Événements fonctionnels, système d'inscription | ✅ TERMINÉ (CRUD ✅, Inscriptions ✅, Calendrier 🔜) |
+| 3 | Building (S2) | **Modèles stables → ActiveAdmin (Jour 11+)**, Permissions fines (Pundit), Upload photos, Notifications | Rôles/permissions, gestion médias, admin minimal (ActiveAdmin), mails | ✅ TERMINÉ (ActiveAdmin ✅, Pundit ✅, Upload photos 🔜, Notifications 🔜) |
 
 #### 📋 **SÉQUENCE DÉTAILLÉE - Phase 2**
 
@@ -690,6 +692,21 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] Documentation complète mise à jour (README, setup guides, architecture)
 - [✅] Credentials Rails configurés et régénérés
 
+#### Pages légales & Conformité RGPD (2025-11-21)
+- [✅] **Pages légales complètes** :
+  - [✅] Mentions Légales (`/mentions-legales`) - Conforme LCEN
+  - [✅] Politique de Confidentialité (`/politique-confidentialite`, `/rgpd`) - Conforme RGPD
+  - [✅] Conditions Générales de Vente (`/cgv`) - Conforme Code consommation
+  - [✅] Conditions Générales d'Utilisation (`/cgu`)
+  - [✅] Page Contact (`/contact`) - Email uniquement
+- [✅] **Gestion des cookies conforme RGPD 2025** :
+  - [✅] Banner de consentement automatique (Stimulus Controller)
+  - [✅] Page de préférences détaillée (`/cookie_consent/preferences`)
+  - [✅] Gestion granulaire (nécessaires, préférences, analytiques)
+  - [✅] Cookies de session Rails documentés (panier, authentification)
+- [✅] Routes RESTful modernes (`resource :cookie_consent`)
+- [✅] Footer mis à jour avec tous les liens légaux
+
 ### 🔜 PHASE 2 - ÉVÉNEMENTS (À VENIR)
 
 #### Améliorations E-commerce
@@ -697,38 +714,38 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [🔜] Panier persistant pour utilisateurs connectés (fusion session/DB)
 
 #### Authentification avancée
-- [🔜] Permissions fines (Pundit: politiques + intégration)
-- [🔜] Vues Devise personnalisées si nécessaire
+- [✅] Permissions fines (Pundit: politiques + intégration)
+- [ ] Vues Devise personnalisées si nécessaire
 
 #### Module Événements
 - [✅] Modèles: `routes`, `events`, `attendances`, `organizer_applications`, `partners`, `contact_messages`, `audit_logs` ✅
 - [✅] Migrations appliquées (7 migrations Phase 2) ✅
 - [✅] Seeds créés et testés (Phase 2) ✅
-- [🔜] CRUD événements complet
-- [🔜] Calendrier interactif
-- [🔜] Inscription aux événements
-- [🔜] Gestion des parcours (GPX)
+- [✅] CRUD événements complet
+- [ ] Calendrier interactif
+- [✅] Inscription aux événements
+- [ ] Gestion des parcours (GPX)
 
 #### Administration
-- [🔜] Interface admin minimale
-- [🔜] Validation des organisateurs
-- [🔜] Statistiques d'utilisation
-- [🔜] Exposition admin des entités e-commerce secondaires (`payments`, `product_variants`, `option_types/values`) + batch actions/exports personnalisés (après livraison des CRUD front)
+- [✅] Interface admin minimale
+- [✅] Validation des organisateurs
+- [ ] Statistiques d'utilisation
+- [ ] Exposition admin des entités e-commerce secondaires (`payments`, `product_variants`, `option_types/values`) + batch actions/exports personnalisés (après livraison des CRUD front)
 
 #### Médias & Notifications
-- [🔜] Upload photos (Active Storage)
-- [🔜] Notifications email (inscription événement, rappel)
+- [ ] Upload photos (Active Storage)
+- [ ] Notifications email (inscription événement, rappel) - code présent, non validé
 
 #### Tests & Qualité ⚠️ **CORRIGÉ - TDD dès le début**
 - [✅] RSpec configuré ✅
 - [✅] Model specs Phase 2 >70% coverage (à maintenir)
-- [🔜] Tests d'intégration (Capybara) à ajouter
-- [🔜] Tests de performance (Week 3)
-- [🔜] Audit sécurité complet (Brakeman) - Week 3
+- [✅] Tests d'intégration (Capybara) à ajouter
+- [ ] Tests de performance (Week 3)
+- [✅] Audit sécurité complet (Brakeman) - Week 3
 
 #### Déploiement
-- [🔜] Déploiement production finalisé
-- [🔜] Formation utilisateurs
+- [ ] Déploiement production finalisé
+- [ ] Formation utilisateurs
 
 ---
 

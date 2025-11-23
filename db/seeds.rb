@@ -301,6 +301,8 @@ sac_roller = Product.create!(
   image_url: "produits/Sac a dos roller.png"
 )
 
+# Pour le sac à dos, on utilise l'image principale pour toutes les couleurs
+# (pas d'images spécifiques par couleur disponibles)
 [
   color_black,
   color_red,
@@ -313,7 +315,8 @@ sac_roller = Product.create!(
     price_cents: 45_00,
     stock_qty: 10,
     currency: "EUR",
-    is_active: true
+    is_active: true,
+    image_url: sac_roller.image_url # Image principale pour toutes les couleurs
   )
   VariantOptionValue.create!(variant:, option_value: color_ov)
 end
@@ -385,6 +388,13 @@ veste_product = Product.create!(
   image_url: "produits/veste.png"
 )
 
+# Mapping couleur -> image pour la veste (utilise les images .avif existantes)
+veste_images = {
+  "Black" => "produits/veste noir.avif",
+  "Blue" => "produits/veste bleu.avif",
+  "White" => "produits/veste.png" # Pas d'image spécifique pour blanc, utilise l'image principale
+}
+
 vestes_colors = [
   color_black,
   color_blue,
@@ -399,7 +409,8 @@ vestes_colors.each do |color_ov|
       price_cents: 40_00,
       stock_qty: [5, 10, 7][idx],
       currency: "EUR",
-      is_active: true
+      is_active: true,
+      image_url: veste_images[color_ov.value] || veste_product.image_url
     )
     VariantOptionValue.create!(variant:, option_value: size_ov)
     VariantOptionValue.create!(variant:, option_value: color_ov)

@@ -1,0 +1,142 @@
+<% content_for :title, "Gestion des Cookies - Grenoble Roller" %>
+<% content_for :description, "Gérez vos préférences de cookies sur le site Grenoble Roller" %>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-cookie text-liquid-primary me-3" aria-hidden="true"></i>
+            Gestion des Cookies
+          </h1>
+          <p class="lead text-muted">
+            Gérez vos préférences de cookies
+          </p>
+          <hr class="w-50 mx-auto">
+        </div>
+
+        <!-- Informations générales -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-info-circle text-liquid-primary me-2" aria-hidden="true"></i>
+              Qu'est-ce qu'un cookie ?
+            </h2>
+            <p class="mb-0">
+              Un cookie est un petit fichier texte stocké sur votre appareil lorsque vous visitez un site web. 
+              Il permet au site de mémoriser vos préférences et d'améliorer votre expérience de navigation.
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulaire de préférences -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-sliders text-liquid-primary me-2" aria-hidden="true"></i>
+              Vos préférences
+            </h2>
+            
+            <%= form_with url: cookie_consent_path, method: :patch, local: true, id: 'cookie-preferences-form' do |f| %>
+              <!-- Cookies strictement nécessaires -->
+              <div class="mb-4 pb-4 border-bottom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h4 class="h5 mb-1">
+                      <i class="bi bi-shield-check text-liquid-success me-2" aria-hidden="true"></i>
+                      Cookies strictement nécessaires
+                    </h4>
+                    <p class="text-muted small mb-0">
+                      Ces cookies sont essentiels au fonctionnement du site et ne peuvent pas être désactivés.
+                    </p>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="necessary" checked disabled>
+                    <label class="form-check-label" for="necessary">Activé</label>
+                  </div>
+                </div>
+                <ul class="small text-muted mb-0">
+                  <li>Cookies de session Rails - Gestion de l'authentification (Devise) et du panier d'achat</li>
+                  <li>Cookie "_session_id" - Identifiant de session pour le fonctionnement du site</li>
+                </ul>
+              </div>
+
+              <!-- Cookies de préférence -->
+              <div class="mb-4 pb-4 border-bottom">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h4 class="h5 mb-1">
+                      <i class="bi bi-gear text-liquid-primary me-2" aria-hidden="true"></i>
+                      Cookies de préférence
+                    </h4>
+                    <p class="text-muted small mb-0">
+                      Ces cookies permettent de mémoriser vos préférences (thème, langue, etc.).
+                    </p>
+                  </div>
+                  <div class="form-check form-switch">
+                    <%= f.check_box :preferences, { class: "form-check-input", id: "preferences", checked: cookie_consent?(:preferences) }, "true", "false" %>
+                    <label class="form-check-label" for="preferences">Activer</label>
+                  </div>
+                </div>
+                <ul class="small text-muted mb-0">
+                  <li>Cookie "Remember me" - Mémorisation de votre connexion</li>
+                </ul>
+              </div>
+
+              <!-- Cookies analytiques -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h4 class="h5 mb-1">
+                      <i class="bi bi-graph-up text-liquid-info me-2" aria-hidden="true"></i>
+                      Cookies analytiques
+                    </h4>
+                    <p class="text-muted small mb-0">
+                      Ces cookies nous aident à comprendre comment vous utilisez le site pour l'améliorer.
+                    </p>
+                  </div>
+                  <div class="form-check form-switch">
+                    <%= f.check_box :analytics, { class: "form-check-input", id: "analytics", checked: cookie_consent?(:analytics) }, "true", "false" %>
+                    <label class="form-check-label" for="analytics">Activer</label>
+                  </div>
+                </div>
+                <ul class="small text-muted mb-0">
+                  <li>Aucun cookie analytique actuellement utilisé</li>
+                </ul>
+              </div>
+
+              <!-- Boutons d'action -->
+              <div class="d-flex justify-content-between gap-3 flex-wrap">
+                <%= f.submit "Enregistrer les préférences", class: "btn btn-liquid-primary" %>
+                <%= button_to "Tout accepter", accept_cookie_consent_path, method: :post, class: "btn btn-outline-liquid-success", form: { data: { turbo: false } } %>
+                <%= button_to "Tout refuser", reject_cookie_consent_path, method: :post, class: "btn btn-outline-liquid-danger", form: { data: { turbo: false } } %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div class="card card-liquid rounded-liquid shadow-liquid">
+          <div class="card-body p-4">
+            <h2 class="h3 mb-4">
+              <i class="bi bi-question-circle text-liquid-primary me-2" aria-hidden="true"></i>
+              Plus d'informations
+            </h2>
+            <p class="mb-3">
+              Pour plus d'informations sur l'utilisation des cookies, consultez notre 
+              <%= link_to "Politique de Confidentialité", politique_confidentialite_path, class: "text-decoration-underline" %>.
+            </p>
+            <p class="mb-0">
+              Vous pouvez également gérer les cookies directement depuis les paramètres de votre navigateur.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%# Les préférences sont chargées côté serveur via le helper cookie_consent_helper.rb %>
+

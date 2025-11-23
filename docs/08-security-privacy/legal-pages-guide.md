@@ -1,16 +1,16 @@
 ---
 title: "Guide Complet - Pages Légales pour Association"
 status: "active"
-version: "1.0"
+version: "1.1"
 created: "2025-11-15"
-updated: "2025-11-15"
+updated: "2025-11-17"
 tags: ["legal", "rgpd", "cgv", "cgu", "mentions-legales", "association"]
 ---
 
 # Guide Complet - Pages Légales pour Association Loi 1901
 
 **Document Type** : Guide de référence pour création pages légales  
-**Contexte** : Association loi 1901 vendant en ligne (boutique)  
+**Contexte** : Association à but non lucrative (loi 1901) - Activité accessoire non lucrative (boutique produits floqués)  
 **Obligations** : Loi française + RGPD + Code de la consommation
 
 ---
@@ -32,25 +32,27 @@ tags: ["legal", "rgpd", "cgv", "cgu", "mentions-legales", "association"]
 - [ ] **Dénomination complète** : "Grenoble Roller" (confirmé)
 - [ ] **Forme juridique** : Association loi 1901 (confirmé)
 - [ ] **Adresse siège social** : À compléter (voir page "À propos")
-- [ ] **Numéro SIRET** : À compléter (si activité commerciale)
-- [ ] **Code APE** : À compléter (si activité commerciale)
-- [ ] **Numéro TVA intracommunautaire** : À compléter (si activité commerciale)
+- [x] **Numéro SIRET** : Non applicable ✅ (activité accessoire non lucrative)
+- [x] **Code APE** : Non applicable ✅ (activité accessoire non lucrative)
+- [x] **Numéro TVA intracommunautaire** : Non applicable ✅
 - [ ] **Téléphone** : À compléter
-- [ ] **Email** : `contact@grenobleroller.fr` (confirmé)
-- [ ] **Directeur de publication** : Nom du président (à compléter)
+- [x] **Email** : `contact@grenoble-roller.org` ✅ (confirmé)
+- [x] **Directeur de publication** : SAVORNIN Stéphane (Président) ✅ (confirmé)
+- [x] **Adresse siège social** : 6 rue Berthe de Boissieux 38000 Grenoble ✅ (confirmé)
+- [x] **Date de création** : 15/10/2005 ✅ (confirmé)
 - [ ] **Responsable de la rédaction** : (optionnel)
 
 ### Informations Hébergeur (pour Mentions Légales)
-- [ ] **Nom hébergeur** : À identifier
-- [ ] **Adresse hébergeur** : À identifier
-- [ ] **Téléphone hébergeur** : À identifier
+- [x] **Nom hébergeur** : IONOS SARL ✅ (confirmé)
+- [x] **Adresse hébergeur** : 7, place de la Gare, BP 70109, 57201 Sarreguemines Cedex ✅ (confirmé)
+- [x] **Téléphone hébergeur** : +33 9 70 80 89 11 ✅ (confirmé)
 
 ### Informations Boutique (pour CGV)
-- [ ] **Modes de paiement acceptés** : À définir (HelloAsso ?)
-- [ ] **Délais de livraison** : À définir
-- [ ] **Frais de livraison** : À définir
-- [ ] **Modalités retour/rétractation** : À définir
-- [ ] **Garanties** : À définir
+- [x] **Modes de paiement acceptés** : HelloAsso (carte bancaire), Chèque, Espèce ✅ (confirmé)
+- [x] **Délais de livraison** : 4 semaines (récupération en main propre) ✅ (confirmé)
+- [x] **Frais de livraison** : N/A (pas de livraison à domicile) ✅ (confirmé)
+- [x] **Modalités retour/rétractation** : Absence de droit de rétractation (articles personnalisés L221-28) ✅ (confirmé)
+- [x] **Garanties** : 2 ans + vices cachés ✅ (confirmé)
 
 ---
 
@@ -65,31 +67,28 @@ tags: ["legal", "rgpd", "cgv", "cgu", "mentions-legales", "association"]
 #### **Section 1 : Éditeur du site**
 ```
 1. Dénomination : Grenoble Roller
-2. Forme juridique : Association loi 1901
-3. Adresse du siège social : [À compléter]
-4. Numéro de téléphone : [À compléter]
-5. Adresse de courrier électronique : contact@grenobleroller.fr
+2. Forme juridique : Association à but non lucrative (loi 1901)
+3. Adresse du siège social : 6 rue Berthe de Boissieux 38000 Grenoble
+4. Numéro de téléphone : N/A
+5. Adresse de courrier électronique : contact@grenoble-roller.org
 ```
 
 #### **Section 2 : Directeur de publication**
 ```
-Nom du directeur de la publication : [Nom du président - À compléter]
+Nom du directeur de la publication : SAVORNIN Stéphane (Président)
 ```
 
 #### **Section 3 : Hébergeur du site**
 ```
-1. Nom, dénomination ou raison sociale : [À identifier]
-2. Adresse : [À identifier]
-3. Numéro de téléphone : [À identifier]
+1. Nom, dénomination ou raison sociale : IONOS SARL
+2. Adresse : 7, place de la Gare, BP 70109, 57201 Sarreguemines Cedex
+3. Numéro de téléphone : +33 9 70 80 89 11
 ```
 
-#### **Section 4 : Activité commerciale (si applicable)**
-Si l'association exerce une activité commerciale (vente boutique), ajouter :
-```
-1. Numéro SIRET : [À compléter]
-2. Code APE (Activité Principale Exercée) : [À compléter]
-3. Numéro TVA intracommunautaire : [À compléter si applicable]
-```
+#### **Section 4 : Activité commerciale**
+**Note importante** : L'association propose ponctuellement des produits floqués Grenoble Roller dans le cadre d'une **activité accessoire non lucrative**, destinée uniquement au financement de ses actions.
+
+**Pas d'identifiants commerciaux** : Aucun numéro SIRET, code APE ou numéro TVA intracommunautaire n'est applicable, cette activité étant non lucrative et accessoire.
 
 #### **Section 5 : Propriété intellectuelle**
 ```
@@ -116,14 +115,14 @@ reproduction non autorisée est interdite.
 #### **Section 1 : Responsable du traitement**
 ```
 Responsable du traitement : Grenoble Roller
-Adresse : [Adresse siège social]
-Email : contact@grenobleroller.fr
+Adresse : 6 rue Berthe de Boissieux 38000 Grenoble
+Email : contact@grenoble-roller.org
 ```
 
 #### **Section 2 : Données collectées**
 Liste exhaustive des données collectées :
 - **Inscription** : Prénom, nom, email, téléphone (optionnel), mot de passe (hashé)
-- **Commandes** : Adresse de livraison, informations de paiement
+- **Commandes** : Informations de paiement (pas d'adresse de livraison - récupération en main propre)
 - **Événements** : Inscriptions aux événements, préférences de rappel
 - **Cookies** : Cookies de session (Devise), cookies "remember me"
 - **Navigation** : Logs serveur (adresses IP, horodatage)
@@ -160,8 +159,8 @@ Liste complète des droits RGPD :
 
 **Modalités d'exercice** :
 ```
-Pour exercer vos droits, contactez-nous à : contact@grenobleroller.fr
-ou par courrier à : [Adresse siège social]
+Pour exercer vos droits, contactez-nous à : contact@grenoble-roller.org
+ou par courrier à : 6 rue Berthe de Boissieux 38000 Grenoble
 ```
 
 #### **Section 7 : Cookies**
@@ -212,16 +211,16 @@ une réclamation auprès de la CNIL :
 
 #### **Section 1 : Informations générales**
 ```
-Vendeur : Grenoble Roller (Association loi 1901)
-Adresse : [Adresse siège social]
-Email : contact@grenobleroller.fr
-SIRET : [À compléter si activité commerciale]
+Vendeur : Grenoble Roller (Association à but non lucrative - loi 1901)
+Adresse : 6 rue Berthe de Boissieux 38000 Grenoble
+Email : contact@grenoble-roller.org
+SIRET : Non applicable (activité accessoire non lucrative)
 ```
 
 #### **Section 2 : Objet**
 ```
 Les présentes CGV régissent les ventes de produits réalisées sur le site 
-grenobleroller.fr par l'association Grenoble Roller.
+grenoble-roller.org par l'association Grenoble Roller.
 ```
 
 #### **Section 3 : Caractéristiques des produits**
@@ -239,11 +238,14 @@ grenobleroller.fr par l'association Grenoble Roller.
 ```
 
 #### **Section 5 : Modalités de paiement**
-Détailler :
-- Modes de paiement acceptés (HelloAsso ? Carte bancaire ? Virement ?)
-- Sécurité des paiements
-- Conditions en cas de retard de paiement
-- Pas d'acompte demandé avant confirmation
+**Modes de paiement acceptés** :
+- HelloAsso (carte bancaire)
+- Chèque
+- Espèce (lors de la récupération du produit)
+
+**Sécurité des paiements** : Les paiements via HelloAsso sont sécurisés et conformes aux normes de sécurité en vigueur.
+
+**Conditions** : Pas d'acompte demandé avant confirmation de commande.
 
 #### **Section 6 : Commande**
 Processus de commande :
@@ -261,39 +263,38 @@ informé par email et pourra :
 - Annuler la commande et être remboursé
 ```
 
-#### **Section 7 : Livraison**
-À définir selon votre organisation :
-- **Délais de livraison** : [À compléter - ex: 5-7 jours ouvrés]
-- **Frais de livraison** : [À compléter - ex: 5€ ou gratuit dès X€]
-- **Zones de livraison** : [À compléter - France métropolitaine ?]
-- **Suivi de commande** : [À compléter - email de suivi ?]
-- **Retard de livraison** : Procédure de réclamation
+#### **Section 7 : Livraison / Récupération**
 
-#### **Section 8 : Droit de rétractation - OBLIGATOIRE**
-**Délai** : 14 jours calendaires à compter de la réception du produit
+**⚠️ IMPORTANT : Pas de livraison à domicile**
 
-**Modalités** :
-```
-Le client dispose d'un délai de 14 jours pour exercer son droit de 
-rétractation sans avoir à justifier de motifs ni à payer de pénalité.
+Les commandes ne font l'objet d'**aucune livraison à domicile**. Les produits sont à **récupérer sur place**, exclusivement :
+- Lors d'une **randonnée roller du vendredi soir**, ou
+- Lors d'une **initiation du samedi matin**,
+selon les dates et lieux communiqués par l'association.
 
-Pour exercer ce droit, le client doit notifier sa décision par email à :
-contact@grenobleroller.fr
+**Délais de disponibilité** : 4 semaines à compter de la commande.
 
-Les frais de retour sont à la charge du client, sauf si le produit est 
-défectueux ou non conforme.
-```
+**Confirmation de disponibilité** : Un message de confirmation peut être envoyé pour informer de la disponibilité de la commande.
 
-**Remboursement** :
-```
-En cas de rétractation, le remboursement sera effectué dans un délai de 
-14 jours suivant la réception du produit retourné.
-```
+**Suivi de commande** : Un e-mail de confirmation de commande est automatiquement envoyé par HelloAsso. Aucun système de suivi ou de traçabilité n'est disponible.
 
-**Exceptions au droit de rétractation** :
-- Produits personnalisés ou confectionnés selon spécifications
-- Produits périssables
-- Produits déballés et non réemballables pour raisons d'hygiène
+**Retard de disponibilité** : En cas de retard anormal dépassant les délais indiqués, l'acheteur peut contacter l'association à l'adresse suivante : contact@grenoble-roller.org
+
+#### **Section 8 : Droit de rétractation - EXCEPTION LÉGALE**
+
+**⚠️ ABSENCE DE DROIT DE RÉTRACTATION**
+
+Conformément à l'**article L221-28 du Code de la consommation**, les articles floqués ou personnalisés (textiles, accessoires Grenoble Roller) ne peuvent faire l'objet d'**aucun droit de rétractation, de retour ou d'échange**, sauf défaut de fabrication avéré imputable à l'association ou à son fournisseur.
+
+**Reconnaissance du client** :
+En procédant à la commande, l'acheteur reconnaît que :
+- Les produits étant réalisés à la demande ou floqués spécifiquement aux couleurs de l'association,
+- Aucun remboursement, retour ou échange ne pourra être accepté,
+- **Sauf en cas d'erreur imputable à l'association ou de produit non conforme à la commande**.
+
+**Cas exceptionnels de remboursement** :
+- Erreur de l'association (produit non conforme, défaut de fabrication)
+- Produit défectueux imputable à l'association ou à son fournisseur
 
 #### **Section 9 : Garanties légales**
 **Garantie légale de conformité** (2 ans) :
@@ -318,8 +319,8 @@ ou n'en aurait donné qu'un moindre prix, s'il les avait connus.
 #### **Section 10 : Réclamations et litiges**
 **Réclamations** :
 ```
-Toute réclamation doit être adressée par email à : contact@grenobleroller.fr
-ou par courrier à : [Adresse siège social]
+Toute réclamation doit être adressée par email à : contact@grenoble-roller.org
+ou par courrier à : 6 rue Berthe de Boissieux 38000 Grenoble
 ```
 
 **Médiation** :
@@ -356,7 +357,7 @@ intellectuelle de Grenoble Roller. Toute reproduction est interdite.
 #### **Section 1 : Objet**
 ```
 Les présentes CGU définissent les conditions d'utilisation du site 
-grenobleroller.fr et des services proposés par l'association Grenoble Roller.
+grenoble-roller.org et des services proposés par l'association Grenoble Roller.
 ```
 
 #### **Section 2 : Acceptation des CGU**
@@ -432,21 +433,13 @@ les tribunaux français sont seuls compétents.
 
 ### 📋 Contenu Recommandé
 
-#### **Option 1 : Formulaire de contact**
-- Formulaire avec champs : Nom, Email, Sujet, Message
-- Validation et envoi par email
-- Message de confirmation
+#### **Option choisie : Coordonnées uniquement** ✅
+- **Email** : contact@grenoble-roller.org
+- **Adresse** : 6 rue Berthe de Boissieux 38000 Grenoble
+- **Téléphone** : N/A
+- **Horaires de disponibilité** : (optionnel - non défini)
 
-#### **Option 2 : Coordonnées uniquement**
-- Email : contact@grenobleroller.fr
-- Adresse : [Adresse siège social]
-- Téléphone : [À compléter]
-- Horaires de disponibilité (si applicable)
-
-#### **Option 3 : Mixte (recommandé)**
-- Formulaire de contact
-- Coordonnées complètes
-- Carte Google Maps (si local physique)
+**Note** : Pas de formulaire de contact souhaité par l'association.
 
 ### 📍 Emplacement
 - Lien dans le footer
@@ -457,11 +450,11 @@ les tribunaux français sont seuls compétents.
 
 ## 🎯 Plan d'Implémentation
 
-### **Étape 1 : Collecte d'informations** (À faire AVANT)
-- [ ] Compléter toutes les informations manquantes (SIRET, adresse, etc.)
-- [ ] Identifier l'hébergeur
-- [ ] Définir les modalités de livraison et paiement
-- [ ] Définir les délais de rétractation et retours
+### **Étape 1 : Collecte d'informations** ✅ TERMINÉ
+- [x] Compléter toutes les informations manquantes ✅ (voir `informations-a-collecter.md`)
+- [x] Identifier l'hébergeur ✅ (IONOS SARL)
+- [x] Définir les modalités de livraison et paiement ✅ (récupération en main propre, HelloAsso/Chèque/Espèce)
+- [x] Définir les délais de rétractation et retours ✅ (absence de droit de rétractation - articles personnalisés)
 
 ### **Étape 2 : Création des routes**
 ```ruby
@@ -544,6 +537,7 @@ Avant mise en ligne, vérifier :
 
 ---
 
-**Dernière mise à jour** : 2025-11-15  
-**Prochaine étape** : Collecter les informations manquantes, puis créer les pages
+**Dernière mise à jour** : 2025-11-17  
+**Statut** : ✅ Informations collectées et validées (voir `informations-a-collecter.md`)  
+**Prochaine étape** : Créer les pages légales avec les informations complétées
 
