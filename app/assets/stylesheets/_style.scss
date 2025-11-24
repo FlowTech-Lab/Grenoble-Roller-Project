@@ -3754,3 +3754,62 @@
     border-color: rgba(255, 255, 255, 0.3) !important;
     opacity: 1;
   }
+  
+  /* === INDICATEUR DE FORCE DU MOT DE PASSE === */
+  
+  .password-strength-container {
+    margin-top: 0.5rem;
+  }
+  
+  .password-strength-bar {
+    height: 4px;
+    background-color: var(--bs-gray-200);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  [data-bs-theme="dark"] .password-strength-bar {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .password-strength-meter {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 2px;
+  }
+  
+  .password-strength-weak {
+    background-color: #dc3545; /* Rouge - Bootstrap danger */
+  }
+  
+  .password-strength-medium {
+    background-color: #ffc107; /* Jaune - Bootstrap warning */
+  }
+  
+  .password-strength-strong {
+    background-color: #198754; /* Vert - Bootstrap success */
+  }
+  
+  .password-strength-feedback {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+  
+  .password-strength-text {
+    display: inline-block;
+  }
+  
+  /* Mode sombre - ajustements couleurs */
+  [data-bs-theme="dark"] .password-strength-weak {
+    background-color: #ff6b6b;
+  }
+  
+  [data-bs-theme="dark"] .password-strength-medium {
+    background-color: #ffd93d;
+  }
+  
+  [data-bs-theme="dark"] .password-strength-strong {
+    background-color: #51cf66;
+  }

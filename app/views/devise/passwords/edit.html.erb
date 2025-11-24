@@ -21,12 +21,30 @@
               </div>
               
               <!-- New Password -->
-              <div class="mb-3">
+              <div class="mb-3" data-controller="password-strength">
                 <%= f.label :password, "Nouveau mot de passe", class: "form-label" %>
-                <%= f.password_field :password, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true %>
+                <%= f.password_field :password, 
+                    autocomplete: "new-password", 
+                    class: "form-control form-control-liquid", 
+                    placeholder: "••••••••", 
+                    required: true,
+                    data: { password_strength_target: "input" } %>
                 <% if @minimum_password_length %>
                   <div class="form-text">Au moins <%= @minimum_password_length %> caractères</div>
                 <% end %>
+                
+                <!-- Indicateur de force du mot de passe -->
+                <div class="password-strength-container d-none mt-2">
+                  <div class="password-strength-bar">
+                    <div class="password-strength-meter" 
+                         data-password-strength-target="meter"></div>
+                  </div>
+                  <div class="password-strength-feedback mt-1 small" 
+                       data-password-strength-target="feedback"
+                       style="display: none;">
+                    <span data-password-strength-target="strengthText"></span>
+                  </div>
+                </div>
               </div>
               
               <!-- Confirm New Password -->
@@ -48,12 +66,31 @@
               <%= f.hidden_field :reset_password_token %>
               
               <!-- New Password -->
-              <div class="mb-3">
+              <div class="mb-3" data-controller="password-strength">
                 <%= f.label :password, "Nouveau mot de passe", class: "form-label" %>
-                <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true %>
+                <%= f.password_field :password, 
+                    autofocus: true, 
+                    autocomplete: "new-password", 
+                    class: "form-control form-control-liquid", 
+                    placeholder: "••••••••", 
+                    required: true,
+                    data: { password_strength_target: "input" } %>
                 <% if @minimum_password_length %>
                   <div class="form-text">Au moins <%= @minimum_password_length %> caractères</div>
                 <% end %>
+                
+                <!-- Indicateur de force du mot de passe -->
+                <div class="password-strength-container d-none mt-2">
+                  <div class="password-strength-bar">
+                    <div class="password-strength-meter" 
+                         data-password-strength-target="meter"></div>
+                  </div>
+                  <div class="password-strength-feedback mt-1 small" 
+                       data-password-strength-target="feedback"
+                       style="display: none;">
+                    <span data-password-strength-target="strengthText"></span>
+                  </div>
+                </div>
               </div>
               
               <!-- Confirm New Password -->
