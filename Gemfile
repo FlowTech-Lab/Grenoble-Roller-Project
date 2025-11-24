@@ -21,6 +21,7 @@ gem "jbuilder"
 gem 'devise'
 gem 'pundit'
 gem 'activeadmin'
+gem 'rack-attack' # Rate limiting pour sécurité
 
 gem 'table_print'
 

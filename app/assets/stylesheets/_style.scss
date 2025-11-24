@@ -3813,3 +3813,143 @@
   [data-bs-theme="dark"] .password-strength-strong {
     background-color: #51cf66;
   }
+  
+  /* === CONFORMITÉ WCAG 2.2 2025 === */
+  
+  /* 2.5.8 - Cibles tactiles ≥ 24×24px */
+  .btn,
+  button[type="submit"],
+  button[type="button"] {
+    min-height: 44px; /* Recommandé 44×44px pour meilleure accessibilité */
+    min-width: 44px;
+    padding: 0.5rem 1rem;
+  }
+  
+  /* Liens avec zone tactile suffisante */
+  a {
+    min-height: 24px;
+    display: inline-block;
+    padding: 4px 0; /* Padding vertical pour zone tactile */
+  }
+  
+  /* Checkboxes et radios - Zone tactile ≥ 24×24px */
+  .form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    cursor: pointer;
+  }
+  
+  .form-check-label {
+    padding-left: 0.5rem;
+    cursor: pointer;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  /* 2.4.11 - Focus clairement visible (outline ≥ 2px, contraste ≥ 3:1) */
+  .form-control:focus,
+  .form-control:focus-visible,
+  .btn:focus,
+  .btn:focus-visible,
+  button:focus,
+  button:focus-visible,
+  a:focus,
+  a:focus-visible,
+  .form-check-input:focus,
+  .form-check-input:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Mode sombre - Focus plus visible */
+  [data-bs-theme="dark"] .form-control:focus,
+  [data-bs-theme="dark"] .form-control:focus-visible,
+  [data-bs-theme="dark"] .btn:focus,
+  [data-bs-theme="dark"] .btn:focus-visible {
+    outline-color: var(--gr-primary-light);
+    box-shadow: 0 0 0 4px rgba(90, 169, 250, 0.3);
+  }
+  
+  /* Toggle password button - Style amélioré */
+  .password-toggle-btn {
+    min-width: 44px;
+    min-height: 44px;
+    border-left: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .password-toggle-btn:hover {
+    background-color: var(--bs-gray-100);
+  }
+  
+  [data-bs-theme="dark"] .password-toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Input group avec toggle - Ajustement */
+  .input-group .form-control {
+    border-right: none;
+  }
+  
+  .input-group .password-toggle-btn {
+    border-left: 1px solid var(--bs-border-color);
+  }
+  
+  /* Erreurs avec aria-describedby - Styles améliorés */
+  .form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6 .4.4.4-.4m0 4.8h-.8'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+  
+  .invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+  }
+  
+  /* Checkbox consentement RGPD - Style amélioré */
+  .form-check-input:checked {
+    background-color: var(--gr-primary);
+    border-color: var(--gr-primary);
+  }
+  
+  .form-check-input:focus {
+    border-color: var(--gr-primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Liens dans labels - Style accessible */
+  .form-check-label a {
+    text-decoration: underline;
+    color: var(--gr-primary);
+  }
+  
+  .form-check-label a:hover,
+  .form-check-label a:focus {
+    color: var(--gr-primary-dark);
+    text-decoration-thickness: 2px;
+  }
+  
+  /* Mobile - Ajustements cibles tactiles */
+  @media (max-width: 576px) {
+    .btn {
+      min-height: 48px; /* Plus grand sur mobile pour meilleure accessibilité */
+      font-size: 1rem;
+    }
+    
+    .form-check-label {
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+  }

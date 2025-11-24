@@ -3,8 +3,19 @@
 class RegistrationsController < Devise::RegistrationsController
   # POST /resource
   def create
+    # Vérifier le consentement RGPD avant création
+    unless params[:accept_terms] == "1"
+      build_resource(sign_up_params)
+      resource.errors.add(:base, "Vous devez accepter les Conditions Générales d'Utilisation et la Politique de Confidentialité pour créer un compte.")
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     super do |resource|
       if resource.persisted?
+        # Gérer l'opt-in newsletter (futur)
+        # TODO: Implémenter newsletter subscription si params[:newsletter_subscription] == "1"
+        
         # Message de bienvenue personnalisé avec le prénom
         first_name = resource.first_name.presence || "nouveau membre"
         flash[:notice] = "Bienvenue #{first_name} ! 🎉 Découvrez les événements à venir."

@@ -19,40 +19,126 @@
 
             <!-- First Name -->
             <div class="mb-3">
-              <%= f.label :first_name, "Prénom", class: "form-label required" %>
-              <%= f.text_field :first_name, class: "form-control form-control-liquid", placeholder: "Jean", required: true, aria: { required: true } %>
+              <%= f.label :first_name, "Prénom", class: "form-label required", for: "user_first_name" %>
+              <% has_error = resource.errors[:first_name].any? %>
+              <%= f.text_field :first_name, 
+                  id: "user_first_name",
+                  autocomplete: "given-name",
+                  class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                  placeholder: "Jean", 
+                  required: true, 
+                  aria: has_error ? { 
+                    required: true,
+                    describedby: "error_first_name",
+                    invalid: true
+                  } : { required: true } %>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_first_name">
+                  <%= resource.errors[:first_name].first %>
+                </div>
+              <% end %>
             </div>
             
             <!-- Last Name -->
             <div class="mb-3">
-              <%= f.label :last_name, "Nom (optionnel)", class: "form-label" %>
-              <%= f.text_field :last_name, class: "form-control form-control-liquid", placeholder: "Dupont" %>
+              <%= f.label :last_name, "Nom (optionnel)", class: "form-label", for: "user_last_name" %>
+              <% has_error = resource.errors[:last_name].any? %>
+              <%= f.text_field :last_name, 
+                  id: "user_last_name",
+                  autocomplete: "family-name",
+                  class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                  placeholder: "Dupont",
+                  aria: has_error ? { 
+                    describedby: "error_last_name",
+                    invalid: true
+                  } : {} %>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_last_name">
+                  <%= resource.errors[:last_name].first %>
+                </div>
+              <% end %>
             </div>
             
             <!-- Email -->
             <div class="mb-3">
-              <%= f.label :email, "Email", class: "form-label required" %>
-              <%= f.email_field :email, autocomplete: "email", class: "form-control form-control-liquid", placeholder: "votre@email.com", required: true, aria: { required: true } %>
+              <%= f.label :email, "Email", class: "form-label required", for: "user_email" %>
+              <% has_error = resource.errors[:email].any? %>
+              <%= f.email_field :email, 
+                  id: "user_email",
+                  autocomplete: "email", 
+                  class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                  placeholder: "votre@email.com", 
+                  required: true, 
+                  aria: has_error ? { 
+                    required: true,
+                    describedby: "error_email",
+                    invalid: true
+                  } : { required: true } %>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_email">
+                  <%= resource.errors[:email].first %>
+                </div>
+              <% end %>
             </div>
             
             <!-- Phone -->
             <div class="mb-3">
-              <%= f.label :phone, "Téléphone (optionnel)", class: "form-label" %>
-              <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78" %>
+              <%= f.label :phone, "Téléphone (optionnel)", class: "form-label", for: "user_phone" %>
+              <% has_error = resource.errors[:phone].any? %>
+              <%= f.text_field :phone, 
+                  id: "user_phone",
+                  type: "tel",
+                  inputmode: "tel",
+                  autocomplete: "tel",
+                  class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                  placeholder: "06 12 34 56 78",
+                  aria: has_error ? { 
+                    describedby: "error_phone",
+                    invalid: true
+                  } : {} %>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_phone">
+                  <%= resource.errors[:phone].first %>
+                </div>
+              <% end %>
             </div>
             
-            <!-- Password -->
-            <div class="mb-3" data-controller="password-strength">
-              <%= f.label :password, "Mot de passe", class: "form-label required" %>
-              <%= f.password_field :password, 
-                  autocomplete: "new-password", 
-                  class: "form-control form-control-liquid", 
-                  placeholder: "••••••••", 
-                  required: true, 
-                  aria: { required: true },
-                  data: { password_strength_target: "input" } %>
-              <% if @minimum_password_length %>
-                <div class="form-text">Au moins <%= @minimum_password_length %> caractères</div>
+            <!-- Password - WCAG 2.2: Toggle show/hide au lieu de confirmation -->
+            <div class="mb-3" data-controller="password-strength password-toggle">
+              <%= f.label :password, "Mot de passe", class: "form-label required", for: "user_password" %>
+              <% has_error = resource.errors[:password].any? %>
+              <% describedby_ids = ["password_help"] %>
+              <% describedby_ids << "error_password" if has_error %>
+              <div class="input-group">
+                <%= f.password_field :password, 
+                    id: "user_password",
+                    autocomplete: "new-password", 
+                    class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                    placeholder: "Minimum 14 caractères", 
+                    required: true, 
+                    aria: { 
+                      required: true,
+                      describedby: describedby_ids.join(" "),
+                      invalid: has_error
+                    },
+                    data: { password_strength_target: "input", password_toggle_target: "input" } %>
+                <button type="button" 
+                        class="btn btn-outline-secondary password-toggle-btn" 
+                        data-action="click->password-toggle#toggle"
+                        data-password-toggle-target="toggle"
+                        aria-label="Afficher le mot de passe"
+                        title="Afficher/Masquer">
+                  <i class="bi bi-eye"></i>
+                  <span class="visually-hidden">Afficher</span>
+                </button>
+              </div>
+              <div class="form-text" id="password_help">
+                Minimum <%= @minimum_password_length || 14 %> caractères recommandés pour une meilleure sécurité
+              </div>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_password">
+                  <%= resource.errors[:password].first %>
+                </div>
               <% end %>
               
               <!-- Indicateur de force du mot de passe -->
@@ -69,23 +155,75 @@
               </div>
             </div>
             
-            <!-- Confirm Password -->
-            <div class="mb-3">
-              <%= f.label :password_confirmation, "Confirmer le mot de passe", class: "form-label required" %>
-              <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control form-control-liquid", placeholder: "••••••••", required: true, aria: { required: true } %>
-            </div>
-            
             <!-- Bio -->
             <div class="mb-3">
-              <%= f.label :bio, "Biographie (optionnel)", class: "form-label" %>
-              <%= f.text_area :bio, rows: 3, class: "form-control form-control-liquid", placeholder: "Parlez-nous de vous, de votre passion pour le roller..." %>
-              <div class="form-text">Présentez-vous brièvement à la communauté</div>
+              <%= f.label :bio, "Biographie (optionnel)", class: "form-label", for: "user_bio" %>
+              <% has_error = resource.errors[:bio].any? %>
+              <% describedby_ids = ["bio_help"] %>
+              <% describedby_ids << "error_bio" if has_error %>
+              <%= f.text_area :bio, 
+                  id: "user_bio",
+                  rows: 3, 
+                  class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                  placeholder: "Parlez-nous de vous, de votre passion pour le roller...",
+                  aria: { 
+                    describedby: describedby_ids.join(" "),
+                    invalid: has_error
+                  } %>
+              <div class="form-text" id="bio_help">Présentez-vous brièvement à la communauté</div>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_bio">
+                  <%= resource.errors[:bio].first %>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- RGPD - Consentement explicite CGU + Politique -->
+            <div class="mb-3">
+              <div class="form-check">
+                <%= check_box_tag :accept_terms, "1", false, 
+                    id: "accept_terms",
+                    class: "form-check-input #{'is-invalid' if flash[:alert]&.include?('consentement')}",
+                    required: true,
+                    aria: { 
+                      required: true,
+                      describedby: "terms_help"
+                    } %>
+                <%= label_tag :accept_terms, class: "form-check-label" do %>
+                  J'accepte les 
+                  <%= link_to "Conditions Générales d'Utilisation", cgu_path, target: "_blank", rel: "noopener noreferrer", class: "text-decoration-underline" %> 
+                  et la 
+                  <%= link_to "Politique de Confidentialité", politique_confidentialite_path, target: "_blank", rel: "noopener noreferrer", class: "text-decoration-underline" %>
+                  <span class="required-marker">*</span>
+                <% end %>
+              </div>
+              <div class="form-text" id="terms_help">
+                Le consentement est obligatoire pour créer un compte
+              </div>
+            </div>
+
+            <!-- RGPD - Opt-in newsletter séparé (non obligatoire) -->
+            <div class="mb-3">
+              <div class="form-check">
+                <%= check_box_tag :newsletter_subscription, "1", false, 
+                    id: "newsletter_subscription",
+                    class: "form-check-input",
+                    aria: { 
+                      describedby: "newsletter_help"
+                    } %>
+                <%= label_tag :newsletter_subscription, class: "form-check-label" do %>
+                  Je souhaite recevoir la newsletter de Grenoble Roller (optionnel)
+                <% end %>
+              </div>
+              <div class="form-text" id="newsletter_help">
+                Recevez nos actualités et événements par email
+              </div>
             </div>
 
             <%= f.hidden_field :role_id, value: Role.find_by(code: 'USER')&.id || Role.find_by(name: 'Utilisateur')&.id || Role.first&.id %>
             
-            <!-- Submit -->
-            <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
+            <!-- Submit - WCAG 2.2: Cible tactile ≥ 44×44px -->
+            <button type="submit" class="btn btn-liquid-primary w-100 mb-3" style="min-height: 44px;">
               <i class="bi bi-person-check me-2"></i>
               S'inscrire
             </button>
@@ -95,7 +233,7 @@
           <div class="text-center">
             <p class="small text-muted mb-0">
               Déjà un compte ? 
-              <%= link_to "Connectez-vous", new_session_path(resource_name), class: "text-decoration-none" %>
+              <%= link_to "Connectez-vous", new_session_path(resource_name), class: "text-decoration-none", style: "min-height: 24px; display: inline-block; padding: 4px 0;" %>
             </p>
           </div>
         </div>
