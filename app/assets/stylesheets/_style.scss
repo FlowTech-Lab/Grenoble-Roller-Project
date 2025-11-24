@@ -3832,23 +3832,34 @@
     padding: 4px 0; /* Padding vertical pour zone tactile */
   }
   
-  /* Checkboxes et radios - Zone tactile ≥ 24×24px */
+  /* Checkboxes et radios - Zone tactile ≥ 24×24px (WCAG 2.5.8) */
   .form-check-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.125rem;
+    width: 1.5rem; /* 24px */
+    height: 1.5rem; /* 24px */
+    margin-top: 0; /* Réaligner avec le label */
     cursor: pointer;
+    flex-shrink: 0; /* Empêcher compression */
+  }
+  
+  .form-check {
+    position: relative;
+    min-height: 44px; /* Zone tactile optimale mobile */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* 12px */
   }
   
   .form-check-label {
-    padding-left: 0.5rem;
     cursor: pointer;
+    line-height: 1.5;
+    padding: 0.625rem 0; /* 10px vertical pour zone tactile */
+    flex: 1;
     min-height: 24px;
     display: inline-flex;
     align-items: center;
   }
   
-  /* 2.4.11 - Focus clairement visible (outline ≥ 2px, contraste ≥ 3:1) */
+  /* 2.4.11 - Focus clairement visible (outline ≥ 3px, contraste ≥ 3:1) */
   .form-control:focus,
   .form-control:focus-visible,
   .btn:focus,
@@ -3859,7 +3870,7 @@
   a:focus-visible,
   .form-check-input:focus,
   .form-check-input:focus-visible {
-    outline: 2px solid var(--gr-primary);
+    outline: 3px solid var(--gr-primary);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
   }
@@ -3873,11 +3884,12 @@
     box-shadow: 0 0 0 4px rgba(90, 169, 250, 0.3);
   }
   
-  /* Toggle password button - Style amélioré */
+  /* Toggle password button - Style amélioré WCAG 2.2 */
   .password-toggle-btn {
     min-width: 44px;
     min-height: 44px;
-    border-left: none;
+    border-left: 0; /* Évite double bordure */
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3891,7 +3903,18 @@
     background-color: rgba(255, 255, 255, 0.1);
   }
   
+  .password-toggle-btn:focus-visible {
+    outline: 3px solid var(--gr-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+    z-index: 4;
+  }
+  
   /* Input group avec toggle - Ajustement */
+  .input-group .form-control:focus {
+    z-index: 3; /* Assure que le focus est visible au-dessus du bouton */
+  }
+  
   .input-group .form-control {
     border-right: none;
   }
@@ -3952,4 +3975,72 @@
       font-size: 0.95rem;
       line-height: 1.5;
     }
+  }
+  
+  /* === AUTH FORMS - AMÉLIORATIONS VISUELLES === */
+  
+  /* Auth Icon Wrapper (Header moderne) */
+  .auth-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+    transition: var(--transition-liquid-fast);
+  }
+  
+  .auth-icon-wrapper:hover {
+    background: rgba(0, 123, 255, 0.15);
+    transform: scale(1.05);
+  }
+  
+  /* Skill Level Cards (Bootstrap .btn-check) */
+  .skill-level-btn {
+    border-width: 2px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .btn-check:checked + .skill-level-btn {
+    background-color: var(--gr-primary) !important;
+    color: white !important;
+    border-color: var(--gr-primary) !important;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  }
+  
+  .skill-level-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--gr-primary);
+  }
+  
+  .btn-check:focus-visible + .skill-level-btn {
+    outline: 3px solid var(--gr-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Mode sombre - Skill Level Cards */
+  [data-bs-theme="dark"] .btn-check:checked + .skill-level-btn {
+    background-color: var(--gr-primary-dark) !important;
+    border-color: var(--gr-primary-dark) !important;
+  }
+  
+  [data-bs-theme="dark"] .skill-level-btn:hover {
+    border-color: var(--gr-primary-dark);
+  }
+  
+  /* Form Control Large (pour inputs plus grands) */
+  .form-control-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  /* Labels avec icônes - Espacement */
+  .form-label i {
+    margin-right: 0.25rem;
   }

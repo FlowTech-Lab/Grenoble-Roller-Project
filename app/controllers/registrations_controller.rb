@@ -16,9 +16,12 @@ class RegistrationsController < Devise::RegistrationsController
         # Gérer l'opt-in newsletter (futur)
         # TODO: Implémenter newsletter subscription si params[:newsletter_subscription] == "1"
         
-        # Message de bienvenue personnalisé avec le prénom
-        first_name = resource.first_name.presence || "nouveau membre"
-        flash[:notice] = "Bienvenue #{first_name} ! 🎉 Découvrez les événements à venir."
+        # Message de bienvenue personnalisé avec le prénom (si fourni)
+        if resource.first_name.present?
+          flash[:notice] = "Bienvenue #{resource.first_name} ! 🎉 Découvrez les événements à venir."
+        else
+          flash[:notice] = "Bienvenue ! 🎉 Découvrez les événements à venir. Complétez votre profil pour une expérience personnalisée."
+        end
       end
     end
   end
