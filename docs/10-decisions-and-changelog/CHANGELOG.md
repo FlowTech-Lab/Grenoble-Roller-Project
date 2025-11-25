@@ -2,6 +2,139 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-11-24] - Intégration changement mot de passe dans profil
+
+### Modifié
+- **Formulaire de profil unifié** :
+  - **Changement de mot de passe intégré** : Plus besoin de page séparée, tout dans `/users/edit`
+  - Formulaire unique pour modifier profil ET mot de passe en une seule fois
+  - Section "Modifier le mot de passe" avec indicateur de force (conforme 2025)
+  - Toggle pour afficher/masquer les mots de passe (accessibilité WCAG 2.2)
+  - `current_password` requis pour toute modification (sécurité renforcée)
+
+- **RegistrationsController** :
+  - `update_resource` : Gère changement de mot de passe optionnel
+  - Vérifie `current_password` même si le mot de passe n'est pas changé
+  - Si password vide → vérifie `current_password` puis `update_without_password`
+  - Si password rempli → utilise `update_with_password` (vérifie automatiquement)
+
+- **PasswordsController** :
+  - Simplifié : Gère uniquement "Mot de passe oublié" (reset via email)
+  - Surcharge `require_no_authentication` pour permettre aux utilisateurs connectés d'accéder à `edit`/`update`
+  - Redirection vers profil si utilisateur connecté tente d'utiliser "mot de passe oublié"
+
+### Conformité
+- ✅ **NIST 2025** : Mot de passe 12 caractères minimum
+- ✅ **WCAG 2.2** : Indicateur de force, toggle password, cibles tactiles 44×44px
+- ✅ **UX** : Formulaire unifié, pas de navigation entre pages
+- ✅ **Sécurité** : `current_password` toujours requis pour modifications
+
+### Fichiers modifiés
+- `app/views/devise/registrations/edit.html.erb` (formulaire unifié avec changement mot de passe)
+- `app/controllers/registrations_controller.rb` (gestion changement mot de passe optionnel)
+- `app/controllers/passwords_controller.rb` (simplifié pour reset uniquement)
+
+### Notes techniques
+- Le formulaire de profil permet maintenant de modifier :
+  - Informations personnelles (email, bio, etc.)
+  - OU mot de passe (nouveau + confirmation)
+  - OU les deux en même temps
+- `current_password` est obligatoire pour toute modification (sécurité)
+- Si les champs password sont vides, seul le profil est mis à jour
+- L'indicateur de force du mot de passe est identique à celui de l'inscription
+
+## [2025-11-24] - Simplification formulaire inscription + Confirmation email
+
+### Ajouté
+- **Formulaire d'inscription simplifié** :
+  - Réduction à **4 champs obligatoires uniquement** : Email, Prénom, Mot de passe (12 caractères), Niveau
+  - Prénom obligatoire pour personnaliser les interactions (événements, emails)
+  - Skill level avec cards Bootstrap visuelles (Débutant, Intermédiaire, Avancé)
+  - Header moderne avec icône dans cercle coloré
+  - Labels avec icônes Bootstrap (envelope, person, shield-lock, speedometer)
+  - Help text positif pour mot de passe avec exemple de passphrase
+
+- **Confirmation email avec accès immédiat** :
+  - Module `:confirmable` activé dans Devise
+  - Période de grâce : `allow_unconfirmed_access_for = 2.days` (meilleure UX)
+  - Accès immédiat après inscription (navigation, consultation)
+  - Confirmation **requise** pour actions critiques :
+    - S'inscrire à un événement (`EventsController#attend`)
+    - Passer une commande (`OrdersController#create`)
+  - Email de confirmation envoyé automatiquement après inscription
+
+- **Email de bienvenue** :
+  - `UserMailer.welcome_email` avec template HTML responsive
+  - Template texte (fallback)
+  - Envoyé automatiquement après création du compte
+  - Lien direct vers les événements
+
+- **Skill level** :
+  - Nouveau champ `skill_level` (beginner, intermediate, advanced)
+  - Validation obligatoire à l'inscription
+  - Cards Bootstrap avec icônes et hover effects
+  - Responsive (3 colonnes mobile-friendly)
+
+### Modifié
+- **Mot de passe** :
+  - Longueur réduite : **14 → 12 caractères** (NIST 2025 standard)
+  - Help text amélioré : "Astuce : Utilisez une phrase facile à retenir" + exemple
+  - Placeholder : "12 caractères minimum"
+
+- **Modèle User** :
+  - `first_name` rendu obligatoire (important pour événements)
+  - `skill_level` obligatoire avec validation inclusion
+  - Callback `after_create :send_welcome_email_and_confirmation`
+  - Méthode `active_for_authentication?` pour permettre accès non confirmé
+
+- **CSS** :
+  - Skill level cards avec styles Bootstrap `.btn-check`
+  - Auth icon wrapper (header moderne)
+  - Focus states WCAG 2.2 (outline 3px)
+  - Compatible mode sombre
+
+- **Controllers** :
+  - `ApplicationController#ensure_email_confirmed` : méthode réutilisable
+  - `EventsController` : exige confirmation pour `attend`
+  - `OrdersController` : exige confirmation pour `create`
+  - `ApplicationController#configure_permitted_parameters` : `first_name` et `skill_level` dans sign_up
+
+### Conformité
+- ✅ **NIST 2025** : Mot de passe 12 caractères (standard actuel)
+- ✅ **WCAG 2.2** : Focus 3px visible, cibles tactiles 44×44px
+- ✅ **RGPD** : Consentement explicite CGU + Politique
+- ✅ **UX** : Formulaire simplifié (4 champs, 1 minute)
+- ✅ **Sécurité** : Confirmation email pour actions critiques
+
+### Fichiers créés
+- `db/migrate/YYYYMMDDHHMMSS_add_skill_level_to_users.rb`
+- `db/migrate/YYYYMMDDHHMMSS_add_confirmable_to_users.rb`
+- `app/mailers/user_mailer.rb`
+- `app/views/user_mailer/welcome_email.html.erb`
+- `app/views/user_mailer/welcome_email.text.erb`
+
+### Fichiers modifiés
+- `app/models/user.rb` (confirmable, skill_level, first_name obligatoire)
+- `app/views/devise/registrations/new.html.erb` (formulaire simplifié 4 champs)
+- `app/controllers/application_controller.rb` (ensure_email_confirmed, sign_up params)
+- `app/controllers/events_controller.rb` (exige confirmation pour attend)
+- `app/controllers/orders_controller.rb` (exige confirmation pour create)
+- `config/initializers/devise.rb` (password_length 12, allow_unconfirmed_access_for)
+- `app/assets/stylesheets/_style.scss` (skill level cards, auth icon wrapper)
+
+### Notes techniques
+- Migration `skill_level` : colonne string avec index
+- Migration `confirmable` : colonnes confirmation_token, confirmed_at, confirmation_sent_at, unconfirmed_email
+- Email bienvenue + confirmation envoyés en parallèle (`deliver_later`)
+- Période de grâce 2 jours : utilisateur peut explorer sans confirmer, mais doit confirmer pour actions critiques
+
+### Corrections finales (2025-11-24)
+- **Traductions I18n** : Messages d'erreur corrigés (12 caractères au lieu de 14)
+- **Redirection erreurs** : Reste sur `/users/sign_up` en cas d'erreur (ne redirige plus vers `/users`)
+- **CSS Input-group** : Contour rouge englobe tout le groupe (input + bouton toggle password)
+- **Rack::Attack** : Correction de l'accès à `match_data` dans `throttled_responder`
+- **Validation email temps réel** : Abandonnée (validation côté serveur suffisante)
+
 ## [2025-11-21] - Pages légales complètes + Gestion des cookies RGPD 2025
 
 ### Ajouté

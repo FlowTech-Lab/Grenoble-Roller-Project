@@ -2,7 +2,7 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-        :recoverable, :rememberable, :validatable
+        :recoverable, :rememberable, :validatable, :confirmable
   # Relation avec Role
   belongs_to :role
   has_many :orders, dependent: :nullify
@@ -20,9 +20,21 @@ class User < ApplicationRecord
   has_many :audit_logs, class_name: 'AuditLog', foreign_key: 'actor_user_id', dependent: :nullify
   
   before_validation :set_default_role, on: :create
+  after_create :send_welcome_email_and_confirmation
   
-  # Validations: prénom obligatoire, nom optionnel
-  validates :first_name, presence: true
+  # Permettre l'accès immédiat même sans confirmation (période de grâce)
+  def active_for_authentication?
+    super || !confirmed?
+  end
+  
+  # Skill levels disponibles
+  SKILL_LEVELS = %w[beginner intermediate advanced].freeze
+  
+  # Validations: skill_level obligatoire à l'inscription
+  validates :skill_level, presence: true, inclusion: { in: SKILL_LEVELS }
+  
+  # Validations: prénom obligatoire (important pour personnaliser les événements)
+  validates :first_name, presence: true, length: { maximum: 50 }
   validates :phone, format: { with: /\A[0-9\s\-\+\(\)]+\z/, message: "format invalide" }, allow_blank: true
   
   def self.ransackable_attributes(_auth_object = nil)
@@ -38,5 +50,11 @@ class User < ApplicationRecord
   def set_default_role
     # Priorité au code stable, fallback sur un libellé courant
     self.role ||= Role.find_by(code: 'USER') || Role.find_by(name: 'Utilisateur') || Role.first
+  end
+  
+  def send_welcome_email_and_confirmation
+    # Envoyer email de bienvenue ET email de confirmation
+    UserMailer.welcome_email(self).deliver_later
+    send_confirmation_instructions
   end
 end

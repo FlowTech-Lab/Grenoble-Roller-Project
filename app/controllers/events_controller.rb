@@ -1,6 +1,7 @@
 class EventsController < ApplicationController
   before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder]
   before_action :authenticate_user!, except: %i[index show]
+  before_action :ensure_email_confirmed, only: [:attend] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
 
   def index

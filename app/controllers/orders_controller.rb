@@ -1,5 +1,6 @@
 class OrdersController < ApplicationController
   before_action :authenticate_user!
+  before_action :ensure_email_confirmed, only: [:create] # Exiger confirmation pour passer une commande
 
   def index
     @orders = current_user.orders.includes(order_items: { variant: :product }).order(created_at: :desc)

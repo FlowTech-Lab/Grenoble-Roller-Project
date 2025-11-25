@@ -43,9 +43,9 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 2 : Inscription**
 - [x] Ajouter astérisques `*` aux champs obligatoires (Visuellement clair) ✅ Déjà implémenté avec classe `.required` et légende
-- [ ] Améliorer les messages d'erreur Devise (Traduire/customiser)
-- [ ] Message de bienvenue après inscription (Toast "Bienvenue [Prénom] ! Découvrez les événements")
-- [ ] Indicateur de force du mot de passe (Barre de progression visuelle)
+- [x] Améliorer les messages d'erreur Devise (Traduire/customiser) ✅ `devise.fr.yml` créé avec toutes les traductions
+- [x] Message de bienvenue après inscription (Toast "Bienvenue [Prénom] ! Découvrez les événements") ✅ Implémenté dans `RegistrationsController`
+- [x] Indicateur de force du mot de passe (Barre de progression visuelle) ✅ Ajouté au formulaire d'inscription (2025-11-24)
 
 ### **Parcours 3 : Découverte des Événements**
 - [x] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours) ✅ Implémenté

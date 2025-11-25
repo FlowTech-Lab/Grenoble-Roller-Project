@@ -13,6 +13,10 @@ module RequestAuthenticationHelper
       }
     }
   end
+
+  def logout_user
+    delete destroy_user_session_path
+  end
 end
 
 RSpec.configure do |config|
