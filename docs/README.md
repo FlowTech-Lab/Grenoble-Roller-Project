@@ -120,7 +120,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `08-security-privacy/conformite-2025-checklist.md` - Checklist conformité 2025 (WCAG 2.2, NIST, RGPD)
 - ✅ **Pages légales créées** : Mentions Légales, RGPD, CGV, CGU, Contact (2025-11-21)
 - ✅ **Gestion des cookies** : Système conforme RGPD 2025 avec Stimulus (2025-11-21)
-- ✅ **Quick Wins Devise** : Formulaire inscription simplifié, confirmation email, profil complet (2025-11-24)
+- ✅ **Quick Wins Devise** : Formulaire inscription simplifié, confirmation email, profil complet avec changement mot de passe intégré (2025-11-24)
 
 ### À compléter
 - `10-decisions-and-changelog/` - ADRs à créer pour décisions structurantes

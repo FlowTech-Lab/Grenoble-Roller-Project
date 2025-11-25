@@ -196,6 +196,13 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 
 **Tous les critères de conformité sont implémentés et testés.**
 
+### Dernières améliorations (2025-11-24)
+- ✅ **Formulaire profil unifié** : Changement de mot de passe intégré dans `/users/edit`
+- ✅ **Indicateur de force** : Ajouté au formulaire de changement de mot de passe (conforme 2025)
+- ✅ **Toggle password** : Affichage/masquage pour tous les champs de mot de passe
+- ✅ **Sécurité renforcée** : `current_password` requis pour toute modification (profil ou mot de passe)
+- ✅ **UX améliorée** : Plus besoin de naviguer vers une page séparée pour changer le mot de passe
+
 ### Corrections finales (2025-11-24)
 - ✅ **Traductions** : Messages d'erreur corrigés (12 caractères au lieu de 14)
 - ✅ **Redirection erreurs** : Reste sur page d'inscription en cas d'erreur

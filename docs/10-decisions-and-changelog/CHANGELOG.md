@@ -2,6 +2,47 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-11-24] - Intégration changement mot de passe dans profil
+
+### Modifié
+- **Formulaire de profil unifié** :
+  - **Changement de mot de passe intégré** : Plus besoin de page séparée, tout dans `/users/edit`
+  - Formulaire unique pour modifier profil ET mot de passe en une seule fois
+  - Section "Modifier le mot de passe" avec indicateur de force (conforme 2025)
+  - Toggle pour afficher/masquer les mots de passe (accessibilité WCAG 2.2)
+  - `current_password` requis pour toute modification (sécurité renforcée)
+
+- **RegistrationsController** :
+  - `update_resource` : Gère changement de mot de passe optionnel
+  - Vérifie `current_password` même si le mot de passe n'est pas changé
+  - Si password vide → vérifie `current_password` puis `update_without_password`
+  - Si password rempli → utilise `update_with_password` (vérifie automatiquement)
+
+- **PasswordsController** :
+  - Simplifié : Gère uniquement "Mot de passe oublié" (reset via email)
+  - Surcharge `require_no_authentication` pour permettre aux utilisateurs connectés d'accéder à `edit`/`update`
+  - Redirection vers profil si utilisateur connecté tente d'utiliser "mot de passe oublié"
+
+### Conformité
+- ✅ **NIST 2025** : Mot de passe 12 caractères minimum
+- ✅ **WCAG 2.2** : Indicateur de force, toggle password, cibles tactiles 44×44px
+- ✅ **UX** : Formulaire unifié, pas de navigation entre pages
+- ✅ **Sécurité** : `current_password` toujours requis pour modifications
+
+### Fichiers modifiés
+- `app/views/devise/registrations/edit.html.erb` (formulaire unifié avec changement mot de passe)
+- `app/controllers/registrations_controller.rb` (gestion changement mot de passe optionnel)
+- `app/controllers/passwords_controller.rb` (simplifié pour reset uniquement)
+
+### Notes techniques
+- Le formulaire de profil permet maintenant de modifier :
+  - Informations personnelles (email, bio, etc.)
+  - OU mot de passe (nouveau + confirmation)
+  - OU les deux en même temps
+- `current_password` est obligatoire pour toute modification (sécurité)
+- Si les champs password sont vides, seul le profil est mis à jour
+- L'indicateur de force du mot de passe est identique à celui de l'inscription
+
 ## [2025-11-24] - Simplification formulaire inscription + Confirmation email
 
 ### Ajouté
