@@ -4,4 +4,3 @@ class AddWantsReminderToAttendances < ActiveRecord::Migration[8.1]
     add_index :attendances, :wants_reminder
   end
 end
-

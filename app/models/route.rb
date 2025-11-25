@@ -14,4 +14,3 @@ class Route < ApplicationRecord
     %w[events]
   end
 end
-

@@ -56,4 +56,3 @@ RSpec.describe ProductVariant, type: :model do
     }.to change { VariantOptionValue.count }.by(-1)
   end
 end
-

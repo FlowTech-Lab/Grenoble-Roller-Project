@@ -1,6 +1,6 @@
 ActiveAdmin.register AuditLog do
   actions :index, :show
-  config.sort_order = 'created_at_desc'
+  config.sort_order = "created_at_desc"
   includes :actor_user
 
   filter :action
@@ -19,7 +19,7 @@ ActiveAdmin.register AuditLog do
     column :target_type
     column :target_id
     column :metadata do |log|
-      log.metadata.present? ? truncate(log.metadata.to_json, length: 80) : '-'
+      log.metadata.present? ? truncate(log.metadata.to_json, length: 80) : "-"
     end
     actions
   end

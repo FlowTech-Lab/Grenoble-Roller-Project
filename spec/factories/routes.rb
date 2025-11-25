@@ -7,4 +7,3 @@ FactoryBot.define do
     description { 'Boucle urbaine pour tous niveaux.' }
   end
 end
-

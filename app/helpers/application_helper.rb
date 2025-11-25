@@ -8,6 +8,6 @@ module ApplicationHelper
     amount = amount_cents / 100.0
     # Formater sans décimales si c'est un nombre entier
     formatted = amount == amount.to_i ? amount.to_i.to_s : sprintf("%.2f", amount)
-    formatted.gsub('.', ',') + '€'
+    formatted.gsub(".", ",") + "€"
   end
 end

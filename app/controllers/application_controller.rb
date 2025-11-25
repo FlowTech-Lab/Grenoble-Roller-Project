@@ -10,23 +10,25 @@ class ApplicationController < ActionController::Base
   protected
 
   def configure_permitted_parameters
-    # Permet ces champs lors de l'inscription
+    # Permet ces champs lors de l'inscription (4 champs : email, prénom, password, skill_level)
     devise_parameter_sanitizer.permit(:sign_up, keys: [
-      :first_name, 
-      :last_name, 
-      :bio, 
-      :phone, 
-      :avatar_url, 
+      :first_name,
+      :skill_level,
       :role_id
     ])
-    
+
     # Permet ces champs lors de la modification du profil
     devise_parameter_sanitizer.permit(:account_update, keys: [
-      :first_name, 
-      :last_name, 
-      :bio, 
-      :phone, 
-      :avatar_url
+      :first_name,
+      :last_name,
+      :bio,
+      :phone,
+      :avatar_url,
+      :skill_level,
+      :email,
+      :password,
+      :password_confirmation,
+      :current_password  # OBLIGATOIRE pour toute modification
     ])
   end
 
@@ -46,5 +48,16 @@ class ApplicationController < ActionController::Base
     return false unless current_user
 
     event.attendances.exists?(user_id: current_user.id)
+  end
+
+  # Vérifier que l'email est confirmé pour les actions critiques
+  def ensure_email_confirmed
+    return unless user_signed_in?
+
+    unless current_user.confirmed?
+      redirect_to root_path,
+                  alert: "Vous devez confirmer votre adresse email pour effectuer cette action. Vérifiez votre boîte mail ou demandez un nouvel email de confirmation.",
+                  status: :forbidden
+    end
   end
 end

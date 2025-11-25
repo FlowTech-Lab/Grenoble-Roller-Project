@@ -44,4 +44,3 @@ RSpec.describe ContactMessage, type: :model do
     end
   end
 end
-

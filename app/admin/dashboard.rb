@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 ActiveAdmin.register_page "Dashboard" do
   menu priority: 1, label: proc { I18n.t("active_admin.dashboard") }
 
@@ -60,10 +61,10 @@ ActiveAdmin.register_page "Dashboard" do
     # Section Événements à valider (liste simple avec liens)
     panel "📋 Événements à valider", style: "margin-top: 20px;" do
       pending_events = Event.pending_validation.order(created_at: :desc).limit(10)
-      
+
       if pending_events.any?
         para "Cliquez sur un événement pour le voir et le modifier :", style: "color: #666; margin-bottom: 15px;"
-        
+
         table_for pending_events, style: "width: 100%;" do
           column "Titre" do |event|
             link_to event.title, admin_event_path(event), style: "color: #337ab7; text-decoration: none; font-weight: 500;"
@@ -78,10 +79,10 @@ ActiveAdmin.register_page "Dashboard" do
             "#{event.attendances_count} / #{event.unlimited? ? '∞' : event.max_participants}"
           end
         end
-        
+
         div style: "margin-top: 20px; text-align: center;" do
-          link_to "Voir tous les événements à valider →", admin_events_path(scope: "en_attente_de_validation"), 
-                  class: "button", 
+          link_to "Voir tous les événements à valider →", admin_events_path(scope: "en_attente_de_validation"),
+                  class: "button",
                   style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
         end
       else
@@ -102,7 +103,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #d9534f;" do
-            link_to Product.where('stock_qty <= 0').count, admin_products_path(scope: "en_rupture_de_stock"), style: "color: #d9534f; text-decoration: none;"
+            link_to Product.where("stock_qty <= 0").count, admin_products_path(scope: "en_rupture_de_stock"), style: "color: #d9534f; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "En rupture de stock"
@@ -110,7 +111,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
-            link_to Order.where(status: 'completed').count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
+            link_to Order.where(status: "completed").count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Commandes complétées"
@@ -135,12 +136,12 @@ ActiveAdmin.register_page "Dashboard" do
           end
           column "Statut" do |order|
             case order.status
-            when 'pending'
-              status_tag('En attente', class: 'warning')
-            when 'completed'
-              status_tag('Complétée', class: 'ok')
-            when 'cancelled', 'canceled'
-              status_tag('Annulée', class: 'error')
+            when "pending"
+              status_tag("En attente", class: "warning")
+            when "completed"
+              status_tag("Complétée", class: "ok")
+            when "cancelled", "canceled"
+              status_tag("Annulée", class: "error")
             else
               status_tag(order.status)
             end
@@ -150,8 +151,8 @@ ActiveAdmin.register_page "Dashboard" do
           end
         end
         div style: "margin-top: 15px; text-align: center;" do
-          link_to "Voir toutes les commandes →", admin_orders_path, 
-                  class: "button", 
+          link_to "Voir toutes les commandes →", admin_orders_path,
+                  class: "button",
                   style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
         end
       end
@@ -161,23 +162,23 @@ ActiveAdmin.register_page "Dashboard" do
     panel "🔗 Accès rapide", style: "margin-top: 20px;" do
       div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;" do
         div do
-          link_to "📅 Tous les événements", admin_events_path, 
+          link_to "📅 Tous les événements", admin_events_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "👥 Tous les utilisateurs", admin_users_path, 
+          link_to "👥 Tous les utilisateurs", admin_users_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "🛒 Toutes les commandes", admin_orders_path, 
+          link_to "🛒 Toutes les commandes", admin_orders_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "📦 Tous les produits", admin_products_path, 
+          link_to "📦 Tous les produits", admin_products_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "📧 Messages de contact", admin_contact_messages_path, 
+          link_to "📧 Messages de contact", admin_contact_messages_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
       end

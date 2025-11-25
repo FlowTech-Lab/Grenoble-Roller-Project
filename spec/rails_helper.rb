@@ -74,13 +74,13 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::IntegrationHelpers, type: :system
   config.include TestDataHelper if defined?(TestDataHelper)
-  
+
   # Capybara configuration for system/feature tests
   # Use rack_test for non-JS tests (faster, no browser needed)
   config.before(:each, type: :system) do
     driven_by :rack_test
   end
-  
+
   # Use headless Chrome for JS tests (modals, JavaScript interactions)
   config.before(:each, type: :system, js: true) do
     driven_by :selenium_chrome_headless

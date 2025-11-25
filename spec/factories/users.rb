@@ -6,18 +6,32 @@ FactoryBot.define do
     sequence(:email) { |n| "user#{n}@example.com" }
     password { 'password123' }
     phone { '0612345678' }
+    skill_level { 'intermediate' }
+    confirmed_at { Time.current } # Par défaut, utilisateur confirmé
 
     trait :organizer do
-      association :role, factory: [:role, :organizer]
+      association :role, factory: [ :role, :organizer ]
     end
 
     trait :admin do
-      association :role, factory: [:role, :admin]
+      association :role, factory: [ :role, :admin ]
     end
 
     trait :superadmin do
-      association :role, factory: [:role, :superadmin]
+      association :role, factory: [ :role, :superadmin ]
+    end
+
+    trait :unconfirmed do
+      confirmed_at { nil }
+      confirmation_sent_at { Time.current }
+    end
+
+    trait :beginner do
+      skill_level { 'beginner' }
+    end
+
+    trait :advanced do
+      skill_level { 'advanced' }
     end
   end
 end
-

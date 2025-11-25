@@ -13,7 +13,7 @@ ActiveAdmin.register User do
     column :last_name
     column :role
     column :email_verified do |user|
-      status_tag(user.email_verified? ? 'Vérifié' : 'Non vérifié', class: user.email_verified? ? 'ok' : 'warning')
+      status_tag(user.email_verified? ? "Vérifié" : "Non vérifié", class: user.email_verified? ? "ok" : "warning")
     end
     column :created_at
     actions
@@ -40,7 +40,7 @@ ActiveAdmin.register User do
       row :updated_at
     end
 
-    panel 'Inscriptions' do
+    panel "Inscriptions" do
       table_for user.attendances.includes(:event) do
         column :event
         column :status do |attendance|
@@ -54,9 +54,9 @@ ActiveAdmin.register User do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Utilisateur' do
+    f.inputs "Utilisateur" do
       f.input :email
-      f.input :password, hint: ('Laissez vide pour conserver le mot de passe actuel' if f.object.persisted?)
+      f.input :password, hint: ("Laissez vide pour conserver le mot de passe actuel" if f.object.persisted?)
       f.input :password_confirmation
       f.input :first_name
       f.input :last_name

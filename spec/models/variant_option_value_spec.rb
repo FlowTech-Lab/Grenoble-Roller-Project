@@ -19,4 +19,3 @@ RSpec.describe VariantOptionValue, type: :model do
     expect(dup.errors[:variant_id]).to be_present
   end
 end
-

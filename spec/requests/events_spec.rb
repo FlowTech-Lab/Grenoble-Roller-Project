@@ -94,6 +94,18 @@ RSpec.describe 'Events', type: :request do
       expect(event.attendances.exists?(user: user)).to be(true)
     end
 
+    it 'blocks unconfirmed users from attending' do
+      user = create(:user, :unconfirmed)
+      login_user(user)
+
+      expect do
+        post attend_event_path(event)
+      end.not_to change { Attendance.count }
+
+      expect(response).to redirect_to(root_path)
+      expect(flash[:alert]).to include('confirmer votre adresse email')
+    end
+
     it 'does not duplicate an existing attendance' do
       user = create(:user)
       create(:attendance, user: user, event: event)
@@ -183,4 +195,3 @@ RSpec.describe 'Events', type: :request do
     end
   end
 end
-

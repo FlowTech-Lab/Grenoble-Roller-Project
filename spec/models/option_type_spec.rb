@@ -16,4 +16,3 @@ RSpec.describe OptionType, type: :model do
     }.to change { OptionValue.count }.by(-1)
   end
 end
-

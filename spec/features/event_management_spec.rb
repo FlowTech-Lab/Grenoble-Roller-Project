@@ -19,7 +19,7 @@ RSpec.describe 'Event Management', type: :system do
 
       it 'permet de créer un événement via le formulaire' do
         visit new_event_path
-        
+
         fill_in 'Titre', with: 'Sortie nocturne Grenoble'
         select 'Published', from: 'Statut'
         select route.name, from: 'Parcours associé'
@@ -30,9 +30,9 @@ RSpec.describe 'Event Management', type: :system do
         fill_in 'Devise', with: 'EUR'
         fill_in 'Lieu / point de rendez-vous', with: 'Parc Paul Mistral, Grenoble'
         fill_in 'Description détaillée', with: 'Une belle sortie nocturne dans les rues de Grenoble avec tous les participants.'
-        
+
         click_button 'Créer l\'événement'
-        
+
         # Vérifier la redirection vers la page de l'événement
         expect(page).to have_content('Sortie nocturne Grenoble')
         expect(Event.last.title).to eq('Sortie nocturne Grenoble')
@@ -41,7 +41,7 @@ RSpec.describe 'Event Management', type: :system do
 
       it 'permet de créer un événement avec max_participants = 0 (illimité)' do
         visit new_event_path
-        
+
         fill_in 'Titre', with: 'Sortie illimitée'
         select 'Published', from: 'Statut'
         fill_in 'Date et heure de début', with: 3.days.from_now.strftime('%Y-%m-%dT%H:%M')
@@ -51,9 +51,9 @@ RSpec.describe 'Event Management', type: :system do
         fill_in 'Devise', with: 'EUR'
         fill_in 'Lieu / point de rendez-vous', with: 'Grenoble'
         fill_in 'Description détaillée', with: 'Une sortie sans limite de participants.'
-        
+
         click_button 'Créer l\'événement'
-        
+
         expect(Event.last.max_participants).to eq(0)
         expect(Event.last.unlimited?).to be true
       end
@@ -61,7 +61,7 @@ RSpec.describe 'Event Management', type: :system do
       it 'affiche des erreurs de validation si le formulaire est incomplet' do
         visit new_event_path
         click_button 'Créer l\'événement'
-        
+
         # Le formulaire affiche les erreurs de validation
         # Vérifier qu'on est toujours sur la page du formulaire (pas de redirection)
         expect(page).to have_content('Créer un événement')
@@ -99,18 +99,18 @@ RSpec.describe 'Event Management', type: :system do
       it 'permet de modifier l\'événement' do
         visit event_path(event)
         click_link 'Modifier'
-        
+
         fill_in 'Titre', with: 'Titre modifié'
         fill_in 'Nombre maximum de participants', with: '15'
         click_button 'Mettre à jour l\'événement'
-        
+
         expect(page).to have_content('Titre modifié')
         expect(event.reload.max_participants).to eq(15)
       end
 
       it 'affiche le formulaire pré-rempli avec les données actuelles' do
         visit edit_event_path(event)
-        
+
         expect(page).to have_field('Titre', with: event.title)
         expect(page).to have_field('Nombre maximum de participants', with: event.max_participants)
       end
@@ -151,18 +151,18 @@ RSpec.describe 'Event Management', type: :system do
 
       it 'permet de supprimer l\'événement avec confirmation', js: true do
         visit event_path(event)
-        
+
         # Cliquer sur le bouton de suppression qui ouvre le modal
         click_button 'Supprimer'
-        
+
         # Attendre que le modal soit visible
         expect(page).to have_content('Supprimer l\'événement')
-        
+
         # Confirmer dans le modal
         within('#confirmDeleteModalShow') do
           click_button 'Oui, supprimer'
         end
-        
+
         # Attendre la redirection
         expect(page).to have_current_path(events_path)
         expect(Event.find_by(id: event.id)).to be_nil
@@ -170,20 +170,20 @@ RSpec.describe 'Event Management', type: :system do
 
       it 'annule la suppression si l\'utilisateur clique sur Annuler dans le modal', js: true do
         visit event_path(event)
-        
+
         click_button 'Supprimer'
-        
+
         # Attendre que le modal soit visible
         expect(page).to have_content('Supprimer l\'événement')
-        
+
         # Annuler dans le modal
         within('#confirmDeleteModalShow') do
           click_button 'Annuler'
         end
-        
+
         # Attendre que le modal soit fermé
         sleep 0.5
-        
+
         # Vérifier que l'événement existe toujours
         expect(Event.find_by(id: event.id)).to be_present
       end
@@ -218,7 +218,7 @@ RSpec.describe 'Event Management', type: :system do
 
     it 'affiche les événements à venir' do
       visit events_path
-      
+
       expect(page).to have_content(upcoming_event.title)
       # Vérifier qu'il y a une section pour les événements à venir
       expect(page).to have_content('À venir')
@@ -226,7 +226,7 @@ RSpec.describe 'Event Management', type: :system do
 
     it 'affiche les événements passés' do
       visit events_path
-      
+
       expect(page).to have_content(past_event.title)
       # Vérifier qu'il y a une section pour les événements passés
       expect(page).to have_content('Événements passés')
@@ -234,10 +234,9 @@ RSpec.describe 'Event Management', type: :system do
 
     it 'affiche le prochain événement en vedette' do
       visit events_path
-      
+
       expect(page).to have_content('Prochain rendez-vous')
       expect(page).to have_content(upcoming_event.title)
     end
   end
 end
-

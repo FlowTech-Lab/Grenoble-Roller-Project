@@ -8,11 +8,11 @@ ActiveAdmin.register Event do
                 :max_participants, :level, :distance_km
 
   scope :all, default: true
-  scope('À venir') { |events| events.upcoming }
-  scope('Publiés') { |events| events.published }
-  scope('En attente de validation', default: true) { |events| events.pending_validation }
-  scope('Refusés') { |events| events.rejected }
-  scope('Annulés') { |events| events.where(status: 'canceled') }
+  scope("À venir") { |events| events.upcoming }
+  scope("Publiés") { |events| events.published }
+  scope("En attente de validation", default: true) { |events| events.pending_validation }
+  scope("Refusés") { |events| events.rejected }
+  scope("Annulés") { |events| events.where(status: "canceled") }
 
   index do
     selectable_column
@@ -20,14 +20,14 @@ ActiveAdmin.register Event do
     column :title
     column :status do |event|
       case event.status
-      when 'draft'
-        status_tag('En attente', class: 'warning')
-      when 'published'
-        status_tag('Publié', class: 'ok')
-      when 'rejected'
-        status_tag('Refusé', class: 'error')
-      when 'canceled'
-        status_tag('Annulé', class: 'error')
+      when "draft"
+        status_tag("En attente", class: "warning")
+      when "published"
+        status_tag("Publié", class: "ok")
+      when "rejected"
+        status_tag("Refusé", class: "error")
+      when "canceled"
+        status_tag("Annulé", class: "error")
       else
         status_tag(event.status)
       end
@@ -35,12 +35,12 @@ ActiveAdmin.register Event do
     column :start_at
     column :duration_min
     column :max_participants do |event|
-      event.unlimited? ? 'Illimité' : event.max_participants
+      event.unlimited? ? "Illimité" : event.max_participants
     end
     column :attendances_count
     column :route
     column :creator_user do |event|
-      event.creator_user&.email || 'N/A'
+      event.creator_user&.email || "N/A"
     end
     column :price_cents do |event|
       number_to_currency(event.price_cents / 100.0, unit: event.currency)
@@ -50,10 +50,10 @@ ActiveAdmin.register Event do
 
   filter :title
   filter :status, as: :select, collection: {
-    'En attente de validation' => 'draft',
-    'Publié' => 'published',
-    'Refusé' => 'rejected',
-    'Annulé' => 'canceled'
+    "En attente de validation" => "draft",
+    "Publié" => "published",
+    "Refusé" => "rejected",
+    "Annulé" => "canceled"
   }
   filter :route
   filter :creator_user, collection: -> { User.order(:email) }
@@ -67,20 +67,20 @@ ActiveAdmin.register Event do
       row :start_at
       row :duration_min
       row :max_participants do |event|
-        event.unlimited? ? 'Illimité (0)' : event.max_participants
+        event.unlimited? ? "Illimité (0)" : event.max_participants
       end
       row :attendances_count
       row :remaining_spots do |event|
         if event.unlimited?
-          'Illimité'
+          "Illimité"
         elsif event.full?
-          'Complet (0)'
+          "Complet (0)"
         else
           "#{event.remaining_spots} places restantes"
         end
       end
       row :creator_user do |event|
-        event.creator_user&.email || 'N/A'
+        event.creator_user&.email || "N/A"
       end
       row :route
       row :price_cents do |event|
@@ -96,7 +96,7 @@ ActiveAdmin.register Event do
       row :updated_at
     end
 
-    panel 'Inscriptions' do
+    panel "Inscriptions" do
       table_for event.attendances.includes(:user) do
         column :user
         column :status do |attendance|
@@ -111,45 +111,45 @@ ActiveAdmin.register Event do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Informations générales' do
+    f.inputs "Informations générales" do
       f.input :title
-      f.input :status, 
-        as: :select, 
+      f.input :status,
+        as: :select,
         collection: {
-          'En attente de validation' => 'draft',
-          'Publié' => 'published',
-          'Refusé' => 'rejected',
-          'Annulé' => 'canceled'
+          "En attente de validation" => "draft",
+          "Publié" => "published",
+          "Refusé" => "rejected",
+          "Annulé" => "canceled"
         },
-        prompt: 'Sélectionnez un statut',
-        hint: 'Changer le statut pour valider, publier, refuser ou annuler l\'événement'
+        prompt: "Sélectionnez un statut",
+        hint: "Changer le statut pour valider, publier, refuser ou annuler l'événement"
       f.input :route
-      f.input :creator_user, 
-        collection: User.order(:email).map { |u| [u.email, u.id] },
+      f.input :creator_user,
+        collection: User.order(:email).map { |u| [ u.email, u.id ] },
         label_method: :email,
         value_method: :id
       f.input :start_at, as: :datetime_select
       f.input :duration_min
-      f.input :max_participants, label: 'Nombre maximum de participants', hint: 'Mettez 0 pour un nombre illimité de participants.'
-      f.input :level, 
-        as: :select, 
+      f.input :max_participants, label: "Nombre maximum de participants", hint: "Mettez 0 pour un nombre illimité de participants."
+      f.input :level,
+        as: :select,
         collection: {
-          'Débutant' => 'beginner',
-          'Intermédiaire' => 'intermediate',
-          'Confirmé' => 'advanced',
-          'Tous niveaux' => 'all_levels'
+          "Débutant" => "beginner",
+          "Intermédiaire" => "intermediate",
+          "Confirmé" => "advanced",
+          "Tous niveaux" => "all_levels"
         }
-      f.input :distance_km, label: 'Distance (km)', input_html: { min: 0.1, step: 0.1 }
+      f.input :distance_km, label: "Distance (km)", input_html: { min: 0.1, step: 0.1 }
       f.input :location_text
       f.input :description
     end
 
-    f.inputs 'Tarification' do
-      f.input :price_cents, label: 'Prix (cents)'
-      f.input :currency, input_html: { value: f.object.currency || 'EUR' }
+    f.inputs "Tarification" do
+      f.input :price_cents, label: "Prix (cents)"
+      f.input :currency, input_html: { value: f.object.currency || "EUR" }
     end
 
-    f.inputs 'Point de rendez-vous' do
+    f.inputs "Point de rendez-vous" do
       f.input :meeting_lat
       f.input :meeting_lng
       f.input :cover_image_url

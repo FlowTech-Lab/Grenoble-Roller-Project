@@ -8,7 +8,11 @@ fi
 
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
+  echo "Preparing database..."
+  ./bin/rails db:prepare || {
+    echo "Warning: db:prepare failed, trying db:migrate..."
+    ./bin/rails db:migrate || echo "Warning: db:migrate also failed, continuing anyway..."
+  }
 fi
 
 # Force CSS rebuild in development environment on startup
@@ -16,6 +20,22 @@ fi
 # Note: This runs AFTER volume mount, so it compiles CSS in the mounted directory
 if [ "${RAILS_ENV}" == "development" ] && [ -f "package.json" ]; then
   echo "Preparing development environment..."
+  
+  # Check if gems need to be updated (when Gemfile.lock changes after rebuild or git pull)
+  # This solves the issue where volume bundle persists old gems even after image rebuild
+  if [ -f "Gemfile.lock" ]; then
+    GEMFILE_LOCK_CHECKSUM=$(md5sum Gemfile.lock | cut -d' ' -f1)
+    BUNDLE_CHECKSUM_FILE="${BUNDLE_PATH:-/rails/vendor/bundle}/.gemfile_lock_checksum"
+    
+    if [ ! -f "$BUNDLE_CHECKSUM_FILE" ] || [ "$(cat "$BUNDLE_CHECKSUM_FILE" 2>/dev/null)" != "$GEMFILE_LOCK_CHECKSUM" ]; then
+      echo "Gemfile.lock has changed or gems are missing. Installing/updating gems..."
+      bundle install || echo "Warning: bundle install failed, continuing anyway..."
+      echo "$GEMFILE_LOCK_CHECKSUM" > "$BUNDLE_CHECKSUM_FILE"
+      echo "Gems updated successfully."
+    else
+      echo "Gems are up-to-date."
+    fi
+  fi
   
   # Install node_modules if they don't exist (first run or volume is empty)
   if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then

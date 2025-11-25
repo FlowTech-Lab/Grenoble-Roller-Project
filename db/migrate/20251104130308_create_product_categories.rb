@@ -4,7 +4,7 @@ class CreateProductCategories < ActiveRecord::Migration[8.0]
       t.string :name, null: false, limit: 100
       t.string :slug, null: false, limit: 120
       t.index :slug, unique: true
-      
+
       t.timestamps
     end
   end

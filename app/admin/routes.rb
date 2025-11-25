@@ -5,16 +5,16 @@ ActiveAdmin.register Route do
                 :gpx_url, :map_image_url, :safety_notes
 
   scope :all, default: true
-  scope('Faciles') { |routes| routes.where(difficulty: 'easy') }
-  scope('Intermédiaires') { |routes| routes.where(difficulty: 'medium') }
-  scope('Difficiles') { |routes| routes.where(difficulty: 'hard') }
+  scope("Faciles") { |routes| routes.where(difficulty: "easy") }
+  scope("Intermédiaires") { |routes| routes.where(difficulty: "medium") }
+  scope("Difficiles") { |routes| routes.where(difficulty: "hard") }
 
   index do
     selectable_column
     id_column
     column :name
     column :difficulty do |route|
-      status_tag(route.difficulty.presence || 'nc', class: "status-#{route.difficulty}")
+      status_tag(route.difficulty.presence || "nc", class: "status-#{route.difficulty}")
     end
     column :distance_km
     column :elevation_m
@@ -42,7 +42,7 @@ ActiveAdmin.register Route do
       row :updated_at
     end
 
-    panel 'Événements associés' do
+    panel "Événements associés" do
       table_for route.events.order(start_at: :desc) do
         column :title
         column :status do |event|
@@ -57,9 +57,9 @@ ActiveAdmin.register Route do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Parcours' do
+    f.inputs "Parcours" do
       f.input :name
-      f.input :difficulty, as: :select, collection: %w[easy medium hard], include_blank: 'Non défini'
+      f.input :difficulty, as: :select, collection: %w[easy medium hard], include_blank: "Non défini"
       f.input :distance_km
       f.input :elevation_m
       f.input :gpx_url

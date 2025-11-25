@@ -26,10 +26,10 @@ RSpec.describe 'Event Attendance', type: :system do
 
       it 'ouvre le popup de confirmation lors du clic sur S\'inscrire' do
         visit event_path(event)
-        
+
         # Trouver et cliquer sur le bouton S'inscrire
         find_button('S\'inscrire', match: :first).click
-        
+
         # Vérifier que le modal est affiché
         expect(page).to have_content('Confirmer votre inscription')
         expect(page).to have_content(event.title)
@@ -38,18 +38,18 @@ RSpec.describe 'Event Attendance', type: :system do
 
       it 'inscrit l\'utilisateur après confirmation dans le popup', js: true do
         visit event_path(event)
-        
+
         # Cliquer sur le bouton pour ouvrir le modal
         find_button('S\'inscrire', match: :first).click
-        
+
         # Attendre que le modal soit visible
         expect(page).to have_content('Confirmer votre inscription')
-        
+
         # Confirmer dans le modal
         within('.modal') do
           click_button 'Confirmer l\'inscription'
         end
-        
+
         # Vérifier le message de succès (redirection après inscription)
         expect(page).to have_content(event.title)
         expect(event.reload.attendances.where(user: member).exists?).to be true
@@ -57,20 +57,20 @@ RSpec.describe 'Event Attendance', type: :system do
 
       it 'annule l\'inscription si l\'utilisateur clique sur Annuler dans le popup', js: true do
         visit event_path(event)
-        
+
         find_button('S\'inscrire', match: :first).click
-        
+
         # Attendre que le modal soit visible
         expect(page).to have_content('Confirmer votre inscription')
-        
+
         # Annuler dans le modal
         within('.modal') do
           click_button 'Annuler'
         end
-        
+
         # Attendre que le modal soit fermé
         sleep 0.5
-        
+
         # Vérifier que le modal est fermé et que l'utilisateur n'est pas inscrit
         expect(page).not_to have_content('Confirmer votre inscription', wait: 2)
         expect(event.attendances.where(user: member).exists?).to be false
@@ -80,7 +80,7 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:attendance, user: member, event: event, status: 'registered')
         event.reload
         visit event_path(event)
-        
+
         expect(page).to have_button('Se désinscrire')
         expect(page).not_to have_button('S\'inscrire')
       end
@@ -89,15 +89,15 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:attendance, user: member, event: event, status: 'registered')
         event.reload
         visit event_path(event)
-        
+
         # Confirmer la désinscription (Turbo confirm avec JavaScript)
         accept_confirm do
           click_button 'Se désinscrire'
         end
-        
+
         # Attendre que la page se recharge
         sleep 0.5
-        
+
         # Vérifier que le bouton "S'inscrire" apparaît maintenant
         expect(page).to have_button('S\'inscrire')
         expect(event.reload.attendances.where(user: member).exists?).to be false
@@ -114,13 +114,13 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:attendance, event: full_event, user: user1, status: 'registered')
         create(:attendance, event: full_event, user: user2, status: 'registered')
         full_event.reload
-        
+
         login_as member
       end
 
       it 'affiche le badge "Complet" et désactive le bouton S\'inscrire' do
         visit event_path(full_event)
-        
+
         expect(page).to have_content('Complet')
         # Le bouton "Complet" doit être présent et désactivé, ou le bouton S'inscrire ne doit pas être présent
         has_disabled_complete = page.has_button?('Complet', disabled: true) || page.has_button?('Complet')
@@ -147,7 +147,7 @@ RSpec.describe 'Event Attendance', type: :system do
 
       it 'permet l\'inscription même avec max_participants = 0' do
         visit event_path(unlimited_event)
-        
+
         expect(page).to have_button('S\'inscrire')
       end
     end
@@ -155,7 +155,7 @@ RSpec.describe 'Event Attendance', type: :system do
     context 'quand l\'utilisateur n\'est pas connecté' do
       it 'redirige vers la page de connexion lors du clic sur S\'inscrire' do
         visit event_path(event)
-        
+
         # Le bouton S'inscrire ne doit pas être visible pour les non connectés
         expect(page).not_to have_button('S\'inscrire')
       end
@@ -173,9 +173,9 @@ RSpec.describe 'Event Attendance', type: :system do
       it 'affiche le nombre de places disponibles' do
         create(:attendance, event: event_with_spots, user: create(:user), status: 'registered')
         event_with_spots.reload
-        
+
         visit event_path(event_with_spots)
-        
+
         # Vérifier que les places restantes sont affichées
         expect(page).to have_content(event_with_spots.remaining_spots.to_s)
         expect(page).to have_content('place disponible')
@@ -189,13 +189,12 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:attendance, event: almost_full_event, user: create(:user), status: 'registered')
         create(:attendance, event: almost_full_event, user: create(:user), status: 'registered')
         almost_full_event.reload
-        
+
         visit event_path(almost_full_event)
-        
+
         expect(page).to have_content('1')
         expect(page).to have_content('place disponible')
       end
     end
   end
 end
-

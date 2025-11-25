@@ -48,4 +48,3 @@ RSpec.describe Product, type: :model do
     expect(ProductVariant.where(id: variant.id)).to be_empty
   end
 end
-

@@ -13,4 +13,3 @@ RSpec.describe Payment, type: :model do
     expect(order2.reload.payment_id).to be_nil
   end
 end
-

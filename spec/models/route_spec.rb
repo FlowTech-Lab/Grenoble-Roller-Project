@@ -36,4 +36,3 @@ RSpec.describe Route, type: :model do
     end
   end
 end
-

@@ -1,11 +1,11 @@
 module EventsHelper
-  FALLBACK_EVENT_IMAGE = 'img/roller.png'
+  FALLBACK_EVENT_IMAGE = "img/roller.png"
 
   def event_cover_image_url(event)
     source = event&.cover_image_url
 
     return fallback_image_path if source.blank?
-    return source if source.start_with?('http://', 'https://')
+    return source if source.start_with?("http://", "https://")
 
     asset_exists?(source) ? asset_path(source) : fallback_image_path
   end
@@ -30,4 +30,3 @@ module EventsHelper
     false
   end
 end
-

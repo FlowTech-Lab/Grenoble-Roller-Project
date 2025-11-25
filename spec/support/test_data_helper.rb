@@ -15,6 +15,7 @@ module TestDataHelper
       last_name: 'Rider',
       email: "user#{SecureRandom.hex(4)}@example.com",
       password: 'password123',
+      skill_level: 'intermediate',
       role: role
     }
 
@@ -85,4 +86,3 @@ module TestDataHelper
     attendance
   end
 end
-

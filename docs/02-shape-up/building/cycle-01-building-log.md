@@ -692,6 +692,31 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] Documentation complète mise à jour (README, setup guides, architecture)
 - [✅] Credentials Rails configurés et régénérés
 
+#### Intégration changement mot de passe dans profil (2025-11-24)
+- [✅] **Formulaire profil unifié** :
+  - [✅] Changement de mot de passe intégré dans `/users/edit` (plus de page séparée)
+  - [✅] Formulaire unique pour modifier profil ET mot de passe en une seule fois
+  - [✅] Indicateur de force du mot de passe (conforme 2025)
+  - [✅] Toggle pour afficher/masquer les mots de passe (WCAG 2.2)
+  - [✅] `current_password` requis pour toute modification (sécurité renforcée)
+- [✅] **RegistrationsController** : Gestion changement mot de passe optionnel
+- [✅] **PasswordsController** : Simplifié pour "Mot de passe oublié" uniquement
+- [✅] **UX améliorée** : Pas de navigation entre pages, tout dans un seul formulaire
+
+#### Simplification formulaire inscription + Confirmation email (2025-11-24)
+- [✅] **Formulaire simplifié** : 4 champs uniquement (Email, Prénom, Mot de passe 12 caractères, Niveau)
+- [✅] **Skill level** : Cards Bootstrap visuelles (Débutant, Intermédiaire, Avancé)
+- [✅] **Confirmation email** : Accès immédiat + confirmation requise pour actions critiques
+- [✅] **Email de bienvenue** : UserMailer avec template HTML responsive
+- [✅] **Améliorations UX** : Header moderne, labels avec icônes, help text positif
+- [✅] **Conformité** : NIST 2025 (12 caractères), WCAG 2.2 (focus 3px, cibles tactiles)
+- [✅] **Corrections finales** :
+  - Traductions I18n corrigées (12 caractères)
+  - Redirection erreurs : reste sur `/users/sign_up`
+  - CSS input-group : contour englobe input + toggle
+  - Rack::Attack : correction accès match_data
+  - Page profil : skill level ajouté avec cards Bootstrap
+
 #### Pages légales & Conformité RGPD (2025-11-21)
 - [✅] **Pages légales complètes** :
   - [✅] Mentions Légales (`/mentions-legales`) - Conforme LCEN
