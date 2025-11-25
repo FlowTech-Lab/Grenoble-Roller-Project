@@ -699,6 +699,12 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] **Email de bienvenue** : UserMailer avec template HTML responsive
 - [✅] **Améliorations UX** : Header moderne, labels avec icônes, help text positif
 - [✅] **Conformité** : NIST 2025 (12 caractères), WCAG 2.2 (focus 3px, cibles tactiles)
+- [✅] **Corrections finales** :
+  - Traductions I18n corrigées (12 caractères)
+  - Redirection erreurs : reste sur `/users/sign_up`
+  - CSS input-group : contour englobe input + toggle
+  - Rack::Attack : correction accès match_data
+  - Page profil : skill level ajouté avec cards Bootstrap
 
 #### Pages légales & Conformité RGPD (2025-11-21)
 - [✅] **Pages légales complètes** :

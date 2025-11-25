@@ -1,6 +1,13 @@
 class PasswordsController < Devise::PasswordsController
-  # Override to allow logged in users to access password change page
-  skip_before_action :require_no_authentication, only: [:edit, :update]
+  # Override require_no_authentication to allow logged in users
+  # This prevents Devise from showing "already authenticated" message
+  def require_no_authentication
+    # Allow logged in users to access edit and update actions
+    return if user_signed_in? && (action_name == 'edit' || action_name == 'update')
+    
+    # For other cases, use default Devise behavior
+    super
+  end
   
   # Override edit action to handle both cases:
   # - User coming from email (with reset_password_token)
@@ -11,6 +18,7 @@ class PasswordsController < Devise::PasswordsController
       # For logged in users, set up the resource
       self.resource = current_user
       @minimum_password_length = Devise.password_length.min
+      render :edit
     else
       # For password reset from email, use default Devise behavior
       super

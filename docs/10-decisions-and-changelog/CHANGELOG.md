@@ -87,6 +87,13 @@ Ce fichier documente les changements significatifs du projet Grenoble Roller.
 - Email bienvenue + confirmation envoyés en parallèle (`deliver_later`)
 - Période de grâce 2 jours : utilisateur peut explorer sans confirmer, mais doit confirmer pour actions critiques
 
+### Corrections finales (2025-11-24)
+- **Traductions I18n** : Messages d'erreur corrigés (12 caractères au lieu de 14)
+- **Redirection erreurs** : Reste sur `/users/sign_up` en cas d'erreur (ne redirige plus vers `/users`)
+- **CSS Input-group** : Contour rouge englobe tout le groupe (input + bouton toggle password)
+- **Rack::Attack** : Correction de l'accès à `match_data` dans `throttled_responder`
+- **Validation email temps réel** : Abandonnée (validation côté serveur suffisante)
+
 ## [2025-11-21] - Pages légales complètes + Gestion des cookies RGPD 2025
 
 ### Ajouté

@@ -9,8 +9,9 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 # Checklist de Conformité 2025 - Formulaire d'Inscription
 
 **Date** : 2025-01-21  
+**Dernière mise à jour** : 2025-11-24  
 **Branche** : `feature/devise-quick-wins`  
-**Status** : En cours d'implémentation
+**Status** : ✅ Terminé
 
 ---
 
@@ -190,6 +191,17 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 ---
 
 **Dernière mise à jour** : 2025-11-24
+
+## ✅ Statut Final - Quick Wins Devise
+
+**Tous les critères de conformité sont implémentés et testés.**
+
+### Corrections finales (2025-11-24)
+- ✅ **Traductions** : Messages d'erreur corrigés (12 caractères au lieu de 14)
+- ✅ **Redirection erreurs** : Reste sur page d'inscription en cas d'erreur
+- ✅ **CSS Input-group** : Contour rouge/vert englobe input + bouton toggle
+- ✅ **Rack::Attack** : Correction accès `match_data` dans throttled_responder
+- ✅ **Validation email** : Validation côté serveur uniquement (plus simple et fiable)
 
 ## 📝 Changements récents (2025-11-24)
 

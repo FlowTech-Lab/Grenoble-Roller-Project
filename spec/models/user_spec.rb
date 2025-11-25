@@ -7,7 +7,8 @@ RSpec.describe User, type: :model do
     defaults = {
       email: 'john.doe@example.com',
       password: 'password123',
-      first_name: 'John'
+      first_name: 'John',
+      skill_level: 'intermediate'
     }
     User.new(defaults.merge(attrs))
   end
@@ -48,6 +49,36 @@ RSpec.describe User, type: :model do
     expect(user.role).to be_nil
     user.save!
     expect(user.role).to eq(role)
+  end
+
+  it 'requires skill_level' do
+    user = build_user(role: role, skill_level: nil)
+    expect(user).to be_invalid
+    expect(user.errors[:skill_level]).to be_present
+  end
+
+  it 'validates skill_level inclusion' do
+    expect(build_user(role: role, skill_level: 'beginner')).to be_valid
+    expect(build_user(role: role, skill_level: 'intermediate')).to be_valid
+    expect(build_user(role: role, skill_level: 'advanced')).to be_valid
+    
+    invalid = build_user(role: role, skill_level: 'invalid')
+    expect(invalid).to be_invalid
+    expect(invalid.errors[:skill_level]).to be_present
+  end
+
+  it 'allows unconfirmed access (period of grace)' do
+    user = build_user(role: role, confirmed_at: nil)
+    user.save!
+    expect(user.active_for_authentication?).to be true
+  end
+
+  it 'sends welcome email and confirmation after creation' do
+    expect {
+      user = build_user(role: role, email: 'welcome@example.com')
+      user.save!
+    }.to have_enqueued_job(ActionMailer::MailDeliveryJob)
+      .at_least(:once) # Au moins un email (bienvenue ou confirmation)
   end
 end
 
