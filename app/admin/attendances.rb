@@ -4,8 +4,8 @@ ActiveAdmin.register Attendance do
   permit_params :user_id, :event_id, :status, :payment_id, :stripe_customer_id
 
   scope :all, default: true
-  scope('Actives') { |attendances| attendances.active }
-  scope('Annulées') { |attendances| attendances.canceled }
+  scope("Actives") { |attendances| attendances.active }
+  scope("Annulées") { |attendances| attendances.canceled }
 
   index do
     selectable_column
@@ -30,7 +30,7 @@ ActiveAdmin.register Attendance do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Inscription' do
+    f.inputs "Inscription" do
       f.input :user, collection: User.order(:email)
       f.input :event
       f.input :status, as: :select, collection: Attendance.statuses.keys

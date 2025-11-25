@@ -18,9 +18,9 @@ class UpdateRolesAndAddUserRoleFk < ActiveRecord::Migration[8.0]
         migration_role.order(:id).find_each.with_index(1) do |role, idx|
           generated_code = if role.respond_to?(:name) && role[:name].present?
                               role[:name].to_s.upcase.gsub(/\s+/, "_")
-                            else
+          else
                               "ROLE_#{role.id || idx}"
-                            end
+          end
           generated_level = role[:level].presence || (idx * 10)
           # update_columns pour éviter validations/callbacks
           role.update_columns(code: role[:code].presence || generated_code,
@@ -40,5 +40,3 @@ class UpdateRolesAndAddUserRoleFk < ActiveRecord::Migration[8.0]
     change_column_null :roles, :level, false
   end
 end
-
-

@@ -37,4 +37,3 @@ RSpec.describe Role, type: :model do
     expect(role.users.count).to eq(2)
   end
 end
-

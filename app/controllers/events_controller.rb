@@ -1,7 +1,7 @@
 class EventsController < ApplicationController
   before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder]
   before_action :authenticate_user!, except: %i[index show]
-  before_action :ensure_email_confirmed, only: [:attend] # Exiger confirmation pour s'inscrire à un événement
+  before_action :ensure_email_confirmed, only: [ :attend ] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
 
   def index
@@ -15,10 +15,10 @@ class EventsController < ApplicationController
     authorize @event
     # Rediriger si l'événement n'est pas visible (publié ou annulé) et que l'utilisateur n'est pas modo+ ou créateur
     unless @event.published? || @event.canceled? || can_moderate? || @event.creator_user_id == current_user&.id
-      redirect_to events_path, alert: 'Cet événement n\'est pas encore publié.'
+      redirect_to events_path, alert: "Cet événement n'est pas encore publié."
     end
   end
-  
+
   def can_moderate?
     current_user.present? && current_user.role&.level.to_i >= 50 # MODERATOR = 50
   end
@@ -26,11 +26,11 @@ class EventsController < ApplicationController
 
   def new
     @event = current_user.created_events.build(
-      status: 'draft', # Toujours en brouillon à la création (en attente de validation)
+      status: "draft", # Toujours en brouillon à la création (en attente de validation)
       start_at: Time.zone.now.change(min: 0),
       duration_min: 60,
       max_participants: 0, # 0 = illimité par défaut
-      currency: 'EUR' # Toujours EUR
+      currency: "EUR" # Toujours EUR
     )
     authorize @event
   end
@@ -38,19 +38,19 @@ class EventsController < ApplicationController
   def create
     @event = current_user.created_events.build
     authorize @event
-    
+
     event_params = permitted_attributes(@event)
     # Toujours EUR
-    event_params[:currency] = 'EUR'
+    event_params[:currency] = "EUR"
     # Toujours en draft à la création (en attente de validation par un modérateur)
-    event_params[:status] = 'draft'
+    event_params[:status] = "draft"
     # Convertir le prix en euros en centimes
     if params[:price_euros].present?
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
     if @event.update(event_params)
-      redirect_to @event, notice: 'Événement créé avec succès. Il est en attente de validation par un modérateur.'
+      redirect_to @event, notice: "Événement créé avec succès. Il est en attente de validation par un modérateur."
     else
       render :new, status: :unprocessable_entity
     end
@@ -62,23 +62,23 @@ class EventsController < ApplicationController
 
   def update
     authorize @event
-    
+
     event_params = permitted_attributes(@event)
     # Toujours EUR
-    event_params[:currency] = 'EUR'
-    
+    event_params[:currency] = "EUR"
+
     # Seuls les modérateurs+ peuvent changer le statut
     unless current_user.role&.level.to_i >= 50 # MODERATOR = 50
       event_params.delete(:status) # Retirer le statut des params si l'utilisateur n'est pas modo+
     end
-    
+
     # Convertir le prix en euros en centimes
     if params[:price_euros].present?
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
     if @event.update(event_params)
-      redirect_to @event, notice: 'Événement mis à jour avec succès.'
+      redirect_to @event, notice: "Événement mis à jour avec succès."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -88,7 +88,7 @@ class EventsController < ApplicationController
     authorize @event
     @event.destroy
 
-    redirect_to events_path, notice: 'Événement supprimé.'
+    redirect_to events_path, notice: "Événement supprimé."
   end
 
   def attend
@@ -99,12 +99,12 @@ class EventsController < ApplicationController
     if attendance.persisted?
       redirect_to @event, notice: "Vous êtes déjà inscrit(e) à cet événement."
     else
-      attendance.status = 'registered'
+      attendance.status = "registered"
       # Accepter wants_reminder depuis les params (formulaire ou paramètre direct)
-      attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == '1' : false
+      attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       if attendance.save
         EventMailer.attendance_confirmed(attendance).deliver_later
-        redirect_to @event, notice: 'Inscription confirmée.'
+        redirect_to @event, notice: "Inscription confirmée."
       else
         redirect_to @event, alert: attendance.errors.full_messages.to_sentence
       end
@@ -118,7 +118,7 @@ class EventsController < ApplicationController
     attendance = @event.attendances.find_by(user: current_user)
     if attendance&.destroy
       EventMailer.attendance_cancelled(current_user, @event).deliver_later
-      redirect_to @event, notice: 'Inscription annulée.'
+      redirect_to @event, notice: "Inscription annulée."
     else
       redirect_to @event, alert: "Impossible d'annuler votre participation."
     end
@@ -132,10 +132,10 @@ class EventsController < ApplicationController
     attendance = @event.attendances.find_by(user: current_user)
     if attendance
       attendance.update(wants_reminder: !attendance.wants_reminder)
-      message = attendance.wants_reminder? ? 'Rappel activé. Vous recevrez un email la veille à 19h pour vous rappeler l\'événement.' : 'Rappel désactivé.'
+      message = attendance.wants_reminder? ? "Rappel activé. Vous recevrez un email la veille à 19h pour vous rappeler l'événement." : "Rappel désactivé."
       redirect_to @event, notice: message
     else
-      redirect_to @event, alert: 'Vous n\'êtes pas inscrit(e) à cet événement.'
+      redirect_to @event, alert: "Vous n'êtes pas inscrit(e) à cet événement."
     end
   end
 
@@ -145,7 +145,7 @@ class EventsController < ApplicationController
     authorize @event, :show?
 
     calendar = Icalendar::Calendar.new
-    calendar.prodid = '-//Grenoble Roller//Events//FR'
+    calendar.prodid = "-//Grenoble Roller//Events//FR"
 
     event_ical = Icalendar::Event.new
     event_ical.dtstart = Icalendar::Values::DateTime.new(@event.start_at)
@@ -157,15 +157,15 @@ class EventsController < ApplicationController
     event_ical.uid = "event-#{@event.id}@grenobleroller.fr"
     event_ical.last_modified = @event.updated_at
     event_ical.created = @event.created_at
-    event_ical.organizer = Icalendar::Values::CalAddress.new("mailto:noreply@grenobleroller.fr", cn: 'Grenoble Roller')
+    event_ical.organizer = Icalendar::Values::CalAddress.new("mailto:noreply@grenobleroller.fr", cn: "Grenoble Roller")
 
     calendar.add_event(event_ical)
     calendar.publish
 
     send_data calendar.to_ical,
               filename: "#{@event.title.parameterize}.ics",
-              type: 'text/calendar; charset=utf-8',
-              disposition: 'attachment'
+              type: "text/calendar; charset=utf-8",
+              disposition: "attachment"
   end
 
   private
@@ -180,4 +180,3 @@ class EventsController < ApplicationController
     @routes = Route.order(:name)
   end
 end
-

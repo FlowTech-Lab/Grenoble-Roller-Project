@@ -12,4 +12,3 @@ class ContactMessage < ApplicationRecord
     []
   end
 end
-

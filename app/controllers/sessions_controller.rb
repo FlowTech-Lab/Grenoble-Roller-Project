@@ -31,4 +31,3 @@ class SessionsController < Devise::SessionsController
     root_path
   end
 end
-

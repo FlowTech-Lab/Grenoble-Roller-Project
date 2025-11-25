@@ -35,4 +35,3 @@ class LegalPagesController < ApplicationController
     @page_description = "Contactez l'association Grenoble Roller"
   end
 end
-

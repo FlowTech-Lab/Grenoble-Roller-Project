@@ -4,34 +4,34 @@ ActiveAdmin.register OrganizerApplication do
   permit_params :user_id, :motivation, :status, :reviewed_by_id, :reviewed_at
 
   scope :all, default: true
-  scope('En attente') { |scope| scope.where(status: 'pending') }
-  scope('Approuvées') { |scope| scope.where(status: 'approved') }
-  scope('Refusées') { |scope| scope.where(status: 'rejected') }
+  scope("En attente") { |scope| scope.where(status: "pending") }
+  scope("Approuvées") { |scope| scope.where(status: "approved") }
+  scope("Refusées") { |scope| scope.where(status: "rejected") }
 
   action_item :approve, only: :show, if: proc { resource.pending? } do
-    link_to 'Approuver', approve_admin_organizer_application_path(resource), method: :put
+    link_to "Approuver", approve_admin_organizer_application_path(resource), method: :put
   end
 
   action_item :reject, only: :show, if: proc { resource.pending? } do
-    link_to 'Refuser', reject_admin_organizer_application_path(resource), method: :put
+    link_to "Refuser", reject_admin_organizer_application_path(resource), method: :put
   end
 
   member_action :approve, method: :put do
     resource.update!(
-      status: 'approved',
+      status: "approved",
       reviewed_by: current_user,
       reviewed_at: Time.current
     )
-    redirect_to resource_path, notice: 'Candidature approuvée.'
+    redirect_to resource_path, notice: "Candidature approuvée."
   end
 
   member_action :reject, method: :put do
     resource.update!(
-      status: 'rejected',
+      status: "rejected",
       reviewed_by: current_user,
       reviewed_at: Time.current
     )
-    redirect_to resource_path, alert: 'Candidature refusée.'
+    redirect_to resource_path, alert: "Candidature refusée."
   end
 
   index do
@@ -67,7 +67,7 @@ ActiveAdmin.register OrganizerApplication do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Candidature' do
+    f.inputs "Candidature" do
       f.input :user, collection: User.order(:email)
       f.input :status, as: :select, collection: OrganizerApplication.statuses.keys
       f.input :motivation

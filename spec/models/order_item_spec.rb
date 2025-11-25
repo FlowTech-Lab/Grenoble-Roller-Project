@@ -16,4 +16,3 @@ RSpec.describe OrderItem, type: :model do
     expect(item.variant_id).to eq(variant.id)
   end
 end
-

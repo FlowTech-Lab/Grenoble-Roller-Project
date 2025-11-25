@@ -6,7 +6,7 @@ RSpec.describe UserMailer, type: :mailer do
     let(:mail) { UserMailer.welcome_email(user) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'has correct subject' do
@@ -37,4 +37,3 @@ RSpec.describe UserMailer, type: :mailer do
     end
   end
 end
-

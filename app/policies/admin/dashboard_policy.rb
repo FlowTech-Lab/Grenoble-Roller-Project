@@ -4,4 +4,3 @@ module Admin
     alias_method :show?, :admin_user?
   end
 end
-

@@ -31,7 +31,7 @@ roles_seed = [
   { code: "USER",        name: "Utilisateur", level: 10 },
   { code: "REGISTERED",  name: "Inscrit",     level: 20 },
   { code: "INITIATION",  name: "Initiation",  level: 30 },
-  { code: "ORGANIZER",   name: "Organisateur",level: 40 },
+  { code: "ORGANIZER",   name: "Organisateur", level: 40 },
   { code: "MODERATOR",   name: "Modérateur",  level: 50 },
   { code: "ADMIN",       name: "Admin",       level: 60 },
   { code: "SUPERADMIN",  name: "Super Admin", level: 70 }
@@ -79,8 +79,8 @@ puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
     email: "client#{i + 1}@example.com",
     password: "password123",
     password_confirmation: "password123",
-    first_name: ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry", "Iris", "Jack", "Kate", "Leo", "Mia", "Noah", "Olivia", "Paul", "Quinn", "Ruby", "Sam", "Tina"][i],
-    last_name: ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel"][i],
+    first_name: [ "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry", "Iris", "Jack", "Kate", "Leo", "Mia", "Noah", "Olivia", "Paul", "Quinn", "Ruby", "Sam", "Tina" ][i],
+    last_name: [ "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel" ][i],
     bio: "Membre passionné de la communauté roller grenobloise",
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
@@ -94,7 +94,7 @@ end
 puts "🧾 Création des paiements..."
 
 
-#On crée 4 paiements “manuels” : 1 stripe réussi / 1 paypal en attente / 1 stripe échoué / 1 mollie réussi
+# On crée 4 paiements “manuels” : 1 stripe réussi / 1 paypal en attente / 1 stripe échoué / 1 mollie réussi
 payments_data = [
   {
     provider: "stripe",
@@ -143,7 +143,7 @@ if Payment.count < TARGET_ORDERS
     Payment.create!(
       provider: %w[stripe paypal mollie].sample,
       provider_payment_id: "gen_#{SecureRandom.hex(6)}",
-      amount_cents: [1500, 2500, 4999, 10000, 1299, 7999].sample,
+      amount_cents: [ 1500, 2500, 4999, 10000, 1299, 7999 ].sample,
       currency: "EUR",
       status: %w[succeeded pending failed].sample,
       created_at: Time.now - rand(0..5).days
@@ -186,12 +186,12 @@ else
 end
 
 # 🛒 Création des OrderItems (APRÈS la création des variants)
-#Création des catégories - Lucas
+# Création des catégories - Lucas
 categories = [
   { name: "Rollers", slug: "rollers" },
   { name: "Protections", slug: "protections" },
   { name: "Accessoires", slug: "accessoires" }
-].map { |attrs| ProductCategory.create!(attrs) 
+].map { |attrs| ProductCategory.create!(attrs)
 }
 puts "🖼️ Catégories créées!"
 
@@ -202,7 +202,7 @@ puts "🎨 Création des types d'options..."
 option_types = [
   { name: "size", presentation: "Taille" },
   { name: "color", presentation: "Couleur" }
-].map { |attrs| OptionType.create!(attrs) 
+].map { |attrs| OptionType.create!(attrs)
 }
 
 
@@ -254,7 +254,7 @@ apparel_sizes.each do |size_ov|
     product: casque_led,
     sku: "CASQ-LED-#{size_ov.value}",
     price_cents: 55_00,
-    stock_qty: [5, 8, 3][apparel_sizes.index(size_ov)],
+    stock_qty: [ 5, 8, 3 ][apparel_sizes.index(size_ov)],
     currency: "EUR",
     is_active: true
   )
@@ -365,7 +365,7 @@ apparel_sizes.each do |size_ov|
     product: tshirt,
     sku: "TSHIRT-#{size_ov.value}",
     price_cents: 20_00,
-    stock_qty: [8, 12, 6][apparel_sizes.index(size_ov)],
+    stock_qty: [ 8, 12, 6 ][apparel_sizes.index(size_ov)],
     currency: "EUR",
     is_active: true
   )
@@ -407,7 +407,7 @@ vestes_colors.each do |color_ov|
       product: veste_product,
       sku: "VESTE-#{color_ov.value.upcase}-#{size_ov.value}",
       price_cents: 40_00,
-      stock_qty: [5, 10, 7][idx],
+      stock_qty: [ 5, 10, 7 ][idx],
       currency: "EUR",
       is_active: true,
       image_url: veste_images[color_ov.value] || veste_product.image_url
@@ -532,7 +532,7 @@ puts "🎪 Création des événements..."
 # Helper pour mapper la difficulté de la route vers le niveau de l'événement
 def map_route_difficulty_to_level(route)
   return 'all_levels' unless route
-  
+
   case route.difficulty
   when 'easy'
     'beginner'
@@ -680,7 +680,7 @@ puts "✅ #{Event.count} événements créés !"
 # 📝 Attendances (inscriptions aux événements)
 puts "📝 Création des inscriptions..."
 published_events = Event.where(status: "published")
-regular_users = users.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"])
+regular_users = users.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com" ])
 
 if published_events.any? && regular_users.any?
   published_events.each do |event|
@@ -699,7 +699,7 @@ if published_events.any? && regular_users.any?
       puts "  ✅ Événement '#{event.title}' : #{event.max_participants} participants (COMPLET)"
     else
       # Pour les autres événements, inscription de quelques utilisateurs
-      num_subscribers = event.unlimited? ? rand(3..8) : [rand(2..6), event.max_participants].min
+      num_subscribers = event.unlimited? ? rand(3..8) : [ rand(2..6), event.max_participants ].min
       subscribers = regular_users.sample(num_subscribers)
       subscribers.each do |user|
         Attendance.create!(
@@ -711,7 +711,7 @@ if published_events.any? && regular_users.any?
       end
     end
   end
-  
+
   # Quelques inscriptions payées
   paid_event = published_events.find { |e| e.price_cents > 0 }
   if paid_event && regular_users.any?
@@ -730,7 +730,7 @@ puts "✅ #{Attendance.count} inscriptions créées !"
 
 # 📋 OrganizerApplications (candidatures organisateur)
 puts "📋 Création des candidatures organisateur..."
-regular_users_for_apps = users.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"]).where(role: user_role).limit(5)
+regular_users_for_apps = users.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com" ]).where(role: user_role).limit(5)
 if regular_users_for_apps.any? && (admin_user || florian)
   organizer_apps_data = [
     {
@@ -739,7 +739,7 @@ if regular_users_for_apps.any? && (admin_user || florian)
       status: "pending"
     }
   ]
-  
+
   # Ajouter une candidature approuvée si on a assez d'utilisateurs
   if regular_users_for_apps.count >= 2
     organizer_apps_data << {
@@ -750,7 +750,7 @@ if regular_users_for_apps.any? && (admin_user || florian)
       reviewed_at: 1.week.ago
     }
   end
-  
+
   # Ajouter une candidature rejetée si on a assez d'utilisateurs
   if regular_users_for_apps.count >= 3
     organizer_apps_data << {
@@ -761,7 +761,7 @@ if regular_users_for_apps.any? && (admin_user || florian)
       reviewed_at: 3.days.ago
     }
   end
-  
+
   organizer_apps_data.each { |attrs| OrganizerApplication.create!(attrs) }
   puts "✅ #{OrganizerApplication.count} candidatures créées !"
 end
@@ -884,7 +884,7 @@ if admin_user || florian
       created_at: 1.day.ago
     }
   ]
-  
+
   audit_logs_data.each { |attrs| AuditLog.create!(attrs) }
   puts "✅ #{AuditLog.count} logs d'audit créés !"
 end

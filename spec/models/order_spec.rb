@@ -21,4 +21,3 @@ RSpec.describe Order, type: :model do
     }.to change { OrderItem.count }.by(-1)
   end
 end
-

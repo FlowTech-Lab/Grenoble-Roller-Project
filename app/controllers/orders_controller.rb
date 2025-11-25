@@ -1,6 +1,6 @@
 class OrdersController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_email_confirmed, only: [:create] # Exiger confirmation pour passer une commande
+  before_action :ensure_email_confirmed, only: [ :create ] # Exiger confirmation pour passer une commande
 
   def index
     @orders = current_user.orders.includes(order_items: { variant: :product }).order(created_at: :desc)
@@ -8,13 +8,13 @@ class OrdersController < ApplicationController
 
   def new
     @cart_items = build_cart_items
-    redirect_to cart_path, alert: 'Votre panier est vide.' and return if @cart_items.empty?
+    redirect_to cart_path, alert: "Votre panier est vide." and return if @cart_items.empty?
     @total_cents = @cart_items.sum { |ci| ci[:subtotal_cents] }
   end
 
   def create
     cart_items = build_cart_items
-    return redirect_to cart_path, alert: 'Votre panier est vide.' if cart_items.empty?
+    return redirect_to cart_path, alert: "Votre panier est vide." if cart_items.empty?
 
     # Vérifier le stock avant de créer la commande
     stock_errors = []
@@ -22,7 +22,7 @@ class OrdersController < ApplicationController
       variant = ci[:variant]
       requested_qty = ci[:quantity]
       available_stock = variant.stock_qty.to_i
-      
+
       if !variant.is_active || !variant.product&.is_active
         stock_errors << "#{variant.product.name} (#{variant.sku}) n'est plus disponible"
       elsif available_stock < requested_qty
@@ -40,9 +40,9 @@ class OrdersController < ApplicationController
     Order.transaction do
       order = Order.create!(
         user: current_user,
-        status: 'pending',
+        status: "pending",
         total_cents: total_cents,
-        currency: 'EUR'
+        currency: "EUR"
       )
 
       cart_items.each do |ci|
@@ -53,13 +53,13 @@ class OrdersController < ApplicationController
           quantity: ci[:quantity],
           unit_price_cents: ci[:unit_price_cents]
         )
-        
+
         # Déduire le stock
         variant.decrement!(:stock_qty, ci[:quantity])
       end
 
       session[:cart] = {}
-      redirect_to order_path(order), notice: 'Commande créée avec succès.'
+      redirect_to order_path(order), notice: "Commande créée avec succès."
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to cart_path, alert: "Erreur lors de la création de la commande: #{e.message}"
@@ -73,10 +73,10 @@ class OrdersController < ApplicationController
 
   def cancel
     @order = current_user.orders.includes(order_items: :variant).find(params[:id])
-    
+
     # Vérifier que la commande peut être annulée
-    unless ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(@order.status.downcase)
-      redirect_to order_path(@order), alert: 'Cette commande ne peut pas être annulée.'
+    unless [ "pending", "en attente", "preparation", "en préparation", "preparing" ].include?(@order.status.downcase)
+      redirect_to order_path(@order), alert: "Cette commande ne peut pas être annulée."
       return
     end
 
@@ -91,10 +91,10 @@ class OrdersController < ApplicationController
       end
 
       # Mettre à jour le statut
-      @order.update!(status: 'cancelled')
+      @order.update!(status: "cancelled")
     end
-    
-    redirect_to order_path(@order), notice: 'Commande annulée avec succès. Le stock a été restauré.'
+
+    redirect_to order_path(@order), notice: "Commande annulée avec succès. Le stock a été restauré."
   rescue => e
     redirect_to order_path(@order), alert: "Erreur lors de l'annulation : #{e.message}"
   end
@@ -120,5 +120,3 @@ class OrdersController < ApplicationController
     end.compact
   end
 end
-
-

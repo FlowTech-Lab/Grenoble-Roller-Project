@@ -10,15 +10,15 @@ FactoryBot.define do
     confirmed_at { Time.current } # Par défaut, utilisateur confirmé
 
     trait :organizer do
-      association :role, factory: [:role, :organizer]
+      association :role, factory: [ :role, :organizer ]
     end
 
     trait :admin do
-      association :role, factory: [:role, :admin]
+      association :role, factory: [ :role, :admin ]
     end
 
     trait :superadmin do
-      association :role, factory: [:role, :superadmin]
+      association :role, factory: [ :role, :superadmin ]
     end
 
     trait :unconfirmed do
@@ -35,4 +35,3 @@ FactoryBot.define do
     end
   end
 end
-

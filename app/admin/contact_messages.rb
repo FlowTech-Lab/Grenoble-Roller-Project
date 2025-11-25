@@ -11,7 +11,7 @@ ActiveAdmin.register ContactMessage do
     column :subject
     column :created_at
     actions defaults: true do |message|
-      link_to 'Répondre', "mailto:#{message.email}?subject=#{ERB::Util.url_encode("Re: #{message.subject}")}"
+      link_to "Répondre", "mailto:#{message.email}?subject=#{ERB::Util.url_encode("Re: #{message.subject}")}"
     end
   end
 

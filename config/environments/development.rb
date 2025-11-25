@@ -8,7 +8,7 @@ Rails.application.configure do
 
   # Do not eager load code on boot.
   config.eager_load = false
-  
+
   # Configure file watcher for Docker volumes
   # Use polling mode for better compatibility with Docker volumes on Linux
   # This is set via environment variable in docker-compose.yml
@@ -47,7 +47,7 @@ Rails.application.configure do
 
   # Store emails in tmp/mails for development (can be viewed in browser or file system)
   config.action_mailer.delivery_method = :file
-  config.action_mailer.file_settings = { location: Rails.root.join('tmp/mails') }
+  config.action_mailer.file_settings = { location: Rails.root.join("tmp/mails") }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -66,7 +66,7 @@ Rails.application.configure do
 
   # Bullet gem configuration for N+1 query detection
   config.after_initialize do
-    require 'bullet'
+    require "bullet"
     Bullet.enable = true
     Bullet.alert = true
     Bullet.bullet_logger = true

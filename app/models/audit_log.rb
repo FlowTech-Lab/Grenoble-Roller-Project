@@ -1,5 +1,5 @@
 class AuditLog < ApplicationRecord
-  belongs_to :actor_user, class_name: 'User'
+  belongs_to :actor_user, class_name: "User"
 
   validates :action, presence: true, length: { maximum: 80 }
   validates :target_type, presence: true, length: { maximum: 50 }
@@ -18,4 +18,3 @@ class AuditLog < ApplicationRecord
     %w[actor_user]
   end
 end
-

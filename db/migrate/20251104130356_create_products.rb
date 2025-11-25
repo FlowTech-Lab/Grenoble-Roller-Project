@@ -12,7 +12,7 @@ class CreateProducts < ActiveRecord::Migration[8.0]
       t.string  :image_url, limit: 255
 
       # 🔽 Conserve uniquement ces index supplémentaires :
-      t.index [:is_active, :slug]
+      t.index [ :is_active, :slug ]
       t.index :slug, unique: true
 
       t.timestamps

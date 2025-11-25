@@ -31,4 +31,3 @@ module CookieConsentHelper
     end
   end
 end
-

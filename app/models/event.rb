@@ -1,32 +1,32 @@
 class Event < ApplicationRecord
-  belongs_to :creator_user, class_name: 'User'
+  belongs_to :creator_user, class_name: "User"
   belongs_to :route, optional: true
   has_many :attendances, dependent: :destroy
   has_many :users, through: :attendances
 
-  enum :status, { 
-    draft: 'draft',      # Brouillon / En attente de validation
-    published: 'published', # Publié / Validé
-    rejected: 'rejected',   # Refusé (demande non aboutie)
-    canceled: 'canceled'    # Annulé
+  enum :status, {
+    draft: "draft",      # Brouillon / En attente de validation
+    published: "published", # Publié / Validé
+    rejected: "rejected",   # Refusé (demande non aboutie)
+    canceled: "canceled"    # Annulé
   }, validate: true
-  
+
   # Traductions des statuts en français
   def status_label
     case status
-    when 'draft'
-      'En attente de validation'
-    when 'published'
-      'Publié'
-    when 'rejected'
-      'Refusé'
-    when 'canceled'
-      'Annulé'
+    when "draft"
+      "En attente de validation"
+    when "published"
+      "Publié"
+    when "rejected"
+      "Refusé"
+    when "canceled"
+      "Annulé"
     else
       status.humanize
     end
   end
-  enum :level, { beginner: 'beginner', intermediate: 'intermediate', advanced: 'advanced', all_levels: 'all_levels' }, validate: true, prefix: true
+  enum :level, { beginner: "beginner", intermediate: "intermediate", advanced: "advanced", all_levels: "all_levels" }, validate: true, prefix: true
 
   validates :status, presence: true
   validates :start_at, presence: true
@@ -38,29 +38,29 @@ class Event < ApplicationRecord
   validates :currency, presence: true, length: { is: 3 }
   validates :location_text, presence: true, length: { minimum: 3, maximum: 255 }
   validates :max_participants, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  
+
   # GPS optionnel, mais si meeting_lat présente, meeting_lng obligatoire et vice-versa
   validates :meeting_lat, presence: true, if: :meeting_lng?
   validates :meeting_lng, presence: true, if: :meeting_lat?
   validates :meeting_lat, numericality: { greater_than_or_equal_to: -90, less_than_or_equal_to: 90 }, allow_nil: true
   validates :meeting_lng, numericality: { greater_than_or_equal_to: -180, less_than_or_equal_to: 180 }, allow_nil: true
-  
+
   # Niveau et distance toujours requis
   validates :level, presence: true
   validates :distance_km, presence: true, numericality: { greater_than_or_equal_to: 0.1 }
 
-  scope :upcoming, -> { where('start_at > ?', Time.current) }
-  scope :past, -> { where('start_at <= ?', Time.current) }
-  scope :published, -> { where(status: 'published') }
-  
+  scope :upcoming, -> { where("start_at > ?", Time.current) }
+  scope :past, -> { where("start_at <= ?", Time.current) }
+  scope :published, -> { where(status: "published") }
+
   # Événements visibles pour les utilisateurs (publiés + annulés pour information)
-  scope :visible, -> { where(status: ['published', 'canceled']) }
-  
+  scope :visible, -> { where(status: [ "published", "canceled" ]) }
+
   # Événements en attente de validation (pour les modérateurs)
-  scope :pending_validation, -> { where(status: 'draft') }
-  
+  scope :pending_validation, -> { where(status: "draft") }
+
   # Événements refusés (pour les modérateurs)
-  scope :rejected, -> { where(status: 'rejected') }
+  scope :rejected, -> { where(status: "rejected") }
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[
@@ -106,7 +106,7 @@ class Event < ApplicationRecord
   def remaining_spots
     return nil if unlimited?
 
-    [max_participants - active_attendances_count, 0].max
+    [ max_participants - active_attendances_count, 0 ].max
   end
 
   # Vérifie s'il reste des places disponibles
@@ -151,7 +151,6 @@ class Event < ApplicationRecord
   def duration_multiple_of_five
     return if duration_min.blank?
 
-    errors.add(:duration_min, 'must be a multiple of 5') unless (duration_min % 5).zero?
+    errors.add(:duration_min, "must be a multiple of 5") unless (duration_min % 5).zero?
   end
 end
-

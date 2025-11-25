@@ -55,7 +55,7 @@ RSpec.describe 'Registrations', type: :request do
         expect {
           post user_registration_path, params: valid_params
         }.to have_enqueued_job(ActionMailer::MailDeliveryJob)
-          .with('UserMailer', 'welcome_email', 'deliver_now', args: [kind_of(User)])
+          .with('UserMailer', 'welcome_email', 'deliver_now', args: [ kind_of(User) ])
       end
 
       it 'sends confirmation email' do
@@ -68,7 +68,7 @@ RSpec.describe 'Registrations', type: :request do
       it 'creates user with correct attributes' do
         post user_registration_path, params: valid_params
         user = User.find_by(email: 'newuser@example.com')
-        
+
         expect(user).to be_present
         expect(user.first_name).to eq('Jean')
         expect(user.skill_level).to eq('intermediate')
@@ -78,7 +78,7 @@ RSpec.describe 'Registrations', type: :request do
       it 'allows immediate access (grace period)' do
         post user_registration_path, params: valid_params
         user = User.find_by(email: 'newuser@example.com')
-        
+
         expect(user.active_for_authentication?).to be true
       end
     end
@@ -196,4 +196,3 @@ RSpec.describe 'Registrations', type: :request do
     end
   end
 end
-

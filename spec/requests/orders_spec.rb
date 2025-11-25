@@ -29,10 +29,10 @@ RSpec.describe 'Orders', type: :request do
         logout_user
         unconfirmed_user = create(:user, :unconfirmed, role: role)
         login_user(unconfirmed_user)
-        
+
         # Ajouter au panier pour l'utilisateur non confirmé
         post add_item_cart_path, params: { variant_id: variant.id, quantity: 1 }
-        
+
         # GET /orders/new n'a pas de blocage email (seulement POST /orders)
         get new_order_path
         expect(response).to have_http_status(:ok)
@@ -57,7 +57,7 @@ RSpec.describe 'Orders', type: :request do
       expect {
         post orders_path
       }.to change(Order, :count).by(1)
-      
+
       expect(response).to have_http_status(:redirect)
       expect(Order.last.user).to eq(user)
       expect(flash[:notice]).to include('succès')
@@ -67,17 +67,16 @@ RSpec.describe 'Orders', type: :request do
       logout_user
       unconfirmed_user = create(:user, :unconfirmed, role: role)
       login_user(unconfirmed_user)
-      
+
       # Ajouter au panier pour l'utilisateur non confirmé
       post add_item_cart_path, params: { variant_id: variant.id, quantity: 1 }
-      
+
       expect {
         post orders_path
       }.not_to change(Order, :count)
-      
+
       expect(response).to redirect_to(root_path)
       expect(flash[:alert]).to include('confirmer votre adresse email')
     end
   end
 end
-

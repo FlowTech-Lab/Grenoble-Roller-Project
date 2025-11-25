@@ -4,9 +4,9 @@ ActiveAdmin.register Order do
   permit_params :user_id, :status, :total_cents, :currency, :payment_id
 
   scope :all, default: true
-  scope('En attente', default: true) { |orders| orders.where(status: 'pending') }
-  scope('Complétées') { |orders| orders.where(status: 'completed') }
-  scope('Annulées') { |orders| orders.where(status: 'cancelled') }
+  scope("En attente", default: true) { |orders| orders.where(status: "pending") }
+  scope("Complétées") { |orders| orders.where(status: "completed") }
+  scope("Annulées") { |orders| orders.where(status: "cancelled") }
 
   index do
     selectable_column
@@ -14,12 +14,12 @@ ActiveAdmin.register Order do
     column :user
     column :status do |order|
       case order.status
-      when 'pending'
-        status_tag('En attente', class: 'warning')
-      when 'completed'
-        status_tag('Complétée', class: 'ok')
-      when 'cancelled', 'canceled'
-        status_tag('Annulée', class: 'error')
+      when "pending"
+        status_tag("En attente", class: "warning")
+      when "completed"
+        status_tag("Complétée", class: "ok")
+      when "cancelled", "canceled"
+        status_tag("Annulée", class: "error")
       else
         status_tag(order.status)
       end
@@ -52,7 +52,7 @@ ActiveAdmin.register Order do
       row :updated_at
     end
 
-    panel 'Articles' do
+    panel "Articles" do
       table_for order.order_items.includes(:variant) do
         column :variant_id
         column :quantity
@@ -67,15 +67,15 @@ ActiveAdmin.register Order do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Commande' do
-      f.input :user, collection: User.order(:email).map { |u| [u.email, u.id] }
+    f.inputs "Commande" do
+      f.input :user, collection: User.order(:email).map { |u| [ u.email, u.id ] }
       f.input :status, as: :select, collection: {
-        'En attente' => 'pending',
-        'Complétée' => 'completed',
-        'Annulée' => 'cancelled'
-      }, prompt: 'Sélectionnez un statut'
-      f.input :total_cents, label: 'Total (cents)'
-      f.input :currency, input_html: { value: f.object.currency || 'EUR' }
+        "En attente" => "pending",
+        "Complétée" => "completed",
+        "Annulée" => "cancelled"
+      }, prompt: "Sélectionnez un statut"
+      f.input :total_cents, label: "Total (cents)"
+      f.input :currency, input_html: { value: f.object.currency || "EUR" }
       f.input :payment
     end
 

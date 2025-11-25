@@ -20,7 +20,7 @@ ActiveAdmin.register Role do
   filter :name
   filter :code
   filter :level
-  filter :users_email_cont, label: 'Utilisateur (email contient)'
+  filter :users_email_cont, label: "Utilisateur (email contient)"
   filter :created_at
   filter :updated_at
 
@@ -34,7 +34,7 @@ ActiveAdmin.register Role do
       row :updated_at
     end
 
-    panel 'Utilisateurs associés' do
+    panel "Utilisateurs associés" do
       table_for role.users.order(:email) do
         column :email
         column :first_name
@@ -47,7 +47,7 @@ ActiveAdmin.register Role do
   form do |f|
     f.semantic_errors
 
-    f.inputs 'Rôle' do
+    f.inputs "Rôle" do
       f.input :name
       f.input :code
       f.input :level
@@ -57,4 +57,3 @@ ActiveAdmin.register Role do
     f.actions
   end
 end
-

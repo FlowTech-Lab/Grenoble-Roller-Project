@@ -12,18 +12,18 @@ class RegistrationsController < Devise::RegistrationsController
     end
 
     build_resource(sign_up_params)
-    
+
     if resource.save
       # Gérer l'opt-in newsletter (futur)
       # TODO: Implémenter newsletter subscription si params[:newsletter_subscription] == "1"
-      
+
       # Message de bienvenue personnalisé avec le prénom (si fourni)
       if resource.first_name.present?
         flash[:notice] = "Bienvenue #{resource.first_name} ! 🎉 Découvrez les événements à venir."
       else
         flash[:notice] = "Bienvenue ! 🎉 Découvrez les événements à venir. Complétez votre profil pour une expérience personnalisée."
       end
-      
+
       # Rediriger après succès
       respond_with resource, location: after_sign_up_path_for(resource)
     else
@@ -49,7 +49,7 @@ class RegistrationsController < Devise::RegistrationsController
   def after_update_path_for(_resource)
     edit_user_registration_path
   end
-  
+
   # Override update_resource pour gérer le changement de mot de passe optionnel
   def update_resource(resource, params)
     # Si password et password_confirmation sont vides, mise à jour sans changer le mot de passe
@@ -59,7 +59,7 @@ class RegistrationsController < Devise::RegistrationsController
         resource.errors.add(:current_password, "est incorrect")
         return false
       end
-      
+
       # Supprimer current_password de params (update_without_password ne l'accepte pas)
       params.delete(:current_password)
       resource.update_without_password(params.except(:password, :password_confirmation))
@@ -69,4 +69,3 @@ class RegistrationsController < Devise::RegistrationsController
     end
   end
 end
-

@@ -23,12 +23,12 @@ class Order < ApplicationRecord
     # Vérifier si le statut vient de passer à "cancelled"
     previous_status = attribute_was(:status) || status_before_last_save
     current_status = status
-    
+
     # Si le statut est passé à "cancelled" et qu'il était différent avant
-    if current_status == 'cancelled' && 
-       previous_status != 'cancelled' &&
+    if current_status == "cancelled" &&
+       previous_status != "cancelled" &&
        previous_status.present?
-      
+
       order_items.includes(:variant).each do |item|
         variant = item.variant
         next unless variant
