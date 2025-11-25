@@ -1,9 +1,9 @@
 Rails.application.routes.draw do
   ActiveAdmin.routes(self)
   devise_for :users, controllers: {
-    registrations: 'registrations',
-    sessions: 'sessions',
-    passwords: 'passwords'
+    registrations: "registrations",
+    sessions: "sessions",
+    passwords: "passwords"
   }
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -17,19 +17,19 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
-  root 'pages#index'
-  
+  root "pages#index"
+
   # Static pages
-  get '/a-propos', to: 'pages#about', as: 'about'
+  get "/a-propos", to: "pages#about", as: "about"
   # Redirection 301 de /association vers /a-propos (fusion des pages)
-  get '/association', to: redirect('/a-propos', status: 301), as: 'association'
+  get "/association", to: redirect("/a-propos", status: 301), as: "association"
 
   # Shop
-  resources :products, only: [:index, :show]
-  get '/shop', to: 'products#index', as: 'shop'
+  resources :products, only: [ :index, :show ]
+  get "/shop", to: "products#index", as: "shop"
 
   # Cart
-  resource :cart, only: [:show] do
+  resource :cart, only: [ :show ] do
     post :add_item
     patch :update_item
     delete :remove_item
@@ -37,7 +37,7 @@ Rails.application.routes.draw do
   end
 
   # Orders (Checkout)
-  resources :orders, only: [:index, :new, :create, :show] do
+  resources :orders, only: [ :index, :new, :create, :show ] do
     member do
       patch :cancel
     end
@@ -48,27 +48,27 @@ Rails.application.routes.draw do
     member do
       post :attend
       delete :cancel_attendance
-      get :ical, defaults: { format: 'ics' }
+      get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
     end
   end
-  
+
   # Routes pour pré-remplir les champs niveau et distance
-  get '/routes/:id/info', to: 'routes#info', as: 'route_info', defaults: { format: 'json' }
+  get "/routes/:id/info", to: "routes#info", as: "route_info", defaults: { format: "json" }
 
   resources :attendances, only: :index
 
   # Legal pages
-  get '/mentions-legales', to: 'legal_pages#mentions_legales', as: 'mentions_legales'
-  get '/politique-confidentialite', to: 'legal_pages#politique_confidentialite', as: 'politique_confidentialite'
-  get '/rgpd', to: 'legal_pages#politique_confidentialite' # Alias pour RGPD
-  get '/cgv', to: 'legal_pages#cgv', as: 'cgv'
-  get '/conditions-generales-vente', to: 'legal_pages#cgv' # Alias pour CGV
-  get '/cgu', to: 'legal_pages#cgu', as: 'cgu'
-  get '/conditions-generales-utilisation', to: 'legal_pages#cgu' # Alias pour CGU
-  get '/contact', to: 'legal_pages#contact', as: 'contact'
+  get "/mentions-legales", to: "legal_pages#mentions_legales", as: "mentions_legales"
+  get "/politique-confidentialite", to: "legal_pages#politique_confidentialite", as: "politique_confidentialite"
+  get "/rgpd", to: "legal_pages#politique_confidentialite" # Alias pour RGPD
+  get "/cgv", to: "legal_pages#cgv", as: "cgv"
+  get "/conditions-generales-vente", to: "legal_pages#cgv" # Alias pour CGV
+  get "/cgu", to: "legal_pages#cgu", as: "cgu"
+  get "/conditions-generales-utilisation", to: "legal_pages#cgu" # Alias pour CGU
+  get "/contact", to: "legal_pages#contact", as: "contact"
 
-  # Cookie consent 
+  # Cookie consent
   resource :cookie_consent, only: [] do
     collection do
       get :preferences

@@ -18,12 +18,12 @@ gem "stimulus-rails"
 gem "cssbundling-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
-gem 'devise'
-gem 'pundit'
-gem 'activeadmin'
-gem 'rack-attack' # Rate limiting pour sécurité
+gem "devise"
+gem "pundit"
+gem "activeadmin"
+gem "rack-attack" # Rate limiting pour sécurité
 
-gem 'table_print'
+gem "table_print"
 
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
@@ -62,7 +62,7 @@ group :development, :test do
   # RSpec testing framework
   gem "rspec-rails"
   gem "factory_bot_rails"
-  
+
   # N+1 query detection [https://github.com/flyerhzm/bullet]
   gem "bullet", require: false
 end
@@ -75,7 +75,7 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
-  
+
   # File watcher for auto-reload in development (required for Docker volumes)
   gem "listen", "~> 3.8"
 end

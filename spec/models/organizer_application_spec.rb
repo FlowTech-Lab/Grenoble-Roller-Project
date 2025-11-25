@@ -43,4 +43,3 @@ RSpec.describe OrganizerApplication, type: :model do
     end
   end
 end
-

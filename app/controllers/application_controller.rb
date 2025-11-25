@@ -16,13 +16,13 @@ class ApplicationController < ActionController::Base
       :skill_level,
       :role_id
     ])
-    
+
     # Permet ces champs lors de la modification du profil
     devise_parameter_sanitizer.permit(:account_update, keys: [
-      :first_name, 
-      :last_name, 
-      :bio, 
-      :phone, 
+      :first_name,
+      :last_name,
+      :bio,
+      :phone,
       :avatar_url,
       :skill_level,
       :email,
@@ -49,13 +49,13 @@ class ApplicationController < ActionController::Base
 
     event.attendances.exists?(user_id: current_user.id)
   end
-  
+
   # Vérifier que l'email est confirmé pour les actions critiques
   def ensure_email_confirmed
     return unless user_signed_in?
-    
+
     unless current_user.confirmed?
-      redirect_to root_path, 
+      redirect_to root_path,
                   alert: "Vous devez confirmer votre adresse email pour effectuer cette action. Vérifiez votre boîte mail ou demandez un nouvel email de confirmation.",
                   status: :forbidden
     end

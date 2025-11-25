@@ -8,7 +8,7 @@ RSpec.describe EventMailer, type: :mailer do
     let(:mail) { EventMailer.attendance_confirmed(attendance) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes event title in subject' do
@@ -77,7 +77,7 @@ RSpec.describe EventMailer, type: :mailer do
     let(:mail) { EventMailer.attendance_cancelled(user, event) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes event title in subject' do
@@ -116,7 +116,7 @@ RSpec.describe EventMailer, type: :mailer do
     let(:mail) { EventMailer.event_reminder(attendance) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes event title in subject' do
@@ -134,4 +134,3 @@ RSpec.describe EventMailer, type: :mailer do
     end
   end
 end
-

@@ -69,10 +69,10 @@ class EventPolicy < ApplicationPolicy
       :level,
       :distance_km
     ]
-    
+
     # Seuls les modérateurs+ peuvent modifier le statut
     attrs << :status if admin? || moderator?
-    
+
     attrs
   end
 
@@ -102,7 +102,7 @@ class EventPolicy < ApplicationPolicy
     def admin?
       user.present? && user.role&.level.to_i >= 60
     end
-    
+
     def moderator?
       user.present? && user.role&.level.to_i >= 50
     end
@@ -121,9 +121,8 @@ class EventPolicy < ApplicationPolicy
   def admin?
     user.present? && user.role&.level.to_i >= 60
   end
-  
+
   def moderator?
     user.present? && user.role&.level.to_i >= 50
   end
 end
-

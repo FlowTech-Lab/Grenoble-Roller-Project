@@ -29,4 +29,3 @@ class EventReminderJob < ApplicationJob
     end
   end
 end
-

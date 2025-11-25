@@ -30,7 +30,7 @@ RSpec.describe EventReminderJob, type: :job do
         end.to change { ActionMailer::Base.deliveries.count }.by(1)
 
         mail = ActionMailer::Base.deliveries.last
-        expect(mail.to).to eq([user.email])
+        expect(mail.to).to eq([ user.email ])
         expect(mail.subject).to include('Rappel')
         expect(mail.subject).to include(event_tomorrow_morning.title)
       end
@@ -121,4 +121,3 @@ RSpec.describe EventReminderJob, type: :job do
     end
   end
 end
-

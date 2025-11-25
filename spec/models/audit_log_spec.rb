@@ -52,8 +52,7 @@ RSpec.describe AuditLog, type: :model do
         AuditLog.create!(actor_user: actor, action: 'event.publish', target_type: 'Event', target_id: 1)
       end
 
-      expect(AuditLog.recent).to eq([recent_log, old_log])
+      expect(AuditLog.recent).to eq([ recent_log, old_log ])
     end
   end
 end
-

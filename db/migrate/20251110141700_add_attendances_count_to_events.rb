@@ -1,7 +1,7 @@
 class AddAttendancesCountToEvents < ActiveRecord::Migration[8.1]
   def up
     add_column :events, :attendances_count, :integer, default: 0, null: false
-    
+
     # Mettre à jour les compteurs pour tous les événements existants
     execute <<-SQL
       UPDATE events

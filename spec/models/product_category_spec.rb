@@ -29,4 +29,3 @@ RSpec.describe ProductCategory, type: :model do
     expect(Product.exists?(product.id)).to be true
   end
 end
-

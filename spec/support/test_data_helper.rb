@@ -86,4 +86,3 @@ module TestDataHelper
     attendance
   end
 end
-

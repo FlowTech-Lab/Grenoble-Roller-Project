@@ -25,4 +25,3 @@ RSpec.describe 'Attendances', type: :request do
     end
   end
 end
-

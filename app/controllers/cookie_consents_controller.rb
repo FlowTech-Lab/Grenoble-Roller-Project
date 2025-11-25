@@ -34,10 +34,10 @@ class CookieConsentsController < ApplicationController
 
     options = cookie_options.merge(value: consent_data.to_json)
     cookies[:cookie_consent] = options
-    
+
     respond_to do |format|
-      format.json { render json: { status: 'accepted', preferences: consent_data } }
-      format.html { redirect_back(fallback_location: root_path, notice: 'Vos préférences de cookies ont été enregistrées.') }
+      format.json { render json: { status: "accepted", preferences: consent_data } }
+      format.html { redirect_back(fallback_location: root_path, notice: "Vos préférences de cookies ont été enregistrées.") }
     end
   end
 
@@ -52,10 +52,10 @@ class CookieConsentsController < ApplicationController
 
     options = cookie_options.merge(value: consent_data.to_json)
     cookies[:cookie_consent] = options
-    
+
     respond_to do |format|
-      format.json { render json: { status: 'rejected', preferences: consent_data } }
-      format.html { redirect_back(fallback_location: root_path, notice: 'Vos préférences de cookies ont été enregistrées.') }
+      format.json { render json: { status: "rejected", preferences: consent_data } }
+      format.html { redirect_back(fallback_location: root_path, notice: "Vos préférences de cookies ont été enregistrées.") }
     end
   end
 
@@ -63,18 +63,17 @@ class CookieConsentsController < ApplicationController
   def update
     consent_data = {
       necessary: true, # Toujours nécessaire
-      preferences: params[:preferences] == 'true',
-      analytics: params[:analytics] == 'true',
+      preferences: params[:preferences] == "true",
+      analytics: params[:analytics] == "true",
       timestamp: Time.current.iso8601
     }
 
     options = cookie_options.merge(value: consent_data.to_json)
     cookies[:cookie_consent] = options
-    
+
     respond_to do |format|
-      format.json { render json: { status: 'updated', preferences: consent_data } }
-      format.html { redirect_back(fallback_location: preferences_cookie_consent_path, notice: 'Vos préférences de cookies ont été mises à jour.') }
+      format.json { render json: { status: "updated", preferences: consent_data } }
+      format.html { redirect_back(fallback_location: preferences_cookie_consent_path, notice: "Vos préférences de cookies ont été mises à jour.") }
     end
   end
 end
-

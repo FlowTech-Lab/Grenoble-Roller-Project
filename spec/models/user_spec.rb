@@ -41,7 +41,7 @@ RSpec.describe User, type: :model do
     user = User.create!(email: 'orders@example.com', password: 'password123', first_name: 'OrderUser', role: role)
     order1 = Order.create!(user: user, status: 'pending', total_cents: 1000, currency: 'EUR')
     order2 = Order.create!(user: user, status: 'pending', total_cents: 2000, currency: 'EUR')
-    expect(user.orders).to match_array([order1, order2])
+    expect(user.orders).to match_array([ order1, order2 ])
   end
 
   it 'sets default role on create when not provided' do
@@ -61,7 +61,7 @@ RSpec.describe User, type: :model do
     expect(build_user(role: role, skill_level: 'beginner')).to be_valid
     expect(build_user(role: role, skill_level: 'intermediate')).to be_valid
     expect(build_user(role: role, skill_level: 'advanced')).to be_valid
-    
+
     invalid = build_user(role: role, skill_level: 'invalid')
     expect(invalid).to be_invalid
     expect(invalid.errors[:skill_level]).to be_present
@@ -81,4 +81,3 @@ RSpec.describe User, type: :model do
       .at_least(:once) # Au moins un email (bienvenue ou confirmation)
   end
 end
-

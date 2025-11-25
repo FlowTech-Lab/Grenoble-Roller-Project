@@ -1,7 +1,7 @@
 module Admin
   class RolePolicy < Admin::ApplicationPolicy
     def admin_user?
-      user.present? && user.role&.code == 'SUPERADMIN'
+      user.present? && user.role&.code == "SUPERADMIN"
     end
 
     class Scope < Admin::ApplicationPolicy::Scope
@@ -13,4 +13,3 @@ module Admin
     end
   end
 end
-
