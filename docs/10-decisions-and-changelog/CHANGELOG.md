@@ -2,6 +2,91 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-11-24] - Simplification formulaire inscription + Confirmation email
+
+### Ajouté
+- **Formulaire d'inscription simplifié** :
+  - Réduction à **4 champs obligatoires uniquement** : Email, Prénom, Mot de passe (12 caractères), Niveau
+  - Prénom obligatoire pour personnaliser les interactions (événements, emails)
+  - Skill level avec cards Bootstrap visuelles (Débutant, Intermédiaire, Avancé)
+  - Header moderne avec icône dans cercle coloré
+  - Labels avec icônes Bootstrap (envelope, person, shield-lock, speedometer)
+  - Help text positif pour mot de passe avec exemple de passphrase
+
+- **Confirmation email avec accès immédiat** :
+  - Module `:confirmable` activé dans Devise
+  - Période de grâce : `allow_unconfirmed_access_for = 2.days` (meilleure UX)
+  - Accès immédiat après inscription (navigation, consultation)
+  - Confirmation **requise** pour actions critiques :
+    - S'inscrire à un événement (`EventsController#attend`)
+    - Passer une commande (`OrdersController#create`)
+  - Email de confirmation envoyé automatiquement après inscription
+
+- **Email de bienvenue** :
+  - `UserMailer.welcome_email` avec template HTML responsive
+  - Template texte (fallback)
+  - Envoyé automatiquement après création du compte
+  - Lien direct vers les événements
+
+- **Skill level** :
+  - Nouveau champ `skill_level` (beginner, intermediate, advanced)
+  - Validation obligatoire à l'inscription
+  - Cards Bootstrap avec icônes et hover effects
+  - Responsive (3 colonnes mobile-friendly)
+
+### Modifié
+- **Mot de passe** :
+  - Longueur réduite : **14 → 12 caractères** (NIST 2025 standard)
+  - Help text amélioré : "Astuce : Utilisez une phrase facile à retenir" + exemple
+  - Placeholder : "12 caractères minimum"
+
+- **Modèle User** :
+  - `first_name` rendu obligatoire (important pour événements)
+  - `skill_level` obligatoire avec validation inclusion
+  - Callback `after_create :send_welcome_email_and_confirmation`
+  - Méthode `active_for_authentication?` pour permettre accès non confirmé
+
+- **CSS** :
+  - Skill level cards avec styles Bootstrap `.btn-check`
+  - Auth icon wrapper (header moderne)
+  - Focus states WCAG 2.2 (outline 3px)
+  - Compatible mode sombre
+
+- **Controllers** :
+  - `ApplicationController#ensure_email_confirmed` : méthode réutilisable
+  - `EventsController` : exige confirmation pour `attend`
+  - `OrdersController` : exige confirmation pour `create`
+  - `ApplicationController#configure_permitted_parameters` : `first_name` et `skill_level` dans sign_up
+
+### Conformité
+- ✅ **NIST 2025** : Mot de passe 12 caractères (standard actuel)
+- ✅ **WCAG 2.2** : Focus 3px visible, cibles tactiles 44×44px
+- ✅ **RGPD** : Consentement explicite CGU + Politique
+- ✅ **UX** : Formulaire simplifié (4 champs, 1 minute)
+- ✅ **Sécurité** : Confirmation email pour actions critiques
+
+### Fichiers créés
+- `db/migrate/YYYYMMDDHHMMSS_add_skill_level_to_users.rb`
+- `db/migrate/YYYYMMDDHHMMSS_add_confirmable_to_users.rb`
+- `app/mailers/user_mailer.rb`
+- `app/views/user_mailer/welcome_email.html.erb`
+- `app/views/user_mailer/welcome_email.text.erb`
+
+### Fichiers modifiés
+- `app/models/user.rb` (confirmable, skill_level, first_name obligatoire)
+- `app/views/devise/registrations/new.html.erb` (formulaire simplifié 4 champs)
+- `app/controllers/application_controller.rb` (ensure_email_confirmed, sign_up params)
+- `app/controllers/events_controller.rb` (exige confirmation pour attend)
+- `app/controllers/orders_controller.rb` (exige confirmation pour create)
+- `config/initializers/devise.rb` (password_length 12, allow_unconfirmed_access_for)
+- `app/assets/stylesheets/_style.scss` (skill level cards, auth icon wrapper)
+
+### Notes techniques
+- Migration `skill_level` : colonne string avec index
+- Migration `confirmable` : colonnes confirmation_token, confirmed_at, confirmation_sent_at, unconfirmed_email
+- Email bienvenue + confirmation envoyés en parallèle (`deliver_later`)
+- Période de grâce 2 jours : utilisateur peut explorer sans confirmer, mais doit confirmer pour actions critiques
+
 ## [2025-11-21] - Pages légales complètes + Gestion des cookies RGPD 2025
 
 ### Ajouté

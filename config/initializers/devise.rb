@@ -179,7 +179,6 @@ Devise.setup do |config|
 
   # ==> Configuration for :validatable
   # Range for password length.
-  # Conformité sécurité 2025 : Minimum 14 caractères recommandé
   # NIST 2025 standard : 12 caractères minimum (excellent équilibre sécurité/UX)
   config.password_length = 12..128
 

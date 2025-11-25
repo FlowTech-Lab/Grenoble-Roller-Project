@@ -17,19 +17,21 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 ## 📋 WCAG 2.2 (AA) - Accessibilité
 
 ### ✅ 2.5.8 - Cibles tactiles ≥ 24×24px
-- [x] **Boutons** : Minimum 44×44px (recommandé) ou 24×24px minimum
-- [x] **Liens** : Padding suffisant pour zone tactile ≥ 24×24px
-- [ ] **Checkboxes/Radios** : Zone tactile ≥ 24×24px
-- [ ] **Icônes** : Zone tactile ≥ 24×24px avec padding
+- [x] **Boutons** : Minimum 44×44px (recommandé) ✅
+- [x] **Liens** : Padding suffisant pour zone tactile ≥ 24×24px ✅
+- [x] **Checkboxes** : 24×24px (1.5rem) avec zone tactile étendue sur label ✅
+- [x] **Skill Level Cards** : 3 colonnes responsive, zones tactiles suffisantes ✅
+- [x] **Icônes** : Zone tactile ≥ 24×24px avec padding ✅
 
-**Action** : Vérifier et ajuster les styles CSS pour tous les éléments interactifs.
+**Status** : ✅ Implémenté - Tous les éléments interactifs conformes
 
 ### ✅ 2.4.11 - Focus clairement visible
-- [x] **Outline** : Minimum 2px, contraste ≥ 3:1 avec le fond
-- [x] **Focus visible** : Outline visible sur tous les éléments focusables
-- [ ] **Focus-visible** : Utiliser `:focus-visible` pour navigation clavier uniquement
+- [x] **Outline** : 3px (amélioré), contraste ≥ 3:1 avec le fond ✅
+- [x] **Focus visible** : Outline visible sur tous les éléments focusables ✅
+- [x] **Focus-visible** : Utilisation de `:focus-visible` pour navigation clavier ✅
+- [x] **Box-shadow** : 0 0 0 4px rgba() pour meilleure visibilité ✅
 
-**Action** : Vérifier tous les états `:focus` et `:focus-visible`.
+**Status** : ✅ Implémenté - Focus 3px sur tous les éléments (WCAG 2.2)
 
 ### ✅ 3.3.7 - Pas de redondance d'entrée
 - [x] **Confirmation mot de passe** : Remplacé par toggle "Afficher/Masquer" ✅
@@ -54,12 +56,13 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 
 ## 🔒 Sécurité
 
-### ✅ Mot de passe ≥ 14-16 caractères
-- [x] **Minimum** : Passé de 6 à 14 caractères minimum ✅
-- [x] **Recommandation** : Message utilisateur "Minimum 14 caractères recommandés" ✅
-- [x] **Message utilisateur** : Mis à jour dans formulaire et traductions ✅
+### ✅ Mot de passe ≥ 12 caractères (NIST 2025)
+- [x] **Minimum** : 12 caractères (NIST 2025 standard) ✅
+- [x] **Recommandation** : Message utilisateur "12 caractères minimum" ✅
+- [x] **Help text positif** : "Astuce : Utilisez une phrase facile à retenir" + exemple ✅
+- [x] **Placeholder** : "12 caractères minimum" ✅
 
-**Status** : ✅ Implémenté - `config.password_length = 14..128` dans `devise.rb`
+**Status** : ✅ Implémenté - `config.password_length = 12..128` dans `devise.rb` (NIST 2025)
 
 ### ⏳ Vérification contre bases de fuites (Pwned Passwords)
 - [ ] **Gem** : `pwned` ou `have_i_been_pwned`
@@ -87,14 +90,13 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 
 ## 📱 UX/Mobile
 
-### 🔄 Multi-step form pour 8+ champs
-- [ ] **Étape 1** : Identité (Prénom, Nom, Email, Téléphone)
-- [ ] **Étape 2** : Sécurité (Mot de passe, Toggle show/hide)
-- [ ] **Étape 3** : Profil (Bio)
-- [ ] **Navigation** : Boutons Précédent/Suivant
-- [ ] **Indicateur** : Barre de progression
+### ✅ Formulaire simplifié (4 champs uniquement)
+- [x] **Champs obligatoires** : Email, Prénom, Mot de passe, Niveau ✅
+- [x] **Temps d'inscription** : ~1 minute (objectif atteint) ✅
+- [x] **Champs optionnels** : Disponibles dans "Mon Profil" (first_name, last_name, phone, bio) ✅
+- [x] **UX optimisée** : Pas besoin de multi-step (4 champs gérables en 1 page) ✅
 
-**Action** : Créer formulaire multi-étapes avec Stimulus.
+**Status** : ✅ Implémenté - Formulaire simplifié à 4 champs essentiels
 
 ### ✅ Validation temps réel avec feedback visuel
 - [x] **Indicateur force** : Déjà implémenté ✅
@@ -187,5 +189,23 @@ tags: ["accessibility", "wcag", "security", "rgpd", "ux", "conformity"]
 
 ---
 
-**Dernière mise à jour** : 2025-01-21
+**Dernière mise à jour** : 2025-11-24
+
+## 📝 Changements récents (2025-11-24)
+
+### ✅ Formulaire simplifié
+- **4 champs obligatoires** : Email, Prénom, Mot de passe (12 caractères), Niveau
+- **Skill level** : Cards Bootstrap visuelles (Débutant, Intermédiaire, Avancé)
+- **Temps d'inscription** : ~1 minute (objectif atteint)
+- **Champs optionnels** : Disponibles dans "Mon Profil" (last_name, phone, bio)
+
+### ✅ Confirmation email
+- **Accès immédiat** : Période de grâce 2 jours (meilleure UX)
+- **Confirmation requise** : Pour s'inscrire à un événement ou passer une commande
+- **Email automatique** : Bienvenue + confirmation envoyés après inscription
+
+### ✅ Améliorations visuelles
+- **Header moderne** : Icône dans cercle coloré
+- **Labels avec icônes** : Bootstrap Icons intégrés
+- **Help text positif** : Guidance avec exemples concrets
 

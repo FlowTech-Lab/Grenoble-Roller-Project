@@ -16,7 +16,7 @@
           <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { turbo: false }) do |f| %>
             <%= render "devise/shared/error_messages", resource: resource %>
 
-            <!-- Email (avec icône) -->
+            <!-- Email -->
             <div class="mb-3">
               <%= f.label :email, class: "form-label fw-semibold required", for: "user_email" do %>
                 <i class="bi bi-envelope me-1"></i> Email
@@ -28,8 +28,6 @@
                   class: "form-control form-control-liquid form-control-lg #{'is-invalid' if has_error}", 
                   placeholder: "votre@email.com", 
                   required: true,
-                  pattern: "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$",
-                  title: "Veuillez entrer une adresse email valide",
                   style: "font-size: 16px; min-height: 44px;",
                   aria: has_error ? { 
                     required: true,

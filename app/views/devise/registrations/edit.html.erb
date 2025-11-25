@@ -22,30 +22,63 @@
             
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <%= f.label :first_name, "Prénom", class: "form-label" %>
+                <%= f.label :first_name, "Prénom", class: "form-label fw-semibold required" %>
+                <% has_error = resource.errors[:first_name].any? %>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-person"></i></span>
-                  <%= f.text_field :first_name, class: "form-control form-control-liquid", placeholder: "Jean", required: true %>
+                  <%= f.text_field :first_name, 
+                      class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                      placeholder: "Jean", 
+                      required: true,
+                      autocomplete: "given-name",
+                      aria: has_error ? {
+                        required: true,
+                        describedby: "error_first_name",
+                        invalid: true
+                      } : { required: true } %>
                 </div>
+                <% if has_error %>
+                  <div class="invalid-feedback d-block" id="error_first_name">
+                    <%= resource.errors[:first_name].first %>
+                  </div>
+                <% end %>
               </div>
               
               <div class="col-md-6">
                 <%= f.label :last_name, "Nom (optionnel)", class: "form-label" %>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                  <%= f.text_field :last_name, class: "form-control form-control-liquid", placeholder: "Dupont" %>
+                  <%= f.text_field :last_name, 
+                      class: "form-control form-control-liquid", 
+                      placeholder: "Dupont",
+                      autocomplete: "family-name" %>
                 </div>
               </div>
             </div>
 
             <div class="mb-3">
-              <%= f.label :email, "Email", class: "form-label" %>
+              <%= f.label :email, "Email", class: "form-label fw-semibold required" %>
+              <% has_error = resource.errors[:email].any? %>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <%= f.email_field :email, class: "form-control form-control-liquid", placeholder: "votre@email.com", autocomplete: "email" %>
+                <%= f.email_field :email, 
+                    class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                    placeholder: "votre@email.com", 
+                    autocomplete: "email",
+                    required: true,
+                    aria: has_error ? {
+                      required: true,
+                      describedby: "error_email",
+                      invalid: true
+                    } : { required: true } %>
               </div>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_email">
+                  <%= resource.errors[:email].first %>
+                </div>
+              <% end %>
               <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-                <div class="alert alert-liquid-warning rounded-liquid mt-2 mb-0 p-2">
+                <div class="alert alert-liquid-warning rounded-liquid mt-2 mb-0 p-2" role="alert">
                   <i class="bi bi-clock-history me-1"></i>
                   <small>En attente de confirmation pour : <%= resource.unconfirmed_email %></small>
                 </div>
@@ -56,8 +89,56 @@
               <%= f.label :phone, "Téléphone", class: "form-label" %>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78" %>
+                <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78", autocomplete: "tel", inputmode: "tel" %>
               </div>
+            </div>
+
+            <!-- Skill Level -->
+            <div class="mb-4">
+              <%= f.label :skill_level, "Niveau de pratique", class: "form-label fw-semibold" %>
+              <% has_error = resource.errors[:skill_level].any? %>
+              <div class="row g-2">
+                <!-- Débutant -->
+                <div class="col-4">
+                  <%= f.radio_button :skill_level, "beginner", 
+                      class: "btn-check", 
+                      id: "skill_beginner_edit",
+                      autocomplete: "off" %>
+                  <label class="btn btn-outline-primary w-100 py-3 skill-level-btn" for="skill_beginner_edit">
+                    <i class="bi bi-person-plus d-block fs-3 mb-1"></i>
+                    <small class="d-block fw-semibold">Débutant</small>
+                  </label>
+                </div>
+                
+                <!-- Intermédiaire -->
+                <div class="col-4">
+                  <%= f.radio_button :skill_level, "intermediate", 
+                      class: "btn-check", 
+                      id: "skill_intermediate_edit",
+                      autocomplete: "off" %>
+                  <label class="btn btn-outline-primary w-100 py-3 skill-level-btn" for="skill_intermediate_edit">
+                    <i class="bi bi-person-check d-block fs-3 mb-1"></i>
+                    <small class="d-block fw-semibold">Intermédiaire</small>
+                  </label>
+                </div>
+                
+                <!-- Avancé -->
+                <div class="col-4">
+                  <%= f.radio_button :skill_level, "advanced", 
+                      class: "btn-check", 
+                      id: "skill_advanced_edit",
+                      autocomplete: "off" %>
+                  <label class="btn btn-outline-primary w-100 py-3 skill-level-btn" for="skill_advanced_edit">
+                    <i class="bi bi-trophy d-block fs-3 mb-1"></i>
+                    <small class="d-block fw-semibold">Avancé</small>
+                  </label>
+                </div>
+              </div>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_skill_level">
+                  <%= resource.errors[:skill_level].first %>
+                </div>
+              <% end %>
             </div>
 
             <div class="mb-4">

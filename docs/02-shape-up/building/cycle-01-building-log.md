@@ -692,6 +692,14 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 - [✅] Documentation complète mise à jour (README, setup guides, architecture)
 - [✅] Credentials Rails configurés et régénérés
 
+#### Simplification formulaire inscription + Confirmation email (2025-11-24)
+- [✅] **Formulaire simplifié** : 4 champs uniquement (Email, Prénom, Mot de passe 12 caractères, Niveau)
+- [✅] **Skill level** : Cards Bootstrap visuelles (Débutant, Intermédiaire, Avancé)
+- [✅] **Confirmation email** : Accès immédiat + confirmation requise pour actions critiques
+- [✅] **Email de bienvenue** : UserMailer avec template HTML responsive
+- [✅] **Améliorations UX** : Header moderne, labels avec icônes, help text positif
+- [✅] **Conformité** : NIST 2025 (12 caractères), WCAG 2.2 (focus 3px, cibles tactiles)
+
 #### Pages légales & Conformité RGPD (2025-11-21)
 - [✅] **Pages légales complètes** :
   - [✅] Mentions Légales (`/mentions-legales`) - Conforme LCEN

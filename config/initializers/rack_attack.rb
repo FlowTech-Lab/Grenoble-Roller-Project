@@ -45,9 +45,22 @@ if Rails.env.development?
 end
 
 # === CUSTOM RESPONSE ===
-Rack::Attack.throttled_responder = lambda do |env|
-  match_data = env['rack.attack.match_data']
-  retry_after = match_data ? match_data[:period] : 60
+Rack::Attack.throttled_responder = lambda do |request|
+  # Accéder à match_data depuis l'environnement Rack
+  match_data = request.env['rack.attack.match_data']
+  
+  # Extraire la période (retry_after) - valeur par défaut 60 secondes
+  retry_after = 60
+  if match_data
+    # Essayer différentes méthodes d'accès selon le type d'objet
+    if match_data.is_a?(Hash)
+      retry_after = match_data[:period] || match_data['period'] || 60
+    elsif match_data.respond_to?(:period)
+      retry_after = match_data.period
+    elsif match_data.respond_to?(:[])
+      retry_after = match_data[:period] || 60
+    end
+  end
   
   [
     429,

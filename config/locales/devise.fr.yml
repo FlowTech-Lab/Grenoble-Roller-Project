@@ -64,7 +64,7 @@ fr:
       not_saved:
         one: "1 erreur a empêché cet %{resource} d'être enregistré :"
         other: "%{count} erreurs ont empêché cet %{resource} d'être enregistré :"
-      password_too_short: "est trop court (minimum %{count} caractères recommandés pour une meilleure sécurité)"
+      password_too_short: "est trop court (minimum %{count} caractères)"
       password_too_long: "est trop long (maximum %{count} caractères)"
       password_blank: "ne peut pas être vide"
       password_confirmation: "ne correspond pas au mot de passe"
@@ -73,4 +73,22 @@ fr:
       email_blank: "ne peut pas être vide"
       current_password_invalid: "n'est pas valide"
       current_password_blank: "ne peut pas être vide"
+  
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              taken: "a déjà été utilisé"
+              invalid: "n'est pas valide"
+              blank: "ne peut pas être vide"
+            first_name:
+              blank: "doit être rempli(e)"
+            skill_level:
+              blank: "doit être sélectionné"
+              inclusion: "n'est pas valide"
+            password:
+              too_short: "est trop court (minimum 12 caractères)"
+              blank: "ne peut pas être vide"
 

@@ -52,8 +52,11 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
   - Création/édition réservées aux rôles `ORGANIZER+` (Pundit)
 
 ### Authentification (Devise)
-- `devise_for :users, controllers: { passwords: 'passwords' }`
+- `devise_for :users, controllers: { registrations: 'registrations', sessions: 'sessions', passwords: 'passwords' }`
   - routes standard: `/users/sign_in`, `/users/sign_out`, `/users/password`, etc.
+  - Inscription simplifiée : 4 champs (Email, Prénom, Mot de passe 12 caractères, Niveau)
+  - Confirmation email : Accès immédiat, confirmation requise pour actions critiques
+  - Email de bienvenue : Envoyé automatiquement après inscription
 
 ### Pages légales
 - `GET /mentions-legales` → `legal_pages#mentions_legales`
