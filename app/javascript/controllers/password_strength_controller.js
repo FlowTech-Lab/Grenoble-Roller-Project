@@ -83,14 +83,17 @@ export default class extends Controller {
     const feedback = this.getFeedbackText(strength, password)
     
     if (feedback.text) {
+      // Afficher le conteneur de feedback
+      this.feedbackTarget.style.display = "block"
+      
+      // Mettre à jour le texte de force
       if (this.hasStrengthTextTarget) {
         this.strengthTextTarget.textContent = feedback.text
-        this.strengthTextTarget.className = `password-strength-text ${feedback.class}`
+        this.strengthTextTarget.className = feedback.class
       } else {
         // Fallback : mettre le texte directement dans feedback
         this.feedbackTarget.innerHTML = `<span class="${feedback.class}">${feedback.text}</span>`
       }
-      this.feedbackTarget.style.display = "block"
     } else {
       this.feedbackTarget.style.display = "none"
     }

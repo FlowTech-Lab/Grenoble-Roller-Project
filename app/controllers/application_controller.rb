@@ -17,14 +17,18 @@ class ApplicationController < ActionController::Base
       :role_id
     ])
     
-    # Permet ces champs lors de la modification du profil (champs optionnels)
+    # Permet ces champs lors de la modification du profil
     devise_parameter_sanitizer.permit(:account_update, keys: [
       :first_name, 
       :last_name, 
       :bio, 
       :phone, 
       :avatar_url,
-      :skill_level
+      :skill_level,
+      :email,
+      :password,
+      :password_confirmation,
+      :current_password  # OBLIGATOIRE pour toute modification
     ])
   end
 

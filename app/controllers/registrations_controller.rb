@@ -49,5 +49,24 @@ class RegistrationsController < Devise::RegistrationsController
   def after_update_path_for(_resource)
     edit_user_registration_path
   end
+  
+  # Override update_resource pour gérer le changement de mot de passe optionnel
+  def update_resource(resource, params)
+    # Si password et password_confirmation sont vides, mise à jour sans changer le mot de passe
+    if params[:password].blank? && params[:password_confirmation].blank?
+      # Vérifier quand même current_password pour la sécurité
+      unless resource.valid_password?(params[:current_password])
+        resource.errors.add(:current_password, "est incorrect")
+        return false
+      end
+      
+      # Supprimer current_password de params (update_without_password ne l'accepte pas)
+      params.delete(:current_password)
+      resource.update_without_password(params.except(:password, :password_confirmation))
+    else
+      # Si l'utilisateur veut changer le mot de passe, vérifier current_password via update_with_password
+      resource.update_with_password(params)
+    end
+  end
 end
 

@@ -141,60 +141,162 @@
               <% end %>
             </div>
 
-            <div class="mb-4">
-              <%= f.label :bio, "Biographie", class: "form-label" %>
+            <div class="mb-0">
+              <%= f.label :bio, "Biographie (optionnel)", class: "form-label" %>
               <%= f.text_area :bio, rows: 4, class: "form-control form-control-liquid", placeholder: "Parlez-nous de vous, de votre passion pour le roller..." %>
               <small class="form-text text-muted">
                 <i class="bi bi-info-circle me-1"></i>
                 Présentez-vous brièvement à la communauté
               </small>
             </div>
+          </div>
+        </div>
 
-            <!-- Confirmation -->
-            <h3 class="h5 text-liquid-primary mb-4 mt-4 pt-3 border-top">
+        <!-- Modifier le mot de passe (INTÉGRÉ ICI) -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 text-liquid-primary mb-3">
+              <i class="bi bi-shield-lock me-2"></i>Modifier le mot de passe
+            </h3>
+            <p class="text-muted small mb-3">
+              Laissez ces champs vides si vous ne souhaitez pas modifier votre mot de passe.
+            </p>
+            
+            <!-- Nouveau mot de passe -->
+            <div class="mb-3" data-controller="password-toggle password-strength">
+              <%= f.label :password, "Nouveau mot de passe (laisser vide si inchangé)", class: "form-label" %>
+              <% has_error = resource.errors[:password].any? %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                <%= f.password_field :password, 
+                    autocomplete: "new-password", 
+                    class: "form-control form-control-liquid #{'is-invalid' if has_error}",
+                    minlength: "12",
+                    placeholder: "12 caractères minimum",
+                    data: { 
+                      password_toggle_target: "input",
+                      password_strength_target: "input"
+                    },
+                    aria: { describedby: "password_help_edit" } %>
+                <button type="button" 
+                        class="btn btn-outline-secondary password-toggle-btn" 
+                        data-action="click->password-toggle#toggle"
+                        data-password-toggle-target="toggle"
+                        aria-label="Afficher le mot de passe"
+                        aria-pressed="false"
+                        title="Afficher le mot de passe"
+                        style="min-height: 44px; min-width: 44px;">
+                  <i class="bi bi-eye" data-password-toggle-target="icon"></i>
+                  <span class="visually-hidden" data-password-toggle-target="label">Afficher</span>
+                </button>
+              </div>
+              
+              <!-- Indicateur de force du mot de passe -->
+              <div class="password-strength-container d-none mt-2" id="password_strength_feedback_edit">
+                <div class="password-strength-bar">
+                  <div class="password-strength-meter" 
+                       data-password-strength-target="meter"></div>
+                </div>
+                <div class="password-strength-feedback mt-1 small" 
+                     data-password-strength-target="feedback"
+                     role="status"
+                     aria-live="polite">
+                  <span data-password-strength-target="strengthText"></span>
+                </div>
+              </div>
+              
+              <div class="form-text" id="password_help_edit">
+                <i class="bi bi-lightbulb text-warning me-1"></i>
+                <strong>Astuce :</strong> Utilisez une phrase facile à retenir
+                <br>
+                <span class="text-muted small">Exemple : café-roller-grenoble</span>
+              </div>
+              
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_password">
+                  <%= resource.errors[:password].first %>
+                </div>
+              <% end %>
+            </div>
+            
+            <!-- Confirmer nouveau mot de passe -->
+            <div class="mb-0" data-controller="password-toggle">
+              <%= f.label :password_confirmation, "Confirmer le nouveau mot de passe", class: "form-label" %>
+              <% has_error = resource.errors[:password_confirmation].any? %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
+                <%= f.password_field :password_confirmation, 
+                    autocomplete: "new-password", 
+                    class: "form-control form-control-liquid #{'is-invalid' if has_error}",
+                    placeholder: "Resaisissez le nouveau mot de passe",
+                    data: { password_toggle_target: "input" } %>
+                <button type="button" 
+                        class="btn btn-outline-secondary password-toggle-btn" 
+                        data-action="click->password-toggle#toggle"
+                        data-password-toggle-target="toggle"
+                        aria-label="Afficher le mot de passe"
+                        aria-pressed="false"
+                        title="Afficher le mot de passe"
+                        style="min-height: 44px; min-width: 44px;">
+                  <i class="bi bi-eye" data-password-toggle-target="icon"></i>
+                  <span class="visually-hidden" data-password-toggle-target="label">Afficher</span>
+                </button>
+              </div>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_password_confirmation">
+                  <%= resource.errors[:password_confirmation].first %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirmation (current_password) -->
+        <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 text-liquid-primary mb-3">
               <i class="bi bi-shield-check me-2"></i>Confirmation
             </h3>
             
-            <div class="mb-4">
-              <%= f.label :current_password, "Mot de passe actuel", class: "form-label" %>
-              <div class="d-flex flex-wrap align-items-end gap-2">
-                <div class="flex-grow-1" style="min-width: 200px;">
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-key"></i></span>
-                    <%= f.password_field :current_password, class: "form-control form-control-liquid", placeholder: "••••••••", autocomplete: "current-password", required: true %>
-                  </div>
-                </div>
-                <div class="d-flex gap-2">
-                  <%= link_to :back, class: "btn btn-outline-primary" do %>
-                    <i class="bi bi-arrow-left me-1"></i>Retour
-                  <% end %>
-                  <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary" %>
-                </div>
+            <div class="mb-3">
+              <%= f.label :current_password, "Mot de passe actuel (requis pour toute modification)", class: "form-label fw-semibold required" %>
+              <% has_error = resource.errors[:current_password].any? %>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                <%= f.password_field :current_password, 
+                    class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                    placeholder: "••••••••", 
+                    autocomplete: "current-password", 
+                    required: true,
+                    aria: has_error ? {
+                      required: true,
+                      describedby: "current_password_help error_current_password",
+                      invalid: true
+                    } : {
+                      required: true,
+                      describedby: "current_password_help"
+                    } %>
               </div>
+              <small class="form-text text-muted" id="current_password_help">
+                <i class="bi bi-info-circle me-1"></i>
+                Pour votre sécurité, nous avons besoin de votre mot de passe actuel pour confirmer vos modifications.
+              </small>
+              <% if has_error %>
+                <div class="invalid-feedback d-block" id="error_current_password">
+                  <%= resource.errors[:current_password].first %>
+                </div>
+              <% end %>
             </div>
             
-            <div class="alert alert-liquid-warning rounded-liquid mb-0">
-              <i class="bi bi-info-circle me-2"></i>
-              <strong>Pour votre sécurité</strong>, nous avons besoin de votre mot de passe actuel pour confirmer vos modifications.
+            <div class="d-flex gap-2">
+              <%= link_to :back, class: "btn btn-outline-secondary" do %>
+                <i class="bi bi-arrow-left me-1"></i>Retour
+              <% end %>
+              <%= f.submit "Mettre à jour mon profil", class: "btn btn-liquid-primary" %>
             </div>
           </div>
         </div>
       <% end %>
-
-      <!-- Changer le mot de passe -->
-      <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
-        <div class="card-body p-4">
-          <h3 class="h5 text-liquid-primary mb-3">
-            <i class="bi bi-shield-lock me-2"></i>Modifier le mot de passe
-          </h3>
-          <p class="text-muted mb-3">
-            Vous souhaitez changer votre mot de passe ? Utilisez le lien ci-dessous pour accéder à la page de modification.
-          </p>
-          <%= link_to edit_user_password_path, class: "btn btn-outline-primary" do %>
-            <i class="bi bi-shield-lock me-2"></i>Changer mon mot de passe
-          <% end %>
-        </div>
-      </div>
 
       <!-- Supprimer le compte -->
       <div class="card card-liquid rounded-liquid shadow-liquid">
