@@ -239,53 +239,92 @@ class HelloassoService
 
     # ---- Lecture / mise à jour des paiements (polling Phase 2) -----------------
 
-    # Récupère les informations d'un checkout-intent HelloAsso et met à jour
-    # le Payment et l'Order associés.
-    #
-    # D'après la doc HelloAsso, l'endpoint
-    #   GET /v5/organizations/{slug}/checkout-intents/{checkoutIntentId}
-    # renvoie un champ `order` uniquement si le paiement a bien abouti.
-    #
-    # Pour l'instant on part sur une logique simple :
-    # - order présent  → paiement OK → Payment.succeeded + Order.paid
-    # - order absent   → on considère que c'est encore en attente
-    #
-    # (Les cas de refus / abandon seront raffinés plus tard si la doc expose
-    #  un état plus précis côté checkout-intent.)
+    # Récupère l'état d'un paiement HelloAsso et met à jour le Payment et l'Order associés.
+    # Utilise l'endpoint GET /v5/organizations/{slug}/checkout-intents/{checkoutIntentId}
+    # Si un order est présent dans le checkout-intent, on peut récupérer son état
     def fetch_and_update_payment(payment)
-      intent = fetch_checkout_intent(payment.provider_payment_id)
-
-      has_order = intent.key?("order") && intent["order"].present?
-      Rails.logger.info(
-        "[HelloassoService] fetch_and_update_payment ##{payment.id} " \
-        "checkoutIntentId=#{payment.provider_payment_id} has_order=#{has_order}"
-      )
-
-      order = payment.orders.first
-
-      if has_order
-        # Paiement confirmé
-        payment.update!(status: "succeeded")
-        order&.update!(status: "paid")
-      else
-        # Si aucun order associé après le délai HelloAsso (~45 minutes),
-        # on considère le paiement comme abandonné / non finalisé.
-        if payment.created_at < 45.minutes.ago
-          payment.update!(status: "abandoned")
-          order&.update!(status: "failed")
-          Rails.logger.info(
-            "[HelloassoService] CheckoutIntent ##{payment.provider_payment_id} " \
-            "considéré comme abandonné (aucune commande créée après 45 minutes)."
-          )
-        else
-          Rails.logger.warn(
-            "[HelloassoService] CheckoutIntent ##{payment.provider_payment_id} " \
-            "sans commande associée (encore en attente)."
-          )
+      # provider_payment_id contient l'ID du checkout-intent
+      checkout_intent_id = payment.provider_payment_id
+      
+      # 1. Récupérer le checkout-intent
+      intent = fetch_checkout_intent(checkout_intent_id)
+      
+      # 2. Si un order est présent, récupérer son état via /orders/{orderId}
+      state = nil
+      if intent.key?("order") && intent["order"].present?
+        order_id = intent.dig("order", "id") || intent.dig("order", "orderId")
+        
+        if order_id
+          begin
+            order_data = fetch_helloasso_order(order_id)
+            state = order_data['state'] if order_data
+          rescue StandardError => e
+            Rails.logger.warn(
+              "[HelloassoService] Failed to fetch order #{order_id}, " \
+              "using checkout-intent status: #{e.message}"
+            )
+          end
         end
       end
 
+      # 3. Déterminer le nouveau statut
+      new_status = if state
+                     case state
+                     when 'Confirmed' then 'succeeded'
+                     when 'Refused' then 'failed'
+                     when 'Refunded' then 'refunded'
+                     else 'pending'
+                     end
+                   elsif intent.key?("order") && intent["order"].present?
+                     # Order présent mais pas de state → considérer comme confirmé
+                     'succeeded'
+                   else
+                     # Pas d'order → encore en attente ou abandonné
+                     payment.created_at < 45.minutes.ago ? 'abandoned' : 'pending'
+                   end
+
+      return payment if new_status == payment.status
+
+      # 4. Mettre à jour le paiement
+      payment.update!(status: new_status)
+
+      # 5. Mettre à jour les commandes associées
+      order_status = case new_status
+                     when 'succeeded' then 'paid'
+                     when 'failed', 'refunded', 'abandoned' then 'failed'
+                     else 'pending'
+                     end
+
+      payment.orders.each { |order| order.update!(status: order_status) }
+
+      Rails.logger.info(
+        "[HelloassoService] Payment ##{payment.id} updated to #{new_status}. " \
+        "Orders: #{payment.orders.pluck(:id).join(', ')}"
+      )
+
       payment
+    end
+
+    # Récupère l'état d'une commande HelloAsso via l'endpoint /orders/{orderId}
+    def fetch_helloasso_order(order_id)
+      uri = URI.parse(
+        "#{api_base_url}/organizations/#{organization_slug}/orders/#{order_id}"
+      )
+
+      request = Net::HTTP::Get.new(uri)
+      request["Authorization"] = "Bearer #{access_token}"
+      request["accept"] = "application/json"
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == "https")
+
+      response = http.request(request)
+
+      unless response.is_a?(Net::HTTPSuccess)
+        raise "HelloAsso order fetch error (#{response.code}): #{response.body}"
+      end
+
+      JSON.parse(response.body)
     end
 
     private

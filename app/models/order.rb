@@ -3,8 +3,19 @@ class Order < ApplicationRecord
   belongs_to :payment, optional: true  # Optionnel pour l'instant, sera requis avec HelloAsso
   has_many :order_items, dependent: :destroy
 
-  # Callbacks pour gérer le stock
+  # Statuts possibles pour les commandes
+  # pending: En attente de paiement
+  # paid: Payée
+  # preparation: En préparation
+  # shipped: Expédiée
+  # cancelled: Annulée
+  # refund_requested: Demande de remboursement en cours
+  # refunded: Remboursée
+  # failed: Échouée (paiement refusé)
+
+  # Callbacks pour gérer le stock et les notifications
   after_update :restore_stock_if_canceled, if: :saved_change_to_status?
+  after_update :notify_status_change, if: :saved_change_to_status?
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[id user_id payment_id status total_cents currency created_at updated_at]
@@ -37,6 +48,30 @@ class Order < ApplicationRecord
         # Le stock est géré uniquement au niveau des variantes
         variant.increment!(:stock_qty, item.quantity)
       end
+    end
+  end
+
+  # Envoie un email de notification lors d'un changement de statut
+  def notify_status_change
+    previous_status = attribute_was(:status) || status_before_last_save
+    current_status = status
+
+    # Ne pas envoyer d'email si c'est la création initiale (pas de previous_status)
+    return unless previous_status.present? && previous_status != current_status
+
+    case current_status
+    when "paid", "payé"
+      OrderMailer.order_paid(self).deliver_later
+    when "cancelled", "annulé"
+      OrderMailer.order_cancelled(self).deliver_later
+    when "preparation", "en préparation", "preparing"
+      OrderMailer.order_preparation(self).deliver_later
+    when "shipped", "envoyé", "expédié"
+      OrderMailer.order_shipped(self).deliver_later
+    when "refund_requested", "remboursement_demandé"
+      OrderMailer.refund_requested(self).deliver_later
+    when "refunded", "remboursé"
+      OrderMailer.refund_confirmed(self).deliver_later
     end
   end
 end

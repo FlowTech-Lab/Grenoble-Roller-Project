@@ -45,6 +45,9 @@ class OrdersController < ApplicationController
         currency: "EUR"
       )
 
+      # Envoyer l'email de confirmation de commande (après création)
+      OrderMailer.order_confirmation(order).deliver_later
+
       cart_items.each do |ci|
         variant = ci[:variant]
         OrderItem.create!(
@@ -107,7 +110,32 @@ class OrdersController < ApplicationController
   end
 
   def show
-    @order = current_user.orders.includes(order_items: { variant: :product }).find(params[:id])
+    @order = current_user.orders.includes(:payment, order_items: { variant: :product }).find(params[:id])
+  end
+
+  def check_payment
+    @order = current_user.orders.includes(:payment).find(params[:id])
+
+    if @order.payment&.provider == "helloasso"
+      HelloassoService.fetch_and_update_payment(@order.payment)
+      @order.reload
+      redirect_to order_path(@order), notice: "✅ Vérification du paiement effectuée"
+    else
+      redirect_to order_path(@order), alert: "Aucun paiement associé à cette commande."
+    end
+  end
+
+  def payment_status
+    @order = current_user.orders.includes(:payment).find(params[:id])
+    
+    # Si le paiement est pending et HelloAsso, faire un check réel
+    if @order.payment&.provider == "helloasso" && @order.payment.status == "pending"
+      HelloassoService.fetch_and_update_payment(@order.payment)
+      @order.reload
+      @order.payment.reload
+    end
+    
+    render json: { status: @order.payment&.status || 'unknown' }
   end
 
   def pay
@@ -115,11 +143,22 @@ class OrdersController < ApplicationController
 
     payment = @order.payment
 
+    # CHECK OBLIGATOIRE : Vérifier le statut réel avec HelloAsso AVANT de créer un nouveau checkout-intent
+    if payment&.provider == "helloasso" && payment.status == "pending"
+      HelloassoService.fetch_and_update_payment(payment)
+      @order.reload
+      payment.reload
+    end
+
+    # Vérifier les conditions APRÈS le check
     unless @order.status&.downcase == "pending" &&
            payment&.provider == "helloasso" &&
            payment.status == "pending"
-      return redirect_to order_path(@order),
-                         alert: "Cette commande ne peut pas être payée via HelloAsso."
+      # Si déjà payé ou autre statut, rediriger vers la liste des commandes à jour
+      redirect_to orders_path,
+                  notice: "Le statut de cette commande a été mis à jour. " \
+                          "Statut actuel : #{@order.status} / #{payment&.status}"
+      return
     end
 
     # Créer un nouveau checkout-intent (plus fiable que de réutiliser l'ancien qui peut expirer)
@@ -157,11 +196,24 @@ class OrdersController < ApplicationController
   end
 
   def cancel
-    @order = current_user.orders.includes(order_items: :variant).find(params[:id])
+    @order = current_user.orders.includes(:payment, order_items: :variant).find(params[:id])
+
+    # CHECK OBLIGATOIRE : Si la commande est payée via HelloAsso, vérifier le statut réel
+    if @order.payment&.provider == "helloasso" && @order.payment.status != "pending"
+      HelloassoService.fetch_and_update_payment(@order.payment)
+      @order.reload
+    end
 
     # Vérifier que la commande peut être annulée
     unless [ "pending", "en attente", "preparation", "en préparation", "preparing" ].include?(@order.status.downcase)
-      redirect_to order_path(@order), alert: "Cette commande ne peut pas être annulée."
+      if @order.status.downcase == "paid" || @order.status.downcase == "payé"
+        redirect_to order_path(@order),
+                    alert: "Cette commande est déjà payée. " \
+                           "Pour un remboursement, veuillez contacter l'association. " \
+                           "Le remboursement sera effectué manuellement."
+      else
+        redirect_to order_path(@order), alert: "Cette commande ne peut pas être annulée."
+      end
       return
     end
 
