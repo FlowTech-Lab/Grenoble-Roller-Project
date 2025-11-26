@@ -1,9 +1,9 @@
 ---
 title: "Synthèse Quick Wins & Intégration Hello Asso"
 status: "active"
-version: "1.1"
+version: "1.2"
 created: "2025-01-20"
-updated: "2025-01-20"
+updated: "2025-11-26"
 tags: ["product", "quick-wins", "helloasso", "boutique", "paiement"]
 ---
 
@@ -105,134 +105,175 @@ tags: ["product", "quick-wins", "helloasso", "boutique", "paiement"]
 
 ## 🛒 ÉTAT ACTUEL - INTÉGRATION HELLO ASSO
 
-### ✅ **Ce qui est déjà en place**
+### ✅ **Phase 0 – Fondations & Authentification**
 
-#### 1. **Structure Base de Données**
-- ✅ Table `payments` créée avec colonne `provider` (stripe, helloasso, free)
-- ✅ Modèle `Payment` avec associations (`has_many :orders`, `has_many :attendances`)
-- ✅ Modèle `Order` avec `belongs_to :payment, optional: true` (prêt pour Hello Asso)
-- ✅ Migration `20251104110828_create_payments.rb` appliquée
+- ✅ **Structure base de données**
+  - Table `payments` avec `provider`, `provider_payment_id`, `amount_cents`, `currency`, `status`
+  - Modèle `Payment` (`has_many :orders`, `has_many :attendances`)
+  - Modèle `Order` avec `belongs_to :payment, optional: true`
+- ✅ **Credentials Rails**
+  - Section `helloasso` dans `credentials.yml.enc` :
+    - `client_id`, `client_secret`, `organization_slug`, `environment: "sandbox"`
+- ✅ **Service HelloAsso de base**
+  - `HelloassoService` :
+    - Gestion OAuth2 `client_credentials` (sandbox / production)
+    - Helpers `sandbox?`, `production?`, `client_id`, `client_secret`, `organization_slug`
 
-#### 2. **Interface Utilisateur**
-- ✅ Page checkout (`app/views/orders/new.html.erb`) avec :
-  - Bouton "Payer Via HelloAsso*"
-  - Section don (2€, 3€, 5€, montant personnalisé)
-  - Info box HelloAsso expliquant le service
-  - Calcul dynamique du total avec don (JavaScript)
-- ✅ Styles CSS pour `.helloasso-info` (mode clair/sombre)
+### ✅ **Phase 1 – Checkout HelloAsso (MVP fonctionnel)**
 
-#### 3. **Contrôleur Orders**
-- ✅ `OrdersController#create` crée la commande avec statut "pending"
-- ✅ Gestion du stock (déduction automatique)
-- ✅ Validation du stock avant création
-- ⚠️ **MANQUE** : Intégration Hello Asso après création de la commande
-
-#### 4. **Pages Légales**
-- ✅ CGV mentionnent HelloAsso comme mode de paiement
-- ✅ Politique de confidentialité mentionne HelloAsso comme sous-traitant
-- ✅ Mentions légales conformes
-
-#### 5. **Documentation**
-- ✅ Guide technique (`docs/02-shape-up/technical-implementation-guide.md`) avec exemple de service HelloAsso
-- ✅ Credentials Rails configurés (structure prête pour `helloasso_token`)
+- ✅ **Initialisation checkout-intents HelloAsso**
+  - `HelloassoService.build_checkout_intent_payload(order, ...)`
+  - `HelloassoService.create_checkout_intent(order, ...)` → retourne `id` + `redirectUrl`
+- ✅ **Flux de création commande**
+  - `OrdersController#create` :
+    - Vérifie le stock et crée `Order` en `status: "pending"`
+    - Crée les `OrderItem` + déduit le stock
+    - Vide le panier `session[:cart]`
+    - Appelle `HelloassoService.create_checkout_intent`
+    - Crée un `Payment` :
+      - `provider: "helloasso"`
+      - `provider_payment_id: <id checkout-intent>`
+      - `status: "pending"`
+    - Lie la commande au paiement (`order.update!(payment: payment)`)
+    - Redirige vers `redirectUrl` HelloAsso (`allow_other_host: true`)
+- ✅ **UX & sécurité**
+  - Bouton checkout désactive Turbo (`data-turbo="false"`) pour éviter les problèmes CORS
+  - Annulation commande (`OrdersController#cancel`) :
+    - Remet le stock
+    - Passe `order.status` à `"cancelled"`
+    - Message utilisateur neutre ("Commande annulée avec succès.")
+- ✅ **Pages légales**
+  - CGV / Confidentialité / Mentions légales à jour avec HelloAsso
 
 ---
 
-### ❌ **Ce qui manque pour finaliser l'intégration**
+## 🔄 FLUX COMPLET (État actuel + À venir)
 
-#### 1. **Service Hello Asso** ⚠️ **CRITIQUE**
-- ❌ Pas de service `HelloassoService` créé
-- ❌ Pas d'intégration API Hello Asso
-- ❌ Pas de gestion des webhooks Hello Asso
+### ✅ Phase 1 – Implémenté
 
-**Fichier à créer** : `app/services/helloasso_service.rb`
+```text
+Utilisateur → Panier → Page Checkout
+          ↓
+   POST /orders (OrdersController#create)
+          ↓
+ Order(pending) + Payment(pending: helloasso)
+          ↓
+ HelloassoService.create_checkout_intent
+          ↓
+  redirectUrl HelloAsso
+          ↓
+ Navigateur → https://www.helloasso-sandbox.com/... (checkout)
+          ↓
+ Utilisateur paie (ou annule) sur HelloAsso
+          ↓
+ Retour vers l'app (backUrl / returnUrl)
 
-**Structure attendue** (basée sur la doc technique) :
-```ruby
-# app/services/helloasso_service.rb
-class HelloassoService
-  include HTTParty
-  base_uri 'https://api.helloasso.com/v5'
-  
-  def initialize
-    @headers = {
-      'Authorization' => "Bearer #{Rails.application.credentials.dig(:helloasso, :token)}",
-      'Content-Type' => 'application/json'
-    }
-  end
-  
-  def create_order(order_data)
-    # Créer une commande Hello Asso
-  end
-  
-  def get_order_status(order_id)
-    # Récupérer le statut d'une commande
-  end
-end
+ÉTAT ACTUEL : Order & Payment restent `pending` après paiement.
+La validation se fait côté HelloAsso uniquement (back-office).
 ```
 
-#### 2. **Modification OrdersController#create** ⚠️ **CRITIQUE**
-- ❌ Pas de création de `Payment` après création de `Order`
-- ❌ Pas de redirection vers Hello Asso
-- ❌ Pas de gestion du don dans la commande
+### 🔜 Phase 2 – Polling (lecture API HelloAsso)
 
-**Actions à ajouter** :
-1. Récupérer le montant du don depuis les paramètres
-2. Créer un `Payment` avec `provider: 'helloasso'`
-3. Créer la commande Hello Asso via `HelloassoService`
-4. Rediriger vers l'URL de paiement Hello Asso
-5. Stocker l'ID de commande Hello Asso dans `Payment.external_id`
-
-#### 3. **Webhooks Hello Asso** ⚠️ **CRITIQUE**
-- ❌ Pas de contrôleur webhook
-- ❌ Pas de gestion des notifications Hello Asso (paiement réussi, échoué, annulé)
-
-**Fichier à créer** : `app/controllers/webhooks/helloasso_controller.rb`
-
-**Actions à gérer** :
-- `payment.succeeded` → Mettre `Order.status = 'paid'`, `Payment.status = 'completed'`
-- `payment.failed` → Mettre `Order.status = 'failed'`, restaurer le stock
-- `payment.cancelled` → Mettre `Order.status = 'cancelled'`, restaurer le stock
-
-#### 4. **Routes Webhooks**
-- ❌ Pas de route pour recevoir les webhooks Hello Asso
-
-**Route à ajouter** : `config/routes.rb`
-```ruby
-namespace :webhooks do
-  post 'helloasso', to: 'helloasso#webhook'
-end
+```text
+Tâche (cron / Rake) helloasso:check_payments
+          ↓
+ Payment.pending (provider: "helloasso")
+          ↓
+ HelloassoService.fetch_and_update_payment(payment)
+          ↓
+ GET /v5/organizations/{slug}/orders/{id} ou /payments/{id}
+          ↓
+ state: "Confirmed" → Payment.paid + Order.paid
+ state: "Refused"/"Cancelled" → Payment.failed + Order.failed
+ state: "Pending" → on réessaie plus tard
 ```
 
-#### 5. **Gestion du Don**
-- ⚠️ Le don est calculé côté client (JavaScript) mais pas envoyé au serveur
-- ❌ Pas de colonne `donation_cents` dans `Order`
-- ❌ Pas de stockage du don dans la commande
+### 🔮 Phase 3 – Webhooks (temps réel)
 
-**Migration à créer** :
-```ruby
-add_column :orders, :donation_cents, :integer, default: 0
+```text
+HelloAsso → POST /webhooks/helloasso
+          ↓
+ HelloassoWebhooksController#handle
+          ↓
+ Vérification signature + idempotence
+          ↓
+ Mise à jour Payment + Order (paid / failed / cancelled)
+          ↓
+ (Optionnel) Notifications / emails / logs
 ```
 
-#### 6. **Credentials Rails**
-- ❌ `helloasso_token` pas encore ajouté aux credentials
+---
 
-**Commande à exécuter** :
-```bash
-bin/rails credentials:edit
-# Ajouter :
-# helloasso:
-#   token: "votre_token_helloasso"
-```
+### ⏳ **Phase 2 – Suivi Paiement (Polling)** (à implémenter)
 
-#### 7. **Page de Confirmation**
-- ❌ Pas de page de retour après paiement Hello Asso
-- ❌ Pas de gestion du retour utilisateur (succès/échec)
+Objectif : passer les commandes de `pending` → `paid` / `failed` en lisant l'API HelloAsso.
 
-**Route à ajouter** :
-```ruby
-get 'orders/:id/confirm', to: 'orders#confirm', as: 'confirm_order'
-```
+- 🔜 **Modèle `Payment`**
+  - Ajouter éventuellement un `enum` `status` (`pending`, `paid`, `failed`, `cancelled`, `expired`)
+  - Méthode de classe :
+    - `Payment.check_and_update_helloasso_orders` :
+      - Boucle sur les paiements `helloasso` `pending` récents
+      - Appelle `HelloassoService.fetch_and_update_payment(payment)`
+- 🔜 **Service HelloAsso**
+  - `HelloassoService.fetch_order_status(provider_payment_id)` ou équivalent
+  - Met à jour :
+    - `payment.status` (`paid`, `failed`, ...)
+    - `order.status` (`paid`, `failed`, ...)
+- 🔜 **Infrastructure**
+  - Tâche Rake `helloasso:check_payments` (lançable manuellement ou via cron)
+  - Optionnel : page de confirmation avec polling JS sur le statut du paiement
+
+#### ✅ Pré‑conditions avant Phase 2
+
+- [ ] Flux sandbox complet validé :
+  - [ ] Création commande → checkout-intent généré
+  - [ ] Redirection vers HelloAsso OK
+  - [ ] Retour vers l'app après paiement OK
+  - [ ] `Payment.provider_payment_id` correspond bien à l'id HelloAsso
+- [ ] API HelloAsso confirmée :
+  - [ ] Endpoint GET de lecture (`/orders/{id}` ou `/payments/{id}`) identifié dans la doc officielle
+  - [ ] États possibles (`Confirmed`, `Pending`, `Refused`, `Cancelled`, …) documentés
+  - [ ] Limites de rate limiting connues
+- [ ] Erreurs attendues listées :
+  - [ ] Token expiré (401/403)
+  - [ ] Order introuvable (404)
+  - [ ] Timeout / erreurs 5xx HelloAsso
+
+#### 🛠️ Plan d'implémentation (résumé)
+
+- **Modèle `Payment`**
+  - Scope `pending_helloasso` pour récupérer les paiements HelloAsso en attente récents
+  - Méthode de classe `check_and_update_helloasso_orders` qui boucle sur ce scope et appelle le service
+- **Service `HelloassoService`**
+  - Méthode `fetch_and_update_payment(payment)` :
+    - Appelle l’API HelloAsso (GET)
+    - Interprète l’état (`Confirmed`, `Refused`, …)
+    - Met à jour `payments.status` et `orders.status`
+    - Loggue les erreurs éventuelles
+- **Infra**
+  - Tâche Rake `helloasso:check_payments`
+  - Intégration future dans un cron / scheduler (toutes les 5–10 minutes)
+
+---
+
+### 🔮 **Phase 3 – Webhooks HelloAsso** (future)
+
+Objectif : mise à jour temps réel et robuste des paiements.
+
+- 🔜 **Contrôleur webhooks**
+  - `HelloassoWebhooksController` avec endpoint `/webhooks/helloasso`
+  - Validation de la signature HMAC
+  - Idempotence (ne pas traiter deux fois le même événement)
+- 🔜 **Routes**
+  - Ajout dans `routes.rb` :
+    - `post "/webhooks/helloasso", to: "helloasso_webhooks#handle"`
+- 🔜 **Traitement des événements**
+  - Exemples (à confirmer avec la doc officielle) :
+    - Paiement confirmé → `payment.status = "paid"`, `order.status = "paid"`
+    - Paiement refusé / annulé → `payment.status = "failed"`, `order.status = "failed"` + éventuel rollback stock
+- 🔜 **Opérations**
+  - Queue de retry (Sidekiq) si le traitement échoue
+  - Monitoring minimal des échecs de webhooks
 
 ---
 

@@ -1,8 +1,9 @@
 ---
 title: "Hello Asso - Étape 1 : Récupération des Informations API"
 status: "active"
-version: "1.0"
+version: "1.1"
 created: "2025-01-20"
+updated: "2025-11-26"
 tags: ["helloasso", "api", "integration", "etape-1"]
 ---
 
@@ -79,28 +80,26 @@ helloasso:
 - **Base URL API** : `https://api.helloasso.com/v5`
 - **URL OAuth2** : `https://api.helloasso.com/oauth2`
 
-### **3. Endpoints Nécessaires**
-
-D'après nos besoins, nous aurons besoin de :
+### **3. Endpoints Nécessaires (État actuel du flux)**
 
 #### **Authentification**
-- `POST https://api.helloasso-sandbox.com/oauth2` - Obtenir un token d'accès (SANDBOX)
-- `POST https://api.helloasso.com/oauth2` - Obtenir un token d'accès (PRODUCTION)
+- `POST https://api.helloasso-sandbox.com/oauth2/token` - Obtenir un token d'accès (SANDBOX)
+- `POST https://api.helloasso.com/oauth2/token` - Obtenir un token d'accès (PRODUCTION)
 
-#### **Commandes (Orders)**
-- `POST https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/orders` - Créer une commande
-- `GET https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/orders/{orderId}` - Récupérer une commande
-- `GET https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/orders` - Lister les commandes
+#### **Checkout (intention de paiement)**
+- `POST https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/checkout-intents`
+  - Utilisé par `HelloassoService.create_checkout_intent`
+  - Retourne un `id` et une `redirectUrl` (URL de paiement HelloAsso)
 
-#### **Paiements (Payments)**
-- `GET https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/payments/{paymentId}` - Récupérer un paiement
-- `GET https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/payments` - Lister les paiements
+#### **Commandes / Paiements (lecture uniquement – pour Phase 2/3)**
+- `GET https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/orders/{orderId}` - Lire l'état d'une commande (à confirmer)
+- `GET https://api.helloasso-sandbox.com/v5/organizations/{organizationSlug}/payments/{paymentId}` - Lire l'état d'un paiement (à confirmer)
 
 > ⚠️ **Remplacer `helloasso-sandbox.com` par `helloasso.com` pour la production**
 
-#### **Webhooks**
+#### **Webhooks (Phase 3 – futur)**  
 - Configuration des webhooks dans le compte Hello Asso
-- URL de callback : `https://votre-domaine.com/webhooks/helloasso`
+- URL de callback prévue : `https://votre-domaine.com/webhooks/helloasso`
 
 ---
 
@@ -247,14 +246,15 @@ Cette étape est terminée quand :
 
 ## 🎯 PROCHAINE ÉTAPE
 
-Une fois cette étape validée, passer à **Étape 2 : Implémentation du Service Hello Asso**
+Cette étape est **déjà réalisée** dans le projet (service en place + auth OK).
 
-**Fichiers à créer** :
-- `app/services/helloasso_service.rb` - Service principal
-- `app/services/helloasso/oauth_service.rb` - Gestion OAuth2 (optionnel, peut être dans le service principal)
+Les prochaines étapes sont décrites dans `synthese-quick-wins-helloasso.md` :
+- **Phase 1** : Checkout HelloAsso (implémenté)
+- **Phase 2** : Polling de l'état des paiements
+- **Phase 3** : Webhooks HelloAsso
 
 ---
 
-**Dernière mise à jour** : 2025-01-20  
-**Version** : 1.0
+**Dernière mise à jour** : 2025-11-26  
+**Version** : 1.1
 
