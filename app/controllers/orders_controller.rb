@@ -36,10 +36,8 @@ class OrdersController < ApplicationController
 
     total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
 
-    order = nil
-
     # Transaction pour garantir la cohérence des données locales (order + stock)
-    Order.transaction do
+    order = Order.transaction do
       order = Order.create!(
         user: current_user,
         status: "pending",
@@ -59,6 +57,7 @@ class OrdersController < ApplicationController
         # Déduire le stock
         variant.decrement!(:stock_qty, ci[:quantity])
       end
+      order
     end
 
     # Vider le panier local une fois la commande créée
@@ -66,7 +65,7 @@ class OrdersController < ApplicationController
 
     # Initialiser un checkout HelloAsso en sandbox (ou production selon l'env)
     # Pour l'instant, on ne gère pas encore le don côté backend → 0 centimes.
-    redirect_url = HelloassoService.checkout_redirect_url(
+    checkout_result = HelloassoService.create_checkout_intent(
       order,
       donation_cents: 0,
       back_url: shop_url,
@@ -74,12 +73,32 @@ class OrdersController < ApplicationController
       return_url: order_url(order)
     )
 
-    if redirect_url.present?
-      # URL externe (HelloAsso sandbox/production) → autoriser l'hôte externe explicitement
-      redirect_to redirect_url, allow_other_host: true
+    if checkout_result[:success]
+      body = checkout_result[:body] || {}
+
+      payment = Payment.create!(
+        provider: "helloasso",
+        provider_payment_id: body["id"].to_s,
+        amount_cents: total_cents,
+        currency: "EUR",
+        status: "pending",
+        created_at: Time.current
+      )
+
+      order.update!(payment: payment)
+
+      redirect_url = body["redirectUrl"]
+
+      if redirect_url.present?
+        # URL externe (HelloAsso sandbox/production) → autoriser l'hôte externe explicitement
+        redirect_to redirect_url, allow_other_host: true
+      else
+        redirect_to order_path(order), notice: "Commande créée avec succès (paiement HelloAsso initialisé)."
+      end
     else
-      # Fallback : si HelloAsso ne renvoie pas d'URL, on reste sur la commande locale
-      redirect_to order_path(order), notice: "Commande créée avec succès."
+      # Fallback : si HelloAsso ne renvoie pas d'URL ou renvoie une erreur,
+      # on garde la commande en pending et on affiche un message.
+      redirect_to order_path(order), alert: "Commande créée mais paiement HelloAsso non initialisé (code #{checkout_result[:status]})."
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to cart_path, alert: "Erreur lors de la création de la commande: #{e.message}"
