@@ -9,7 +9,12 @@ Rails.application.routes.draw do
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Standard Rails endpoint - simple check (no DB queries)
   get "up" => "rails/health#show", as: :rails_health_check
+  
+  # Advanced health check with database connection and migrations status
+  # Returns JSON with detailed status (DB + migrations) - useful for monitoring/alerting
+  get "health" => "health#check", as: :health_check
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
