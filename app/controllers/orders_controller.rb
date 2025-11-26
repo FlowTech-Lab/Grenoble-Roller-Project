@@ -36,7 +36,9 @@ class OrdersController < ApplicationController
 
     total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
 
-    # Transaction pour garantir la cohérence
+    order = nil
+
+    # Transaction pour garantir la cohérence des données locales (order + stock)
     Order.transaction do
       order = Order.create!(
         user: current_user,
@@ -57,8 +59,26 @@ class OrdersController < ApplicationController
         # Déduire le stock
         variant.decrement!(:stock_qty, ci[:quantity])
       end
+    end
 
-      session[:cart] = {}
+    # Vider le panier local une fois la commande créée
+    session[:cart] = {}
+
+    # Initialiser un checkout HelloAsso en sandbox (ou production selon l'env)
+    # Pour l'instant, on ne gère pas encore le don côté backend → 0 centimes.
+    redirect_url = HelloassoService.checkout_redirect_url(
+      order,
+      donation_cents: 0,
+      back_url: shop_url,
+      error_url: order_url(order),
+      return_url: order_url(order)
+    )
+
+    if redirect_url.present?
+      # URL externe (HelloAsso sandbox/production) → autoriser l'hôte externe explicitement
+      redirect_to redirect_url, allow_other_host: true
+    else
+      # Fallback : si HelloAsso ne renvoie pas d'URL, on reste sur la commande locale
       redirect_to order_path(order), notice: "Commande créée avec succès."
     end
   rescue ActiveRecord::RecordInvalid => e

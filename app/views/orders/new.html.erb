@@ -111,7 +111,7 @@
               <%= link_to cart_path, class: "btn btn-outline-primary flex-fill" do %>
                 <i class="bi bi-arrow-left me-1"></i>Modifier le panier
               <% end %>
-              <%= button_to orders_path, method: :post, class: "btn btn-liquid-primary flex-fill" do %>
+              <%= button_to orders_path, method: :post, class: "btn btn-liquid-primary flex-fill", data: { turbo: false } do %>
                 <i class="bi bi-check-circle me-2"></i>Payer Via HelloAsso*
               <% end %>
             </div>

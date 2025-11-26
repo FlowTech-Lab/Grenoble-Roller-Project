@@ -1,3 +1,4 @@
+
 class HelloassoService
   require "net/http"
   require "uri"
@@ -91,10 +92,11 @@ class HelloassoService
         containsDonation: donation_cents.to_i.positive?,
         terms: nil,
         payer: nil,
+        # La doc indique que metadata est un JSON object, pas une string.
         metadata: {
           localOrderId: order.id,
           environment: environment
-        }.to_json # la doc attend une string JSON
+        }
       }
     end
 
@@ -153,6 +155,79 @@ class HelloassoService
     rescue => e
       Rails.logger.error("[HelloassoService] Impossible de récupérer l'access_token : #{e.class} - #{e.message}")
       nil
+    end
+
+    # ---- Checkout intents (REST) -----------------------------------------------
+
+    # Initialise un checkout HelloAsso via l'endpoint officiel :
+    # POST /v5/organizations/{organizationSlug}/checkout-intents
+    #
+    # - order: objet ressemblant à une Order locale (id, total_cents, currency)
+    # - donation_cents: montant du don additionnel en centimes (Integer)
+    # - back_url, error_url, return_url: URLs de redirection (voir doc HelloAsso)
+    #
+    # Retourne un Hash :
+    #   {
+    #     status: 200,
+    #     success: true/false,
+    #     body: { "id" => ..., "redirectUrl" => "..." }
+    #   }
+    def create_checkout_intent(order, donation_cents:, back_url:, error_url:, return_url:)
+      token = access_token
+      raise "HelloAsso access_token introuvable" if token.to_s.strip.empty?
+      raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+
+      payload = build_checkout_intent_payload(
+        order,
+        donation_cents: donation_cents,
+        back_url: back_url,
+        error_url: error_url,
+        return_url: return_url
+      )
+
+      uri = URI.parse("#{api_base_url}/organizations/#{organization_slug}/checkout-intents")
+
+      request = Net::HTTP::Post.new(uri)
+      request["Authorization"] = "Bearer #{token}"
+      request["accept"] = "application/json"
+      request["content-type"] = "application/*+json"
+      request.body = payload.to_json
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == "https")
+
+      response = http.request(request)
+
+      body =
+        begin
+          JSON.parse(response.body)
+        rescue JSON::ParserError
+          { "raw_body" => response.body }
+        end
+
+      result = {
+        status: response.code.to_i,
+        success: response.is_a?(Net::HTTPSuccess),
+        body: body
+      }
+
+      Rails.logger.info("[HelloassoService] create_checkout_intent response: #{result.inspect}")
+      result
+    end
+
+    # Helper pour récupérer directement l'URL de redirection si tout s'est bien passé.
+    def checkout_redirect_url(order, donation_cents:, back_url:, error_url:, return_url:)
+      result = create_checkout_intent(
+        order,
+        donation_cents: donation_cents,
+        back_url: back_url,
+        error_url: error_url,
+        return_url: return_url
+      )
+
+      return nil unless result[:success]
+
+      result.dig(:body, "redirectUrl")
     end
   end
 end
