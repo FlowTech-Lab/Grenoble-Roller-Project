@@ -870,7 +870,12 @@ log_success "✅ Migrations exécutées avec succès (durée: ${MIGRATION_DURATI
 # ✅ SAFEGUARD 3 : Vérification post-migration (pas de pending restant)
 log "🔍 Vérification post-migration..."
 POST_MIGRATION_STATUS=$(docker exec "${CONTAINER_NAME}" bin/rails db:migrate:status 2>&1)
-POST_PENDING_COUNT=$(echo "$POST_MIGRATION_STATUS" | grep -c "^\s*down" || echo "0")
+# Compter les migrations en attente (méthode robuste pour éviter les erreurs de parsing)
+POST_PENDING_COUNT=$(echo "$POST_MIGRATION_STATUS" | grep -E "^\s*down" 2>/dev/null | wc -l | tr -d ' \n\r')
+# S'assurer que c'est un nombre valide (défaut à 0 si vide ou invalide)
+if ! [[ "$POST_PENDING_COUNT" =~ ^[0-9]+$ ]]; then
+    POST_PENDING_COUNT=0
+fi
 
 if [ "$POST_PENDING_COUNT" -gt 0 ]; then
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
