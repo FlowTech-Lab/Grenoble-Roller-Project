@@ -83,21 +83,19 @@
                     <strong class="text-liquid-primary"><%= format_price(order.total_cents) %></strong>
                   </div>
 
-                  <!-- Action buttons -->
+                  <!-- Actions : Payer (si pending) ou Détails -->
                   <div class="d-flex gap-2">
+                    <% if order.payment&.status == "pending" && order.payment&.provider == "helloasso" %>
+                      <%= button_to pay_order_path(order),
+                          method: :post,
+                          class: "btn btn-warning btn-sm",
+                          data: { turbo: false },
+                          aria: { label: "Finaliser le paiement de la commande ##{order.id}" } do %>
+                        <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Payer
+                      <% end %>
+                    <% end %>
                     <%= link_to order_path(order), class: "btn btn-outline-primary btn-sm" do %>
                       <i class="bi bi-eye me-1"></i>Détails
-                    <% end %>
-                    <% if ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(order.status.downcase) %>
-                      <%= button_to cancel_order_path(order), 
-                          method: :patch,
-                          class: "btn btn-outline-danger btn-sm",
-                          data: { 
-                            confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible.",
-                            turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible."
-                          } do %>
-                        <i class="bi bi-x-circle me-1"></i>Annuler
-                      <% end %>
                     <% end %>
                   </div>
                 </div>

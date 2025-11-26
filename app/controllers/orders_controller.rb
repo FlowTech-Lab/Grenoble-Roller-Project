@@ -3,7 +3,7 @@ class OrdersController < ApplicationController
   before_action :ensure_email_confirmed, only: [ :create ] # Exiger confirmation pour passer une commande
 
   def index
-    @orders = current_user.orders.includes(order_items: { variant: :product }).order(created_at: :desc)
+    @orders = current_user.orders.includes(:payment, order_items: { variant: :product }).order(created_at: :desc)
   end
 
   def new
@@ -108,6 +108,52 @@ class OrdersController < ApplicationController
 
   def show
     @order = current_user.orders.includes(order_items: { variant: :product }).find(params[:id])
+  end
+
+  def pay
+    @order = current_user.orders.includes(:payment).find(params[:id])
+
+    payment = @order.payment
+
+    unless @order.status&.downcase == "pending" &&
+           payment&.provider == "helloasso" &&
+           payment.status == "pending"
+      return redirect_to order_path(@order),
+                         alert: "Cette commande ne peut pas être payée via HelloAsso."
+    end
+
+    # Créer un nouveau checkout-intent (plus fiable que de réutiliser l'ancien qui peut expirer)
+    checkout_result = HelloassoService.create_checkout_intent(
+      @order,
+      donation_cents: 0,
+      back_url: orders_url,
+      error_url: order_url(@order),
+      return_url: order_url(@order)
+    )
+
+    if checkout_result[:success]
+      body = checkout_result[:body] || {}
+      redirect_url = body["redirectUrl"]
+
+      # Mettre à jour le payment avec le nouveau checkout-intent ID
+      if body["id"].present?
+        payment.update!(
+          provider_payment_id: body["id"].to_s
+        )
+      end
+
+      if redirect_url.present?
+        redirect_to redirect_url, allow_other_host: true
+      else
+        redirect_to order_path(@order),
+                    alert: "Impossible de récupérer l'URL de paiement HelloAsso. " \
+                           "Merci de réessayer plus tard ou de contacter l'association."
+      end
+    else
+      redirect_to order_path(@order),
+                  alert: "Erreur lors de l'initialisation du paiement HelloAsso. " \
+                         "Merci de réessayer plus tard ou de contacter l'association."
+    end
   end
 
   def cancel

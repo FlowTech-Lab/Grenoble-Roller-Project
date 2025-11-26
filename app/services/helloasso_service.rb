@@ -230,6 +230,13 @@ class HelloassoService
       result.dig(:body, "redirectUrl")
     end
 
+    # Récupère l'URL de redirection pour un checkout-intent existant.
+    # Utile pour permettre à un utilisateur de reprendre un paiement interrompu.
+    def checkout_redirect_url_for_intent(checkout_intent_id)
+      intent = fetch_checkout_intent(checkout_intent_id)
+      intent["redirectUrl"]
+    end
+
     # ---- Lecture / mise à jour des paiements (polling Phase 2) -----------------
 
     # Récupère les informations d'un checkout-intent HelloAsso et met à jour
