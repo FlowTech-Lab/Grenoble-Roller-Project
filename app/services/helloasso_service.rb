@@ -229,7 +229,83 @@ class HelloassoService
 
       result.dig(:body, "redirectUrl")
     end
+
+    # ---- Lecture / mise à jour des paiements (polling Phase 2) -----------------
+
+    # Récupère les informations d'un checkout-intent HelloAsso et met à jour
+    # le Payment et l'Order associés.
+    #
+    # D'après la doc HelloAsso, l'endpoint
+    #   GET /v5/organizations/{slug}/checkout-intents/{checkoutIntentId}
+    # renvoie un champ `order` uniquement si le paiement a bien abouti.
+    #
+    # Pour l'instant on part sur une logique simple :
+    # - order présent  → paiement OK → Payment.succeeded + Order.paid
+    # - order absent   → on considère que c'est encore en attente
+    #
+    # (Les cas de refus / abandon seront raffinés plus tard si la doc expose
+    #  un état plus précis côté checkout-intent.)
+    def fetch_and_update_payment(payment)
+      intent = fetch_checkout_intent(payment.provider_payment_id)
+
+      has_order = intent.key?("order") && intent["order"].present?
+      Rails.logger.info(
+        "[HelloassoService] fetch_and_update_payment ##{payment.id} " \
+        "checkoutIntentId=#{payment.provider_payment_id} has_order=#{has_order}"
+      )
+
+      order = payment.orders.first
+
+      if has_order
+        # Paiement confirmé
+        payment.update!(status: "succeeded")
+        order&.update!(status: "paid")
+      else
+        # Si aucun order associé après le délai HelloAsso (~45 minutes),
+        # on considère le paiement comme abandonné / non finalisé.
+        if payment.created_at < 45.minutes.ago
+          payment.update!(status: "abandoned")
+          order&.update!(status: "failed")
+          Rails.logger.info(
+            "[HelloassoService] CheckoutIntent ##{payment.provider_payment_id} " \
+            "considéré comme abandonné (aucune commande créée après 45 minutes)."
+          )
+        else
+          Rails.logger.warn(
+            "[HelloassoService] CheckoutIntent ##{payment.provider_payment_id} " \
+            "sans commande associée (encore en attente)."
+          )
+        end
+      end
+
+      payment
+    end
+
+    private
+
+    # Lecture d'un checkout-intent HelloAsso.
+    # Utilise l'endpoint :
+    #   GET /v5/organizations/{organizationSlug}/checkout-intents/{checkoutIntentId}
+    def fetch_checkout_intent(checkout_intent_id)
+      uri = URI.parse(
+        "#{api_base_url}/organizations/#{organization_slug}/checkout-intents/#{checkout_intent_id}"
+      )
+
+      request = Net::HTTP::Get.new(uri)
+      request["Authorization"] = "Bearer #{access_token}"
+      request["accept"] = "application/json"
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == "https")
+
+      response = http.request(request)
+
+      unless response.is_a?(Net::HTTPSuccess)
+        raise "HelloAsso checkout-intent fetch error (#{response.code}): #{response.body}"
+      end
+
+      JSON.parse(response.body)
+    end
   end
 end
-
 
