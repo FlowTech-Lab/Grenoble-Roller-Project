@@ -53,6 +53,116 @@ container_is_running() {
     docker ps --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null || return 1
 }
 
+# Fonction pour vérifier si un conteneur existe (running ou stopped)
+container_exists() {
+    local container_name=$1
+    docker ps -a --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null || return 1
+}
+
+# Fonction pour démarrer un conteneur s'il est arrêté
+ensure_container_running() {
+    local container_name=$1
+    local compose_file=$2
+    
+    # Vérifier si le conteneur est running
+    if container_is_running "$container_name"; then
+        return 0
+    fi
+    
+    # Vérifier si le conteneur existe mais est arrêté
+    if container_exists "$container_name"; then
+        log_warning "⚠️  Le conteneur ${container_name} existe mais est arrêté"
+        
+        # Mode interactif si possible
+        if [ -t 0 ] && [ -t 1 ]; then
+            read -p "Voulez-vous démarrer le conteneur ? (o/N) : " answer
+            answer=${answer:-N}
+            if [[ "$answer" =~ ^[OoYy]$ ]]; then
+                log_info "Démarrage du conteneur ${container_name}..."
+                docker start "$container_name" 2>/dev/null || {
+                    # Si docker start échoue, essayer avec docker compose
+                    log_info "Tentative avec docker compose..."
+                    docker compose -f "$compose_file" up -d "$container_name" 2>/dev/null || {
+                        log_error "Échec du démarrage du conteneur"
+                        return 1
+                    }
+                }
+                
+                # Attendre que le conteneur démarre
+                if wait_for_container_running "$container_name" 60; then
+                    log_success "✅ Conteneur ${container_name} démarré avec succès"
+                    return 0
+                else
+                    log_error "❌ Le conteneur n'a pas démarré dans les temps"
+                    return 1
+                fi
+            else
+                log_info "Démarrage annulé par l'utilisateur"
+                return 1
+            fi
+        else
+            # Mode non-interactif : démarrer automatiquement
+            log_warning "Mode non-interactif : démarrage automatique du conteneur..."
+            docker start "$container_name" 2>/dev/null || {
+                docker compose -f "$compose_file" up -d "$container_name" 2>/dev/null || {
+                    log_error "Échec du démarrage du conteneur"
+                    return 1
+                }
+            }
+            
+            if wait_for_container_running "$container_name" 60; then
+                log_success "✅ Conteneur ${container_name} démarré avec succès"
+                return 0
+            else
+                log_error "❌ Le conteneur n'a pas démarré dans les temps"
+                return 1
+            fi
+        fi
+    else
+        # Le conteneur n'existe pas du tout
+        log_warning "⚠️  Le conteneur ${container_name} n'existe pas"
+        
+        # Mode interactif si possible
+        if [ -t 0 ] && [ -t 1 ]; then
+            read -p "Voulez-vous créer et démarrer le conteneur ? (o/N) : " answer
+            answer=${answer:-N}
+            if [[ "$answer" =~ ^[OoYy]$ ]]; then
+                log_info "Création et démarrage du conteneur ${container_name}..."
+                if docker compose -f "$compose_file" up -d --build; then
+                    if wait_for_container_running "$container_name" 120; then
+                        log_success "✅ Conteneur ${container_name} créé et démarré avec succès"
+                        return 0
+                    else
+                        log_error "❌ Le conteneur n'a pas démarré dans les temps"
+                        return 1
+                    fi
+                else
+                    log_error "Échec de la création du conteneur"
+                    return 1
+                fi
+            else
+                log_info "Création annulée par l'utilisateur"
+                return 1
+            fi
+        else
+            # Mode non-interactif : créer automatiquement
+            log_warning "Mode non-interactif : création automatique du conteneur..."
+            if docker compose -f "$compose_file" up -d --build; then
+                if wait_for_container_running "$container_name" 120; then
+                    log_success "✅ Conteneur ${container_name} créé et démarré avec succès"
+                    return 0
+                else
+                    log_error "❌ Le conteneur n'a pas démarré dans les temps"
+                    return 1
+                fi
+            else
+                log_error "Échec de la création du conteneur"
+                return 1
+            fi
+        fi
+    fi
+}
+
 container_is_healthy() {
     local container_name=$1
     local health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container_name" 2>/dev/null || echo "none")
@@ -137,24 +247,204 @@ show_container_logs() {
     log_error "=== Fin des logs ==="
 }
 
-# Fonction de rollback
+# Fonction de nettoyage Docker (libère de l'espace disque)
+cleanup_docker() {
+    log "🧹 Nettoyage Docker en cours..."
+    
+    local freed_space=0
+    
+    # 1. Supprimer les images sans tag (dangling)
+    local dangling_images=$(docker images -f "dangling=true" -q 2>/dev/null | wc -l)
+    if [ "$dangling_images" -gt 0 ]; then
+        log_info "Suppression de $dangling_images images sans tag..."
+        docker image prune -f > /dev/null 2>&1 && {
+            log_success "Images sans tag supprimées"
+            freed_space=$((freed_space + 1))
+        } || log_warning "Échec suppression images sans tag"
+    fi
+    
+    # 2. Supprimer le cache de build Docker
+    log_info "Nettoyage du cache de build Docker..."
+    docker builder prune -f > /dev/null 2>&1 && {
+        log_success "Cache de build nettoyé"
+        freed_space=$((freed_space + 1))
+    } || log_warning "Échec nettoyage cache build"
+    
+    # 3. Supprimer les volumes orphelins
+    local orphan_volumes=$(docker volume ls -f "dangling=true" -q 2>/dev/null | wc -l)
+    if [ "$orphan_volumes" -gt 0 ]; then
+        log_info "Suppression de $orphan_volumes volumes orphelins..."
+        docker volume prune -f > /dev/null 2>&1 && {
+            log_success "Volumes orphelins supprimés"
+            freed_space=$((freed_space + 1))
+        } || log_warning "Échec suppression volumes orphelins"
+    fi
+    
+    # 4. Supprimer les conteneurs arrêtés
+    local stopped_containers=$(docker ps -a -f "status=exited" -q 2>/dev/null | wc -l)
+    if [ "$stopped_containers" -gt 0 ]; then
+        log_info "Suppression de $stopped_containers conteneurs arrêtés..."
+        docker container prune -f > /dev/null 2>&1 && {
+            log_success "Conteneurs arrêtés supprimés"
+            freed_space=$((freed_space + 1))
+        } || log_warning "Échec suppression conteneurs arrêtés"
+    fi
+    
+    if [ $freed_space -gt 0 ]; then
+        log_success "🧹 Nettoyage Docker terminé (espace libéré)"
+    else
+        log_info "Aucun élément à nettoyer"
+    fi
+}
+
+# Fonction pour vérifier l'espace disque disponible
+check_disk_space() {
+    local required_gb=${1:-5}  # 5 GB par défaut
+    local available_space
+    
+    # Récupérer l'espace disponible (en GB)
+    if command -v df > /dev/null 2>&1; then
+        available_space=$(df -BG "$REPO_DIR" 2>/dev/null | tail -1 | awk '{print $4}' | sed 's/G//' || echo "0")
+    else
+        log_warning "Impossible de vérifier l'espace disque (commande 'df' non disponible)"
+        return 0
+    fi
+    
+    if [ "$available_space" -lt "$required_gb" ]; then
+        log_warning "⚠️  Espace disque faible : ${available_space}GB disponible (minimum recommandé : ${required_gb}GB)"
+        return 1
+    else
+        log_info "✅ Espace disque OK : ${available_space}GB disponible"
+        return 0
+    fi
+}
+
+# Fonction de récupération en cas d'erreur d'espace disque
+recover_from_disk_full() {
+    local error_output="$1"
+    local current_commit="$2"
+    
+    # Détecter l'erreur "no space left on device"
+    if echo "$error_output" | grep -qi "no space left on device\|disk full\|not enough space"; then
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "🔴 ERREUR : Espace disque insuffisant"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        
+        # Afficher l'espace disponible
+        if command -v df > /dev/null 2>&1; then
+            log_error "Espace disque actuel :"
+            df -h "$REPO_DIR" | tail -1 | awk '{print "  Disponible: " $4 " sur " $2 " (" $5 " utilisé)"}'
+        fi
+        
+        log_error ""
+        log_error "🔧 OPTIONS DE RÉCUPÉRATION :"
+        log_error ""
+        log_error "1. Nettoyage automatique Docker (recommandé)"
+        log_error "2. Rollback vers commit précédent"
+        log_error "3. Ignorer et continuer (risqué)"
+        log_error "4. Quitter et nettoyer manuellement"
+        log_error ""
+        
+        # Mode interactif si possible, sinon nettoyage automatique
+        if [ -t 0 ] && [ -t 1 ]; then
+            # Terminal interactif disponible
+            read -p "Votre choix (1-4) [1] : " choice
+            choice=${choice:-1}
+        else
+            # Mode non-interactif (cron, etc.) → nettoyage automatique
+            log_warning "Mode non-interactif détecté, nettoyage automatique..."
+            choice=1
+        fi
+        
+        case "$choice" in
+            1)
+                log_info "Option 1 : Nettoyage automatique Docker..."
+                cleanup_docker
+                
+                # Vérifier à nouveau l'espace
+                if check_disk_space 3; then
+                    log_success "✅ Espace suffisant après nettoyage, vous pouvez réessayer le déploiement"
+                    return 0
+                else
+                    log_error "❌ Espace toujours insuffisant après nettoyage"
+                    log_error "Action manuelle requise : libérer de l'espace puis réessayer"
+                    return 1
+                fi
+                ;;
+            2)
+                log_info "Option 2 : Rollback vers commit précédent..."
+                rollback "$current_commit"
+                return 1
+                ;;
+            3)
+                log_warning "Option 3 : Ignorer l'erreur (RISQUÉ)"
+                log_warning "Le déploiement peut échouer à nouveau"
+                return 0
+                ;;
+            4)
+                log_info "Option 4 : Quitter pour nettoyage manuel"
+                log_info "Commandes utiles :"
+                log_info "  docker system prune -a --volumes  # Nettoyage complet (ATTENTION)"
+                log_info "  docker builder prune -a -f        # Cache build uniquement"
+                log_info "  df -h                              # Vérifier espace disque"
+                return 1
+                ;;
+            *)
+                log_error "Choix invalide, nettoyage automatique par défaut..."
+                cleanup_docker
+                return 0
+                ;;
+        esac
+    else
+        # Pas d'erreur d'espace disque
+        return 0
+    fi
+}
+
+# Fonction de rollback améliorée
 rollback() {
     local current_commit=$1
     log_warning "🔄 Début du rollback vers commit ${current_commit:0:7}..."
+    
+    # Vérifier l'espace disque avant rollback
+    if ! check_disk_space 2; then
+        log_warning "⚠️  Espace disque faible, nettoyage avant rollback..."
+        cleanup_docker
+    fi
     
     # Restaurer le code
     if git checkout "$current_commit" 2>/dev/null; then
         log_info "Code restauré vers ${current_commit:0:7}"
     else
         log_error "Échec du checkout vers ${current_commit:0:7}"
+        # Si échec à cause de l'espace, proposer nettoyage
+        if git checkout "$current_commit" 2>&1 | grep -qi "no space\|disk full"; then
+            log_error "Échec probablement dû à l'espace disque"
+            cleanup_docker
+            # Réessayer
+            if git checkout "$current_commit" 2>/dev/null; then
+                log_success "Code restauré après nettoyage"
+            else
+                log_error "Échec définitif du checkout"
+            fi
+        fi
     fi
     
     # Rebuild et restart
     log_info "Rebuild et restart avec l'ancienne version..."
-    if docker compose -f "$COMPOSE_FILE" up -d --build; then
+    local build_output
+    build_output=$(docker compose -f "$COMPOSE_FILE" up -d --build 2>&1)
+    local build_exit_code=$?
+    
+    if [ $build_exit_code -eq 0 ]; then
         log_info "Conteneurs redémarrés"
     else
         log_error "Échec du rebuild/restart lors du rollback"
+        # Vérifier si c'est un problème d'espace
+        if echo "$build_output" | grep -qi "no space\|disk full"; then
+            log_error "Erreur d'espace disque détectée lors du rollback"
+            recover_from_disk_full "$build_output" "$current_commit"
+        fi
     fi
     
     # Restaurer la DB si nécessaire
@@ -225,6 +515,12 @@ log "━━━━━━━━━━━━━━━━━━━━━━━━━
 log "🚀 DEPLOYMENT START - ${ENV} - $(date '+%Y-%m-%d %H:%M:%S')"
 log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+# Nettoyage préventif automatique (images sans tag et cache build uniquement)
+# Pour éviter les problèmes d'espace disque
+log "🧹 Nettoyage préventif Docker (images sans tag + cache build)..."
+docker image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
+docker builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
+
 # 1. Vérifier s'il y a des mises à jour
 log "📥 Vérification des mises à jour (branche: ${BRANCH})..."
 git fetch origin
@@ -238,28 +534,36 @@ if [ "$LOCAL" = "$REMOTE" ]; then
     # 🔍 Vérification critique : Migrations en attente même si Git est à jour
     # Ceci évite le drift DB/code non détecté (best practice DevOps production-grade)
     log "🔍 Vérification des migrations en attente..."
-    if container_is_running "$CONTAINER_NAME"; then
-        MIGRATION_STATUS=$(docker exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
-        PENDING_COUNT=$(echo "$MIGRATION_STATUS" | grep -c "^\s*down" || echo "0")
-        PENDING_LIST=$(echo "$MIGRATION_STATUS" | grep "^\s*down" | sed 's/^\s*down\s*//' || echo "")
-        
-        if [ "$PENDING_COUNT" -gt 0 ]; then
-            log_warning "⚠️  $PENDING_COUNT migration(s) en attente détectée(s)"
-            if [ -n "$PENDING_LIST" ]; then
-                log_warning "Migrations en attente :"
-                echo "$PENDING_LIST" | while read -r migration; do
-                    log_warning "  - $migration"
-                done
-            fi
-            log "🔄 Continuation du déploiement pour exécuter les migrations..."
-            # Ne pas exit, continuer vers la phase de migrations
+    
+    # S'assurer que le conteneur est running (démarre si nécessaire)
+    if ! container_is_running "$CONTAINER_NAME"; then
+        log_warning "⚠️  Le conteneur ${CONTAINER_NAME} n'est pas running"
+        if ensure_container_running "$CONTAINER_NAME" "$COMPOSE_FILE"; then
+            log_success "✅ Conteneur démarré, continuation de la vérification..."
         else
-            log "✅ Aucune migration en attente - Base de données synchronisée"
+            log_error "❌ Impossible de démarrer le conteneur"
+            log_warning "Sortie sans vérification - les migrations seront vérifiées au prochain déploiement"
             exit 0
         fi
+    fi
+    
+    # Maintenant le conteneur est running, vérifier les migrations
+    MIGRATION_STATUS=$(docker exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
+    PENDING_COUNT=$(echo "$MIGRATION_STATUS" | grep -c "^\s*down" || echo "0")
+    PENDING_LIST=$(echo "$MIGRATION_STATUS" | grep "^\s*down" | sed 's/^\s*down\s*//' || echo "")
+    
+    if [ "$PENDING_COUNT" -gt 0 ]; then
+        log_warning "⚠️  $PENDING_COUNT migration(s) en attente détectée(s)"
+        if [ -n "$PENDING_LIST" ]; then
+            log_warning "Migrations en attente :"
+            echo "$PENDING_LIST" | while read -r migration; do
+                log_warning "  - $migration"
+            done
+        fi
+        log "🔄 Continuation du déploiement pour exécuter les migrations..."
+        # Ne pas exit, continuer vers la phase de migrations
     else
-        log_warning "⚠️  Impossible de vérifier les migrations (conteneur non running)"
-        log_info "Sortie sans vérification - les migrations seront vérifiées au prochain déploiement"
+        log "✅ Aucune migration en attente - Base de données synchronisée"
         exit 0
     fi
 fi
@@ -302,15 +606,45 @@ if ! git pull origin "$BRANCH"; then
     exit 1
 fi
 
-# 6. Build et restart
-log "🔨 Build et redémarrage..."
-if ! docker compose -f "$COMPOSE_FILE" up -d --build; then
-    log_error "Échec du build/restart"
-    rollback "$CURRENT_COMMIT"
-    exit 1
+# 6. Vérification espace disque avant build
+log "💾 Vérification de l'espace disque..."
+if ! check_disk_space 5; then
+    log_warning "⚠️  Espace disque faible, nettoyage préventif..."
+    cleanup_docker
+    # Vérifier à nouveau
+    if ! check_disk_space 3; then
+        log_error "❌ Espace disque insuffisant même après nettoyage"
+        log_error "Action requise : libérer de l'espace manuellement puis réessayer"
+        exit 1
+    fi
 fi
 
-# 7. Attendre que le conteneur web démarre
+# 7. Build et restart
+log "🔨 Build et redémarrage..."
+BUILD_OUTPUT=$(docker compose -f "$COMPOSE_FILE" up -d --build 2>&1)
+BUILD_EXIT_CODE=$?
+
+if [ $BUILD_EXIT_CODE -ne 0 ]; then
+    log_error "Échec du build/restart"
+    echo "$BUILD_OUTPUT" | tee -a "$LOG_FILE"
+    
+    # Détecter erreur d'espace disque
+    if echo "$BUILD_OUTPUT" | grep -qi "no space left on device\|disk full\|not enough space"; then
+        log_error "Erreur d'espace disque détectée"
+        if recover_from_disk_full "$BUILD_OUTPUT" "$CURRENT_COMMIT"; then
+            log_info "Nettoyage effectué, vous pouvez réessayer le déploiement"
+            exit 0
+        else
+            rollback "$CURRENT_COMMIT"
+            exit 1
+        fi
+    else
+        rollback "$CURRENT_COMMIT"
+        exit 1
+    fi
+fi
+
+# 8. Attendre que le conteneur web démarre
 log "⏳ Attente du démarrage du conteneur..."
 if ! wait_for_container_running "$CONTAINER_NAME" 60; then
     log_error "Le conteneur web n'a pas démarré"
@@ -319,7 +653,7 @@ if ! wait_for_container_running "$CONTAINER_NAME" 60; then
     exit 1
 fi
 
-# 8. Attendre que le conteneur soit healthy (si healthcheck configuré)
+# 9. Attendre que le conteneur soit healthy (si healthcheck configuré)
 if docker inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
     if ! wait_for_container_healthy "$CONTAINER_NAME" 120; then
         log_error "Le conteneur web n'est pas devenu healthy"
@@ -340,7 +674,7 @@ else
     done
 fi
 
-# 9. Vérifier que le conteneur est toujours running avant migrations
+# 10. Vérifier que le conteneur est toujours running avant migrations
 if ! container_is_running "$CONTAINER_NAME"; then
     log_error "Le conteneur web s'est arrêté avant les migrations"
     show_container_logs "$CONTAINER_NAME"
@@ -348,7 +682,7 @@ if ! container_is_running "$CONTAINER_NAME"; then
     exit 1
 fi
 
-# 10. Migrations - Vérification finale avant exécution
+# 11. Migrations - Vérification finale avant exécution
 log "🗄️ Préparation des migrations..."
 
 # Double vérification juste avant l'exécution
@@ -547,7 +881,7 @@ elif [ "$MIGRATION_DURATION" -gt 300 ]; then
     log_error "Cette migration causerait un downtime significatif en production"
 fi
 
-# 11. Health check HTTP (double vérification)
+# 12. Health check HTTP (double vérification)
 log "🏥 Health check HTTP (port: ${PORT})..."
 MAX_RETRIES=30
 RETRY_COUNT=0
@@ -576,7 +910,7 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     sleep 2
 done
 
-# 12. Rollback si health check échoue
+# 13. Rollback si health check échoue
 log_error "Health check HTTP échoué après $MAX_RETRIES tentatives"
 show_container_logs "$CONTAINER_NAME"
 rollback "$CURRENT_COMMIT"
