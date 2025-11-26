@@ -3,52 +3,79 @@
     <div class="col-12 col-lg-8">
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
-          <!-- Header compact -->
-          <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
-            <h1 class="h5 mb-0">
-              <i class="bi bi-receipt-cutoff text-liquid-primary me-2"></i>
+          <!-- HEADER : Titre + Status Badge (séparés) -->
+          <div class="mb-3 pb-3 border-bottom">
+            <!-- Titre principal -->
+            <h1 class="h5 mb-3">
+              <i class="bi bi-receipt-cutoff text-liquid-primary me-2" aria-hidden="true"></i>
               Commande #<%= @order.id %>
             </h1>
+            
+            <!-- Status badge (séparé, avec icône + texte) -->
             <% 
-              status_btn = case @order.status.downcase
+              status_config = case @order.status.downcase
                 when 'pending', 'en attente'
-                  'btn-warning'
+                  { 
+                    badge_class: 'bg-warning text-dark', 
+                    icon: 'bi-hourglass-split', 
+                    label: 'En attente',
+                    aria_label: 'Statut: En attente de paiement'
+                  }
                 when 'preparation', 'en préparation', 'preparing'
-                  'btn-info'
+                  { 
+                    badge_class: 'bg-info text-white', 
+                    icon: 'bi-gear', 
+                    label: 'En préparation',
+                    aria_label: 'Statut: Commande en préparation'
+                  }
+                when 'paid', 'payé'
+                  { 
+                    badge_class: 'bg-success text-white', 
+                    icon: 'bi-check-circle', 
+                    label: 'Payée',
+                    aria_label: 'Statut: Commande payée'
+                  }
                 when 'sent', 'envoyé', 'shipped', 'finished', 'terminé'
-                  'btn-success'
+                  { 
+                    badge_class: 'bg-success text-white', 
+                    icon: 'bi-truck', 
+                    label: 'Expédiée',
+                    aria_label: 'Statut: Commande expédiée'
+                  }
                 when 'cancelled', 'annulé', 'canceled'
-                  'btn-danger'
+                  { 
+                    badge_class: 'bg-danger text-white', 
+                    icon: 'bi-x-circle', 
+                    label: 'Annulée',
+                    aria_label: 'Statut: Commande annulée'
+                  }
                 else
-                  'btn-success'
+                  { 
+                    badge_class: 'bg-secondary text-white', 
+                    icon: 'bi-question-circle', 
+                    label: @order.status,
+                    aria_label: "Statut: #{@order.status}"
+                  }
               end
             %>
-            <button type="button" class="btn <%= status_btn %> btn-sm" disabled>
-              <i class="bi <%= case @order.status.downcase
-                when 'pending', 'en attente'
-                  'bi-hourglass-split'
-                when 'preparation', 'en préparation', 'preparing'
-                  'bi-gear'
-                when 'sent', 'envoyé', 'shipped'
-                  'bi-truck'
-                when 'cancelled', 'annulé', 'canceled'
-                  'bi-x-circle'
-                else
-                  'bi-check-circle'
-              end %> me-1"></i>
-              <%= @order.status %>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge <%= status_config[:badge_class] %> px-3 py-2" 
+                    aria-label="<%= status_config[:aria_label] %>">
+                <i class="bi <%= status_config[:icon] %> me-1" aria-hidden="true"></i>
+                <%= status_config[:label] %>
+              </span>
+            </div>
           </div>
 
-          <!-- Order info compact -->
-          <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3 pb-3 border-bottom">
+          <!-- INFOS RAPIDES (Date, Articles, Total) -->
+          <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-4 pb-3 border-bottom">
             <div class="d-flex align-items-center gap-1">
-              <i class="bi bi-calendar"></i>
+              <i class="bi bi-calendar" aria-hidden="true"></i>
               <span><%= l(@order.created_at, format: :short) %></span>
             </div>
-            <span>•</span>
+            <span aria-hidden="true">•</span>
             <div class="d-flex align-items-center gap-1">
-              <i class="bi bi-box-seam"></i>
+              <i class="bi bi-box-seam" aria-hidden="true"></i>
               <span><%= @order.order_items.sum(:quantity) %> article(s)</span>
             </div>
             <span class="ms-auto fw-bold text-liquid-primary">
@@ -56,25 +83,29 @@
             </span>
           </div>
 
-          <!-- Order items -->
-          <div class="mb-3">
-            <h3 class="h6 text-liquid-primary mb-3">
-              <i class="bi bi-list-ul me-2"></i>Articles
-            </h3>
+          <!-- ARTICLES -->
+          <div class="mb-4">
+            <h2 class="h6 text-liquid-primary mb-3">
+              <i class="bi bi-list-ul me-2" aria-hidden="true"></i>Articles
+            </h2>
             
             <div class="mb-3">
               <% @order.order_items.each do |item| %>
-                <div class="cart-item mb-2 pb-2 border-bottom">
+                <div class="cart-item mb-3 pb-3 border-bottom">
                   <div class="cart-item-image">
-                    <%= image_tag item.variant.product.image_url, alt: item.variant.product.name, loading: "lazy" %>
+                    <%= image_tag item.variant.product.image_url, 
+                        alt: item.variant.product.name, 
+                        loading: "lazy",
+                        class: "img-fluid",
+                        style: "width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" %>
                   </div>
                   
                   <div class="cart-item-content">
                     <div class="cart-item-info">
-                      <p class="cart-item-title mb-1"><%= item.variant.product.name %></p>
+                      <p class="cart-item-title mb-1 fw-semibold"><%= item.variant.product.name %></p>
                       <div class="d-flex align-items-center gap-2">
                         <p class="small text-muted mb-0"><%= item.variant.sku %></p>
-                        <span class="small text-muted">•</span>
+                        <span class="small text-muted" aria-hidden="true">•</span>
                         <p class="small text-muted mb-0"><%= format_price(item.unit_price_cents) %> / u</p>
                       </div>
                     </div>
@@ -93,34 +124,103 @@
               <% end %>
             </div>
 
-            <!-- Total compact -->
-            <div class="pt-2">
-              <div class="d-flex justify-content-between align-items-center mt-1">
+            <!-- Total -->
+            <div class="pt-2 border-top">
+              <div class="d-flex justify-content-between align-items-center mt-2">
                 <strong>Total:</strong>
-                <strong class="text-liquid-primary"><%= format_price(@order.total_cents) %></strong>
+                <strong class="text-liquid-primary fs-5"><%= format_price(@order.total_cents) %></strong>
               </div>
             </div>
           </div>
 
-          <!-- Action buttons compact -->
-          <div class="d-flex gap-2 flex-wrap pt-3 border-top">
-            <%= link_to orders_path, class: "btn btn-outline-primary btn-sm" do %>
-              <i class="bi bi-arrow-left me-1"></i>Retour
-            <% end %>
-            <%= link_to shop_path, class: "btn btn-outline-primary btn-sm" do %>
-              <i class="bi bi-bag me-1"></i>Boutique
-            <% end %>
-            <% if ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(@order.status.downcase) %>
-              <%= button_to cancel_order_path(@order), 
-                  method: :patch,
-                  class: "btn btn-outline-danger btn-sm",
-                  data: { 
-                    confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible et le stock sera restauré.",
-                    turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible et le stock sera restauré."
-                  } do %>
-                <i class="bi bi-x-circle me-1"></i>Annuler
+          <!-- ACTIONS CONTEXTUELLES (Une principale + secondaires) -->
+          <div class="pt-3 border-top">
+            <% 
+              # Déterminer l'action principale selon le contexte
+              is_pending = ['pending', 'en attente'].include?(@order.status.downcase)
+              is_pending_payment = @order.payment&.status == "pending" && @order.payment&.provider == "helloasso"
+              is_preparation = ['preparation', 'en préparation', 'preparing'].include?(@order.status.downcase)
+              is_cancellable = is_pending || is_preparation
+            %>
+            
+            <!-- Action principale -->
+            <div class="mb-3">
+              <% if is_pending_payment %>
+                <!-- Payer (si paiement pending) -->
+                <%= button_to pay_order_path(@order),
+                    method: :post,
+                    class: "btn btn-warning w-100 w-md-auto",
+                    data: { turbo: false },
+                    aria: { label: "Finaliser le paiement de la commande ##{@order.id}" } do %>
+                  <i class="bi bi-credit-card me-2" aria-hidden="true"></i>Finaliser le paiement
+                <% end %>
+              <% elsif @order.status.downcase == 'paid' || @order.status.downcase == 'payé' %>
+                <!-- Paiement confirmé (disabled) -->
+                <button type="button" class="btn btn-success w-100 w-md-auto" disabled>
+                  <i class="bi bi-check-circle me-2" aria-hidden="true"></i>Paiement confirmé
+                </button>
+              <% elsif is_preparation %>
+                <!-- Préparation en cours (disabled) -->
+                <button type="button" class="btn btn-info w-100 w-md-auto" disabled>
+                  <i class="bi bi-gear me-2" aria-hidden="true"></i>Préparation en cours
+                </button>
+              <% elsif ['sent', 'envoyé', 'shipped'].include?(@order.status.downcase) %>
+                <!-- Colis en route (disabled) -->
+                <button type="button" class="btn btn-success w-100 w-md-auto" disabled>
+                  <i class="bi bi-truck me-2" aria-hidden="true"></i>Colis en route
+                </button>
+              <% elsif ['cancelled', 'annulé', 'canceled'].include?(@order.status.downcase) %>
+                <!-- Commande annulée (disabled) -->
+                <button type="button" class="btn btn-danger w-100 w-md-auto" disabled>
+                  <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Commande annulée
+                </button>
               <% end %>
-            <% end %>
+            </div>
+
+            <!-- Actions secondaires -->
+            <div class="d-flex gap-2 flex-wrap">
+              <%= link_to orders_path, 
+                  class: "btn btn-outline-primary btn-sm",
+                  aria: { label: "Retour à la liste des commandes" } do %>
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Retour
+              <% end %>
+              
+              <%= link_to shop_path, 
+                  class: "btn btn-outline-primary btn-sm",
+                  aria: { label: "Retour à la boutique" } do %>
+                <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
+              <% end %>
+
+              <!-- Annuler (en dropdown si cancellable) -->
+              <% if is_cancellable %>
+                <div class="dropdown">
+                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                          type="button" 
+                          id="orderActionsDropdown" 
+                          data-bs-toggle="dropdown" 
+                          aria-expanded="false"
+                          aria-label="Plus d'actions pour la commande ##{@order.id}">
+                    <i class="bi bi-three-dots-vertical me-1" aria-hidden="true"></i>Plus d'actions
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="orderActionsDropdown">
+                    <li>
+                      <%= button_to cancel_order_path(@order), 
+                          method: :patch,
+                          class: "dropdown-item text-danger",
+                          form: { 
+                            data: { 
+                              confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible et le stock sera restauré.",
+                              turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible et le stock sera restauré."
+                            } 
+                          },
+                          aria: { label: "Annuler la commande ##{@order.id}" } do %>
+                        <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Annuler cette commande
+                      <% end %>
+                    </li>
+                  </ul>
+                </div>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>

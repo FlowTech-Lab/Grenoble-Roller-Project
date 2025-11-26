@@ -3,7 +3,7 @@ class OrdersController < ApplicationController
   before_action :ensure_email_confirmed, only: [ :create ] # Exiger confirmation pour passer une commande
 
   def index
-    @orders = current_user.orders.includes(order_items: { variant: :product }).order(created_at: :desc)
+    @orders = current_user.orders.includes(:payment, order_items: { variant: :product }).order(created_at: :desc)
   end
 
   def new
@@ -36,8 +36,8 @@ class OrdersController < ApplicationController
 
     total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
 
-    # Transaction pour garantir la cohérence
-    Order.transaction do
+    # Transaction pour garantir la cohérence des données locales (order + stock)
+    order = Order.transaction do
       order = Order.create!(
         user: current_user,
         status: "pending",
@@ -57,9 +57,48 @@ class OrdersController < ApplicationController
         # Déduire le stock
         variant.decrement!(:stock_qty, ci[:quantity])
       end
+      order
+    end
 
-      session[:cart] = {}
-      redirect_to order_path(order), notice: "Commande créée avec succès."
+    # Vider le panier local une fois la commande créée
+    session[:cart] = {}
+
+    # Initialiser un checkout HelloAsso en sandbox (ou production selon l'env)
+    # Pour l'instant, on ne gère pas encore le don côté backend → 0 centimes.
+    checkout_result = HelloassoService.create_checkout_intent(
+      order,
+      donation_cents: 0,
+      back_url: shop_url,
+      error_url: order_url(order),
+      return_url: order_url(order)
+    )
+
+    if checkout_result[:success]
+      body = checkout_result[:body] || {}
+
+      payment = Payment.create!(
+        provider: "helloasso",
+        provider_payment_id: body["id"].to_s,
+        amount_cents: total_cents,
+        currency: "EUR",
+        status: "pending",
+        created_at: Time.current
+      )
+
+      order.update!(payment: payment)
+
+      redirect_url = body["redirectUrl"]
+
+      if redirect_url.present?
+        # URL externe (HelloAsso sandbox/production) → autoriser l'hôte externe explicitement
+        redirect_to redirect_url, allow_other_host: true
+      else
+        redirect_to order_path(order), notice: "Commande créée avec succès (paiement HelloAsso initialisé)."
+      end
+    else
+      # Fallback : si HelloAsso ne renvoie pas d'URL ou renvoie une erreur,
+      # on garde la commande en pending et on affiche un message.
+      redirect_to order_path(order), alert: "Commande créée mais paiement HelloAsso non initialisé (code #{checkout_result[:status]})."
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to cart_path, alert: "Erreur lors de la création de la commande: #{e.message}"
@@ -69,6 +108,52 @@ class OrdersController < ApplicationController
 
   def show
     @order = current_user.orders.includes(order_items: { variant: :product }).find(params[:id])
+  end
+
+  def pay
+    @order = current_user.orders.includes(:payment).find(params[:id])
+
+    payment = @order.payment
+
+    unless @order.status&.downcase == "pending" &&
+           payment&.provider == "helloasso" &&
+           payment.status == "pending"
+      return redirect_to order_path(@order),
+                         alert: "Cette commande ne peut pas être payée via HelloAsso."
+    end
+
+    # Créer un nouveau checkout-intent (plus fiable que de réutiliser l'ancien qui peut expirer)
+    checkout_result = HelloassoService.create_checkout_intent(
+      @order,
+      donation_cents: 0,
+      back_url: orders_url,
+      error_url: order_url(@order),
+      return_url: order_url(@order)
+    )
+
+    if checkout_result[:success]
+      body = checkout_result[:body] || {}
+      redirect_url = body["redirectUrl"]
+
+      # Mettre à jour le payment avec le nouveau checkout-intent ID
+      if body["id"].present?
+        payment.update!(
+          provider_payment_id: body["id"].to_s
+        )
+      end
+
+      if redirect_url.present?
+        redirect_to redirect_url, allow_other_host: true
+      else
+        redirect_to order_path(@order),
+                    alert: "Impossible de récupérer l'URL de paiement HelloAsso. " \
+                           "Merci de réessayer plus tard ou de contacter l'association."
+      end
+    else
+      redirect_to order_path(@order),
+                  alert: "Erreur lors de l'initialisation du paiement HelloAsso. " \
+                         "Merci de réessayer plus tard ou de contacter l'association."
+    end
   end
 
   def cancel
@@ -94,7 +179,7 @@ class OrdersController < ApplicationController
       @order.update!(status: "cancelled")
     end
 
-    redirect_to order_path(@order), notice: "Commande annulée avec succès. Le stock a été restauré."
+    redirect_to order_path(@order), notice: "Commande annulée avec succès."
   rescue => e
     redirect_to order_path(@order), alert: "Erreur lors de l'annulation : #{e.message}"
   end
