@@ -2,20 +2,32 @@
 <% if notice || alert %>
   <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
     <% if notice %>
+      <% 
+        # Déterminer le type de toast (success par défaut si flash[:type] == 'success', sinon info)
+        toast_type = flash[:type] == 'success' ? 'success' : 'info'
+        show_cart_button = flash[:show_cart_button] == true
+      %>
       <div class="toast" 
            role="alert" 
            aria-live="assertive" 
            aria-atomic="true" 
            data-bs-autohide="true" 
-           data-bs-delay="5000"
+           data-bs-delay="6000"
            data-controller="toast">
-        <div class="toast-header bg-info text-white">
-          <i class="bi bi-info-circle me-2"></i>
-          <strong class="me-auto">Information</strong>
+        <div class="toast-header <%= toast_type == 'success' ? 'bg-success' : 'bg-info' %> text-white">
+          <i class="bi <%= toast_type == 'success' ? 'bi-check-circle' : 'bi-info-circle' %> me-2"></i>
+          <strong class="me-auto"><%= toast_type == 'success' ? 'Succès' : 'Information' %></strong>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body">
-          <%= notice %>
+          <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
+            <span class="flex-grow-1"><%= notice %></span>
+            <% if show_cart_button %>
+              <%= link_to cart_path, class: "btn btn-sm btn-liquid-primary flex-shrink-0" do %>
+                <i class="bi bi-cart me-1"></i>Voir le panier
+              <% end %>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>

@@ -27,7 +27,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Total** : **119 améliorations** identifiées (**+12 nouvelles** liées au footer)
 
-**Avancement** : **8/41 Quick Wins terminés** (20%) + **1 partiellement fait**
+**Avancement** : **9/41 Quick Wins terminés** (22%) + **1 partiellement fait**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -75,9 +75,9 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ### **Parcours 7 : Achat en Boutique**
 - [ ] Filtres par catégories (Sidebar ou tabs avec catégories)
 - [ ] Barre de recherche (Recherche par nom produit - AJAX)
-- [ ] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url)
+- [x] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url) ✅ **DÉJÀ GÉRÉ** - Image obligatoire (validation `presence: true`)
 - [ ] Zoom sur image produit (Lightbox pour agrandir l'image au clic)
-- [ ] Message "Article ajouté" plus visible (Toast/notification persistante)
+- [x] Message "Article ajouté" plus visible (Toast/notification persistante) ✅ **TERMINÉ** (2025-01-20)
 
 ### **Parcours 8 : Administration**
 - [x] Dashboard avec statistiques basiques (Cards avec compteurs : Événements à valider, Utilisateurs, Commandes, Revenus)
@@ -587,11 +587,11 @@ Une user story est "Done" quand :
 ---
 
 **Document créé le** : 2025-11-14  
-**Dernière mise à jour** : 2025-11-15  
-**Version** : 1.3 (Mise à jour avancement - 8 Quick Wins terminés)
+**Dernière mise à jour** : 2025-01-20  
+**Version** : 1.4 (Mise à jour avancement - 9 Quick Wins terminés)
 
 **Avancement actuel** :
-- ✅ **8 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain"
+- ✅ **9 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20)
 - 🟡 **1 partiellement fait** : Liens footer (Contact/CGU/Confidentialité restent `#`)
-- ⏳ **32 Quick Wins en attente**
+- ⏳ **31 Quick Wins en attente**
 

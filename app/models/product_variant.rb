@@ -4,7 +4,7 @@ class ProductVariant < ApplicationRecord
   has_many :option_values, through: :variant_option_values
 
   validates :sku, presence: true, uniqueness: true, length: { maximum: 80 }
-  validates :price_cents, :currency, presence: true
+  validates :price_cents, :currency, :image_url, presence: true
   validates :currency, length: { is: 3 }
 
   def self.ransackable_attributes(_auth_object = nil)
