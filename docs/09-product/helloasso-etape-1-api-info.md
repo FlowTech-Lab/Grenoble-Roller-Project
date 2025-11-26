@@ -1,9 +1,9 @@
 ---
 title: "Hello Asso - Étape 1 : Récupération des Informations API"
 status: "active"
-version: "1.1"
+version: "1.2"
 created: "2025-01-20"
-updated: "2025-11-26"
+updated: "2025-01-26"
 tags: ["helloasso", "api", "integration", "etape-1"]
 ---
 
@@ -255,6 +255,21 @@ Les prochaines étapes sont décrites dans `synthese-quick-wins-helloasso.md` :
 
 ---
 
-**Dernière mise à jour** : 2025-11-26  
-**Version** : 1.1
+**Dernière mise à jour** : 2025-01-26  
+**Version** : 1.2
+
+## 📝 CHANGELOG
+
+### Version 1.2 (2025-01-26)
+- ✅ **Action `OrdersController#pay` implémentée**
+  - Crée un nouveau checkout-intent à chaque clic (évite expiration)
+  - Mise à jour automatique du `provider_payment_id`
+  - Gestion d'erreurs améliorée
+- ✅ **UX Liste commandes améliorée**
+  - Bouton "Payer" visible directement dans la liste
+  - Route `POST /orders/:id/pay` ajoutée
+
+### Version 1.1 (2025-11-26)
+- ✅ Documentation mise à jour avec endpoints checkout-intents
+- ✅ Clarification sandbox vs production
 

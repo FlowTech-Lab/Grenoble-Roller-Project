@@ -73,11 +73,18 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?")
 
 ### **Parcours 7 : Achat en Boutique**
-- [ ] Filtres par catégories (Sidebar ou tabs avec catégories)
-- [ ] Barre de recherche (Recherche par nom produit - AJAX)
+- [ ] Filtres par catégories (Sidebar ou tabs avec catégories) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
+- [ ] Barre de recherche (Recherche par nom produit - AJAX) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
 - [x] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url) ✅ **DÉJÀ GÉRÉ** - Image obligatoire (validation `presence: true`)
-- [ ] Zoom sur image produit (Lightbox pour agrandir l'image au clic)
+- [ ] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ⚠️ **PRIORITÉ MOYENNE**
 - [x] Message "Article ajouté" plus visible (Toast/notification persistante) ✅ **TERMINÉ** (2025-01-20)
+- [x] **UX Liste commandes : Bouton "Payer" visible** ✅ **TERMINÉ** (2025-01-26)
+  - Bouton "Payer" directement dans la liste pour commandes `pending`
+  - Suppression bouton "Annuler" de la liste (réduit annulations accidentelles)
+- [x] **UX Page détail : Optimisation actions** ✅ **TERMINÉ** (2025-01-26)
+  - Alerte redondante supprimée
+  - Bouton "Finaliser le paiement" comme CTA principal
+  - "Annuler" dans dropdown (friction élevée)
 
 ### **Parcours 8 : Administration**
 - [x] Dashboard avec statistiques basiques (Cards avec compteurs : Événements à valider, Utilisateurs, Commandes, Revenus)
@@ -587,11 +594,11 @@ Une user story est "Done" quand :
 ---
 
 **Document créé le** : 2025-11-14  
-**Dernière mise à jour** : 2025-01-20  
-**Version** : 1.4 (Mise à jour avancement - 9 Quick Wins terminés)
+**Dernière mise à jour** : 2025-01-26  
+**Version** : 1.5 (Mise à jour avancement - 11 Quick Wins terminés)
 
 **Avancement actuel** :
-- ✅ **9 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20)
+- ✅ **11 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26)
 - 🟡 **1 partiellement fait** : Liens footer (Contact/CGU/Confidentialité restent `#`)
-- ⏳ **31 Quick Wins en attente**
+- ⏳ **29 Quick Wins en attente**
 

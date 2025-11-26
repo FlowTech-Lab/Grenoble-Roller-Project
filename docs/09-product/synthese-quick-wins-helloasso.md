@@ -1,9 +1,9 @@
 ---
 title: "Synthèse Quick Wins & Intégration Hello Asso"
 status: "active"
-version: "1.2"
+version: "1.3"
 created: "2025-01-20"
-updated: "2025-11-26"
+updated: "2025-01-26"
 tags: ["product", "quick-wins", "helloasso", "boutique", "paiement"]
 ---
 
@@ -144,6 +144,16 @@ tags: ["product", "quick-wins", "helloasso", "boutique", "paiement"]
     - Message utilisateur neutre ("Commande annulée avec succès.")
 - ✅ **Pages légales**
   - CGV / Confidentialité / Mentions légales à jour avec HelloAsso
+- ✅ **UX Liste commandes & Reprise paiement** (2025-01-26)
+  - **Bouton "Payer" dans la liste** : Visible directement dans `orders/index` pour les commandes `pending` avec paiement HelloAsso `pending`
+  - **Suppression bouton "Annuler" de la liste** : Réduit les annulations accidentelles, l'annulation se fait uniquement depuis la page détail
+  - **Action `OrdersController#pay`** : Crée un **nouveau checkout-intent** à chaque clic (évite les erreurs 404 dues à l'expiration)
+  - **Mise à jour `provider_payment_id`** : Le nouveau checkout-intent ID remplace l'ancien dans le `Payment`
+- ✅ **UX Page détail commande** (2025-01-26)
+  - **Alerte paiement pending supprimée** : Plus de redondance, focus sur l'action principale
+  - **Bouton principal "Finaliser le paiement"** : CTA unique et visible pour les paiements en attente
+  - **Bouton "Annuler" dans dropdown** : Caché dans menu "Plus d'actions" (friction élevée = moins d'annulations accidentelles)
+  - **Hiérarchie visuelle améliorée** : Titre séparé du status badge, sections claires, mobile-first
 
 ---
 
@@ -170,6 +180,17 @@ Utilisateur → Panier → Page Checkout
 
 ÉTAT ACTUEL : Order & Payment restent `pending` après paiement.
 La validation se fait côté HelloAsso uniquement (back-office).
+
+REPRISE PAIEMENT (nouveau - 2025-01-26) :
+Utilisateur → Liste commandes → Clic "Payer"
+          ↓
+   POST /orders/:id/pay (OrdersController#pay)
+          ↓
+ Création NOUVEAU checkout-intent (évite expiration)
+          ↓
+ Mise à jour Payment.provider_payment_id
+          ↓
+ Redirection HelloAsso (URL toujours valide)
 ```
 
 ### 🔜 Phase 2 – Polling (lecture API HelloAsso)
@@ -297,6 +318,56 @@ Objectif : mise à jour temps réel et robuste des paiements.
 - ✅ Gestion des quantités : "3x T-shirt ajoutés au panier"
 - ✅ Redirection vers boutique après ajout (logique améliorée)
 - ✅ Layout responsive (bouton en dessous sur mobile, à côté sur desktop)
+
+#### 1.2 UX Liste commandes & Reprise paiement ✅ **TERMINÉ** (2025-01-26)
+**Fichiers modifiés** :
+- `app/views/orders/index.html.erb` - Ajout bouton "Payer", suppression bouton "Annuler"
+- `app/controllers/orders_controller.rb` - Action `pay` créant un nouveau checkout-intent
+- `config/routes.rb` - Route `POST /orders/:id/pay`
+
+**Implémentation réalisée** :
+- ✅ **Bouton "Payer" dans la liste** : Visible directement pour les commandes `pending` avec paiement HelloAsso `pending`
+  - Bouton orange (`btn-warning`) pour visibilité
+  - Placé avant le bouton "Détails"
+  - Redirige directement vers HelloAsso (1 clic pour payer)
+- ✅ **Suppression bouton "Annuler" de la liste** : Réduit les annulations accidentelles
+  - L'annulation se fait uniquement depuis la page détail (dans dropdown "Plus d'actions")
+  - Friction élevée = moins d'annulations par erreur
+- ✅ **Action `OrdersController#pay`** : Crée un **nouveau checkout-intent** à chaque clic
+  - Évite les erreurs 404 dues à l'expiration des checkout-intents
+  - URL de redirection toujours valide
+  - Mise à jour automatique du `Payment.provider_payment_id` avec le nouveau ID
+- ✅ **Gestion d'erreurs** : Messages clairs si la création du checkout-intent échoue
+
+**Résultat UX** :
+- **Payer** : 1 clic depuis la liste → redirection HelloAsso ✅
+- **Annuler** : 3-4 clics (Détails → Plus d'actions → Annuler → Confirmer) ⬆️
+- **Objectif atteint** : Encourager les paiements, réduire les annulations accidentelles
+
+#### 1.3 UX Page détail commande ✅ **TERMINÉ** (2025-01-26)
+**Fichiers modifiés** :
+- `app/views/orders/show.html.erb` - Refactorisation complète selon bonnes pratiques UX
+
+**Implémentation réalisée** :
+- ✅ **Alerte paiement pending supprimée** : Plus de redondance, focus sur l'action principale
+- ✅ **Bouton principal "Finaliser le paiement"** : CTA unique et visible pour les paiements en attente
+  - Bouton orange (`btn-warning`) full-width sur mobile, auto sur desktop
+  - Visible uniquement si `payment.status == "pending"` et `payment.provider == "helloasso"`
+- ✅ **Bouton "Annuler" dans dropdown** : Caché dans menu "Plus d'actions"
+  - Friction élevée = moins d'annulations accidentelles
+  - Visible uniquement pour les commandes cancellables (`pending` ou `preparation`)
+- ✅ **Hiérarchie visuelle améliorée** :
+  - Titre séparé du status badge (plus clair)
+  - Status badges avec icônes + texte clair (pas de jargon technique)
+  - Couleurs cohérentes : Jaune (pending), Bleu (préparation), Vert (payé/expédié), Rouge (annulé)
+- ✅ **Actions contextuelles** : Une action principale par contexte
+  - Pending + payment pending → "Finaliser le paiement"
+  - Paid → "Paiement confirmé" (disabled)
+  - Préparation → "Préparation en cours" (disabled)
+  - Expédié → "Colis en route" (disabled)
+  - Annulé → "Commande annulée" (disabled)
+- ✅ **Mobile-first** : Boutons full-width sur mobile, stacking vertical logique
+- ✅ **Accessibilité** : Labels ARIA, icônes avec `aria-hidden`, contraste respecté
 
 #### 1.2 Zoom sur image produit (2h) ⚠️ **PRIORITÉ MOYENNE**
 **Fichiers à modifier** :
@@ -552,12 +623,28 @@ get 'orders/:id/confirm', to: 'orders#confirm', as: 'confirm_order'
 
 ---
 
-**Dernière mise à jour** : 2025-01-20  
-**Version** : 1.1
+**Dernière mise à jour** : 2025-01-26  
+**Version** : 1.3
 
 ## 📝 CHANGELOG
 
-### Version 1.1 (2025-01-20)
+### Version 1.3 (2025-01-26)
+- ✅ **UX Liste commandes améliorée**
+  - Bouton "Payer" visible directement dans la liste pour les commandes `pending`
+  - Suppression bouton "Annuler" de la liste (réduit annulations accidentelles)
+  - Action `OrdersController#pay` créant un nouveau checkout-intent à chaque clic
+  - Mise à jour automatique du `provider_payment_id` avec le nouveau checkout-intent
+- ✅ **UX Page détail commande optimisée**
+  - Alerte paiement pending supprimée (plus de redondance)
+  - Bouton principal "Finaliser le paiement" comme CTA unique
+  - Bouton "Annuler" déplacé dans dropdown "Plus d'actions" (friction élevée)
+  - Hiérarchie visuelle améliorée (titre/status séparés, mobile-first)
+- ✅ **Logique reprise paiement robuste**
+  - Création d'un nouveau checkout-intent évite les erreurs 404 (expiration)
+  - URL de redirection toujours valide
+  - Gestion d'erreurs améliorée dans `OrdersController#pay`
+
+### Version 1.2 (2025-01-20)
 - ✅ Quick Win "Message Article ajouté" terminé
   - Toast vert (success) avec nom du produit
   - Bouton "Voir le panier" dans le toast
