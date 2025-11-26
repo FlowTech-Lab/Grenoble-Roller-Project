@@ -64,6 +64,40 @@ class HelloassoService
       production? ? HELLOASSO_PRODUCTION_API_BASE_URL : HELLOASSO_SANDBOX_API_BASE_URL
     end
 
+    # ---- Payload helpers (no network) -------------------------------------------
+
+    # Construit le payload JSON (Hash Ruby) pour initialiser un checkout HelloAsso.
+    #
+    # - order: objet ressemblant à une Order locale (id, total_cents, currency)
+    # - donation_cents: montant du don additionnel en centimes (Integer)
+    # - back_url: URL suivie par le contributeur s'il veut revenir en arrière
+    # - error_url: URL appelée en cas d'erreur pendant le checkout
+    # - return_url: URL appelée après le paiement (succès / échec)
+    #
+    # NOTE: on ne fait AUCUN appel réseau ici, juste un Hash Ruby.
+    def build_checkout_intent_payload(order, donation_cents:, back_url:, error_url:, return_url:)
+      raise ArgumentError, "order is required" unless order
+      raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+
+      total_cents = order.total_cents.to_i + donation_cents.to_i
+
+      {
+        totalAmount: total_cents,
+        initialAmount: total_cents, # un seul paiement pour l'instant
+        itemName: "Commande ##{order.id} - Boutique Grenoble Roller",
+        backUrl: back_url,
+        errorUrl: error_url,
+        returnUrl: return_url,
+        containsDonation: donation_cents.to_i.positive?,
+        terms: nil,
+        payer: nil,
+        metadata: {
+          localOrderId: order.id,
+          environment: environment
+        }.to_json # la doc attend une string JSON
+      }
+    end
+
     # ---- OAuth2 / Token management -------------------------------------------------
 
     # Appelle l'API HelloAsso pour obtenir un access_token OAuth2
