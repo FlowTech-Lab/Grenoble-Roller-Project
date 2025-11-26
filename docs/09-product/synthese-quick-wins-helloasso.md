@@ -281,6 +281,29 @@ get 'orders/:id/confirm', to: 'orders#confirm', as: 'confirm_order'
 
 ## 🎯 PLAN D'ACTION - INTÉGRATION HELLO ASSO
 
+### **Phase 0 : Récupération des Informations API** ⚠️ **PREMIÈRE ÉTAPE**
+
+> 📋 **Voir le document détaillé** : [`helloasso-etape-1-api-info.md`](helloasso-etape-1-api-info.md)
+
+#### 0.1 Récupérer les identifiants Hello Asso
+- [ ] Accéder au compte Hello Asso de l'association
+- [ ] Aller dans "Mon compte" → "Intégrations et API"
+- [ ] Récupérer **Client ID** et **Client Secret** (OAuth2)
+- [ ] Noter l'**Organization Slug** (ex: "grenoble-roller")
+- [ ] Consulter la documentation API : https://api.helloasso.com/v5/docs
+- [ ] Comprendre le flux OAuth2 (obtention du token)
+- [ ] Tester l'authentification en sandbox
+
+**Livrables** :
+- Identifiants OAuth2 notés (Client ID, Client Secret)
+- Organization Slug identifié
+- Documentation API consultée
+- Test d'authentification OAuth2 réussi
+
+**Durée estimée** : 1-2h (selon familiarité avec Hello Asso)
+
+---
+
 ### **Phase 1 : Configuration & Service (2-3h)**
 
 #### 1.1 Ajouter credentials Hello Asso
@@ -288,9 +311,13 @@ get 'orders/:id/confirm', to: 'orders#confirm', as: 'confirm_order'
 bin/rails credentials:edit
 # Ajouter :
 # helloasso:
-#   token: "votre_token_helloasso"
+#   client_id: "votre_client_id"           # OAuth2 Client ID
+#   client_secret: "votre_client_secret"  # OAuth2 Client Secret
 #   organization_slug: "grenoble-roller"  # À confirmer avec Hello Asso
+#   environment: "sandbox"                 # ou "production"
 ```
+
+> ⚠️ **IMPORTANT** : Ces identifiants doivent être récupérés depuis le compte Hello Asso (voir Phase 0)
 
 #### 1.2 Créer le service Hello Asso
 **Fichier** : `app/services/helloasso_service.rb`
@@ -426,7 +453,12 @@ get 'orders/:id/confirm', to: 'orders#confirm', as: 'confirm_order'
 ### Documentation Hello Asso
 - **API Documentation** : https://api.helloasso.com/v5/docs
 - **Webhooks** : https://api.helloasso.com/v5/docs/webhooks
-- **Sandbox** : https://www.helloasso.com/associations/grenoble-roller (à confirmer)
+- **⚠️ SANDBOX (Tests obligatoires)** :
+  - OAuth2 : https://api.helloasso-sandbox.com/oauth2
+  - API v5 : https://api.helloasso-sandbox.com/v5
+- **Production** :
+  - OAuth2 : https://api.helloasso.com/oauth2
+  - API v5 : https://api.helloasso.com/v5
 
 ### Fichiers de référence dans le projet
 - `docs/02-shape-up/technical-implementation-guide.md` - Exemple service Hello Asso
