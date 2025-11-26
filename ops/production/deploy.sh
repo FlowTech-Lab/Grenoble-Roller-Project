@@ -234,7 +234,34 @@ REMOTE=$(git rev-parse "origin/${BRANCH}" 2>/dev/null || echo "$LOCAL")
 
 if [ "$LOCAL" = "$REMOTE" ]; then
     log "✅ Déjà à jour (commit: ${LOCAL:0:7})"
-    exit 0
+    
+    # 🔍 Vérification critique : Migrations en attente même si Git est à jour
+    # Ceci évite le drift DB/code non détecté (best practice DevOps production-grade)
+    log "🔍 Vérification des migrations en attente..."
+    if container_is_running "$CONTAINER_NAME"; then
+        MIGRATION_STATUS=$(docker exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
+        PENDING_COUNT=$(echo "$MIGRATION_STATUS" | grep -c "^\s*down" || echo "0")
+        PENDING_LIST=$(echo "$MIGRATION_STATUS" | grep "^\s*down" | sed 's/^\s*down\s*//' || echo "")
+        
+        if [ "$PENDING_COUNT" -gt 0 ]; then
+            log_warning "⚠️  $PENDING_COUNT migration(s) en attente détectée(s)"
+            if [ -n "$PENDING_LIST" ]; then
+                log_warning "Migrations en attente :"
+                echo "$PENDING_LIST" | while read -r migration; do
+                    log_warning "  - $migration"
+                done
+            fi
+            log "🔄 Continuation du déploiement pour exécuter les migrations..."
+            # Ne pas exit, continuer vers la phase de migrations
+        else
+            log "✅ Aucune migration en attente - Base de données synchronisée"
+            exit 0
+        fi
+    else
+        log_warning "⚠️  Impossible de vérifier les migrations (conteneur non running)"
+        log_info "Sortie sans vérification - les migrations seront vérifiées au prochain déploiement"
+        exit 0
+    fi
 fi
 
 log "🆕 Nouvelle version détectée (${LOCAL:0:7} → ${REMOTE:0:7})"
@@ -322,7 +349,8 @@ if ! container_is_running "$CONTAINER_NAME"; then
 fi
 
 # 10. Migrations - Vérification finale avant exécution
-log "🗄️ Exécution des migrations..."
+log "🗄️ Préparation des migrations..."
+
 # Double vérification juste avant l'exécution
 if ! container_is_running "$CONTAINER_NAME"; then
     log_error "Le conteneur web s'est arrêté juste avant les migrations"
@@ -335,13 +363,125 @@ fi
 log_info "État du conteneur avant migrations :"
 docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
 
+# 🔍 SAFEGUARD 1 : Analyse des migrations en attente pour détecter les migrations destructives
+log "🔍 Analyse des migrations en attente pour détecter les risques..."
+MIGRATION_STATUS=$(docker exec "${CONTAINER_NAME}" bin/rails db:migrate:status 2>&1)
+PENDING_MIGRATIONS=$(echo "$MIGRATION_STATUS" | grep "^\s*down" || echo "")
+
+if [ -n "$PENDING_MIGRATIONS" ]; then
+    # Patterns destructifs étendus (couvre plus de cas Rails)
+    DESTRUCTIVE_PATTERNS="Remove|Drop|Destroy|Delete|Truncate|Clear|Rename.*Column|Change.*Column.*Type"
+    DESTRUCTIVE_MIGRATIONS=$(echo "$PENDING_MIGRATIONS" | grep -iE "$DESTRUCTIVE_PATTERNS" || echo "")
+    
+    if [ -n "$DESTRUCTIVE_MIGRATIONS" ]; then
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "⚠️  ⚠️  ⚠️  MIGRATIONS DESTRUCTIVES DÉTECTÉES ⚠️  ⚠️  ⚠️"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "Les migrations suivantes peuvent supprimer ou modifier définitivement des données :"
+        echo "$DESTRUCTIVE_MIGRATIONS" | while read -r migration; do
+            log_error "  🔴 $migration"
+        done
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "🔴 PRODUCTION : Approbation manuelle requise"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "Action requise : Exécuter manuellement après vérification"
+        log_error "Commande : docker exec ${CONTAINER_NAME} bin/rails db:migrate"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "Déploiement arrêté pour sécurité. Rollback du code..."
+        rollback "$CURRENT_COMMIT"
+        exit 1
+    else
+        log_success "✅ Aucune migration destructive détectée"
+    fi
+    
+    # Détecter aussi les migrations de données (potentiellement longues)
+    DATA_PATTERNS="find_each|update_all|destroy_all|\.each"
+    DATA_MIGRATIONS=$(echo "$PENDING_MIGRATIONS" | grep -iE "$DATA_PATTERNS" || echo "")
+    
+    if [ -n "$DATA_MIGRATIONS" ]; then
+        log_warning "⚠️  Migrations de données détectées (potentiellement longues) :"
+        echo "$DATA_MIGRATIONS" | while read -r migration; do
+            log_warning "  🟡 $migration"
+        done
+        log_warning "Ces migrations peuvent prendre du temps sur de gros volumes de données"
+    fi
+fi
+
+# 🕐 SAFEGUARD 2 : Configuration du timeout pour les migrations
+# Timeout : 10 minutes pour production (plus long car migrations peuvent être plus complexes)
+MIGRATION_TIMEOUT=600  # 10 minutes en production
+
+log "🕐 Timeout migration configuré : ${MIGRATION_TIMEOUT}s (${ENV})"
+
+# Détecter la version de timeout pour gérer les codes de sortie correctement
+TIMEOUT_CMD=""
+TIMEOUT_EXIT_CODE=124  # GNU timeout par défaut
+
+if command -v timeout > /dev/null 2>&1; then
+    # Tester si c'est GNU timeout (Linux) ou BSD timeout (macOS)
+    if timeout --version 2>&1 | grep -q "GNU\|coreutils"; then
+        TIMEOUT_CMD="timeout"
+        TIMEOUT_EXIT_CODE=124  # GNU timeout
+    elif timeout 1 sleep 0 2>&1 | grep -q "usage"; then
+        TIMEOUT_CMD="timeout"
+        TIMEOUT_EXIT_CODE=143  # BSD timeout
+    elif command -v gtimeout > /dev/null 2>&1; then
+        # macOS avec coreutils installé
+        TIMEOUT_CMD="gtimeout"
+        TIMEOUT_EXIT_CODE=124
+    else
+        log_warning "⚠️  Version de timeout non reconnue, utilisation par défaut"
+        TIMEOUT_CMD="timeout"
+    fi
+fi
+
 # En production, utiliser db:migrate (ne JAMAIS utiliser db:reset qui supprime les données)
-MIGRATION_OUTPUT=$(docker exec "${CONTAINER_NAME}" bin/rails db:migrate 2>&1)
-MIGRATION_EXIT_CODE=$?
+log "🗄️ Exécution des migrations (timeout: ${MIGRATION_TIMEOUT}s)..."
+MIGRATION_START_TIME=$(date +%s)
+
+# Utiliser timeout pour limiter la durée d'exécution
+if [ -n "$TIMEOUT_CMD" ]; then
+    MIGRATION_OUTPUT=$($TIMEOUT_CMD ${MIGRATION_TIMEOUT} docker exec "${CONTAINER_NAME}" bin/rails db:migrate 2>&1)
+    MIGRATION_EXIT_CODE=$?
+else
+    # Fallback si timeout n'est pas disponible
+    log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
+    MIGRATION_OUTPUT=$(docker exec "${CONTAINER_NAME}" bin/rails db:migrate 2>&1)
+    MIGRATION_EXIT_CODE=$?
+fi
+
+MIGRATION_END_TIME=$(date +%s)
+MIGRATION_DURATION=$((MIGRATION_END_TIME - MIGRATION_START_TIME))
+
 echo "$MIGRATION_OUTPUT" | tee -a "$LOG_FILE"
 
+# Vérifier si timeout a été déclenché (gérer codes 124, 143 ET 137)
+if [ $MIGRATION_EXIT_CODE -eq 124 ] || [ $MIGRATION_EXIT_CODE -eq 143 ] || [ $MIGRATION_EXIT_CODE -eq 137 ]; then
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_error "⏱️  TIMEOUT : Migration a dépassé ${MIGRATION_TIMEOUT}s"
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_error "⚠️  RISQUE CRITIQUE : Migration partielle possible"
+    log_error "La migration a peut-être été partiellement exécutée, vérifiez l'état de la DB"
+    log_error "Durée réelle : ${MIGRATION_DURATION}s"
+    log_error ""
+    log_error "🔧 SOLUTIONS POSSIBLES :"
+    log_error "  1. Vérifier l'état : docker exec ${CONTAINER_NAME} bin/rails db:migrate:status"
+    log_error "  2. Si migration bloquée : redémarrer le conteneur DB"
+    log_error "  3. Si migration partielle : restaurer backup puis corriger migration"
+    log_error "  4. Augmenter timeout si migration légitime : MIGRATION_TIMEOUT=1200 (20min)"
+    log_error ""
+    log_error "Action : Rollback du code et vérification manuelle immédiate de la DB"
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    show_container_logs "$CONTAINER_NAME" 50
+    rollback "$CURRENT_COMMIT"
+    exit 1
+fi
+
 if [ $MIGRATION_EXIT_CODE -ne 0 ]; then
-    log_error "Échec des migrations"
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_error "❌ Échec des migrations (durée: ${MIGRATION_DURATION}s)"
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     # Détecter les erreurs spécifiques
     if echo "$MIGRATION_OUTPUT" | grep -q "does not exist\|UndefinedTable"; then
@@ -351,15 +491,60 @@ if [ $MIGRATION_EXIT_CODE -ne 0 ]; then
         log_error "Action requise : Corriger l'ordre des migrations avant de redéployer"
     fi
     
-    show_container_logs "$CONTAINER_NAME"
+    if echo "$MIGRATION_OUTPUT" | grep -qi "lock\|deadlock\|timeout"; then
+        log_error "⚠️ ERREUR CRITIQUE DÉTECTÉE : Verrouillage de base de données"
+        log_error "La migration a peut-être causé un lock sur une table en production"
+        log_error "Vérifiez les processus PostgreSQL en cours et les locks actifs"
+        log_error "Commande : docker exec ${DB_CONTAINER} psql -U postgres -c \"SELECT * FROM pg_locks WHERE NOT granted;\""
+    fi
+    
+    show_container_logs "$CONTAINER_NAME" 50
+    
     # Vérifier l'état du conteneur après l'échec
     if ! container_is_running "$CONTAINER_NAME"; then
         log_error "Le conteneur s'est arrêté pendant les migrations"
         log_info "État du conteneur après échec :"
         docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
     fi
+    
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_error "Rollback du code en cours..."
     rollback "$CURRENT_COMMIT"
     exit 1
+fi
+
+# Migration réussie
+log_success "✅ Migrations exécutées avec succès (durée: ${MIGRATION_DURATION}s)"
+
+# ✅ SAFEGUARD 3 : Vérification post-migration (pas de pending restant)
+log "🔍 Vérification post-migration..."
+POST_MIGRATION_STATUS=$(docker exec "${CONTAINER_NAME}" bin/rails db:migrate:status 2>&1)
+POST_PENDING_COUNT=$(echo "$POST_MIGRATION_STATUS" | grep -c "^\s*down" || echo "0")
+
+if [ "$POST_PENDING_COUNT" -gt 0 ]; then
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_error "⚠️  ANOMALIE : $POST_PENDING_COUNT migration(s) encore en attente après db:migrate"
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "$POST_MIGRATION_STATUS" | grep "^\s*down" | while read -r migration; do
+        log_error "  🔴 $migration"
+    done
+    log_error "Cela indique probablement une migration échouée silencieusement"
+    log_error "Vérifiez manuellement : docker exec ${CONTAINER_NAME} bin/rails db:migrate:status"
+    log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    show_container_logs "$CONTAINER_NAME" 100
+    rollback "$CURRENT_COMMIT"
+    exit 1
+fi
+
+log_success "✅ Toutes les migrations ont été appliquées correctement"
+
+# Log performance pour monitoring
+if [ "$MIGRATION_DURATION" -gt 60 ]; then
+    log_warning "⚠️  Migration longue détectée : ${MIGRATION_DURATION}s (> 1min)"
+    log_warning "Considérez l'optimisation de cette migration pour éviter les locks en prod"
+elif [ "$MIGRATION_DURATION" -gt 300 ]; then
+    log_error "🔴 Migration TRÈS longue : ${MIGRATION_DURATION}s (> 5min)"
+    log_error "Cette migration causerait un downtime significatif en production"
 fi
 
 # 11. Health check HTTP (double vérification)
