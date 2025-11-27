@@ -10,6 +10,10 @@
 ARG RUBY_VERSION=3.4.2
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
+# Build ID pour forcer un nouveau build (évite cache Docker trompeur)
+ARG BUILD_ID=latest
+LABEL build.id="${BUILD_ID}"
+
 # Rails app lives here
 WORKDIR /rails
 

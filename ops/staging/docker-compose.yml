@@ -5,7 +5,9 @@ services:
   web:
     build:
       context: ../..
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  # Dockerfile à la racine (correct car context = ../..)
+      args:
+        BUILD_ID: ${BUILD_ID:-latest}
     container_name: grenoble-roller-staging
     env_file:
       - ../../.env
