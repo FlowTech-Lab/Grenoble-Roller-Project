@@ -56,7 +56,10 @@ admin = User.create!(
   last_name: "Roller",
   bio: "Administrateur du site Grenoble Roller",
   phone: "0698765432",
-  role: admin_role
+  role: admin_role,
+  skill_level: "advanced",
+  email_verified: true,
+  confirmed_at: Time.now  # Confirmation automatique pour admin
 )
 puts "👑 Admin créé !"
 
@@ -69,12 +72,17 @@ florian = User.create!(
   last_name: "Astier",
   bio: "Développeur fullstack passionné par les nouvelles technologies",
   phone: "0652556832",
-  role: superadmin_role
+  role: superadmin_role,
+  skill_level: "advanced",
+  email_verified: true,
+  confirmed_at: Time.now  # Confirmation automatique pour superadmin
 )
 puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 
 # 👥 Utilisateurs de test
+skill_levels = ["beginner", "intermediate", "advanced"]
 20.times do |i|
+  confirmed = rand > 0.2  # 80% des utilisateurs confirmés
   User.create!(
     email: "client#{i + 1}@example.com",
     password: "password123",
@@ -84,6 +92,9 @@ puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
     bio: "Membre passionné de la communauté roller grenobloise",
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
+    skill_level: skill_levels.sample,
+    email_verified: confirmed,
+    confirmed_at: confirmed ? (Time.now - rand(0..7).days) : nil,  # Confirmation à des dates variées
     created_at: Time.now - rand(1..30).days,
     updated_at: Time.now
   )
@@ -177,6 +188,7 @@ else
       status: order_status,
       total_cents: pay.amount_cents,
       currency: pay.currency,
+      donation_cents: rand(0..500),  # Don optionnelle entre 0 et 5€
       created_at: pay.created_at + rand(0..6).hours,
       updated_at: Time.now
     )

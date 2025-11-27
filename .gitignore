@@ -43,3 +43,6 @@
 /backups/
 /logs/
 ops/logs/
+
+# Métriques Prometheus (générées automatiquement à chaque déploiement)
+/metrics/
