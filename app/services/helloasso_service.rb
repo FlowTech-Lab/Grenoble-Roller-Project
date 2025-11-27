@@ -69,7 +69,7 @@ class HelloassoService
 
     # Construit le payload JSON (Hash Ruby) pour initialiser un checkout HelloAsso.
     #
-    # - order: objet ressemblant à une Order locale (id, total_cents, currency)
+    # - order: objet ressemblant à une Order locale (id, total_cents, currency, order_items)
     # - donation_cents: montant du don additionnel en centimes (Integer)
     # - back_url: URL suivie par le contributeur s'il veut revenir en arrière
     # - error_url: URL appelée en cas d'erreur pendant le checkout
@@ -80,22 +80,74 @@ class HelloassoService
       raise ArgumentError, "order is required" unless order
       raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
 
-      total_cents = order.total_cents.to_i + donation_cents.to_i
+      # Récupérer le don depuis l'order si disponible, sinon utiliser le paramètre
+      donation = order.respond_to?(:donation_cents) ? (order.donation_cents || 0) : donation_cents.to_i
+      
+      # Construire le tableau items avec les articles de la commande
+      items = []
+      
+      # Ajouter les articles de la commande (si order_items est disponible)
+      if order.respond_to?(:order_items) && order.order_items.any?
+        order.order_items.each do |order_item|
+          product_name = if order_item.respond_to?(:variant) && order_item.variant
+                           order_item.variant.product&.name || "Article ##{order_item.variant_id}"
+                         elsif order_item.respond_to?(:product)
+                           order_item.product&.name || "Article ##{order_item.id}"
+                         else
+                           "Article ##{order_item.id}"
+                         end
+          
+          items << {
+            name: product_name,
+            quantity: order_item.quantity.to_i,
+            amount: order_item.unit_price_cents.to_i,
+            type: "Product"
+          }
+        end
+      else
+        # Fallback : si pas d'order_items, créer un item générique avec le total des articles
+        articles_cents = order.total_cents.to_i - donation
+        if articles_cents > 0
+          items << {
+            name: "Commande ##{order.id} - Boutique Grenoble Roller",
+            quantity: 1,
+            amount: articles_cents,
+            type: "Product"
+          }
+        end
+      end
+      
+      # Ajouter le don comme item séparé si > 0 (selon la doc HelloAsso)
+      if donation > 0
+        items << {
+          name: "Contribution à l'association",
+          quantity: 1,
+          amount: donation,
+          type: "Donation"
+        }
+      end
 
+      # Structure du payload pour checkout-intents
+      # NOTE: L'endpoint /checkout-intents peut nécessiter une structure différente de /orders
+      # Selon la doc HelloAsso, checkout-intents utilise totalAmount/initialAmount, pas items
+      # Mais on peut essayer avec items d'abord, et fallback si erreur 400
+      
+      total_cents = items.sum { |item| item[:amount] * item[:quantity] }
+      
+      # Structure pour checkout-intents (selon tests précédents qui fonctionnaient)
       {
         totalAmount: total_cents,
-        initialAmount: total_cents, # un seul paiement pour l'instant
-        itemName: "Commande ##{order.id} - Boutique Grenoble Roller",
+        initialAmount: total_cents,
+        itemName: items.any? ? items.map { |i| "#{i[:name]} x#{i[:quantity]}" }.join(", ") : "Commande ##{order.id}",
         backUrl: back_url,
         errorUrl: error_url,
         returnUrl: return_url,
-        containsDonation: donation_cents.to_i.positive?,
-        terms: nil,
-        payer: nil,
-        # La doc indique que metadata est un JSON object, pas une string.
+        containsDonation: donation.positive?,
         metadata: {
           localOrderId: order.id,
-          environment: environment
+          environment: environment,
+          donationCents: donation,
+          items: items # Garder les items dans metadata pour référence
         }
       }
     end
@@ -134,7 +186,13 @@ class HelloassoService
       response = http.request(request)
 
       unless response.is_a?(Net::HTTPSuccess)
-        raise "HelloAsso OAuth error (#{response.code}): #{response.body}"
+        error_msg = if response.code.to_i == 429
+                      "HelloAsso OAuth error (429): Rate limit atteint. " \
+                      "Les serveurs HelloAsso sont surchargés. Réessayez dans quelques minutes."
+                    else
+                      "HelloAsso OAuth error (#{response.code}): #{response.body[0..200]}"
+                    end
+        raise error_msg
       end
 
       body = JSON.parse(response.body)
@@ -150,10 +208,20 @@ class HelloassoService
     end
 
     # Helper pratique pour juste récupérer le token (ou nil en cas d'erreur)
+    # Force un nouveau token à chaque appel (pas de cache) pour éviter les tokens expirés
     def access_token
-      fetch_access_token![:access_token]
+      result = fetch_access_token!
+      token = result[:access_token]
+      
+      if token.to_s.strip.empty?
+        Rails.logger.error("[HelloassoService] access_token vide dans la réponse : #{result.inspect}")
+        return nil
+      end
+      
+      token
     rescue => e
       Rails.logger.error("[HelloassoService] Impossible de récupérer l'access_token : #{e.class} - #{e.message}")
+      Rails.logger.error("[HelloassoService] Backtrace: #{e.backtrace.first(5).join("\n")}")
       nil
     end
 
@@ -173,9 +241,23 @@ class HelloassoService
     #     body: { "id" => ..., "redirectUrl" => "..." }
     #   }
     def create_checkout_intent(order, donation_cents:, back_url:, error_url:, return_url:)
-      token = access_token
-      raise "HelloAsso access_token introuvable" if token.to_s.strip.empty?
+      # Vérifier les prérequis
       raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+      
+      # Obtenir un token (avec retry si nécessaire)
+      token = access_token
+      if token.to_s.strip.empty?
+        Rails.logger.error("[HelloassoService] Tentative de récupération du token échouée")
+        # Réessayer une fois
+        begin
+          token = fetch_access_token![:access_token]
+        rescue => e
+          Rails.logger.error("[HelloassoService] Échec définitif de récupération du token : #{e.message}")
+          raise "HelloAsso access_token introuvable. Vérifiez les credentials (client_id, client_secret) dans Rails credentials."
+        end
+      end
+      
+      raise "HelloAsso access_token introuvable après retry" if token.to_s.strip.empty?
 
       payload = build_checkout_intent_payload(
         order,
@@ -185,18 +267,29 @@ class HelloassoService
         return_url: return_url
       )
 
+      # Log du payload pour debug
+      Rails.logger.info("[HelloassoService] Payload checkout-intent: #{payload.to_json}")
+
       uri = URI.parse("#{api_base_url}/organizations/#{organization_slug}/checkout-intents")
 
       request = Net::HTTP::Post.new(uri)
       request["Authorization"] = "Bearer #{token}"
       request["accept"] = "application/json"
-      request["content-type"] = "application/*+json"
+      request["content-type"] = "application/json"
       request.body = payload.to_json
 
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == "https")
 
       response = http.request(request)
+
+      # Si 401 (Unauthorized), le token a peut-être expiré, réessayer une fois avec un nouveau token
+      if response.code.to_i == 401
+        Rails.logger.warn("[HelloassoService] Token expiré (401) lors de create_checkout_intent, réessai avec un nouveau token...")
+        token = fetch_access_token![:access_token]
+        request["Authorization"] = "Bearer #{token}"
+        response = http.request(request)
+      end
 
       body =
         begin
@@ -211,7 +304,13 @@ class HelloassoService
         body: body
       }
 
-      Rails.logger.info("[HelloassoService] create_checkout_intent response: #{result.inspect}")
+      # Log détaillé pour debug
+      if response.code.to_i != 200
+        Rails.logger.error("[HelloassoService] create_checkout_intent ERROR (#{response.code}): #{response.body}")
+      else
+        Rails.logger.info("[HelloassoService] create_checkout_intent SUCCESS: #{result.inspect}")
+      end
+      
       result
     end
 
@@ -311,8 +410,12 @@ class HelloassoService
         "#{api_base_url}/organizations/#{organization_slug}/orders/#{order_id}"
       )
 
+      # Obtenir un token frais
+      token = access_token
+      raise "HelloAsso access_token introuvable" if token.to_s.strip.empty?
+
       request = Net::HTTP::Get.new(uri)
-      request["Authorization"] = "Bearer #{access_token}"
+      request["Authorization"] = "Bearer #{token}"
       request["accept"] = "application/json"
 
       http = Net::HTTP.new(uri.host, uri.port)
@@ -320,11 +423,40 @@ class HelloassoService
 
       response = http.request(request)
 
+      # Si 401 (Unauthorized), le token a peut-être expiré, réessayer une fois avec un nouveau token
+      if response.code.to_i == 401
+        Rails.logger.warn("[HelloassoService] Token expiré (401), réessai avec un nouveau token...")
+        token = fetch_access_token![:access_token]
+        request["Authorization"] = "Bearer #{token}"
+        response = http.request(request)
+      end
+
       unless response.is_a?(Net::HTTPSuccess)
         raise "HelloAsso order fetch error (#{response.code}): #{response.body}"
       end
 
       JSON.parse(response.body)
+    end
+
+    # Extrait le montant du don depuis une réponse HelloAsso (order ou checkout-intent).
+    # Cherche un item avec type: "Donation" dans le tableau items.
+    #
+    # - response_data: Hash Ruby parsé depuis la réponse JSON HelloAsso
+    #
+    # Retourne le montant en centimes (Integer), ou 0 si aucun don trouvé.
+    def extract_donation_from_response(response_data)
+      return 0 unless response_data.is_a?(Hash)
+      
+      items = response_data['items'] || response_data[:items] || []
+      return 0 unless items.is_a?(Array)
+      
+      donation_item = items.find { |item| 
+        (item['type'] || item[:type]) == 'Donation' 
+      }
+      
+      return 0 unless donation_item
+      
+      (donation_item['amount'] || donation_item[:amount] || 0).to_i
     end
 
     private
@@ -337,14 +469,26 @@ class HelloassoService
         "#{api_base_url}/organizations/#{organization_slug}/checkout-intents/#{checkout_intent_id}"
       )
 
+      # Obtenir un token frais
+      token = access_token
+      raise "HelloAsso access_token introuvable" if token.to_s.strip.empty?
+
       request = Net::HTTP::Get.new(uri)
-      request["Authorization"] = "Bearer #{access_token}"
+      request["Authorization"] = "Bearer #{token}"
       request["accept"] = "application/json"
 
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == "https")
 
       response = http.request(request)
+
+      # Si 401 (Unauthorized), le token a peut-être expiré, réessayer une fois avec un nouveau token
+      if response.code.to_i == 401
+        Rails.logger.warn("[HelloassoService] Token expiré (401), réessai avec un nouveau token...")
+        token = fetch_access_token![:access_token]
+        request["Authorization"] = "Bearer #{token}"
+        response = http.request(request)
+      end
 
       unless response.is_a?(Net::HTTPSuccess)
         raise "HelloAsso checkout-intent fetch error (#{response.code}): #{response.body}"

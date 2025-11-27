@@ -35,13 +35,21 @@ class OrdersController < ApplicationController
     end
 
     total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
+    
+    # Récupérer le don (en centimes) depuis les params
+    donation_cents = params[:donation_cents].to_i
+    donation_cents = 0 if donation_cents < 0 # Sécurité : pas de don négatif
+    
+    # Le total de la commande inclut le don
+    order_total_cents = total_cents + donation_cents
 
     # Transaction pour garantir la cohérence des données locales (order + stock)
     order = Order.transaction do
       order = Order.create!(
         user: current_user,
         status: "pending",
-        total_cents: total_cents,
+        total_cents: order_total_cents, # Total inclut le don
+        donation_cents: donation_cents, # Stocker le don séparément
         currency: "EUR"
       )
 
@@ -66,11 +74,10 @@ class OrdersController < ApplicationController
     # Vider le panier local une fois la commande créée
     session[:cart] = {}
 
-    # Initialiser un checkout HelloAsso en sandbox (ou production selon l'env)
-    # Pour l'instant, on ne gère pas encore le don côté backend → 0 centimes.
+    # Initialiser un checkout HelloAsso avec le don
     checkout_result = HelloassoService.create_checkout_intent(
       order,
-      donation_cents: 0,
+      donation_cents: donation_cents,
       back_url: shop_url,
       error_url: order_url(order),
       return_url: order_url(order)
@@ -82,7 +89,7 @@ class OrdersController < ApplicationController
       payment = Payment.create!(
         provider: "helloasso",
         provider_payment_id: body["id"].to_s,
-        amount_cents: total_cents,
+        amount_cents: order_total_cents, # Montant total inclut le don
         currency: "EUR",
         status: "pending",
         created_at: Time.current
@@ -128,18 +135,30 @@ class OrdersController < ApplicationController
   def payment_status
     @order = current_user.orders.includes(:payment).find(params[:id])
     
+    # Si pas de payment mais commande pending → considérer comme pending
+    if @order.payment.nil?
+      order_status = @order.status.downcase
+      if ['pending', 'en attente'].include?(order_status)
+        render json: { status: 'pending' }
+        return
+      else
+        render json: { status: 'unknown' }
+        return
+      end
+    end
+    
     # Si le paiement est pending et HelloAsso, faire un check réel
-    if @order.payment&.provider == "helloasso" && @order.payment.status == "pending"
+    if @order.payment.provider == "helloasso" && @order.payment.status == "pending"
       HelloassoService.fetch_and_update_payment(@order.payment)
       @order.reload
       @order.payment.reload
     end
     
-    render json: { status: @order.payment&.status || 'unknown' }
+    render json: { status: @order.payment.status || 'unknown' }
   end
 
   def pay
-    @order = current_user.orders.includes(:payment).find(params[:id])
+    @order = current_user.orders.includes(:payment, order_items: :variant).find(params[:id])
 
     payment = @order.payment
 
@@ -151,34 +170,79 @@ class OrdersController < ApplicationController
     end
 
     # Vérifier les conditions APRÈS le check
-    unless @order.status&.downcase == "pending" &&
-           payment&.provider == "helloasso" &&
-           payment.status == "pending"
-      # Si déjà payé ou autre statut, rediriger vers la liste des commandes à jour
-      redirect_to orders_path,
-                  notice: "Le statut de cette commande a été mis à jour. " \
-                          "Statut actuel : #{@order.status} / #{payment&.status}"
+    order_status = @order.status&.downcase
+    is_cancelled = ["cancelled", "annulé", "canceled"].include?(order_status)
+    is_pending = order_status == "pending"
+    
+    # Permettre le paiement si : commande pending + non annulée + (pas de payment OU payment pending helloasso)
+    can_pay = is_pending && 
+              !is_cancelled && 
+              (payment.nil? || (payment.provider == "helloasso" && payment.status == "pending"))
+    
+    unless can_pay
+      # Si déjà payé, annulé ou autre statut, rediriger vers la liste des commandes à jour
+      message = if is_cancelled
+                  "Cette commande est annulée et ne peut plus être payée."
+                else
+                  "Le statut de cette commande a été mis à jour. " \
+                  "Statut actuel : #{@order.status} / #{payment&.status || 'pas de paiement'}"
+                end
+      redirect_to orders_path, notice: message
       return
     end
 
     # Créer un nouveau checkout-intent (plus fiable que de réutiliser l'ancien qui peut expirer)
-    checkout_result = HelloassoService.create_checkout_intent(
-      @order,
-      donation_cents: 0,
-      back_url: orders_url,
-      error_url: order_url(@order),
-      return_url: order_url(@order)
-    )
+    # Utiliser le don stocké dans l'order
+    begin
+      checkout_result = HelloassoService.create_checkout_intent(
+        @order,
+        donation_cents: @order.donation_cents || 0,
+        back_url: orders_url,
+        error_url: order_url(@order),
+        return_url: order_url(@order)
+      )
+    rescue => e
+      Rails.logger.error("[OrdersController#pay] Erreur lors de la création du checkout-intent : #{e.class} - #{e.message}")
+      
+      # Message d'erreur adapté selon le type d'erreur
+      error_message = if e.message.include?("429") || e.message.include?("Rate limit")
+                        "Les serveurs HelloAsso sont temporairement surchargés. " \
+                        "Merci de réessayer dans quelques minutes."
+                      elsif e.message.include?("access_token")
+                        "Erreur de configuration HelloAsso. " \
+                        "Merci de contacter l'association."
+                      else
+                        "Erreur lors de l'initialisation du paiement HelloAsso. " \
+                        "Merci de réessayer plus tard ou de contacter l'association."
+                      end
+      
+      redirect_to order_path(@order), alert: error_message
+      return
+    end
 
     if checkout_result[:success]
       body = checkout_result[:body] || {}
       redirect_url = body["redirectUrl"]
 
-      # Mettre à jour le payment avec le nouveau checkout-intent ID
+      # Créer ou mettre à jour le payment avec le nouveau checkout-intent ID
       if body["id"].present?
-        payment.update!(
-          provider_payment_id: body["id"].to_s
-        )
+        if payment.nil?
+          # Créer un nouveau payment si il n'existe pas
+          payment = Payment.create!(
+            provider: "helloasso",
+            provider_payment_id: body["id"].to_s,
+            amount_cents: @order.total_cents,
+            currency: "EUR",
+            status: "pending",
+            created_at: Time.current
+          )
+          @order.update!(payment: payment)
+        else
+          # Mettre à jour le payment existant avec le nouveau checkout-intent ID
+          payment.update!(
+            provider_payment_id: body["id"].to_s
+          )
+        end
       end
 
       if redirect_url.present?
