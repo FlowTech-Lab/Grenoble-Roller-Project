@@ -10,18 +10,29 @@ set -euo pipefail  # Mode strict : erreur, variable non définie, pipefail
 # ============================================================================
 # DÉTECTION AUTOMATIQUE DE L'ENVIRONNEMENT
 # ============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# Utiliser $0 pour obtenir le chemin du symlink (si présent), sinon BASH_SOURCE[0]
+# Cela permet de détecter l'environnement même si le script est un symlink
+SCRIPT_PATH="${0:-${BASH_SOURCE[0]}}"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
-# Détecter l'environnement depuis le chemin du script
-if [[ "$SCRIPT_DIR" == *"/staging"* ]]; then
+# Détecter l'environnement depuis le chemin du script (symlink ou réel)
+if [[ "$SCRIPT_DIR" == *"/staging"* ]] || [[ "$0" == *"/staging"* ]]; then
     ENV="staging"
-elif [[ "$SCRIPT_DIR" == *"/production"* ]]; then
+elif [[ "$SCRIPT_DIR" == *"/production"* ]] || [[ "$0" == *"/production"* ]]; then
     ENV="production"
 else
     echo "❌ Erreur: Environnement non détecté (staging/production)"
     echo "   Le script doit être dans ops/staging/ ou ops/production/"
     exit 1
+fi
+
+# REPO_DIR doit pointer vers la racine du repo
+# Si le script est dans ops/staging/ ou ops/production/, remonter de 2 niveaux
+# Si le script est directement dans ops/, remonter d'1 niveau
+if [[ "$SCRIPT_DIR" == *"/staging"* ]] || [[ "$SCRIPT_DIR" == *"/production"* ]]; then
+    REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+else
+    REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 fi
 
 # ============================================================================
