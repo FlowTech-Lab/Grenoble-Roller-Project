@@ -111,8 +111,11 @@
               <%= link_to cart_path, class: "btn btn-outline-primary flex-fill" do %>
                 <i class="bi bi-arrow-left me-1"></i>Modifier le panier
               <% end %>
-              <%= button_to orders_path, method: :post, class: "btn btn-liquid-primary flex-fill" do %>
-                <i class="bi bi-check-circle me-2"></i>Payer Via HelloAsso*
+              <%= form_with url: orders_path, method: :post, class: "flex-fill", data: { turbo: false } do |form| %>
+                <%= form.hidden_field :donation_cents, id: "donationCentsInput", value: 0 %>
+                <%= form.submit "Payer Via HelloAsso*", class: "btn btn-liquid-primary w-100" do %>
+                  <i class="bi bi-check-circle me-2"></i>Payer Via HelloAsso*
+                <% end %>
               <% end %>
             </div>
 
@@ -169,6 +172,7 @@
         updateDonationDisplay: function() {
           const donationDisplay = document.getElementById('donationDisplay');
           const orderTotalWithDonation = document.getElementById('orderTotalWithDonation');
+          const donationCentsInput = document.getElementById('donationCentsInput');
           
           if (donationDisplay) {
             donationDisplay.textContent = window.orderDonation.formatPrice(window.orderDonation.donationAmount);
@@ -177,6 +181,11 @@
           if (orderTotalWithDonation) {
             const total = window.orderDonation.cartSubtotal + window.orderDonation.donationAmount;
             orderTotalWithDonation.textContent = window.orderDonation.formatPrice(total);
+          }
+          
+          // Mettre à jour le champ hidden pour l'envoyer au serveur
+          if (donationCentsInput) {
+            donationCentsInput.value = Math.round(window.orderDonation.donationAmount * 100);
           }
         },
         

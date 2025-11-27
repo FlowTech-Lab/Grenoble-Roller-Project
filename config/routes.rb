@@ -45,6 +45,9 @@ Rails.application.routes.draw do
   resources :orders, only: [ :index, :new, :create, :show ] do
     member do
       patch :cancel
+      post :pay
+      post :check_payment
+      get :payment_status
     end
   end
 

@@ -118,6 +118,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_020634) do
   create_table "orders", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "currency", limit: 3, default: "EUR", null: false
+    t.integer "donation_cents", default: 0, null: false
     t.bigint "payment_id"
     t.string "status", default: "pending", null: false
     t.integer "total_cents", default: 0, null: false

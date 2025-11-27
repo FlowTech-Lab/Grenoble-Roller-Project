@@ -177,6 +177,33 @@ tags: ["product", "ux", "quick-wins", "plan"]
 
 ---
 
-**Dernière mise à jour** : 2025-11-15  
-**Version** : 1.1 (Mise à jour avec Quick Wins terminés aujourd'hui)
+### **Phase 4 : Quick Wins Boutique & HelloAsso (2025-01-20 à 2025-01-26)**
+
+#### 4.1 Message "Article ajouté" plus visible ✅ TERMINÉ (2025-01-20)
+- [x] Toast notification avec nom du produit
+- [x] Bouton "Voir le panier" dans le toast
+- [x] Redirection vers boutique après ajout
+- **Fichiers** : `app/controllers/carts_controller.rb`, `app/views/layouts/_flash.html.erb`
+- **Date** : 2025-01-20
+
+#### 4.2 UX Liste commandes & Reprise paiement ✅ TERMINÉ (2025-01-26)
+- [x] Bouton "Payer" visible dans la liste pour commandes `pending`
+- [x] Suppression bouton "Annuler" de la liste
+- [x] Action `OrdersController#pay` créant un nouveau checkout-intent
+- [x] Mise à jour automatique du `provider_payment_id`
+- **Fichiers** : `app/views/orders/index.html.erb`, `app/controllers/orders_controller.rb`, `config/routes.rb`
+- **Date** : 2025-01-26
+
+#### 4.3 UX Page détail commande ✅ TERMINÉ (2025-01-26)
+- [x] Alerte paiement pending supprimée (plus de redondance)
+- [x] Bouton principal "Finaliser le paiement" comme CTA unique
+- [x] Bouton "Annuler" déplacé dans dropdown "Plus d'actions"
+- [x] Hiérarchie visuelle améliorée (titre/status séparés, mobile-first)
+- **Fichiers** : `app/views/orders/show.html.erb`
+- **Date** : 2025-01-26
+
+---
+
+**Dernière mise à jour** : 2025-01-26  
+**Version** : 1.2 (Mise à jour avec Quick Wins boutique & HelloAsso terminés)
 

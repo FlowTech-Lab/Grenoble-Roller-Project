@@ -50,6 +50,25 @@
                         'btn-success'
                     end
                   %>
+                  <% 
+                    # Traduire le statut en français
+                    status_text = case order.status.downcase
+                      when 'pending', 'en attente'
+                        'En attente'
+                      when 'preparation', 'en préparation', 'preparing'
+                        'En préparation'
+                      when 'paid', 'payé'
+                        'Payée'
+                      when 'sent', 'envoyé', 'shipped'
+                        'Expédiée'
+                      when 'cancelled', 'annulé', 'canceled'
+                        'Annulée'
+                      when 'failed', 'échoué'
+                        'Échouée'
+                      else
+                        order.status.capitalize
+                    end
+                  %>
                   <button type="button" class="btn <%= status_btn %> btn-sm" disabled>
                     <i class="bi <%= case order.status.downcase
                       when 'pending', 'en attente'
@@ -63,7 +82,7 @@
                       else
                         'bi-check-circle'
                     end %> me-1"></i>
-                    <%= order.status %>
+                    <%= status_text %>
                   </button>
 
                   <!-- Date -->
@@ -83,21 +102,29 @@
                     <strong class="text-liquid-primary"><%= format_price(order.total_cents) %></strong>
                   </div>
 
-                  <!-- Action buttons -->
+                  <!-- Actions : Payer (si pending ET non annulée) ou Détails -->
                   <div class="d-flex gap-2">
+                    <% 
+                      order_status = order.status.downcase
+                      is_cancelled = ['cancelled', 'annulé', 'canceled'].include?(order_status)
+                      is_pending = ['pending', 'en attente'].include?(order_status)
+                      # Afficher le bouton Payer si : commande pending + (payment pending helloasso OU pas de payment) + non annulée
+                      show_pay_button = is_pending && 
+                                       !is_cancelled && 
+                                       (order.payment.nil? || 
+                                        (order.payment.status == "pending" && order.payment.provider == "helloasso"))
+                    %>
+                    <% if show_pay_button %>
+                      <%= button_to pay_order_path(order),
+                          method: :post,
+                          class: "btn btn-warning btn-sm",
+                          data: { turbo: false },
+                          aria: { label: "Finaliser le paiement de la commande ##{order.id}" } do %>
+                        <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Payer
+                      <% end %>
+                    <% end %>
                     <%= link_to order_path(order), class: "btn btn-outline-primary btn-sm" do %>
                       <i class="bi bi-eye me-1"></i>Détails
-                    <% end %>
-                    <% if ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(order.status.downcase) %>
-                      <%= button_to cancel_order_path(order), 
-                          method: :patch,
-                          class: "btn btn-outline-danger btn-sm",
-                          data: { 
-                            confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible.",
-                            turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible."
-                          } do %>
-                        <i class="bi bi-x-circle me-1"></i>Annuler
-                      <% end %>
                     <% end %>
                   </div>
                 </div>
