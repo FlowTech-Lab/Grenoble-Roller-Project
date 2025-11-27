@@ -42,3 +42,4 @@
 # Backups et logs locaux (créés automatiquement par les scripts)
 /backups/
 /logs/
+ops/logs/
