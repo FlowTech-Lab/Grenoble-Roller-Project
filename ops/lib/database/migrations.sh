@@ -48,24 +48,55 @@ verify_migrations_synced() {
 }
 
 # Analyser les migrations en attente pour détecter les destructives
+# IMPORTANT : Vérifie si les migrations destructives sont déjà appliquées (up) ou nouvelles (down)
 analyze_destructive_migrations() {
     local container=$1
-    local migration_status=$(docker exec "$container" bin/rails db:migrate:status 2>&1)
+    local migration_status=$(docker exec "$container" bin/rails db:migrate:status 2>&1 | grep -v "Generating image" | grep -v "Please add" || echo "")
     local pending_migrations=$(echo "$migration_status" | grep "^\s*down" || echo "")
     
     if [ -z "$pending_migrations" ]; then
         return 0  # Pas de migrations en attente
     fi
     
-    # Patterns destructifs
-    local destructive_patterns="Remove|Drop|Destroy|Delete|Truncate|Clear|Rename.*Column|Change.*Column.*Type"
-    local destructive_migrations=$(echo "$pending_migrations" | grep -iE "$destructive_patterns" || echo "")
+    # Patterns destructifs dans la méthode up() (ceux-ci sont dangereux)
+    local destructive_patterns_up="drop_table|remove_column|remove_index|remove_foreign_key|remove_reference|remove_timestamps|remove_belongs_to|change_column_null.*false|execute.*DELETE|execute.*TRUNCATE|execute.*DROP"
     
-    if [ -n "$destructive_migrations" ]; then
-        log_error "⚠️  ⚠️  ⚠️  MIGRATIONS DESTRUCTIVES DÉTECTÉES ⚠️  ⚠️  ⚠️"
+    # Patterns destructifs dans les noms de migrations (pour détection rapide)
+    local destructive_names="Remove|Drop|Destroy|Delete|Truncate|Clear|Rename.*Column|Change.*Column.*Type"
+    
+    local new_destructive_found=false
+    local destructive_list=""
+    
+    # Analyser chaque migration en attente
+    while IFS= read -r migration_line; do
+        # Extraire l'ID de migration depuis la ligne "down  20251124020634  Add confirmable to users"
+        local mig_id=$(echo "$migration_line" | awk '{print $2}' | cut -d'_' -f1)
+        local mig_name=$(echo "$migration_line" | awk '{for(i=3;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ $//')
+        
+        # Chercher le fichier de migration correspondant
+        local mig_file=$(find "${REPO_DIR:-.}/db/migrate" -name "${mig_id}_*.rb" -type f 2>/dev/null | head -1)
+        
+        if [ -n "$mig_file" ] && [ -f "$mig_file" ]; then
+            # Vérifier si la méthode up() contient des opérations destructives
+            if grep -qiE "$destructive_patterns_up" "$mig_file"; then
+                # Vérifier si c'est dans la méthode up() (dangereux) ou seulement dans down() (OK)
+                if grep -A 30 "^  def up" "$mig_file" | grep -qiE "$destructive_patterns_up"; then
+                    # Migration destructive dans up() - NOUVELLE et DANGEREUSE
+                    destructive_list="${destructive_list}${mig_id} ${mig_name}\n"
+                    new_destructive_found=true
+                fi
+                # Si destructive seulement dans down(), c'est OK (on n'applique jamais down() automatiquement)
+            fi
+        fi
+    done <<< "$pending_migrations"
+    
+    if [ "$new_destructive_found" = true ]; then
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "⚠️  ⚠️  ⚠️  NOUVELLES MIGRATIONS DESTRUCTIVES DÉTECTÉES ⚠️  ⚠️  ⚠️"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         log_error "Les migrations suivantes peuvent supprimer ou modifier définitivement des données :"
-        echo "$destructive_migrations" | while read -r migration; do
-            log_error "  🔴 $migration"
+        echo -e "$destructive_list" | while read -r mig_id mig_name; do
+            [ -n "$mig_id" ] && log_error "  🔴 ${mig_id} - ${mig_name}"
         done
         
         if [ "${ENV:-}" = "production" ]; then
