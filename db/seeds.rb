@@ -2,6 +2,13 @@
 
 require "securerandom"
 
+# Désactiver l'envoi d'emails pendant le seed (évite erreurs SMTP)
+ActionMailer::Base.perform_deliveries = false
+ActionMailer::Base.delivery_method = :test
+
+# Désactiver temporairement le callback d'envoi d'email pour tout le seed
+User.skip_callback(:create, :after, :send_welcome_email_and_confirmation)
+
 # 🧹 Nettoyage (dans l'ordre pour éviter les erreurs FK)
 # Phase 2 - Events
 Attendance.destroy_all
@@ -48,10 +55,10 @@ superadmin_role = Role.find_by!(code: "SUPERADMIN")
 puts "✅ #{Role.count} rôles créés avec succès !"
 
 # 👑 Admin principal
-admin = User.create!(
+admin = User.new(
   email: "admin@roller.com",
-  password: "admin123",
-  password_confirmation: "admin123",
+  password: "admin12345678",  # Minimum 12 caractères requis
+  password_confirmation: "admin12345678",
   first_name: "Admin",
   last_name: "Roller",
   bio: "Administrateur du site Grenoble Roller",
@@ -61,13 +68,15 @@ admin = User.create!(
   email_verified: true,
   confirmed_at: Time.now  # Confirmation automatique pour admin
 )
+admin.skip_confirmation_notification!
+admin.save!
 puts "👑 Admin créé !"
 
 # 👨‍💻 Florian (SUPERADMIN)
-florian = User.create!(
+florian = User.new(
   email: "T3rorX@hotmail.fr",
-  password: "T3rorX123",
-  password_confirmation: "T3rorX123",
+  password: "T3rorX12345678",  # Minimum 12 caractères requis
+  password_confirmation: "T3rorX12345678",
   first_name: "Florian",
   last_name: "Astier",
   bio: "Développeur fullstack passionné par les nouvelles technologies",
@@ -77,16 +86,18 @@ florian = User.create!(
   email_verified: true,
   confirmed_at: Time.now  # Confirmation automatique pour superadmin
 )
+florian.skip_confirmation_notification!
+florian.save!
 puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 
 # 👥 Utilisateurs de test
 skill_levels = ["beginner", "intermediate", "advanced"]
 20.times do |i|
   confirmed = rand > 0.2  # 80% des utilisateurs confirmés
-  User.create!(
+  user = User.new(
     email: "client#{i + 1}@example.com",
-    password: "password123",
-    password_confirmation: "password123",
+    password: "password12345678",  # Minimum 12 caractères requis
+    password_confirmation: "password12345678",
     first_name: [ "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry", "Iris", "Jack", "Kate", "Leo", "Mia", "Noah", "Olivia", "Paul", "Quinn", "Ruby", "Sam", "Tina" ][i],
     last_name: [ "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel" ][i],
     bio: "Membre passionné de la communauté roller grenobloise",
@@ -98,6 +109,8 @@ skill_levels = ["beginner", "intermediate", "advanced"]
     created_at: Time.now - rand(1..30).days,
     updated_at: Time.now
   )
+  user.skip_confirmation_notification!
+  user.save!
   puts "👤 Utilisateur client #{i + 1} créé !"
 end
 
@@ -203,8 +216,7 @@ categories = [
   { name: "Rollers", slug: "rollers" },
   { name: "Protections", slug: "protections" },
   { name: "Accessoires", slug: "accessoires" }
-].map { |attrs| ProductCategory.create!(attrs)
-}
+].map { |attrs| ProductCategory.create!(attrs) }
 puts "🖼️ Catégories créées!"
 
 puts "🛼 Création des produits..."
@@ -214,8 +226,7 @@ puts "🎨 Création des types d'options..."
 option_types = [
   { name: "size", presentation: "Taille" },
   { name: "color", presentation: "Couleur" }
-].map { |attrs| OptionType.create!(attrs)
-}
+].map { |attrs| OptionType.create!(attrs) }
 
 
 puts "🎯 Création des valeurs d'options..."
@@ -268,7 +279,8 @@ apparel_sizes.each do |size_ov|
     price_cents: 55_00,
     stock_qty: [ 5, 8, 3 ][apparel_sizes.index(size_ov)],
     currency: "EUR",
-    is_active: true
+    is_active: true,
+    image_url: casque_led.image_url
   )
   VariantOptionValue.create!(variant:, option_value: size_ov)
 end
@@ -294,7 +306,8 @@ variant_casquette = ProductVariant.create!(
   price_cents: 15_00,
   stock_qty: 20,
   currency: "EUR",
-  is_active: true
+  is_active: true,
+  image_url: casquette.image_url
 )
 VariantOptionValue.create!(variant: variant_casquette, option_value: color_white)
 
@@ -354,7 +367,8 @@ variant_sac_simple = ProductVariant.create!(
   price_cents: 25_00,
   stock_qty: 15,
   currency: "EUR",
-  is_active: true
+  is_active: true,
+  image_url: sac_simple.image_url
 )
 
 # ---------------------------
@@ -379,7 +393,8 @@ apparel_sizes.each do |size_ov|
     price_cents: 20_00,
     stock_qty: [ 8, 12, 6 ][apparel_sizes.index(size_ov)],
     currency: "EUR",
-    is_active: true
+    is_active: true,
+    image_url: tshirt.image_url
   )
   VariantOptionValue.create!(variant:, option_value: size_ov)
 end
@@ -449,7 +464,8 @@ ProductVariant.create!(
   price_cents: 12_00,
   stock_qty: 0,
   currency: "EUR",
-  is_active: false
+  is_active: false,
+  image_url: disabled_product.image_url
 )
 
 # 🛒 Création des OrderItems (APRÈS la création des variants)
@@ -711,7 +727,7 @@ if published_events.any? && regular_users.any?
       puts "  ✅ Événement '#{event.title}' : #{event.max_participants} participants (COMPLET)"
     else
       # Pour les autres événements, inscription de quelques utilisateurs
-      num_subscribers = event.unlimited? ? rand(3..8) : [ rand(2..6), event.max_participants ].min
+      num_subscribers = (event.max_participants == 0) ? rand(3..8) : [ rand(2..6), event.max_participants ].min
       subscribers = regular_users.sample(num_subscribers)
       subscribers.each do |user|
         Attendance.create!(
@@ -912,3 +928,9 @@ puts "   - Messages de contact : #{ContactMessage.count}"
 puts "   - Logs d'audit : #{AuditLog.count}"
 
 puts "\n🌱 Seed complet terminé avec succès !"
+
+# Réactiver le callback d'envoi d'email
+User.set_callback(:create, :after, :send_welcome_email_and_confirmation)
+
+# Réactiver l'envoi d'emails
+ActionMailer::Base.perform_deliveries = true
