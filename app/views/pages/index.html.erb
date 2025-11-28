@@ -60,10 +60,11 @@
         <div class="col-12 col-lg-10 col-xl-8">
           <article class="card card-event card-event-featured card-liquid rounded-liquid shadow-liquid overflow-hidden">
             <div class="card-event-image card-event-image-featured">
-              <%= image_tag(event_cover_image_url(@highlighted_event),
-                            alt: @highlighted_event.title,
-                            loading: 'lazy',
-                            class: 'w-100 h-100 object-fit-cover') %>
+              <% if @highlighted_event.cover_image.attached? %>
+                <%= image_tag(rails_representation_path(@highlighted_event.cover_image_card_featured), alt: @highlighted_event.title, loading: 'lazy', class: 'w-100 h-100 object-fit-cover') %>
+              <% else %>
+                <%= image_tag(event_cover_image_url(@highlighted_event), alt: @highlighted_event.title, loading: 'lazy', class: 'w-100 h-100 object-fit-cover') %>
+              <% end %>
               <span class="card-event-date badge badge-liquid-success">
                 <i class="bi bi-calendar3 me-1"></i>
                 <%= l @highlighted_event.start_at, format: :day_month, locale: :fr %>

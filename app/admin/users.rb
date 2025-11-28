@@ -33,7 +33,15 @@ ActiveAdmin.register User do
       row :last_name
       row :bio
       row :phone
-      row :avatar_url
+      row :avatar do |user|
+        if user.avatar.attached?
+          image_tag(user.avatar, height: 150, style: "border-radius: 8px;")
+        elsif user.avatar_url.present?
+          image_tag(user.avatar_url, height: 150, style: "border-radius: 8px;")
+        else
+          status_tag("Aucun avatar", class: "warning")
+        end
+      end
       row :role
       row :email_verified
       row :created_at
@@ -62,7 +70,8 @@ ActiveAdmin.register User do
       f.input :last_name
       f.input :bio
       f.input :phone
-      f.input :avatar_url
+      f.input :avatar, as: :file, hint: "Upload un avatar (recommandé)"
+      f.input :avatar_url, hint: "Ou utilisez une URL (déprécié, pour transition)"
       f.input :role
       f.input :email_verified
     end

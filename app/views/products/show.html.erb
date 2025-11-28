@@ -23,9 +23,9 @@
          colorId: (v.option_values.find { |ov| ov.option_type.name == 'color' }&.id || nil),
          stock: v.stock_qty,
          price: v.price_cents,
-         imageUrl: asset_path((v.image_url.presence || @product.image_url))
+         imageUrl: variant_image_url(v).present? ? (v.image.attached? ? url_for(v.image) : asset_path(v.image_url.presence || @product.image_url)) : ""
        } }.to_json.html_safe %>'
-       data-product-show-default-image-url-value="<%= asset_path(@product.image_url).to_json.html_safe %>">
+       data-product-show-default-image-url-value="<%= (@product.image.attached? ? url_for(@product.image) : asset_path(@product.image_url)).to_json.html_safe %>">
     <div class="row g-4 align-items-stretch flex-column flex-lg-row">
       <!-- Image principale -->
       <div class="col-12 col-lg-5">

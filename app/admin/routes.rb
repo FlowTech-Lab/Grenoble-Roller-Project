@@ -35,7 +35,15 @@ ActiveAdmin.register Route do
       row :distance_km
       row :elevation_m
       row :gpx_url
-      row :map_image_url
+      row :map_image do |route|
+        if route.map_image.attached?
+          image_tag(route.map_image, height: 150, style: "border-radius: 8px;")
+        elsif route.map_image_url.present?
+          image_tag(route.map_image_url, height: 150, style: "border-radius: 8px;")
+        else
+          status_tag("Aucune carte", class: "warning")
+        end
+      end
       row :description
       row :safety_notes
       row :created_at
@@ -63,7 +71,8 @@ ActiveAdmin.register Route do
       f.input :distance_km
       f.input :elevation_m
       f.input :gpx_url
-      f.input :map_image_url
+      f.input :map_image, as: :file, hint: "Upload une carte (recommandé)"
+      f.input :map_image_url, hint: "Ou utilisez une URL (déprécié, pour transition)"
       f.input :description
       f.input :safety_notes
     end
