@@ -24,6 +24,7 @@ class ApplicationController < ActionController::Base
       :bio,
       :phone,
       :avatar_url,
+      :avatar,
       :skill_level,
       :email,
       :password,

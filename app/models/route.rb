@@ -1,5 +1,8 @@
 class Route < ApplicationRecord
   has_many :events, dependent: :nullify
+  
+  # Active Storage attachments
+  has_one_attached :map_image
 
   validates :name, presence: true, length: { maximum: 140 }
   validates :difficulty, inclusion: { in: %w[easy medium hard] }, allow_nil: true

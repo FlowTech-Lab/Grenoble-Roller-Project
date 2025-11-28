@@ -6,6 +6,8 @@ Scripts dédiés à l'environnement de staging.
 
 - **`deploy.sh`** : Script de déploiement automatique STAGING
 - **`watchdog.sh`** : Script de surveillance (appelé par cron)
+- **`rebuild.sh`** : Rebuild rapide sans cache (pour prendre en compte les changements de code)
+- **`init-db.sh`** : Initialisation de la base de données (migrate + seed) - pour fresh install
 
 ## ✨ Fonctionnalités automatiques
 
@@ -16,11 +18,28 @@ Scripts dédiés à l'environnement de staging.
 
 ## 🚀 Utilisation
 
-### Test manuel
+### Déploiement automatique
 
 ```bash
 # Depuis la racine du projet
 ./ops/staging/deploy.sh
+```
+
+### Rebuild manuel (après modification de code/seeds)
+
+```bash
+# Rebuild sans cache pour prendre en compte les changements
+./ops/staging/rebuild.sh
+
+# Puis initialiser la DB si nécessaire
+./ops/staging/init-db.sh
+```
+
+### Initialisation base de données (fresh install)
+
+```bash
+# Migrate + Seed (vérifie aussi si seeds.rb a changé)
+./ops/staging/init-db.sh
 ```
 
 ### Automatisation (cron)

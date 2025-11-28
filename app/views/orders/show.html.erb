@@ -197,11 +197,11 @@
               <% @order.order_items.each_with_index do |item, index| %>
                 <div class="cart-item mb-3 pb-3 <%= 'border-bottom' unless index == @order.order_items.count - 1 %>">
                   <div class="cart-item-image">
-                    <%= image_tag item.variant.product.image_url, 
-                        alt: item.variant.product.name, 
-                        loading: "lazy",
-                        class: "img-fluid",
-                        style: "width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" %>
+                    <% if item.variant.product.image.attached? %>
+                      <%= image_tag item.variant.product.image, alt: item.variant.product.name, loading: "lazy", class: "img-fluid", style: "width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" %>
+                    <% elsif item.variant.product.image_url.present? %>
+                      <%= image_tag item.variant.product.image_url, alt: item.variant.product.name, loading: "lazy", class: "img-fluid", style: "width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" %>
+                    <% end %>
                   </div>
                   
                   <div class="cart-item-content">

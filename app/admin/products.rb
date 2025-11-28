@@ -63,8 +63,10 @@ ActiveAdmin.register Product do
       row :is_active do |product|
         status_tag(product.is_active ? "Actif" : "Inactif", class: product.is_active ? "ok" : "warning")
       end
-      row :image_url do |product|
-        if product.image_url.present?
+      row :image do |product|
+        if product.image.attached?
+          image_tag(product.image, height: 150, style: "border-radius: 8px;")
+        elsif product.image_url.present?
           image_tag(product.image_url, height: 150, style: "border-radius: 8px;")
         else
           status_tag("Aucune image", class: "warning")
@@ -142,8 +144,9 @@ ActiveAdmin.register Product do
               hint: "⚠️ ATTENTION : Le stock réel est géré au niveau des variantes, pas ici. Ce champ n'est utilisé que pour affichage."
       f.input :is_active,
               hint: "Désactiver pour masquer le produit et toutes ses variantes sur le site"
+      f.input :image, as: :file, hint: "Upload une image (recommandé)"
       f.input :image_url,
-              hint: "Image principale du produit (utilisée pour toutes les variantes)"
+              hint: "Ou utilisez une URL (déprécié, pour transition)"
     end
 
     f.actions
