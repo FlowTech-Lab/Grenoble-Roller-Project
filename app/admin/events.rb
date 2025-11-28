@@ -4,7 +4,7 @@ ActiveAdmin.register Event do
 
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
                 :description, :price_cents, :currency, :location_text,
-                :meeting_lat, :meeting_lng, :route_id, :cover_image_url,
+                :meeting_lat, :meeting_lng, :route_id,
                 :max_participants, :level, :distance_km
 
   scope :all, default: true
@@ -93,8 +93,6 @@ ActiveAdmin.register Event do
       row :cover_image do |event|
         if event.cover_image.attached?
           image_tag(rails_representation_path(event.cover_image_thumb), height: 150, style: "border-radius: 8px;")
-        elsif event.cover_image_url.present?
-          image_tag(event.cover_image_url, height: 150, style: "border-radius: 8px;")
         else
           status_tag("Aucune image", class: "warning")
         end
@@ -160,8 +158,7 @@ ActiveAdmin.register Event do
     f.inputs "Point de rendez-vous" do
       f.input :meeting_lat
       f.input :meeting_lng
-      f.input :cover_image, as: :file, hint: "Upload une image de couverture (recommandé)"
-      f.input :cover_image_url, hint: "Ou utilisez une URL (déprécié, pour transition)"
+      f.input :cover_image, as: :file, hint: "Upload une image de couverture (1200x800 recommandé)"
     end
 
     f.actions

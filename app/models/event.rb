@@ -109,7 +109,6 @@ class Event < ApplicationRecord
       level
       distance_km
       creator_user_id
-      cover_image_url
       max_participants
       attendances_count
       created_at
