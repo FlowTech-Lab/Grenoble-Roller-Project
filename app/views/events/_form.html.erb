@@ -211,7 +211,7 @@
 
           <div class="col-12">
             <%= f.label :cover_image, "Image de couverture", class: "form-label" %>
-            <% if event.cover_image.attached? %>
+            <% if event.persisted? && event.cover_image.attached? %>
               <div class="mb-2">
                 <%= image_tag rails_representation_path(event.cover_image_thumb), class: "img-thumbnail", style: "max-height: 200px;" %>
                 <div class="form-text">
