@@ -7,7 +7,7 @@
     <div class="hero-event-wrapper">
       <div class="hero-image-container">
         <% if @event.cover_image.attached? %>
-          <%= image_tag(@event.cover_image, alt: @event.title, class: "hero-image", loading: "eager") %>
+          <%= image_tag(rails_representation_path(@event.cover_image_hero), alt: @event.title, class: "hero-image", loading: "eager") %>
         <% else %>
           <%= image_tag(event_cover_image_url(@event), alt: @event.title, class: "hero-image", loading: "eager") %>
         <% end %>

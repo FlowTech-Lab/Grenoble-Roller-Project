@@ -1,0 +1,116 @@
+#!/bin/bash
+# Script de test pour Active Storage avec MinIO
+
+set -e
+
+echo "🧪 Test Active Storage avec MinIO"
+echo ""
+
+# Vérifier que les credentials MinIO sont configurés
+echo "1️⃣ Vérification des credentials MinIO..."
+docker compose -f ops/dev/docker-compose.yml exec web bin/rails runner "
+  begin
+    access_key = Rails.application.credentials.dig(:minio, :access_key_id)
+    secret_key = Rails.application.credentials.dig(:minio, :secret_access_key)
+    endpoint = Rails.application.credentials.dig(:minio, :endpoint)
+    
+    if access_key && secret_key && endpoint
+      puts '✅ Credentials MinIO configurés'
+      puts \"   Endpoint: #{endpoint}\"
+    else
+      puts '❌ Credentials MinIO manquants'
+      puts '   Ajoutez-les avec: docker compose -f ops/dev/docker-compose.yml run --rm -it -e EDITOR=nano web bin/rails credentials:edit'
+      exit 1
+    end
+  rescue => e
+    puts \"❌ Erreur: #{e.message}\"
+    exit 1
+  end
+" || exit 1
+
+echo ""
+echo "2️⃣ Vérification de la connexion MinIO..."
+docker compose -f ops/dev/docker-compose.yml exec web bin/rails runner "
+  require 'aws-sdk-s3'
+  
+  begin
+    s3 = Aws::S3::Client.new(
+      endpoint: Rails.application.credentials.dig(:minio, :endpoint),
+      access_key_id: Rails.application.credentials.dig(:minio, :access_key_id),
+      secret_access_key: Rails.application.credentials.dig(:minio, :secret_access_key),
+      region: 'us-east-1',
+      force_path_style: true
+    )
+    
+    bucket_name = \"grenoble-roller-\#{Rails.env}\"
+    s3.head_bucket(bucket: bucket_name)
+    puts \"✅ Connexion MinIO OK - Bucket #{bucket_name} accessible\"
+  rescue => e
+    puts \"❌ Erreur de connexion: #{e.message}\"
+    exit 1
+  end
+" || exit 1
+
+echo ""
+echo "3️⃣ Test d'upload d'une image de test..."
+docker compose -f ops/dev/docker-compose.yml exec web bin/rails runner "
+  require 'open-uri'
+  
+  begin
+    # Créer un événement de test
+    user = User.first || User.create!(
+      email: 'test@example.com',
+      password: 'password123',
+      first_name: 'Test',
+      skill_level: 'intermediate',
+      role: Role.find_by(code: 'USER') || Role.first
+    )
+    
+    event = Event.create!(
+      title: 'Test Active Storage',
+      description: 'Test upload image',
+      start_at: 1.day.from_now,
+      duration_min: 60,
+      price_cents: 0,
+      currency: 'EUR',
+      location_text: 'Test',
+      level: 'all_levels',
+      distance_km: 10,
+      max_participants: 10,
+      creator_user: user,
+      status: 'draft'
+    )
+    
+    # Télécharger une image de test depuis internet
+    test_image_url = 'https://via.placeholder.com/1200x800.jpg'
+    downloaded_image = URI.open(test_image_url)
+    
+    event.cover_image.attach(
+      io: downloaded_image,
+      filename: 'test-image.jpg',
+      content_type: 'image/jpeg'
+    )
+    
+    if event.cover_image.attached?
+      puts \"✅ Upload réussi - Image attachée à l'événement ##{event.id}\"
+      puts \"   URL: #{event.cover_image.url}\"
+      puts \"   Taille: #{event.cover_image.byte_size} bytes\"
+      
+      # Nettoyer
+      event.destroy
+      puts \"✅ Événement de test supprimé\"
+    else
+      puts '❌ Échec de l\'upload'
+      event.destroy
+      exit 1
+    end
+  rescue => e
+    puts \"❌ Erreur: #{e.message}\"
+    puts e.backtrace.first(5).join(\"\\n\")
+    exit 1
+  end
+" || exit 1
+
+echo ""
+echo "✅ Tous les tests sont passés ! Active Storage fonctionne correctement."
+

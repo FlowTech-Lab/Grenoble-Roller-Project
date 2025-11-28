@@ -6,6 +6,34 @@ class Event < ApplicationRecord
   
   # Active Storage attachments
   has_one_attached :cover_image
+  
+  # Variants optimisés pour différents contextes d'affichage
+  # Utilisation: event.cover_image.variant(:hero), event.cover_image.variant(:card), etc.
+  
+  def cover_image_hero
+    return nil unless cover_image.attached?
+    # Hero image (page détail) : 1200x500px max (ratio 2.4:1)
+    # Desktop: 500px height, Tablet: 400px, Mobile: 300px
+    cover_image.variant(resize_to_limit: [1200, 500], format: :webp, saver: { quality: 85 })
+  end
+  
+  def cover_image_card
+    return nil unless cover_image.attached?
+    # Card event (liste) : 800x200px (ratio 4:1)
+    cover_image.variant(resize_to_limit: [800, 200], format: :webp, saver: { quality: 80 })
+  end
+  
+  def cover_image_card_featured
+    return nil unless cover_image.attached?
+    # Card featured (événement mis en avant) : 1200x350px (ratio ~3.4:1)
+    cover_image.variant(resize_to_limit: [1200, 350], format: :webp, saver: { quality: 85 })
+  end
+  
+  def cover_image_thumb
+    return nil unless cover_image.attached?
+    # Thumbnail (formulaire/admin) : 400x200px
+    cover_image.variant(resize_to_limit: [400, 200], format: :webp, saver: { quality: 75 })
+  end
 
   enum :status, {
     draft: "draft",      # Brouillon / En attente de validation

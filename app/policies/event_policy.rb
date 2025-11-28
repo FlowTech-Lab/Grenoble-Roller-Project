@@ -64,6 +64,7 @@ class EventPolicy < ApplicationPolicy
       :meeting_lat,
       :meeting_lng,
       :route_id,
+      :cover_image,
       :cover_image_url,
       :max_participants,
       :level,

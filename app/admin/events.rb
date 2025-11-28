@@ -92,7 +92,7 @@ ActiveAdmin.register Event do
       row :meeting_lng
       row :cover_image do |event|
         if event.cover_image.attached?
-          image_tag(event.cover_image, height: 150, style: "border-radius: 8px;")
+          image_tag(rails_representation_path(event.cover_image_thumb), height: 150, style: "border-radius: 8px;")
         elsif event.cover_image_url.present?
           image_tag(event.cover_image_url, height: 150, style: "border-radius: 8px;")
         else

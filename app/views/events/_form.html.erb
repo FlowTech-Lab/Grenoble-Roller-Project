@@ -23,7 +23,7 @@
           </div>
         <% end %>
 
-        <%= form_with(model: event, html: { class: 'row g-3', data: { controller: 'event-form' } }) do |f| %>
+        <%= form_with(model: event, html: { class: 'row g-3', multipart: true, data: { controller: 'event-form' } }) do |f| %>
           <div class="col-12">
             <%= f.label :title, "Titre", class: "form-label" %>
             <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble" %>
@@ -213,9 +213,9 @@
             <%= f.label :cover_image, "Image de couverture", class: "form-label" %>
             <% if event.cover_image.attached? %>
               <div class="mb-2">
-                <%= image_tag event.cover_image, class: "img-thumbnail", style: "max-height: 200px;" %>
+                <%= image_tag rails_representation_path(event.cover_image_thumb), class: "img-thumbnail", style: "max-height: 200px;" %>
                 <div class="form-text">
-                  <i class="bi bi-check-circle text-success me-1"></i>Image actuelle
+                  <i class="bi bi-check-circle text-success me-1"></i>Image actuelle (optimisée)
                 </div>
               </div>
             <% end %>
