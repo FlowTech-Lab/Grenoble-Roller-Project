@@ -102,15 +102,13 @@ force_rebuild_without_cache() {
     fi
     
     if [ $BUILD_EXIT_CODE -eq 0 ]; then
-        log_info "Démarrage des conteneurs avec la nouvelle image (force-recreate web uniquement)..."
-        # --force-recreate : Force la recréation du conteneur même si la config n'a pas changé
-        # On ne recrée QUE le service web, pas la DB pour éviter de perdre les données
-        # Le nom du service est généralement "web" dans docker-compose.yml
-        if docker compose -f "$compose_file" up -d --force-recreate web 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
-            log_success "✅ Conteneur web démarré avec la nouvelle image (DB non impactée)"
+        log_info "Démarrage de tous les services (web, db, minio, etc.)..."
+        # Démarrer tous les services pour s'assurer que les nouveaux services ajoutés au docker-compose.yml sont créés
+        if docker compose -f "$compose_file" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+            log_success "✅ Tous les services démarrés avec succès"
             return 0
         else
-            log_error "❌ Échec du démarrage du conteneur web"
+            log_error "❌ Échec du démarrage des services"
             return 1
         fi
     else
