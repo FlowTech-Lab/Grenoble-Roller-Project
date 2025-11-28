@@ -6,7 +6,10 @@ class User < ApplicationRecord
   # Relation avec Role
   belongs_to :role
   has_many :orders, dependent: :nullify
-
+  
+  # Active Storage attachments
+  has_one_attached :avatar
+  
   # Phase 2 - Events associations
   has_many :created_events, class_name: "Event", foreign_key: "creator_user_id", dependent: :restrict_with_error
   has_many :attendances, dependent: :destroy

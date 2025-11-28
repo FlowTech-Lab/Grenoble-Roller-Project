@@ -6,7 +6,11 @@
     <!-- Hero image avec overlay gradient et informations superposées -->
     <div class="hero-event-wrapper">
       <div class="hero-image-container">
-        <%= image_tag(event_cover_image_url(@event), alt: @event.title, class: "hero-image", loading: "eager") %>
+        <% if @event.cover_image.attached? %>
+          <%= image_tag(@event.cover_image, alt: @event.title, class: "hero-image", loading: "eager") %>
+        <% else %>
+          <%= image_tag(event_cover_image_url(@event), alt: @event.title, class: "hero-image", loading: "eager") %>
+        <% end %>
         <div class="hero-overlay"></div>
         
         <!-- Badge de date en haut à droite (z-index élevé) -->

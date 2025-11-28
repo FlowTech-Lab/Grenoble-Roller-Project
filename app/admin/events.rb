@@ -90,7 +90,15 @@ ActiveAdmin.register Event do
       row :location_text
       row :meeting_lat
       row :meeting_lng
-      row :cover_image_url
+      row :cover_image do |event|
+        if event.cover_image.attached?
+          image_tag(event.cover_image, height: 150, style: "border-radius: 8px;")
+        elsif event.cover_image_url.present?
+          image_tag(event.cover_image_url, height: 150, style: "border-radius: 8px;")
+        else
+          status_tag("Aucune image", class: "warning")
+        end
+      end
       row :description
       row :created_at
       row :updated_at
@@ -152,7 +160,8 @@ ActiveAdmin.register Event do
     f.inputs "Point de rendez-vous" do
       f.input :meeting_lat
       f.input :meeting_lng
-      f.input :cover_image_url
+      f.input :cover_image, as: :file, hint: "Upload une image de couverture (recommandé)"
+      f.input :cover_image_url, hint: "Ou utilisez une URL (déprécié, pour transition)"
     end
 
     f.actions

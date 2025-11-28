@@ -25,6 +25,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     # Volume /rails/db supprimé car il écrasait les migrations de l'image
     # Si Solid Queue/Cache/Cable nécessitent SQLite, monter seulement les fichiers spécifiques
     # volumes:
@@ -50,6 +52,25 @@ services:
       timeout: 5s
       retries: 5
 
+  minio:
+    image: minio/minio:latest
+    container_name: grenoble-roller-minio-staging
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9002:9000"  # API S3
+      - "9003:9001"  # Console web
+    volumes:
+      - grenoble-roller-staging-minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   # grenoble-roller-staging-data:  # Supprimé car écrasait les migrations de l'image
   grenoble-roller-staging-db-data:
+  grenoble-roller-staging-minio-data:

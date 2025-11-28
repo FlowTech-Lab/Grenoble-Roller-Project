@@ -3,6 +3,9 @@ class Event < ApplicationRecord
   belongs_to :route, optional: true
   has_many :attendances, dependent: :destroy
   has_many :users, through: :attendances
+  
+  # Active Storage attachments
+  has_one_attached :cover_image
 
   enum :status, {
     draft: "draft",      # Brouillon / En attente de validation

@@ -14,6 +14,7 @@ RUN apt-get update -qq && \
     libpq-dev \
     libvips \
     libyaml-dev \
+    nano \
     node-gyp \
     pkg-config \
     postgresql-client \
