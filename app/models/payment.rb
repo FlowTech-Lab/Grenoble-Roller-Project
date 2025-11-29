@@ -1,6 +1,7 @@
 class Payment < ApplicationRecord
   has_many :orders, dependent: :nullify
   has_many :attendances, dependent: :nullify
+  has_one :membership, dependent: :nullify
 
   # Paiements HelloAsso en attente récents (24h) – utilisés pour le polling
   scope :pending_helloasso, lambda {

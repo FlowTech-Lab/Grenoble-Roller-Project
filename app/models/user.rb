@@ -6,6 +6,7 @@ class User < ApplicationRecord
   # Relation avec Role
   belongs_to :role
   has_many :orders, dependent: :nullify
+  has_many :memberships, dependent: :destroy
   
   # Active Storage attachments
   has_one_attached :avatar
@@ -45,7 +46,35 @@ class User < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[orders created_events attendances events organizer_applications reviewed_applications audit_logs role]
+    %w[orders created_events attendances events organizer_applications reviewed_applications audit_logs role memberships]
+  end
+
+  # Helpers pour vérifier adhésion active
+  def has_active_membership?
+    memberships.active_now.exists?
+  end
+
+  # Obtenir l'adhésion active actuelle
+  def current_membership
+    memberships.active_now.order(start_date: :desc).first
+  end
+
+  # Calculer l'âge de l'utilisateur
+  def age
+    return nil unless date_of_birth.present?
+    ((Date.today - date_of_birth) / 365.25).floor
+  end
+
+  # Vérifier si l'utilisateur est mineur
+  def is_minor?
+    return false unless date_of_birth.present?
+    age < 18
+  end
+
+  # Vérifier si l'utilisateur est un enfant (< 16 ans)
+  def is_child?
+    return false unless date_of_birth.present?
+    age < 16
   end
 
   private

@@ -396,9 +396,27 @@ class HelloassoService
 
       payment.orders.each { |order| order.update!(status: order_status) }
 
+      # 6. Mettre à jour les adhésions associées
+      if payment.membership
+        membership_status = case new_status
+                           when 'succeeded' then 'active'
+                           when 'failed', 'refunded', 'abandoned' then 'expired'
+                           else 'pending'
+                           end
+        
+        old_status = payment.membership.status
+        payment.membership.update!(status: membership_status)
+        
+        # Envoyer email si le paiement a échoué
+        if new_status == 'failed' && old_status == 'pending'
+          MembershipMailer.payment_failed(payment.membership).deliver_later if defined?(MembershipMailer)
+        end
+      end
+
       Rails.logger.info(
         "[HelloassoService] Payment ##{payment.id} updated to #{new_status}. " \
-        "Orders: #{payment.orders.pluck(:id).join(', ')}"
+        "Orders: #{payment.orders.pluck(:id).join(', ')}, " \
+        "Membership: #{payment.membership&.id}"
       )
 
       payment
@@ -457,6 +475,120 @@ class HelloassoService
       return 0 unless donation_item
       
       (donation_item['amount'] || donation_item[:amount] || 0).to_i
+    end
+
+    # ---- Adhésions (checkout-intent simplifié) -------------------------------------
+
+    # Crée un checkout-intent HelloAsso pour une adhésion.
+    # Utilise un payload simplifié (pas d'items, juste le montant total).
+    #
+    # - membership: objet Membership
+    # - back_url, error_url, return_url: URLs de redirection
+    #
+    # Retourne un Hash avec status, success, body (id, redirectUrl)
+    def create_membership_checkout_intent(membership, back_url:, error_url:, return_url:)
+      raise ArgumentError, "membership is required" unless membership
+      raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+
+      token = access_token
+      if token.to_s.strip.empty?
+        begin
+          token = fetch_access_token![:access_token]
+        rescue => e
+          Rails.logger.error("[HelloassoService] Échec récupération token : #{e.message}")
+          raise "HelloAsso access_token introuvable"
+        end
+      end
+
+      # Construire le payload simplifié pour adhésion
+      category_name = membership.category == 'adult' ? 'Adulte' : 
+                      membership.category == 'student' ? 'Étudiant' : 'Famille'
+      season_name = membership.season || Membership.current_season_name
+      item_name = "Adhésion #{category_name} Saison #{season_name}"
+
+      payload = {
+        organizationSlug: organization_slug,
+        initialAmount: {
+          total: membership.amount_cents,
+          currency: membership.currency || "EUR"
+        },
+        totalAmount: {
+          total: membership.amount_cents,
+          currency: membership.currency || "EUR"
+        },
+        items: [
+          {
+            name: item_name,
+            amount: membership.amount_cents,
+            type: "Membership"
+          }
+        ],
+        metadata: {
+          membership_id: membership.id,
+          user_id: membership.user_id,
+          category: membership.category,
+          season: season_name,
+          environment: environment
+        },
+        backUrl: back_url,
+        errorUrl: error_url,
+        returnUrl: return_url
+      }
+
+      Rails.logger.info("[HelloassoService] Payload membership checkout-intent: #{payload.to_json}")
+
+      uri = URI.parse("#{api_base_url}/organizations/#{organization_slug}/checkout-intents")
+      request = Net::HTTP::Post.new(uri)
+      request["Authorization"] = "Bearer #{token}"
+      request["accept"] = "application/json"
+      request["content-type"] = "application/json"
+      request.body = payload.to_json
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == "https")
+
+      response = http.request(request)
+
+      # Retry avec nouveau token si 401
+      if response.code.to_i == 401
+        Rails.logger.warn("[HelloassoService] Token expiré (401), réessai...")
+        token = fetch_access_token![:access_token]
+        request["Authorization"] = "Bearer #{token}"
+        response = http.request(request)
+      end
+
+      body = begin
+        JSON.parse(response.body)
+      rescue JSON::ParserError
+        { "raw_body" => response.body }
+      end
+
+      success = response.is_a?(Net::HTTPSuccess)
+      
+      Rails.logger.info("[HelloassoService] create_membership_checkout_intent response: #{{
+        status: response.code.to_i,
+        success: success,
+        body: body
+      }.inspect}")
+
+      {
+        status: response.code.to_i,
+        success: success,
+        body: body
+      }
+    end
+
+    # Helper pour obtenir l'URL de redirection HelloAsso pour une adhésion
+    def membership_checkout_redirect_url(membership, back_url:, error_url:, return_url:)
+      result = create_membership_checkout_intent(
+        membership,
+        back_url: back_url,
+        error_url: error_url,
+        return_url: return_url
+      )
+
+      return nil unless result[:success]
+      result[:body]["redirectUrl"]
     end
 
     private

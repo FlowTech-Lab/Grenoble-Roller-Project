@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_24_020634) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -116,6 +116,43 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_020634) do
     t.index ["creator_user_id"], name: "index_events_on_creator_user_id"
     t.index ["route_id"], name: "index_events_on_route_id"
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
+  end
+
+  create_table "memberships", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.integer "category", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "EUR", null: false
+    t.string "emergency_contact_name"
+    t.string "emergency_contact_phone"
+    t.date "end_date", null: false
+    t.boolean "ffrs_data_sharing_consent", default: false
+    t.string "health_questionnaire_status"
+    t.boolean "is_minor", default: false
+    t.boolean "legal_notices_accepted", default: false
+    t.boolean "medical_certificate_provided", default: false
+    t.string "medical_certificate_url"
+    t.jsonb "metadata"
+    t.boolean "parent_authorization", default: false
+    t.date "parent_authorization_date"
+    t.string "parent_email"
+    t.string "parent_name"
+    t.string "parent_phone"
+    t.bigint "payment_id"
+    t.string "provider_order_id"
+    t.boolean "rgpd_consent", default: false
+    t.string "season"
+    t.date "start_date", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["payment_id"], name: "index_memberships_on_payment_id"
+    t.index ["provider_order_id"], name: "index_memberships_on_provider_order_id"
+    t.index ["status", "end_date"], name: "index_memberships_on_status_and_end_date"
+    t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season"
+    t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season_unique", unique: true
+    t.index ["user_id", "status"], name: "index_memberships_on_user_id_and_status"
+    t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
   create_table "option_types", force: :cascade do |t|
@@ -250,18 +287,22 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_020634) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.string "address"
     t.string "avatar_url"
     t.text "bio"
+    t.string "city"
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"
     t.datetime "confirmed_at"
     t.datetime "created_at", null: false
+    t.date "date_of_birth"
     t.string "email", default: "", null: false
     t.boolean "email_verified", default: false, null: false
     t.string "encrypted_password", default: "", null: false
     t.string "first_name"
     t.string "last_name"
     t.string "phone", limit: 10
+    t.string "postal_code"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
@@ -294,6 +335,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_020634) do
   add_foreign_key "audit_logs", "users", column: "actor_user_id"
   add_foreign_key "events", "routes"
   add_foreign_key "events", "users", column: "creator_user_id"
+  add_foreign_key "memberships", "payments"
+  add_foreign_key "memberships", "users"
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "product_variants", column: "variant_id"

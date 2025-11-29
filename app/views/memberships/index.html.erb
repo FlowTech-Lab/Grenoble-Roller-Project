@@ -1,0 +1,103 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <i class="bi bi-person-badge text-liquid-primary me-2"></i>Mes adhésions
+            </h1>
+            <p class="text-muted small mb-0">Consultez l'historique de vos adhésions</p>
+          </div>
+
+          <% if @memberships.empty? %>
+            <!-- Empty state -->
+            <div class="text-center py-5">
+              <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
+              <h3 class="h6 text-muted mt-3 mb-2">Vous n'avez pas encore d'adhésion</h3>
+              <p class="text-muted small mb-4">Rejoignez l'association et profitez de tous les avantages !</p>
+              <%= link_to new_membership_path, class: "btn btn-liquid-primary" do %>
+                <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
+              <% end %>
+            </div>
+          <% else %>
+            <!-- Memberships list -->
+            <% @memberships.each do |membership| %>
+              <div class="mb-3 pb-3 border-bottom <%= 'border-0 pb-0 mb-0' if membership == @memberships.last %>">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                  <!-- Membership icon and season -->
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-badge text-liquid-primary"></i>
+                    <div>
+                      <span class="text-muted small">Saison</span>
+                      <strong class="d-block"><%= membership.season %></strong>
+                    </div>
+                  </div>
+
+                  <!-- Status badge -->
+                  <% 
+                    status_btn = case membership.status
+                      when 'pending'
+                        'btn-warning'
+                      when 'active'
+                        'btn-success'
+                      when 'expired'
+                        'btn-secondary'
+                      else
+                        'btn-secondary'
+                    end
+                    
+                    status_text = case membership.status
+                      when 'pending'
+                        'En attente'
+                      when 'active'
+                        'Active'
+                      when 'expired'
+                        'Expirée'
+                      else
+                        membership.status.humanize
+                    end
+                  %>
+                  <span class="badge <%= status_btn %>"><%= status_text %></span>
+
+                  <!-- Category and amount -->
+                  <div class="ms-auto text-end">
+                    <div class="small text-muted">
+                      <%= membership.category.humanize %>
+                    </div>
+                    <strong><%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %></strong>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="d-flex gap-2">
+                    <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-eye me-1"></i>Détails
+                    <% end %>
+                    
+                    <% if membership.status == 'pending' && membership.status != 'cancelled' %>
+                      <%= button_to pay_membership_path(membership),
+                          method: :post,
+                          class: "btn btn-sm btn-primary",
+                          data: { turbo: false },
+                          form: { style: "display: inline-block;" } do %>
+                        <i class="bi bi-credit-card me-1"></i>Payer
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- New membership button -->
+            <div class="text-center mt-4 pt-3 border-top">
+              <%= link_to new_membership_path, class: "btn btn-liquid-primary" do %>
+                <i class="bi bi-person-plus me-2"></i>Nouvelle adhésion
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

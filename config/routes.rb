@@ -51,6 +51,14 @@ Rails.application.routes.draw do
     end
   end
 
+  # Memberships
+  resources :memberships, only: [ :index, :new, :create, :show ] do
+    member do
+      post :pay
+      get :payment_status
+    end
+  end
+
   # Events (Phase 2)
   resources :events do
     member do
