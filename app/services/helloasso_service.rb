@@ -501,6 +501,7 @@ class HelloassoService
       end
 
       # Construire le payload pour adhésion avec T-shirt optionnel
+      # Utiliser la même structure que pour les commandes (itemName au lieu de items)
       category_name = membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 
                       membership.category == 'with_ffrs' ? 'Cotisation Adhérent Grenoble Roller + Licence FFRS' : 
                       'Adhésion'
@@ -509,14 +510,8 @@ class HelloassoService
       # Calculer le montant total (adhésion + T-shirt si présent)
       total_amount = membership.total_amount_cents
       
-      # Construire les items
-      items = [
-        {
-          name: "#{category_name} Saison #{season_name}",
-          amount: membership.amount_cents,
-          type: "Membership"
-        }
-      ]
+      # Construire itemName (string concaténée comme pour les commandes)
+      item_name_parts = ["#{category_name} Saison #{season_name}"]
       
       # Ajouter le T-shirt si présent
       if membership.tshirt_variant_id.present?
@@ -526,24 +521,17 @@ class HelloassoService
           ov.option_type.name.downcase.include?('dimension')
         }&.value || "Taille standard"
         
-        items << {
-          name: "T-shirt Grenoble Roller (#{tshirt_size})",
-          amount: membership.tshirt_price_cents || 1400,
-          type: "Product"
-        }
+        item_name_parts << "T-shirt Grenoble Roller (#{tshirt_size})"
       end
+      
+      item_name = item_name_parts.join(", ")
 
       payload = {
         organizationSlug: organization_slug,
-        initialAmount: {
-          total: total_amount,
-          currency: membership.currency || "EUR"
-        },
-        totalAmount: {
-          total: total_amount,
-          currency: membership.currency || "EUR"
-        },
-        items: items,
+        initialAmount: total_amount,
+        totalAmount: total_amount,
+        itemName: item_name,
+        containsDonation: false,
         metadata: {
           membership_id: membership.id,
           user_id: membership.user_id,
@@ -558,6 +546,7 @@ class HelloassoService
       }
 
       Rails.logger.info("[HelloassoService] Payload membership checkout-intent: #{payload.to_json}")
+      Rails.logger.info("[HelloassoService] Membership ##{membership.id} - amount_cents: #{membership.amount_cents}, tshirt_price: #{membership.tshirt_price_cents}, total: #{membership.total_amount_cents}")
 
       uri = URI.parse("#{api_base_url}/organizations/#{organization_slug}/checkout-intents")
       request = Net::HTTP::Post.new(uri)
@@ -568,8 +557,12 @@ class HelloassoService
 
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = (uri.scheme == "https")
+      http.read_timeout = 30
+      http.open_timeout = 10
 
       response = http.request(request)
+      
+      Rails.logger.info("[HelloassoService] Response status: #{response.code}, body: #{response.body[0..500]}")
 
       # Retry avec nouveau token si 401
       if response.code.to_i == 401
@@ -601,6 +594,7 @@ class HelloassoService
     end
 
     # Helper pour obtenir l'URL de redirection HelloAsso pour une adhésion
+    # Retourne un hash avec :redirect_url et :checkout_id
     def membership_checkout_redirect_url(membership, back_url:, error_url:, return_url:)
       result = create_membership_checkout_intent(
         membership,
@@ -609,8 +603,35 @@ class HelloassoService
         return_url: return_url
       )
 
-      return nil unless result[:success]
-      result[:body]["redirectUrl"]
+      unless result[:success]
+        error_msg = if result[:body].is_a?(Hash)
+          result[:body]["message"] || 
+          (result[:body]["errors"].is_a?(Hash) ? result[:body]["errors"].to_json : result[:body]["errors"]) ||
+          result[:body]["title"] ||
+          result[:body].inspect
+        else
+          result[:body].to_s
+        end
+        Rails.logger.error("[HelloassoService] Échec création checkout-intent pour membership ##{membership.id}")
+        Rails.logger.error("[HelloassoService] Status: #{result[:status]}, Body: #{result[:body].inspect}")
+        Rails.logger.error("[HelloassoService] Message d'erreur: #{error_msg}")
+        # Retourner nil pour que le controller détecte l'erreur
+        return nil
+      end
+      
+      redirect_url = result[:body]["redirectUrl"] || result[:body][:redirectUrl]
+      checkout_id = result[:body]["id"] || result[:body][:id]
+      
+      unless redirect_url
+        Rails.logger.error("[HelloassoService] Pas de redirectUrl dans la réponse pour membership ##{membership.id}: #{result[:body].inspect}")
+        return nil
+      end
+      
+      # Retourner un hash avec les deux informations
+      {
+        redirect_url: redirect_url,
+        checkout_id: checkout_id
+      }
     end
     
     # Crée un checkout-intent HelloAsso pour plusieurs adhésions enfants (un seul paiement)
@@ -629,8 +650,8 @@ class HelloassoService
         end
       end
 
-      # Construire tous les items (une adhésion par enfant + T-shirts)
-      items = []
+      # Construire itemName (string concaténée comme pour les commandes)
+      item_name_parts = []
       total_amount = 0
       season_name = Membership.current_season_name
       
@@ -641,11 +662,7 @@ class HelloassoService
         
         child_name = membership.is_child_membership? ? "#{membership.child_first_name} #{membership.child_last_name}" : nil
         
-        items << {
-          name: child_name ? "#{category_name} - #{child_name} (Saison #{season_name})" : "#{category_name} Saison #{season_name}",
-          amount: membership.amount_cents,
-          type: "Membership"
-        }
+        item_name_parts << (child_name ? "#{category_name} - #{child_name} (Saison #{season_name})" : "#{category_name} Saison #{season_name}")
         total_amount += membership.amount_cents
         
         # Ajouter le T-shirt si présent
@@ -656,26 +673,19 @@ class HelloassoService
             ov.option_type.name.downcase.include?('dimension')
           }&.value || "Taille standard"
           
-          items << {
-            name: child_name ? "T-shirt Grenoble Roller (#{tshirt_size}) - #{child_name}" : "T-shirt Grenoble Roller (#{tshirt_size})",
-            amount: membership.tshirt_price_cents || 1400,
-            type: "Product"
-          }
+          item_name_parts << (child_name ? "T-shirt Grenoble Roller (#{tshirt_size}) - #{child_name}" : "T-shirt Grenoble Roller (#{tshirt_size})")
           total_amount += (membership.tshirt_price_cents || 1400)
         end
       end
+      
+      item_name = item_name_parts.join(", ")
 
       payload = {
         organizationSlug: organization_slug,
-        initialAmount: {
-          total: total_amount,
-          currency: "EUR"
-        },
-        totalAmount: {
-          total: total_amount,
-          currency: "EUR"
-        },
-        items: items,
+        initialAmount: total_amount,
+        totalAmount: total_amount,
+        itemName: item_name,
+        containsDonation: false,
         metadata: {
           memberships_count: memberships.size,
           memberships_ids: memberships.map(&:id),

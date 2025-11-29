@@ -84,6 +84,17 @@ class Membership < ApplicationRecord
     end_date < Date.current
   end
 
+  # Méthode publique pour vérifier si c'est une adhésion enfant
+  def is_child_membership?
+    is_child_membership == true
+  end
+  
+  # Nom complet de l'enfant
+  def child_full_name
+    return nil unless is_child_membership?
+    "#{child_first_name} #{child_last_name}".strip
+  end
+
   private
 
   def unique_personal_membership_per_season
@@ -95,8 +106,16 @@ class Membership < ApplicationRecord
       is_child_membership: false
     ).where.not(id: id)
     
-    if existing.exists?
-      errors.add(:base, "Vous avez déjà une adhésion personnelle pour cette saison")
+    # Empêcher plusieurs adhésions pending pour la même saison
+    if status == 'pending' && existing.where(status: 'pending').exists?
+      errors.add(:base, "Vous avez déjà une adhésion en attente de paiement pour cette saison")
+      return
+    end
+    
+    # Empêcher une nouvelle adhésion si une adhésion active existe déjà
+    if existing.where(status: 'active').where("end_date > ?", Date.current).exists?
+      errors.add(:base, "Vous avez déjà une adhésion active pour cette saison")
+      return
     end
   end
 
@@ -141,17 +160,6 @@ class Membership < ApplicationRecord
   def child_age
     return 0 unless child_date_of_birth.present?
     ((Date.today - child_date_of_birth) / 365.25).floor
-  end
-  
-  # Méthode publique pour vérifier si c'est une adhésion enfant
-  def is_child_membership?
-    is_child_membership == true
-  end
-  
-  # Nom complet de l'enfant
-  def child_full_name
-    return nil unless is_child_membership?
-    "#{child_first_name} #{child_last_name}".strip
   end
 end
 

@@ -20,8 +20,8 @@
                   <strong>⏳ Paiement en attente</strong>
                   <p class="small mb-0">Vérification automatique en cours...</p>
                 </div>
-                <%= button_to pay_membership_path(@membership),
-                    method: :post,
+                <%= button_to payment_status_membership_path(@membership),
+                    method: :get,
                     class: "btn btn-sm btn-warning",
                     data: { turbo: false },
                     aria: { label: "Vérifier le statut du paiement maintenant" } do %>

@@ -8,6 +8,12 @@ class MembershipsController < ApplicationController
   end
 
   def new
+    # Si paramètre check_age, calculer l'âge et rediriger
+    if params[:check_age] == "true" || params[:check_age] == true
+      check_age_and_redirect
+      return
+    end
+    
     type = params[:type] # "adult", "teen", "children", ou nil (choix initial)
     children_count = params[:count]&.to_i
     
@@ -15,16 +21,32 @@ class MembershipsController < ApplicationController
     unless type
       @season = Membership.current_season_name
       @start_date, @end_date = Membership.current_season_dates
+      
+      # Vérifier s'il y a une adhésion en cours (pending ou active) pour cette saison
+      current_season = Membership.current_season_name
+      existing_memberships = current_user.memberships.personal.where(season: current_season)
+      @pending_membership = existing_memberships.find { |m| m.status == 'pending' }
+      @active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+      
       return
     end
     
-    # Vérifier si l'utilisateur a déjà une adhésion personnelle active (sauf pour enfants)
+    # Vérifier si l'utilisateur a déjà une adhésion personnelle active ou pending (sauf pour enfants)
     if %w[adult teen].include?(type)
       current_season = Membership.current_season_name
-      existing_membership = current_user.memberships.personal.find_by(season: current_season)
+      existing_memberships = current_user.memberships.personal.where(season: current_season)
       
-      if existing_membership&.active?
-        redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      # Vérifier adhésion active
+      active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+      if active_membership
+        redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+        return
+      end
+      
+      # Vérifier adhésion pending
+      pending_membership = existing_memberships.find { |m| m.status == 'pending' }
+      if pending_membership
+        redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement avant d'en créer une nouvelle."
         return
       end
     end
@@ -47,29 +69,11 @@ class MembershipsController < ApplicationController
       @children_count = children_count
       @current_index = 0
     elsif type == "teen"
-      # Vérifier l'âge pour les ados
-      if current_user.date_of_birth.blank?
-        redirect_to edit_user_registration_path, alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil."
-        return
-      end
-      age = current_user.age
-      if age < 16
-        redirect_to new_membership_path, alert: "Vous devez avoir au moins 16 ans pour adhérer seul."
-        return
-      elsif age >= 18
-        redirect_to new_membership_path, alert: "Vous avez 18 ans ou plus, veuillez choisir l'option 'Adulte'."
-        return
-      end
+      # Pour les ados, on permet de saisir la date de naissance dans le formulaire si absente
+      # La vérification d'âge se fera lors de la création de l'adhésion
     elsif type == "adult"
-      # Vérifier l'âge pour les adultes
-      if current_user.date_of_birth.blank?
-        redirect_to edit_user_registration_path, alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil."
-        return
-      end
-      if current_user.age < 18
-        redirect_to new_membership_path, alert: "Vous devez avoir au moins 18 ans pour adhérer en tant qu'adulte."
-        return
-      end
+      # Pour les adultes, on permet de saisir la date de naissance dans le formulaire si absente
+      # La vérification d'âge se fera lors de la création de l'adhésion
     end
     
     # Rendre la vue appropriée
@@ -80,6 +84,51 @@ class MembershipsController < ApplicationController
       render :teen_form
     when "children"
       render :children_form
+    end
+  end
+  
+  def check_age_and_redirect
+    # Vérifier si la date de naissance est renseignée
+    if current_user.date_of_birth.blank?
+      redirect_to edit_user_registration_path, 
+        alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil pour continuer."
+      return
+    end
+    
+    # Calculer l'âge
+    age = current_user.age
+    
+    # Vérifier si l'utilisateur a déjà une adhésion personnelle active ou pending
+    current_season = Membership.current_season_name
+    existing_memberships = current_user.memberships.personal.where(season: current_season)
+    
+    # Vérifier adhésion active
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    if active_membership
+      redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      return
+    end
+    
+    # Vérifier adhésion pending
+    pending_membership = existing_memberships.find { |m| m.status == 'pending' }
+    if pending_membership
+      redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement avant d'en créer une nouvelle."
+      return
+    end
+    
+    # Rediriger selon l'âge
+    if age < 16
+      flash[:alert] = "Pour les personnes de moins de 16 ans, veuillez contacter un membre du bureau de l'association pour procéder à l'adhésion. #{helpers.link_to('Contactez-nous', contact_path, class: 'alert-link')} pour plus d'informations.".html_safe
+      redirect_to new_membership_path
+      return
+    elsif age >= 16 && age < 18
+      # Rediriger vers le formulaire ado
+      redirect_to new_membership_path(type: "teen")
+      return
+    else
+      # Rediriger vers le formulaire adulte
+      redirect_to new_membership_path(type: "adult")
+      return
     end
   end
 
@@ -240,19 +289,6 @@ class MembershipsController < ApplicationController
     end
 
     # Créer un nouveau checkout-intent (les anciens peuvent expirer)
-    redirect_url = HelloassoService.membership_checkout_redirect_url(
-      @membership,
-      back_url: membership_url(@membership),
-      error_url: membership_url(@membership),
-      return_url: membership_url(@membership)
-    )
-
-    unless redirect_url
-      redirect_to membership_path(@membership), alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
-      return
-    end
-
-    # Mettre à jour le provider_payment_id si nécessaire
     result = HelloassoService.create_membership_checkout_intent(
       @membership,
       back_url: membership_url(@membership),
@@ -260,22 +296,41 @@ class MembershipsController < ApplicationController
       return_url: membership_url(@membership)
     )
 
-    if result[:success] && result[:body]["id"]
-      checkout_id = result[:body]["id"].to_s
-      if @membership.payment
-        @membership.payment.update!(provider_payment_id: checkout_id)
-      else
-        payment = Payment.create!(
-          provider: "helloasso",
-          provider_payment_id: checkout_id,
-          status: "pending",
-          amount_cents: @membership.total_amount_cents,
-          currency: @membership.currency
-        )
-        @membership.update!(payment: payment, provider_order_id: checkout_id)
-      end
+    unless result[:success] && result[:body]["id"]
+      Rails.logger.error("[MembershipsController] Échec création checkout-intent : #{result.inspect}")
+      redirect_to membership_path(@membership), alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+      return
     end
 
+    checkout_id = result[:body]["id"].to_s
+    redirect_url = result[:body]["redirectUrl"]
+
+    unless redirect_url
+      Rails.logger.error("[MembershipsController] Pas de redirectUrl dans la réponse : #{result.inspect}")
+      redirect_to membership_path(@membership), alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+      return
+    end
+
+    # Créer ou mettre à jour le Payment
+    if @membership.payment
+      @membership.payment.update!(
+        provider_payment_id: checkout_id,
+        status: "pending",
+        amount_cents: @membership.total_amount_cents
+      )
+    else
+      payment = Payment.create!(
+        provider: "helloasso",
+        provider_payment_id: checkout_id,
+        status: "pending",
+        amount_cents: @membership.total_amount_cents,
+        currency: @membership.currency || "EUR"
+      )
+      @membership.update!(payment: payment)
+    end
+    
+    @membership.update!(provider_order_id: checkout_id)
+    
     redirect_to redirect_url, allow_other_host: true
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors du paiement : #{e.message}")
@@ -349,10 +404,21 @@ class MembershipsController < ApplicationController
     end
 
     current_season = Membership.current_season_name
-    existing_membership = current_user.memberships.personal.find_by(season: current_season)
     
-    if existing_membership&.active?
-      redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+    # Vérifier les adhésions existantes pour cette saison
+    existing_memberships = current_user.memberships.personal.where(season: current_season)
+    
+    # Vérifier si une adhésion active existe
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    if active_membership
+      redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      return
+    end
+    
+    # Vérifier si une adhésion pending existe
+    pending_membership = existing_memberships.find { |m| m.status == 'pending' }
+    if pending_membership
+      redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement ou annuler cette adhésion avant d'en créer une nouvelle."
       return
     end
 
@@ -361,10 +427,9 @@ class MembershipsController < ApplicationController
 
     # Mettre à jour les informations User si fournies
     if membership_params[:first_name].present?
-      current_user.update!(
+      user_update_params = {
         first_name: membership_params[:first_name],
         last_name: membership_params[:last_name],
-        date_of_birth: membership_params[:date_of_birth],
         phone: membership_params[:phone],
         email: membership_params[:email],
         address: membership_params[:address],
@@ -372,7 +437,21 @@ class MembershipsController < ApplicationController
         postal_code: membership_params[:postal_code],
         wants_whatsapp: membership_params[:wants_whatsapp] == "1",
         wants_email_info: membership_params[:wants_email_info] == "1"
-      )
+      }
+      # Ajouter date_of_birth si fournie
+      user_update_params[:date_of_birth] = membership_params[:date_of_birth] if membership_params[:date_of_birth].present?
+      current_user.update!(user_update_params)
+    end
+    
+    # Vérifier l'âge après mise à jour (ou utiliser l'âge existant)
+    if current_user.date_of_birth.blank?
+      redirect_to new_membership_path(type: "adult"), alert: "La date de naissance est obligatoire pour adhérer."
+      return
+    end
+    
+    if current_user.age < 18
+      redirect_to new_membership_path(type: "adult"), alert: "Vous devez avoir au moins 18 ans pour adhérer en tant qu'adulte."
+      return
     end
 
     # Créer l'adhésion en pending
@@ -394,42 +473,43 @@ class MembershipsController < ApplicationController
     )
 
     # Créer le paiement HelloAsso
-    redirect_url = HelloassoService.membership_checkout_redirect_url(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
+    begin
+      checkout_result = HelloassoService.membership_checkout_redirect_url(
+        membership,
+        back_url: new_membership_url,
+        error_url: membership_url(membership),
+        return_url: membership_url(membership)
+      )
 
-    unless redirect_url
+      unless checkout_result && checkout_result.is_a?(Hash) && checkout_result[:redirect_url]
+        Rails.logger.error("[MembershipsController] Échec: checkout_result invalide ou nil: #{checkout_result.inspect}")
+        Rails.logger.error("[MembershipsController] Membership ##{membership.id} sera détruite")
+        membership.destroy
+        redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez vérifier les logs ou contacter le support si le problème persiste."
+        return
+      end
+
+      redirect_url = checkout_result[:redirect_url]
+      checkout_id = checkout_result[:checkout_id]
+
+      # Créer le Payment avec l'ID du checkout-intent
+      payment = Payment.create!(
+        provider: "helloasso",
+        provider_payment_id: checkout_id ? checkout_id.to_s : nil,
+        status: "pending",
+        amount_cents: membership.total_amount_cents,
+        currency: "EUR"
+      )
+      membership.update!(payment: payment, provider_order_id: checkout_id ? checkout_id.to_s : nil)
+
+      redirect_to redirect_url, allow_other_host: true
+    rescue => e
+      Rails.logger.error("[MembershipsController] Erreur lors de la création du checkout-intent : #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
       membership.destroy
-      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso : #{e.message}. Veuillez réessayer ou contacter le support."
       return
     end
-
-    # Créer le Payment
-    payment = Payment.create!(
-      provider: "helloasso",
-      provider_payment_id: nil,
-      status: "pending",
-      amount_cents: membership.total_amount_cents,
-      currency: "EUR"
-    )
-
-    # Mettre à jour le provider_payment_id avec l'ID du checkout-intent
-    result = HelloassoService.create_membership_checkout_intent(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
-
-    if result[:success] && result[:body]["id"]
-      payment.update!(provider_payment_id: result[:body]["id"].to_s)
-      membership.update!(payment: payment, provider_order_id: result[:body]["id"].to_s)
-    end
-
-    redirect_to redirect_url, allow_other_host: true
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
@@ -447,10 +527,21 @@ class MembershipsController < ApplicationController
     end
 
     current_season = Membership.current_season_name
-    existing_membership = current_user.memberships.personal.find_by(season: current_season)
     
-    if existing_membership&.active?
-      redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+    # Vérifier les adhésions existantes pour cette saison
+    existing_memberships = current_user.memberships.personal.where(season: current_season)
+    
+    # Vérifier si une adhésion active existe
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    if active_membership
+      redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      return
+    end
+    
+    # Vérifier si une adhésion pending existe
+    pending_membership = existing_memberships.find { |m| m.status == 'pending' }
+    if pending_membership
+      redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement ou annuler cette adhésion avant d'en créer une nouvelle."
       return
     end
 
@@ -459,10 +550,9 @@ class MembershipsController < ApplicationController
 
     # Mettre à jour les informations User si fournies
     if membership_params[:first_name].present?
-      current_user.update!(
+      user_update_params = {
         first_name: membership_params[:first_name],
         last_name: membership_params[:last_name],
-        date_of_birth: membership_params[:date_of_birth],
         phone: membership_params[:phone],
         email: membership_params[:email],
         address: membership_params[:address],
@@ -470,7 +560,25 @@ class MembershipsController < ApplicationController
         postal_code: membership_params[:postal_code],
         wants_whatsapp: membership_params[:wants_whatsapp] == "1",
         wants_email_info: membership_params[:wants_email_info] == "1"
-      )
+      }
+      # Ajouter date_of_birth si fournie
+      user_update_params[:date_of_birth] = membership_params[:date_of_birth] if membership_params[:date_of_birth].present?
+      current_user.update!(user_update_params)
+    end
+    
+    # Vérifier l'âge après mise à jour (ou utiliser l'âge existant)
+    if current_user.date_of_birth.blank?
+      redirect_to new_membership_path(type: "teen"), alert: "La date de naissance est obligatoire pour adhérer."
+      return
+    end
+    
+    age = current_user.age
+    if age < 16
+      redirect_to new_membership_path(type: "teen"), alert: "Vous devez avoir au moins 16 ans pour adhérer seul."
+      return
+    elsif age >= 18
+      redirect_to new_membership_path(type: "adult"), alert: "Vous avez 18 ans ou plus, veuillez choisir l'option 'Adulte'."
+      return
     end
 
     # Créer l'adhésion en pending
@@ -495,42 +603,43 @@ class MembershipsController < ApplicationController
     )
 
     # Créer le paiement HelloAsso
-    redirect_url = HelloassoService.membership_checkout_redirect_url(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
+    begin
+      checkout_result = HelloassoService.membership_checkout_redirect_url(
+        membership,
+        back_url: new_membership_url,
+        error_url: membership_url(membership),
+        return_url: membership_url(membership)
+      )
 
-    unless redirect_url
+      unless checkout_result && checkout_result.is_a?(Hash) && checkout_result[:redirect_url]
+        Rails.logger.error("[MembershipsController] Échec: checkout_result invalide ou nil: #{checkout_result.inspect}")
+        Rails.logger.error("[MembershipsController] Membership ##{membership.id} sera détruite")
+        membership.destroy
+        redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez vérifier les logs ou contacter le support si le problème persiste."
+        return
+      end
+
+      redirect_url = checkout_result[:redirect_url]
+      checkout_id = checkout_result[:checkout_id]
+
+      # Créer le Payment avec l'ID du checkout-intent
+      payment = Payment.create!(
+        provider: "helloasso",
+        provider_payment_id: checkout_id ? checkout_id.to_s : nil,
+        status: "pending",
+        amount_cents: membership.total_amount_cents,
+        currency: "EUR"
+      )
+      membership.update!(payment: payment, provider_order_id: checkout_id ? checkout_id.to_s : nil)
+
+      redirect_to redirect_url, allow_other_host: true
+    rescue => e
+      Rails.logger.error("[MembershipsController] Erreur lors de la création du checkout-intent : #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
       membership.destroy
-      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso : #{e.message}. Veuillez réessayer ou contacter le support."
       return
     end
-
-    # Créer le Payment
-    payment = Payment.create!(
-      provider: "helloasso",
-      provider_payment_id: nil,
-      status: "pending",
-      amount_cents: membership.total_amount_cents,
-      currency: "EUR"
-    )
-
-    # Mettre à jour le provider_payment_id avec l'ID du checkout-intent
-    result = HelloassoService.create_membership_checkout_intent(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
-
-    if result[:success] && result[:body]["id"]
-      payment.update!(provider_payment_id: result[:body]["id"].to_s)
-      membership.update!(payment: payment, provider_order_id: result[:body]["id"].to_s)
-    end
-
-    redirect_to redirect_url, allow_other_host: true
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))

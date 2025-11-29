@@ -34,39 +34,69 @@
             <h2 class="h5 mb-3">
               <i class="bi bi-person-check me-2 text-liquid-primary"></i>Adhérer pour moi
             </h2>
-            <div class="row g-3">
-              <!-- Option Adulte 18+ -->
-              <div class="col-md-6">
-                <%= link_to new_membership_path(type: "adult"), class: "text-decoration-none" do %>
-                  <div class="card h-100 border-2 hover-shadow">
-                    <div class="card-body text-center p-4">
-                      <i class="bi bi-person-badge fs-1 text-liquid-primary mb-3"></i>
-                      <h3 class="h5 fw-bold mb-2">Adulte (18 ans et +)</h3>
-                      <p class="text-muted small mb-3">
-                        Adhésion autonome pour les personnes majeures
-                      </p>
-                      <span class="btn btn-liquid-primary w-100">Choisir</span>
-                    </div>
+            
+            <!-- Alerte si adhésion active -->
+            <% if @active_membership %>
+              <div class="alert alert-success mb-3" role="alert">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-check-circle me-2 fs-5"></i>
+                  <div class="flex-grow-1">
+                    <strong>Adhésion active</strong>
+                    <p class="mb-2 small">Vous avez déjà une adhésion active pour cette saison.</p>
+                    <%= link_to membership_path(@active_membership), class: "btn btn-sm btn-success" do %>
+                      <i class="bi bi-eye me-1"></i>Voir mon adhésion
+                    <% end %>
                   </div>
-                <% end %>
+                </div>
               </div>
-
-              <!-- Option Ado 16-17 -->
-              <div class="col-md-6">
-                <%= link_to new_membership_path(type: "teen"), class: "text-decoration-none" do %>
-                  <div class="card h-100 border-2 hover-shadow">
-                    <div class="card-body text-center p-4">
-                      <i class="bi bi-person-heart fs-1 text-liquid-success mb-3"></i>
-                      <h3 class="h5 fw-bold mb-2">Ado (16-17 ans)</h3>
-                      <p class="text-muted small mb-3">
-                        Adhésion autonome, vos parents seront informés
-                      </p>
-                      <span class="btn btn-liquid-success w-100">Choisir</span>
-                    </div>
+            <!-- Alerte si adhésion pending -->
+            <% elsif @pending_membership %>
+              <div class="alert alert-warning mb-3" role="alert">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-exclamation-triangle me-2 fs-5"></i>
+                  <div class="flex-grow-1">
+                    <strong>Adhésion en attente de paiement</strong>
+                    <p class="mb-2 small">Vous avez déjà une adhésion en attente de paiement pour cette saison.</p>
+                    <%= link_to membership_path(@pending_membership), class: "btn btn-sm btn-warning" do %>
+                      <i class="bi bi-credit-card me-1"></i>Finaliser le paiement
+                    <% end %>
                   </div>
-                <% end %>
+                </div>
               </div>
-            </div>
+            <% end %>
+            
+            <!-- Carte "Adhérer pour moi" - masquée si adhésion active -->
+            <% unless @active_membership %>
+              <div class="row g-3">
+                <div class="col-12">
+                  <% if @pending_membership %>
+                    <div class="card border-2 opacity-50" style="pointer-events: none;">
+                      <div class="card-body text-center p-4">
+                        <i class="bi bi-person-badge fs-1 text-muted mb-3"></i>
+                        <h3 class="h5 fw-bold mb-2 text-muted">Adhérer pour moi</h3>
+                        <p class="text-muted small mb-3">
+                          Votre âge sera calculé automatiquement pour vous orienter vers le bon formulaire
+                        </p>
+                        <span class="btn btn-secondary btn-lg w-100 disabled">Désactivé</span>
+                      </div>
+                    </div>
+                  <% else %>
+                    <%= link_to new_membership_path(check_age: true), class: "text-decoration-none" do %>
+                      <div class="card border-2 hover-shadow">
+                        <div class="card-body text-center p-4">
+                          <i class="bi bi-person-badge fs-1 text-liquid-primary mb-3"></i>
+                          <h3 class="h5 fw-bold mb-2">Adhérer pour moi</h3>
+                          <p class="text-muted small mb-3">
+                            Votre âge sera calculé automatiquement pour vous orienter vers le bon formulaire
+                          </p>
+                          <span class="btn btn-liquid-primary btn-lg w-100">Commencer</span>
+                        </div>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
           </div>
 
           <!-- Séparateur -->
@@ -110,3 +140,4 @@
     </div>
   </div>
 </div>
+

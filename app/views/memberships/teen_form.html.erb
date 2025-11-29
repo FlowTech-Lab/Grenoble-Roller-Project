@@ -29,8 +29,7 @@
                       <div class="card-body">
                         <div class="form-check">
                           <%= f.radio_button :category, key, 
-                              { class: "form-check-input", id: "category_#{key}", required: true },
-                              key, nil %>
+                              { class: "form-check-input", id: "category_#{key}", required: true } %>
                           <label class="form-check-label w-100" for="category_<%= key %>">
                             <strong><%= cat[:name] %></strong>
                             <p class="text-muted small mb-2"><%= cat[:description] %></p>
@@ -48,8 +47,8 @@
               </div>
             </div>
 
-            <!-- Étape 2 : Sélection T-shirt -->
-            <%= render partial: 'tshirt_selection' %>
+            <!-- Étape 2 : Sélection T-shirt (TEMPORAIREMENT DÉSACTIVÉ) -->
+            <%#= render partial: 'tshirt_selection' %>
 
             <!-- Étape 3 : Informations personnelles -->
             <div class="mb-4">
@@ -70,11 +69,19 @@
                       required: true %>
                 </div>
                 <div class="col-md-6">
-                  <%= f.label :date_of_birth, "Date de naissance *", class: "form-label" %>
+                  <%= f.label :date_of_birth, "Date de naissance *", class: "form-label" do %>
+                    <i class="bi bi-calendar3 me-1"></i>Date de naissance
+                  <% end %>
                   <%= f.date_field :date_of_birth, 
                       class: "form-control", 
                       value: @user.date_of_birth,
-                      required: true %>
+                      required: true,
+                      max: Date.today,
+                      min: Date.today - 120.years,
+                      placeholder: "JJ/MM/AAAA" %>
+                  <div class="form-text small">
+                    <i class="bi bi-info-circle me-1"></i>Format : JJ/MM/AAAA (ex: 15/03/2007)
+                  </div>
                 </div>
                 <div class="col-md-6">
                   <%= f.label :phone, "Téléphone *", class: "form-label" %>

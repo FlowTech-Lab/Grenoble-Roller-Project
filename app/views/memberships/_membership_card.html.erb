@@ -62,13 +62,17 @@
         <i class="bi bi-eye me-1"></i>Détails
       <% end %>
       
-      <% if membership.status == 'pending' && membership.status != 'cancelled' %>
+      <% if membership.status == 'pending' %>
         <%= button_to pay_membership_path(membership),
             method: :post,
             class: "btn btn-sm btn-primary",
             data: { turbo: false },
             form: { style: "display: inline-block;" } do %>
           <i class="bi bi-credit-card me-1"></i>Payer
+        <% end %>
+      <% elsif membership.status == 'expired' %>
+        <%= link_to new_membership_path, class: "btn btn-sm btn-success" do %>
+          <i class="bi bi-arrow-repeat me-1"></i>Renouveler
         <% end %>
       <% end %>
     </div>

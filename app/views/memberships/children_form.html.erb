@@ -35,8 +35,7 @@
                             <div class="card-body">
                               <div class="form-check">
                                 <%= child_form.radio_button :category, key, 
-                                    { class: "form-check-input", id: "category_#{key}_#{index}", required: true },
-                                    key, nil %>
+                                    { class: "form-check-input", id: "category_#{key}_#{index}", required: true } %>
                                 <label class="form-check-label w-100" for="category_<%= key %>_<%= index %>">
                                   <strong><%= cat[:name] %></strong>
                                   <p class="text-muted small mb-2"><%= cat[:description] %></p>
@@ -126,13 +125,19 @@
                             placeholder: "Nom" %>
                       </div>
                       <div class="col-md-6">
-                        <%= child_form.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" %>
+                        <%= child_form.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" do %>
+                          <i class="bi bi-calendar3 me-1"></i>Date de naissance de l'enfant
+                        <% end %>
                         <%= child_form.date_field :child_date_of_birth, 
                             class: "form-control", 
                             required: true,
                             max: Date.today,
+                            min: Date.today - 18.years,
+                            placeholder: "JJ/MM/AAAA",
                             onchange: "checkChildAge(#{index})" %>
-                        <small class="text-muted">L'âge sera calculé automatiquement</small>
+                        <div class="form-text small">
+                          <i class="bi bi-info-circle me-1"></i>Format : JJ/MM/AAAA (ex: 15/03/2015). L'âge sera calculé automatiquement.
+                        </div>
                       </div>
                     </div>
                   </div>

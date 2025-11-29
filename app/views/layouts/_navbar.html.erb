@@ -114,11 +114,11 @@
             </ul>
           </div>
         <% else %>
-          <%= link_to new_user_session_path, class: "btn btn-outline-primary" do %>
-            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Connexion
-          <% end %>
-          <%= link_to new_user_registration_path, class: "btn btn-liquid-primary" do %>
+          <%= link_to new_user_registration_path, class: "btn btn-outline-primary" do %>
             <i class="bi bi-person-plus me-2" aria-hidden="true"></i>S'inscrire
+          <% end %>
+          <%= link_to new_user_session_path, class: "btn btn-liquid-primary" do %>
+            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Connexion
           <% end %>
         <% end %>
       </div>

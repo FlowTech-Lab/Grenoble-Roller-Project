@@ -93,6 +93,69 @@
               </div>
             </div>
 
+            <div class="mb-3">
+              <%= f.label :date_of_birth, "Date de naissance", class: "form-label" do %>
+                <i class="bi bi-calendar3 me-1"></i>Date de naissance
+              <% end %>
+              <%= f.date_field :date_of_birth, 
+                  class: "form-control form-control-liquid", 
+                  value: resource.date_of_birth,
+                  max: Date.today,
+                  min: Date.today - 120.years,
+                  placeholder: "JJ/MM/AAAA" %>
+              <div class="form-text small">
+                <i class="bi bi-info-circle me-1"></i>Nécessaire pour les adhésions. Format : JJ/MM/AAAA (ex: 15/03/1990)
+              </div>
+            </div>
+
+            <!-- Adresse -->
+            <div class="row g-3 mb-3">
+              <div class="col-12">
+                <%= f.label :address, "Adresse", class: "form-label" do %>
+                  <i class="bi bi-house me-1"></i>Adresse
+                <% end %>
+                <%= f.text_field :address, 
+                    class: "form-control form-control-liquid", 
+                    placeholder: "123 Rue de la République",
+                    autocomplete: "street-address" %>
+              </div>
+              <div class="col-md-4">
+                <%= f.label :postal_code, "Code postal", class: "form-label" do %>
+                  <i class="bi bi-mailbox me-1"></i>Code postal
+                <% end %>
+                <%= f.text_field :postal_code, 
+                    class: "form-control form-control-liquid", 
+                    placeholder: "38000",
+                    autocomplete: "postal-code",
+                    maxlength: 5,
+                    pattern: "[0-9]{5}" %>
+              </div>
+              <div class="col-md-8">
+                <%= f.label :city, "Ville", class: "form-label" do %>
+                  <i class="bi bi-building me-1"></i>Ville
+                <% end %>
+                <%= f.text_field :city, 
+                    class: "form-control form-control-liquid", 
+                    placeholder: "Grenoble",
+                    autocomplete: "address-level2" %>
+              </div>
+            </div>
+
+            <!-- Options de communication -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-bell me-1"></i>Options de communication
+              </label>
+              <div class="form-check">
+                <%= f.check_box :wants_whatsapp, class: "form-check-input" %>
+                <%= f.label :wants_whatsapp, "Je souhaite rejoindre la communauté WhatsApp", class: "form-check-label" %>
+              </div>
+              <div class="form-check">
+                <%= f.check_box :wants_email_info, class: "form-check-input" %>
+                <%= f.label :wants_email_info, "Je souhaite recevoir les informations par email", class: "form-check-label" %>
+              </div>
+            </div>
+
             <!-- Skill Level -->
             <div class="mb-4">
               <%= f.label :skill_level, "Niveau de pratique", class: "form-label fw-semibold" %>

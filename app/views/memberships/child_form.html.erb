@@ -26,8 +26,7 @@
                       <div class="card-body">
                         <div class="form-check">
                           <%= f.radio_button :category, key, 
-                              { class: "form-check-input", id: "category_#{key}", required: true },
-                              key, nil %>
+                              { class: "form-check-input", id: "category_#{key}", required: true } %>
                           <label class="form-check-label w-100" for="category_<%= key %>">
                             <strong><%= cat[:name] %></strong>
                             <p class="text-muted small mb-2"><%= cat[:description] %></p>
@@ -45,8 +44,8 @@
               </div>
             </div>
 
-            <!-- Étape 2 : Sélection T-shirt -->
-            <%= render partial: 'tshirt_selection' %>
+            <!-- Étape 2 : Sélection T-shirt (TEMPORAIREMENT DÉSACTIVÉ) -->
+            <%#= render partial: 'tshirt_selection' %>
 
             <!-- Étape 3 : Informations enfant -->
             <div class="mb-4">
@@ -67,11 +66,19 @@
                       placeholder: "Nom" %>
                 </div>
                 <div class="col-md-6">
-                  <%= f.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" %>
+                  <%= f.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" do %>
+                    <i class="bi bi-calendar3 me-1"></i>Date de naissance de l'enfant
+                  <% end %>
                   <%= f.date_field :child_date_of_birth, 
                       class: "form-control", 
                       required: true,
-                      max: Date.today %>
+                      max: Date.today,
+                      min: Date.today - 18.years,
+                      placeholder: "JJ/MM/AAAA",
+                      onchange: "checkChildAge()" %>
+                  <div class="form-text small">
+                    <i class="bi bi-info-circle me-1"></i>Format : JJ/MM/AAAA (ex: 15/03/2015). L'âge sera calculé automatiquement.
+                  </div>
                   <small class="text-muted">L'âge sera calculé automatiquement</small>
                 </div>
               </div>
