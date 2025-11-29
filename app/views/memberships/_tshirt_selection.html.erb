@@ -1,0 +1,71 @@
+<!-- Sélection T-shirt (format card boutique en petit) -->
+<div class="mb-4">
+  <h4 class="h6 mb-3">
+    <i class="bi bi-tshirt me-2 text-liquid-primary"></i>T-shirt Grenoble Roller (optionnel)
+  </h4>
+  
+  <% if @tshirt_variants.any? %>
+    <div class="row g-2">
+      <% @tshirt_variants.each do |tshirt_data| %>
+        <% variant = tshirt_data[:variant] %>
+        <% size = tshirt_data[:size] %>
+        <% size_id = tshirt_data[:size_id] %>
+        
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card card-product card-liquid rounded-liquid h-100" 
+               style="cursor: pointer;"
+               data-tshirt-variant-id="<%= variant.id %>"
+               onclick="selectTshirt(<%= variant.id %>)">
+            <div class="card-product-image-wrapper" style="height: 120px;">
+              <div class="card-product-image">
+                <% if variant.image.attached? %>
+                  <%= image_tag variant.image, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
+                <% elsif variant.image_url.present? %>
+                  <%= image_tag variant.image_url, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
+                <% else %>
+                  <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                    <i class="bi bi-tshirt fs-4 text-muted"></i>
+                  </div>
+                <% end %>
+              </div>
+              <% if variant.stock_qty > 0 %>
+                <span class="badge badge-liquid-success badge-stock" style="font-size: 0.7rem;">En stock</span>
+              <% else %>
+                <span class="badge badge-liquid-danger badge-stock" style="font-size: 0.7rem;">Rupture</span>
+              <% end %>
+            </div>
+            <div class="card-body p-2">
+              <h6 class="product-title mb-1" style="font-size: 0.85rem;">Taille <%= size %></h6>
+              <p class="product-price mb-0" style="font-size: 0.9rem; font-weight: bold;">
+                <%= number_to_currency(14.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+              </p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <input type="hidden" name="tshirt_variant_id" id="selected_tshirt_variant_id" value="">
+    
+    <script>
+      function selectTshirt(variantId) {
+        // Désélectionner toutes les cards
+        document.querySelectorAll('[data-tshirt-variant-id]').forEach(card => {
+          card.classList.remove('border-primary', 'border-3');
+          card.classList.add('border');
+        });
+        
+        // Sélectionner la card cliquée
+        const selectedCard = document.querySelector(`[data-tshirt-variant-id="${variantId}"]`);
+        if (selectedCard) {
+          selectedCard.classList.remove('border');
+          selectedCard.classList.add('border-primary', 'border-3');
+          document.getElementById('selected_tshirt_variant_id').value = variantId;
+        }
+      }
+    </script>
+  <% else %>
+    <p class="text-muted small">Aucun T-shirt disponible pour le moment.</p>
+  <% end %>
+</div>
+

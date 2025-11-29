@@ -53,6 +53,16 @@ Rails.application.routes.draw do
 
   # Memberships
   resources :memberships, only: [ :index, :new, :create, :show ] do
+    collection do
+      post :choose_type # Adulte ou Ado
+      post :choose_children_count # Nombre d'enfants
+      get :adult_form # Formulaire adulte 18+
+      get :teen_form # Formulaire ado 16-17
+      get "child_form/:index", to: "memberships#child_form", as: :child_form # Formulaire enfant (avec index)
+      post :create_adult # Créer adhésion adulte
+      post :create_teen # Créer adhésion ado
+      post :create_child # Créer adhésion enfant
+    end
     member do
       post :pay
       get :payment_status

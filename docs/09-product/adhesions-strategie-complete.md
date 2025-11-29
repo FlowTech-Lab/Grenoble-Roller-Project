@@ -39,7 +39,7 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 
 **1. Admin configure adhésion pour N+1**
 - Dates fixes : 1er sept N → 31 août N+1
-- Tarifs : 50€ adulte, 25€ étudiant, 80€ famille
+- Tarifs : 10€ standard, 56.55€ avec FFRS ✅ **Corrigé selon HelloAsso réel** (au lieu de 50€/25€/80€)
 - Page `/memberships/new` disponible
 
 **2. User adhère**
@@ -85,14 +85,18 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 **Champs SIMPLES** :
 - `id` (primary key)
 - `user_id` (FK vers users)
-- `category` : enum "adult" / "student" / "family"
-- `amount_cents` : 5000 / 2500 / 8000
+- `category` : enum "standard" / "with_ffrs" ✅ **Corrigé selon HelloAsso réel** (au lieu de adult/student/family)
+- `amount_cents` : 1000 / 5655 ✅ **Corrigé selon HelloAsso réel** (10€ / 56.55€ au lieu de 50€/25€/80€)
 - `status` : enum "pending" → "active" → "expired"
 - `start_date` : 1er sept N (date)
 - `end_date` : 31 août N+1 (date)
 - `season` : "2025-2026" (string, pour historique)
 - `payment_id` (FK vers payments, optionnel)
 - `provider_order_id` : ID HelloAsso pour réconciliation (string)
+- `tshirt_variant_id` (FK vers product_variants, optionnel) ✅ **Ajouté pour HelloAsso réel**
+- `tshirt_price_cents` (integer, default: 1400) ✅ **Ajouté pour HelloAsso réel**
+- `wants_whatsapp` (boolean) ✅ **Ajouté pour HelloAsso réel**
+- `wants_email_info` (boolean) ✅ **Ajouté pour HelloAsso réel**
 - `created_at`, `updated_at`
 
 **Champs pour mineurs** (si nécessaire) :
@@ -132,8 +136,8 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - `belongs_to :payment, optional: true`
 
 **Enums** :
-- `enum status: { pending: 0, active: 1, expired: 2 }`
-- `enum category: { adult: 0, student: 1, family: 2 }`
+- `enum :status, { pending: 0, active: 1, expired: 2 }` ✅
+- `enum :category, { standard: 0, with_ffrs: 1 }` ✅ **Corrigé selon HelloAsso réel** (au lieu de adult/student/family)
 
 **Scopes** :
 - `scope :active_now` : Adhésions actives (status = active ET end_date > today)

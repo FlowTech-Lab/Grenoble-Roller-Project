@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_29_004746) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -121,6 +121,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
   create_table "memberships", force: :cascade do |t|
     t.integer "amount_cents", null: false
     t.integer "category", null: false
+    t.date "child_date_of_birth"
+    t.string "child_first_name"
+    t.string "child_last_name"
     t.datetime "created_at", null: false
     t.string "currency", default: "EUR", null: false
     t.string "emergency_contact_name"
@@ -128,6 +131,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
     t.date "end_date", null: false
     t.boolean "ffrs_data_sharing_consent", default: false
     t.string "health_questionnaire_status"
+    t.boolean "is_child_membership", default: false, null: false
     t.boolean "is_minor", default: false
     t.boolean "legal_notices_accepted", default: false
     t.boolean "medical_certificate_provided", default: false
@@ -144,11 +148,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
     t.string "season"
     t.date "start_date", null: false
     t.integer "status", default: 0, null: false
+    t.integer "tshirt_price_cents", default: 1400
+    t.bigint "tshirt_variant_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.boolean "wants_email_info", default: true
+    t.boolean "wants_whatsapp", default: false
     t.index ["payment_id"], name: "index_memberships_on_payment_id"
     t.index ["provider_order_id"], name: "index_memberships_on_provider_order_id"
     t.index ["status", "end_date"], name: "index_memberships_on_status_and_end_date"
+    t.index ["tshirt_variant_id"], name: "index_memberships_on_tshirt_variant_id"
+    t.index ["user_id", "is_child_membership", "season"], name: "idx_on_user_id_is_child_membership_season_0aa4f85c42"
     t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season"
     t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season_unique", unique: true
     t.index ["user_id", "status"], name: "index_memberships_on_user_id_and_status"
@@ -310,6 +320,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
     t.string "skill_level"
     t.string "unconfirmed_email"
     t.datetime "updated_at", null: false
+    t.boolean "wants_email_info", default: true
+    t.boolean "wants_whatsapp", default: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -336,6 +348,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_29_000248) do
   add_foreign_key "events", "routes"
   add_foreign_key "events", "users", column: "creator_user_id"
   add_foreign_key "memberships", "payments"
+  add_foreign_key "memberships", "product_variants", column: "tshirt_variant_id"
   add_foreign_key "memberships", "users"
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"

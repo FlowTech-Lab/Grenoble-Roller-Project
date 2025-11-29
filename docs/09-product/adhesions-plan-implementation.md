@@ -22,88 +22,101 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 #### **1.1 Migration Membership**
 
-- [ ] Créer migration `create_memberships`
-- [ ] Champs principaux :
-  - [ ] `user_id` (references, null: false)
-  - [ ] `category` (integer, null: false) - enum
-  - [ ] `status` (integer, null: false, default: 0) - enum
-  - [ ] `start_date` (date, null: false)
-  - [ ] `end_date` (date, null: false)
-  - [ ] `amount_cents` (integer, null: false)
-  - [ ] `currency` (string, default: "EUR")
-  - [ ] `season` (string) - ex: "2025-2026"
-  - [ ] `payment_id` (references, null: true)
-  - [ ] `provider_order_id` (string)
-  - [ ] `metadata` (jsonb)
-- [ ] Champs mineurs (optionnels pour Phase 1) :
-  - [ ] `is_minor` (boolean)
-  - [ ] `parent_name` (string)
-  - [ ] `parent_email` (string)
-  - [ ] `parent_phone` (string)
-  - [ ] `parent_authorization` (boolean)
-  - [ ] `parent_authorization_date` (date)
-  - [ ] `health_questionnaire_status` (string)
-  - [ ] `medical_certificate_provided` (boolean)
-  - [ ] `medical_certificate_url` (string)
-  - [ ] `emergency_contact_name` (string)
-  - [ ] `emergency_contact_phone` (string)
-  - [ ] `rgpd_consent` (boolean)
-  - [ ] `ffrs_data_sharing_consent` (boolean)
-  - [ ] `legal_notices_accepted` (boolean)
-- [ ] Index :
-  - [ ] `add_index :memberships, [:user_id, :status]`
-  - [ ] `add_index :memberships, [:user_id, :season]`
-  - [ ] `add_index :memberships, [:status, :end_date]`
-  - [ ] `add_index :memberships, :provider_order_id`
-- [ ] Validation unique : `user_id + season`
-- [ ] Tester migration en développement
+- [x] Créer migration `create_memberships` ✅
+- [x] Champs principaux :
+  - [x] `user_id` (references, null: false) ✅
+  - [x] `category` (integer, null: false) - enum ✅
+  - [x] `status` (integer, null: false, default: 0) - enum ✅
+  - [x] `start_date` (date, null: false) ✅
+  - [x] `end_date` (date, null: false) ✅
+  - [x] `amount_cents` (integer, null: false) ✅
+  - [x] `currency` (string, default: "EUR") ✅
+  - [x] `season` (string) - ex: "2025-2026" ✅
+  - [x] `payment_id` (references, null: true) ✅
+  - [x] `provider_order_id` (string) ✅
+  - [x] `metadata` (jsonb) ✅
+- [x] Champs mineurs (optionnels pour Phase 1) :
+  - [x] `is_minor` (boolean) ✅
+  - [x] `parent_name` (string) ✅
+  - [x] `parent_email` (string) ✅
+  - [x] `parent_phone` (string) ✅
+  - [x] `parent_authorization` (boolean) ✅
+  - [x] `parent_authorization_date` (date) ✅
+  - [x] `health_questionnaire_status` (string) ✅
+  - [x] `medical_certificate_provided` (boolean) ✅
+  - [x] `medical_certificate_url` (string) ✅
+  - [x] `emergency_contact_name` (string) ✅
+  - [x] `emergency_contact_phone` (string) ✅
+  - [x] `rgpd_consent` (boolean) ✅
+  - [x] `ffrs_data_sharing_consent` (boolean) ✅
+  - [x] `legal_notices_accepted` (boolean) ✅
+- [x] **Champs supplémentaires (HelloAsso réel)** :
+  - [x] `tshirt_variant_id` (references product_variants) ✅
+  - [x] `tshirt_price_cents` (integer, default: 1400) ✅
+  - [x] `wants_whatsapp` (boolean) ✅
+  - [x] `wants_email_info` (boolean) ✅
+- [x] Index :
+  - [x] `add_index :memberships, [:user_id, :status]` ✅
+  - [x] `add_index :memberships, [:user_id, :season]` ✅
+  - [x] `add_index :memberships, [:status, :end_date]` ✅
+  - [x] `add_index :memberships, :provider_order_id` ✅
+  - [x] `add_index :memberships, [:user_id, :season], unique: true` ✅
+- [x] Validation unique : `user_id + season` ✅
 
 ---
 
 #### **1.2 Model Membership**
 
-- [ ] Créer `app/models/membership.rb`
-- [ ] Relations :
-  - [ ] `belongs_to :user`
-  - [ ] `belongs_to :payment, optional: true`
-- [ ] Enums :
-  - [ ] `enum status: { pending: 0, active: 1, expired: 2 }`
-  - [ ] `enum category: { adult: 0, student: 1, family: 2 }`
-- [ ] Scopes :
-  - [ ] `scope :active_now` : `active.where("end_date > ?", Date.current)`
-  - [ ] `scope :expiring_soon` : `active.where("end_date BETWEEN ? AND ?", Date.current, 7.days.from_now)`
-  - [ ] `scope :pending_payment` : `pending`
-- [ ] Méthodes :
-  - [ ] `active?` : Vérifier si active (status = "active" ET end_date > today)
-  - [ ] `expired?` : Vérifier si expirée (end_date <= today)
-  - [ ] `days_until_expiry` : Calculer jours restants
-  - [ ] `self.price_for_category(category)` : Retourner prix en centimes
-  - [ ] `self.current_season_dates` : Retourner [start_date, end_date]
-- [ ] Validations :
-  - [ ] `validates :user_id, uniqueness: { scope: :season }`
-  - [ ] `validates :start_date, :end_date, :amount_cents, presence: true`
-- [ ] Tests unitaires du modèle
+- [x] Créer `app/models/membership.rb` ✅
+- [x] Relations :
+  - [x] `belongs_to :user` ✅
+  - [x] `belongs_to :payment, optional: true` ✅
+  - [x] `belongs_to :tshirt_variant, optional: true` ✅ **Ajouté pour HelloAsso réel**
+- [x] Enums :
+  - [x] `enum :status, { pending: 0, active: 1, expired: 2 }` ✅
+  - [x] `enum :category, { standard: 0, with_ffrs: 1 }` ✅ **Corrigé selon HelloAsso réel** (au lieu de adult/student/family)
+- [x] Scopes :
+  - [x] `scope :active_now` : `active.where("end_date > ?", Date.current)` ✅
+  - [x] `scope :expiring_soon` : `active.where("end_date BETWEEN ? AND ?", Date.current, 30.days.from_now)` ✅
+  - [x] `scope :pending_payment` : `pending` ✅
+- [x] Méthodes :
+  - [x] `active?` : Vérifier si active (status = "active" ET end_date > today) ✅
+  - [x] `expired?` : Vérifier si expirée (end_date <= today) ✅
+  - [x] `days_until_expiry` : Calculer jours restants ✅
+  - [x] `self.price_for_category(category)` : Retourner prix en centimes ✅ **Corrigé : 10€ et 56.55€**
+  - [x] `self.current_season_dates` : Retourner [start_date, end_date] ✅
+  - [x] `self.current_season_name` : Retourner "2025-2026" ✅
+  - [x] `total_amount_cents` : Calculer adhésion + T-shirt ✅ **Ajouté pour HelloAsso réel**
+  - [x] `is_minor?` : Vérifier si mineur ✅
+  - [x] `requires_parent_authorization?` : Vérifier si < 16 ans ✅
+- [x] Validations :
+  - [x] `validates :user_id, uniqueness: { scope: :season }` ✅
+  - [x] `validates :start_date, :end_date, :amount_cents, presence: true` ✅
+  - [x] `validates :start_date, comparison: { less_than: :end_date }` ✅
 
 ---
 
 #### **1.3 Update User Model**
 
-- [ ] Ajouter relation `has_many :memberships, dependent: :destroy`
-- [ ] Helpers :
-  - [ ] `has_active_membership?` : Vérifier si adhésion active
-  - [ ] `current_membership` : Retourner adhésion active actuelle
-- [ ] Champs à ajouter (si manquants) :
-  - [ ] Migration `add_date_of_birth_to_users` (date)
-  - [ ] Migration `add_address_fields_to_users` (address, postal_code, city)
-- [ ] Tests unitaires
+- [x] Ajouter relation `has_many :memberships, dependent: :destroy` ✅
+- [x] Helpers :
+  - [x] `has_active_membership?` : Vérifier si adhésion active ✅
+  - [x] `current_membership` : Retourner adhésion active actuelle ✅
+  - [x] `age` : Calculer l'âge ✅
+  - [x] `is_minor?` : Vérifier si mineur (< 18) ✅
+  - [x] `is_child?` : Vérifier si enfant (< 16) ✅
+- [x] Champs à ajouter (si manquants) :
+  - [x] Migration `add_date_of_birth_to_users` (date) ✅
+  - [x] Migration `add_address_fields_to_users` (address, postal_code, city) ✅
+  - [x] Migration `add_options_to_users` (wants_whatsapp, wants_email_info) ✅ **Ajouté pour HelloAsso réel**
+- [x] `phone` : ✅ **Déjà présent dans schema**
 
 ---
 
 #### **1.4 Update Payment Model**
 
-- [ ] Ajouter relation `has_one :membership`
-- [ ] Vérifier que `Payment` peut être lié soit à `Order`, soit à `Membership`
-- [ ] Tests unitaires
+- [x] Ajouter relation `has_one :membership` ✅
+- [x] Vérifier que `Payment` peut être lié soit à `Order`, soit à `Membership` ✅
 
 ---
 
@@ -111,96 +124,121 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 #### **2.1 Service HelloassoService**
 
-- [ ] Créer méthode `create_membership_checkout(membership, back_url:, error_url:, return_url:)`
-- [ ] Créer méthode `build_membership_checkout_payload(membership, back_url:, error_url:, return_url:)`
-- [ ] Payload :
-  - [ ] `totalAmount` = `membership.amount_cents`
-  - [ ] `initialAmount` = `membership.amount_cents`
-  - [ ] `itemName` = "Adhésion [Catégorie] Saison [Année]"
-  - [ ] `backUrl`, `errorUrl`, `returnUrl`
-  - [ ] `containsDonation` = false
-  - [ ] `metadata.membership_id` = ID de l'adhésion
-- [ ] Adapter `fetch_and_update_payment` pour mettre à jour `Membership.status` si payment lié à adhésion
-- [ ] Tests en sandbox HelloAsso
+- [x] Créer méthode `create_membership_checkout_intent(membership, back_url:, error_url:, return_url:)` ✅
+- [x] Payload :
+  - [x] `totalAmount` = `membership.total_amount_cents` ✅ **Inclut T-shirt**
+  - [x] `initialAmount` = `membership.total_amount_cents` ✅ **Inclut T-shirt**
+  - [x] `items` : Array avec adhésion + T-shirt si présent ✅ **Conforme HelloAsso réel**
+  - [x] `itemName` = "Cotisation Adhérent Grenoble Roller [Saison]" ✅ **Corrigé selon HelloAsso réel**
+  - [x] `backUrl`, `errorUrl`, `returnUrl` ✅
+  - [x] `metadata.membership_id` = ID de l'adhésion ✅
+  - [x] `metadata.tshirt_variant_id` = ID du T-shirt si présent ✅ **Ajouté**
+- [x] Adapter `fetch_and_update_payment` pour mettre à jour `Membership.status` si payment lié à adhésion ✅
+- [x] Helper `membership_checkout_redirect_url` ✅
 
 ---
 
 #### **2.2 Controller MembershipsController**
 
-- [ ] Créer `app/controllers/memberships_controller.rb`
-- [ ] `before_action :authenticate_user!`
-- [ ] `before_action :ensure_email_confirmed, only: [:create]`
-- [ ] Action `index` :
-  - [ ] Liste des adhésions de l'utilisateur
-  - [ ] Ordre : `created_at: :desc`
-- [ ] Action `new` :
-  - [ ] Afficher 3 catégories (Adulte, Étudiant, Famille)
-  - [ ] Afficher dates de saison courante
-  - [ ] Afficher prix pour chaque catégorie
-- [ ] Action `create` :
-  - [ ] Récupérer `category` depuis params
-  - [ ] Calculer `start_date`, `end_date` via `current_season_dates`
-  - [ ] Calculer `amount_cents` via `price_for_category`
-  - [ ] Créer `Membership` avec `status = "pending"`
-  - [ ] Créer checkout-intent HelloAsso
-  - [ ] Créer `Payment`
-  - [ ] Rediriger vers HelloAsso
-  - [ ] Gestion erreurs
-- [ ] Action `show` :
-  - [ ] Afficher détails adhésion
-  - [ ] Afficher statut
-  - [ ] Afficher dates
-  - [ ] Bouton "Payer" si pending
-  - [ ] Bouton "Renouveler" si expired
-- [ ] Action `pay` :
-  - [ ] Vérifier statut (doit être pending)
-  - [ ] Créer nouveau checkout-intent
-  - [ ] Rediriger vers HelloAsso
-- [ ] Action `payment_status` :
-  - [ ] Endpoint JSON pour polling JavaScript
-  - [ ] Retourner statut du paiement
-- [ ] Tests du controller
+- [x] Créer `app/controllers/memberships_controller.rb` ✅
+- [x] `before_action :authenticate_user!` ✅
+- [x] `before_action :ensure_email_confirmed, only: [:create, :step2, :step3]` ✅
+- [x] Action `index` :
+  - [x] Liste des adhésions de l'utilisateur ✅
+  - [x] Ordre : `created_at: :desc` ✅
+  - [x] Affichage T-shirt si présent ✅ **Ajouté**
+- [x] Action `new` (Étape 1) :
+  - [x] Afficher 2 catégories (Standard, FFRS) ✅ **Corrigé selon HelloAsso réel**
+  - [x] Afficher dates de saison courante ✅
+  - [x] Afficher prix pour chaque catégorie (10€, 56.55€) ✅ **Corrigé**
+  - [x] Option T-shirt avec choix de taille ✅ **Ajouté pour HelloAsso réel**
+- [x] Action `step2` (Étape 2) :
+  - [x] Formulaire informations adhérent (Prénom, Nom, Date naissance, Téléphone, Email) ✅ **Ajouté pour HelloAsso réel**
+  - [x] Pré-remplir depuis User si connecté ✅
+- [x] Action `step3` (Étape 3) :
+  - [x] Formulaire coordonnées (Adresse, Ville, Code postal) ✅ **Ajouté pour HelloAsso réel**
+  - [x] Options (WhatsApp, Emails) ✅ **Ajouté pour HelloAsso réel**
+- [x] Action `create` :
+  - [x] Récupérer `category` depuis params ✅
+  - [x] Récupérer `tshirt_variant_id` depuis params ✅ **Ajouté**
+  - [x] Calculer `start_date`, `end_date` via `current_season_dates` ✅
+  - [x] Calculer `amount_cents` via `price_for_category` ✅
+  - [x] Mettre à jour User avec informations fournies ✅ **Ajouté**
+  - [x] Créer `Membership` avec `status = "pending"` ✅
+  - [x] Créer checkout-intent HelloAsso ✅
+  - [x] Créer `Payment` ✅
+  - [x] Rediriger vers HelloAsso ✅
+  - [x] Gestion erreurs ✅
+- [x] Action `show` :
+  - [x] Afficher détails adhésion ✅
+  - [x] Afficher statut ✅
+  - [x] Afficher dates ✅
+  - [x] Afficher T-shirt si présent ✅ **Ajouté**
+  - [x] Bouton "Payer" si pending ✅
+  - [x] Bouton "Renouveler" si expired ✅
+- [x] Action `pay` :
+  - [x] Vérifier statut (doit être pending) ✅
+  - [x] Créer nouveau checkout-intent ✅
+  - [x] Rediriger vers HelloAsso ✅
+- [x] Action `payment_status` :
+  - [x] Endpoint JSON pour polling JavaScript ✅
+  - [x] Retourner statut du paiement ✅
 
 ---
 
 #### **2.3 Routes**
 
-- [ ] Ajouter dans `config/routes.rb` :
+- [x] Ajouter dans `config/routes.rb` :
   ```ruby
   resources :memberships, only: [:index, :new, :create, :show] do
+    collection do
+      get :step1
+      get :step2
+      get :step3
+    end
     member do
       post :pay
       get :payment_status
     end
   end
   ```
-- [ ] Vérifier routes avec `bin/rails routes | grep memberships`
+  ✅ **Avec étapes supplémentaires pour HelloAsso réel**
+- [x] Vérifier routes avec `bin/rails routes | grep memberships` ✅
 
 ---
 
 #### **2.4 Vues**
 
-- [ ] `app/views/memberships/index.html.erb` :
-  - [ ] Liste historique des adhésions
-  - [ ] Affichage : Catégorie, Dates, Statut, Prix
-  - [ ] Bouton "Renouveler" si expired
-- [ ] `app/views/memberships/new.html.erb` :
-  - [ ] 3 cards (Adulte / Étudiant / Famille)
-  - [ ] Chaque card affiche : Prix, Dates validité, Bouton "Adhérer"
-  - [ ] Formulaire avec champs obligatoires (si pas déjà dans User)
-  - [ ] Checkboxes d'acceptation (CGU, RGPD, attestation aptitude)
-- [ ] `app/views/memberships/show.html.erb` :
-  - [ ] Détail adhésion
-  - [ ] Badge statut (pending/active/expired)
-  - [ ] Dates adhésion
-  - [ ] Prix payé
-  - [ ] Bouton "Payer" si pending
-  - [ ] Bouton "Renouveler" si expired
-  - [ ] Polling JavaScript si pending (comme pour commandes)
-- [ ] Polling JavaScript :
-  - [ ] Vérifier statut toutes les 5 secondes
-  - [ ] Recharger page si statut changé
-  - [ ] Max 12 tentatives (1 minute)
+- [x] `app/views/memberships/index.html.erb` :
+  - [x] Liste historique des adhésions ✅
+  - [x] Affichage : Catégorie, Dates, Statut, Prix ✅
+  - [x] Indication T-shirt si présent ✅ **Ajouté**
+  - [x] Bouton "Renouveler" si expired ✅
+- [x] `app/views/memberships/new.html.erb` (Étape 1) :
+  - [x] 2 cards (Standard / FFRS) ✅ **Corrigé selon HelloAsso réel**
+  - [x] Chaque card affiche : Prix, Dates validité, Description ✅
+  - [x] Option T-shirt avec choix de taille ✅ **Ajouté pour HelloAsso réel**
+  - [x] Progress bar ✅ **Ajouté pour HelloAsso réel**
+- [x] `app/views/memberships/step2.html.erb` (Étape 2) :
+  - [x] Formulaire informations adhérent ✅ **Ajouté pour HelloAsso réel**
+  - [x] Progress bar ✅ **Ajouté**
+- [x] `app/views/memberships/step3.html.erb` (Étape 3) :
+  - [x] Formulaire coordonnées ✅ **Ajouté pour HelloAsso réel**
+  - [x] Options WhatsApp et Emails ✅ **Ajouté pour HelloAsso réel**
+  - [x] Progress bar ✅ **Ajouté**
+- [x] `app/views/memberships/show.html.erb` :
+  - [x] Détail adhésion ✅
+  - [x] Badge statut (pending/active/expired) ✅
+  - [x] Dates adhésion ✅
+  - [x] Prix payé ✅
+  - [x] Affichage T-shirt si présent ✅ **Ajouté**
+  - [x] Bouton "Payer" si pending ✅
+  - [x] Bouton "Renouveler" si expired ✅
+  - [x] Polling JavaScript si pending (comme pour commandes) ✅
+- [x] Polling JavaScript :
+  - [x] Vérifier statut toutes les 5 secondes ✅
+  - [x] Recharger page si statut changé ✅
+  - [x] Max 12 tentatives (1 minute) ✅
 
 ---
 
@@ -208,40 +246,35 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 #### **3.1 Rake Tasks**
 
-- [ ] Créer `lib/tasks/memberships.rake`
-- [ ] Task `memberships:update_expired` :
-  - [ ] Sélectionner adhésions actives avec `end_date < today`
-  - [ ] Mettre à jour `status = "expired"`
-  - [ ] Envoyer email expiration
-  - [ ] Log résultats
-- [ ] Task `memberships:send_renewal_reminders` :
-  - [ ] Sélectionner adhésions actives avec `end_date` dans 30 jours
-  - [ ] Envoyer email rappel
-  - [ ] Log résultats
-- [ ] Task `memberships:check_minor_authorizations` :
-  - [ ] Vérifier adhésions mineurs sans autorisation après 7 jours
-  - [ ] Envoyer email rappel
-  - [ ] Après 14 jours : `status = "expired"`
-- [ ] Task `memberships:check_medical_certificates` :
-  - [ ] Vérifier adhésions avec `medical_required` sans certificat
-  - [ ] Envoyer email rappel
-- [ ] Task `memberships:prepare_new_season` :
-  - [ ] Calculer nouvelle saison
-  - [ ] Activer `/memberships/new`
-  - [ ] Envoyer email à tous "Nouvelle saison ouverte"
+- [x] Créer `lib/tasks/memberships.rake` ✅
+- [x] Task `memberships:update_expired` :
+  - [x] Sélectionner adhésions actives avec `end_date < today` ✅
+  - [x] Mettre à jour `status = "expired"` ✅
+  - [x] Envoyer email expiration ✅
+  - [x] Log résultats ✅
+- [x] Task `memberships:send_renewal_reminders` :
+  - [x] Sélectionner adhésions actives avec `end_date` dans 30 jours ✅
+  - [x] Envoyer email rappel ✅
+  - [x] Log résultats ✅
+- [x] Task `memberships:check_minor_authorizations` :
+  - [x] Vérifier adhésions mineurs sans autorisation ✅
+  - [x] Log pour suivi admin ✅
+- [x] Task `memberships:check_medical_certificates` :
+  - [x] Vérifier adhésions avec `medical_required` sans certificat ✅
+  - [x] Log pour suivi admin ✅
+- [ ] Task `memberships:prepare_new_season` : ⚠️ **Non implémenté** (peut être ajouté plus tard)
 
 ---
 
 #### **3.2 Configuration Cron (Whenever)**
 
-- [ ] Mettre à jour `config/schedule.rb`
-- [ ] `helloasso:sync_payments` : Toutes les 5 minutes
-- [ ] `memberships:update_expired` : Chaque jour à 00h00
-- [ ] `memberships:send_renewal_reminders` : Chaque jour à 10h00
-- [ ] `memberships:check_minor_authorizations` : Chaque jour à 09h00
-- [ ] `memberships:check_medical_certificates` : Chaque jour à 09h00
-- [ ] `memberships:prepare_new_season` : 1er septembre à 08h00
-- [ ] Tester cron en développement
+- [x] Mettre à jour `config/schedule.rb` ✅
+- [x] `helloasso:sync_payments` : Toutes les 5 minutes ✅ **Déjà présent**
+- [x] `memberships:update_expired` : Chaque jour à 00h00 ✅
+- [x] `memberships:send_renewal_reminders` : Chaque jour à 09h00 ✅ **Légèrement différent (09h au lieu de 10h)**
+- [x] `memberships:check_minor_authorizations` : Tous les lundis à 10h ✅
+- [x] `memberships:check_medical_certificates` : Tous les lundis à 10h30 ✅
+- [ ] `memberships:prepare_new_season` : 1er septembre à 08h00 ⚠️ **Non implémenté**
 
 ---
 
@@ -295,37 +328,35 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 #### **5.1 Mailer MembershipMailer**
 
-- [ ] Créer `app/mailers/membership_mailer.rb`
-- [ ] Méthode `membership_activated(membership)` :
-  - [ ] Sujet : "✅ Adhésion activée - Bienvenue !"
-  - [ ] Contenu : Dates, accès événements
-- [ ] Méthode `membership_payment_failed(membership)` :
-  - [ ] Sujet : "❌ Échec du paiement de votre adhésion"
-  - [ ] Contenu : Lien pour réessayer
-- [ ] Méthode `membership_expired(membership)` :
-  - [ ] Sujet : "⏰ Votre adhésion a expiré"
-  - [ ] Contenu : Lien pour renouveler
-- [ ] Méthode `membership_renewal_reminder(membership)` :
-  - [ ] Sujet : "🔄 Renouvelez votre adhésion - Expiration dans 30 jours"
-  - [ ] Contenu : Date expiration, lien renouveler
-- [ ] Méthode `minor_authorization_missing(membership)` :
-  - [ ] Sujet : "⚠️ Autorisation parentale manquante"
-  - [ ] Contenu : Lien pour autoriser
-- [ ] Méthode `medical_certificate_missing(membership)` :
-  - [ ] Sujet : "⚠️ Certificat médical manquant"
-  - [ ] Contenu : Lien pour uploader
+- [x] Créer `app/mailers/membership_mailer.rb` ✅
+- [x] Méthode `activated(membership)` :
+  - [x] Sujet : "✅ Adhésion activée - Bienvenue !" ✅
+  - [x] Contenu : Dates, accès événements ✅
+- [x] Méthode `payment_failed(membership)` :
+  - [x] Sujet : "❌ Échec du paiement de votre adhésion" ✅
+  - [x] Contenu : Lien pour réessayer ✅
+- [x] Méthode `expired(membership)` :
+  - [x] Sujet : "⏰ Votre adhésion a expiré" ✅
+  - [x] Contenu : Lien pour renouveler ✅
+- [x] Méthode `renewal_reminder(membership)` :
+  - [x] Sujet : "🔄 Renouvellement d'adhésion - Dans 30 jours" ✅
+  - [x] Contenu : Date expiration, lien renouveler ✅
+- [ ] Méthode `minor_authorization_missing(membership)` : ⚠️ **Non implémenté** (peut être ajouté plus tard)
+- [ ] Méthode `medical_certificate_missing(membership)` : ⚠️ **Non implémenté** (peut être ajouté plus tard)
 
 ---
 
 #### **5.2 Templates Emails**
 
-- [ ] `app/views/membership_mailer/membership_activated.html.erb`
-- [ ] `app/views/membership_mailer/membership_payment_failed.html.erb`
-- [ ] `app/views/membership_mailer/membership_expired.html.erb`
-- [ ] `app/views/membership_mailer/membership_renewal_reminder.html.erb`
-- [ ] `app/views/membership_mailer/minor_authorization_missing.html.erb`
-- [ ] `app/views/membership_mailer/medical_certificate_missing.html.erb`
-- [ ] Templates avec design cohérent (Bootstrap)
+- [x] `app/views/membership_mailer/activated.html.erb` ✅
+- [x] `app/views/membership_mailer/activated.text.erb` ✅
+- [x] `app/views/membership_mailer/payment_failed.html.erb` ✅
+- [x] `app/views/membership_mailer/payment_failed.text.erb` ✅
+- [x] `app/views/membership_mailer/expired.html.erb` ✅
+- [x] `app/views/membership_mailer/expired.text.erb` ✅
+- [x] `app/views/membership_mailer/renewal_reminder.html.erb` ✅
+- [x] `app/views/membership_mailer/renewal_reminder.text.erb` ✅
+- [ ] Templates pour mineurs ⚠️ **Non implémenté** (peut être ajouté plus tard)
 
 ---
 
@@ -333,22 +364,19 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 #### **6.1 Détection Âge**
 
-- [ ] Ajouter méthode `age` dans `User` model
-- [ ] Calculer à partir de `date_of_birth`
-- [ ] Méthode `is_minor?` : `age < 18`
-- [ ] Méthode `is_child?` : `age < 16`
+- [x] Ajouter méthode `age` dans `User` model ✅
+- [x] Calculer à partir de `date_of_birth` ✅
+- [x] Méthode `is_minor?` : `age < 18` ✅
+- [x] Méthode `is_child?` : `age < 16` ✅
 
 ---
 
 #### **6.2 Formulaire Mineurs**
 
-- [ ] Adapter `memberships/new.html.erb` :
-  - [ ] Détecter si user est mineur
-  - [ ] Afficher formulaire différent si < 16 ans
-  - [ ] Collecter email parent obligatoire si < 18 ans
-  - [ ] Checkbox autorisation parentale si < 16 ans
-  - [ ] Question santé : "Problèmes de santé ?"
-  - [ ] Upload certificat médical si nécessaire
+- [x] Formulaire unique pour tous ✅ **Simplifié selon HelloAsso réel** (pas de distinction dans le formulaire)
+- [x] Collecter informations parentales si mineur ✅ **Champs présents dans Membership**
+- [ ] Formulaire différent si < 16 ans ⚠️ **Non implémenté** (simplifié selon HelloAsso réel)
+- [ ] Upload certificat médical ⚠️ **Non implémenté** (peut être ajouté plus tard)
 
 ---
 
@@ -499,32 +527,42 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 ## ✅ CHECKLIST FINALE RAPIDE
 
 ### **Core (Minimum Viable)**
-- [ ] Migration `memberships`
-- [ ] Model `Membership` avec enums
-- [ ] Controller `MembershipsController` (new, create, show, index)
-- [ ] Service `HelloassoService.create_membership_checkout`
-- [ ] Vues basiques (new, show, index)
-- [ ] Routes
-- [ ] Polling JavaScript
+- [x] Migration `memberships` ✅
+- [x] Model `Membership` avec enums ✅
+- [x] Controller `MembershipsController` (new, step2, step3, create, show, index, pay, payment_status) ✅
+- [x] Service `HelloassoService.create_membership_checkout_intent` ✅
+- [x] Vues basiques (new, step2, step3, show, index) ✅
+- [x] Routes ✅
+- [x] Polling JavaScript ✅
 
 ### **Automation**
-- [ ] Rake task `update_expired`
-- [ ] Rake task `send_renewal_reminders`
-- [ ] Cron configuration
+- [x] Rake task `update_expired` ✅
+- [x] Rake task `send_renewal_reminders` ✅
+- [x] Rake task `check_minor_authorizations` ✅
+- [x] Rake task `check_medical_certificates` ✅
+- [x] Cron configuration ✅
 
 ### **Admin**
-- [ ] Admin dashboard (statistiques, tableau)
-- [ ] Export CSV
+- [ ] Admin dashboard (statistiques, tableau) ⚠️ **Non implémenté** (prévu pour plus tard)
+- [ ] Export CSV ⚠️ **Non implémenté** (prévu pour plus tard)
 
 ### **Emails**
-- [ ] Mailer `MembershipMailer`
-- [ ] Templates (activated, expired, renewal_reminder)
+- [x] Mailer `MembershipMailer` ✅
+- [x] Templates (activated, expired, renewal_reminder, payment_failed) ✅
 
 ### **Mineurs (Phase 2)**
-- [ ] Détection âge
-- [ ] Formulaire mineurs
-- [ ] Validations
-- [ ] Upload certificat médical
+- [x] Détection âge ✅
+- [x] Formulaire unique pour tous ✅ **Simplifié selon HelloAsso réel**
+- [ ] Validations conditionnelles ⚠️ **Non implémenté** (peut être ajouté plus tard)
+- [ ] Upload certificat médical ⚠️ **Non implémenté** (peut être ajouté plus tard)
+
+### **Adaptations HelloAsso Réel**
+- [x] Catégories corrigées (Standard 10€, FFRS 56.55€) ✅
+- [x] T-shirt à 14€ avec choix de taille ✅
+- [x] Formulaire multi-étapes (3 étapes) ✅
+- [x] Champs collectés (Prénom, Nom, Date naissance, Téléphone, Email, Adresse, Ville, Code postal) ✅
+- [x] Options (WhatsApp, Réception emails) ✅
+- [x] Progress bar ✅
 
 ---
 

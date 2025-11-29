@@ -95,9 +95,16 @@
           <!-- Header -->
           <div class="text-center mb-4 pb-3 border-bottom">
             <h1 class="h4 mb-2">
-              <i class="bi bi-person-badge text-liquid-primary me-2"></i>Adhésion Saison <%= @membership.season %>
+              <% if @membership.is_child_membership? %>
+                <i class="bi bi-person-heart text-liquid-warning me-2"></i>Adhésion de <%= @membership.child_full_name %>
+              <% else %>
+                <i class="bi bi-person-badge text-liquid-primary me-2"></i>Mon adhésion
+              <% end %>
             </h1>
-            <p class="text-muted small mb-0">Détails de votre adhésion</p>
+            <p class="text-muted small mb-0">
+              Saison <%= @membership.season %> - 
+              Valable du <%= l(@membership.start_date, format: :long) %> au <%= l(@membership.end_date, format: :long) %>
+            </p>
           </div>
 
           <!-- Status badge -->
@@ -130,24 +137,62 @@
 
           <!-- Details -->
           <div class="row g-3 mb-4">
+            <% if @membership.is_child_membership? %>
+              <div class="col-12">
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Informations de l'enfant</h6>
+                    <p class="card-text">
+                      <strong><%= @membership.child_full_name %></strong><br>
+                      Date de naissance : <%= l(@membership.child_date_of_birth, format: :long) if @membership.child_date_of_birth.present? %><br>
+                      Âge : <%= @membership.child_age %> ans
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% end %>
             <div class="col-12 col-md-6">
               <div class="card bg-light">
                 <div class="card-body">
                   <h6 class="card-subtitle mb-2 text-muted">Catégorie</h6>
-                  <p class="card-text h5"><%= @membership.category.humanize %></p>
+                  <p class="card-text h5">
+                    <%= @membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 'Cotisation Adhérent Grenoble Roller + Licence FFRS' %>
+                  </p>
                 </div>
               </div>
             </div>
             <div class="col-12 col-md-6">
               <div class="card bg-light">
                 <div class="card-body">
-                  <h6 class="card-subtitle mb-2 text-muted">Montant</h6>
+                  <h6 class="card-subtitle mb-2 text-muted">Montant adhésion</h6>
                   <p class="card-text h5">
                     <%= number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
                   </p>
+                  <% if @membership.tshirt_variant_id.present? %>
+                    <p class="card-text small mb-0">
+                      + T-shirt : <%= number_to_currency(@membership.tshirt_price_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                    </p>
+                  <% end %>
                 </div>
               </div>
             </div>
+            <% if @membership.tshirt_variant_id.present? %>
+              <div class="col-12">
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">T-shirt</h6>
+                    <p class="card-text">
+                      <% size = @membership.tshirt_variant&.option_values&.find { |ov| 
+                           ov.option_type.name.downcase.include?('taille') || 
+                           ov.option_type.name.downcase.include?('size') ||
+                           ov.option_type.name.downcase.include?('dimension')
+                         }&.value || "N/A" %>
+                      Taille : <strong><%= size %></strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% end %>
             <div class="col-12 col-md-6">
               <div class="card bg-light">
                 <div class="card-body">

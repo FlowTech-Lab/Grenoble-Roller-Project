@@ -51,12 +51,27 @@ class User < ApplicationRecord
 
   # Helpers pour vérifier adhésion active
   def has_active_membership?
-    memberships.active_now.exists?
+    memberships.personal.active_now.exists?
   end
 
-  # Obtenir l'adhésion active actuelle
+  # Obtenir l'adhésion active actuelle (personnelle)
   def current_membership
-    memberships.active_now.order(start_date: :desc).first
+    memberships.personal.active_now.order(start_date: :desc).first
+  end
+  
+  # Obtenir toutes les adhésions enfants actives
+  def active_children_memberships
+    memberships.children.active_now.order(created_at: :desc)
+  end
+  
+  # Vérifier si l'utilisateur a des adhésions enfants actives
+  def has_active_children_memberships?
+    active_children_memberships.exists?
+  end
+  
+  # Obtenir toutes les adhésions (personnelle + enfants)
+  def all_active_memberships
+    memberships.active_now.order(is_child_membership: :asc, created_at: :desc)
   end
 
   # Calculer l'âge de l'utilisateur

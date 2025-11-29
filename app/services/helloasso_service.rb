@@ -500,34 +500,56 @@ class HelloassoService
         end
       end
 
-      # Construire le payload simplifié pour adhésion
-      category_name = membership.category == 'adult' ? 'Adulte' : 
-                      membership.category == 'student' ? 'Étudiant' : 'Famille'
+      # Construire le payload pour adhésion avec T-shirt optionnel
+      category_name = membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 
+                      membership.category == 'with_ffrs' ? 'Cotisation Adhérent Grenoble Roller + Licence FFRS' : 
+                      'Adhésion'
       season_name = membership.season || Membership.current_season_name
-      item_name = "Adhésion #{category_name} Saison #{season_name}"
+      
+      # Calculer le montant total (adhésion + T-shirt si présent)
+      total_amount = membership.total_amount_cents
+      
+      # Construire les items
+      items = [
+        {
+          name: "#{category_name} Saison #{season_name}",
+          amount: membership.amount_cents,
+          type: "Membership"
+        }
+      ]
+      
+      # Ajouter le T-shirt si présent
+      if membership.tshirt_variant_id.present?
+        tshirt_size = membership.tshirt_variant&.option_values&.find { |ov| 
+          ov.option_type.name.downcase.include?('taille') || 
+          ov.option_type.name.downcase.include?('size') ||
+          ov.option_type.name.downcase.include?('dimension')
+        }&.value || "Taille standard"
+        
+        items << {
+          name: "T-shirt Grenoble Roller (#{tshirt_size})",
+          amount: membership.tshirt_price_cents || 1400,
+          type: "Product"
+        }
+      end
 
       payload = {
         organizationSlug: organization_slug,
         initialAmount: {
-          total: membership.amount_cents,
+          total: total_amount,
           currency: membership.currency || "EUR"
         },
         totalAmount: {
-          total: membership.amount_cents,
+          total: total_amount,
           currency: membership.currency || "EUR"
         },
-        items: [
-          {
-            name: item_name,
-            amount: membership.amount_cents,
-            type: "Membership"
-          }
-        ],
+        items: items,
         metadata: {
           membership_id: membership.id,
           user_id: membership.user_id,
           category: membership.category,
           season: season_name,
+          tshirt_variant_id: membership.tshirt_variant_id,
           environment: environment
         },
         backUrl: back_url,

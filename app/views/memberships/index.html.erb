@@ -6,7 +6,12 @@
           <!-- Header -->
           <div class="text-center mb-4 pb-3 border-bottom">
             <h1 class="h4 mb-2">
-              <i class="bi bi-person-badge text-liquid-primary me-2"></i>Mes adhésions
+              <i class="bi bi-person-badge text-liquid-primary me-2"></i>
+              <% if current_user.has_active_children_memberships? %>
+                Mes adhésions
+              <% else %>
+                Mon adhésion
+              <% end %>
             </h1>
             <p class="text-muted small mb-0">Consultez l'historique de vos adhésions</p>
           </div>
@@ -22,70 +27,29 @@
               <% end %>
             </div>
           <% else %>
-            <!-- Memberships list -->
-            <% @memberships.each do |membership| %>
-              <div class="mb-3 pb-3 border-bottom <%= 'border-0 pb-0 mb-0' if membership == @memberships.last %>">
-                <div class="d-flex flex-wrap align-items-center gap-3">
-                  <!-- Membership icon and season -->
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-person-badge text-liquid-primary"></i>
-                    <div>
-                      <span class="text-muted small">Saison</span>
-                      <strong class="d-block"><%= membership.season %></strong>
-                    </div>
-                  </div>
-
-                  <!-- Status badge -->
-                  <% 
-                    status_btn = case membership.status
-                      when 'pending'
-                        'btn-warning'
-                      when 'active'
-                        'btn-success'
-                      when 'expired'
-                        'btn-secondary'
-                      else
-                        'btn-secondary'
-                    end
-                    
-                    status_text = case membership.status
-                      when 'pending'
-                        'En attente'
-                      when 'active'
-                        'Active'
-                      when 'expired'
-                        'Expirée'
-                      else
-                        membership.status.humanize
-                    end
-                  %>
-                  <span class="badge <%= status_btn %>"><%= status_text %></span>
-
-                  <!-- Category and amount -->
-                  <div class="ms-auto text-end">
-                    <div class="small text-muted">
-                      <%= membership.category.humanize %>
-                    </div>
-                    <strong><%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %></strong>
-                  </div>
-
-                  <!-- Actions -->
-                  <div class="d-flex gap-2">
-                    <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary" do %>
-                      <i class="bi bi-eye me-1"></i>Détails
-                    <% end %>
-                    
-                    <% if membership.status == 'pending' && membership.status != 'cancelled' %>
-                      <%= button_to pay_membership_path(membership),
-                          method: :post,
-                          class: "btn btn-sm btn-primary",
-                          data: { turbo: false },
-                          form: { style: "display: inline-block;" } do %>
-                        <i class="bi bi-credit-card me-1"></i>Payer
-                      <% end %>
-                    <% end %>
-                  </div>
-                </div>
+            <!-- Adhésion personnelle -->
+            <% personal_memberships = @memberships.select { |m| !m.is_child_membership } %>
+            <% if personal_memberships.any? %>
+              <div class="mb-4">
+                <h3 class="h6 mb-3">
+                  <i class="bi bi-person me-2 text-liquid-primary"></i>Mon adhésion
+                </h3>
+                <% personal_memberships.each_with_index do |membership, idx| %>
+                  <%= render partial: 'membership_card', locals: { membership: membership, is_child: false, last: (idx == personal_memberships.size - 1 && !@memberships.select { |m| m.is_child_membership }.any?) } %>
+                <% end %>
+              </div>
+            <% end %>
+            
+            <!-- Adhésions enfants -->
+            <% children_memberships = @memberships.select { |m| m.is_child_membership } %>
+            <% if children_memberships.any? %>
+              <div class="mb-4">
+                <h3 class="h6 mb-3">
+                  <i class="bi bi-people me-2 text-liquid-warning"></i>Adhésions enfants (<%= children_memberships.count %>)
+                </h3>
+                <% children_memberships.each_with_index do |membership, idx| %>
+                  <%= render partial: 'membership_card', locals: { membership: membership, is_child: true, last: idx == children_memberships.size - 1 } %>
+                <% end %>
               </div>
             <% end %>
 

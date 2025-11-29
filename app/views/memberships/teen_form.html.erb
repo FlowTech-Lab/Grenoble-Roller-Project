@@ -1,0 +1,187 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <i class="bi bi-person-heart text-liquid-success me-2"></i>ADHÉSION ADO (16-17 ans)
+            </h1>
+            <p class="text-muted small mb-0">
+              Saison <%= @season %> - Valable du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
+            </p>
+            <div class="alert alert-info mt-3 mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Information importante :</strong> Vos parents seront informés de votre adhésion par email.
+            </div>
+          </div>
+
+          <%= form_with url: create_teen_memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+            <!-- Étape 1 : Choix de la catégorie -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">1. Choisissez votre adhésion</h3>
+              <div class="row g-3">
+                <% @categories.each do |key, cat| %>
+                  <div class="col-md-6">
+                    <div class="card h-100 border-2">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <%= f.radio_button :category, key, 
+                              { class: "form-check-input", id: "category_#{key}", required: true },
+                              key, nil %>
+                          <label class="form-check-label w-100" for="category_<%= key %>">
+                            <strong><%= cat[:name] %></strong>
+                            <p class="text-muted small mb-2"><%= cat[:description] %></p>
+                            <p class="mb-0">
+                              <strong class="text-liquid-primary">
+                                <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                              </strong>
+                            </p>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Étape 2 : Sélection T-shirt -->
+            <%= render partial: 'tshirt_selection' %>
+
+            <!-- Étape 3 : Informations personnelles -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">2. Vos informations</h3>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <%= f.label :first_name, "Prénom *", class: "form-label" %>
+                  <%= f.text_field :first_name, 
+                      class: "form-control", 
+                      value: @user.first_name,
+                      required: true %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :last_name, "Nom *", class: "form-label" %>
+                  <%= f.text_field :last_name, 
+                      class: "form-control", 
+                      value: @user.last_name,
+                      required: true %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :date_of_birth, "Date de naissance *", class: "form-label" %>
+                  <%= f.date_field :date_of_birth, 
+                      class: "form-control", 
+                      value: @user.date_of_birth,
+                      required: true %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :phone, "Téléphone *", class: "form-label" %>
+                  <%= f.telephone_field :phone, 
+                      class: "form-control", 
+                      value: @user.phone,
+                      required: true %>
+                </div>
+                <div class="col-12">
+                  <%= f.label :email, "Email *", class: "form-label" %>
+                  <%= f.email_field :email, 
+                      class: "form-control", 
+                      value: @user.email,
+                      required: true %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Étape 4 : Coordonnées -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">3. Vos coordonnées</h3>
+              <div class="row g-3">
+                <div class="col-12">
+                  <%= f.label :address, "Adresse *", class: "form-label" %>
+                  <%= f.text_field :address, 
+                      class: "form-control", 
+                      value: @user.address,
+                      required: true %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :city, "Ville *", class: "form-label" %>
+                  <%= f.text_field :city, 
+                      class: "form-control", 
+                      value: @user.city,
+                      required: true %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :postal_code, "Code postal *", class: "form-label" %>
+                  <%= f.text_field :postal_code, 
+                      class: "form-control", 
+                      value: @user.postal_code,
+                      required: true %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Étape 5 : Informations parentales (obligatoire pour 16-17 ans) -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">4. Informations parentales</h3>
+              <p class="text-muted small mb-3">
+                Vos parents seront informés de votre adhésion par email. Ces informations sont obligatoires.
+              </p>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <%= f.label :parent_name, "Nom du parent/tuteur *", class: "form-label" %>
+                  <%= f.text_field :parent_name, 
+                      class: "form-control", 
+                      value: "#{@user.first_name} #{@user.last_name}",
+                      required: true %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :parent_email, "Email du parent/tuteur *", class: "form-label" %>
+                  <%= f.email_field :parent_email, 
+                      class: "form-control", 
+                      required: true,
+                      placeholder: "parent@example.com" %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :parent_phone, "Téléphone du parent/tuteur", class: "form-label" %>
+                  <%= f.telephone_field :parent_phone, 
+                      class: "form-control", 
+                      value: @user.phone %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Étape 6 : Options -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">5. Options</h3>
+              <div class="form-check mb-3">
+                <%= f.check_box :wants_whatsapp, 
+                    { class: "form-check-input", id: "wants_whatsapp" }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="wants_whatsapp">
+                  Je souhaite rejoindre la communauté WhatsApp
+                </label>
+              </div>
+              <div class="form-check">
+                <%= f.check_box :wants_email_info, 
+                    { class: "form-check-input", id: "wants_email_info", checked: true }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="wants_email_info">
+                  Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
+                </label>
+              </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="d-flex justify-content-between mt-4">
+              <%= link_to new_membership_path, class: "btn btn-outline-secondary" do %>
+                <i class="bi bi-arrow-left me-1"></i>Retour
+              <% end %>
+              <%= f.submit "Valider et payer", class: "btn btn-liquid-success btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

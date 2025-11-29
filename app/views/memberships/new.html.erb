@@ -1,56 +1,110 @@
 <div class="container py-4">
   <div class="row justify-content-center">
-    <div class="col-12 col-lg-8">
+    <div class="col-12 col-lg-10">
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
           <!-- Header -->
           <div class="text-center mb-4 pb-3 border-bottom">
             <h1 class="h4 mb-2">
-              <i class="bi bi-person-plus text-liquid-primary me-2"></i>Adhérer à l'association
+              <i class="bi bi-person-plus text-liquid-primary me-2"></i>ADHÉSION SAISON <%= @season %>
             </h1>
-            <p class="text-muted small mb-0">Rejoignez Grenoble Roller pour la saison <%= @season %></p>
+            <p class="text-muted small mb-0">
+              par <strong>GRENOBLE ROLLER</strong>
+            </p>
+            <p class="text-muted small mt-2 mb-0">
+              <i class="bi bi-calendar-event me-1"></i>
+              Adhésion valable du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
+            </p>
           </div>
 
-          <!-- Season info -->
-          <div class="alert alert-info mb-4">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-calendar-event me-2"></i>
-              <div>
-                <strong>Période de validité :</strong><br>
-                Du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
+          <!-- Description -->
+          <div class="mb-4">
+            <p class="mb-2">
+              En adhérent à notre association vous soutenez notre volonté de faire découvrir le roller à tous. 
+              Vous aidez à l'organisation de nos traditionnelles randonnées roller pour le plus grand plaisir 
+              des grenoblois qui aiment la glisse !
+            </p>
+            <p class="mb-0">
+              <strong>L'adhésion est nécessaire pour participer aux initiations le samedi matin.</strong>
+            </p>
+          </div>
+
+          <!-- Section 1 : Adhérer pour moi -->
+          <div class="mb-5">
+            <h2 class="h5 mb-3">
+              <i class="bi bi-person-check me-2 text-liquid-primary"></i>Adhérer pour moi
+            </h2>
+            <div class="row g-3">
+              <!-- Option Adulte 18+ -->
+              <div class="col-md-6">
+                <%= form_with url: choose_type_memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+                  <%= f.hidden_field :type, value: "adult" %>
+                  <div class="card h-100 border-2 hover-shadow">
+                    <div class="card-body text-center p-4">
+                      <i class="bi bi-person-badge fs-1 text-liquid-primary mb-3"></i>
+                      <h3 class="h5 fw-bold mb-2">Adulte (18 ans et +)</h3>
+                      <p class="text-muted small mb-3">
+                        Adhésion autonome pour les personnes majeures
+                      </p>
+                      <%= f.submit "Choisir", class: "btn btn-liquid-primary w-100" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Option Ado 16-17 -->
+              <div class="col-md-6">
+                <%= form_with url: choose_type_memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+                  <%= f.hidden_field :type, value: "teen" %>
+                  <div class="card h-100 border-2 hover-shadow">
+                    <div class="card-body text-center p-4">
+                      <i class="bi bi-person-heart fs-1 text-liquid-success mb-3"></i>
+                      <h3 class="h5 fw-bold mb-2">Ado (16-17 ans)</h3>
+                      <p class="text-muted small mb-3">
+                        Adhésion autonome, vos parents seront informés
+                      </p>
+                      <%= f.submit "Choisir", class: "btn btn-liquid-success w-100" %>
+                    </div>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
 
-          <!-- Categories -->
-          <div class="row g-3">
-            <% @categories.each do |key, info| %>
-              <div class="col-12 col-md-4">
-                <div class="card h-100 <%= 'border-primary' if key == :adult %>">
-                  <div class="card-body text-center">
-                    <h5 class="card-title"><%= info[:name] %></h5>
-                    <p class="text-muted small mb-3"><%= info[:description] %></p>
-                    <div class="mb-3">
-                      <span class="h4 text-primary">
-                        <%= number_to_currency(info[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-                      </span>
-                    </div>
-                    <%= form_with url: memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
-                      <%= f.hidden_field :category, value: key %>
-                      <%= f.submit "Choisir", class: "btn btn-primary w-100" %>
-                    <% end %>
-                  </div>
-                </div>
+          <!-- Séparateur -->
+          <hr class="my-5">
+
+          <!-- Section 2 : Inscrire un enfant -->
+          <div class="mb-4">
+            <h2 class="h5 mb-3">
+              <i class="bi bi-people me-2 text-liquid-warning"></i>Inscrire un enfant
+            </h2>
+            <p class="text-muted small mb-3">
+              Vous pouvez inscrire plusieurs enfants en une seule fois. Chaque enfant aura son propre formulaire.
+            </p>
+            
+            <%= form_with url: choose_children_count_memberships_path, method: :post, local: true, data: { turbo: false }, class: "row g-3 align-items-end" do |f| %>
+              <div class="col-md-6">
+                <%= f.label :children_count, "Nombre d'enfants à inscrire", class: "form-label" %>
+                <%= f.number_field :children_count, 
+                    in: 1..10, 
+                    value: 1, 
+                    class: "form-control",
+                    required: true,
+                    min: 1,
+                    max: 10 %>
+              </div>
+              <div class="col-md-6">
+                <%= f.submit "Continuer", class: "btn btn-liquid-warning w-100" %>
               </div>
             <% end %>
           </div>
 
-          <!-- Info -->
-          <div class="mt-4 pt-3 border-top">
-            <p class="text-muted small mb-0">
-              <i class="bi bi-info-circle me-1"></i>
-              Le paiement sera effectué via HelloAsso. Vous serez redirigé vers leur plateforme sécurisée.
-            </p>
+          <!-- Info légale -->
+          <div class="alert alert-info mt-4 mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Information importante :</strong> Pour les enfants de moins de 16 ans, une autorisation parentale est obligatoire. 
+            Pour les adolescents de 16-17 ans, les parents seront informés de l'adhésion.
           </div>
         </div>
       </div>

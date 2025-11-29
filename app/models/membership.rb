@@ -1,36 +1,50 @@
 class Membership < ApplicationRecord
   belongs_to :user
   belongs_to :payment, optional: true
+  belongs_to :tshirt_variant, class_name: "ProductVariant", optional: true
 
-  enum status: {
+  enum :status, {
     pending: 0,
     active: 1,
     expired: 2
   }
 
-  enum category: {
-    adult: 0,
-    student: 1,
-    family: 2
+  enum :category, {
+    standard: 0,    # 10€ - Cotisation Adhérent Grenoble Roller
+    with_ffrs: 1    # 56.55€ - Cotisation + Licence FFRS
   }
 
-  validates :user_id, uniqueness: { scope: :season, message: "ne peut avoir qu'une adhésion par saison" }
+  # Validation : un utilisateur ne peut avoir qu'une adhésion personnelle par saison
+  # Mais peut avoir plusieurs adhésions enfants
+  validate :unique_personal_membership_per_season
   validates :start_date, :end_date, :amount_cents, :category, presence: true
   validates :start_date, comparison: { less_than: :end_date }
+  
+  # Validations pour adhésions enfants
+  validates :child_first_name, :child_last_name, :child_date_of_birth, presence: true, if: :is_child_membership?
+  validates :parent_authorization, inclusion: { in: [true] }, if: -> { is_child_membership? && child_age < 16 }
 
   # Scopes
   scope :active_now, -> { active.where("end_date > ?", Date.current) }
   scope :expiring_soon, -> { active.where("end_date BETWEEN ? AND ?", Date.current, 30.days.from_now) }
   scope :pending_payment, -> { pending }
+  scope :personal, -> { where(is_child_membership: false) }
+  scope :children, -> { where(is_child_membership: true) }
 
   # Calcul automatique du prix selon la catégorie
   def self.price_for_category(category)
     case category.to_s
-    when 'adult' then 5000      # 50€ en centimes
-    when 'student' then 2500    # 25€ en centimes
-    when 'family' then 8000     # 80€ en centimes
+    when 'standard' then 1000      # 10€ en centimes
+    when 'with_ffrs' then 5655      # 56.55€ en centimes
     else 0
     end
+  end
+
+  # Calculer le prix total (adhésion + T-shirt si présent)
+  def total_amount_cents
+    base = amount_cents || 0
+    tshirt = tshirt_variant_id.present? ? (tshirt_price_cents || 1400) : 0
+    base + tshirt
   end
 
   # Calcul automatique des dates de saison (1er sept - 31 août)
@@ -72,6 +86,20 @@ class Membership < ApplicationRecord
 
   private
 
+  def unique_personal_membership_per_season
+    return if is_child_membership? # Pas de validation pour les enfants
+    
+    existing = Membership.where(
+      user_id: user_id,
+      season: season,
+      is_child_membership: false
+    ).where.not(id: id)
+    
+    if existing.exists?
+      errors.add(:base, "Vous avez déjà une adhésion personnelle pour cette saison")
+    end
+  end
+
   def activate_if_paid
     # Si le statut vient de passer à 'active', envoyer l'email
     if status == 'active' && saved_change_to_status? && saved_change_to_status[0] == 'pending'
@@ -87,16 +115,43 @@ class Membership < ApplicationRecord
 
   # Vérifier si l'adhésion est pour un mineur
   def is_minor?
-    return false unless user.date_of_birth.present?
-    age = ((Date.today - user.date_of_birth) / 365.25).floor
-    age < 18
+    if is_child_membership?
+      return false unless child_date_of_birth.present?
+      child_age < 18
+    else
+      return false unless user.date_of_birth.present?
+      age = ((Date.today - user.date_of_birth) / 365.25).floor
+      age < 18
+    end
   end
 
   # Vérifier si l'adhésion nécessite une autorisation parentale
   def requires_parent_authorization?
-    return false unless user.date_of_birth.present?
-    age = ((Date.today - user.date_of_birth) / 365.25).floor
-    age < 16
+    if is_child_membership?
+      return false unless child_date_of_birth.present?
+      child_age < 16
+    else
+      return false unless user.date_of_birth.present?
+      age = ((Date.today - user.date_of_birth) / 365.25).floor
+      age < 16
+    end
+  end
+  
+  # Calculer l'âge de l'enfant
+  def child_age
+    return 0 unless child_date_of_birth.present?
+    ((Date.today - child_date_of_birth) / 365.25).floor
+  end
+  
+  # Méthode publique pour vérifier si c'est une adhésion enfant
+  def is_child_membership?
+    is_child_membership == true
+  end
+  
+  # Nom complet de l'enfant
+  def child_full_name
+    return nil unless is_child_membership?
+    "#{child_first_name} #{child_last_name}".strip
   end
 end
 

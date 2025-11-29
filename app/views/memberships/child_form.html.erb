@@ -1,0 +1,233 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <i class="bi bi-person-heart text-liquid-warning me-2"></i>INSCRIPTION ENFANT <%= @child_index + 1 %> / <%= @children_count %>
+            </h1>
+            <p class="text-muted small mb-0">
+              Saison <%= @season %> - Valable du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
+            </p>
+          </div>
+
+          <%= form_with url: create_child_memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+            <%= f.hidden_field :child_index, value: @child_index %>
+            
+            <!-- Étape 1 : Choix de la catégorie -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">1. Choisissez l'adhésion</h3>
+              <div class="row g-3">
+                <% @categories.each do |key, cat| %>
+                  <div class="col-md-6">
+                    <div class="card h-100 border-2">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <%= f.radio_button :category, key, 
+                              { class: "form-check-input", id: "category_#{key}", required: true },
+                              key, nil %>
+                          <label class="form-check-label w-100" for="category_<%= key %>">
+                            <strong><%= cat[:name] %></strong>
+                            <p class="text-muted small mb-2"><%= cat[:description] %></p>
+                            <p class="mb-0">
+                              <strong class="text-liquid-primary">
+                                <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                              </strong>
+                            </p>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Étape 2 : Sélection T-shirt -->
+            <%= render partial: 'tshirt_selection' %>
+
+            <!-- Étape 3 : Informations enfant -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">2. Informations de l'enfant</h3>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <%= f.label :child_first_name, "Prénom de l'enfant *", class: "form-label" %>
+                  <%= f.text_field :child_first_name, 
+                      class: "form-control", 
+                      required: true,
+                      placeholder: "Prénom" %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :child_last_name, "Nom de l'enfant *", class: "form-label" %>
+                  <%= f.text_field :child_last_name, 
+                      class: "form-control", 
+                      required: true,
+                      placeholder: "Nom" %>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" %>
+                  <%= f.date_field :child_date_of_birth, 
+                      class: "form-control", 
+                      required: true,
+                      max: Date.today %>
+                  <small class="text-muted">L'âge sera calculé automatiquement</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Étape 4 : Autorisation parentale (si < 16 ans) -->
+            <div class="mb-4" id="parent_authorization_section" style="display: none;">
+              <h3 class="h5 mb-3">3. Autorisation parentale</h3>
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Obligatoire pour les enfants de moins de 16 ans</strong>
+              </div>
+              <div class="form-check">
+                <%= f.check_box :parent_authorization, 
+                    { class: "form-check-input", id: "parent_authorization" }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="parent_authorization">
+                  <strong>Je, soussigné(e) <%= "#{@user.first_name} #{@user.last_name}" %>, représentant légal de l'enfant,</strong>
+                  <ul class="mt-2 mb-0 small">
+                    <li>Accepte que mon enfant adhère à Grenoble Roller</li>
+                    <li>Accepte que mon enfant pratique le roller</li>
+                    <li>Accepte le paiement de la cotisation</li>
+                    <li>Accepte les conditions d'adhésion et la politique de confidentialité</li>
+                    <li>Accepte les risques inhérents au roller</li>
+                  </ul>
+                </label>
+              </div>
+            </div>
+
+            <!-- Étape 5 : Santé -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">4. Questionnaire de santé</h3>
+              <div class="form-check mb-3">
+                <%= f.radio_button :has_health_issues, "0", 
+                    { class: "form-check-input", id: "health_ok", checked: true }, 
+                    "0", "1" %>
+                <label class="form-check-label" for="health_ok">
+                  <strong>L'enfant n'a pas de problèmes de santé</strong>
+                  <p class="text-muted small mb-0">Une attestation parentale de santé suffit (valable 3 ans)</p>
+                </label>
+              </div>
+              <div class="form-check">
+                <%= f.radio_button :has_health_issues, "1", 
+                    { class: "form-check-input", id: "health_issues" }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="health_issues">
+                  <strong>L'enfant a des problèmes de santé</strong>
+                  <p class="text-muted small mb-0">Un certificat médical sera requis (valable 6 mois)</p>
+                </label>
+              </div>
+            </div>
+
+            <!-- Étape 6 : Options -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">5. Options</h3>
+              <div class="form-check mb-3">
+                <%= f.check_box :wants_whatsapp, 
+                    { class: "form-check-input", id: "wants_whatsapp" }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="wants_whatsapp">
+                  Je souhaite que l'enfant rejoigne la communauté WhatsApp
+                </label>
+              </div>
+              <div class="form-check">
+                <%= f.check_box :wants_email_info, 
+                    { class: "form-check-input", id: "wants_email_info", checked: true }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="wants_email_info">
+                  Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
+                </label>
+              </div>
+            </div>
+
+            <!-- Étape 7 : Consentements -->
+            <div class="mb-4">
+              <h3 class="h5 mb-3">6. Consentements</h3>
+              <div class="form-check mb-3">
+                <%= f.check_box :rgpd_consent, 
+                    { class: "form-check-input", id: "rgpd_consent", required: true }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="rgpd_consent">
+                  J'accepte que Grenoble Roller collecte les données de l'enfant pour l'adhésion *
+                </label>
+              </div>
+              <div class="form-check mb-3">
+                <%= f.check_box :legal_notices_accepted, 
+                    { class: "form-check-input", id: "legal_notices_accepted", required: true }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="legal_notices_accepted">
+                  J'accepte les conditions générales et la politique de confidentialité *
+                </label>
+              </div>
+              <div class="form-check">
+                <%= f.check_box :ffrs_data_sharing_consent, 
+                    { class: "form-check-input", id: "ffrs_data_sharing_consent" }, 
+                    "1", "0" %>
+                <label class="form-check-label" for="ffrs_data_sharing_consent">
+                  J'autorise le partage des données avec la FFRS (si licence FFRS)
+                </label>
+              </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="d-flex justify-content-between mt-4">
+              <% if @child_index > 0 %>
+                <%= link_to child_form_memberships_path(@child_index - 1), class: "btn btn-outline-secondary" do %>
+                  <i class="bi bi-arrow-left me-1"></i>Enfant précédent
+                <% end %>
+              <% else %>
+                <%= link_to new_membership_path, class: "btn btn-outline-secondary" do %>
+                  <i class="bi bi-arrow-left me-1"></i>Retour
+                <% end %>
+              <% end %>
+              <%= f.submit @child_index + 1 < @children_count ? "Enregistrer et passer à l'enfant suivant" : "Valider et payer", 
+                  class: "btn btn-liquid-warning btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Afficher/masquer la section autorisation parentale selon l'âge
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateOfBirthField = document.getElementById('child_date_of_birth');
+    const authorizationSection = document.getElementById('parent_authorization_section');
+    const authorizationCheckbox = document.getElementById('parent_authorization');
+    
+    function checkAge() {
+      if (!dateOfBirthField.value) {
+        authorizationSection.style.display = 'none';
+        return;
+      }
+      
+      const birthDate = new Date(dateOfBirthField.value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      if (age < 16) {
+        authorizationSection.style.display = 'block';
+        authorizationCheckbox.required = true;
+      } else {
+        authorizationSection.style.display = 'none';
+        authorizationCheckbox.required = false;
+        authorizationCheckbox.checked = false;
+      }
+    }
+    
+    dateOfBirthField.addEventListener('change', checkAge);
+    checkAge(); // Vérifier au chargement si une date est déjà présente
+  });
+</script>
+
