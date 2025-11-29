@@ -1,0 +1,87 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <i class="bi bi-list-check text-liquid-warning me-2"></i>RÉCAPITULATIF
+            </h1>
+            <p class="text-muted small mb-0">
+              Saison <%= @season %> - <%= @children_count %> enfant(s)
+            </p>
+          </div>
+
+          <!-- Liste des enfants -->
+          <div class="mb-4">
+            <% @children_data.each_with_index do |child_data, index| %>
+              <div class="card mb-3">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <i class="bi bi-person-heart text-liquid-warning me-2"></i>
+                    Enfant <%= index + 1 %> : <%= child_data[:child_first_name] || child_data["child_first_name"] %> <%= child_data[:child_last_name] || child_data["child_last_name"] %>
+                  </h5>
+                  
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <strong>Catégorie :</strong>
+                      <% category_key = child_data[:category] || child_data["category"] %>
+                      <%= @categories[category_key.to_sym]&.dig(:name) || category_key %>
+                    </div>
+                    <div class="col-md-6">
+                      <strong>Montant :</strong>
+                      <% amount = Membership.price_for_category(category_key) %>
+                      <%= number_to_currency(amount / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                    </div>
+                    
+                    <% if child_data[:tshirt_variant_id].present? || child_data["tshirt_variant_id"].present? %>
+                      <div class="col-12">
+                        <strong>T-shirt :</strong>
+                        <% tshirt_id = child_data[:tshirt_variant_id] || child_data["tshirt_variant_id"] %>
+                        <% tshirt_variant = @tshirt_variants.find { |t| t[:variant].id.to_s == tshirt_id.to_s } %>
+                        <% if tshirt_variant %>
+                          Taille <%= tshirt_variant[:size] %> - 
+                        <% end %>
+                        <%= number_to_currency(14.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Total -->
+          <div class="card bg-light mb-4">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Total à payer :</h5>
+                <h4 class="mb-0 text-liquid-primary">
+                  <%= number_to_currency(@total_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                </h4>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulaire pour créer toutes les adhésions et payer -->
+          <%= form_with url: batch_memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+            <% @children_data.each_with_index do |child_data, index| %>
+              <% child_data.each do |key, value| %>
+                <%= f.hidden_field "children[#{index}][#{key}]", value: value %>
+              <% end %>
+            <% end %>
+            
+            <div class="d-flex justify-content-between mt-4">
+              <%= link_to new_membership_path(type: "children", count: @children_count), class: "btn btn-outline-secondary" do %>
+                <i class="bi bi-arrow-left me-1"></i>Modifier
+              <% end %>
+              <%= f.submit "Valider et payer", class: "btn btn-liquid-warning btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

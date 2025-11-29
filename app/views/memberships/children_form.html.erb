@@ -1,0 +1,305 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <i class="bi bi-people text-liquid-warning me-2"></i>INSCRIPTION DE <%= @children_count %> ENFANT(S)
+            </h1>
+            <p class="text-muted small mb-0">
+              Saison <%= @season %> - Valable du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
+            </p>
+            <p class="text-muted small mt-2 mb-0">
+              Remplissez tous les formulaires ci-dessous, puis validez pour créer toutes les adhésions et effectuer un seul paiement.
+            </p>
+          </div>
+
+          <%= form_with url: summary_memberships_path, method: :get, local: true, data: { turbo: false } do |f| %>
+            <% @children_count.times do |index| %>
+              <div class="mb-5 pb-4 border-bottom <%= 'border-0 pb-0 mb-0' if index == @children_count - 1 %>">
+                <h3 class="h5 mb-3">
+                  <i class="bi bi-person-heart text-liquid-warning me-2"></i>Enfant <%= index + 1 %> / <%= @children_count %>
+                </h3>
+                
+                <!-- Champs pour cet enfant (utiliser fields_for pour un array) -->
+                <%= f.fields_for "children[]", OpenStruct.new do |child_form| %>
+                  <!-- Étape 1 : Choix de la catégorie -->
+                  <div class="mb-4">
+                    <h4 class="h6 mb-3">1. Choisissez l'adhésion</h4>
+                    <div class="row g-3">
+                      <% @categories.each do |key, cat| %>
+                        <div class="col-md-6">
+                          <div class="card h-100 border-2">
+                            <div class="card-body">
+                              <div class="form-check">
+                                <%= child_form.radio_button :category, key, 
+                                    { class: "form-check-input", id: "category_#{key}_#{index}", required: true },
+                                    key, nil %>
+                                <label class="form-check-label w-100" for="category_<%= key %>_<%= index %>">
+                                  <strong><%= cat[:name] %></strong>
+                                  <p class="text-muted small mb-2"><%= cat[:description] %></p>
+                                  <p class="mb-0">
+                                    <strong class="text-liquid-primary">
+                                      <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                                    </strong>
+                                  </p>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+
+                  <!-- Étape 2 : Sélection T-shirt -->
+                  <div class="mb-4">
+                    <h4 class="h6 mb-3">
+                      <i class="bi bi-tshirt me-2 text-liquid-primary"></i>T-shirt Grenoble Roller (optionnel)
+                    </h4>
+                    
+                    <% if @tshirt_variants.any? %>
+                      <div class="row g-2">
+                        <% @tshirt_variants.each do |tshirt_data| %>
+                          <% variant = tshirt_data[:variant] %>
+                          <% size = tshirt_data[:size] %>
+                          
+                          <div class="col-6 col-md-4 col-lg-3">
+                            <div class="card card-product card-liquid rounded-liquid h-100" 
+                                 style="cursor: pointer;"
+                                 data-tshirt-variant-id="<%= variant.id %>"
+                                 data-child-index="<%= index %>"
+                                 onclick="selectTshirt(<%= variant.id %>, <%= index %>)">
+                              <div class="card-product-image-wrapper" style="height: 120px;">
+                                <div class="card-product-image">
+                                  <% if variant.image.attached? %>
+                                    <%= image_tag variant.image, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
+                                  <% elsif variant.image_url.present? %>
+                                    <%= image_tag variant.image_url, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
+                                  <% else %>
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                      <i class="bi bi-tshirt fs-4 text-muted"></i>
+                                    </div>
+                                  <% end %>
+                                </div>
+                                <% if variant.stock_qty > 0 %>
+                                  <span class="badge badge-liquid-success badge-stock" style="font-size: 0.7rem;">En stock</span>
+                                <% else %>
+                                  <span class="badge badge-liquid-danger badge-stock" style="font-size: 0.7rem;">Rupture</span>
+                                <% end %>
+                              </div>
+                              <div class="card-body p-2">
+                                <h6 class="product-title mb-1" style="font-size: 0.85rem;">Taille <%= size %></h6>
+                                <p class="product-price mb-0" style="font-size: 0.9rem; font-weight: bold;">
+                                  <%= number_to_currency(14.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
+                      
+                      <%= child_form.hidden_field :tshirt_variant_id, id: "selected_tshirt_variant_id_#{index}", value: "" %>
+                    <% else %>
+                      <p class="text-muted small">Aucun T-shirt disponible pour le moment.</p>
+                    <% end %>
+                  </div>
+
+                  <!-- Étape 3 : Informations enfant -->
+                  <div class="mb-4">
+                    <h4 class="h6 mb-3">2. Informations de l'enfant</h4>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <%= child_form.label :child_first_name, "Prénom de l'enfant *", class: "form-label" %>
+                        <%= child_form.text_field :child_first_name, 
+                            class: "form-control", 
+                            required: true,
+                            placeholder: "Prénom" %>
+                      </div>
+                      <div class="col-md-6">
+                        <%= child_form.label :child_last_name, "Nom de l'enfant *", class: "form-label" %>
+                        <%= child_form.text_field :child_last_name, 
+                            class: "form-control", 
+                            required: true,
+                            placeholder: "Nom" %>
+                      </div>
+                      <div class="col-md-6">
+                        <%= child_form.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" %>
+                        <%= child_form.date_field :child_date_of_birth, 
+                            class: "form-control", 
+                            required: true,
+                            max: Date.today,
+                            onchange: "checkChildAge(#{index})" %>
+                        <small class="text-muted">L'âge sera calculé automatiquement</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Étape 4 : Autorisation parentale (si < 16 ans) -->
+                  <div class="mb-4" id="parent_authorization_section_<%= index %>" style="display: none;">
+                    <h4 class="h6 mb-3">3. Autorisation parentale</h4>
+                    <div class="alert alert-warning">
+                      <i class="bi bi-exclamation-triangle me-2"></i>
+                      <strong>Obligatoire pour les enfants de moins de 16 ans</strong>
+                    </div>
+                    <div class="form-check">
+                      <%= child_form.check_box :parent_authorization, 
+                          { class: "form-check-input", id: "parent_authorization_#{index}" }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="parent_authorization_<%= index %>">
+                        <strong>Je, soussigné(e) <%= "#{@user.first_name} #{@user.last_name}" %>, représentant légal de l'enfant,</strong>
+                        <ul class="mt-2 mb-0 small">
+                          <li>Accepte que mon enfant adhère à Grenoble Roller</li>
+                          <li>Accepte que mon enfant pratique le roller</li>
+                          <li>Accepte le paiement de la cotisation</li>
+                          <li>Accepte les conditions d'adhésion et la politique de confidentialité</li>
+                          <li>Accepte les risques inhérents au roller</li>
+                        </ul>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Étape 5 : Santé -->
+                  <div class="mb-4">
+                    <h4 class="h6 mb-3">4. Questionnaire de santé</h4>
+                    <div class="form-check mb-3">
+                      <%= child_form.radio_button :has_health_issues, "0", 
+                          { class: "form-check-input", id: "health_ok_#{index}", checked: true }, 
+                          "0", "1" %>
+                      <label class="form-check-label" for="health_ok_<%= index %>">
+                        <strong>L'enfant n'a pas de problèmes de santé</strong>
+                        <p class="text-muted small mb-0">Une attestation parentale de santé suffit (valable 3 ans)</p>
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <%= child_form.radio_button :has_health_issues, "1", 
+                          { class: "form-check-input", id: "health_issues_#{index}" }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="health_issues_<%= index %>">
+                        <strong>L'enfant a des problèmes de santé</strong>
+                        <p class="text-muted small mb-0">Un certificat médical sera requis (valable 6 mois)</p>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Étape 6 : Options -->
+                  <div class="mb-4">
+                    <h4 class="h6 mb-3">5. Options</h4>
+                    <div class="form-check mb-3">
+                      <%= child_form.check_box :wants_whatsapp, 
+                          { class: "form-check-input", id: "wants_whatsapp_#{index}" }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="wants_whatsapp_<%= index %>">
+                        Je souhaite que l'enfant rejoigne la communauté WhatsApp
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <%= child_form.check_box :wants_email_info, 
+                          { class: "form-check-input", id: "wants_email_info_<%= index %>", checked: true }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="wants_email_info_<%= index %>">
+                        Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Étape 7 : Consentements -->
+                  <div class="mb-4">
+                    <h4 class="h6 mb-3">6. Consentements</h4>
+                    <div class="form-check mb-3">
+                      <%= child_form.check_box :rgpd_consent, 
+                          { class: "form-check-input", id: "rgpd_consent_#{index}", required: true }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="rgpd_consent_<%= index %>">
+                        J'accepte que Grenoble Roller collecte les données de l'enfant pour l'adhésion *
+                      </label>
+                    </div>
+                    <div class="form-check mb-3">
+                      <%= child_form.check_box :legal_notices_accepted, 
+                          { class: "form-check-input", id: "legal_notices_accepted_#{index}", required: true }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="legal_notices_accepted_<%= index %>">
+                        J'accepte les conditions générales et la politique de confidentialité *
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <%= child_form.check_box :ffrs_data_sharing_consent, 
+                          { class: "form-check-input", id: "ffrs_data_sharing_consent_#{index}" }, 
+                          "1", "0" %>
+                      <label class="form-check-label" for="ffrs_data_sharing_consent_<%= index %>">
+                        J'autorise le partage des données avec la FFRS (si licence FFRS)
+                      </label>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <!-- Boutons -->
+            <div class="d-flex justify-content-between mt-4">
+              <%= link_to new_membership_path, class: "btn btn-outline-secondary" do %>
+                <i class="bi bi-arrow-left me-1"></i>Retour
+              <% end %>
+              <%= f.submit "Voir le récapitulatif", class: "btn btn-liquid-warning btn-lg" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectTshirt(variantId, childIndex) {
+    // Désélectionner toutes les cards pour cet enfant
+    document.querySelectorAll(`[data-child-index="${childIndex}"]`).forEach(card => {
+      card.classList.remove('border-primary', 'border-3');
+      card.classList.add('border');
+    });
+    
+    // Sélectionner la card cliquée
+    const selectedCard = document.querySelector(`[data-tshirt-variant-id="${variantId}"][data-child-index="${childIndex}"]`);
+    if (selectedCard) {
+      selectedCard.classList.remove('border');
+      selectedCard.classList.add('border-primary', 'border-3');
+      document.getElementById(`selected_tshirt_variant_id_${childIndex}`).value = variantId;
+    }
+  }
+  
+  function checkChildAge(index) {
+    const dateOfBirthField = document.querySelector(`input[name="children[${index}][child_date_of_birth]"]`);
+    const authorizationSection = document.getElementById(`parent_authorization_section_${index}`);
+    const authorizationCheckbox = document.getElementById(`parent_authorization_${index}`);
+    
+    if (!dateOfBirthField || !dateOfBirthField.value) {
+      if (authorizationSection) authorizationSection.style.display = 'none';
+      return;
+    }
+    
+    const birthDate = new Date(dateOfBirthField.value);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    if (age < 16) {
+      if (authorizationSection) {
+        authorizationSection.style.display = 'block';
+        if (authorizationCheckbox) authorizationCheckbox.required = true;
+      }
+    } else {
+      if (authorizationSection) {
+        authorizationSection.style.display = 'none';
+        if (authorizationCheckbox) {
+          authorizationCheckbox.required = false;
+          authorizationCheckbox.checked = false;
+        }
+      }
+    }
+  }
+</script>
+

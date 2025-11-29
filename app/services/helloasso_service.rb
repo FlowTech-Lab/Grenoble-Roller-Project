@@ -612,6 +612,132 @@ class HelloassoService
       return nil unless result[:success]
       result[:body]["redirectUrl"]
     end
+    
+    # Crée un checkout-intent HelloAsso pour plusieurs adhésions enfants (un seul paiement)
+    def create_multiple_memberships_checkout_intent(memberships, back_url:, error_url:, return_url:)
+      raise ArgumentError, "memberships must be an array" unless memberships.is_a?(Array)
+      raise ArgumentError, "at least one membership required" if memberships.empty?
+      raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+
+      token = access_token
+      if token.to_s.strip.empty?
+        begin
+          token = fetch_access_token![:access_token]
+        rescue => e
+          Rails.logger.error("[HelloassoService] Échec récupération token : #{e.message}")
+          raise "HelloAsso access_token introuvable"
+        end
+      end
+
+      # Construire tous les items (une adhésion par enfant + T-shirts)
+      items = []
+      total_amount = 0
+      season_name = Membership.current_season_name
+      
+      memberships.each_with_index do |membership, index|
+        category_name = membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 
+                        membership.category == 'with_ffrs' ? 'Cotisation Adhérent Grenoble Roller + Licence FFRS' : 
+                        'Adhésion'
+        
+        child_name = membership.is_child_membership? ? "#{membership.child_first_name} #{membership.child_last_name}" : nil
+        
+        items << {
+          name: child_name ? "#{category_name} - #{child_name} (Saison #{season_name})" : "#{category_name} Saison #{season_name}",
+          amount: membership.amount_cents,
+          type: "Membership"
+        }
+        total_amount += membership.amount_cents
+        
+        # Ajouter le T-shirt si présent
+        if membership.tshirt_variant_id.present?
+          tshirt_size = membership.tshirt_variant&.option_values&.find { |ov| 
+            ov.option_type.name.downcase.include?('taille') || 
+            ov.option_type.name.downcase.include?('size') ||
+            ov.option_type.name.downcase.include?('dimension')
+          }&.value || "Taille standard"
+          
+          items << {
+            name: child_name ? "T-shirt Grenoble Roller (#{tshirt_size}) - #{child_name}" : "T-shirt Grenoble Roller (#{tshirt_size})",
+            amount: membership.tshirt_price_cents || 1400,
+            type: "Product"
+          }
+          total_amount += (membership.tshirt_price_cents || 1400)
+        end
+      end
+
+      payload = {
+        organizationSlug: organization_slug,
+        initialAmount: {
+          total: total_amount,
+          currency: "EUR"
+        },
+        totalAmount: {
+          total: total_amount,
+          currency: "EUR"
+        },
+        items: items,
+        metadata: {
+          memberships_count: memberships.size,
+          memberships_ids: memberships.map(&:id),
+          user_id: memberships.first.user_id,
+          season: season_name,
+          environment: environment
+        },
+        backUrl: back_url,
+        errorUrl: error_url,
+        returnUrl: return_url
+      }
+
+      Rails.logger.info("[HelloassoService] Payload multiple memberships checkout-intent: #{payload.to_json}")
+
+      uri = URI.parse("#{api_base_url}/organizations/#{organization_slug}/checkout-intents")
+      request = Net::HTTP::Post.new(uri)
+      request["Authorization"] = "Bearer #{token}"
+      request["accept"] = "application/json"
+      request["content-type"] = "application/json"
+      request.body = payload.to_json
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == "https")
+
+      response = http.request(request)
+
+      # Retry avec nouveau token si 401
+      if response.code.to_i == 401
+        Rails.logger.warn("[HelloassoService] Token expiré (401), réessai...")
+        token = fetch_access_token![:access_token]
+        request["Authorization"] = "Bearer #{token}"
+        response = http.request(request)
+      end
+
+      body = response.body.present? ? JSON.parse(response.body) : {}
+      success = response.is_a?(Net::HTTPSuccess)
+
+      Rails.logger.info("[HelloassoService] create_multiple_memberships_checkout_intent response: #{{
+        status: response.code.to_i,
+        success: success,
+        body: body
+      }.to_json}")
+
+      {
+        status: response.code.to_i,
+        success: success,
+        body: body
+      }
+    end
+    
+    # Helper pour obtenir l'URL de redirection HelloAsso pour plusieurs adhésions
+    def multiple_memberships_checkout_redirect_url(memberships, back_url:, error_url:, return_url:)
+      result = create_multiple_memberships_checkout_intent(
+        memberships,
+        back_url: back_url,
+        error_url: error_url,
+        return_url: return_url
+      )
+
+      return nil unless result[:success]
+      result[:body]["redirectUrl"]
+    end
 
     private
 

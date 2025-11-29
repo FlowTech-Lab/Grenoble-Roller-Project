@@ -1,6 +1,6 @@
 class MembershipsController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_email_confirmed, only: [ :create, :create_adult, :create_teen, :create_child, :step2, :step3 ]
+  before_action :ensure_email_confirmed, only: [ :create, :batch_create ]
   before_action :set_membership, only: [ :show, :pay, :payment_status ]
 
   def index
@@ -8,251 +8,213 @@ class MembershipsController < ApplicationController
   end
 
   def new
-    # Vérifier si l'utilisateur a déjà une adhésion personnelle active pour la saison courante
-    current_season = Membership.current_season_name
-    existing_membership = current_user.memberships.personal.find_by(season: current_season)
+    type = params[:type] # "adult", "teen", "children", ou nil (choix initial)
+    children_count = params[:count]&.to_i
     
-    if existing_membership&.active?
-      redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
-      return
-    end
-
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
-  end
-  
-  # Choix du type : Adulte ou Ado
-  def choose_type
-    type = params[:type]
-    
-    unless %w[adult teen].include?(type)
-      redirect_to new_membership_path, alert: "Type d'adhésion invalide."
+    # Si pas de type, afficher le choix initial
+    unless type
+      @season = Membership.current_season_name
+      @start_date, @end_date = Membership.current_season_dates
       return
     end
     
-    # Vérifier l'âge de l'utilisateur
-    if current_user.date_of_birth.blank?
-      redirect_to edit_user_registration_path, alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil."
-      return
-    end
-    
-    age = current_user.age
-    
-    case type
-    when "adult"
-      if age < 18
-        redirect_to new_membership_path, alert: "Vous devez avoir au moins 18 ans pour adhérer en tant qu'adulte."
+    # Vérifier si l'utilisateur a déjà une adhésion personnelle active (sauf pour enfants)
+    if %w[adult teen].include?(type)
+      current_season = Membership.current_season_name
+      existing_membership = current_user.memberships.personal.find_by(season: current_season)
+      
+      if existing_membership&.active?
+        redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
         return
       end
-      redirect_to adult_form_memberships_path
-    when "teen"
+    end
+    
+    @type = type
+    @season = Membership.current_season_name
+    @start_date, @end_date = Membership.current_season_dates
+    @categories = get_categories
+    @tshirt_variants = get_tshirt_variants
+    @user = current_user
+    
+    # Pour les enfants : initialiser la session
+    if type == "children"
+      if children_count.nil? || children_count < 1 || children_count > 10
+        redirect_to new_membership_path, alert: "Veuillez spécifier un nombre d'enfants entre 1 et 10."
+        return
+      end
+      session[:children_count] = children_count
+      session[:children_data] = []
+      @children_count = children_count
+      @current_index = 0
+    elsif type == "teen"
+      # Vérifier l'âge pour les ados
+      if current_user.date_of_birth.blank?
+        redirect_to edit_user_registration_path, alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil."
+        return
+      end
+      age = current_user.age
       if age < 16
-        redirect_to new_membership_path, alert: "Vous devez avoir au moins 16 ans pour adhérer seul. Veuillez demander à un parent de vous inscrire."
+        redirect_to new_membership_path, alert: "Vous devez avoir au moins 16 ans pour adhérer seul."
         return
       elsif age >= 18
         redirect_to new_membership_path, alert: "Vous avez 18 ans ou plus, veuillez choisir l'option 'Adulte'."
         return
       end
-      redirect_to teen_form_memberships_path
-    end
-  end
-  
-  # Choix du nombre d'enfants
-  def choose_children_count
-    children_count = params[:children_count].to_i
-    
-    if children_count < 1 || children_count > 10
-      redirect_to new_membership_path, alert: "Le nombre d'enfants doit être entre 1 et 10."
-      return
-    end
-    
-    # Stocker dans la session pour les formulaires suivants
-    session[:children_count] = children_count
-    session[:current_child_index] = 0
-    
-    redirect_to child_form_memberships_path(0)
-  end
-
-  # Formulaire adulte 18+
-  def adult_form
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
-    @categories = get_categories
-    @tshirt_variants = get_tshirt_variants
-    @user = current_user
-  end
-  
-  # Formulaire ado 16-17
-  def teen_form
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
-    @categories = get_categories
-    @tshirt_variants = get_tshirt_variants
-    @user = current_user
-    
-    # Vérifier l'âge
-    if current_user.age >= 18
-      redirect_to new_membership_path, alert: "Vous avez 18 ans ou plus, veuillez choisir l'option 'Adulte'."
-      return
-    elsif current_user.age < 16
-      redirect_to new_membership_path, alert: "Vous devez avoir au moins 16 ans pour adhérer seul."
-      return
-    end
-  end
-  
-  # Formulaire enfant (avec index pour gérer plusieurs enfants)
-  def child_form
-    @child_index = params[:index].to_i
-    @children_count = session[:children_count] || 1
-    
-    if @child_index >= @children_count
-      # Tous les enfants sont remplis, rediriger vers récapitulatif ou paiement
-      session.delete(:children_count)
-      session.delete(:current_child_index)
-      redirect_to memberships_path, notice: "Toutes les adhésions enfants ont été créées."
-      return
+    elsif type == "adult"
+      # Vérifier l'âge pour les adultes
+      if current_user.date_of_birth.blank?
+        redirect_to edit_user_registration_path, alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil."
+        return
+      end
+      if current_user.age < 18
+        redirect_to new_membership_path, alert: "Vous devez avoir au moins 18 ans pour adhérer en tant qu'adulte."
+        return
+      end
     end
     
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
-    @categories = get_categories
-    @tshirt_variants = get_tshirt_variants
-    @user = current_user
-  end
-
-  # Étape 2 : Informations adhérent
-  def step2
-    @category = params[:category]
-    @tshirt_variant_id = params[:tshirt_variant_id] if params[:wants_tshirt] == "1"
-    
-    unless Membership.categories.key?(@category)
-      redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
-      return
+    # Rendre la vue appropriée
+    case type
+    when "adult"
+      render :adult_form
+    when "teen"
+      render :teen_form
+    when "children"
+      render :children_form
     end
-
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
-    
-    # Pré-remplir depuis User si connecté
-    @user = current_user
-  end
-
-  # Étape 3 : Coordonnées
-  def step3
-    @category = params[:category]
-    @tshirt_variant_id = params[:tshirt_variant_id]
-    @first_name = params[:first_name]
-    @last_name = params[:last_name]
-    @date_of_birth = params[:date_of_birth]
-    @phone = params[:phone]
-    @email = params[:email]
-    
-    # Validation basique
-    if @first_name.blank? || @last_name.blank? || @date_of_birth.blank? || @phone.blank? || @email.blank?
-      redirect_to step2_memberships_path(category: @category, tshirt_variant_id: @tshirt_variant_id), 
-                  alert: "Veuillez remplir tous les champs obligatoires."
-      return
-    end
-
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
   end
 
   def create
-    category = params[:category]
-    tshirt_variant_id = params[:tshirt_variant_id].presence
+    # Détecter le type depuis les paramètres
+    if params[:membership] && params[:membership][:is_child_membership] == "true"
+      # Création d'un enfant unique (rare, normalement on utilise batch)
+      create_child_membership_single
+    elsif params[:membership] && params[:membership][:type] == "teen"
+      create_teen_membership
+    else
+      create_adult_membership
+    end
+  end
+  
+  # Création groupée d'enfants (plusieurs enfants, un seul paiement)
+  def batch_create
+    # Récupérer les données depuis la session (stockées dans summary)
+    children_data = session[:children_data] || []
     
-    unless Membership.categories.key?(category)
-      redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
+    if children_data.empty?
+      redirect_to new_membership_path, alert: "Aucune donnée d'enfant trouvée."
       return
     end
-
-    # Vérifier si l'utilisateur a déjà une adhésion active pour la saison courante
-    current_season = Membership.current_season_name
-    existing_membership = current_user.memberships.find_by(season: current_season)
     
-    if existing_membership&.active?
-      redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
-      return
+    # Créer toutes les adhésions enfants (sans paiement pour l'instant)
+    memberships = []
+    children_data.each_with_index do |child_data, index|
+      membership = create_child_membership_from_params(child_data, index)
+      if membership.persisted?
+        memberships << membership
+      else
+        # En cas d'erreur, détruire les adhésions déjà créées
+        memberships.each(&:destroy)
+        redirect_to summary_memberships_path, 
+                    alert: "Erreur lors de la création de l'adhésion enfant #{index + 1} : #{membership.errors.full_messages.join(', ')}"
+        return
+      end
     end
-
-    start_date, end_date = Membership.current_season_dates
-    amount_cents = Membership.price_for_category(category)
-
-    # Mettre à jour les informations User si fournies
-    if params[:first_name].present?
-      current_user.update!(
-        first_name: params[:first_name],
-        last_name: params[:last_name],
-        date_of_birth: params[:date_of_birth],
-        phone: params[:phone],
-        email: params[:email],
-        address: params[:address],
-        city: params[:city],
-        postal_code: params[:postal_code],
-        wants_whatsapp: params[:wants_whatsapp] == "1",
-        wants_email_info: params[:wants_email_info] == "1"
-      )
-    end
-
-    # Créer l'adhésion en pending
-    membership = Membership.create!(
-      user: current_user,
-      category: category,
-      status: :pending,
-      start_date: start_date,
-      end_date: end_date,
-      amount_cents: amount_cents,
-      currency: "EUR",
-      season: current_season,
-      is_minor: current_user.is_minor?,
-      tshirt_variant_id: tshirt_variant_id,
-      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil, # 14€ fixe pour HelloAsso
-      wants_whatsapp: params[:wants_whatsapp] == "1",
-      wants_email_info: params[:wants_email_info] == "1"
-    )
-
-    # Créer le paiement HelloAsso
-    redirect_url = HelloassoService.membership_checkout_redirect_url(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
+    
+    # Créer UN SEUL paiement HelloAsso pour toutes les adhésions
+    redirect_url = HelloassoService.multiple_memberships_checkout_redirect_url(
+      memberships,
+      back_url: summary_memberships_path,
+      error_url: memberships_path,
+      return_url: memberships_path
     )
 
     unless redirect_url
-      membership.destroy
-      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+      # En cas d'erreur, détruire les adhésions créées
+      memberships.each(&:destroy)
+      redirect_to summary_memberships_path, 
+                  alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
       return
     end
 
-    # Créer le Payment
+    # Créer le Payment unique
+    total_amount = memberships.sum(&:total_amount_cents)
     payment = Payment.create!(
       provider: "helloasso",
       provider_payment_id: nil,
       status: "pending",
-      amount_cents: membership.total_amount_cents,
+      amount_cents: total_amount,
       currency: "EUR"
     )
 
-    # Mettre à jour le provider_payment_id avec l'ID du checkout-intent
-    result = HelloassoService.create_membership_checkout_intent(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
+    # Lier le paiement à toutes les adhésions
+    memberships.each do |membership|
+      membership.update!(payment: payment)
+    end
+
+    # Créer le checkout-intent avec tous les items
+    result = HelloassoService.create_multiple_memberships_checkout_intent(
+      memberships,
+      back_url: summary_memberships_path,
+      error_url: memberships_path,
+      return_url: memberships_path
     )
 
     if result[:success] && result[:body]["id"]
-      payment.update!(provider_payment_id: result[:body]["id"].to_s)
-      membership.update!(payment: payment, provider_order_id: result[:body]["id"].to_s)
+      checkout_id = result[:body]["id"].to_s
+      payment.update!(provider_payment_id: checkout_id)
+      memberships.each do |membership|
+        membership.update!(provider_order_id: checkout_id)
+      end
     end
-
+    
+    # Nettoyer la session
+    session.delete(:children_count)
+    session.delete(:children_data)
+    
     redirect_to redirect_url, allow_other_host: true
   rescue => e
-    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
+    Rails.logger.error("[MembershipsController] Erreur lors de la création des adhésions enfants : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+    redirect_to summary_memberships_path, 
+                alert: "Erreur lors de la création des adhésions : #{e.message}"
+  end
+  
+  # Récapitulatif avant paiement groupé
+  def summary
+    # Les données viennent du formulaire children_form via params (GET)
+    if params[:children].present?
+      # Convertir les paramètres en hash simple avec symboles
+      @children_data = params[:children].map do |child|
+        child.to_unsafe_h.symbolize_keys
+      end
+      @children_count = @children_data.size
+      # Stocker en session pour batch_create
+      session[:children_data] = @children_data
+      session[:children_count] = @children_count
+    else
+      # Si pas de params, utiliser la session
+      @children_data = session[:children_data] || []
+      @children_count = session[:children_count] || @children_data.size
+    end
+    
+    if @children_data.empty?
+      redirect_to new_membership_path, alert: "Données incomplètes. Veuillez recommencer."
+      return
+    end
+    
+    @season = Membership.current_season_name
+    @start_date, @end_date = Membership.current_season_dates
+    @categories = get_categories
+    @tshirt_variants = get_tshirt_variants
+    
+    # Calculer le total
+    @total_cents = 0
+    @children_data.each do |child_data|
+      category_key = child_data[:category]
+      amount = Membership.price_for_category(category_key)
+      amount += 1400 if child_data[:tshirt_variant_id].present? # T-shirt 14€
+      @total_cents += amount
+    end
   end
 
   def show
@@ -337,98 +299,6 @@ class MembershipsController < ApplicationController
     render json: { status: "unknown" }, status: 500
   end
 
-  # Créer adhésion adulte
-  def create_adult
-    create_personal_membership(type: "adult")
-  end
-  
-  # Créer adhésion ado
-  def create_teen
-    create_personal_membership(type: "teen")
-  end
-  
-  # Créer adhésion enfant
-  def create_child
-    child_index = params[:child_index].to_i
-    children_count = session[:children_count] || 1
-    
-    # Validation des champs enfant
-    if params[:child_first_name].blank? || params[:child_last_name].blank? || params[:child_date_of_birth].blank?
-      redirect_to child_form_memberships_path(child_index), 
-                  alert: "Veuillez remplir tous les champs obligatoires pour l'enfant."
-      return
-    end
-    
-    # Calculer l'âge de l'enfant
-    child_age = ((Date.today - Date.parse(params[:child_date_of_birth])) / 365.25).floor
-    
-    if child_age >= 18
-      redirect_to child_form_memberships_path(child_index), 
-                  alert: "L'enfant a 18 ans ou plus, il doit adhérer seul via l'option 'Adulte'."
-      return
-    end
-    
-    # Créer l'adhésion enfant
-    membership = create_child_membership(params, child_age)
-    
-    unless membership&.persisted?
-      redirect_to child_form_memberships_path(child_index), 
-                  alert: "Erreur lors de la création de l'adhésion : #{membership&.errors&.full_messages&.join(', ') || 'Erreur inconnue'}"
-      return
-    end
-    
-    # Créer le paiement HelloAsso et rediriger
-    redirect_url = HelloassoService.membership_checkout_redirect_url(
-      membership,
-      back_url: child_form_memberships_path(child_index),
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
-
-    unless redirect_url
-      membership.destroy
-      redirect_to child_form_memberships_path(child_index), 
-                  alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
-      return
-    end
-
-    # Mettre à jour le provider_payment_id avec l'ID du checkout-intent
-    result = HelloassoService.create_membership_checkout_intent(
-      membership,
-      back_url: child_form_memberships_path(child_index),
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
-
-    if result[:success] && result[:body]["id"]
-      checkout_id = result[:body]["id"].to_s
-      if membership.payment
-        membership.payment.update!(provider_payment_id: checkout_id)
-      end
-      membership.update!(provider_order_id: checkout_id)
-    end
-    
-    # Si ce n'est pas le dernier enfant, passer au suivant après paiement
-    if child_index + 1 < children_count
-      session[:current_child_index] = child_index + 1
-      # Stocker l'ID de l'adhésion en session pour revenir après paiement
-      session[:pending_child_memberships] ||= []
-      session[:pending_child_memberships] << membership.id
-      redirect_to redirect_url, allow_other_host: true
-    else
-      # Dernier enfant, rediriger vers HelloAsso puis vers la liste après paiement
-      session.delete(:children_count)
-      session.delete(:current_child_index)
-      session[:pending_child_memberships] ||= []
-      session[:pending_child_memberships] << membership.id
-      redirect_to redirect_url, allow_other_host: true
-    end
-  rescue => e
-    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
-    redirect_to child_form_memberships_path(child_index), 
-                alert: "Erreur lors de la création de l'adhésion : #{e.message}"
-  end
-
   private
 
   def set_membership
@@ -468,16 +338,16 @@ class MembershipsController < ApplicationController
     end
   end
   
-  def create_personal_membership(type:)
-    category = params[:category]
-    tshirt_variant_id = params[:tshirt_variant_id].presence
+  def create_adult_membership
+    membership_params = params[:membership] || params
+    category = membership_params[:category]
+    tshirt_variant_id = membership_params[:tshirt_variant_id].presence
     
     unless Membership.categories.key?(category)
       redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
       return
     end
 
-    # Vérifier si l'utilisateur a déjà une adhésion personnelle active pour la saison courante
     current_season = Membership.current_season_name
     existing_membership = current_user.memberships.personal.find_by(season: current_season)
     
@@ -490,18 +360,18 @@ class MembershipsController < ApplicationController
     amount_cents = Membership.price_for_category(category)
 
     # Mettre à jour les informations User si fournies
-    if params[:first_name].present?
+    if membership_params[:first_name].present?
       current_user.update!(
-        first_name: params[:first_name],
-        last_name: params[:last_name],
-        date_of_birth: params[:date_of_birth],
-        phone: params[:phone],
-        email: params[:email],
-        address: params[:address],
-        city: params[:city],
-        postal_code: params[:postal_code],
-        wants_whatsapp: params[:wants_whatsapp] == "1",
-        wants_email_info: params[:wants_email_info] == "1"
+        first_name: membership_params[:first_name],
+        last_name: membership_params[:last_name],
+        date_of_birth: membership_params[:date_of_birth],
+        phone: membership_params[:phone],
+        email: membership_params[:email],
+        address: membership_params[:address],
+        city: membership_params[:city],
+        postal_code: membership_params[:postal_code],
+        wants_whatsapp: membership_params[:wants_whatsapp] == "1",
+        wants_email_info: membership_params[:wants_email_info] == "1"
       )
     end
 
@@ -519,18 +389,9 @@ class MembershipsController < ApplicationController
       is_minor: current_user.is_minor?,
       tshirt_variant_id: tshirt_variant_id,
       tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      wants_whatsapp: params[:wants_whatsapp] == "1",
-      wants_email_info: params[:wants_email_info] == "1"
+      wants_whatsapp: membership_params[:wants_whatsapp] == "1",
+      wants_email_info: membership_params[:wants_email_info] == "1"
     )
-    
-    # Pour les ados 16-17, collecter l'email parent si fourni
-    if type == "teen" && params[:parent_email].present?
-      membership.update!(
-        parent_email: params[:parent_email],
-        parent_name: params[:parent_name] || "#{current_user.first_name} #{current_user.last_name}",
-        parent_phone: params[:parent_phone] || current_user.phone
-      )
-    end
 
     # Créer le paiement HelloAsso
     redirect_url = HelloassoService.membership_checkout_redirect_url(
@@ -575,12 +436,138 @@ class MembershipsController < ApplicationController
     redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
   end
   
-  def create_child_membership(params, child_age)
-    category = params[:category]
-    tshirt_variant_id = params[:tshirt_variant_id].presence
+  def create_teen_membership
+    membership_params = params[:membership] || params
+    category = membership_params[:category]
+    tshirt_variant_id = membership_params[:tshirt_variant_id].presence
     
     unless Membership.categories.key?(category)
-      return Membership.new # Retourner un membership invalide
+      redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
+      return
+    end
+
+    current_season = Membership.current_season_name
+    existing_membership = current_user.memberships.personal.find_by(season: current_season)
+    
+    if existing_membership&.active?
+      redirect_to membership_path(existing_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      return
+    end
+
+    start_date, end_date = Membership.current_season_dates
+    amount_cents = Membership.price_for_category(category)
+
+    # Mettre à jour les informations User si fournies
+    if membership_params[:first_name].present?
+      current_user.update!(
+        first_name: membership_params[:first_name],
+        last_name: membership_params[:last_name],
+        date_of_birth: membership_params[:date_of_birth],
+        phone: membership_params[:phone],
+        email: membership_params[:email],
+        address: membership_params[:address],
+        city: membership_params[:city],
+        postal_code: membership_params[:postal_code],
+        wants_whatsapp: membership_params[:wants_whatsapp] == "1",
+        wants_email_info: membership_params[:wants_email_info] == "1"
+      )
+    end
+
+    # Créer l'adhésion en pending
+    membership = Membership.create!(
+      user: current_user,
+      category: category,
+      status: :pending,
+      start_date: start_date,
+      end_date: end_date,
+      amount_cents: amount_cents,
+      currency: "EUR",
+      season: current_season,
+      is_child_membership: false,
+      is_minor: true, # Les ados sont mineurs
+      tshirt_variant_id: tshirt_variant_id,
+      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
+      wants_whatsapp: membership_params[:wants_whatsapp] == "1",
+      wants_email_info: membership_params[:wants_email_info] == "1",
+      parent_email: membership_params[:parent_email],
+      parent_name: membership_params[:parent_name] || "#{current_user.first_name} #{current_user.last_name}",
+      parent_phone: membership_params[:parent_phone] || current_user.phone
+    )
+
+    # Créer le paiement HelloAsso
+    redirect_url = HelloassoService.membership_checkout_redirect_url(
+      membership,
+      back_url: new_membership_url,
+      error_url: membership_url(membership),
+      return_url: membership_url(membership)
+    )
+
+    unless redirect_url
+      membership.destroy
+      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+      return
+    end
+
+    # Créer le Payment
+    payment = Payment.create!(
+      provider: "helloasso",
+      provider_payment_id: nil,
+      status: "pending",
+      amount_cents: membership.total_amount_cents,
+      currency: "EUR"
+    )
+
+    # Mettre à jour le provider_payment_id avec l'ID du checkout-intent
+    result = HelloassoService.create_membership_checkout_intent(
+      membership,
+      back_url: new_membership_url,
+      error_url: membership_url(membership),
+      return_url: membership_url(membership)
+    )
+
+    if result[:success] && result[:body]["id"]
+      payment.update!(provider_payment_id: result[:body]["id"].to_s)
+      membership.update!(payment: payment, provider_order_id: result[:body]["id"].to_s)
+    end
+
+    redirect_to redirect_url, allow_other_host: true
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+  end
+  
+  def create_child_membership_single
+    # Rare cas : création d'un enfant unique (normalement on utilise batch)
+    membership_params = params[:membership] || params
+    create_child_membership_from_params(membership_params, 0)
+  end
+  
+  def create_child_membership_from_params(child_params, index)
+    # Normaliser les clés (convertir en symbol si nécessaire)
+    child_params = child_params.symbolize_keys if child_params.is_a?(Hash) && child_params.keys.first.is_a?(String)
+    
+    category = child_params[:category]
+    tshirt_variant_id = child_params[:tshirt_variant_id].presence
+    
+    unless Membership.categories.key?(category)
+      return Membership.new.tap { |m| m.errors.add(:category, "invalide") }
+    end
+
+    # Validation des champs enfant
+    child_first_name = child_params[:child_first_name]
+    child_last_name = child_params[:child_last_name]
+    child_date_of_birth = child_params[:child_date_of_birth]
+    
+    if child_first_name.blank? || child_last_name.blank? || child_date_of_birth.blank?
+      return Membership.new.tap { |m| m.errors.add(:base, "Tous les champs obligatoires doivent être remplis") }
+    end
+    
+    # Calculer l'âge de l'enfant
+    child_age = ((Date.today - Date.parse(child_date_of_birth)) / 365.25).floor
+    
+    if child_age >= 18
+      return Membership.new.tap { |m| m.errors.add(:base, "L'enfant a 18 ans ou plus, il doit adhérer seul") }
     end
 
     start_date, end_date = Membership.current_season_dates
@@ -598,26 +585,27 @@ class MembershipsController < ApplicationController
       currency: "EUR",
       season: current_season,
       is_child_membership: true,
-      child_first_name: params[:child_first_name],
-      child_last_name: params[:child_last_name],
-      child_date_of_birth: params[:child_date_of_birth],
+      child_first_name: child_first_name,
+      child_last_name: child_last_name,
+      child_date_of_birth: child_date_of_birth,
       is_minor: child_age < 18,
-      parent_authorization: child_age < 16 ? (params[:parent_authorization] == "1") : false,
+      parent_authorization: child_age < 16 ? (child_params[:parent_authorization] == "1") : false,
       parent_authorization_date: child_age < 16 ? Date.today : nil,
       parent_name: "#{current_user.first_name} #{current_user.last_name}",
       parent_email: current_user.email,
       parent_phone: current_user.phone,
       tshirt_variant_id: tshirt_variant_id,
       tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      wants_whatsapp: params[:wants_whatsapp] == "1",
-      wants_email_info: params[:wants_email_info] == "1",
-      health_questionnaire_status: params[:has_health_issues] == "1" ? "medical_required" : "ok",
-      medical_certificate_provided: params[:has_health_issues] == "1" ? false : true,
-      rgpd_consent: params[:rgpd_consent] == "1",
-      legal_notices_accepted: params[:legal_notices_accepted] == "1"
+      wants_whatsapp: child_params[:wants_whatsapp] == "1",
+      wants_email_info: child_params[:wants_email_info] == "1",
+      health_questionnaire_status: child_params[:has_health_issues] == "1" ? "medical_required" : "ok",
+      medical_certificate_provided: child_params[:has_health_issues] == "1" ? false : true,
+      rgpd_consent: child_params[:rgpd_consent] == "1",
+      legal_notices_accepted: child_params[:legal_notices_accepted] == "1",
+      ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1"
     )
     
-    # Créer le Payment (le paiement HelloAsso sera géré dans create_child)
+    # Créer le Payment (le paiement sera géré dans batch_create ou create)
     payment = Payment.create!(
       provider: "helloasso",
       provider_payment_id: nil,

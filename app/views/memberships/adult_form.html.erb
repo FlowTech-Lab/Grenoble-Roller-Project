@@ -13,7 +13,8 @@
             </p>
           </div>
 
-          <%= form_with url: create_adult_memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+          <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+            <%= f.hidden_field :type, value: "adult" %>
             <!-- Étape 1 : Choix de la catégorie -->
             <div class="mb-4">
               <h3 class="h5 mb-3">1. Choisissez votre adhésion</h3>

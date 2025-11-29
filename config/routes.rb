@@ -51,17 +51,15 @@ Rails.application.routes.draw do
     end
   end
 
-  # Memberships
+  # Memberships - Routes REST
   resources :memberships, only: [ :index, :new, :create, :show ] do
     collection do
-      post :choose_type # Adulte ou Ado
-      post :choose_children_count # Nombre d'enfants
-      get :adult_form # Formulaire adulte 18+
-      get :teen_form # Formulaire ado 16-17
-      get "child_form/:index", to: "memberships#child_form", as: :child_form # Formulaire enfant (avec index)
-      post :create_adult # Créer adhésion adulte
-      post :create_teen # Créer adhésion ado
-      post :create_child # Créer adhésion enfant
+      # Choix initial du type d'adhésion
+      get :new, action: :new, as: :new
+      # Création groupée d'enfants (plusieurs enfants, un seul paiement)
+      post :batch, action: :batch_create, as: :batch
+      # Récapitulatif avant paiement groupé
+      get :summary, action: :summary, as: :summary
     end
     member do
       post :pay
