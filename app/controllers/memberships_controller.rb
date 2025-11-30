@@ -82,6 +82,23 @@ class MembershipsController < ApplicationController
       render :adult_form
     when "teen"
       render :teen_form
+    when "child"
+      # Formulaire pour un seul enfant (simplifié)
+      @season = Membership.current_season_name
+      @start_date, @end_date = Membership.current_season_dates
+      @categories = {
+        standard: {
+          name: "Cotisation Adhérent Grenoble Roller",
+          description: "Je souhaite être membre bienfaiteur ou actif de l'association.",
+          price_cents: 1000
+        },
+        with_ffrs: {
+          name: "Cotisation Adhérent Grenoble Roller + Licence FFRS",
+          description: "Je souhaite être membre bienfaiteur ou actif de l'association. Je souhaite également prendre la licence de la FFRS (Loisir ou Compétition).",
+          price_cents: 5655
+        }
+      }
+      render :child_form
     when "children"
       # Créer un array d'objets temporaires pour fields_for
       @children_objects = Array.new(@children_count) { OpenStruct.new }
@@ -136,10 +153,12 @@ class MembershipsController < ApplicationController
 
   def create
     # Détecter le type depuis les paramètres
-    if params[:membership] && params[:membership][:is_child_membership] == "true"
-      # Création d'un enfant unique (rare, normalement on utilise batch)
+    membership_params = params[:membership] || params
+    
+    if membership_params[:is_child_membership] == "true" || membership_params[:is_child_membership] == true
+      # Création d'un enfant unique
       create_child_membership_single
-    elsif params[:membership] && params[:membership][:type] == "teen"
+    elsif membership_params[:type] == "teen"
       create_teen_membership
     else
       create_adult_membership
@@ -402,6 +421,183 @@ class MembershipsController < ApplicationController
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la vérification du statut : #{e.message}")
     render json: { status: "unknown" }, status: 500
+  end
+
+  # Paiement groupé pour plusieurs enfants
+  def pay_multiple
+    # Rails envoie membership_ids[] comme un array
+    membership_ids = params[:membership_ids] || params["membership_ids"] || []
+    # Normaliser en array si c'est une string
+    membership_ids = [membership_ids] unless membership_ids.is_a?(Array)
+    membership_ids = membership_ids.reject(&:blank?)
+    
+    if membership_ids.empty?
+      redirect_to memberships_path, alert: "Aucune adhésion sélectionnée."
+      return
+    end
+    
+    # Récupérer les adhésions enfants pending de l'utilisateur
+    memberships = current_user.memberships.where(
+      id: membership_ids,
+      is_child_membership: true,
+      status: 'pending'
+    )
+    
+    if memberships.empty?
+      redirect_to memberships_path, alert: "Aucune adhésion enfant en attente de paiement trouvée."
+      return
+    end
+    
+      # Créer un paiement groupé HelloAsso
+      begin
+        result = HelloassoService.create_multiple_memberships_checkout_intent(
+          memberships.to_a,
+          back_url: memberships_url(host: request.host_with_port, protocol: request.protocol),
+          error_url: memberships_url(host: request.host_with_port, protocol: request.protocol),
+          return_url: memberships_url(host: request.host_with_port, protocol: request.protocol)
+        )
+      
+      unless result[:success] && result[:body]["redirectUrl"]
+        Rails.logger.error("[MembershipsController] Échec création checkout-intent groupé : #{result.inspect}")
+        redirect_to memberships_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
+        return
+      end
+      
+      checkout_id = result[:body]["id"].to_s
+      redirect_url = result[:body]["redirectUrl"]
+      
+      # Créer un Payment unique pour toutes les adhésions
+      total_amount = memberships.sum(&:total_amount_cents)
+      payment = Payment.create!(
+        provider: "helloasso",
+        provider_payment_id: checkout_id,
+        status: "pending",
+        amount_cents: total_amount,
+        currency: "EUR"
+      )
+      
+      # Lier le paiement à toutes les adhésions
+      memberships.each do |membership|
+        membership.update!(
+          payment: payment,
+          provider_order_id: checkout_id
+        )
+      end
+      
+      redirect_to redirect_url, allow_other_host: true
+    rescue => e
+      Rails.logger.error("[MembershipsController] Erreur lors du paiement groupé : #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      redirect_to memberships_path, alert: "Erreur lors de l'initialisation du paiement : #{e.message}"
+    end
+  end
+
+  # Modifier une adhésion enfant (pending uniquement)
+  def edit_child
+    unless @membership.is_child_membership? && @membership.status == 'pending'
+      redirect_to membership_path(@membership), alert: "Cette adhésion ne peut pas être modifiée."
+      return
+    end
+    
+    @season = Membership.current_season_name
+    @start_date, @end_date = Membership.current_season_dates
+    @categories = get_categories
+    @user = current_user
+    render :edit_child_form
+  end
+
+  # Mettre à jour une adhésion enfant (pending uniquement)
+  def update_child
+    unless @membership.is_child_membership? && @membership.status == 'pending'
+      redirect_to membership_path(@membership), alert: "Cette adhésion ne peut pas être modifiée."
+      return
+    end
+    
+    membership_params = params[:membership] || params
+    
+    # Reconstruire la date de naissance
+    if membership_params[:child_date_of_birth].blank?
+      day = membership_params[:child_date_of_birth_day]
+      month = membership_params[:child_date_of_birth_month]
+      year = membership_params[:child_date_of_birth_year]
+      
+      if day.present? && month.present? && year.present?
+        begin
+          membership_params[:child_date_of_birth] = Date.new(year.to_i, month.to_i, day.to_i).to_s
+        rescue ArgumentError => e
+          redirect_to edit_child_membership_path(@membership), alert: "Date de naissance invalide."
+          return
+        end
+      end
+    end
+    
+    # Calculer l'âge de l'enfant
+    child_date_of_birth = Date.parse(membership_params[:child_date_of_birth]) rescue nil
+    if child_date_of_birth.blank?
+      redirect_to edit_child_membership_path(@membership), alert: "Date de naissance obligatoire."
+      return
+    end
+    
+    child_age = ((Date.today - child_date_of_birth) / 365.25).floor
+    
+    if child_age >= 18
+      redirect_to edit_child_membership_path(@membership), alert: "L'enfant a 18 ans ou plus, il doit adhérer seul."
+      return
+    end
+    
+    # Mettre à jour l'adhésion
+    @membership.update!(
+      category: membership_params[:category],
+      child_first_name: membership_params[:child_first_name],
+      child_last_name: membership_params[:child_last_name],
+      child_date_of_birth: child_date_of_birth,
+      amount_cents: Membership.price_for_category(membership_params[:category]),
+      is_minor: child_age < 18,
+      parent_authorization: child_age < 16 ? (membership_params[:parent_authorization] == "1") : false,
+      parent_authorization_date: child_age < 16 ? Date.today : nil,
+      wants_whatsapp: membership_params[:wants_whatsapp] == "1",
+      wants_email_info: membership_params[:wants_email_info] == "1",
+      health_questionnaire_status: membership_params[:has_health_issues] == "1" ? "medical_required" : "ok",
+      medical_certificate_provided: membership_params[:has_health_issues] == "1" ? false : true,
+      rgpd_consent: membership_params[:rgpd_consent] == "1",
+      legal_notices_accepted: membership_params[:legal_notices_accepted] == "1",
+      ffrs_data_sharing_consent: membership_params[:ffrs_data_sharing_consent] == "1"
+    )
+    
+    redirect_to memberships_path, notice: "Adhésion de #{@membership.child_full_name} mise à jour avec succès."
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la mise à jour : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to edit_child_membership_path(@membership), alert: "Erreur lors de la mise à jour : #{e.message}"
+  end
+
+  # Supprimer une adhésion enfant (pending uniquement)
+  def destroy_child
+    unless @membership.is_child_membership? && @membership.status == 'pending'
+      redirect_to membership_path(@membership), alert: "Cette adhésion ne peut pas être supprimée."
+      return
+    end
+    
+    child_name = @membership.child_full_name
+    
+    # Supprimer le paiement associé s'il existe et n'est pas lié à d'autres adhésions
+    if @membership.payment
+      payment = @membership.payment
+      # Si le paiement est lié à plusieurs adhésions, ne pas le supprimer
+      if payment.memberships.count > 1
+        @membership.update!(payment: nil)
+      else
+        payment.destroy
+      end
+    end
+    
+    @membership.destroy
+    
+    redirect_to memberships_path, notice: "Adhésion de #{child_name} supprimée avec succès."
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la suppression : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to memberships_path, alert: "Erreur lors de la suppression : #{e.message}"
   end
 
   private
@@ -697,9 +893,21 @@ class MembershipsController < ApplicationController
   end
   
   def create_child_membership_single
-    # Rare cas : création d'un enfant unique (normalement on utilise batch)
+    # Création d'un enfant unique - redirection vers /memberships pour afficher l'enfant créé
     membership_params = params[:membership] || params
-    create_child_membership_from_params(membership_params, 0)
+    
+    membership = create_child_membership_from_params(membership_params, 0)
+    
+    if membership.persisted?
+      # Rediriger vers /memberships pour afficher l'enfant créé
+      redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant procéder au paiement."
+    else
+      redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
+    end
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.message}"
   end
   
   def create_child_membership_from_params(child_params, index)
@@ -782,16 +990,8 @@ class MembershipsController < ApplicationController
       ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1"
     )
     
-    # Créer le Payment (le paiement sera géré dans batch_create ou create)
-    payment = Payment.create!(
-      provider: "helloasso",
-      provider_payment_id: nil,
-      status: "pending",
-      amount_cents: membership.total_amount_cents,
-      currency: "EUR"
-    )
-    
-    membership.update!(payment: payment)
+    # Le Payment sera créé lors du clic sur "Payer" dans /memberships
+    # Pas de création automatique ici
 
     membership
   rescue => e

@@ -108,32 +108,12 @@
               <i class="bi bi-people me-2 text-liquid-warning"></i>Inscrire un enfant
             </h2>
             <p class="text-muted small mb-3">
-              Vous pouvez inscrire plusieurs enfants en une seule fois. Chaque enfant aura son propre formulaire.
+              Ajoutez un enfant à la fois. Vous pourrez payer pour tous les enfants en attente en une seule transaction.
             </p>
             
-            <%= form_with url: new_membership_path, method: :get, local: true, class: "row g-3 align-items-end" do |f| %>
-              <%= f.hidden_field :type, value: "children" %>
-              <div class="col-md-6">
-                <%= f.label :count, "Nombre d'enfants à inscrire", class: "form-label" %>
-                <%= f.number_field :count, 
-                    in: 1..10, 
-                    value: params[:count] || 1, 
-                    class: "form-control",
-                    required: true,
-                    min: 1,
-                    max: 10 %>
-              </div>
-              <div class="col-md-6">
-                <%= f.submit "Continuer", class: "btn btn-liquid-warning w-100" %>
-              </div>
+            <%= link_to new_membership_path(type: "child"), class: "btn btn-liquid-warning btn-lg w-100" do %>
+              <i class="bi bi-person-plus me-2"></i>Ajouter un enfant
             <% end %>
-          </div>
-
-          <!-- Info légale -->
-          <div class="alert alert-info mt-4 mb-0">
-            <i class="bi bi-info-circle me-2"></i>
-            <strong>Information importante :</strong> Pour les enfants de moins de 16 ans, une autorisation parentale est obligatoire. 
-            Pour les adolescents de 16-17 ans, les parents seront informés de l'adhésion.
           </div>
         </div>
       </div>

@@ -60,10 +60,16 @@ Rails.application.routes.draw do
       post :batch, action: :batch_create, as: :batch
       # Récapitulatif avant paiement groupé
       get :summary, action: :summary, as: :summary
+      # Paiement groupé pour plusieurs enfants
+      post :pay_multiple, action: :pay_multiple, as: :pay_multiple
     end
     member do
       post :pay
       get :payment_status
+      # Actions pour enfants
+      get :edit_child, action: :edit_child, as: :edit_child
+      patch :update_child, action: :update_child, as: :update_child
+      delete :destroy_child, action: :destroy_child, as: :destroy_child
     end
   end
 

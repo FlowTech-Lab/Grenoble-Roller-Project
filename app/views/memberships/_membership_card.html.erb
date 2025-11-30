@@ -63,12 +63,37 @@
       <% end %>
       
       <% if membership.status == 'pending' %>
-        <%= button_to pay_membership_path(membership),
-            method: :post,
-            class: "btn btn-sm btn-primary",
-            data: { turbo: false },
-            form: { style: "display: inline-block;" } do %>
-          <i class="bi bi-credit-card me-1"></i>Payer
+        <% if is_child && local_assigns[:is_pending] %>
+          <!-- Actions pour enfants pending : Modifier, Supprimer, Payer individuellement -->
+          <%= link_to edit_child_membership_path(membership), class: "btn btn-sm btn-outline-warning" do %>
+            <i class="bi bi-pencil me-1"></i>Modifier
+          <% end %>
+          <%= button_to destroy_child_membership_path(membership),
+              method: :delete,
+              class: "btn btn-sm btn-outline-danger",
+              data: { 
+                turbo: false,
+                confirm: "Êtes-vous sûr de vouloir supprimer l'adhésion de #{membership.child_full_name} ? Cette action est irréversible."
+              },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-trash me-1"></i>Supprimer
+          <% end %>
+          <%= button_to pay_membership_path(membership),
+              method: :post,
+              class: "btn btn-sm btn-primary",
+              data: { turbo: false },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-credit-card me-1"></i>Payer
+          <% end %>
+        <% else %>
+          <!-- Paiement individuel pour adhésions personnelles pending -->
+          <%= button_to pay_membership_path(membership),
+              method: :post,
+              class: "btn btn-sm btn-primary",
+              data: { turbo: false },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-credit-card me-1"></i>Payer
+          <% end %>
         <% end %>
       <% elsif membership.status == 'expired' %>
         <%= link_to new_membership_path, class: "btn btn-sm btn-success" do %>

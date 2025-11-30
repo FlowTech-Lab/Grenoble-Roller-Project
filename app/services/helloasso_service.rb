@@ -397,13 +397,14 @@ class HelloassoService
       payment.orders.each { |order| order.update!(status: order_status) }
 
       # 6. Mettre à jour les adhésions associées
+      membership_status = case new_status
+                         when 'succeeded' then 'active'
+                         when 'failed', 'refunded', 'abandoned' then 'expired'
+                         else 'pending'
+                         end
+      
+      # Gérer les adhésions personnelles (has_one :membership)
       if payment.membership
-        membership_status = case new_status
-                           when 'succeeded' then 'active'
-                           when 'failed', 'refunded', 'abandoned' then 'expired'
-                           else 'pending'
-                           end
-        
         old_status = payment.membership.status
         payment.membership.update!(status: membership_status)
         
@@ -412,11 +413,28 @@ class HelloassoService
           MembershipMailer.payment_failed(payment.membership).deliver_later if defined?(MembershipMailer)
         end
       end
+      
+      # Gérer les adhésions enfants groupées (has_many :memberships)
+      if payment.memberships.any?
+        payment.memberships.each do |membership|
+          old_status = membership.status
+          membership.update!(status: membership_status)
+          
+          # Envoyer email si le paiement a échoué
+          if new_status == 'failed' && old_status == 'pending'
+            MembershipMailer.payment_failed(membership).deliver_later if defined?(MembershipMailer)
+          end
+        end
+      end
 
+      membership_ids = []
+      membership_ids << payment.membership.id if payment.membership
+      membership_ids.concat(payment.memberships.pluck(:id)) if payment.memberships.any?
+      
       Rails.logger.info(
         "[HelloassoService] Payment ##{payment.id} updated to #{new_status}. " \
         "Orders: #{payment.orders.pluck(:id).join(', ')}, " \
-        "Membership: #{payment.membership&.id}"
+        "Memberships: #{membership_ids.join(', ')}"
       )
 
       payment
