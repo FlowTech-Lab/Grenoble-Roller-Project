@@ -83,6 +83,8 @@ class MembershipsController < ApplicationController
     when "teen"
       render :teen_form
     when "children"
+      # Créer un array d'objets temporaires pour fields_for
+      @children_objects = Array.new(@children_count) { OpenStruct.new }
       render :children_form
     end
   end
@@ -231,12 +233,57 @@ class MembershipsController < ApplicationController
   # Récapitulatif avant paiement groupé
   def summary
     # Les données viennent du formulaire children_form via params (GET)
-    if params[:children].present?
-      # Convertir les paramètres en hash simple avec symboles
-      @children_data = params[:children].map do |child|
-        child.to_unsafe_h.symbolize_keys
+    # Le formulaire utilise form_with url: qui génère [children][...] (sans index car un seul objet)
+    # Rails parse les crochets comme une clé littérale "[children]"
+    children_params = params[:children] || params["children"] || params["[children]"]
+    
+    Rails.logger.info("[MembershipsController] summary - params[:children]: #{params[:children].inspect}")
+    Rails.logger.info("[MembershipsController] summary - params['children']: #{params['children'].inspect}")
+    Rails.logger.info("[MembershipsController] summary - params['[children]']: #{params['[children]'].inspect}")
+    Rails.logger.info("[MembershipsController] summary - children_params: #{children_params.inspect}")
+    
+    if children_params.present?
+      # children_params est un hash avec les clés [children][...]
+      child_data = if children_params.is_a?(Hash)
+        children_params.to_unsafe_h.symbolize_keys
+      elsif children_params.is_a?(ActionController::Parameters)
+        children_params.to_unsafe_h.symbolize_keys
+      else
+        {}
       end
-      @children_count = @children_data.size
+      
+      # Reconstruire la date de naissance à partir des 3 champs séparés
+      if child_data[:child_date_of_birth].blank?
+        day = child_data[:child_date_of_birth_day]
+        month = child_data[:child_date_of_birth_month]
+        year = child_data[:child_date_of_birth_year]
+        
+        if day.present? && month.present? && year.present?
+          begin
+            child_data[:child_date_of_birth] = Date.new(year.to_i, month.to_i, day.to_i).to_s
+          rescue ArgumentError => e
+            Rails.logger.error("[MembershipsController] summary - Erreur de date: #{e.message}")
+            child_data[:child_date_of_birth] = nil
+          end
+        end
+      end
+      
+      # Vérifier que les champs essentiels sont présents
+      if child_data[:category].present? && 
+         child_data[:child_first_name].present? && 
+         child_data[:child_last_name].present? && 
+         child_data[:child_date_of_birth].present?
+        @children_data = [child_data]
+        @children_count = 1
+      else
+        Rails.logger.error("[MembershipsController] summary - Champs manquants: category=#{child_data[:category].present?}, first_name=#{child_data[:child_first_name].present?}, last_name=#{child_data[:child_last_name].present?}, date=#{child_data[:child_date_of_birth].present?}")
+        @children_data = []
+        @children_count = 0
+      end
+      
+      Rails.logger.info("[MembershipsController] summary - @children_data: #{@children_data.inspect}")
+      Rails.logger.info("[MembershipsController] summary - @children_count: #{@children_count}")
+      
       # Stocker en session pour batch_create
       session[:children_data] = @children_data
       session[:children_count] = @children_count
@@ -244,9 +291,12 @@ class MembershipsController < ApplicationController
       # Si pas de params, utiliser la session
       @children_data = session[:children_data] || []
       @children_count = session[:children_count] || @children_data.size
+      Rails.logger.info("[MembershipsController] summary - Utilisation de la session: #{@children_data.inspect}")
     end
     
     if @children_data.empty?
+      Rails.logger.error("[MembershipsController] summary - Données vides, redirection")
+      Rails.logger.error("[MembershipsController] summary - children_params était: #{children_params.inspect}")
       redirect_to new_membership_path, alert: "Données incomplètes. Veuillez recommencer."
       return
     end
@@ -666,14 +716,32 @@ class MembershipsController < ApplicationController
     # Validation des champs enfant
     child_first_name = child_params[:child_first_name]
     child_last_name = child_params[:child_last_name]
+    
+    # Reconstruire la date à partir des 3 champs (jour, mois, année) ou utiliser le champ caché
     child_date_of_birth = child_params[:child_date_of_birth]
+    if child_date_of_birth.blank?
+      # Essayer de reconstruire depuis les champs séparés
+      day = child_params[:child_date_of_birth_day]
+      month = child_params[:child_date_of_birth_month]
+      year = child_params[:child_date_of_birth_year]
+      
+      if day.present? && month.present? && year.present?
+        begin
+          child_date_of_birth = Date.new(year.to_i, month.to_i, day.to_i)
+        rescue ArgumentError => e
+          return Membership.new.tap { |m| m.errors.add(:base, "Date de naissance invalide") }
+        end
+      end
+    else
+      child_date_of_birth = Date.parse(child_date_of_birth) rescue nil
+    end
     
     if child_first_name.blank? || child_last_name.blank? || child_date_of_birth.blank?
       return Membership.new.tap { |m| m.errors.add(:base, "Tous les champs obligatoires doivent être remplis") }
     end
     
     # Calculer l'âge de l'enfant
-    child_age = ((Date.today - Date.parse(child_date_of_birth)) / 365.25).floor
+    child_age = ((Date.today - child_date_of_birth) / 365.25).floor
     
     if child_age >= 18
       return Membership.new.tap { |m| m.errors.add(:base, "L'enfant a 18 ans ou plus, il doit adhérer seul") }

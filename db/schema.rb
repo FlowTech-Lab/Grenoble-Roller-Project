@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_29_004746) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_30_194115) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -160,7 +160,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_29_004746) do
     t.index ["tshirt_variant_id"], name: "index_memberships_on_tshirt_variant_id"
     t.index ["user_id", "is_child_membership", "season"], name: "idx_on_user_id_is_child_membership_season_0aa4f85c42"
     t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season"
-    t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season_unique", unique: true
+    t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season_unique_personal", unique: true, where: "(is_child_membership = false)"
     t.index ["user_id", "status"], name: "index_memberships_on_user_id_and_status"
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end

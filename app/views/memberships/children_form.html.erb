@@ -17,14 +17,12 @@
           </div>
 
           <%= form_with url: summary_memberships_path, method: :get, local: true, data: { turbo: false } do |f| %>
-            <% @children_count.times do |index| %>
+            <%= f.fields_for "children", @children_objects do |child_form| %>
+              <% index = @children_objects.index(child_form.object) %>
               <div class="mb-5 pb-4 border-bottom <%= 'border-0 pb-0 mb-0' if index == @children_count - 1 %>">
                 <h3 class="h5 mb-3">
                   <i class="bi bi-person-heart text-liquid-warning me-2"></i>Enfant <%= index + 1 %> / <%= @children_count %>
                 </h3>
-                
-                <!-- Champs pour cet enfant (utiliser fields_for pour un array) -->
-                <%= f.fields_for "children[]", OpenStruct.new do |child_form| %>
                   <!-- Étape 1 : Choix de la catégorie -->
                   <div class="mb-4">
                     <h4 class="h6 mb-3">1. Choisissez l'adhésion</h4>
@@ -53,60 +51,10 @@
                     </div>
                   </div>
 
-                  <!-- Étape 2 : Sélection T-shirt -->
-                  <div class="mb-4">
-                    <h4 class="h6 mb-3">
-                      <i class="bi bi-tshirt me-2 text-liquid-primary"></i>T-shirt Grenoble Roller (optionnel)
-                    </h4>
-                    
-                    <% if @tshirt_variants.any? %>
-                      <div class="row g-2">
-                        <% @tshirt_variants.each do |tshirt_data| %>
-                          <% variant = tshirt_data[:variant] %>
-                          <% size = tshirt_data[:size] %>
-                          
-                          <div class="col-6 col-md-4 col-lg-3">
-                            <div class="card card-product card-liquid rounded-liquid h-100" 
-                                 style="cursor: pointer;"
-                                 data-tshirt-variant-id="<%= variant.id %>"
-                                 data-child-index="<%= index %>"
-                                 onclick="selectTshirt(<%= variant.id %>, <%= index %>)">
-                              <div class="card-product-image-wrapper" style="height: 120px;">
-                                <div class="card-product-image">
-                                  <% if variant.image.attached? %>
-                                    <%= image_tag variant.image, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
-                                  <% elsif variant.image_url.present? %>
-                                    <%= image_tag variant.image_url, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
-                                  <% else %>
-                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                                      <i class="bi bi-tshirt fs-4 text-muted"></i>
-                                    </div>
-                                  <% end %>
-                                </div>
-                                <% if variant.stock_qty > 0 %>
-                                  <span class="badge badge-liquid-success badge-stock" style="font-size: 0.7rem;">En stock</span>
-                                <% else %>
-                                  <span class="badge badge-liquid-danger badge-stock" style="font-size: 0.7rem;">Rupture</span>
-                                <% end %>
-                              </div>
-                              <div class="card-body p-2">
-                                <h6 class="product-title mb-1" style="font-size: 0.85rem;">Taille <%= size %></h6>
-                                <p class="product-price mb-0" style="font-size: 0.9rem; font-weight: bold;">
-                                  <%= number_to_currency(14.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        <% end %>
-                      </div>
-                      
-                      <%= child_form.hidden_field :tshirt_variant_id, id: "selected_tshirt_variant_id_#{index}", value: "" %>
-                    <% else %>
-                      <p class="text-muted small">Aucun T-shirt disponible pour le moment.</p>
-                    <% end %>
-                  </div>
+                  <!-- Étape 2 : Sélection T-shirt (TEMPORAIREMENT DÉSACTIVÉ) -->
+                  <%#= render partial: 'tshirt_selection' %>
 
-                  <!-- Étape 3 : Informations enfant -->
+                  <!-- Étape 2 : Informations enfant -->
                   <div class="mb-4">
                     <h4 class="h6 mb-3">2. Informations de l'enfant</h4>
                     <div class="row g-3">
@@ -125,24 +73,57 @@
                             placeholder: "Nom" %>
                       </div>
                       <div class="col-md-6">
-                        <%= child_form.label :child_date_of_birth, "Date de naissance de l'enfant *", class: "form-label" do %>
-                          <i class="bi bi-calendar3 me-1"></i>Date de naissance de l'enfant
-                        <% end %>
-                        <%= child_form.date_field :child_date_of_birth, 
-                            class: "form-control", 
-                            required: true,
-                            max: Date.today,
-                            min: Date.today - 18.years,
-                            placeholder: "JJ/MM/AAAA",
-                            onchange: "checkChildAge(#{index})" %>
+                        <label class="form-label">
+                          <i class="bi bi-calendar3 me-1"></i>Date de naissance de l'enfant *
+                        </label>
+                        <div class="row g-2">
+                          <div class="col-4">
+                            <%= child_form.select :child_date_of_birth_day, 
+                                options_for_select((1..31).map { |d| [d, d] }), 
+                                { prompt: "Jour", include_blank: true },
+                                { 
+                                  class: "form-select", 
+                                  id: "child_date_of_birth_day_#{index}",
+                                  required: true,
+                                  onchange: "updateChildDateOfBirth(#{index})"
+                                } %>
+                          </div>
+                          <div class="col-4">
+                            <%= child_form.select :child_date_of_birth_month, 
+                                options_for_select([
+                                  ["Janvier", 1], ["Février", 2], ["Mars", 3], ["Avril", 4],
+                                  ["Mai", 5], ["Juin", 6], ["Juillet", 7], ["Août", 8],
+                                  ["Septembre", 9], ["Octobre", 10], ["Novembre", 11], ["Décembre", 12]
+                                ]), 
+                                { prompt: "Mois", include_blank: true },
+                                { 
+                                  class: "form-select", 
+                                  id: "child_date_of_birth_month_#{index}",
+                                  required: true,
+                                  onchange: "updateChildDateOfBirth(#{index})"
+                                } %>
+                          </div>
+                          <div class="col-4">
+                            <%= child_form.select :child_date_of_birth_year, 
+                                options_for_select(Date.today.year.downto(Date.today.year - 18).map { |y| [y, y] }), 
+                                { prompt: "Année", include_blank: true },
+                                { 
+                                  class: "form-select", 
+                                  id: "child_date_of_birth_year_#{index}",
+                                  required: true,
+                                  onchange: "updateChildDateOfBirth(#{index})"
+                                } %>
+                          </div>
+                        </div>
+                        <%= child_form.hidden_field :child_date_of_birth, id: "child_date_of_birth_#{index}" %>
                         <div class="form-text small">
-                          <i class="bi bi-info-circle me-1"></i>Format : JJ/MM/AAAA (ex: 15/03/2015). L'âge sera calculé automatiquement.
+                          <i class="bi bi-info-circle me-1"></i>L'âge sera calculé automatiquement à partir de la date sélectionnée.
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Étape 4 : Autorisation parentale (si < 16 ans) -->
+                  <!-- Étape 3 : Autorisation parentale (si < 16 ans) -->
                   <div class="mb-4" id="parent_authorization_section_<%= index %>" style="display: none;">
                     <h4 class="h6 mb-3">3. Autorisation parentale</h4>
                     <div class="alert alert-warning">
@@ -166,13 +147,12 @@
                     </div>
                   </div>
 
-                  <!-- Étape 5 : Santé -->
+                  <!-- Étape 4 : Santé -->
                   <div class="mb-4">
                     <h4 class="h6 mb-3">4. Questionnaire de santé</h4>
                     <div class="form-check mb-3">
                       <%= child_form.radio_button :has_health_issues, "0", 
-                          { class: "form-check-input", id: "health_ok_#{index}", checked: true }, 
-                          "0", "1" %>
+                          { class: "form-check-input", id: "health_ok_#{index}", checked: true } %>
                       <label class="form-check-label" for="health_ok_<%= index %>">
                         <strong>L'enfant n'a pas de problèmes de santé</strong>
                         <p class="text-muted small mb-0">Une attestation parentale de santé suffit (valable 3 ans)</p>
@@ -180,8 +160,7 @@
                     </div>
                     <div class="form-check">
                       <%= child_form.radio_button :has_health_issues, "1", 
-                          { class: "form-check-input", id: "health_issues_#{index}" }, 
-                          "1", "0" %>
+                          { class: "form-check-input", id: "health_issues_#{index}" } %>
                       <label class="form-check-label" for="health_issues_<%= index %>">
                         <strong>L'enfant a des problèmes de santé</strong>
                         <p class="text-muted small mb-0">Un certificat médical sera requis (valable 6 mois)</p>
@@ -189,7 +168,7 @@
                     </div>
                   </div>
 
-                  <!-- Étape 6 : Options -->
+                  <!-- Étape 5 : Options -->
                   <div class="mb-4">
                     <h4 class="h6 mb-3">5. Options</h4>
                     <div class="form-check mb-3">
@@ -202,7 +181,7 @@
                     </div>
                     <div class="form-check">
                       <%= child_form.check_box :wants_email_info, 
-                          { class: "form-check-input", id: "wants_email_info_<%= index %>", checked: true }, 
+                          { class: "form-check-input", id: "wants_email_info_#{index}", checked: true }, 
                           "1", "0" %>
                       <label class="form-check-label" for="wants_email_info_<%= index %>">
                         Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
@@ -210,7 +189,7 @@
                     </div>
                   </div>
 
-                  <!-- Étape 7 : Consentements -->
+                  <!-- Étape 6 : Consentements -->
                   <div class="mb-4">
                     <h4 class="h6 mb-3">6. Consentements</h4>
                     <div class="form-check mb-3">
@@ -238,7 +217,6 @@
                       </label>
                     </div>
                   </div>
-                <% end %>
               </div>
             <% end %>
 
@@ -247,7 +225,10 @@
               <%= link_to new_membership_path, class: "btn btn-outline-secondary" do %>
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
-              <%= f.submit "Voir le récapitulatif", class: "btn btn-liquid-warning btn-lg" %>
+              <%= f.submit "Voir le récapitulatif", 
+                  class: "btn btn-liquid-warning btn-lg", 
+                  id: "submit-summary-btn",
+                  disabled: true %>
             </div>
           <% end %>
         </div>
@@ -257,7 +238,8 @@
 </div>
 
 <script>
-  function selectTshirt(variantId, childIndex) {
+  <%# Fonction T-shirt désactivée temporairement %>
+  <%# function selectTshirt(variantId, childIndex) {
     // Désélectionner toutes les cards pour cet enfant
     document.querySelectorAll(`[data-child-index="${childIndex}"]`).forEach(card => {
       card.classList.remove('border-primary', 'border-3');
@@ -271,19 +253,40 @@
       selectedCard.classList.add('border-primary', 'border-3');
       document.getElementById(`selected_tshirt_variant_id_${childIndex}`).value = variantId;
     }
+  } %>
+  
+  // Mettre à jour le champ caché date_of_birth à partir des 3 sélecteurs
+  function updateChildDateOfBirth(index) {
+    const day = document.getElementById(`child_date_of_birth_day_${index}`).value;
+    const month = document.getElementById(`child_date_of_birth_month_${index}`).value;
+    const year = document.getElementById(`child_date_of_birth_year_${index}`).value;
+    const hiddenField = document.getElementById(`child_date_of_birth_${index}`);
+    
+    if (day && month && year) {
+      // Format: YYYY-MM-DD pour le champ caché
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      hiddenField.value = dateStr;
+      checkChildAge(index);
+    } else {
+      hiddenField.value = '';
+      validateForm();
+    }
   }
   
   function checkChildAge(index) {
-    const dateOfBirthField = document.querySelector(`input[name="children[${index}][child_date_of_birth]"]`);
+    const day = document.getElementById(`child_date_of_birth_day_${index}`).value;
+    const month = document.getElementById(`child_date_of_birth_month_${index}`).value;
+    const year = document.getElementById(`child_date_of_birth_year_${index}`).value;
     const authorizationSection = document.getElementById(`parent_authorization_section_${index}`);
     const authorizationCheckbox = document.getElementById(`parent_authorization_${index}`);
     
-    if (!dateOfBirthField || !dateOfBirthField.value) {
+    if (!day || !month || !year) {
       if (authorizationSection) authorizationSection.style.display = 'none';
+      validateForm();
       return;
     }
     
-    const birthDate = new Date(dateOfBirthField.value);
+    const birthDate = new Date(year, month - 1, day); // month est 0-indexed en JS
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -305,6 +308,197 @@
         }
       }
     }
+    
+    validateForm();
   }
+  
+  // Validation du formulaire pour activer/désactiver le bouton
+  function validateForm() {
+    const submitBtn = document.getElementById('submit-summary-btn');
+    if (!submitBtn) {
+      console.error('Bouton submit-summary-btn introuvable');
+      return;
+    }
+    
+    // Utiliser une variable globale ou la récupérer depuis le DOM
+    const childrenCount = window.childrenFormCount || <%= @children_count %>;
+    window.childrenFormCount = childrenCount; // Stocker pour éviter les redéclarations
+    let allValid = true;
+    let debugInfo = [];
+    
+    for (let i = 0; i < childrenCount; i++) {
+      // Les noms de champs sont [children][...] (sans index car fields_for avec un seul objet)
+      // Category: chercher par name ou par ID
+      const category = document.querySelector(`input[name="[children][category]"]:checked`) ||
+                       document.querySelector(`input[id^="category_"][id$="_${i}"]:checked`);
+      
+      // Prénom et nom: utiliser les noms exacts [children][...]
+      const firstName = document.querySelector(`input[name="[children][child_first_name]"]`) ||
+                        document.querySelector(`input[id*="child_first_name"]`);
+      
+      const lastName = document.querySelector(`input[name="[children][child_last_name]"]`) ||
+                       document.querySelector(`input[id*="child_last_name"]`);
+      
+      // Date de naissance: vérifier les 3 sélecteurs (jour, mois, année)
+      const dateOfBirthDay = document.getElementById(`child_date_of_birth_day_${i}`);
+      const dateOfBirthMonth = document.getElementById(`child_date_of_birth_month_${i}`);
+      const dateOfBirthYear = document.getElementById(`child_date_of_birth_year_${i}`);
+      const dateOfBirth = (dateOfBirthDay && dateOfBirthDay.value && 
+                          dateOfBirthMonth && dateOfBirthMonth.value && 
+                          dateOfBirthYear && dateOfBirthYear.value) ? 
+                          { value: `${dateOfBirthYear.value}-${dateOfBirthMonth.value}-${dateOfBirthDay.value}` } : null;
+      
+      // Checkboxes avec IDs explicites
+      const rgpdConsent = document.querySelector(`input[id="rgpd_consent_${i}"]:checked`) ||
+                          document.querySelector(`input[name="[children][rgpd_consent]"]:checked`);
+      const legalNotices = document.querySelector(`input[id="legal_notices_accepted_${i}"]:checked`) ||
+                           document.querySelector(`input[name="[children][legal_notices_accepted]"]:checked`);
+      
+      debugInfo.push({
+        index: i,
+        category: category ? `OK (${category.name || category.id})` : 'MANQUANT',
+        firstName: firstName ? (firstName.value.trim() ? `OK (${firstName.name || firstName.id})` : `VIDE (${firstName.name || firstName.id})`) : 'MANQUANT',
+        lastName: lastName ? (lastName.value.trim() ? `OK (${lastName.name || lastName.id})` : `VIDE (${lastName.name || lastName.id})`) : 'MANQUANT',
+        dateOfBirth: dateOfBirth ? (dateOfBirth.value ? `OK (${dateOfBirth.name || dateOfBirth.id})` : `VIDE (${dateOfBirth.name || dateOfBirth.id})`) : 'MANQUANT',
+        rgpdConsent: rgpdConsent ? `OK (${rgpdConsent.name || rgpdConsent.id})` : 'MANQUANT',
+        legalNotices: legalNotices ? `OK (${legalNotices.name || legalNotices.id})` : 'MANQUANT'
+      });
+      
+      // Vérifier si l'enfant a moins de 16 ans et si l'autorisation parentale est requise
+      let parentAuthRequired = false;
+      if (dateOfBirthDay && dateOfBirthDay.value && dateOfBirthMonth && dateOfBirthMonth.value && dateOfBirthYear && dateOfBirthYear.value) {
+        const birthDate = new Date(dateOfBirthYear.value, dateOfBirthMonth.value - 1, dateOfBirthDay.value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        if (age < 16) {
+          parentAuthRequired = true;
+        }
+      }
+      
+      const parentAuth = document.querySelector(`input[id="parent_authorization_${i}"]:checked`);
+      
+      // Validation des champs requis
+      if (!category || !firstName || !firstName.value.trim() || !lastName || !lastName.value.trim() || 
+          !dateOfBirth || !dateOfBirth.value || !rgpdConsent || !legalNotices) {
+        allValid = false;
+        console.log(`Enfant ${i + 1}: Champs manquants`, debugInfo[i]);
+        break;
+      }
+      
+      // Si l'enfant a moins de 16 ans, l'autorisation parentale est requise
+      if (parentAuthRequired && !parentAuth) {
+        allValid = false;
+        console.log(`Enfant ${i + 1}: Autorisation parentale requise mais manquante`);
+        break;
+      }
+    }
+    
+    console.log('Validation:', allValid ? 'VALIDÉ' : 'INVALIDE', debugInfo);
+    
+    // Activer/désactiver le bouton
+    submitBtn.disabled = !allValid;
+    if (allValid) {
+      submitBtn.classList.remove('disabled');
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
+    } else {
+      submitBtn.classList.add('disabled');
+      submitBtn.style.opacity = '0.6';
+      submitBtn.style.cursor = 'not-allowed';
+    }
+  }
+  
+  // Initialisation (éviter les redéclarations avec Turbo)
+  function initChildrenForm() {
+    // Éviter la double initialisation
+    if (window.childrenFormInitialized) {
+      return;
+    }
+    window.childrenFormInitialized = true;
+    
+    // Attendre que le DOM soit complètement chargé
+    const init = () => {
+      const form = document.querySelector('form[action*="summary"]');
+      if (!form) {
+        console.error('Formulaire introuvable');
+        return;
+      }
+      
+      console.log('Formulaire trouvé, initialisation de la validation...');
+      
+      // Stocker le nombre d'enfants globalement
+      const childrenCount = <%= @children_count %>;
+      window.childrenFormCount = childrenCount;
+      
+      // DEBUG: Lister tous les noms de champs pour comprendre la structure
+      const allInputs = form.querySelectorAll('input, select, textarea');
+      console.log('=== TOUS LES CHAMPS DU FORMULAIRE ===');
+      console.log(`Total de champs trouvés: ${allInputs.length}`);
+      allInputs.forEach((input, idx) => {
+        if (input.name || input.id) {
+          console.log(`[${idx}] name="${input.name || 'N/A'}", type="${input.type || 'N/A'}", id="${input.id || 'N/A'}", value="${input.value || ''}"`);
+        }
+      });
+      console.log('=====================================');
+      
+      // Écouter tous les événements de changement sur le formulaire
+      form.addEventListener('change', function(e) {
+        if (e.target.name && !e.target.name.includes('_method') && !e.target.name.includes('authenticity_token')) {
+          console.log('Changement détecté:', e.target.name, e.target.id);
+          validateForm();
+        }
+      });
+      form.addEventListener('input', validateForm);
+      form.addEventListener('keyup', validateForm);
+      
+      // Validation initiale après un délai pour laisser le DOM se charger complètement
+      setTimeout(() => {
+        validateForm();
+        // Pour chaque enfant, vérifier l'âge au chargement
+        for (let i = 0; i < childrenCount; i++) {
+          const dateOfBirthDay = document.getElementById(`child_date_of_birth_day_${i}`);
+          const dateOfBirthMonth = document.getElementById(`child_date_of_birth_month_${i}`);
+          const dateOfBirthYear = document.getElementById(`child_date_of_birth_year_${i}`);
+          
+          if (dateOfBirthDay) {
+            dateOfBirthDay.addEventListener('change', function() {
+              updateChildDateOfBirth(i);
+            });
+          }
+          if (dateOfBirthMonth) {
+            dateOfBirthMonth.addEventListener('change', function() {
+              updateChildDateOfBirth(i);
+            });
+          }
+          if (dateOfBirthYear) {
+            dateOfBirthYear.addEventListener('change', function() {
+              updateChildDateOfBirth(i);
+            });
+          }
+        }
+      }, 200);
+    };
+    
+    // Attendre que le DOM soit prêt
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      // Si déjà chargé, attendre un peu pour que les champs soient rendus
+      setTimeout(init, 50);
+    }
+  }
+  
+  // Initialiser
+  initChildrenForm();
+  
+  // Réinitialiser lors des navigations Turbo
+  document.addEventListener('turbo:load', function() {
+    window.childrenFormInitialized = false;
+    setTimeout(initChildrenForm, 100);
+  });
 </script>
 
