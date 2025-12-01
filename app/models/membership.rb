@@ -2,6 +2,9 @@ class Membership < ApplicationRecord
   belongs_to :user
   belongs_to :payment, optional: true
   belongs_to :tshirt_variant, class_name: "ProductVariant", optional: true
+  
+  # Certificat médical (si requis par le questionnaire de santé)
+  has_one_attached :medical_certificate
 
   enum :status, {
     pending: 0,

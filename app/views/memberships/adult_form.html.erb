@@ -1,156 +1,497 @@
+<% 
+  # Définir l'étape courante (pour le stepper)
+  current_step = 1
+  total_steps = 6
+%>
+
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
+      <!-- HERO SECTION -->
+      <div class="hero-form">
+        <div class="text-center">
+          <div class="hero-icon">👤</div>
+          <h1 class="hero-title">MON ADHÉSION</h1>
+          <p class="hero-subtitle">Rejoignez Grenoble Roller et profitez de tous les avantages</p>
+          
+          <div class="hero-badges">
+            <span class="badge">
+              <i class="bi bi-calendar-event me-1"></i>
+              Saison <%= @season %>
+            </span>
+            <span class="badge">
+              <i class="bi bi-calendar-range me-1"></i>
+              <%= l(@start_date, format: :short) %> → <%= l(@end_date, format: :short) %>
+            </span>
+          </div>
+          
+          <div class="hero-progress">
+            <div class="progress-text">
+              <span>Étape <%= current_step %>/<%= total_steps %> — Catégorie</span>
+              <span><%= (current_step.to_f / total_steps * 100).round %>% complété</span>
+            </div>
+            <div class="progress-bar-custom">
+              <div class="progress-fill green" style="width: <%= (current_step.to_f / total_steps * 100) %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPPER -->
+      <%= render partial: 'form_stepper', locals: { form_type: 'adult', current_step: current_step } %>
+
+      <!-- MAIN FORM -->
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
-          <!-- Header -->
-          <div class="text-center mb-4 pb-3 border-bottom">
-            <h1 class="h4 mb-2">
-              <i class="bi bi-person-badge text-liquid-primary me-2"></i>ADHÉSION ADULTE (18 ans et +)
-            </h1>
-            <p class="text-muted small mb-0">
-              Saison <%= @season %> - Valable du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
-            </p>
-          </div>
-
-          <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+          <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "adult_membership_form", multipart: true do |f| %>
             <%= f.hidden_field :type, value: "adult" %>
-            <!-- Étape 1 : Choix de la catégorie -->
-            <div class="mb-4">
-              <h3 class="h5 mb-3">1. Choisissez votre adhésion</h3>
+            
+            <!-- ÉTAPE 1 : CATÉGORIE -->
+            <div class="form-section" id="step-category">
+              <h3 class="section-title">
+                <span class="section-number">1</span>
+                Choisissez votre adhésion
+              </h3>
+              <p class="section-intro">Sélectionnez la formule qui vous correspond</p>
+              
               <div class="row g-3">
                 <% @categories.each do |key, cat| %>
                   <div class="col-md-6">
-                    <div class="card card-liquid h-100" style="background: var(--liquid-glass-bg); border: 2px solid var(--card-border-color);">
-                      <div class="card-body">
-                        <div class="form-check">
-                          <%= f.radio_button :category, key, 
-                              { class: "form-check-input", id: "category_#{key}", required: true } %>
-                          <label class="form-check-label w-100" for="category_<%= key %>">
-                            <strong><%= cat[:name] %></strong>
-                            <p class="text-muted small mb-2"><%= cat[:description] %></p>
-                            <p class="mb-0">
-                              <strong class="text-liquid-primary">
-                                <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-                              </strong>
-                            </p>
-                          </label>
-                        </div>
+                    <label for="category_<%= key %>" class="category-card <%= 'selected' if key == :standard %>" onclick="selectCategory('<%= key %>')">
+                      <div class="category-icon">
+                        <%= key == :standard ? '👤' : '🎓' %>
                       </div>
-                    </div>
+                      <div class="category-title"><%= cat[:name] %></div>
+                      <div class="category-description"><%= cat[:description] %></div>
+                      <div class="category-price">
+                        <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                      </div>
+                      <% if key == :standard %>
+                        <span class="category-badge">
+                          <i class="bi bi-star-fill me-1"></i>Most Popular
+                        </span>
+                      <% end %>
+                      <div class="category-select">
+                        <%= f.radio_button :category, key, 
+                            { class: "form-check-input", id: "category_#{key}", required: true, onchange: "updateCategorySelection()" } %>
+                        <span id="category_label_<%= key %>">Sélectionner</span>
+                      </div>
+                      <% if key == :standard %>
+                        <div class="mt-3 pt-3 border-top">
+                          <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="with_ffrs_checkbox" onchange="toggleFFRS()">
+                            <label class="form-check-label" for="with_ffrs_checkbox">
+                              Inclure licence FFRS <strong class="text-liquid-primary">+4,55€</strong>
+                            </label>
+                          </div>
+                        </div>
+                      <% end %>
+                    </label>
                   </div>
                 <% end %>
               </div>
             </div>
 
-            <!-- Étape 2 : Sélection T-shirt (TEMPORAIREMENT DÉSACTIVÉ) -->
-            <%#= render partial: 'tshirt_selection' %>
-
-            <!-- Étape 3 : Informations personnelles -->
-            <div class="mb-4">
-              <h3 class="h5 mb-3">2. Vos informations</h3>
+            <!-- ÉTAPE 2 : INFORMATIONS -->
+            <div class="form-section" id="step-info">
+              <h3 class="section-title">
+                <span class="section-number">2</span>
+                Vos informations
+              </h3>
+              <p class="section-intro">Vos données aident l'association à mieux vous connaître</p>
+              
               <div class="row g-3">
                 <div class="col-md-6">
-                  <%= f.label :first_name, "Prénom *", class: "form-label" %>
+                  <%= f.label :first_name, "Prénom *", class: "form-label fw-bold" %>
                   <%= f.text_field :first_name, 
-                      class: "form-control", 
+                      class: "form-control form-control-lg", 
                       value: @user.first_name,
-                      required: true %>
-                </div>
-                <div class="col-md-6">
-                  <%= f.label :last_name, "Nom *", class: "form-label" %>
-                  <%= f.text_field :last_name, 
-                      class: "form-control", 
-                      value: @user.last_name,
-                      required: true %>
-                </div>
-                <div class="col-md-6">
-                  <%= f.label :date_of_birth, "Date de naissance *", class: "form-label" do %>
-                    <i class="bi bi-calendar3 me-1"></i>Date de naissance
-                  <% end %>
-                  <%= f.date_field :date_of_birth, 
-                      class: "form-control", 
-                      value: @user.date_of_birth,
                       required: true,
-                      max: Date.today,
-                      min: Date.today - 120.years,
-                      placeholder: "JJ/MM/AAAA" %>
-                  <div class="form-text small">
-                    <i class="bi bi-info-circle me-1"></i>Format : JJ/MM/AAAA (ex: 15/03/1990)
+                      onblur: "validateField(this)" %>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :last_name, "Nom *", class: "form-label fw-bold" %>
+                  <%= f.text_field :last_name, 
+                      class: "form-control form-control-lg", 
+                      value: @user.last_name,
+                      required: true,
+                      onblur: "validateField(this)" %>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-6">
+                  <%= f.label :email, "Email *", class: "form-label fw-bold" %>
+                  <%= f.email_field :email, 
+                      class: "form-control form-control-lg", 
+                      value: @user.email,
+                      required: true,
+                      readonly: true,
+                      style: "background-color: #f8f9fa;" %>
+                  <div class="form-text small mt-1">
+                    <i class="bi bi-check-circle text-success me-1"></i>
+                    Confirmé : <%= @user.email %>
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <%= f.label :phone, "Téléphone *", class: "form-label" %>
+                  <%= f.label :phone, "Téléphone *", class: "form-label fw-bold" %>
                   <%= f.telephone_field :phone, 
-                      class: "form-control", 
+                      class: "form-control form-control-lg", 
                       value: @user.phone,
-                      required: true %>
+                      required: true,
+                      placeholder: "+33 ou 06XX",
+                      onblur: "validateField(this)" %>
+                  <div class="form-text small mt-1">
+                    Format : +33 ou 06XX
+                  </div>
+                  <div class="invalid-feedback"></div>
                 </div>
-                <div class="col-12">
-                  <%= f.label :email, "Email *", class: "form-label" %>
-                  <%= f.email_field :email, 
-                      class: "form-control", 
-                      value: @user.email,
-                      required: true %>
+                <div class="col-md-12">
+                  <%= f.label :date_of_birth, "Date de naissance *", class: "form-label fw-bold" do %>
+                    <i class="bi bi-calendar3 me-1"></i>Date de naissance
+                  <% end %>
+                  <div class="row g-2">
+                    <div class="col-4">
+                      <%= f.select :date_of_birth_day, 
+                          options_for_select((1..31).map { |d| [d, d] }, @user.date_of_birth&.day), 
+                          { prompt: "Jour", include_blank: true },
+                          { 
+                            class: "form-select form-select-lg", 
+                            id: "date_of_birth_day",
+                            required: true,
+                            onchange: "updateAdultDateOfBirth()"
+                          } %>
+                    </div>
+                    <div class="col-4">
+                      <%= f.select :date_of_birth_month, 
+                          options_for_select([
+                            ["Janvier", 1], ["Février", 2], ["Mars", 3], ["Avril", 4],
+                            ["Mai", 5], ["Juin", 6], ["Juillet", 7], ["Août", 8],
+                            ["Septembre", 9], ["Octobre", 10], ["Novembre", 11], ["Décembre", 12]
+                          ], @user.date_of_birth&.month), 
+                          { prompt: "Mois", include_blank: true },
+                          { 
+                            class: "form-select form-select-lg", 
+                            id: "date_of_birth_month",
+                            required: true,
+                            onchange: "updateAdultDateOfBirth()"
+                          } %>
+                    </div>
+                    <div class="col-4">
+                      <%= f.select :date_of_birth_year, 
+                          options_for_select(Date.today.year.downto(Date.today.year - 120).map { |y| [y, y] }, @user.date_of_birth&.year), 
+                          { prompt: "Année", include_blank: true },
+                          { 
+                            class: "form-select form-select-lg", 
+                            id: "date_of_birth_year",
+                            required: true,
+                            onchange: "updateAdultDateOfBirth()"
+                          } %>
+                    </div>
+                  </div>
+                  <%= f.hidden_field :date_of_birth, id: "date_of_birth" %>
+                  <div class="age-display mt-2" id="adult_age_display" style="display: none;">
+                    <i class="bi bi-info-circle me-1"></i>Âge : <strong id="adult_age_value"></strong> ans
+                  </div>
+                  <div class="form-text small mt-2">
+                    <i class="bi bi-info-circle me-1"></i>L'âge sera calculé automatiquement à partir de la date sélectionnée.
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Étape 4 : Coordonnées -->
-            <div class="mb-4">
-              <h3 class="h5 mb-3">3. Vos coordonnées</h3>
+            <!-- ÉTAPE 3 : COORDONNÉES -->
+            <div class="form-section" id="step-address">
+              <h3 class="section-title">
+                <span class="section-number">3</span>
+                Vos coordonnées
+              </h3>
+              
               <div class="row g-3">
                 <div class="col-12">
-                  <%= f.label :address, "Adresse *", class: "form-label" %>
+                  <%= f.label :address, "Adresse *", class: "form-label fw-bold" %>
                   <%= f.text_field :address, 
-                      class: "form-control", 
+                      class: "form-control form-control-lg", 
                       value: @user.address,
-                      required: true %>
+                      required: true,
+                      placeholder: "Numéro et nom de rue",
+                      onblur: "validateField(this)" %>
+                  <div class="form-text small mt-1">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Suggestions d'adresses disponibles
+                  </div>
+                  <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-6">
-                  <%= f.label :city, "Ville *", class: "form-label" %>
+                  <%= f.label :city, "Ville *", class: "form-label fw-bold" %>
                   <%= f.text_field :city, 
-                      class: "form-control", 
+                      class: "form-control form-control-lg", 
                       value: @user.city,
-                      required: true %>
+                      required: true,
+                      onblur: "validateField(this)" %>
+                  <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-6">
-                  <%= f.label :postal_code, "Code postal *", class: "form-label" %>
+                  <%= f.label :postal_code, "Code postal *", class: "form-label fw-bold" %>
                   <%= f.text_field :postal_code, 
-                      class: "form-control", 
+                      class: "form-control form-control-lg", 
                       value: @user.postal_code,
-                      required: true %>
+                      required: true,
+                      pattern: "[0-9]{5}",
+                      placeholder: "38000",
+                      onblur: "validateField(this)" %>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-12">
+                  <%= f.label :country, "Pays", class: "form-label fw-bold" %>
+                  <%= f.select :country, 
+                      options_for_select([["France", "FR"]], @user.country || "FR"),
+                      {},
+                      { class: "form-select form-select-lg" } %>
                 </div>
               </div>
             </div>
 
-            <!-- Étape 5 : Options -->
-            <div class="mb-4">
-              <h3 class="h5 mb-3">4. Options</h3>
-              <div class="form-check mb-3">
-                <%= f.check_box :wants_whatsapp, 
-                    { class: "form-check-input", id: "wants_whatsapp" }, 
-                    "1", "0" %>
-                <label class="form-check-label" for="wants_whatsapp">
-                  Je souhaite rejoindre la communauté WhatsApp
-                </label>
+            <!-- ÉTAPE 4 : QUESTIONNAIRE SANTÉ -->
+            <div class="form-section" id="step-health">
+              <h3 class="section-title">
+                <span class="section-number">4</span>
+                Questionnaire de santé
+              </h3>
+              <p class="section-intro">Répondez aux questions suivantes concernant votre santé</p>
+              
+              <div class="health-questions">
+                <% health_questions = [
+                  { id: 'health_q1', text: "Un membre de votre famille a-t-il eu une mort subite ou inexpliquée ?" },
+                  { id: 'health_q2', text: "Avez-vous ressenti une douleur dans la poitrine, des palpitations ou un essoufflement lors d'un effort ?" },
+                  { id: 'health_q3', text: "Avez-vous eu un épisode de respiration sifflante (asthme) ?" },
+                  { id: 'health_q4', text: "Avez-vous eu une perte de connaissance ou une chute suite à un malaise ?" },
+                  { id: 'health_q5', text: "Si vous avez arrêté le sport 30 jours+, avez-vous repris sans l'avis d'un médecin ?" },
+                  { id: 'health_q6', text: "Avez-vous débuté un traitement médical de longue durée ?" },
+                  { id: 'health_q7', text: "Avez-vous des problèmes de santé survenus ces 12 derniers mois ?" },
+                  { id: 'health_q8', text: "Votre pratique sportive est-elle interrompue pour des raisons de santé ?" },
+                  { id: 'health_q9', text: "Pensez-vous avoir besoin d'un avis médical pour continuer le sport ?" }
+                ] %>
+                
+                <% health_questions.each_with_index do |question, index| %>
+                  <div class="health-question-item mb-3">
+                    <label class="form-label fw-bold">
+                      Q<%= index + 1 %> : <%= question[:text] %>
+                    </label>
+                    <div class="d-flex gap-4 mt-2">
+                      <div class="form-check">
+                        <%= f.radio_button "health_question_#{index + 1}", "no", 
+                            { class: "form-check-input", id: "#{question[:id]}_no", onchange: "checkHealthQuestions()" } %>
+                        <label class="form-check-label" for="<%= question[:id] %>_no">
+                          Non
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <%= f.radio_button "health_question_#{index + 1}", "yes", 
+                            { class: "form-check-input", id: "#{question[:id]}_yes", onchange: "checkHealthQuestions()" } %>
+                        <label class="form-check-label" for="<%= question[:id] %>_yes">
+                          Oui
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
               </div>
-              <div class="form-check">
-                <%= f.check_box :wants_email_info, 
-                    { class: "form-check-input", id: "wants_email_info", checked: true }, 
-                    "1", "0" %>
-                <label class="form-check-label" for="wants_email_info">
-                  Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
-                </label>
+              
+              <!-- Upload certificat médical (affiché si au moins une réponse = OUI) -->
+              <div id="health_certificate_upload" class="mt-4" style="display: none;">
+                <div class="alert alert-warning mb-3">
+                  <i class="bi bi-exclamation-triangle me-2"></i>
+                  <strong>Certificat médical requis</strong>
+                  <p class="mb-0 mt-2">Vous avez répondu "Oui" à au moins une question. Un certificat médical est obligatoire pour continuer.</p>
+                </div>
+                
+                <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 2px solid var(--card-border-color);">
+                  <div class="card-body">
+                    <label class="form-label fw-bold mb-3">
+                      <i class="bi bi-file-earmark-medical me-2"></i>
+                      Certificat médical *
+                    </label>
+                    
+                    <div class="file-upload-area" id="certificate_upload_area">
+                      <div class="file-upload-content">
+                        <i class="bi bi-cloud-upload fs-1 text-muted mb-3"></i>
+                        <p class="mb-2">
+                          <strong>Glissez-déposez votre certificat</strong> ou cliquez pour sélectionner
+                        </p>
+                        <p class="text-muted small mb-0">
+                          Formats acceptés : PDF, JPG, PNG (max 10 Mo)
+                        </p>
+                      </div>
+                      <%= f.file_field :medical_certificate, 
+                          class: "form-control d-none", 
+                          id: "medical_certificate_input",
+                          accept: ".pdf,.jpg,.jpeg,.png",
+                          onchange: "handleFileSelect(this)" %>
+                      <button type="button" class="btn btn-outline-primary mt-3" onclick="document.getElementById('medical_certificate_input').click()">
+                        <i class="bi bi-folder2-open me-2"></i>Sélectionner un fichier
+                      </button>
+                    </div>
+                    
+                    <div id="certificate_preview" class="mt-3" style="display: none;">
+                      <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
+                          <div>
+                            <strong id="certificate_filename"></strong>
+                            <small class="text-muted d-block" id="certificate_filesize"></small>
+                          </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCertificate()">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div class="form-text small mt-2">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Le certificat médical doit être valide et daté de moins de 6 mois
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="health_no_issues_info" class="alert alert-success mt-3" style="display: none;">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Parfait !</strong> Aucun problème de santé détecté. Vous pouvez continuer sans certificat médical.
               </div>
             </div>
 
-            <!-- Boutons -->
-            <div class="d-flex justify-content-between mt-4">
-              <%= link_to new_membership_path, class: "btn btn-outline-secondary" do %>
+            <!-- ÉTAPE 5 : OPTIONS -->
+            <div class="form-section" id="step-options">
+              <h3 class="section-title">
+                <span class="section-number">5</span>
+                Options
+              </h3>
+              
+              <div class="consent-group">
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :wants_whatsapp, 
+                        { class: "form-check-input", id: "wants_whatsapp" }, 
+                        "1", "0" %>
+                    <label class="form-check-label" for="wants_whatsapp">
+                      Je souhaite rejoindre la communauté WhatsApp
+                    </label>
+                  </div>
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :wants_email_info, 
+                        { class: "form-check-input", id: "wants_email_info", checked: true }, 
+                        "1", "0" %>
+                    <label class="form-check-label" for="wants_email_info">
+                      Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ÉTAPE 6 : CONSENTEMENTS -->
+            <div class="form-section" id="step-consents">
+              <h3 class="section-title">
+                <span class="section-number">6</span>
+                Consentements & Confidentialité
+              </h3>
+              <p class="section-intro">Pour finaliser votre adhésion, veuillez accepter :</p>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-file-text consent-icon text-liquid-primary"></i>
+                  Conditions d'adhésion
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :legal_notices_accepted, 
+                        { class: "form-check-input", id: "legal_notices_accepted", required: true }, 
+                        "1", "0" %>
+                    <label class="form-check-label" for="legal_notices_accepted">
+                      Je m'engage à respecter le règlement intérieur et les CGU de Grenoble Roller
+                      <%= link_to cgu_path, target: "_blank", class: "ms-2" do %>
+                        Lire les CGU <i class="bi bi-box-arrow-up-right"></i>
+                      <% end %>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-shield-lock consent-icon text-liquid-primary"></i>
+                  Données personnelles (RGPD)
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :rgpd_consent, 
+                        { class: "form-check-input", id: "rgpd_consent", required: true }, 
+                        "1", "0" %>
+                        <label class="form-check-label" for="rgpd_consent">
+                          J'autorise Grenoble Roller à collecter mes données pour l'adhésion (conservation 3 ans)
+                          <%= link_to politique_confidentialite_path, target: "_blank", class: "ms-2" do %>
+                            Politique confidentialité <i class="bi bi-box-arrow-up-right"></i>
+                          <% end %>
+                        </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-bell consent-icon text-liquid-primary"></i>
+                  Communication
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :wants_email_info, 
+                        { class: "form-check-input", id: "wants_email_info_consent", checked: true }, 
+                        "1", "0" %>
+                    <label class="form-check-label" for="wants_email_info_consent">
+                      Je souhaite recevoir des infos sur les événements et randos
+                      <small class="text-muted d-block">(Vous pouvez vous désabonner à tout moment)</small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="consent-group" id="ffrs_consent_group" style="display: none;">
+                <div class="consent-group-title">
+                  <i class="bi bi-people consent-icon text-liquid-primary"></i>
+                  Partage FFRS (Si licence)
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :ffrs_data_sharing_consent, 
+                        { class: "form-check-input", id: "ffrs_data_sharing_consent" }, 
+                        "1", "0" %>
+                        <label class="form-check-label" for="ffrs_data_sharing_consent">
+                          J'autorise le partage de mes données avec la FFRS pour la licence
+                          <%= link_to "#", class: "ms-2" do %>
+                            En savoir plus <i class="bi bi-box-arrow-up-right"></i>
+                          <% end %>
+                        </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="alert alert-success mt-3" id="all_consents_accepted" style="display: none;">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Tous les consentements acceptés</strong>
+              </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="form-navigation">
+              <%= link_to new_membership_path, class: "btn btn-outline-secondary btn-nav btn-back" do %>
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
-              <%= f.submit "Valider et payer", class: "btn btn-liquid-primary btn-lg" %>
+              <%= f.submit "Valider et payer", 
+                  class: "btn btn-liquid-primary btn-lg btn-nav",
+                  id: "submit_btn" %>
             </div>
           <% end %>
         </div>
@@ -159,3 +500,378 @@
   </div>
 </div>
 
+<script>
+  // Toggle FFRS
+  function toggleFFRS() {
+    const checkbox = document.getElementById('with_ffrs_checkbox');
+    const standardRadio = document.getElementById('category_standard');
+    const ffrsRadio = document.getElementById('category_with_ffrs');
+    
+    if (checkbox && checkbox.checked) {
+      // Si checkbox cochée, sélectionner with_ffrs
+      if (ffrsRadio) {
+        ffrsRadio.checked = true;
+        updateCategorySelection();
+      }
+    } else {
+      // Si checkbox décochée, revenir à standard
+      if (standardRadio) {
+        standardRadio.checked = true;
+        updateCategorySelection();
+      }
+    }
+  }
+  
+  // Sélection catégorie
+  function selectCategory(key) {
+    document.getElementById('category_' + key).checked = true;
+    const checkbox = document.getElementById('with_ffrs_checkbox');
+    if (checkbox) {
+      checkbox.checked = (key === 'with_ffrs');
+    }
+    updateCategorySelection();
+  }
+  
+  function updateCategorySelection() {
+    document.querySelectorAll('.category-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    
+    document.querySelectorAll('input[name="membership[category]"]:checked').forEach(radio => {
+      const card = radio.closest('.category-card');
+      if (card) {
+        card.classList.add('selected');
+        const label = card.querySelector('#category_label_' + radio.value);
+        if (label) label.textContent = 'Sélectionné';
+      }
+    });
+    
+    // Afficher/masquer consentement FFRS
+    const ffrsGroup = document.getElementById('ffrs_consent_group');
+    const selectedCategory = document.querySelector('input[name="membership[category]"]:checked')?.value;
+    if (ffrsGroup) {
+      ffrsGroup.style.display = selectedCategory === 'with_ffrs' ? 'block' : 'none';
+    }
+  }
+  
+  // Mettre à jour le champ caché date_of_birth à partir des 3 sélecteurs
+  function updateAdultDateOfBirth() {
+    const day = document.getElementById('date_of_birth_day').value;
+    const month = document.getElementById('date_of_birth_month').value;
+    const year = document.getElementById('date_of_birth_year').value;
+    const hiddenField = document.getElementById('date_of_birth');
+    
+    if (day && month && year) {
+      // Format: YYYY-MM-DD pour le champ caché
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      hiddenField.value = dateStr;
+      updateAdultAge();
+    } else {
+      hiddenField.value = '';
+      updateAdultAge();
+    }
+  }
+  
+  // Calcul âge adulte
+  function updateAdultAge() {
+    const day = document.getElementById('date_of_birth_day').value;
+    const month = document.getElementById('date_of_birth_month').value;
+    const year = document.getElementById('date_of_birth_year').value;
+    const ageDisplay = document.getElementById('adult_age_display');
+    const ageValue = document.getElementById('adult_age_value');
+    
+    if (!day || !month || !year) {
+      if (ageDisplay) ageDisplay.style.display = 'none';
+      return;
+    }
+    
+    const birthDate = new Date(year, month - 1, day); // month est 0-indexed en JS
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    if (ageValue) ageValue.textContent = age;
+    if (ageDisplay) ageDisplay.style.display = 'block';
+  }
+  
+  // Validation champ
+  function validateField(field) {
+    const value = field.value.trim();
+    const feedback = field.nextElementSibling;
+    
+    // Réinitialiser
+    field.classList.remove('is-invalid', 'is-valid');
+    if (feedback && feedback.classList.contains('invalid-feedback')) {
+      feedback.textContent = '';
+    }
+    
+    // Validation selon le type
+    if (field.hasAttribute('required') && !value) {
+      field.classList.add('is-invalid');
+      if (feedback && feedback.classList.contains('invalid-feedback')) {
+        feedback.textContent = 'Champ obligatoire';
+      }
+      return false;
+    }
+    
+    // Validation email
+    if (field.type === 'email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        field.classList.add('is-invalid');
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+          feedback.textContent = 'Email invalide';
+        }
+        return false;
+      }
+    }
+    
+    // Validation téléphone
+    if (field.type === 'tel' && value) {
+      const phoneRegex = /^(\+33|0)[1-9](\d{2}){4}$/;
+      if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+        field.classList.add('is-invalid');
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+          feedback.textContent = 'Format invalide (ex: +33 6 12 34 56 78 ou 06 12 34 56 78)';
+        }
+        return false;
+      }
+    }
+    
+    // Validation code postal
+    if (field.name && field.name.includes('postal_code') && value) {
+      const postalRegex = /^[0-9]{5}$/;
+      if (!postalRegex.test(value)) {
+        field.classList.add('is-invalid');
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+          feedback.textContent = 'Code postal invalide (5 chiffres)';
+        }
+        return false;
+      }
+    }
+    
+    // Si valide
+    if (value) {
+      field.classList.add('is-valid');
+    }
+    
+    return true;
+  }
+  
+  // Validation complète du formulaire
+  function validateForm() {
+    const form = document.getElementById('adult_membership_form');
+    if (!form) return false;
+    
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+      if (!validateField(field)) {
+        isValid = false;
+      }
+    });
+    
+    // Activer/désactiver bouton submit
+    const submitBtn = document.getElementById('submit_btn');
+    if (submitBtn) {
+      submitBtn.disabled = !isValid;
+    }
+    
+    return isValid;
+  }
+  
+  // Vérifier tous les consentements
+  function checkAllConsents() {
+    const required = ['legal_notices_accepted', 'rgpd_consent'];
+    const allChecked = required.every(id => document.getElementById(id)?.checked);
+    const allConsentsDiv = document.getElementById('all_consents_accepted');
+    if (allConsentsDiv) {
+      allConsentsDiv.style.display = allChecked ? 'block' : 'none';
+    }
+  }
+  
+  // Vérifier les réponses au questionnaire de santé
+  function checkHealthQuestions() {
+    let hasYesAnswer = false;
+    
+    // Vérifier les 9 questions
+    for (let i = 1; i <= 9; i++) {
+      const yesRadio = document.getElementById(`health_q${i}_yes`);
+      if (yesRadio && yesRadio.checked) {
+        hasYesAnswer = true;
+        break;
+      }
+    }
+    
+    const uploadDiv = document.getElementById('health_certificate_upload');
+    const noIssuesDiv = document.getElementById('health_no_issues_info');
+    const certificateInput = document.getElementById('medical_certificate_input');
+    
+    if (hasYesAnswer) {
+      // Afficher l'upload et rendre le champ requis
+      if (uploadDiv) uploadDiv.style.display = 'block';
+      if (noIssuesDiv) noIssuesDiv.style.display = 'none';
+      if (certificateInput) certificateInput.setAttribute('required', 'required');
+    } else {
+      // Masquer l'upload et retirer le required
+      if (uploadDiv) uploadDiv.style.display = 'none';
+      if (noIssuesDiv) noIssuesDiv.style.display = 'block';
+      if (certificateInput) {
+        certificateInput.removeAttribute('required');
+        certificateInput.value = '';
+        removeCertificate();
+      }
+    }
+    
+    validateForm();
+  }
+  
+  // Gérer la sélection de fichier
+  function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const maxSize = 10 * 1024 * 1024; // 10 Mo
+      
+      if (file.size > maxSize) {
+        alert('Le fichier est trop volumineux. Taille maximale : 10 Mo');
+        input.value = '';
+        return;
+      }
+      
+      // Afficher la preview
+      const preview = document.getElementById('certificate_preview');
+      const filename = document.getElementById('certificate_filename');
+      const filesize = document.getElementById('certificate_filesize');
+      const uploadArea = document.getElementById('certificate_upload_area');
+      const fileIcon = preview?.querySelector('i');
+      
+      if (preview && filename && filesize) {
+        filename.textContent = file.name;
+        filesize.textContent = formatFileSize(file.size);
+        
+        // Changer l'icône selon le type de fichier
+        if (fileIcon) {
+          if (file.type === 'application/pdf') {
+            fileIcon.className = 'bi bi-file-earmark-pdf fs-3 text-danger me-3';
+          } else if (file.type.startsWith('image/')) {
+            fileIcon.className = 'bi bi-file-earmark-image fs-3 text-primary me-3';
+          } else {
+            fileIcon.className = 'bi bi-file-earmark fs-3 text-secondary me-3';
+          }
+        }
+        
+        preview.style.display = 'block';
+        if (uploadArea) uploadArea.style.display = 'none';
+      }
+    }
+  }
+  
+  // Supprimer le certificat
+  function removeCertificate() {
+    const input = document.getElementById('medical_certificate_input');
+    const preview = document.getElementById('certificate_preview');
+    const uploadArea = document.getElementById('certificate_upload_area');
+    
+    if (input) input.value = '';
+    if (preview) preview.style.display = 'none';
+    if (uploadArea) uploadArea.style.display = 'block';
+  }
+  
+  // Formater la taille du fichier
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  // Initialisation
+  document.addEventListener('DOMContentLoaded', function() {
+    updateCategorySelection();
+    updateAdultAge(); // Vérifier au chargement si une date est déjà présente
+    checkHealthQuestions(); // Vérifier les questions de santé
+    checkAllConsents();
+    validateForm();
+    
+    // Drag & drop pour l'upload
+    const uploadArea = document.getElementById('certificate_upload_area');
+    const certificateInput = document.getElementById('medical_certificate_input');
+    
+    if (uploadArea && certificateInput) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => uploadArea.classList.add('drag-over'), false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('drag-over'), false);
+      });
+      
+      uploadArea.addEventListener('drop', handleDrop, false);
+    }
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length > 0) {
+        certificateInput.files = files;
+        handleFileSelect(certificateInput);
+      }
+    }
+    
+    // Écouter changements consentements
+    ['legal_notices_accepted', 'rgpd_consent'].forEach(id => {
+      const checkbox = document.getElementById(id);
+      if (checkbox) {
+        checkbox.addEventListener('change', function() {
+          checkAllConsents();
+          validateForm();
+        });
+      }
+    });
+    
+    // Écouter changements champs
+    const form = document.getElementById('adult_membership_form');
+    if (form) {
+      form.addEventListener('input', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+          validateField(e.target);
+          validateForm();
+        }
+      });
+      
+      form.addEventListener('change', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+          validateField(e.target);
+          validateForm();
+        }
+      });
+    }
+    
+    // Validation avant soumission
+    form?.addEventListener('submit', function(e) {
+      if (!validateForm()) {
+        e.preventDefault();
+        const firstInvalid = form.querySelector('.is-invalid');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus();
+        }
+        return false;
+      }
+    });
+  });
+</script>

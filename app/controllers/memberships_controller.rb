@@ -377,12 +377,31 @@ class MembershipsController < ApplicationController
       parent_authorization_date: child_age < 16 ? Date.today : nil,
       wants_whatsapp: membership_params[:wants_whatsapp] == "1",
       wants_email_info: membership_params[:wants_email_info] == "1",
-      health_questionnaire_status: membership_params[:has_health_issues] == "1" ? "medical_required" : "ok",
-      medical_certificate_provided: membership_params[:has_health_issues] == "1" ? false : true,
       rgpd_consent: membership_params[:rgpd_consent] == "1",
       legal_notices_accepted: membership_params[:legal_notices_accepted] == "1",
       ffrs_data_sharing_consent: membership_params[:ffrs_data_sharing_consent] == "1"
     )
+    
+    # Vérifier les réponses au questionnaire de santé (9 questions)
+    has_health_issue = false
+    (1..9).each do |i|
+      if membership_params["health_question_#{i}"] == "yes"
+        has_health_issue = true
+        break
+      end
+    end
+    
+    # Attacher le certificat médical si fourni
+    if membership_params[:medical_certificate].present?
+      @membership.medical_certificate.attach(membership_params[:medical_certificate])
+    end
+    
+    # Validation : si problème de santé détecté, certificat obligatoire
+    if has_health_issue && !@membership.medical_certificate.attached?
+      @membership.errors.add(:medical_certificate, "est obligatoire si vous avez répondu 'Oui' à au moins une question de santé")
+      redirect_to edit_membership_path(@membership), alert: "Un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
+      return
+    end
     
     redirect_to memberships_path, notice: "Adhésion de #{@membership.child_full_name} mise à jour avec succès."
   rescue => e
@@ -520,6 +539,15 @@ class MembershipsController < ApplicationController
       return
     end
 
+    # Vérifier les réponses au questionnaire de santé (9 questions)
+    has_health_issue = false
+    (1..9).each do |i|
+      if membership_params["health_question_#{i}"] == "yes"
+        has_health_issue = true
+        break
+      end
+    end
+    
     # Créer l'adhésion en pending
     membership = Membership.create!(
       user: current_user,
@@ -537,6 +565,19 @@ class MembershipsController < ApplicationController
       wants_whatsapp: membership_params[:wants_whatsapp] == "1",
       wants_email_info: membership_params[:wants_email_info] == "1"
     )
+    
+    # Attacher le certificat médical si fourni
+    if membership_params[:medical_certificate].present?
+      membership.medical_certificate.attach(membership_params[:medical_certificate])
+    end
+    
+    # Validation : si problème de santé détecté, certificat obligatoire
+    if has_health_issue && !membership.medical_certificate.attached?
+      membership.errors.add(:medical_certificate, "est obligatoire si vous avez répondu 'Oui' à au moins une question de santé")
+      membership.destroy
+      redirect_to new_membership_path(type: "adult"), alert: "Un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
+      return
+    end
 
     # Créer le paiement HelloAsso
     begin
@@ -803,12 +844,31 @@ class MembershipsController < ApplicationController
       tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
       wants_whatsapp: child_params[:wants_whatsapp] == "1",
       wants_email_info: child_params[:wants_email_info] == "1",
-      health_questionnaire_status: child_params[:has_health_issues] == "1" ? "medical_required" : "ok",
-      medical_certificate_provided: child_params[:has_health_issues] == "1" ? false : true,
       rgpd_consent: child_params[:rgpd_consent] == "1",
       legal_notices_accepted: child_params[:legal_notices_accepted] == "1",
       ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1"
     )
+    
+    # Vérifier les réponses au questionnaire de santé (9 questions)
+    has_health_issue = false
+    (1..9).each do |i|
+      if child_params["health_question_#{i}"] == "yes"
+        has_health_issue = true
+        break
+      end
+    end
+    
+    # Attacher le certificat médical si fourni
+    if child_params[:medical_certificate].present?
+      membership.medical_certificate.attach(child_params[:medical_certificate])
+    end
+    
+    # Validation : si problème de santé détecté, certificat obligatoire
+    if has_health_issue && !membership.medical_certificate.attached?
+      membership.errors.add(:medical_certificate, "est obligatoire si vous avez répondu 'Oui' à au moins une question de santé")
+      membership.destroy
+      return membership
+    end
     
     # Le Payment sera créé lors du clic sur "Payer" dans /memberships
     # Pas de création automatique ici
