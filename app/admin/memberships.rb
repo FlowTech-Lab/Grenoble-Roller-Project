@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register Membership do
+  menu priority: 4, label: "Adhésions"
+  
   includes :user, :payment, :tshirt_variant
 
   permit_params :user_id, :category, :status, :start_date, :end_date, :amount_cents, :currency,

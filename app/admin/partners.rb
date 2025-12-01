@@ -1,4 +1,6 @@
 ActiveAdmin.register Partner do
+  menu priority: 12, label: "Partenaires"
+  
   permit_params :name, :url, :logo_url, :description, :is_active
 
   scope :all, default: true

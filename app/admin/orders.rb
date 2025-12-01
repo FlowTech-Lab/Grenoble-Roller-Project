@@ -1,4 +1,6 @@
 ActiveAdmin.register Order do
+  menu priority: 5, label: "Commandes"
+  
   includes :user, :payment, :order_items
 
   permit_params :user_id, :status, :total_cents, :currency, :payment_id

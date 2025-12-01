@@ -1,4 +1,6 @@
 ActiveAdmin.register Product do
+  menu priority: 6, label: "Produits"
+  
   includes :category
 
   permit_params :category_id, :name, :slug, :description, :price_cents,

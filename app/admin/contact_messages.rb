@@ -1,4 +1,6 @@
 ActiveAdmin.register ContactMessage do
+  menu priority: 13, label: "Messages de contact"
+  
   actions :all, except: %i[new create edit update]
 
   config.filters = true
