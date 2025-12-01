@@ -17,12 +17,22 @@ class MembershipsController < ApplicationController
     @active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
   end
 
+  def choose
+    # Page de sélection : adhésion seule ou adhésion + T-shirt
+    # Cette page s'affiche avant le formulaire pour simplifier le choix
+    @is_child = params[:child] == 'true'
+    render :choose
+  end
+
   def new
     # Si paramètre check_age, calculer l'âge et rediriger
     if params[:check_age] == "true" || params[:check_age] == true
       check_age_and_redirect
       return
     end
+    
+    # Gérer le paramètre with_tshirt (depuis la page choose)
+    @with_tshirt = params[:with_tshirt] == 'true'
     
     type = params[:type] # "adult", "teen", "children", ou nil (choix initial)
     children_count = params[:count]&.to_i
@@ -73,7 +83,8 @@ class MembershipsController < ApplicationController
     @season = Membership.current_season_name
     @start_date, @end_date = Membership.current_season_dates
     @categories = get_categories
-    @tshirt_variants = get_tshirt_variants
+    @tshirt_product = Product.find_by(slug: "tshirt-grenoble-roller")
+    @tshirt_variants = @tshirt_product&.product_variants&.where(is_active: true)&.includes(option_values: :option_type)&.order(:id) || []
     @user = current_user
     
     if type == "teen"
@@ -91,6 +102,9 @@ class MembershipsController < ApplicationController
     when "teen"
       render :teen_form
     when "child"
+      # Gérer le paramètre with_tshirt (depuis la page choose ou lien direct)
+      @with_tshirt = params[:with_tshirt] == 'true'
+      
       # Formulaire pour un seul enfant (simplifié)
       @season = Membership.current_season_name
       @start_date, @end_date = Membership.current_season_dates
@@ -149,8 +163,8 @@ class MembershipsController < ApplicationController
       redirect_to new_membership_path(type: "teen")
       return
     else
-      # Rediriger vers le formulaire adulte
-      redirect_to new_membership_path(type: "adult")
+      # Rediriger vers la page de choix (adhésion seule ou avec T-shirt)
+      redirect_to choose_memberships_path
       return
     end
   end
@@ -474,23 +488,6 @@ class MembershipsController < ApplicationController
     }
   end
   
-  def get_tshirt_variants
-    tshirt_product = Product.find_by(slug: "tshirt-grenoble-roller")
-    variants = tshirt_product&.product_variants&.where(is_active: true)&.includes(option_values: :option_type)&.order(:id) || []
-    
-    variants.map do |variant|
-      size_option = variant.option_values.find { |ov| 
-        ov.option_type.name.downcase.include?('taille') || 
-        ov.option_type.name.downcase.include?('size') ||
-        ov.option_type.name.downcase.include?('dimension')
-      }
-      {
-        variant: variant,
-        size: size_option&.value || "N/A",
-        size_id: size_option&.id
-      }
-    end
-  end
   
   def create_adult_membership
     membership_params = params[:membership] || params
@@ -565,6 +562,11 @@ class MembershipsController < ApplicationController
       end
     end
     
+    # Gérer le T-shirt (nouveau système simplifié)
+    with_tshirt = membership_params[:with_tshirt] == 'true' || membership_params[:with_tshirt] == true
+    tshirt_size = membership_params[:tshirt_size] if with_tshirt
+    tshirt_qty = (membership_params[:tshirt_qty] || 1).to_i if with_tshirt
+    
     # Créer l'adhésion en pending
     membership = Membership.create!(
       user: current_user,
@@ -578,7 +580,11 @@ class MembershipsController < ApplicationController
       is_child_membership: false,
       is_minor: current_user.is_minor?,
       tshirt_variant_id: tshirt_variant_id,
-      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil
+      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
+      # Nouveaux champs T-shirt simplifié
+      with_tshirt: with_tshirt,
+      tshirt_size: tshirt_size,
+      tshirt_qty: with_tshirt ? tshirt_qty : 0
     )
     
     # Attacher le certificat médical si fourni
@@ -841,6 +847,11 @@ class MembershipsController < ApplicationController
       )
     end
 
+    # Gérer le T-shirt (nouveau système simplifié)
+    with_tshirt = child_params[:with_tshirt] == 'true' || child_params[:with_tshirt] == true
+    tshirt_size = child_params[:tshirt_size] if with_tshirt
+    tshirt_qty = (child_params[:tshirt_qty] || 1).to_i if with_tshirt
+    
     # Créer l'adhésion enfant
     membership = Membership.create!(
       user: current_user, # Le parent
@@ -863,6 +874,10 @@ class MembershipsController < ApplicationController
       parent_phone: current_user.phone,
       tshirt_variant_id: tshirt_variant_id,
       tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
+      # Nouveaux champs T-shirt simplifié
+      with_tshirt: with_tshirt,
+      tshirt_size: tshirt_size,
+      tshirt_qty: with_tshirt ? tshirt_qty : 0,
       rgpd_consent: child_params[:rgpd_consent] == "1",
       legal_notices_accepted: child_params[:legal_notices_accepted] == "1",
       ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1"

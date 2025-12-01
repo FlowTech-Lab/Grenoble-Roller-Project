@@ -54,6 +54,8 @@ Rails.application.routes.draw do
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
     collection do
+      # Page de sélection (adhésion seule ou avec T-shirt)
+      get :choose
       # Paiement groupé pour plusieurs enfants en attente
       post :pay_multiple
     end

@@ -1,71 +1,117 @@
-<!-- Sélection T-shirt (format card boutique en petit) -->
-<div class="mb-4">
-  <h4 class="h6 mb-3">
-    <i class="bi bi-tshirt me-2 text-liquid-primary"></i>T-shirt Grenoble Roller (optionnel)
-  </h4>
-  
-  <% if @tshirt_variants.any? %>
-    <div class="row g-2">
-      <% @tshirt_variants.each do |tshirt_data| %>
-        <% variant = tshirt_data[:variant] %>
-        <% size = tshirt_data[:size] %>
-        <% size_id = tshirt_data[:size_id] %>
-        
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card card-product card-liquid rounded-liquid h-100" 
-               style="cursor: pointer;"
-               data-tshirt-variant-id="<%= variant.id %>"
-               onclick="selectTshirt(<%= variant.id %>)">
-            <div class="card-product-image-wrapper" style="height: 120px;">
-              <div class="card-product-image">
-                <% if variant.image.attached? %>
-                  <%= image_tag variant.image, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
-                <% elsif variant.image_url.present? %>
-                  <%= image_tag variant.image_url, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
-                <% else %>
-                  <div class="d-flex align-items-center justify-content-center h-100" style="background: var(--liquid-glass-bg);">
-                    <i class="bi bi-tshirt fs-4 text-muted"></i>
-                  </div>
-                <% end %>
+<% 
+  # Partial réutilisable pour la sélection de T-shirt dans les formulaires d'adhésion
+  # Variables attendues :
+  # - @tshirt_product : le produit T-shirt (Product)
+  # - @tshirt_variants : les variantes actives du T-shirt
+  # - @membership : l'adhésion en cours (optionnel, pour pré-remplir)
+  # - @with_tshirt : boolean indiquant si le T-shirt est inclus
+  # - f : le form builder
+%>
+
+<% if @tshirt_product && @tshirt_variants.any? && @with_tshirt %>
+  <div class="form-section" id="step-tshirt">
+    <h3 class="section-title">
+      <span class="section-number">2</span>
+      🎽 <%= @tshirt_product.name %>
+    </h3>
+    <p class="section-intro">Personnalisez le T-shirt pour votre adhésion</p>
+    
+    <div class="row g-4 mb-4">
+      <!-- Image produit -->
+      <div class="col-md-6">
+        <div class="card card-liquid" style="aspect-ratio: 1 / 1; max-height: 400px;">
+          <div class="card-body d-flex align-items-center justify-content-center p-4">
+            <% if @tshirt_product.image_url.present? %>
+              <%= image_tag @tshirt_product.image_url, alt: @tshirt_product.name, class: "img-fluid", style: "object-fit: contain; max-height: 100%;" %>
+            <% else %>
+              <div class="d-flex align-items-center justify-content-center h-100">
+                <i class="bi bi-tshirt" style="font-size: 8rem; color: var(--liquid-primary);"></i>
               </div>
-              <% if variant.stock_qty > 0 %>
-                <span class="badge badge-liquid-success badge-stock" style="font-size: 0.7rem;">En stock</span>
-              <% else %>
-                <span class="badge badge-liquid-danger badge-stock" style="font-size: 0.7rem;">Rupture</span>
-              <% end %>
-            </div>
-            <div class="card-body p-2">
-              <h6 class="product-title mb-1" style="font-size: 0.85rem;">Taille <%= size %></h6>
-              <p class="product-price mb-0" style="font-size: 0.9rem; font-weight: bold;">
-                <%= number_to_currency(14.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-              </p>
-            </div>
+            <% end %>
           </div>
         </div>
-      <% end %>
-    </div>
-    
-    <input type="hidden" name="tshirt_variant_id" id="selected_tshirt_variant_id" value="">
-    
-    <script>
-      function selectTshirt(variantId) {
-        // Désélectionner toutes les cards
-        document.querySelectorAll('[data-tshirt-variant-id]').forEach(card => {
-          card.classList.remove('border-primary', 'border-3');
-          card.classList.add('border');
-        });
+        <% if @tshirt_product.description.present? %>
+          <p class="text-muted small mt-2 text-center">
+            <%= @tshirt_product.description %>
+          </p>
+        <% end %>
+      </div>
+      
+      <!-- Sélection -->
+      <div class="col-md-6">
+        <!-- Taille -->
+        <div class="mb-3">
+          <%= f.label :tshirt_size, "Taille *", class: "form-label fw-bold" %>
+          <%= f.select :tshirt_size, 
+              options_for_select(
+                @tshirt_variants.map do |variant|
+                  size_option = variant.option_values.find { |ov| 
+                    ov.option_type.name.downcase.include?('taille') || 
+                    ov.option_type.name.downcase.include?('size')
+                  }
+                  size_value = size_option&.value || variant.sku
+                  size_presentation = size_option&.presentation || size_value
+                  stock_available = variant.stock_qty.to_i > 0
+                  [size_presentation, size_value, { disabled: !stock_available }]
+                end,
+                @membership&.tshirt_size || 'M'
+              ), 
+              { prompt: @membership&.tshirt_size ? nil : "Choisissez une taille" },
+              { 
+                class: "form-select form-select-lg", 
+                id: "tshirt_size",
+                required: @with_tshirt,
+                onchange: "updateTshirtTotal()"
+              } %>
+          <div class="form-text small mt-1">
+            <i class="bi bi-info-circle me-1"></i>
+            Prix membre : <strong>14€</strong> au lieu de 20€
+          </div>
+        </div>
         
-        // Sélectionner la card cliquée
-        const selectedCard = document.querySelector(`[data-tshirt-variant-id="${variantId}"]`);
-        if (selectedCard) {
-          selectedCard.classList.remove('border');
-          selectedCard.classList.add('border-primary', 'border-3');
-          document.getElementById('selected_tshirt_variant_id').value = variantId;
-        }
-      }
-    </script>
-  <% else %>
-    <p class="text-muted small">Aucun T-shirt disponible pour le moment.</p>
-  <% end %>
-</div>
-
+        <!-- Quantité -->
+        <div class="mb-3">
+          <%= f.label :tshirt_qty, "Quantité", class: "form-label fw-bold" %>
+          <div class="input-group input-group-lg">
+            <button class="btn btn-outline-secondary" 
+                    type="button" 
+                    onclick="decrementTshirtQty()">−</button>
+            <%= f.number_field :tshirt_qty, 
+                value: @membership&.tshirt_qty || 1, 
+                min: 1, 
+                max: 5,
+                id: "tshirt_qty",
+                class: "form-control text-center",
+                required: @with_tshirt,
+                onchange: "updateTshirtTotal()" %>
+            <button class="btn btn-outline-secondary" 
+                    type="button" 
+                    onclick="incrementTshirtQty()">+</button>
+          </div>
+        </div>
+        
+        <!-- Badge réduction -->
+        <div class="alert alert-info alert-tshirt-reduction mb-3">
+          <small>
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>14€ au lieu de 20€</strong> - Réduction membre
+          </small>
+        </div>
+        
+        <!-- Total -->
+        <div class="card card-liquid mt-3">
+          <div class="card-body text-center">
+            <h5 class="mb-2">Total adhésion + T-shirt</h5>
+            <div class="display-5 text-liquid-primary fw-bold" id="tshirt_total_display">
+              <%= number_to_currency(1000 + (@membership&.tshirt_qty || 1) * 1400 / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+            </div>
+            <small class="text-success">
+              <i class="bi bi-check-circle me-1"></i>
+              <strong>Économisez 6€ !</strong>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -5311,3 +5311,32 @@
       background: rgba(77, 148, 255, 0.15);
     }
   }
+
+  /* Alert T-shirt Reduction - Adaptatif mode clair/sombre */
+  .alert-tshirt-reduction {
+    background: #e7f3ff;
+    border-color: #b3d9ff;
+    color: #0056b3;
+    
+    strong {
+      color: #0056b3;
+    }
+    
+    i {
+      color: #2782bb;
+    }
+  }
+
+  [data-bs-theme="dark"] .alert-tshirt-reduction {
+    background: rgba(39, 130, 187, 0.2);
+    border-color: rgba(77, 148, 255, 0.4);
+    color: rgba(255, 255, 255, 0.95);
+    
+    strong {
+      color: rgba(255, 255, 255, 0.95);
+    }
+    
+    i {
+      color: #4d94ff;
+    }
+  }

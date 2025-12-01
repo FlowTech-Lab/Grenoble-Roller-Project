@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_01_020755) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_01_214924) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -149,11 +149,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_020755) do
     t.date "start_date", null: false
     t.integer "status", default: 0, null: false
     t.integer "tshirt_price_cents", default: 1400
+    t.integer "tshirt_qty", default: 0, null: false
+    t.string "tshirt_size"
     t.bigint "tshirt_variant_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.boolean "wants_email_info", default: true
     t.boolean "wants_whatsapp", default: false
+    t.boolean "with_tshirt", default: false, null: false
     t.index ["payment_id"], name: "index_memberships_on_payment_id"
     t.index ["provider_order_id"], name: "index_memberships_on_provider_order_id"
     t.index ["status", "end_date"], name: "index_memberships_on_status_and_end_date"

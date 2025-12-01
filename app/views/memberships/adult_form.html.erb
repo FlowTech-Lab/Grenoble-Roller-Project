@@ -1,7 +1,8 @@
-<% 
+  <% 
   # Définir l'étape courante (pour le stepper)
-  current_step = 1
-  total_steps = 5
+  # Catégorie en premier (étape 1), puis T-shirt si avec_tshirt (étape 2)
+  current_step = 1 # Commence toujours par la catégorie
+  total_steps = @with_tshirt ? 6 : 5
 %>
 
 <div class="container py-4">
@@ -38,13 +39,14 @@
       </div>
 
       <!-- STEPPER -->
-      <%= render partial: 'form_stepper', locals: { form_type: 'adult', current_step: current_step } %>
+      <%= render partial: 'form_stepper', locals: { form_type: 'adult', current_step: current_step, with_tshirt: @with_tshirt } %>
 
       <!-- MAIN FORM -->
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
           <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "adult_membership_form", multipart: true do |f| %>
             <%= f.hidden_field :type, value: "adult" %>
+            <%= f.hidden_field :with_tshirt, value: @with_tshirt ? 'true' : 'false', id: "with_tshirt_hidden" %>
             
             <!-- ÉTAPE 1 : CATÉGORIE -->
             <div class="form-section" id="step-category">
@@ -95,11 +97,14 @@
                 <% end %>
               </div>
             </div>
+            
+            <!-- ÉTAPE 2 : SÉLECTION T-SHIRT (si avec_tshirt) -->
+            <%= render partial: 'tshirt_selection', locals: { f: f } %>
 
-            <!-- ÉTAPE 2 : INFORMATIONS -->
+            <!-- ÉTAPE <%= @with_tshirt ? 3 : 2 %> : INFORMATIONS -->
             <div class="form-section" id="step-info">
               <h3 class="section-title">
-                <span class="section-number">2</span>
+                <span class="section-number"><%= @with_tshirt ? 3 : 2 %></span>
                 Vos informations
               </h3>
               <p class="section-intro">Vos données aident l'association à mieux vous connaître</p>
@@ -203,10 +208,10 @@
               </div>
             </div>
 
-            <!-- ÉTAPE 3 : COORDONNÉES -->
+            <!-- ÉTAPE <%= @with_tshirt ? 4 : 3 %> : COORDONNÉES -->
             <div class="form-section" id="step-address">
               <h3 class="section-title">
-                <span class="section-number">3</span>
+                <span class="section-number"><%= @with_tshirt ? 4 : 3 %></span>
                 Vos coordonnées
               </h3>
               
@@ -255,10 +260,10 @@
               </div>
             </div>
 
-            <!-- ÉTAPE 4 : QUESTIONNAIRE SANTÉ -->
+            <!-- ÉTAPE <%= @with_tshirt ? 5 : 4 %> : QUESTIONNAIRE SANTÉ -->
             <div class="form-section" id="step-health">
               <h3 class="section-title">
-                <span class="section-number">4</span>
+                <span class="section-number"><%= @with_tshirt ? 5 : 4 %></span>
                 Questionnaire de santé
               </h3>
               <p class="section-intro">Répondez aux questions suivantes concernant votre santé</p>
@@ -365,10 +370,10 @@
               </div>
             </div>
 
-            <!-- ÉTAPE 5 : CONSENTEMENTS -->
+            <!-- ÉTAPE <%= @with_tshirt ? 6 : 5 %> : CONSENTEMENTS -->
             <div class="form-section" id="step-consents">
               <h3 class="section-title">
-                <span class="section-number">5</span>
+                <span class="section-number"><%= @with_tshirt ? 6 : 5 %></span>
                 Consentements & Confidentialité
               </h3>
               <p class="section-intro">Pour finaliser votre adhésion, veuillez accepter :</p>
@@ -536,6 +541,13 @@
     if (ffrsGroup) {
       ffrsGroup.style.display = selectedCategory === 'with_ffrs' ? 'block' : 'none';
     }
+    
+    // Mettre à jour le total T-shirt si présent
+    <% if @with_tshirt %>
+    if (typeof updateTshirtTotal === 'function') {
+      updateTshirtTotal();
+    }
+    <% end %>
   }
   
   // Mettre à jour le champ caché date_of_birth à partir des 3 sélecteurs
@@ -774,8 +786,58 @@
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
+  // Gestion T-shirt (si avec_tshirt)
+  <% if @with_tshirt %>
+    function incrementTshirtQty() {
+      const qtyInput = document.getElementById('tshirt_qty');
+      const currentQty = parseInt(qtyInput.value) || 1;
+      if (currentQty < 5) {
+        qtyInput.value = currentQty + 1;
+        updateTshirtTotal();
+      }
+    }
+    
+    function decrementTshirtQty() {
+      const qtyInput = document.getElementById('tshirt_qty');
+      const currentQty = parseInt(qtyInput.value) || 1;
+      if (currentQty > 1) {
+        qtyInput.value = currentQty - 1;
+        updateTshirtTotal();
+      }
+    }
+    
+    function updateTshirtTotal() {
+      const qtyInput = document.getElementById('tshirt_qty');
+      const totalDisplay = document.getElementById('tshirt_total_display');
+      if (!qtyInput || !totalDisplay) return;
+      
+      // Récupérer la catégorie sélectionnée
+      const categoryRadio = document.querySelector('input[name="membership[category]"]:checked');
+      let adhesionPrice = 10; // Par défaut : 10€ pour standard
+      
+      if (categoryRadio) {
+        const category = categoryRadio.value;
+        // Prix selon la catégorie : standard = 10€, with_ffrs = 56.55€
+        adhesionPrice = category === 'with_ffrs' ? 56.55 : 10;
+      }
+      
+      const qty = parseInt(qtyInput.value) || 1;
+      const tshirtPrice = 14; // 14€ par T-shirt
+      const total = adhesionPrice + (qty * tshirtPrice);
+      
+      // Formater avec virgule comme séparateur décimal et espace comme séparateur de milliers (format français)
+      const parts = total.toFixed(2).split('.');
+      const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      const formatted = integerPart + ',' + parts[1] + ' €';
+      totalDisplay.textContent = formatted;
+    }
+  <% end %>
+
   // Initialisation
   document.addEventListener('DOMContentLoaded', function() {
+    <% if @with_tshirt %>
+      updateTshirtTotal(); // Initialiser le total T-shirt
+    <% end %>
     updateCategorySelection();
     updateAdultAge(); // Vérifier au chargement si une date est déjà présente
     checkHealthQuestions(); // Vérifier les questions de santé

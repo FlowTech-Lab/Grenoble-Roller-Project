@@ -59,8 +59,20 @@ class Membership < ApplicationRecord
   # Calculer le prix total (adhésion + T-shirt si présent)
   def total_amount_cents
     base = amount_cents || 0
-    tshirt = tshirt_variant_id.present? ? (tshirt_price_cents || 1400) : 0
-    base + tshirt
+    
+    # Nouveau système simplifié : with_tshirt + tshirt_qty
+    if with_tshirt && tshirt_qty.to_i > 0
+      tshirt_total = tshirt_qty.to_i * 1400 # 14€ par T-shirt
+      return base + tshirt_total
+    end
+    
+    # Ancien système (rétrocompatibilité) : tshirt_variant_id
+    if tshirt_variant_id.present?
+      tshirt = tshirt_price_cents || 1400
+      return base + tshirt
+    end
+    
+    base
   end
 
   # Calcul automatique des dates de saison (1er sept - 31 août)
