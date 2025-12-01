@@ -21,6 +21,16 @@ class MembershipsController < ApplicationController
     # Page de sélection : adhésion seule ou adhésion + T-shirt
     # Cette page s'affiche avant le formulaire pour simplifier le choix
     @is_child = params[:child] == 'true'
+    @renew_from = params[:renew_from]
+    
+    # Si renouvellement, récupérer l'ancienne adhésion pour afficher les infos
+    if @renew_from.present?
+      @old_membership = current_user.memberships.find_by(id: @renew_from)
+      if @old_membership && @old_membership.is_child_membership? && @old_membership.expired?
+        @is_renewal = true
+      end
+    end
+    
     render :choose
   end
 
@@ -49,12 +59,16 @@ class MembershipsController < ApplicationController
       if old_membership && old_membership.is_child_membership? && old_membership.expired?
         @old_membership = old_membership
         # Pré-remplir les informations depuis l'ancienne adhésion
+        # Note: on ne pré-remplit PAS with_tshirt pour permettre de choisir un nouveau T-shirt
         @membership = Membership.new(
           is_child_membership: true,
           child_first_name: old_membership.child_first_name,
           child_last_name: old_membership.child_last_name,
           child_date_of_birth: old_membership.child_date_of_birth,
-          category: old_membership.category
+          category: old_membership.category,
+          with_tshirt: @with_tshirt, # Utiliser le paramètre from choose page
+          tshirt_size: nil, # Ne pas pré-remplir la taille pour permettre un nouveau choix
+          tshirt_qty: @with_tshirt ? 1 : 0
         )
       end
     end

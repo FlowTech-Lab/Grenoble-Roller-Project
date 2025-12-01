@@ -319,7 +319,7 @@
                     </small>
                   </div>
                   <% if membership.is_child_membership? %>
-                    <%= link_to new_membership_path(type: "child", renew_from: membership.id), class: "btn btn-sm btn-success" do %>
+                    <%= link_to choose_memberships_path(child: true, renew_from: membership.id), class: "btn btn-sm btn-success" do %>
                       <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
                     <% end %>
                   <% else %>
