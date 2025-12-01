@@ -216,6 +216,31 @@
     color: white;
   }
   
+  .btn-liquid-warning {
+    background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
+    border: none;
+    color: #000;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    transition: var(--transition-liquid);
+  }
+  
+  .btn-liquid-warning:hover {
+    background: linear-gradient(135deg, #F57C00 0%, #FF9800 100%);
+    color: #000;
+    box-shadow: var(--shadow-hover-lg);
+  }
+  
+  [data-bs-theme="dark"] .btn-liquid-warning {
+    background: linear-gradient(135deg, #FFB74D 0%, #FFCC80 100%);
+    color: #000;
+  }
+  
+  [data-bs-theme="dark"] .btn-liquid-warning:hover {
+    background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
+    color: #000;
+  }
+  
   /* Outline liquid buttons - Identiques dans les deux thèmes */
   .btn-outline-liquid-primary {
     background: transparent;
@@ -417,6 +442,16 @@
     background: #ffc107;
     color: #000;
     border: none;
+  }
+  
+  .bg-liquid-warning {
+    background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%) !important;
+    color: #000 !important;
+  }
+  
+  [data-bs-theme="dark"] .bg-liquid-warning {
+    background: linear-gradient(135deg, #FFB74D 0%, #FFCC80 100%) !important;
+    color: #000 !important;
   }
   
   /* === LIQUID ANIMATIONS === */
@@ -4083,4 +4118,418 @@
   /* Labels avec icônes - Espacement */
   .form-label i {
     margin-right: 0.25rem;
+  }
+
+  /* ========================================
+     MEMBERSHIPS - PAGE ADHÉSIONS
+     Styles pour la page de gestion des adhésions
+     ======================================== */
+
+  /* Hero Section Adhésions */
+  .hero-memberships {
+    background: linear-gradient(135deg, #2180A9 0%, #32B8C6 100%);
+    color: white;
+    border-radius: 1.6rem;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--bs-box-shadow-lg);
+    position: relative;
+    overflow: hidden;
+    
+    /* Overlay subtil pour texture */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    
+    > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    h1 {
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .badge {
+      background: rgba(255, 255, 255, 0.95) !important;
+      color: #2180A9 !important;
+      border: none;
+    }
+  }
+
+  [data-bs-theme="dark"] .hero-memberships {
+    background: linear-gradient(135deg, #1a6b8a 0%, #2a9db8 100%);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    
+    &::before {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+    }
+    
+    .badge {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: white !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-memberships {
+      padding: 2rem 1.5rem;
+      
+      h1 {
+        font-size: 1.75rem;
+      }
+    }
+  }
+
+  /* Sidebar Sticky */
+  .sidebar-sticky {
+    position: sticky;
+    top: 100px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  @media (max-width: 1024px) {
+    .sidebar-sticky {
+      position: relative;
+      top: 0;
+      max-height: none;
+    }
+  }
+
+  /* Quick Action Cards - Réutilise styles card-liquid */
+  .quick-action-card {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 2px solid;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: var(--transition-liquid);
+    cursor: pointer;
+    box-shadow: var(--bs-box-shadow);
+    
+    &:hover {
+      box-shadow: var(--shadow-hover-card);
+      transform: translateY(-2px);
+    }
+    
+    &.teal {
+      border-color: #2180A9;
+      background: linear-gradient(135deg, rgba(224, 247, 250, 0.9) 0%, rgba(178, 235, 242, 0.9) 100%);
+      
+      &:hover {
+        background: linear-gradient(135deg, rgba(224, 247, 250, 1) 0%, rgba(178, 235, 242, 1) 100%);
+      }
+    }
+    
+    &.orange {
+      border-color: #FF9800;
+      background: linear-gradient(135deg, rgba(255, 243, 224, 0.9) 0%, rgba(255, 224, 178, 0.9) 100%);
+      
+      &:hover {
+        background: linear-gradient(135deg, rgba(255, 243, 224, 1) 0%, rgba(255, 224, 178, 1) 100%);
+      }
+    }
+  }
+
+  [data-bs-theme="dark"] .quick-action-card {
+    &.teal {
+      border-color: #4d94ff;
+      background: linear-gradient(135deg, rgba(33, 128, 169, 0.2) 0%, rgba(50, 184, 198, 0.2) 100%);
+      
+      &:hover {
+        background: linear-gradient(135deg, rgba(33, 128, 169, 0.3) 0%, rgba(50, 184, 198, 0.3) 100%);
+      }
+    }
+    
+    &.orange {
+      border-color: #ffb74d;
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 193, 77, 0.2) 100%);
+      
+      &:hover {
+        background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(255, 193, 77, 0.3) 100%);
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .quick-action-card {
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  /* Membership Cards - Réutilise styles card-liquid */
+  .membership-card {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--bs-box-shadow);
+    transition: var(--transition-liquid);
+    position: relative;
+    
+    &:hover {
+      box-shadow: var(--shadow-hover-card);
+      transform: translateY(-2px);
+    }
+    
+    &.active {
+      border: 2px solid #2E8B57;
+    }
+    
+    &.pending {
+      border: 2px solid #FF9800;
+    }
+    
+    &.expired {
+      border: 1px solid #9E9E9E;
+      opacity: 0.7;
+    }
+  }
+
+  [data-bs-theme="dark"] .membership-card {
+    &.active {
+      border-color: #4caf50;
+    }
+    
+    &.pending {
+      border-color: #ffb74d;
+    }
+    
+    &.expired {
+      border-color: rgba(255, 255, 255, 0.3);
+      opacity: 0.6;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .membership-card {
+      padding: 1rem;
+    }
+  }
+
+  /* Status Badges */
+  .status-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    &.active {
+      background: #E8F5E9;
+      color: #2E8B57;
+    }
+    
+    &.pending {
+      background: #FFF3E0;
+      color: #FF9800;
+    }
+    
+    &.expired {
+      background: #F5F5F5;
+      color: #9E9E9E;
+    }
+  }
+
+  [data-bs-theme="dark"] .status-badge {
+    &.active {
+      background: rgba(76, 175, 80, 0.3);
+      color: #81c784;
+    }
+    
+    &.pending {
+      background: rgba(255, 152, 0, 0.3);
+      color: #ffb74d;
+    }
+    
+    &.expired {
+      background: rgba(158, 158, 158, 0.3);
+      color: #bdbdbd;
+    }
+  }
+
+  /* Progress Bar */
+  .progress-bar-custom {
+    height: 8px;
+    border-radius: 4px;
+    background: #E0E0E0;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  [data-bs-theme="dark"] .progress-bar-custom {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    
+    &.green {
+      background: linear-gradient(90deg, #4CAF50, #66BB6A);
+    }
+    
+    &.orange {
+      background: linear-gradient(90deg, #FF9800, #FFB74D);
+    }
+    
+    &.red {
+      background: linear-gradient(90deg, #E53935, #EF5350);
+    }
+  }
+
+  /* Empty State */
+  .empty-state {
+    background: #E8F5F9;
+    border-radius: 1.2rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    border: 1px solid var(--card-border-color);
+  }
+
+  [data-bs-theme="dark"] .empty-state {
+    background: rgba(33, 128, 169, 0.15);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    .empty-state {
+      padding: 2rem 1rem;
+      
+      h2 {
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  /* Child Mini Cards - Réutilise styles card-liquid */
+  .child-mini-card {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: var(--transition-liquid);
+    
+    &:hover {
+      border-color: #FF9800;
+      box-shadow: var(--bs-box-shadow);
+      transform: translateY(-1px);
+    }
+  }
+
+  [data-bs-theme="dark"] .child-mini-card:hover {
+    border-color: #ffb74d;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+  }
+
+  /* Payment Alert Improved - Utilise alert-warning Bootstrap avec améliorations */
+  .payment-alert-improved {
+    border: 2px solid #FF9800;
+    border-radius: 1.2rem;
+    box-shadow: var(--bs-box-shadow);
+  }
+
+  [data-bs-theme="dark"] .payment-alert-improved {
+    border-color: #ffb74d;
+    
+    .bg-white {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: var(--bs-body-color) !important;
+    }
+  }
+
+  /* Stats Overview Cards - Style simple avec glassmorphism */
+  .memberships-stats-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 0.5rem;
+    transition: var(--transition-liquid-fast);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: translateX(2px);
+    }
+  }
+
+  [data-bs-theme="dark"] .memberships-stats-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Historique Items - Style simple avec glassmorphism */
+  .membership-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    transition: var(--transition-liquid-fast);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: translateX(2px);
+    }
+  }
+
+  [data-bs-theme="dark"] .membership-history-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .hero-memberships h1 {
+      font-size: 1.75rem !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .membership-card,
+    .quick-action-card,
+    .child-mini-card,
+    .memberships-stats-item,
+    .membership-history-item {
+      transition: none;
+      
+      &:hover {
+        transform: none;
+      }
+    }
+    
+    .progress-fill {
+      transition: none;
+    }
   }

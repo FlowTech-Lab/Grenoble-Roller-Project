@@ -1,214 +1,326 @@
+<% 
+  # Calculs pour les stats
+  personal_memberships = @memberships.select { |m| !m.is_child_membership? }
+  children_memberships = @memberships.select { |m| m.is_child_membership? }
+  children_pending = children_memberships.select { |m| m.pending? }
+  children_paid = children_memberships.select { |m| !m.pending? }
+  active_memberships = @memberships.select { |m| m.active? }
+  pending_memberships = @memberships.select { |m| m.pending? }
+  expired_memberships = @memberships.select { |m| m.expired? }
+  total_paid = @memberships.select { |m| !m.pending? }.sum(&:total_amount_cents) / 100.0
+  
+  # Date d'expiration la plus proche
+  nearest_expiry = @memberships.select { |m| m.active? && m.end_date.present? }
+    .map(&:end_date).compact.min
+%>
+
+
 <div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-12 col-lg-10">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body p-4">
-          <!-- Header -->
-          <div class="text-center mb-4 pb-3 border-bottom">
-            <h1 class="h4 mb-2">
-              <i class="bi bi-person-badge text-liquid-primary me-2"></i>
-              <% if current_user.has_active_children_memberships? %>
-                Mes adhésions
-              <% else %>
-                Mon adhésion
-              <% end %>
-            </h1>
-            <p class="text-muted small mb-0">Consultez l'historique de vos adhésions</p>
-          </div>
-
-          <!-- Adhésions existantes -->
-          <% if @memberships.any? %>
-            <!-- Adhésion personnelle -->
-            <% personal_memberships = @memberships.select { |m| !m.is_child_membership? } %>
-            <% if personal_memberships.any? %>
-              <div class="mb-4">
-                <h3 class="h6 mb-3">
-                  <i class="bi bi-person me-2 text-liquid-primary"></i>Mon adhésion
-                </h3>
-                <% personal_memberships.each_with_index do |membership, idx| %>
-                  <%= render partial: 'membership_card', locals: { membership: membership, is_child: false, last: (idx == personal_memberships.size - 1 && !@memberships.select { |m| m.is_child_membership? }.any?) } %>
-                <% end %>
-              </div>
-            <% end %>
-            
-            <!-- Adhésions enfants -->
-            <% children_memberships = @memberships.select { |m| m.is_child_membership? } %>
-            <% children_pending = children_memberships.select { |m| m.pending? } %>
-            <% children_paid = children_memberships.select { |m| !m.pending? } %>
-            
-            <% if children_memberships.any? %>
-              <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h3 class="h6 mb-0">
-                    <i class="bi bi-people me-2 text-liquid-warning"></i>
-                    Adhésions enfants
-                    <span class="badge bg-liquid-warning text-dark ms-2"><%= children_memberships.count %></span>
-                  </h3>
-                </div>
-                
-                <!-- Enfants en attente de paiement -->
-                <% if children_pending.any? %>
-                  <div class="alert alert-warning mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <div>
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong><%= children_pending.count %> enfant(s) en attente de paiement</strong>
-                      </div>
-                      <%= form_with url: pay_multiple_memberships_path, method: :post, local: true, data: { turbo: false }, class: "d-inline" do |f| %>
-                        <% children_pending.each do |membership| %>
-                          <%= f.hidden_field "membership_ids[]", value: membership.id %>
-                        <% end %>
-                        <%= f.submit "Payer tous (#{number_to_currency(children_pending.sum(&:total_amount_cents) / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")})", 
-                            class: "btn btn-sm btn-warning" %>
-                      <% end %>
-                    </div>
-                  </div>
-                  
-                  <% children_pending.each_with_index do |membership, idx| %>
-                    <%= render partial: 'membership_card', locals: { membership: membership, is_child: true, is_pending: true, last: (idx == children_pending.size - 1 && children_paid.empty?) } %>
-                  <% end %>
-                <% end %>
-                
-                <!-- Enfants déjà payés (actifs ou expirés) -->
-                <% if children_paid.any? %>
-                  <% if children_pending.any? %>
-                    <hr class="my-4">
-                    <h4 class="h6 mb-3 text-muted">Adhésions enfants payées</h4>
-                  <% end %>
-                  <% children_paid.each_with_index do |membership, idx| %>
-                    <%= render partial: 'membership_card', locals: { membership: membership, is_child: true, is_pending: false, last: idx == children_paid.size - 1 } %>
-                  <% end %>
-                <% end %>
-              </div>
-            <% end %>
-            
-            <!-- Séparateur si adhésions existantes -->
-            <hr class="my-5">
+  <!-- HERO SECTION -->
+  <div class="hero-memberships">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <div>
+        <h1 class="h2 mb-2">
+          <i class="bi bi-person-badge me-2 fs-2"></i>
+          <% if current_user.has_active_children_memberships? %>
+            Mes adhésions
           <% else %>
-            <!-- Empty state -->
-            <div class="text-center py-4 mb-4">
-              <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
-              <h3 class="h6 text-muted mt-3 mb-2">Vous n'avez pas encore d'adhésion</h3>
-              <p class="text-muted small mb-0">Rejoignez l'association et profitez de tous les avantages !</p>
-            </div>
+            Mon adhésion
           <% end %>
+        </h1>
+        <p class="mb-2 opacity-75" style="font-style: italic;">
+          Gérez vos adhésions et celles de vos enfants
+        </p>
+        <div class="d-flex align-items-center gap-3 flex-wrap mt-3">
+          <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
+            <i class="bi bi-calendar-event me-1"></i>
+            Saison <%= @season %>
+          </span>
+          <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
+            <i class="bi bi-calendar-range me-1"></i>
+            <%= l(@start_date, format: :short) %> → <%= l(@end_date, format: :short) %>
+          </span>
+        </div>
+      </div>
+      <% if @memberships.empty? %>
+        <div class="mt-3 mt-md-0">
+          <%= link_to new_membership_path(check_age: true), class: "btn btn-light btn-lg" do %>
+            <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 
-          <!-- Section Nouvelle adhésion -->
-          <div class="mb-4">
-            <div class="text-center mb-4 pb-3 border-bottom">
-              <h2 class="h5 mb-2">
-                <i class="bi bi-person-plus text-liquid-primary me-2"></i>ADHÉSION SAISON <%= @season %>
-              </h2>
-              <p class="text-muted small mb-0">
-                par <strong>GRENOBLE ROLLER</strong>
-              </p>
-              <p class="text-muted small mt-2 mb-0">
-                <i class="bi bi-calendar-event me-1"></i>
-                Adhésion valable du <%= l(@start_date, format: :long) %> au <%= l(@end_date, format: :long) %>
-              </p>
-            </div>
-
-            <!-- Description -->
-            <div class="mb-4">
-              <p class="mb-2">
-                En adhérent à notre association vous soutenez notre volonté de faire découvrir le roller à tous. 
-                Vous aidez à l'organisation de nos traditionnelles randonnées roller pour le plus grand plaisir 
-                des grenoblois qui aiment la glisse !
-              </p>
-              <p class="mb-0">
-                <strong>L'adhésion est nécessaire pour participer aux initiations le samedi matin.</strong>
-              </p>
-            </div>
-
-            <!-- Section 1 : Adhérer pour moi -->
-            <div class="mb-5">
-              <h3 class="h6 mb-3">
-                <i class="bi bi-person-check me-2 text-liquid-primary"></i>Adhérer pour moi
-              </h3>
-              
-              <!-- Alerte si adhésion active -->
-              <% if @active_membership %>
-                <div class="alert alert-success mb-3" role="alert">
-                  <div class="d-flex align-items-start">
-                    <i class="bi bi-check-circle me-2 fs-5"></i>
+  <!-- LAYOUT 2 COLONNES -->
+  <div class="row">
+    <!-- SIDEBAR GAUCHE (Desktop) -->
+    <div class="col-12 col-lg-4 mb-4 mb-lg-0">
+      <div class="sidebar-sticky">
+        <!-- Quick Actions -->
+        <div class="card card-liquid shadow-sm mb-4">
+          <div class="card-body">
+            <h3 class="h6 mb-3">
+              <i class="bi bi-lightning-charge text-liquid-primary me-2"></i>
+              Actions rapides
+            </h3>
+            
+            <!-- Adhérer pour moi -->
+            <% unless @active_membership %>
+              <%= link_to new_membership_path(check_age: true), class: "text-decoration-none" do %>
+                <div class="quick-action-card teal">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-person-badge fs-3 text-liquid-primary me-3"></i>
                     <div class="flex-grow-1">
-                      <strong>Adhésion active</strong>
-                      <p class="mb-2 small">Vous avez déjà une adhésion active pour cette saison.</p>
-                      <%= link_to membership_path(@active_membership), class: "btn btn-sm btn-success" do %>
-                        <i class="bi bi-eye me-1"></i>Voir mon adhésion
-                      <% end %>
-                    </div>
-                  </div>
-                </div>
-              <!-- Alerte si adhésion pending -->
-              <% elsif @pending_membership %>
-                <div class="alert alert-warning mb-3" role="alert">
-                  <div class="d-flex align-items-start">
-                    <i class="bi bi-exclamation-triangle me-2 fs-5"></i>
-                    <div class="flex-grow-1">
-                      <strong>Adhésion en attente de paiement</strong>
-                      <p class="mb-2 small">Vous avez déjà une adhésion en attente de paiement pour cette saison.</p>
-                      <%= link_to membership_path(@pending_membership), class: "btn btn-sm btn-warning" do %>
-                        <i class="bi bi-credit-card me-1"></i>Finaliser le paiement
-                      <% end %>
+                      <h4 class="h6 mb-0 fw-bold">Je m'adhère</h4>
+                      <small class="text-muted">
+                        <% if @pending_membership %>
+                          Adhésion en attente
+                        <% else %>
+                          Pas d'adhésion active
+                        <% end %>
+                      </small>
                     </div>
                   </div>
                 </div>
               <% end %>
-              
-              <!-- Carte "Adhérer pour moi" - masquée si adhésion active -->
-              <% unless @active_membership %>
-                <div class="row g-3">
-                  <div class="col-12">
-                    <% if @pending_membership %>
-                      <div class="card border-2 opacity-50" style="pointer-events: none;">
-                        <div class="card-body text-center p-4">
-                          <i class="bi bi-person-badge fs-1 text-muted mb-3"></i>
-                          <h4 class="h6 fw-bold mb-2 text-muted">Adhérer pour moi</h4>
-                          <p class="text-muted small mb-3">
-                            Votre âge sera calculé automatiquement pour vous orienter vers le bon formulaire
-                          </p>
-                          <span class="btn btn-secondary btn-lg w-100 disabled">Désactivé</span>
-                        </div>
-                      </div>
-                    <% else %>
-                      <%= link_to new_membership_path(check_age: true), class: "text-decoration-none" do %>
-                        <div class="card border-2 hover-shadow">
-                          <div class="card-body text-center p-4">
-                            <i class="bi bi-person-badge fs-1 text-liquid-primary mb-3"></i>
-                            <h4 class="h6 fw-bold mb-2">Adhérer pour moi</h4>
-                            <p class="text-muted small mb-3">
-                              Votre âge sera calculé automatiquement pour vous orienter vers le bon formulaire
-                            </p>
-                            <span class="btn btn-liquid-primary btn-lg w-100">Commencer</span>
-                          </div>
-                        </div>
+            <% end %>
+            
+            <!-- Ajouter un enfant -->
+            <%= link_to new_membership_path(type: "child"), class: "text-decoration-none" do %>
+              <div class="quick-action-card orange">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-person-plus fs-3 text-liquid-warning me-3"></i>
+                  <div class="flex-grow-1">
+                    <h4 class="h6 mb-0 fw-bold">Ajouter un enfant</h4>
+                    <small class="text-muted">
+                      <% if children_pending.any? %>
+                        <%= children_pending.count %> en attente
+                      <% else %>
+                        Inscrire un enfant
                       <% end %>
-                    <% end %>
+                    </small>
                   </div>
                 </div>
-              <% end %>
-            </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
 
-            <!-- Séparateur -->
-            <hr class="my-4">
-
-            <!-- Section 2 : Inscrire un enfant -->
-            <div class="mb-4">
+        <!-- Overview Stats -->
+        <% if @memberships.any? %>
+          <div class="card card-liquid shadow-sm mb-4">
+            <div class="card-body">
               <h3 class="h6 mb-3">
-                <i class="bi bi-people me-2 text-liquid-warning"></i>Inscrire un enfant
+                <i class="bi bi-graph-up text-liquid-primary me-2"></i>
+                Vue d'ensemble
               </h3>
-              <p class="text-muted small mb-3">
-                Ajoutez un enfant à la fois. Vous pourrez payer pour tous les enfants en attente en une seule transaction.
-              </p>
               
-              <%= link_to new_membership_path(type: "child"), class: "btn btn-liquid-warning btn-lg w-100" do %>
-                <i class="bi bi-person-plus me-2"></i>Ajouter un enfant
-              <% end %>
+              <div class="d-flex flex-column gap-2">
+                <% if active_memberships.any? %>
+                  <div class="memberships-stats-item">
+                    <span><i class="bi bi-check-circle text-success me-2"></i>Actives</span>
+                    <strong><%= active_memberships.count %></strong>
+                  </div>
+                <% end %>
+                
+                <% if pending_memberships.any? %>
+                  <div class="memberships-stats-item">
+                    <span><i class="bi bi-hourglass-split text-warning me-2"></i>En attente</span>
+                    <strong><%= pending_memberships.count %></strong>
+                  </div>
+                <% end %>
+                
+                <% if nearest_expiry %>
+                  <div class="memberships-stats-item">
+                    <span><i class="bi bi-calendar-x text-info me-2"></i>Expire le</span>
+                    <strong><%= l(nearest_expiry, format: :short) %></strong>
+                  </div>
+                <% end %>
+                
+                <% if total_paid > 0 %>
+                  <div class="memberships-stats-item">
+                    <span><i class="bi bi-currency-euro text-primary me-2"></i>Total payé</span>
+                    <strong><%= number_to_currency(total_paid, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %></strong>
+                  </div>
+                <% end %>
+              </div>
             </div>
+          </div>
+        <% end %>
+
+        <!-- Description -->
+        <div class="card card-liquid shadow-sm">
+          <div class="card-body">
+            <p class="small text-muted mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>En adhérent à notre association vous soutenez notre volonté de faire découvrir le roller à tous. 
+              Vous aidez à l'organisation de nos traditionnelles randonnées roller pour le plus grand plaisir 
+              des grenoblois qui aiment la glisse !</strong>
+            </p>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- COLONNE DROITE : CONTENU PRINCIPAL -->
+    <div class="col-12 col-lg-8">
+      <% if @memberships.empty? %>
+        <!-- EMPTY STATE AMÉLIORÉ -->
+        <div class="empty-state">
+          <div style="font-size: 4rem; margin-bottom: 1.5rem;">🎉</div>
+          <h2 class="h4 mb-3">Rejoignez Grenoble Roller !</h2>
+          <p class="text-muted mb-4">
+            Rejoignez notre communauté de passionnés de roller à Grenoble
+          </p>
+          
+          <div class="text-start d-inline-block mb-4" style="max-width: 400px;">
+            <div class="d-flex align-items-start mb-2">
+              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+              <span>Participer aux randos roller</span>
+            </div>
+            <div class="d-flex align-items-start mb-2">
+              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+              <span>Rejoindre une communauté</span>
+            </div>
+            <div class="d-flex align-items-start mb-2">
+              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+              <span>Tarifs avantageux toute l'année</span>
+            </div>
+            <div class="d-flex align-items-start">
+              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+              <span>Support des événements</span>
+            </div>
+          </div>
+          
+          <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg" do %>
+            <i class="bi bi-person-plus me-2"></i>Adhérer maintenant →
+          <% end %>
+        </div>
+      <% else %>
+        <!-- ADHÉSION PERSONNELLE -->
+        <% if personal_memberships.any? %>
+          <% personal_memberships.each do |membership| %>
+            <%= render partial: 'membership_card_improved', locals: { membership: membership, is_child: false } %>
+          <% end %>
+        <% end %>
+
+        <!-- ADHÉSIONS ENFANTS -->
+        <% if children_memberships.any? %>
+          <div class="card card-liquid shadow-sm mb-4">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 mb-0">
+                  <i class="bi bi-people text-liquid-warning me-2"></i>
+                  Adhésions enfants
+                  <span class="badge bg-liquid-warning text-dark ms-2"><%= children_memberships.count %></span>
+                </h3>
+                <%= link_to new_membership_path(type: "child"), class: "btn btn-sm btn-liquid-warning" do %>
+                  <i class="bi bi-person-plus me-1"></i>Ajouter
+                <% end %>
+              </div>
+
+              <!-- Enfants en attente de paiement -->
+              <% if children_pending.any? %>
+                <div class="alert alert-warning payment-alert-improved">
+                  <h4 class="h6 mb-3">
+                    <i class="bi bi-pin-map me-2"></i>
+                    <%= children_pending.count %> ENFANT(S) EN ATTENTE DE PAIEMENT
+                  </h4>
+                  
+                  <div class="mb-3">
+                    <% children_pending.each do |membership| %>
+                      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                          <strong><%= membership.child_full_name %></strong>
+                          <small class="text-muted d-block">
+                            <%= number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                          </small>
+                        </div>
+                        <span class="badge bg-warning text-dark">⏳ Pending</span>
+                      </div>
+                    <% end %>
+                  </div>
+                  
+                  <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                    <strong>Total :</strong>
+                    <strong class="fs-5">
+                      <%= number_to_currency(children_pending.sum(&:total_amount_cents) / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                    </strong>
+                  </div>
+                  
+                  <%= form_with url: pay_multiple_memberships_path, method: :post, local: true, data: { turbo: false }, class: "mb-2" do |f| %>
+                    <% children_pending.each do |membership| %>
+                      <%= f.hidden_field "membership_ids[]", value: membership.id %>
+                    <% end %>
+                    <%= f.submit "🔐 Payer avec HelloAsso →", class: "btn btn-warning btn-lg w-100 mb-2" %>
+                  <% end %>
+                  
+                  <div class="d-flex gap-3 justify-content-center">
+                    <small class="text-muted">
+                      <i class="bi bi-shield-check me-1"></i>Paiement sécurisé
+                    </small>
+                    <small class="text-muted">
+                      <i class="bi bi-envelope me-1"></i>Reçu par email
+                    </small>
+                  </div>
+                </div>
+                
+                <!-- Mini cards enfants pending -->
+                <div class="row g-2 mb-3">
+                  <% children_pending.each do |membership| %>
+                    <div class="col-12 col-md-6">
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: true } %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <!-- Enfants payés/actifs -->
+              <% if children_paid.any? %>
+                <% if children_pending.any? %>
+                  <hr class="my-4">
+                  <h4 class="h6 mb-3 text-muted">Payées / Actives</h4>
+                <% end %>
+                
+                <div class="row g-2">
+                  <% children_paid.each do |membership| %>
+                    <div class="col-12 col-md-6">
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: false } %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- HISTORIQUE (adhésions expirées) -->
+        <% if expired_memberships.any? %>
+          <div class="card card-liquid shadow-sm">
+            <div class="card-body">
+              <h3 class="h6 mb-3">
+                <i class="bi bi-clock-history text-muted me-2"></i>
+                Historique
+              </h3>
+              <% expired_memberships.each do |membership| %>
+                <div class="membership-history-item">
+                  <div>
+                    <strong>Saison <%= membership.season %></strong>
+                    <small class="text-muted d-block">
+                      ✓ Payée (<%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>)
+                      - Expirée le <%= l(membership.end_date, format: :short) if membership.end_date %>
+                    </small>
+                  </div>
+                  <%= link_to new_membership_path(check_age: true), class: "btn btn-sm btn-success" do %>
+                    <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
     </div>
   </div>
 </div>
