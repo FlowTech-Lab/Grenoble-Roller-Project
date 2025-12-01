@@ -160,6 +160,87 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
+    # Section Boutique
+    panel "🛒 Statistiques Boutique", style: "margin-top: 20px;" do
+      div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" do
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #337ab7;" do
+            link_to Product.count, admin_products_path, style: "color: #337ab7; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Produits en catalogue"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #d9534f;" do
+            link_to Product.where("stock_qty <= 0").count, admin_products_path(scope: "en_rupture_de_stock"), style: "color: #d9534f; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "En rupture de stock"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
+            completed_orders_count = Order.where(status: %w[paid shipped completed]).count
+            link_to completed_orders_count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Commandes payées / complétées"
+          end
+        end
+
+        # CA boutique (commandes payées) dans le bloc Statistiques Boutique
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
+            shop_revenue_cents = Order.where(status: %w[paid shipped completed]).sum(:total_cents)
+            shop_revenue = shop_revenue_cents / 100.0
+            number_to_currency(shop_revenue, unit: "€", separator: ",", delimiter: " ")
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "CA boutique (commandes payées)"
+          end
+        end
+      end
+
+      # Commandes récentes
+      recent_orders = Order.order(created_at: :desc).limit(5)
+      if recent_orders.any?
+        para "Commandes récentes :", style: "color: #666; margin-bottom: 10px; font-weight: bold;"
+        table_for recent_orders, style: "width: 100%;" do
+          column "Utilisateur" do |order|
+            if order.user
+              link_to order.user.email, admin_user_path(order.user), style: "color: #337ab7; text-decoration: none;"
+            else
+              "N/A"
+            end
+          end
+          column "Total" do |order|
+            number_to_currency(order.total_cents / 100.0, unit: order.currency)
+          end
+          column "Statut" do |order|
+            case order.status
+            when "pending"
+              status_tag("En attente", class: "warning")
+            when "completed"
+              status_tag("Complétée", class: "ok")
+            when "cancelled", "canceled"
+              status_tag("Annulée", class: "error")
+            else
+              status_tag(order.status)
+            end
+          end
+          column "Date" do |order|
+            order.created_at.strftime("%d/%m/%Y %H:%M")
+          end
+        end
+        div style: "margin-top: 15px; text-align: center;" do
+          link_to "Voir toutes les commandes →", admin_orders_path,
+                  class: "button",
+                  style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
+        end
+      end
+    end
+
     # Section Adhésions
     panel "👥 Statistiques Adhésions", style: "margin-top: 20px;" do
       div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" do
@@ -257,87 +338,6 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "margin-top: 15px; text-align: center;" do
           link_to "Voir toutes les adhésions →", admin_memberships_path,
-                  class: "button",
-                  style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
-        end
-      end
-    end
-
-    # Section Boutique
-    panel "🛒 Statistiques Boutique", style: "margin-top: 20px;" do
-      div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" do
-        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
-          div style: "font-size: 24px; font-weight: bold; color: #337ab7;" do
-            link_to Product.count, admin_products_path, style: "color: #337ab7; text-decoration: none;"
-          end
-          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "Produits en catalogue"
-          end
-        end
-        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
-          div style: "font-size: 24px; font-weight: bold; color: #d9534f;" do
-            link_to Product.where("stock_qty <= 0").count, admin_products_path(scope: "en_rupture_de_stock"), style: "color: #d9534f; text-decoration: none;"
-          end
-          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "En rupture de stock"
-          end
-        end
-        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
-          div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
-            completed_orders_count = Order.where(status: %w[paid shipped completed]).count
-            link_to completed_orders_count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
-          end
-          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "Commandes payées / complétées"
-          end
-        end
-
-        # CA boutique (commandes payées) dans le bloc Statistiques Boutique
-        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
-          div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
-            shop_revenue_cents = Order.where(status: %w[paid shipped completed]).sum(:total_cents)
-            shop_revenue = shop_revenue_cents / 100.0
-            number_to_currency(shop_revenue, unit: "€", separator: ",", delimiter: " ")
-          end
-          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "CA boutique (commandes payées)"
-          end
-        end
-      end
-
-      # Commandes récentes
-      recent_orders = Order.order(created_at: :desc).limit(5)
-      if recent_orders.any?
-        para "Commandes récentes :", style: "color: #666; margin-bottom: 10px; font-weight: bold;"
-        table_for recent_orders, style: "width: 100%;" do
-          column "Utilisateur" do |order|
-            if order.user
-              link_to order.user.email, admin_user_path(order.user), style: "color: #337ab7; text-decoration: none;"
-            else
-              "N/A"
-            end
-          end
-          column "Total" do |order|
-            number_to_currency(order.total_cents / 100.0, unit: order.currency)
-          end
-          column "Statut" do |order|
-            case order.status
-            when "pending"
-              status_tag("En attente", class: "warning")
-            when "completed"
-              status_tag("Complétée", class: "ok")
-            when "cancelled", "canceled"
-              status_tag("Annulée", class: "error")
-            else
-              status_tag(order.status)
-            end
-          end
-          column "Date" do |order|
-            order.created_at.strftime("%d/%m/%Y %H:%M")
-          end
-        end
-        div style: "margin-top: 15px; text-align: center;" do
-          link_to "Voir toutes les commandes →", admin_orders_path,
                   class: "button",
                   style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
         end
