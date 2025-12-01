@@ -51,19 +51,16 @@ Rails.application.routes.draw do
     end
   end
 
-  # Memberships - Routes REST
-  resources :memberships, only: [ :index, :new, :create, :show ] do
+  # Memberships - Routes REST/CRUD
+  resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
     collection do
       # Paiement groupé pour plusieurs enfants en attente
-      post :pay_multiple, action: :pay_multiple, as: :pay_multiple
+      post :pay_multiple
     end
     member do
+      # Actions personnalisées (non-CRUD)
       post :pay
       get :payment_status
-      # Actions pour enfants
-      get :edit_child, action: :edit_child, as: :edit_child
-      patch :update_child, action: :update_child, as: :update_child
-      delete :destroy_child, action: :destroy_child, as: :destroy_child
     end
   end
 

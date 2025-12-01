@@ -13,7 +13,7 @@
             </p>
           </div>
 
-          <%= form_with model: @membership, url: update_child_membership_path(@membership), method: :patch, local: true, data: { turbo: false } do |f| %>
+          <%= form_with model: @membership, url: membership_path(@membership), method: :patch, local: true, data: { turbo: false } do |f| %>
             <!-- Étape 1 : Choix de la catégorie -->
             <div class="mb-4">
               <h3 class="h5 mb-3">1. Choisissez l'adhésion</h3>

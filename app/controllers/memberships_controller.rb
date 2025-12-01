@@ -1,7 +1,7 @@
 class MembershipsController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_email_confirmed, only: [ :create, :batch_create ]
-  before_action :set_membership, only: [ :show, :pay, :payment_status ]
+  before_action :ensure_email_confirmed, only: [ :create ]
+  before_action :set_membership, only: [ :show, :edit, :update, :destroy, :pay, :payment_status ]
 
   def index
     @memberships = current_user.memberships.includes(:payment, :tshirt_variant).order(created_at: :desc)
@@ -312,7 +312,8 @@ class MembershipsController < ApplicationController
   end
 
   # Modifier une adhésion enfant (pending uniquement)
-  def edit_child
+  def edit
+    # Seules les adhésions enfants en attente peuvent être modifiées
     unless @membership.is_child_membership? && @membership.status == 'pending'
       redirect_to membership_path(@membership), alert: "Cette adhésion ne peut pas être modifiée."
       return
@@ -325,8 +326,8 @@ class MembershipsController < ApplicationController
     render :edit_child_form
   end
 
-  # Mettre à jour une adhésion enfant (pending uniquement)
-  def update_child
+  # Mettre à jour une adhésion (uniquement enfants pending)
+  def update
     unless @membership.is_child_membership? && @membership.status == 'pending'
       redirect_to membership_path(@membership), alert: "Cette adhésion ne peut pas être modifiée."
       return
@@ -344,7 +345,7 @@ class MembershipsController < ApplicationController
         begin
           membership_params[:child_date_of_birth] = Date.new(year.to_i, month.to_i, day.to_i).to_s
         rescue ArgumentError => e
-          redirect_to edit_child_membership_path(@membership), alert: "Date de naissance invalide."
+          redirect_to edit_membership_path(@membership), alert: "Date de naissance invalide."
           return
         end
       end
@@ -353,14 +354,14 @@ class MembershipsController < ApplicationController
     # Calculer l'âge de l'enfant
     child_date_of_birth = Date.parse(membership_params[:child_date_of_birth]) rescue nil
     if child_date_of_birth.blank?
-      redirect_to edit_child_membership_path(@membership), alert: "Date de naissance obligatoire."
+      redirect_to edit_membership_path(@membership), alert: "Date de naissance obligatoire."
       return
     end
     
     child_age = ((Date.today - child_date_of_birth) / 365.25).floor
     
     if child_age >= 18
-      redirect_to edit_child_membership_path(@membership), alert: "L'enfant a 18 ans ou plus, il doit adhérer seul."
+      redirect_to edit_membership_path(@membership), alert: "L'enfant a 18 ans ou plus, il doit adhérer seul."
       return
     end
     
@@ -387,11 +388,11 @@ class MembershipsController < ApplicationController
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la mise à jour : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to edit_child_membership_path(@membership), alert: "Erreur lors de la mise à jour : #{e.message}"
+    redirect_to edit_membership_path(@membership), alert: "Erreur lors de la mise à jour : #{e.message}"
   end
 
-  # Supprimer une adhésion enfant (pending uniquement)
-  def destroy_child
+  # Supprimer une adhésion (uniquement enfants pending)
+  def destroy
     unless @membership.is_child_membership? && @membership.status == 'pending'
       redirect_to membership_path(@membership), alert: "Cette adhésion ne peut pas être supprimée."
       return

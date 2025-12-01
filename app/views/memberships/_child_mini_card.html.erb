@@ -45,10 +45,10 @@
         <% end %>
         
         <% if is_pending %>
-          <%= link_to edit_child_membership_path(membership), class: "btn btn-sm btn-outline-warning", title: "Modifier" do %>
+          <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning", title: "Modifier" do %>
             <i class="bi bi-pencil"></i>
           <% end %>
-          <%= button_to destroy_child_membership_path(membership),
+          <%= button_to membership_path(membership),
               method: :delete,
               class: "btn btn-sm btn-outline-danger",
               title: "Supprimer",
