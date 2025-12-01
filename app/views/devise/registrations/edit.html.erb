@@ -56,55 +56,59 @@
               </div>
             </div>
 
-            <div class="mb-3">
-              <%= f.label :email, "Email", class: "form-label fw-semibold required" %>
-              <% has_error = resource.errors[:email].any? %>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <%= f.email_field :email, 
-                    class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
-                    placeholder: "votre@email.com", 
-                    autocomplete: "email",
-                    required: true,
-                    aria: has_error ? {
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <%= f.label :email, "Email", class: "form-label fw-semibold required" %>
+                <% has_error = resource.errors[:email].any? %>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                  <%= f.email_field :email, 
+                      class: "form-control form-control-liquid #{'is-invalid' if has_error}", 
+                      placeholder: "votre@email.com", 
+                      autocomplete: "email",
                       required: true,
-                      describedby: "error_email",
-                      invalid: true
-                    } : { required: true } %>
+                      aria: has_error ? {
+                        required: true,
+                        describedby: "error_email",
+                        invalid: true
+                      } : { required: true } %>
+                </div>
+                <% if has_error %>
+                  <div class="invalid-feedback d-block" id="error_email">
+                    <%= resource.errors[:email].first %>
+                  </div>
+                <% end %>
+                <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+                  <div class="alert alert-liquid-warning rounded-liquid mt-2 mb-0 p-2" role="alert">
+                    <i class="bi bi-clock-history me-1"></i>
+                    <small>En attente de confirmation pour : <%= resource.unconfirmed_email %></small>
+                  </div>
+                <% end %>
               </div>
-              <% if has_error %>
-                <div class="invalid-feedback d-block" id="error_email">
-                  <%= resource.errors[:email].first %>
+              
+              <div class="col-md-6">
+                <%= f.label :phone, "Téléphone", class: "form-label" %>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                  <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78", autocomplete: "tel", inputmode: "tel" %>
                 </div>
-              <% end %>
-              <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-                <div class="alert alert-liquid-warning rounded-liquid mt-2 mb-0 p-2" role="alert">
-                  <i class="bi bi-clock-history me-1"></i>
-                  <small>En attente de confirmation pour : <%= resource.unconfirmed_email %></small>
-                </div>
-              <% end %>
+              </div>
             </div>
 
-            <div class="mb-3">
-              <%= f.label :phone, "Téléphone", class: "form-label" %>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78", autocomplete: "tel", inputmode: "tel" %>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <%= f.label :date_of_birth, "Date de naissance", class: "form-label" do %>
-                <i class="bi bi-calendar3 me-1"></i>Date de naissance
-              <% end %>
-              <%= f.date_field :date_of_birth, 
-                  class: "form-control form-control-liquid", 
-                  value: resource.date_of_birth,
-                  max: Date.today,
-                  min: Date.today - 120.years,
-                  placeholder: "JJ/MM/AAAA" %>
-              <div class="form-text small">
-                <i class="bi bi-info-circle me-1"></i>Nécessaire pour les adhésions. Format : JJ/MM/AAAA (ex: 15/03/1990)
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <%= f.label :date_of_birth, "Date de naissance", class: "form-label" do %>
+                  <i class="bi bi-calendar3 me-1"></i>Date de naissance
+                <% end %>
+                <%= f.date_field :date_of_birth, 
+                    class: "form-control form-control-liquid", 
+                    value: resource.date_of_birth,
+                    max: Date.today,
+                    min: Date.today - 120.years,
+                    placeholder: "JJ/MM/AAAA" %>
+                <div class="form-text small">
+                  <i class="bi bi-info-circle me-1"></i>Nécessaire pour les adhésions
+                </div>
               </div>
             </div>
 
@@ -119,7 +123,7 @@
                     placeholder: "123 Rue de la République",
                     autocomplete: "street-address" %>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <%= f.label :postal_code, "Code postal", class: "form-label" do %>
                   <i class="bi bi-mailbox me-1"></i>Code postal
                 <% end %>
@@ -130,7 +134,7 @@
                     maxlength: 5,
                     pattern: "[0-9]{5}" %>
               </div>
-              <div class="col-md-8">
+              <div class="col-md-6">
                 <%= f.label :city, "Ville", class: "form-label" do %>
                   <i class="bi bi-building me-1"></i>Ville
                 <% end %>
@@ -141,18 +145,35 @@
               </div>
             </div>
 
-            <!-- Options de communication -->
+            <!-- Préférences de communication -->
             <div class="mb-4">
-              <label class="form-label fw-semibold">
-                <i class="bi bi-bell me-1"></i>Options de communication
+              <label class="form-label fw-semibold mb-3">
+                <i class="bi bi-bell me-1"></i>Préférences de communication
               </label>
-              <div class="form-check">
-                <%= f.check_box :wants_whatsapp, class: "form-check-input" %>
-                <%= f.label :wants_whatsapp, "Je souhaite rejoindre la communauté WhatsApp", class: "form-check-label" %>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <%= f.check_box :wants_initiation_mail, class: "form-check-input" %>
+                    <%= f.label :wants_initiation_mail, "Emails initiations et randos", class: "form-check-label fw-semibold" %>
+                    <small class="form-text text-muted d-block mt-1">
+                      Recevoir les informations sur les initiations du samedi et les randos
+                    </small>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <%= f.check_box :wants_events_mail, class: "form-check-input" %>
+                    <%= f.label :wants_events_mail, "Emails événements", class: "form-check-label fw-semibold" %>
+                    <small class="form-text text-muted d-block mt-1">
+                      Recevoir les informations sur les événements et actualités
+                    </small>
+                  </div>
+                </div>
               </div>
-              <div class="form-check">
-                <%= f.check_box :wants_email_info, class: "form-check-input" %>
-                <%= f.label :wants_email_info, "Je souhaite recevoir les informations par email", class: "form-check-label" %>
+              <div class="alert alert-info mt-3 mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                <small>Vous pouvez modifier ces préférences à tout moment</small>
               </div>
             </div>
 

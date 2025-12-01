@@ -375,8 +375,6 @@ class MembershipsController < ApplicationController
       is_minor: child_age < 18,
       parent_authorization: child_age < 16 ? (membership_params[:parent_authorization] == "1") : false,
       parent_authorization_date: child_age < 16 ? Date.today : nil,
-      wants_whatsapp: membership_params[:wants_whatsapp] == "1",
-      wants_email_info: membership_params[:wants_email_info] == "1",
       rgpd_consent: membership_params[:rgpd_consent] == "1",
       legal_notices_accepted: membership_params[:legal_notices_accepted] == "1",
       ffrs_data_sharing_consent: membership_params[:ffrs_data_sharing_consent] == "1"
@@ -519,12 +517,15 @@ class MembershipsController < ApplicationController
         email: membership_params[:email],
         address: membership_params[:address],
         city: membership_params[:city],
-        postal_code: membership_params[:postal_code],
-        wants_whatsapp: membership_params[:wants_whatsapp] == "1",
-        wants_email_info: membership_params[:wants_email_info] == "1"
+        postal_code: membership_params[:postal_code]
       }
       # Ajouter date_of_birth si fournie
       user_update_params[:date_of_birth] = membership_params[:date_of_birth] if membership_params[:date_of_birth].present?
+      # Ajouter les préférences email si fournies
+      if params[:user]
+        user_update_params[:wants_initiation_mail] = params[:user][:wants_initiation_mail] == "1"
+        user_update_params[:wants_events_mail] = params[:user][:wants_events_mail] == "1"
+      end
       current_user.update!(user_update_params)
     end
     
@@ -561,9 +562,7 @@ class MembershipsController < ApplicationController
       is_child_membership: false,
       is_minor: current_user.is_minor?,
       tshirt_variant_id: tshirt_variant_id,
-      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      wants_whatsapp: membership_params[:wants_whatsapp] == "1",
-      wants_email_info: membership_params[:wants_email_info] == "1"
+      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil
     )
     
     # Attacher le certificat médical si fourni
@@ -702,8 +701,6 @@ class MembershipsController < ApplicationController
       is_minor: true, # Les ados sont mineurs
       tshirt_variant_id: tshirt_variant_id,
       tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      wants_whatsapp: membership_params[:wants_whatsapp] == "1",
-      wants_email_info: membership_params[:wants_email_info] == "1",
       parent_email: membership_params[:parent_email],
       parent_name: membership_params[:parent_name] || "#{current_user.first_name} #{current_user.last_name}",
       parent_phone: membership_params[:parent_phone] || current_user.phone
@@ -820,6 +817,14 @@ class MembershipsController < ApplicationController
     amount_cents = Membership.price_for_category(category)
     current_season = Membership.current_season_name
 
+    # Mettre à jour les préférences email de l'utilisateur si fournies
+    if params[:user]
+      current_user.update!(
+        wants_initiation_mail: params[:user][:wants_initiation_mail] == "1",
+        wants_events_mail: params[:user][:wants_events_mail] == "1"
+      )
+    end
+
     # Créer l'adhésion enfant
     membership = Membership.create!(
       user: current_user, # Le parent
@@ -842,8 +847,6 @@ class MembershipsController < ApplicationController
       parent_phone: current_user.phone,
       tshirt_variant_id: tshirt_variant_id,
       tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      wants_whatsapp: child_params[:wants_whatsapp] == "1",
-      wants_email_info: child_params[:wants_email_info] == "1",
       rgpd_consent: child_params[:rgpd_consent] == "1",
       legal_notices_accepted: child_params[:legal_notices_accepted] == "1",
       ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1"

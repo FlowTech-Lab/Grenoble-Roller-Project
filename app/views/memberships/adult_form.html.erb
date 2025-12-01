@@ -1,7 +1,7 @@
 <% 
   # Définir l'étape courante (pour le stepper)
   current_step = 1
-  total_steps = 6
+  total_steps = 5
 %>
 
 <div class="container py-4">
@@ -63,18 +63,22 @@
                       </div>
                       <div class="category-title"><%= cat[:name] %></div>
                       <div class="category-description"><%= cat[:description] %></div>
-                      <div class="category-price">
-                        <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-                      </div>
-                      <% if key == :standard %>
-                        <span class="category-badge">
-                          <i class="bi bi-star-fill me-1"></i>Most Popular
-                        </span>
-                      <% end %>
-                      <div class="category-select">
-                        <%= f.radio_button :category, key, 
-                            { class: "form-check-input", id: "category_#{key}", required: true, onchange: "updateCategorySelection()" } %>
-                        <span id="category_label_<%= key %>">Sélectionner</span>
+                      <div class="category-footer d-flex justify-content-between align-items-center mt-auto">
+                        <div class="category-select">
+                          <%= f.radio_button :category, key, 
+                              { class: "form-check-input", id: "category_#{key}", required: true, onchange: "updateCategorySelection()" } %>
+                          <span id="category_label_<%= key %>">Sélectionner</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="category-price">
+                            <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                          </div>
+                          <% if key == :standard %>
+                            <span class="category-badge">
+                              <i class="bi bi-star-fill me-1"></i>Best-seller
+                            </span>
+                          <% end %>
+                        </div>
                       </div>
                       <% if key == :standard %>
                         <div class="mt-3 pt-3 border-top">
@@ -361,41 +365,10 @@
               </div>
             </div>
 
-            <!-- ÉTAPE 5 : OPTIONS -->
-            <div class="form-section" id="step-options">
-              <h3 class="section-title">
-                <span class="section-number">5</span>
-                Options
-              </h3>
-              
-              <div class="consent-group">
-                <div class="consent-item">
-                  <div class="form-check">
-                    <%= f.check_box :wants_whatsapp, 
-                        { class: "form-check-input", id: "wants_whatsapp" }, 
-                        "1", "0" %>
-                    <label class="form-check-label" for="wants_whatsapp">
-                      Je souhaite rejoindre la communauté WhatsApp
-                    </label>
-                  </div>
-                </div>
-                <div class="consent-item">
-                  <div class="form-check">
-                    <%= f.check_box :wants_email_info, 
-                        { class: "form-check-input", id: "wants_email_info", checked: true }, 
-                        "1", "0" %>
-                    <label class="form-check-label" for="wants_email_info">
-                      Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ÉTAPE 6 : CONSENTEMENTS -->
+            <!-- ÉTAPE 5 : CONSENTEMENTS -->
             <div class="form-section" id="step-consents">
               <h3 class="section-title">
-                <span class="section-number">6</span>
+                <span class="section-number">5</span>
                 Consentements & Confidentialité
               </h3>
               <p class="section-intro">Pour finaliser votre adhésion, veuillez accepter :</p>
@@ -447,14 +420,25 @@
                 </div>
                 <div class="consent-item">
                   <div class="form-check">
-                    <%= f.check_box :wants_email_info, 
-                        { class: "form-check-input", id: "wants_email_info_consent", checked: true }, 
-                        "1", "0" %>
-                    <label class="form-check-label" for="wants_email_info_consent">
-                      Je souhaite recevoir des infos sur les événements et randos
-                      <small class="text-muted d-block">(Vous pouvez vous désabonner à tout moment)</small>
+                    <%= check_box_tag "user[wants_initiation_mail]", "1", @user.wants_initiation_mail, 
+                        { class: "form-check-input", id: "wants_initiation_mail" } %>
+                    <label class="form-check-label" for="wants_initiation_mail">
+                      Je souhaite recevoir les informations sur les initiations
                     </label>
                   </div>
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= check_box_tag "user[wants_events_mail]", "1", @user.wants_events_mail, 
+                        { class: "form-check-input", id: "wants_events_mail" } %>
+                    <label class="form-check-label" for="wants_events_mail">
+                      Je souhaite recevoir les informations sur les événements/randonnées
+                    </label>
+                  </div>
+                </div>
+                <div class="form-text small mt-2">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Vous pourrez modifier ces préférences à tout moment dans votre profil
                 </div>
               </div>
               

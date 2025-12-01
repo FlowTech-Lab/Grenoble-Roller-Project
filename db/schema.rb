@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_30_194115) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_01_020755) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -321,6 +321,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_30_194115) do
     t.string "unconfirmed_email"
     t.datetime "updated_at", null: false
     t.boolean "wants_email_info", default: true
+    t.boolean "wants_events_mail", default: true, null: false
+    t.boolean "wants_initiation_mail", default: true, null: false
     t.boolean "wants_whatsapp", default: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
