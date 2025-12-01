@@ -226,8 +226,14 @@
                 Votre adhésion est active jusqu'au <%= l(@membership.end_date, format: :long) %>
               </div>
             <% elsif @membership.status == 'expired' %>
-              <%= link_to new_membership_path, class: "btn btn-primary" do %>
-                <i class="bi bi-arrow-repeat me-2"></i>Renouveler mon adhésion
+              <% if @membership.is_child_membership? %>
+                <%= link_to choose_memberships_path(child: true, renew_from: @membership.id), class: "btn btn-primary" do %>
+                  <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
+                <% end %>
+              <% else %>
+                <%= link_to choose_memberships_path, class: "btn btn-primary" do %>
+                  <i class="bi bi-arrow-repeat me-2"></i>Renouveler mon adhésion
+                <% end %>
               <% end %>
             <% end %>
           </div>
