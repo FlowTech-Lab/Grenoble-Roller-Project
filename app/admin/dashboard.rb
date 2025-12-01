@@ -46,14 +46,15 @@ ActiveAdmin.register_page "Dashboard" do
         end
       end
 
-      # Card Chiffre d'affaires
+      # Card Chiffre d'affaires boutique (commandes)
       div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
         div style: "font-size: 32px; font-weight: bold; color: #5cb85c; margin-bottom: 10px;" do
-          revenue = Order.where(status: "completed").sum(:total_cents) / 100.0
-          number_to_currency(revenue, unit: "€", separator: ",", delimiter: " ")
+          shop_revenue_cents = Order.where(status: %w[paid shipped completed]).sum(:total_cents)
+          shop_revenue = shop_revenue_cents / 100.0
+          number_to_currency(shop_revenue, unit: "€", separator: ",", delimiter: " ")
         end
         div style: "color: #666; font-size: 14px;" do
-          "Chiffre d'affaires"
+          "CA boutique (commandes payées)"
         end
       end
 
@@ -90,11 +91,39 @@ ActiveAdmin.register_page "Dashboard" do
       # Card Revenus adhésions
       div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
         div style: "font-size: 32px; font-weight: bold; color: #337ab7; margin-bottom: 10px;" do
-          membership_revenue = Membership.active.sum { |m| m.total_amount_cents } / 100.0
+          current_season = Membership.respond_to?(:current_season_name) ? Membership.current_season_name : nil
+          paid_memberships = Membership.where(status: %i[active expired])
+          paid_memberships = paid_memberships.where(season: current_season) if current_season
+          membership_revenue = paid_memberships.sum { |m| m.total_amount_cents } / 100.0
           number_to_currency(membership_revenue, unit: "€", separator: ",", delimiter: " ")
         end
         div style: "color: #666; font-size: 14px;" do
-          "Revenus adhésions"
+          if Membership.respond_to?(:current_season_name)
+            "Revenus adhésions (saison #{Membership.current_season_name})"
+          else
+            "Revenus adhésions"
+          end
+        end
+      end
+
+      # Card CA total (boutique + adhésions)
+      div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
+        div style: "font-size: 32px; font-weight: bold; color: #5bc0de; margin-bottom: 10px;" do
+          shop_revenue_cents = Order.where(status: %w[paid shipped completed]).sum(:total_cents)
+          current_season = Membership.respond_to?(:current_season_name) ? Membership.current_season_name : nil
+          paid_memberships = Membership.where(status: %i[active expired])
+          paid_memberships = paid_memberships.where(season: current_season) if current_season
+          membership_revenue_cents = paid_memberships.sum { |m| m.total_amount_cents }
+
+          total_revenue = (shop_revenue_cents + membership_revenue_cents) / 100.0
+          number_to_currency(total_revenue, unit: "€", separator: ",", delimiter: " ")
+        end
+        div style: "color: #666; font-size: 14px;" do
+          if Membership.respond_to?(:current_season_name)
+            "CA total (boutique + adhésions, saison #{Membership.current_season_name})"
+          else
+            "CA total (boutique + adhésions)"
+          end
         end
       end
     end
@@ -155,7 +184,7 @@ ActiveAdmin.register_page "Dashboard" do
             link_to Membership.personal.count, admin_memberships_path(scope: "personnelles"), style: "color: #337ab7; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "Adhésions personnelles"
+            "Adhésions personnelles (toutes saisons)"
           end
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
@@ -163,7 +192,7 @@ ActiveAdmin.register_page "Dashboard" do
             link_to Membership.children.count, admin_memberships_path(scope: "enfants"), style: "color: #d9534f; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "Adhésions enfants"
+            "Adhésions enfants (toutes saisons)"
           end
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
@@ -242,7 +271,7 @@ ActiveAdmin.register_page "Dashboard" do
             link_to Product.count, admin_products_path, style: "color: #337ab7; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "Produits total"
+            "Produits en catalogue"
           end
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
@@ -255,10 +284,23 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
-            link_to Order.where(status: "completed").count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
+            completed_orders_count = Order.where(status: %w[paid shipped completed]).count
+            link_to completed_orders_count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
-            "Commandes complétées"
+            "Commandes payées / complétées"
+          end
+        end
+
+        # CA boutique (commandes payées) dans le bloc Statistiques Boutique
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
+            shop_revenue_cents = Order.where(status: %w[paid shipped completed]).sum(:total_cents)
+            shop_revenue = shop_revenue_cents / 100.0
+            number_to_currency(shop_revenue, unit: "€", separator: ",", delimiter: " ")
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "CA boutique (commandes payées)"
           end
         end
       end
