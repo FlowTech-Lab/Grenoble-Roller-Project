@@ -60,17 +60,7 @@ class MembershipsController < ApplicationController
     @tshirt_variants = get_tshirt_variants
     @user = current_user
     
-    # Pour les enfants : initialiser la session
-    if type == "children"
-      if children_count.nil? || children_count < 1 || children_count > 10
-        redirect_to new_membership_path, alert: "Veuillez spécifier un nombre d'enfants entre 1 et 10."
-        return
-      end
-      session[:children_count] = children_count
-      session[:children_data] = []
-      @children_count = children_count
-      @current_index = 0
-    elsif type == "teen"
+    if type == "teen"
       # Pour les ados, on permet de saisir la date de naissance dans le formulaire si absente
       # La vérification d'âge se fera lors de la création de l'adhésion
     elsif type == "adult"
@@ -101,10 +91,6 @@ class MembershipsController < ApplicationController
         }
       }
       render :child_form
-    when "children"
-      # Créer un array d'objets temporaires pour fields_for
-      @children_objects = Array.new(@children_count) { OpenStruct.new }
-      render :children_form
     end
   end
   
@@ -168,175 +154,6 @@ class MembershipsController < ApplicationController
   end
   
   # Création groupée d'enfants (plusieurs enfants, un seul paiement)
-  def batch_create
-    # Récupérer les données depuis la session (stockées dans summary)
-    children_data = session[:children_data] || []
-    
-    if children_data.empty?
-      redirect_to new_membership_path, alert: "Aucune donnée d'enfant trouvée."
-      return
-    end
-    
-    # Créer toutes les adhésions enfants (sans paiement pour l'instant)
-    memberships = []
-    children_data.each_with_index do |child_data, index|
-      membership = create_child_membership_from_params(child_data, index)
-      if membership.persisted?
-        memberships << membership
-      else
-        # En cas d'erreur, détruire les adhésions déjà créées
-        memberships.each(&:destroy)
-        redirect_to summary_memberships_path, 
-                    alert: "Erreur lors de la création de l'adhésion enfant #{index + 1} : #{membership.errors.full_messages.join(', ')}"
-        return
-      end
-    end
-    
-    # Créer UN SEUL paiement HelloAsso pour toutes les adhésions
-    redirect_url = HelloassoService.multiple_memberships_checkout_redirect_url(
-      memberships,
-      back_url: summary_memberships_path,
-      error_url: memberships_path,
-      return_url: memberships_path
-    )
-
-    unless redirect_url
-      # En cas d'erreur, détruire les adhésions créées
-      memberships.each(&:destroy)
-      redirect_to summary_memberships_path, 
-                  alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
-      return
-    end
-
-    # Créer le Payment unique
-    total_amount = memberships.sum(&:total_amount_cents)
-    payment = Payment.create!(
-      provider: "helloasso",
-      provider_payment_id: nil,
-      status: "pending",
-      amount_cents: total_amount,
-      currency: "EUR"
-    )
-
-    # Lier le paiement à toutes les adhésions
-    memberships.each do |membership|
-      membership.update!(payment: payment)
-    end
-
-    # Créer le checkout-intent avec tous les items
-    result = HelloassoService.create_multiple_memberships_checkout_intent(
-      memberships,
-      back_url: summary_memberships_path,
-      error_url: memberships_path,
-      return_url: memberships_path
-    )
-
-    if result[:success] && result[:body]["id"]
-      checkout_id = result[:body]["id"].to_s
-      payment.update!(provider_payment_id: checkout_id)
-      memberships.each do |membership|
-        membership.update!(provider_order_id: checkout_id)
-      end
-    end
-    
-    # Nettoyer la session
-    session.delete(:children_count)
-    session.delete(:children_data)
-    
-    redirect_to redirect_url, allow_other_host: true
-  rescue => e
-    Rails.logger.error("[MembershipsController] Erreur lors de la création des adhésions enfants : #{e.message}")
-    Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to summary_memberships_path, 
-                alert: "Erreur lors de la création des adhésions : #{e.message}"
-  end
-  
-  # Récapitulatif avant paiement groupé
-  def summary
-    # Les données viennent du formulaire children_form via params (GET)
-    # Le formulaire utilise form_with url: qui génère [children][...] (sans index car un seul objet)
-    # Rails parse les crochets comme une clé littérale "[children]"
-    children_params = params[:children] || params["children"] || params["[children]"]
-    
-    Rails.logger.info("[MembershipsController] summary - params[:children]: #{params[:children].inspect}")
-    Rails.logger.info("[MembershipsController] summary - params['children']: #{params['children'].inspect}")
-    Rails.logger.info("[MembershipsController] summary - params['[children]']: #{params['[children]'].inspect}")
-    Rails.logger.info("[MembershipsController] summary - children_params: #{children_params.inspect}")
-    
-    if children_params.present?
-      # children_params est un hash avec les clés [children][...]
-      child_data = if children_params.is_a?(Hash)
-        children_params.to_unsafe_h.symbolize_keys
-      elsif children_params.is_a?(ActionController::Parameters)
-        children_params.to_unsafe_h.symbolize_keys
-      else
-        {}
-      end
-      
-      # Reconstruire la date de naissance à partir des 3 champs séparés
-      if child_data[:child_date_of_birth].blank?
-        day = child_data[:child_date_of_birth_day]
-        month = child_data[:child_date_of_birth_month]
-        year = child_data[:child_date_of_birth_year]
-        
-        if day.present? && month.present? && year.present?
-          begin
-            child_data[:child_date_of_birth] = Date.new(year.to_i, month.to_i, day.to_i).to_s
-          rescue ArgumentError => e
-            Rails.logger.error("[MembershipsController] summary - Erreur de date: #{e.message}")
-            child_data[:child_date_of_birth] = nil
-          end
-        end
-      end
-      
-      # Vérifier que les champs essentiels sont présents
-      if child_data[:category].present? && 
-         child_data[:child_first_name].present? && 
-         child_data[:child_last_name].present? && 
-         child_data[:child_date_of_birth].present?
-        @children_data = [child_data]
-        @children_count = 1
-      else
-        Rails.logger.error("[MembershipsController] summary - Champs manquants: category=#{child_data[:category].present?}, first_name=#{child_data[:child_first_name].present?}, last_name=#{child_data[:child_last_name].present?}, date=#{child_data[:child_date_of_birth].present?}")
-        @children_data = []
-        @children_count = 0
-      end
-      
-      Rails.logger.info("[MembershipsController] summary - @children_data: #{@children_data.inspect}")
-      Rails.logger.info("[MembershipsController] summary - @children_count: #{@children_count}")
-      
-      # Stocker en session pour batch_create
-      session[:children_data] = @children_data
-      session[:children_count] = @children_count
-    else
-      # Si pas de params, utiliser la session
-      @children_data = session[:children_data] || []
-      @children_count = session[:children_count] || @children_data.size
-      Rails.logger.info("[MembershipsController] summary - Utilisation de la session: #{@children_data.inspect}")
-    end
-    
-    if @children_data.empty?
-      Rails.logger.error("[MembershipsController] summary - Données vides, redirection")
-      Rails.logger.error("[MembershipsController] summary - children_params était: #{children_params.inspect}")
-      redirect_to new_membership_path, alert: "Données incomplètes. Veuillez recommencer."
-      return
-    end
-    
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
-    @categories = get_categories
-    @tshirt_variants = get_tshirt_variants
-    
-    # Calculer le total
-    @total_cents = 0
-    @children_data.each do |child_data|
-      category_key = child_data[:category]
-      amount = Membership.price_for_category(category_key)
-      amount += 1400 if child_data[:tshirt_variant_id].present? # T-shirt 14€
-      @total_cents += amount
-    end
-  end
-
   def show
     @membership = @membership || current_user.memberships.find(params[:id])
   end

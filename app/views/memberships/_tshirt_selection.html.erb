@@ -23,7 +23,7 @@
                 <% elsif variant.image_url.present? %>
                   <%= image_tag variant.image_url, alt: "T-shirt Taille #{size}", loading: "lazy", style: "object-fit: contain; height: 100%;" %>
                 <% else %>
-                  <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                  <div class="d-flex align-items-center justify-content-center h-100" style="background: var(--liquid-glass-bg);">
                     <i class="bi bi-tshirt fs-4 text-muted"></i>
                   </div>
                 <% end %>

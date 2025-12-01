@@ -54,11 +54,7 @@ Rails.application.routes.draw do
   # Memberships - Routes REST
   resources :memberships, only: [ :index, :new, :create, :show ] do
     collection do
-      # Création groupée d'enfants (plusieurs enfants, un seul paiement)
-      post :batch, action: :batch_create, as: :batch
-      # Récapitulatif avant paiement groupé
-      get :summary, action: :summary, as: :summary
-      # Paiement groupé pour plusieurs enfants
+      # Paiement groupé pour plusieurs enfants en attente
       post :pay_multiple, action: :pay_multiple, as: :pay_multiple
     end
     member do

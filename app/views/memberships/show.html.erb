@@ -139,7 +139,7 @@
           <div class="row g-3 mb-4">
             <% if @membership.is_child_membership? %>
               <div class="col-12">
-                <div class="card bg-light">
+                <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                   <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-muted">Informations de l'enfant</h6>
                     <p class="card-text">
@@ -152,7 +152,7 @@
               </div>
             <% end %>
             <div class="col-12 col-md-6">
-              <div class="card bg-light">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                 <div class="card-body">
                   <h6 class="card-subtitle mb-2 text-muted">Catégorie</h6>
                   <p class="card-text h5">
@@ -162,7 +162,7 @@
               </div>
             </div>
             <div class="col-12 col-md-6">
-              <div class="card bg-light">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                 <div class="card-body">
                   <h6 class="card-subtitle mb-2 text-muted">Montant adhésion</h6>
                   <p class="card-text h5">
@@ -178,7 +178,7 @@
             </div>
             <% if @membership.tshirt_variant_id.present? %>
               <div class="col-12">
-                <div class="card bg-light">
+                <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                   <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-muted">T-shirt</h6>
                     <p class="card-text">
@@ -194,7 +194,7 @@
               </div>
             <% end %>
             <div class="col-12 col-md-6">
-              <div class="card bg-light">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                 <div class="card-body">
                   <h6 class="card-subtitle mb-2 text-muted">Date de début</h6>
                   <p class="card-text"><%= l(@membership.start_date, format: :long) %></p>
@@ -202,7 +202,7 @@
               </div>
             </div>
             <div class="col-12 col-md-6">
-              <div class="card bg-light">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                 <div class="card-body">
                   <h6 class="card-subtitle mb-2 text-muted">Date de fin</h6>
                   <p class="card-text"><%= l(@membership.end_date, format: :long) %></p>

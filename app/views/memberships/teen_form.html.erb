@@ -25,7 +25,7 @@
               <div class="row g-3">
                 <% @categories.each do |key, cat| %>
                   <div class="col-md-6">
-                    <div class="card h-100 border-2">
+                    <div class="card card-liquid h-100" style="background: var(--liquid-glass-bg); border: 2px solid var(--card-border-color);">
                       <div class="card-body">
                         <div class="form-check">
                           <%= f.radio_button :category, key, 
