@@ -33,6 +33,22 @@ class MembershipsController < ApplicationController
       return
     end
     
+    # Si renouvellement depuis une adhésion expirée (pour enfants)
+    if type == "child" && params[:renew_from].present?
+      old_membership = current_user.memberships.find_by(id: params[:renew_from])
+      if old_membership && old_membership.is_child_membership? && old_membership.expired?
+        @old_membership = old_membership
+        # Pré-remplir les informations depuis l'ancienne adhésion
+        @membership = Membership.new(
+          is_child_membership: true,
+          child_first_name: old_membership.child_first_name,
+          child_last_name: old_membership.child_last_name,
+          child_date_of_birth: old_membership.child_date_of_birth,
+          category: old_membership.category
+        )
+      end
+    end
+    
     # Vérifier si l'utilisateur a déjà une adhésion personnelle active ou pending (sauf pour enfants)
     if %w[adult teen].include?(type)
       current_season = Membership.current_season_name

@@ -306,14 +306,26 @@
               <% expired_memberships.each do |membership| %>
                 <div class="membership-history-item">
                   <div>
-                    <strong>Saison <%= membership.season %></strong>
+                    <strong>
+                      <% if membership.is_child_membership? %>
+                        <%= membership.child_full_name %> - Saison <%= membership.season %>
+                      <% else %>
+                        Saison <%= membership.season %>
+                      <% end %>
+                    </strong>
                     <small class="text-muted d-block">
                       ✓ Payée (<%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>)
                       - Expirée le <%= l(membership.end_date, format: :short) if membership.end_date %>
                     </small>
                   </div>
-                  <%= link_to new_membership_path(check_age: true), class: "btn btn-sm btn-success" do %>
-                    <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+                  <% if membership.is_child_membership? %>
+                    <%= link_to new_membership_path(type: "child", renew_from: membership.id), class: "btn btn-sm btn-success" do %>
+                      <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
+                    <% end %>
+                  <% else %>
+                    <%= link_to new_membership_path(check_age: true), class: "btn btn-sm btn-success" do %>
+                      <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+                    <% end %>
                   <% end %>
                 </div>
               <% end %>

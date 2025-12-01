@@ -7,12 +7,24 @@
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
-      <!-- HERO SECTION -->
-      <div class="hero-form">
-        <div class="text-center">
-          <div class="hero-icon">👶</div>
-          <h1 class="hero-title">INSCRIPTION DE VOTRE ENFANT</h1>
-          <p class="hero-subtitle">Rejoignez Grenoble Roller en toute simplicité</p>
+          <!-- HERO SECTION -->
+          <div class="hero-form">
+            <div class="text-center">
+              <div class="hero-icon">👶</div>
+              <h1 class="hero-title">
+                <% if @old_membership %>
+                  RÉADHÉSION DE <%= @old_membership.child_full_name.upcase %>
+                <% else %>
+                  INSCRIPTION DE VOTRE ENFANT
+                <% end %>
+              </h1>
+              <p class="hero-subtitle">
+                <% if @old_membership %>
+                  Renouvellement de l'adhésion pour la saison <%= @season %>
+                <% else %>
+                  Rejoignez Grenoble Roller en toute simplicité
+                <% end %>
+              </p>
           
           <div class="hero-badges">
             <span class="badge">
@@ -54,10 +66,10 @@
               </h3>
               <p class="section-intro">Sélectionnez la formule qui correspond à votre enfant</p>
               
-              <div class="row g-3">
-                <% @categories.each do |key, cat| %>
-                  <div class="col-md-6">
-                    <label for="category_<%= key %>" class="category-card <%= 'selected' if key == :standard %>" onclick="selectCategory('<%= key %>')">
+                  <div class="row g-3">
+                    <% @categories.each do |key, cat| %>
+                      <div class="col-md-6">
+                        <label for="category_<%= key %>" class="category-card <%= 'selected' if (@membership&.category&.to_sym == key) || (key == :standard && @membership.nil?) %>" onclick="selectCategory('<%= key %>')">
                       <div class="category-icon">
                         <%= key == :standard ? '👶' : '🎓' %>
                       </div>
@@ -94,25 +106,35 @@
               </h3>
               <p class="section-intro">Ces informations permettront d'adapter le formulaire d'adhésion</p>
               
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <%= f.label :child_first_name, "Prénom de l'enfant *", class: "form-label fw-bold" %>
-                  <%= f.text_field :child_first_name, 
-                      class: "form-control form-control-lg", 
-                      required: true,
-                      placeholder: "Prénom",
-                      onblur: "validateField(this)" %>
-                  <div class="invalid-feedback"></div>
-                </div>
-                <div class="col-md-6">
-                  <%= f.label :child_last_name, "Nom de l'enfant *", class: "form-label fw-bold" %>
-                  <%= f.text_field :child_last_name, 
-                      class: "form-control form-control-lg", 
-                      required: true,
-                      placeholder: "Nom",
-                      onblur: "validateField(this)" %>
-                  <div class="invalid-feedback"></div>
-                </div>
+                  <% if @old_membership %>
+                    <div class="alert alert-info mb-4">
+                      <i class="bi bi-info-circle me-2"></i>
+                      <strong>Renouvellement d'adhésion</strong> : Les informations de <%= @old_membership.child_full_name %> ont été pré-remplies. 
+                      Vous pouvez les modifier si nécessaire.
+                    </div>
+                  <% end %>
+                  
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <%= f.label :child_first_name, "Prénom de l'enfant *", class: "form-label fw-bold" %>
+                      <%= f.text_field :child_first_name, 
+                          class: "form-control form-control-lg", 
+                          required: true,
+                          placeholder: "Prénom",
+                          value: @membership&.child_first_name,
+                          onblur: "validateField(this)" %>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-6">
+                      <%= f.label :child_last_name, "Nom de l'enfant *", class: "form-label fw-bold" %>
+                      <%= f.text_field :child_last_name, 
+                          class: "form-control form-control-lg", 
+                          required: true,
+                          placeholder: "Nom",
+                          value: @membership&.child_last_name,
+                          onblur: "validateField(this)" %>
+                      <div class="invalid-feedback"></div>
+                    </div>
                     <div class="col-md-12">
                       <%= f.label :child_date_of_birth, "Date de naissance *", class: "form-label fw-bold" do %>
                         <i class="bi bi-calendar3 me-1"></i>Date de naissance de l'enfant
@@ -120,7 +142,7 @@
                       <div class="row g-2">
                         <div class="col-4">
                           <%= f.select :child_date_of_birth_day, 
-                              options_for_select((1..31).map { |d| [d, d] }), 
+                              options_for_select((1..31).map { |d| [d, d] }, @membership&.child_date_of_birth&.day), 
                               { prompt: "Jour", include_blank: true },
                               { 
                                 class: "form-select form-select-lg", 
@@ -135,7 +157,7 @@
                                 ["Janvier", 1], ["Février", 2], ["Mars", 3], ["Avril", 4],
                                 ["Mai", 5], ["Juin", 6], ["Juillet", 7], ["Août", 8],
                                 ["Septembre", 9], ["Octobre", 10], ["Novembre", 11], ["Décembre", 12]
-                              ]), 
+                              ], @membership&.child_date_of_birth&.month), 
                               { prompt: "Mois", include_blank: true },
                               { 
                                 class: "form-select form-select-lg", 
@@ -146,7 +168,7 @@
                         </div>
                         <div class="col-4">
                           <%= f.select :child_date_of_birth_year, 
-                              options_for_select(Date.today.year.downto(Date.today.year - 18).map { |y| [y, y] }), 
+                              options_for_select(Date.today.year.downto(Date.today.year - 18).map { |y| [y, y] }, @membership&.child_date_of_birth&.year), 
                               { prompt: "Année", include_blank: true },
                               { 
                                 class: "form-select form-select-lg", 
@@ -893,6 +915,32 @@
       });
     });
     updateAuthPrice();
+    
+    // Initialiser les valeurs si renouvellement depuis une adhésion expirée
+    <% if @old_membership %>
+      // Pré-remplir le nom de l'enfant dans l'autorisation parentale
+      const parentChildName = document.getElementById('parent_child_name');
+      if (parentChildName) {
+        parentChildName.textContent = '<%= @old_membership.child_full_name %>';
+      }
+      
+      // Initialiser la date de naissance si elle est pré-remplie
+      <% if @membership&.child_date_of_birth %>
+        setTimeout(() => {
+          updateChildDateOfBirth();
+          calculateChildAge();
+        }, 100);
+      <% end %>
+      
+      // Sélectionner la catégorie si elle était pré-remplie
+      <% if @membership&.category %>
+        const categoryRadio = document.getElementById('category_<%= @membership.category %>');
+        if (categoryRadio) {
+          categoryRadio.checked = true;
+          selectCategory('<%= @membership.category %>');
+        }
+      <% end %>
+    <% end %>
     
     // Validation avant soumission
     form?.addEventListener('submit', function(e) {
