@@ -34,6 +34,19 @@ class Membership < ApplicationRecord
   scope :personal, -> { where(is_child_membership: false) }
   scope :children, -> { where(is_child_membership: true) }
 
+  # Ransack pour ActiveAdmin
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id user_id payment_id tshirt_variant_id category status season start_date end_date 
+       amount_cents currency is_child_membership is_minor child_first_name child_last_name 
+       child_date_of_birth parent_authorization parent_authorization_date parent_name 
+       parent_email parent_phone rgpd_consent legal_notices_accepted ffrs_data_sharing_consent 
+       health_questionnaire_status created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[medical_certificate_attachment medical_certificate_blob payment tshirt_variant user]
+  end
+
   # Calcul automatique du prix selon la catégorie
   def self.price_for_category(category)
     case category.to_s

@@ -56,6 +56,47 @@ ActiveAdmin.register_page "Dashboard" do
           "Chiffre d'affaires"
         end
       end
+
+      # Card Adhésions actives
+      div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
+        div style: "font-size: 32px; font-weight: bold; color: #5cb85c; margin-bottom: 10px;" do
+          active_memberships = Membership.active_now.count
+          if active_memberships > 0
+            link_to active_memberships, admin_memberships_path(scope: "actives"), style: "color: #5cb85c; text-decoration: none;"
+          else
+            active_memberships
+          end
+        end
+        div style: "color: #666; font-size: 14px;" do
+          "Adhésions actives"
+        end
+      end
+
+      # Card Adhésions en attente
+      div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
+        div style: "font-size: 32px; font-weight: bold; color: #f0ad4e; margin-bottom: 10px;" do
+          pending_memberships = Membership.pending.count
+          if pending_memberships > 0
+            link_to pending_memberships, admin_memberships_path(scope: "en_attente"), style: "color: #f0ad4e; text-decoration: none;"
+          else
+            pending_memberships
+          end
+        end
+        div style: "color: #666; font-size: 14px;" do
+          "Adhésions en attente"
+        end
+      end
+
+      # Card Revenus adhésions
+      div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
+        div style: "font-size: 32px; font-weight: bold; color: #337ab7; margin-bottom: 10px;" do
+          membership_revenue = Membership.active.sum { |m| m.total_amount_cents } / 100.0
+          number_to_currency(membership_revenue, unit: "€", separator: ",", delimiter: " ")
+        end
+        div style: "color: #666; font-size: 14px;" do
+          "Revenus adhésions"
+        end
+      end
     end
 
     # Section Événements à valider (liste simple avec liens)
@@ -87,6 +128,109 @@ ActiveAdmin.register_page "Dashboard" do
         end
       else
         para "✅ Aucun événement en attente de validation", style: "color: #5cb85c; font-weight: bold; text-align: center; padding: 20px;"
+      end
+    end
+
+    # Section Adhésions
+    panel "👥 Statistiques Adhésions", style: "margin-top: 20px;" do
+      div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" do
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
+            link_to Membership.active_now.count, admin_memberships_path(scope: "actives"), style: "color: #5cb85c; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Adhésions actives"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #f0ad4e;" do
+            link_to Membership.pending.count, admin_memberships_path(scope: "en_attente"), style: "color: #f0ad4e; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "En attente de paiement"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #337ab7;" do
+            link_to Membership.personal.count, admin_memberships_path(scope: "personnelles"), style: "color: #337ab7; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Adhésions personnelles"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #d9534f;" do
+            link_to Membership.children.count, admin_memberships_path(scope: "enfants"), style: "color: #d9534f; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Adhésions enfants"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #f0ad4e;" do
+            link_to Membership.expiring_soon.count, admin_memberships_path(scope: "expirent_bientot"), style: "color: #f0ad4e; text-decoration: none;"
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Expirent bientôt (30j)"
+          end
+        end
+        div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
+          div style: "font-size: 24px; font-weight: bold; color: #337ab7;" do
+            total_revenue = Membership.active.sum { |m| m.total_amount_cents } / 100.0
+            number_to_currency(total_revenue, unit: "€", separator: ",", delimiter: " ")
+          end
+          div style: "color: #666; font-size: 13px; margin-top: 5px;" do
+            "Revenus adhésions"
+          end
+        end
+      end
+
+      # Adhésions récentes
+      recent_memberships = Membership.order(created_at: :desc).limit(5)
+      if recent_memberships.any?
+        para "Adhésions récentes :", style: "color: #666; margin-bottom: 10px; font-weight: bold;"
+        table_for recent_memberships, style: "width: 100%;" do
+          column "Utilisateur" do |membership|
+            if membership.user
+              link_to membership.user.email, admin_user_path(membership.user), style: "color: #337ab7; text-decoration: none;"
+            else
+              "N/A"
+            end
+          end
+          column "Type" do |membership|
+            membership.is_child_membership? ? "Enfant" : "Personnelle"
+          end
+          column "Nom" do |membership|
+            if membership.is_child_membership?
+              membership.child_full_name
+            else
+              membership.user&.email || "N/A"
+            end
+          end
+          column "Total" do |membership|
+            number_to_currency(membership.total_amount_cents / 100.0, unit: membership.currency || "EUR")
+          end
+          column "Statut" do |membership|
+            case membership.status
+            when "active"
+              status_tag("Active", class: "ok")
+            when "pending"
+              status_tag("En attente", class: "warning")
+            when "expired"
+              status_tag("Expirée", class: "error")
+            else
+              status_tag(membership.status)
+            end
+          end
+          column "Date" do |membership|
+            membership.created_at.strftime("%d/%m/%Y %H:%M")
+          end
+        end
+        div style: "margin-top: 15px; text-align: center;" do
+          link_to "Voir toutes les adhésions →", admin_memberships_path,
+                  class: "button",
+                  style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
+        end
       end
     end
 
@@ -179,6 +323,10 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div do
           link_to "📧 Messages de contact", admin_contact_messages_path,
+                  style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
+        end
+        div do
+          link_to "👥 Toutes les adhésions", admin_memberships_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
       end
