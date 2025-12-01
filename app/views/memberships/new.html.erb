@@ -1,6 +1,13 @@
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
+      <!-- Lien vers la liste des adhésions -->
+      <div class="mb-3">
+        <%= link_to memberships_path, class: "btn btn-outline-primary btn-sm" do %>
+          <i class="bi bi-arrow-left me-1"></i>Voir mes adhésions
+        <% end %>
+      </div>
+      
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
           <!-- Header -->

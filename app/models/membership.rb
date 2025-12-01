@@ -95,6 +95,12 @@ class Membership < ApplicationRecord
     "#{child_first_name} #{child_last_name}".strip
   end
 
+  # Calculer l'âge de l'enfant
+  def child_age
+    return 0 unless child_date_of_birth.present?
+    ((Date.today - child_date_of_birth) / 365.25).floor
+  end
+
   private
 
   def unique_personal_membership_per_season
@@ -154,12 +160,6 @@ class Membership < ApplicationRecord
       age = ((Date.today - user.date_of_birth) / 365.25).floor
       age < 16
     end
-  end
-  
-  # Calculer l'âge de l'enfant
-  def child_age
-    return 0 unless child_date_of_birth.present?
-    ((Date.today - child_date_of_birth) / 365.25).floor
   end
 end
 

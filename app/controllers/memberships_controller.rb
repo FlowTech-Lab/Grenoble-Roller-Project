@@ -5,6 +5,16 @@ class MembershipsController < ApplicationController
 
   def index
     @memberships = current_user.memberships.includes(:payment, :tshirt_variant).order(created_at: :desc)
+    
+    # Variables pour la section "Nouvelle adhésion"
+    @season = Membership.current_season_name
+    @start_date, @end_date = Membership.current_season_dates
+    
+    # Vérifier s'il y a une adhésion personnelle en cours (pending ou active) pour cette saison
+    current_season = Membership.current_season_name
+    existing_memberships = current_user.memberships.personal.where(season: current_season)
+    @pending_membership = existing_memberships.find { |m| m.status == 'pending' }
+    @active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
   end
 
   def new
@@ -17,17 +27,9 @@ class MembershipsController < ApplicationController
     type = params[:type] # "adult", "teen", "children", ou nil (choix initial)
     children_count = params[:count]&.to_i
     
-    # Si pas de type, afficher le choix initial
+    # Si pas de type, rediriger vers index (la page principale avec les options)
     unless type
-      @season = Membership.current_season_name
-      @start_date, @end_date = Membership.current_season_dates
-      
-      # Vérifier s'il y a une adhésion en cours (pending ou active) pour cette saison
-      current_season = Membership.current_season_name
-      existing_memberships = current_user.memberships.personal.where(season: current_season)
-      @pending_membership = existing_memberships.find { |m| m.status == 'pending' }
-      @active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
-      
+      redirect_to memberships_path
       return
     end
     

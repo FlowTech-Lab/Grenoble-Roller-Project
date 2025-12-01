@@ -54,8 +54,6 @@ Rails.application.routes.draw do
   # Memberships - Routes REST
   resources :memberships, only: [ :index, :new, :create, :show ] do
     collection do
-      # Choix initial du type d'adhésion
-      get :new, action: :new, as: :new
       # Création groupée d'enfants (plusieurs enfants, un seul paiement)
       post :batch, action: :batch_create, as: :batch
       # Récapitulatif avant paiement groupé
