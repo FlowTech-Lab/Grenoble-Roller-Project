@@ -4127,7 +4127,8 @@
 
   /* Hero Section Adhésions */
   .hero-memberships {
-    background: linear-gradient(135deg, #2180A9 0%, #32B8C6 100%);
+    /* Mode clair : Gradient bleu harmonieux avec le thème */
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 50%, #1e8dff 100%);
     color: white;
     border-radius: 1.6rem;
     padding: 3rem 2rem;
@@ -4136,7 +4137,7 @@
     position: relative;
     overflow: hidden;
     
-    /* Overlay subtil pour texture */
+    /* Overlay subtil pour texture et profondeur */
     &::before {
       content: '';
       position: absolute;
@@ -4144,7 +4145,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
       pointer-events: none;
     }
     
@@ -4158,26 +4159,34 @@
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
     .badge {
       background: rgba(255, 255, 255, 0.95) !important;
-      color: #2180A9 !important;
+      color: #0056b3 !important;
       border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
 
   [data-bs-theme="dark"] .hero-memberships {
-    background: linear-gradient(135deg, #1a6b8a 0%, #2a9db8 100%);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    /* Mode sombre : Gradient bleu plus foncé pour s'harmoniser avec le thème dark */
+    background: linear-gradient(135deg, #001f3f 0%, #002d5c 50%, #003d7a 100%);
+    box-shadow: 0 4px 24px rgba(0, 31, 63, 0.5);
     
     &::before {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 100%);
+    }
+    
+    h1 {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     }
     
     .badge {
       background: rgba(255, 255, 255, 0.15) !important;
       color: white !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
   }
 
