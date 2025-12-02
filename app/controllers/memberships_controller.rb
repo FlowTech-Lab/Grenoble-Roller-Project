@@ -139,33 +139,39 @@ class MembershipsController < ApplicationController
   end
   
   def check_age_and_redirect
-    # Vérifier si la date de naissance est renseignée
-    if current_user.date_of_birth.blank?
-      redirect_to edit_user_registration_path, 
-        alert: "Veuillez d'abord renseigner votre date de naissance dans votre profil pour continuer."
-      return
-    end
-    
-    # Calculer l'âge
-    age = current_user.age
-    
-    # Vérifier si l'utilisateur a déjà une adhésion personnelle active ou pending
+    # Vérifier d'abord si l'utilisateur a déjà une adhésion personnelle active ou pending
     current_season = Membership.current_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
     
     # Vérifier adhésion active
     active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
     if active_membership
-      redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      # Message adapté avec informations sur l'adhésion
+      flash[:info] = "Vous avez déjà une adhésion active pour la saison #{current_season}. Elle est valable jusqu'au #{I18n.l(active_membership.end_date, format: :long)}."
+      flash[:show_membership_modal] = true
+      redirect_to membership_path(active_membership)
       return
     end
     
     # Vérifier adhésion pending
     pending_membership = existing_memberships.find { |m| m.status == 'pending' }
     if pending_membership
-      redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement avant d'en créer une nouvelle."
+      # Message adapté pour adhésion en attente
+      flash[:warning] = "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement avant d'en créer une nouvelle."
+      flash[:show_membership_modal] = true
+      redirect_to membership_path(pending_membership)
       return
     end
+    
+    # Si pas de date de naissance, permettre de continuer (sera renseignée dans le formulaire)
+    if current_user.date_of_birth.blank?
+      # Rediriger vers la page de choix (le formulaire permettra de renseigner la date de naissance)
+      redirect_to choose_memberships_path
+      return
+    end
+    
+    # Calculer l'âge si date de naissance présente
+    age = current_user.age
     
     # Rediriger selon l'âge
     if age < 16
@@ -426,11 +432,56 @@ class MembershipsController < ApplicationController
     
     # Vérifier les réponses au questionnaire de santé (9 questions)
     has_health_issue = false
+    all_answered_no = true
     (1..9).each do |i|
-      if membership_params["health_question_#{i}"] == "yes"
+      answer = membership_params["health_question_#{i}"]
+      if answer == "yes"
         has_health_issue = true
-        break
+        all_answered_no = false
+      elsif answer == "no"
+        # Réponse NON, continue
+      else
+        all_answered_no = false # Pas encore répondu
       end
+    end
+    
+    # Déterminer le statut du questionnaire selon la catégorie
+    is_ffrs = membership_params[:category] == "with_ffrs" || @membership.category == "with_ffrs"
+    
+    if is_ffrs
+      # FFRS : Questionnaire obligatoire
+      if has_health_issue
+        # Au moins une réponse OUI : certificat obligatoire
+        @membership.health_questionnaire_status = "medical_required"
+        if membership_params[:medical_certificate].blank? && !@membership.medical_certificate.attached?
+          redirect_to edit_membership_path(@membership), alert: "Pour la licence FFRS, un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
+          return
+        end
+      elsif all_answered_no
+        # Toutes réponses NON : vérifier si nouvelle licence FFRS
+        @membership.health_questionnaire_status = "ok"
+        # Vérifier si l'utilisateur a déjà eu une licence FFRS pour un enfant
+        previous_ffrs = current_user.memberships.children.where(category: "with_ffrs").where.not(id: @membership.id).exists?
+        if !previous_ffrs && membership_params[:medical_certificate].blank? && !@membership.medical_certificate.attached?
+          # Nouvelle licence FFRS : certificat obligatoire même si toutes réponses NON
+          redirect_to edit_membership_path(@membership), alert: "Pour une nouvelle licence FFRS, un certificat médical est obligatoire."
+          return
+        end
+        # TODO: Générer attestation automatique si renouvellement
+      else
+        # Pas toutes les questions répondues
+        redirect_to edit_membership_path(@membership), alert: "Le questionnaire de santé est obligatoire pour la licence FFRS. Veuillez répondre à toutes les questions."
+        return
+      end
+    else
+      # STANDARD : Questionnaire optionnel, pas de certificat obligatoire
+      @membership.health_questionnaire_status = has_health_issue ? "medical_required" : "ok"
+    end
+    
+    # Mettre à jour les réponses du questionnaire
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      @membership.send("health_q#{i}=", answer) if answer.present?
     end
     
     # Attacher le certificat médical si fourni
@@ -438,12 +489,8 @@ class MembershipsController < ApplicationController
       @membership.medical_certificate.attach(membership_params[:medical_certificate])
     end
     
-    # Validation : si problème de santé détecté, certificat obligatoire
-    if has_health_issue && !@membership.medical_certificate.attached?
-      @membership.errors.add(:medical_certificate, "est obligatoire si vous avez répondu 'Oui' à au moins une question de santé")
-      redirect_to edit_membership_path(@membership), alert: "Un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
-      return
-    end
+    # Sauvegarder les modifications
+    @membership.save!
     
     redirect_to memberships_path, notice: "Adhésion de #{@membership.child_full_name} mise à jour avec succès."
   rescue => e
@@ -535,24 +582,31 @@ class MembershipsController < ApplicationController
     start_date, end_date = Membership.current_season_dates
     amount_cents = Membership.price_for_category(category)
 
-    # Mettre à jour les informations User si fournies
-    if membership_params[:first_name].present?
-      user_update_params = {
-        first_name: membership_params[:first_name],
-        last_name: membership_params[:last_name],
-        phone: membership_params[:phone],
-        email: membership_params[:email],
-        address: membership_params[:address],
-        city: membership_params[:city],
-        postal_code: membership_params[:postal_code]
-      }
-      # Ajouter date_of_birth si fournie
-      user_update_params[:date_of_birth] = membership_params[:date_of_birth] if membership_params[:date_of_birth].present?
-      # Ajouter les préférences email si fournies
-      if params[:user]
-        user_update_params[:wants_initiation_mail] = params[:user][:wants_initiation_mail] == "1"
-        user_update_params[:wants_events_mail] = params[:user][:wants_events_mail] == "1"
-      end
+    # Mettre à jour les informations User (même si certains champs sont vides, on met à jour ceux qui sont fournis)
+    user_update_params = {}
+    
+    # Mettre à jour les champs fournis
+    user_update_params[:first_name] = membership_params[:first_name] if membership_params[:first_name].present?
+    user_update_params[:last_name] = membership_params[:last_name] if membership_params[:last_name].present?
+    user_update_params[:phone] = membership_params[:phone] if membership_params[:phone].present?
+    user_update_params[:email] = membership_params[:email] if membership_params[:email].present?
+    user_update_params[:address] = membership_params[:address] if membership_params[:address].present?
+    user_update_params[:city] = membership_params[:city] if membership_params[:city].present?
+    user_update_params[:postal_code] = membership_params[:postal_code] if membership_params[:postal_code].present?
+    
+    # Toujours mettre à jour la date de naissance si fournie (même si les autres champs ne le sont pas)
+    if membership_params[:date_of_birth].present?
+      user_update_params[:date_of_birth] = membership_params[:date_of_birth]
+    end
+    
+    # Ajouter les préférences email si fournies
+    if params[:user]
+      user_update_params[:wants_initiation_mail] = params[:user][:wants_initiation_mail] == "1" if params[:user][:wants_initiation_mail].present?
+      user_update_params[:wants_events_mail] = params[:user][:wants_events_mail] == "1" if params[:user][:wants_events_mail].present?
+    end
+    
+    # Mettre à jour l'utilisateur si au moins un paramètre est fourni
+    if user_update_params.any?
       current_user.update!(user_update_params)
     end
     
@@ -569,17 +623,64 @@ class MembershipsController < ApplicationController
 
     # Vérifier les réponses au questionnaire de santé (9 questions)
     has_health_issue = false
+    all_answered_no = true
     (1..9).each do |i|
-      if membership_params["health_question_#{i}"] == "yes"
+      answer = membership_params["health_question_#{i}"]
+      if answer == "yes"
         has_health_issue = true
-        break
+        all_answered_no = false
+      elsif answer != "no"
+        all_answered_no = false # Pas encore répondu
       end
+    end
+    
+    # Déterminer le statut du questionnaire selon la catégorie
+    is_ffrs = category == "with_ffrs"
+    
+    if is_ffrs
+      # FFRS : Questionnaire obligatoire
+      if has_health_issue
+        # Au moins une réponse OUI : certificat obligatoire
+        membership_params[:health_questionnaire_status] = "medical_required"
+        if membership_params[:medical_certificate].blank?
+          redirect_to new_membership_path(type: "adult"), alert: "Pour la licence FFRS, un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
+          return
+        end
+      elsif all_answered_no
+        # Toutes réponses NON : vérifier si nouvelle licence FFRS
+        membership_params[:health_questionnaire_status] = "ok"
+        # Vérifier si l'utilisateur a déjà eu une licence FFRS
+        previous_ffrs = current_user.memberships.personal.where(category: "with_ffrs").exists?
+        if !previous_ffrs && membership_params[:medical_certificate].blank?
+          # Nouvelle licence FFRS : certificat obligatoire même si toutes réponses NON
+          redirect_to new_membership_path(type: "adult"), alert: "Pour une nouvelle licence FFRS, un certificat médical est obligatoire."
+          return
+        end
+        # TODO: Générer attestation automatique si renouvellement
+      else
+        # Pas toutes les questions répondues
+        redirect_to new_membership_path(type: "adult"), alert: "Le questionnaire de santé est obligatoire pour la licence FFRS. Veuillez répondre à toutes les questions."
+        return
+      end
+    else
+      # STANDARD : Questionnaire optionnel, pas de certificat obligatoire
+      membership_params[:health_questionnaire_status] = has_health_issue ? "medical_required" : "ok"
+      # Pas de validation stricte pour Standard
     end
     
     # Gérer le T-shirt (nouveau système simplifié)
     with_tshirt = membership_params[:with_tshirt] == 'true' || membership_params[:with_tshirt] == true
     tshirt_size = membership_params[:tshirt_size] if with_tshirt
     tshirt_qty = (membership_params[:tshirt_qty] || 1).to_i if with_tshirt
+    
+    # Préparer les attributs du questionnaire de santé
+    health_attrs = {
+      health_questionnaire_status: membership_params[:health_questionnaire_status] || "ok"
+    }
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      health_attrs["health_q#{i}"] = answer if answer.present?
+    end
     
     # Créer l'adhésion en pending
     membership = Membership.create!(
@@ -598,7 +699,9 @@ class MembershipsController < ApplicationController
       # Nouveaux champs T-shirt simplifié
       with_tshirt: with_tshirt,
       tshirt_size: tshirt_size,
-      tshirt_qty: with_tshirt ? tshirt_qty : 0
+      tshirt_qty: with_tshirt ? tshirt_qty : 0,
+      # Questionnaire de santé
+      **health_attrs
     )
     
     # Attacher le certificat médical si fourni
@@ -606,13 +709,7 @@ class MembershipsController < ApplicationController
       membership.medical_certificate.attach(membership_params[:medical_certificate])
     end
     
-    # Validation : si problème de santé détecté, certificat obligatoire
-    if has_health_issue && !membership.medical_certificate.attached?
-      membership.errors.add(:medical_certificate, "est obligatoire si vous avez répondu 'Oui' à au moins une question de santé")
-      membership.destroy
-      redirect_to new_membership_path(type: "adult"), alert: "Un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
-      return
-    end
+    # Validation déjà effectuée avant création, pas besoin de re-vérifier ici
 
     # Créer le paiement HelloAsso
     begin
@@ -690,21 +787,35 @@ class MembershipsController < ApplicationController
     start_date, end_date = Membership.current_season_dates
     amount_cents = Membership.price_for_category(category)
 
-    # Mettre à jour les informations User si fournies
-    if membership_params[:first_name].present?
-      user_update_params = {
-        first_name: membership_params[:first_name],
-        last_name: membership_params[:last_name],
-        phone: membership_params[:phone],
-        email: membership_params[:email],
-        address: membership_params[:address],
-        city: membership_params[:city],
-        postal_code: membership_params[:postal_code],
-        wants_whatsapp: membership_params[:wants_whatsapp] == "1",
-        wants_email_info: membership_params[:wants_email_info] == "1"
-      }
-      # Ajouter date_of_birth si fournie
-      user_update_params[:date_of_birth] = membership_params[:date_of_birth] if membership_params[:date_of_birth].present?
+    # Mettre à jour les informations User (même si certains champs sont vides, on met à jour ceux qui sont fournis)
+    user_update_params = {}
+    
+    # Mettre à jour les champs fournis
+    user_update_params[:first_name] = membership_params[:first_name] if membership_params[:first_name].present?
+    user_update_params[:last_name] = membership_params[:last_name] if membership_params[:last_name].present?
+    user_update_params[:phone] = membership_params[:phone] if membership_params[:phone].present?
+    user_update_params[:email] = membership_params[:email] if membership_params[:email].present?
+    user_update_params[:address] = membership_params[:address] if membership_params[:address].present?
+    user_update_params[:city] = membership_params[:city] if membership_params[:city].present?
+    user_update_params[:postal_code] = membership_params[:postal_code] if membership_params[:postal_code].present?
+    
+    # Toujours mettre à jour la date de naissance si fournie (même si les autres champs ne le sont pas)
+    if membership_params[:date_of_birth].present?
+      user_update_params[:date_of_birth] = membership_params[:date_of_birth]
+    end
+    
+    # Ajouter les préférences email si fournies (anciennes versions pour compatibilité)
+    user_update_params[:wants_whatsapp] = membership_params[:wants_whatsapp] == "1" if membership_params[:wants_whatsapp].present?
+    user_update_params[:wants_email_info] = membership_params[:wants_email_info] == "1" if membership_params[:wants_email_info].present?
+    
+    # Ajouter les préférences email si fournies (nouvelles versions)
+    if params[:user]
+      user_update_params[:wants_initiation_mail] = params[:user][:wants_initiation_mail] == "1" if params[:user][:wants_initiation_mail].present?
+      user_update_params[:wants_events_mail] = params[:user][:wants_events_mail] == "1" if params[:user][:wants_events_mail].present?
+    end
+    
+    # Mettre à jour l'utilisateur si au moins un paramètre est fourni
+    if user_update_params.any?
       current_user.update!(user_update_params)
     end
     
@@ -866,6 +977,55 @@ class MembershipsController < ApplicationController
     tshirt_size = child_params[:tshirt_size] if with_tshirt
     tshirt_qty = (child_params[:tshirt_qty] || 1).to_i if with_tshirt
     
+    # Vérifier les réponses au questionnaire de santé (9 questions) AVANT création
+    has_health_issue = false
+    all_answered_no = true
+    (1..9).each do |i|
+      answer = child_params["health_question_#{i}"]
+      if answer == "yes"
+        has_health_issue = true
+        all_answered_no = false
+      elsif answer == "no"
+        # Réponse NON, continue
+      else
+        all_answered_no = false # Pas encore répondu
+      end
+    end
+    
+    # Déterminer le statut du questionnaire selon la catégorie
+    is_ffrs = category == "with_ffrs"
+    
+    if is_ffrs
+      # FFRS : Questionnaire obligatoire
+      if has_health_issue
+        # Au moins une réponse OUI : certificat obligatoire
+        if child_params[:medical_certificate].blank?
+          return Membership.new.tap { |m| m.errors.add(:medical_certificate, "est obligatoire pour la licence FFRS si vous avez répondu 'Oui' à au moins une question de santé") }
+        end
+      elsif all_answered_no
+        # Toutes réponses NON : vérifier si nouvelle licence FFRS
+        # Vérifier si l'utilisateur a déjà eu une licence FFRS pour un enfant
+        previous_ffrs = current_user.memberships.children.where(category: "with_ffrs").exists?
+        if !previous_ffrs && child_params[:medical_certificate].blank?
+          # Nouvelle licence FFRS : certificat obligatoire même si toutes réponses NON
+          return Membership.new.tap { |m| m.errors.add(:medical_certificate, "est obligatoire pour une nouvelle licence FFRS") }
+        end
+        # TODO: Générer attestation automatique si renouvellement
+      else
+        # Pas toutes les questions répondues
+        return Membership.new.tap { |m| m.errors.add(:base, "Le questionnaire de santé est obligatoire pour la licence FFRS. Veuillez répondre à toutes les questions.") }
+      end
+    end
+    
+    # Préparer les attributs du questionnaire de santé
+    health_attrs = {
+      health_questionnaire_status: is_ffrs ? (has_health_issue ? "medical_required" : "ok") : (has_health_issue ? "medical_required" : "ok")
+    }
+    (1..9).each do |i|
+      answer = child_params["health_question_#{i}"]
+      health_attrs["health_q#{i}"] = answer if answer.present?
+    end
+    
     # Créer l'adhésion enfant
     membership = Membership.create!(
       user: current_user, # Le parent
@@ -894,29 +1054,17 @@ class MembershipsController < ApplicationController
       tshirt_qty: with_tshirt ? tshirt_qty : 0,
       rgpd_consent: child_params[:rgpd_consent] == "1",
       legal_notices_accepted: child_params[:legal_notices_accepted] == "1",
-      ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1"
+      ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1",
+      # Questionnaire de santé
+      **health_attrs
     )
-    
-    # Vérifier les réponses au questionnaire de santé (9 questions)
-    has_health_issue = false
-    (1..9).each do |i|
-      if child_params["health_question_#{i}"] == "yes"
-        has_health_issue = true
-        break
-      end
-    end
     
     # Attacher le certificat médical si fourni
     if child_params[:medical_certificate].present?
       membership.medical_certificate.attach(child_params[:medical_certificate])
     end
     
-    # Validation : si problème de santé détecté, certificat obligatoire
-    if has_health_issue && !membership.medical_certificate.attached?
-      membership.errors.add(:medical_certificate, "est obligatoire si vous avez répondu 'Oui' à au moins une question de santé")
-      membership.destroy
-      return membership
-    end
+    # Validation déjà effectuée avant création, pas besoin de re-vérifier ici
     
     # Le Payment sera créé lors du clic sur "Payer" dans /memberships
     # Pas de création automatique ici

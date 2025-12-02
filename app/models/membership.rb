@@ -17,6 +17,11 @@ class Membership < ApplicationRecord
     with_ffrs: 1    # 56.55€ - Cotisation + Licence FFRS
   }
 
+  enum :health_questionnaire_status, {
+    ok: "ok",
+    medical_required: "medical_required"
+  }
+
   # Validation : un utilisateur ne peut avoir qu'une adhésion personnelle par saison
   # Mais peut avoir plusieurs adhésions enfants
   validate :unique_personal_membership_per_season
@@ -40,7 +45,8 @@ class Membership < ApplicationRecord
        amount_cents currency is_child_membership is_minor child_first_name child_last_name 
        child_date_of_birth parent_authorization parent_authorization_date parent_name 
        parent_email parent_phone rgpd_consent legal_notices_accepted ffrs_data_sharing_consent 
-       health_questionnaire_status created_at updated_at]
+       health_questionnaire_status health_q1 health_q2 health_q3 health_q4 health_q5 
+       health_q6 health_q7 health_q8 health_q9 created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)

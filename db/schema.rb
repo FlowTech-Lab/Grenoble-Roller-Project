@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_01_214924) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_02_001000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -130,6 +130,15 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_214924) do
     t.string "emergency_contact_phone"
     t.date "end_date", null: false
     t.boolean "ffrs_data_sharing_consent", default: false
+    t.string "health_q1"
+    t.string "health_q2"
+    t.string "health_q3"
+    t.string "health_q4"
+    t.string "health_q5"
+    t.string "health_q6"
+    t.string "health_q7"
+    t.string "health_q8"
+    t.string "health_q9"
     t.string "health_questionnaire_status"
     t.boolean "is_child_membership", default: false, null: false
     t.boolean "is_minor", default: false

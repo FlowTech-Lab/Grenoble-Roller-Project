@@ -257,9 +257,19 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - ☑️ "Le parent/tuteur accepte le paiement"
 
 **ÉTAPE 4** : Questionnaire de santé (9 questions)
-- Questions spécifiques sur la santé
-- Si au moins une réponse "OUI" → Upload certificat médical requis
-- Si toutes "NON" → Pas de certificat requis
+
+**ADHÉSION STANDARD (10€)** :
+- Questionnaire présent (9 questions)
+- Pas obligatoire de tout cocher "NON" pour continuer
+- Juste demander de répondre honnêtement
+- Si réponse "OUI" → Pas d'upload certificat obligatoire
+- Affichage : "Consultez votre médecin avant de pratiquer"
+
+**LICENCE FFRS (56.55€)** :
+- Questionnaire OBLIGATOIRE
+- Si toutes réponses "NON" → Génération attestation automatique (si renouvellement)
+- Si au moins 1 "OUI" → Upload certificat OBLIGATOIRE
+- Si nouvelle licence FFRS → Upload certificat OBLIGATOIRE (même si toutes réponses NON)
 
 **ÉTAPE 5** : Consentements
 - RGPD, FFRS, Notices légales
@@ -288,7 +298,7 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - Email Parent (OBLIGATOIRE)
 - Téléphone (enfant optionnel)
 
-**ÉTAPE 3** : Santé (même que < 16)
+**ÉTAPE 3** : Questionnaire de santé (même règles que < 16 selon catégorie)
 
 **ÉTAPE 4** : Paiement
 - Enfant peut payer SEUL (si cotisation modique)
@@ -325,10 +335,25 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - Adresse, Ville, Code postal
 - Préférences communication : `wants_initiation_mail`, `wants_events_mail` (dans User)
 
-**ÉTAPE 5** : Consentements
+**ÉTAPE 5** : Questionnaire de santé (9 questions)
+
+**ADHÉSION STANDARD (10€)** :
+- Questionnaire présent (9 questions)
+- Pas obligatoire de tout cocher "NON" pour continuer
+- Juste demander de répondre honnêtement
+- Si réponse "OUI" → Pas d'upload certificat obligatoire
+- Affichage : "Consultez votre médecin avant de pratiquer"
+
+**LICENCE FFRS (56.55€)** :
+- Questionnaire OBLIGATOIRE
+- Si toutes réponses "NON" → Génération attestation automatique (si renouvellement)
+- Si au moins 1 "OUI" → Upload certificat OBLIGATOIRE
+- Si nouvelle licence FFRS → Upload certificat OBLIGATOIRE (même si toutes réponses NON)
+
+**ÉTAPE 6** : Consentements
 - RGPD, FFRS, Notices légales
 
-**ÉTAPE 6** : Paiement
+**ÉTAPE 7** : Paiement
 - Paiement HelloAsso
 
 **Flux normal** :

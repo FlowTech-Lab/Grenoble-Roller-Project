@@ -1,3 +1,64 @@
+<!-- Modal pour utilisateur déjà adhérent -->
+<% if flash[:show_membership_modal] %>
+  <div class="modal fade" id="membershipInfoModal" tabindex="-1" aria-labelledby="membershipInfoModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header <%= @membership.active? ? 'bg-success text-white' : 'bg-warning text-dark' %>">
+          <h5 class="modal-title" id="membershipInfoModalLabel">
+            <i class="bi <%= @membership.active? ? 'bi-check-circle' : 'bi-exclamation-triangle' %> me-2"></i>
+            <% if @membership.active? %>
+              Adhésion déjà active
+            <% else %>
+              Adhésion en attente
+            <% end %>
+          </h5>
+          <button type="button" class="btn-close <%= @membership.active? ? 'btn-close-white' : '' %>" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <% if @membership.active? %>
+            <p class="mb-3">
+              <strong>Vous avez déjà une adhésion active pour la saison <%= @membership.season %>.</strong>
+            </p>
+            <p class="mb-2">
+              <i class="bi bi-calendar-check me-2 text-success"></i>
+              <strong>Valable jusqu'au :</strong> <%= l(@membership.end_date, format: :long) %>
+            </p>
+            <p class="mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              Vous pouvez renouveler votre adhésion à partir du <%= l(@membership.end_date - 30.days, format: :long) %>.
+            </p>
+          <% else %>
+            <p class="mb-3">
+              <strong>Vous avez déjà une adhésion en attente de paiement pour cette saison.</strong>
+            </p>
+            <p class="mb-2">
+              <i class="bi bi-credit-card me-2 text-warning"></i>
+              <strong>Statut :</strong> En attente de paiement
+            </p>
+            <p class="mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              Veuillez finaliser le paiement avant de créer une nouvelle adhésion.
+            </p>
+          <% end %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+          <% if @membership.pending? %>
+            <%= link_to "Finaliser le paiement", membership_path(@membership), class: "btn btn-primary" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = new bootstrap.Modal(document.getElementById('membershipInfoModal'));
+      modal.show();
+    });
+  </script>
+<% end %>
+
 <div class="container py-4">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-8">

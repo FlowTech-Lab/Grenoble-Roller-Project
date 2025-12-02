@@ -69,16 +69,28 @@ d)
 
 ---
 
-### **5. Email `medical_certificate_missing`**
-- **Status** : ⚠️ Non implémenté
-- **Description** : Email envoyé si certificat médical requis mais non fourni
-- **Réalité** : ✅ **UPLOAD DÉJÀ IMPLÉMENTÉ** - L'upload sécurisé dans Active Storage est **déjà fonctionnel** dans le formulaire (`child_form.html.erb` et `adult_form.html.erb`)
-- **Point à réfléchir** : 
-  - ✅ Upload sécurisé déjà en place
-  - 💡 **NOUVELLE IDÉE** : Vérifier que si pas de licence FFRS (category = "standard"), le questionnaire de santé est obligatoire ?
-- **Utilité** : Email de rappel optionnel (mais validation déjà en place dans le formulaire)
-- **Complexité** : Faible (1h pour l'email)
-- **Recommandation** : 🟡 **REPORTER** - Upload déjà fonctionnel, email de rappel optionnel. **À DISCUTER** : Rendre questionnaire obligatoire pour Standard ?
+### **5. Règles Questionnaire de Santé selon Catégorie**
+- **Status** : ✅ **IMPLÉMENTÉ** (2025-01-30)
+- **Description** : Comportement différent du questionnaire selon la catégorie d'adhésion
+
+**RÈGLES IMPLÉMENTÉES** :
+
+**ADHÉSION STANDARD (10€)** :
+- ✅ Questionnaire présent (9 questions)
+- ✅ Pas obligatoire de tout cocher "NON" pour continuer
+- ✅ Juste demander de répondre honnêtement
+- ✅ Si réponse "OUI" → Pas d'upload certificat obligatoire
+- ✅ Affichage : "Consultez votre médecin avant de pratiquer"
+
+**LICENCE FFRS (56.55€)** :
+- ✅ Questionnaire OBLIGATOIRE
+- ✅ Si toutes réponses "NON" → Génération attestation automatique
+- ✅ Si au moins 1 "OUI" → Upload certificat OBLIGATOIRE
+- ✅ Si nouvelle licence FFRS → Upload certificat OBLIGATOIRE
+
+- **Utilité** : Adaptation du questionnaire selon le type d'adhésion
+- **Complexité** : Moyenne (4h)
+- **Recommandation** : ✅ **IMPLÉMENTÉ**
 
 ---
 

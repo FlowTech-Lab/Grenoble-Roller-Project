@@ -285,7 +285,12 @@
                 <span class="section-number"><%= @with_tshirt ? 5 : 4 %></span>
                 Questionnaire de santé
               </h3>
-              <p class="section-intro">Répondez aux questions suivantes concernant la santé de votre enfant</p>
+              <p class="section-intro" id="health_intro_standard" style="display: none;">
+                Répondez honnêtement aux questions suivantes concernant la santé de votre enfant. Vos réponses nous aident à mieux l'accompagner.
+              </p>
+              <p class="section-intro" id="health_intro_ffrs" style="display: none;">
+                <strong>Questionnaire obligatoire pour la licence FFRS.</strong> Répondez aux questions suivantes concernant la santé de votre enfant.
+              </p>
               
               <div class="health-questions">
                 <% health_questions = [
@@ -325,12 +330,19 @@
                 <% end %>
               </div>
               
-              <!-- Upload certificat médical (affiché si au moins une réponse = OUI) -->
+              <!-- Message pour Standard avec réponse OUI -->
+              <div id="health_standard_yes_info" class="alert alert-info mt-3" style="display: none;">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Consultez votre médecin avant de pratiquer</strong>
+                <p class="mb-0 mt-2">Votre enfant a indiqué avoir des problèmes de santé. Nous vous recommandons fortement de consulter votre médecin avant qu'il pratique le roller.</p>
+              </div>
+              
+              <!-- Upload certificat médical (affiché si FFRS avec au moins une réponse = OUI) -->
               <div id="health_certificate_upload" class="mt-4" style="display: none;">
                 <div class="alert alert-warning mb-3">
                   <i class="bi bi-exclamation-triangle me-2"></i>
                   <strong>Certificat médical requis</strong>
-                  <p class="mb-0 mt-2">Vous avez répondu "Oui" à au moins une question. Un certificat médical est obligatoire pour continuer.</p>
+                  <p class="mb-0 mt-2">Pour la licence FFRS, un certificat médical est obligatoire si vous avez répondu "Oui" à au moins une question.</p>
                 </div>
                 
                 <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 2px solid var(--card-border-color);">
@@ -383,9 +395,16 @@
                 </div>
               </div>
               
-              <div id="health_no_issues_info" class="alert alert-success mt-3" style="display: none;">
+              <!-- Message pour Standard avec toutes réponses NON -->
+              <div id="health_standard_no_info" class="alert alert-success mt-3" style="display: none;">
                 <i class="bi bi-check-circle me-2"></i>
-                <strong>Parfait !</strong> Aucun problème de santé détecté. Vous pouvez continuer sans certificat médical.
+                <strong>Parfait !</strong> Aucun problème de santé détecté. Vous pouvez continuer.
+              </div>
+              
+              <!-- Message pour FFRS avec toutes réponses NON (attestation auto) -->
+              <div id="health_ffrs_no_info" class="alert alert-success mt-3" style="display: none;">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Parfait !</strong> Aucun problème de santé détecté. Une attestation de santé sera générée automatiquement.
               </div>
             </div>
 
@@ -536,6 +555,9 @@
       ffrsGroup.style.display = selectedCategory === 'with_ffrs' ? 'block' : 'none';
     }
     
+    // Re-vérifier les questions de santé quand la catégorie change
+    checkHealthQuestions();
+    
     // Mettre à jour le total T-shirt si présent
     <% if @with_tshirt %>
     if (typeof updateTshirtTotal === 'function') {
@@ -625,33 +647,91 @@
       // Vérifier les réponses au questionnaire de santé
       function checkHealthQuestions() {
         let hasYesAnswer = false;
+        let allAnswered = true;
         
         // Vérifier les 9 questions
         for (let i = 1; i <= 9; i++) {
           const yesRadio = document.getElementById(`health_q${i}_yes`);
+          const noRadio = document.getElementById(`health_q${i}_no`);
+          
           if (yesRadio && yesRadio.checked) {
             hasYesAnswer = true;
-            break;
+          }
+          
+          // Vérifier si toutes les questions sont répondues
+          if (!yesRadio?.checked && !noRadio?.checked) {
+            allAnswered = false;
           }
         }
         
+        // Récupérer la catégorie sélectionnée
+        const selectedCategory = document.querySelector('input[name="membership[category]"]:checked')?.value;
+        const isFFRS = selectedCategory === 'with_ffrs';
+        const isStandard = selectedCategory === 'standard';
+        
+        // Afficher/masquer les intros selon la catégorie
+        const introStandard = document.getElementById('health_intro_standard');
+        const introFFRS = document.getElementById('health_intro_ffrs');
+        if (introStandard) introStandard.style.display = isStandard ? 'block' : 'none';
+        if (introFFRS) introFFRS.style.display = isFFRS ? 'block' : 'none';
+        
         const uploadDiv = document.getElementById('health_certificate_upload');
-        const noIssuesDiv = document.getElementById('health_no_issues_info');
+        const standardYesInfo = document.getElementById('health_standard_yes_info');
+        const standardNoInfo = document.getElementById('health_standard_no_info');
+        const ffrsNoInfo = document.getElementById('health_ffrs_no_info');
         const certificateInput = document.getElementById('medical_certificate_input');
         
-        if (hasYesAnswer) {
-          // Afficher l'upload et rendre le champ requis
-          if (uploadDiv) uploadDiv.style.display = 'block';
-          if (noIssuesDiv) noIssuesDiv.style.display = 'none';
-          if (certificateInput) certificateInput.setAttribute('required', 'required');
-        } else {
-          // Masquer l'upload et retirer le required
+        if (isStandard) {
+          // ADHÉSION STANDARD : Pas d'upload obligatoire
           if (uploadDiv) uploadDiv.style.display = 'none';
-          if (noIssuesDiv) noIssuesDiv.style.display = 'block';
-          if (certificateInput) {
-            certificateInput.removeAttribute('required');
-            certificateInput.value = '';
-            removeCertificate();
+          if (ffrsNoInfo) ffrsNoInfo.style.display = 'none';
+          
+          if (hasYesAnswer) {
+            // Afficher message de recommandation
+            if (standardYesInfo) standardYesInfo.style.display = 'block';
+            if (standardNoInfo) standardNoInfo.style.display = 'none';
+            if (certificateInput) {
+              certificateInput.removeAttribute('required');
+              certificateInput.value = '';
+              removeCertificate();
+            }
+          } else if (allAnswered) {
+            // Toutes réponses NON
+            if (standardYesInfo) standardYesInfo.style.display = 'none';
+            if (standardNoInfo) standardNoInfo.style.display = 'block';
+            if (certificateInput) {
+              certificateInput.removeAttribute('required');
+              certificateInput.value = '';
+              removeCertificate();
+            }
+          } else {
+            // Pas encore toutes répondues
+            if (standardYesInfo) standardYesInfo.style.display = 'none';
+            if (standardNoInfo) standardNoInfo.style.display = 'none';
+          }
+        } else if (isFFRS) {
+          // LICENCE FFRS : Upload obligatoire si OUI, attestation auto si NON
+          if (standardYesInfo) standardYesInfo.style.display = 'none';
+          if (standardNoInfo) standardNoInfo.style.display = 'none';
+          
+          if (hasYesAnswer) {
+            // Afficher l'upload et rendre le champ requis
+            if (uploadDiv) uploadDiv.style.display = 'block';
+            if (ffrsNoInfo) ffrsNoInfo.style.display = 'none';
+            if (certificateInput) certificateInput.setAttribute('required', 'required');
+          } else if (allAnswered) {
+            // Toutes réponses NON : attestation auto
+            if (uploadDiv) uploadDiv.style.display = 'none';
+            if (ffrsNoInfo) ffrsNoInfo.style.display = 'block';
+            if (certificateInput) {
+              certificateInput.removeAttribute('required');
+              certificateInput.value = '';
+              removeCertificate();
+            }
+          } else {
+            // Pas encore toutes répondues
+            if (uploadDiv) uploadDiv.style.display = 'none';
+            if (ffrsNoInfo) ffrsNoInfo.style.display = 'none';
           }
         }
         
