@@ -1,6 +1,6 @@
 ActiveAdmin.register User do
   menu priority: 2, label: "Utilisateurs"
-  
+
   permit_params :email, :password, :password_confirmation,
                 :first_name, :last_name, :bio, :phone, :avatar_url,
                 :email_verified, :role_id

@@ -82,21 +82,21 @@ class HelloassoService
 
       # Récupérer le don depuis l'order si disponible, sinon utiliser le paramètre
       donation = order.respond_to?(:donation_cents) ? (order.donation_cents || 0) : donation_cents.to_i
-      
+
       # Construire le tableau items avec les articles de la commande
       items = []
-      
+
       # Ajouter les articles de la commande (si order_items est disponible)
       if order.respond_to?(:order_items) && order.order_items.any?
         order.order_items.each do |order_item|
           product_name = if order_item.respond_to?(:variant) && order_item.variant
-                           order_item.variant.product&.name || "Article ##{order_item.variant_id}"
-                         elsif order_item.respond_to?(:product)
-                           order_item.product&.name || "Article ##{order_item.id}"
-                         else
-                           "Article ##{order_item.id}"
-                         end
-          
+            order_item.variant.product&.name || "Article ##{order_item.variant_id}"
+          elsif order_item.respond_to?(:product)
+            order_item.product&.name || "Article ##{order_item.id}"
+          else
+            "Article ##{order_item.id}"
+          end
+
           items << {
             name: product_name,
             quantity: order_item.quantity.to_i,
@@ -116,7 +116,7 @@ class HelloassoService
           }
         end
       end
-      
+
       # Ajouter le don comme item séparé si > 0 (selon la doc HelloAsso)
       if donation > 0
         items << {
@@ -131,9 +131,9 @@ class HelloassoService
       # NOTE: L'endpoint /checkout-intents peut nécessiter une structure différente de /orders
       # Selon la doc HelloAsso, checkout-intents utilise totalAmount/initialAmount, pas items
       # Mais on peut essayer avec items d'abord, et fallback si erreur 400
-      
+
       total_cents = items.sum { |item| item[:amount] * item[:quantity] }
-      
+
       # Structure pour checkout-intents (selon tests précédents qui fonctionnaient)
       {
         totalAmount: total_cents,
@@ -187,11 +187,11 @@ class HelloassoService
 
       unless response.is_a?(Net::HTTPSuccess)
         error_msg = if response.code.to_i == 429
-                      "HelloAsso OAuth error (429): Rate limit atteint. " \
-                      "Les serveurs HelloAsso sont surchargés. Réessayez dans quelques minutes."
-                    else
-                      "HelloAsso OAuth error (#{response.code}): #{response.body[0..200]}"
-                    end
+          "HelloAsso OAuth error (429): Rate limit atteint. " \
+          "Les serveurs HelloAsso sont surchargés. Réessayez dans quelques minutes."
+        else
+          "HelloAsso OAuth error (#{response.code}): #{response.body[0..200]}"
+        end
         raise error_msg
       end
 
@@ -212,12 +212,12 @@ class HelloassoService
     def access_token
       result = fetch_access_token!
       token = result[:access_token]
-      
+
       if token.to_s.strip.empty?
         Rails.logger.error("[HelloassoService] access_token vide dans la réponse : #{result.inspect}")
         return nil
       end
-      
+
       token
     rescue => e
       Rails.logger.error("[HelloassoService] Impossible de récupérer l'access_token : #{e.class} - #{e.message}")
@@ -243,7 +243,7 @@ class HelloassoService
     def create_checkout_intent(order, donation_cents:, back_url:, error_url:, return_url:)
       # Vérifier les prérequis
       raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
-      
+
       # Obtenir un token (avec retry si nécessaire)
       token = access_token
       if token.to_s.strip.empty?
@@ -256,7 +256,7 @@ class HelloassoService
           raise "HelloAsso access_token introuvable. Vérifiez les credentials (client_id, client_secret) dans Rails credentials."
         end
       end
-      
+
       raise "HelloAsso access_token introuvable après retry" if token.to_s.strip.empty?
 
       payload = build_checkout_intent_payload(
@@ -310,7 +310,7 @@ class HelloassoService
       else
         Rails.logger.info("[HelloassoService] create_checkout_intent SUCCESS: #{result.inspect}")
       end
-      
+
       result
     end
 
@@ -344,19 +344,19 @@ class HelloassoService
     def fetch_and_update_payment(payment)
       # provider_payment_id contient l'ID du checkout-intent
       checkout_intent_id = payment.provider_payment_id
-      
+
       # 1. Récupérer le checkout-intent
       intent = fetch_checkout_intent(checkout_intent_id)
-      
+
       # 2. Si un order est présent, récupérer son état via /orders/{orderId}
       state = nil
       if intent.key?("order") && intent["order"].present?
         order_id = intent.dig("order", "id") || intent.dig("order", "orderId")
-        
+
         if order_id
           begin
             order_data = fetch_helloasso_order(order_id)
-            state = order_data['state'] if order_data
+            state = order_data["state"] if order_data
           rescue StandardError => e
             Rails.logger.warn(
               "[HelloassoService] Failed to fetch order #{order_id}, " \
@@ -368,19 +368,19 @@ class HelloassoService
 
       # 3. Déterminer le nouveau statut
       new_status = if state
-                     case state
-                     when 'Confirmed' then 'succeeded'
-                     when 'Refused' then 'failed'
-                     when 'Refunded' then 'refunded'
-                     else 'pending'
-                     end
-                   elsif intent.key?("order") && intent["order"].present?
-                     # Order présent mais pas de state → considérer comme confirmé
-                     'succeeded'
-                   else
-                     # Pas d'order → encore en attente ou abandonné
-                     payment.created_at < 45.minutes.ago ? 'abandoned' : 'pending'
-                   end
+        case state
+        when "Confirmed" then "succeeded"
+        when "Refused" then "failed"
+        when "Refunded" then "refunded"
+        else "pending"
+        end
+      elsif intent.key?("order") && intent["order"].present?
+        # Order présent mais pas de state → considérer comme confirmé
+        "succeeded"
+      else
+        # Pas d'order → encore en attente ou abandonné
+        payment.created_at < 45.minutes.ago ? "abandoned" : "pending"
+      end
 
       return payment if new_status == payment.status
 
@@ -389,39 +389,39 @@ class HelloassoService
 
       # 5. Mettre à jour les commandes associées
       order_status = case new_status
-                     when 'succeeded' then 'paid'
-                     when 'failed', 'refunded', 'abandoned' then 'failed'
-                     else 'pending'
-                     end
+      when "succeeded" then "paid"
+      when "failed", "refunded", "abandoned" then "failed"
+      else "pending"
+      end
 
       payment.orders.each { |order| order.update!(status: order_status) }
 
       # 6. Mettre à jour les adhésions associées
       membership_status = case new_status
-                         when 'succeeded' then 'active'
-                         when 'failed', 'refunded', 'abandoned' then 'expired'
-                         else 'pending'
-                         end
-      
+      when "succeeded" then "active"
+      when "failed", "refunded", "abandoned" then "expired"
+      else "pending"
+      end
+
       # Gérer les adhésions personnelles (has_one :membership)
       if payment.membership
         old_status = payment.membership.status
         payment.membership.update!(status: membership_status)
-        
+
         # Envoyer email si le paiement a échoué
-        if new_status == 'failed' && old_status == 'pending'
+        if new_status == "failed" && old_status == "pending"
           MembershipMailer.payment_failed(payment.membership).deliver_later if defined?(MembershipMailer)
         end
       end
-      
+
       # Gérer les adhésions enfants groupées (has_many :memberships)
       if payment.memberships.any?
         payment.memberships.each do |membership|
           old_status = membership.status
           membership.update!(status: membership_status)
-          
+
           # Envoyer email si le paiement a échoué
-          if new_status == 'failed' && old_status == 'pending'
+          if new_status == "failed" && old_status == "pending"
             MembershipMailer.payment_failed(membership).deliver_later if defined?(MembershipMailer)
           end
         end
@@ -430,7 +430,7 @@ class HelloassoService
       membership_ids = []
       membership_ids << payment.membership.id if payment.membership
       membership_ids.concat(payment.memberships.pluck(:id)) if payment.memberships.any?
-      
+
       Rails.logger.info(
         "[HelloassoService] Payment ##{payment.id} updated to #{new_status}. " \
         "Orders: #{payment.orders.pluck(:id).join(', ')}, " \
@@ -482,17 +482,17 @@ class HelloassoService
     # Retourne le montant en centimes (Integer), ou 0 si aucun don trouvé.
     def extract_donation_from_response(response_data)
       return 0 unless response_data.is_a?(Hash)
-      
-      items = response_data['items'] || response_data[:items] || []
+
+      items = response_data["items"] || response_data[:items] || []
       return 0 unless items.is_a?(Array)
-      
-      donation_item = items.find { |item| 
-        (item['type'] || item[:type]) == 'Donation' 
+
+      donation_item = items.find { |item|
+        (item["type"] || item[:type]) == "Donation"
       }
-      
+
       return 0 unless donation_item
-      
-      (donation_item['amount'] || donation_item[:amount] || 0).to_i
+
+      (donation_item["amount"] || donation_item[:amount] || 0).to_i
     end
 
     # ---- Adhésions (checkout-intent simplifié) -------------------------------------
@@ -520,28 +520,28 @@ class HelloassoService
 
       # Construire le payload pour adhésion avec T-shirt optionnel
       # Utiliser la même structure que pour les commandes (itemName au lieu de items)
-      category_name = membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 
-                      membership.category == 'with_ffrs' ? 'Cotisation Adhérent Grenoble Roller + Licence FFRS' : 
-                      'Adhésion'
+      category_name = membership.category == "standard" ? "Cotisation Adhérent Grenoble Roller" :
+                      membership.category == "with_ffrs" ? "Cotisation Adhérent Grenoble Roller + Licence FFRS" :
+                      "Adhésion"
       season_name = membership.season || Membership.current_season_name
-      
+
       # Calculer le montant total (adhésion + T-shirt si présent)
       total_amount = membership.total_amount_cents
-      
+
       # Construire itemName (string concaténée comme pour les commandes)
-      item_name_parts = ["#{category_name} Saison #{season_name}"]
-      
+      item_name_parts = [ "#{category_name} Saison #{season_name}" ]
+
       # Ajouter le T-shirt si présent
       if membership.tshirt_variant_id.present?
-        tshirt_size = membership.tshirt_variant&.option_values&.find { |ov| 
-          ov.option_type.name.downcase.include?('taille') || 
-          ov.option_type.name.downcase.include?('size') ||
-          ov.option_type.name.downcase.include?('dimension')
+        tshirt_size = membership.tshirt_variant&.option_values&.find { |ov|
+          ov.option_type.name.downcase.include?("taille") ||
+          ov.option_type.name.downcase.include?("size") ||
+          ov.option_type.name.downcase.include?("dimension")
         }&.value || "Taille standard"
-        
+
         item_name_parts << "T-shirt Grenoble Roller (#{tshirt_size})"
       end
-      
+
       item_name = item_name_parts.join(", ")
 
       payload = {
@@ -579,7 +579,7 @@ class HelloassoService
       http.open_timeout = 10
 
       response = http.request(request)
-      
+
       Rails.logger.info("[HelloassoService] Response status: #{response.code}, body: #{response.body[0..500]}")
 
       # Retry avec nouveau token si 401
@@ -597,7 +597,7 @@ class HelloassoService
       end
 
       success = response.is_a?(Net::HTTPSuccess)
-      
+
       Rails.logger.info("[HelloassoService] create_membership_checkout_intent response: #{{
         status: response.code.to_i,
         success: success,
@@ -623,7 +623,7 @@ class HelloassoService
 
       unless result[:success]
         error_msg = if result[:body].is_a?(Hash)
-          result[:body]["message"] || 
+          result[:body]["message"] ||
           (result[:body]["errors"].is_a?(Hash) ? result[:body]["errors"].to_json : result[:body]["errors"]) ||
           result[:body]["title"] ||
           result[:body].inspect
@@ -636,22 +636,22 @@ class HelloassoService
         # Retourner nil pour que le controller détecte l'erreur
         return nil
       end
-      
+
       redirect_url = result[:body]["redirectUrl"] || result[:body][:redirectUrl]
       checkout_id = result[:body]["id"] || result[:body][:id]
-      
+
       unless redirect_url
         Rails.logger.error("[HelloassoService] Pas de redirectUrl dans la réponse pour membership ##{membership.id}: #{result[:body].inspect}")
         return nil
       end
-      
+
       # Retourner un hash avec les deux informations
       {
         redirect_url: redirect_url,
         checkout_id: checkout_id
       }
     end
-    
+
     # Crée un checkout-intent HelloAsso pour plusieurs adhésions enfants (un seul paiement)
     def create_multiple_memberships_checkout_intent(memberships, back_url:, error_url:, return_url:)
       raise ArgumentError, "memberships must be an array" unless memberships.is_a?(Array)
@@ -672,30 +672,30 @@ class HelloassoService
       item_name_parts = []
       total_amount = 0
       season_name = Membership.current_season_name
-      
+
       memberships.each_with_index do |membership, index|
-        category_name = membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 
-                        membership.category == 'with_ffrs' ? 'Cotisation Adhérent Grenoble Roller + Licence FFRS' : 
-                        'Adhésion'
-        
+        category_name = membership.category == "standard" ? "Cotisation Adhérent Grenoble Roller" :
+                        membership.category == "with_ffrs" ? "Cotisation Adhérent Grenoble Roller + Licence FFRS" :
+                        "Adhésion"
+
         child_name = membership.is_child_membership? ? "#{membership.child_first_name} #{membership.child_last_name}" : nil
-        
+
         item_name_parts << (child_name ? "#{category_name} - #{child_name} (Saison #{season_name})" : "#{category_name} Saison #{season_name}")
         total_amount += membership.amount_cents
-        
+
         # Ajouter le T-shirt si présent
         if membership.tshirt_variant_id.present?
-          tshirt_size = membership.tshirt_variant&.option_values&.find { |ov| 
-            ov.option_type.name.downcase.include?('taille') || 
-            ov.option_type.name.downcase.include?('size') ||
-            ov.option_type.name.downcase.include?('dimension')
+          tshirt_size = membership.tshirt_variant&.option_values&.find { |ov|
+            ov.option_type.name.downcase.include?("taille") ||
+            ov.option_type.name.downcase.include?("size") ||
+            ov.option_type.name.downcase.include?("dimension")
           }&.value || "Taille standard"
-          
+
           item_name_parts << (child_name ? "T-shirt Grenoble Roller (#{tshirt_size}) - #{child_name}" : "T-shirt Grenoble Roller (#{tshirt_size})")
           total_amount += (membership.tshirt_price_cents || 1400)
         end
       end
-      
+
       item_name = item_name_parts.join(", ")
 
       payload = {
@@ -753,7 +753,7 @@ class HelloassoService
         body: body
       }
     end
-    
+
     # Helper pour obtenir l'URL de redirection HelloAsso pour plusieurs adhésions
     def multiple_memberships_checkout_redirect_url(memberships, back_url:, error_url:, return_url:)
       result = create_multiple_memberships_checkout_intent(
@@ -806,4 +806,3 @@ class HelloassoService
     end
   end
 end
-

@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   # Standard Rails endpoint - simple check (no DB queries)
   get "up" => "rails/health#show", as: :rails_health_check
-  
+
   # Advanced health check with database connection and migrations status
   # Returns JSON with detailed status (DB + migrations) - useful for monitoring/alerting
   get "health" => "health#check", as: :health_check

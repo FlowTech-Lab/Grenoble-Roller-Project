@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # HealthController - Monitoring avancé avec vérification DB + migrations
-# 
+#
 # Complément de /up (Rails standard) qui vérifie juste que l'app boot.
 # Ce endpoint est plus complet mais plus lent (requête DB).
-# 
+#
 # Usage :
 # - Monitoring Prometheus/Grafana
 # - Alertes PagerDuty/OpsGenie
@@ -16,9 +16,9 @@
 class HealthController < ApplicationController
   # Pas besoin d'authentification pour les health checks
   skip_before_action :verify_authenticity_token
-  
+
   # GET /health
-  # 
+  #
   # Exemple de réponse OK :
   # {
   #   "status": "ok",
@@ -53,7 +53,7 @@ class HealthController < ApplicationController
       },
       timestamp: Time.current.iso8601
     }
-    
+
     # Vérifier la connexion à la base de données
     begin
       ActiveRecord::Base.connection.execute("SELECT 1")
@@ -65,14 +65,14 @@ class HealthController < ApplicationController
       render json: health_data, status: :service_unavailable
       return
     end
-    
+
     # Vérifier les migrations en attente
     begin
       migration_context = ActiveRecord::Base.connection.migration_context
       pending_migrations = migration_context.pending_migrations
-      
+
       health_data[:migrations][:pending_count] = pending_migrations.count
-      
+
       if pending_migrations.any?
         health_data[:migrations][:status] = "pending"
         health_data[:migrations][:pending_migrations] = pending_migrations.map do |migration|
@@ -83,7 +83,7 @@ class HealthController < ApplicationController
           }
         end
         health_data[:status] = "degraded"
-        
+
         # Retourner 503 pour signaler un problème nécessitant une intervention
         render json: health_data, status: :service_unavailable
         return
@@ -97,9 +97,8 @@ class HealthController < ApplicationController
       render json: health_data, status: :service_unavailable
       return
     end
-    
+
     # Tout est OK
     render json: health_data, status: :ok
   end
 end
-

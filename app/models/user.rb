@@ -7,10 +7,10 @@ class User < ApplicationRecord
   belongs_to :role
   has_many :orders, dependent: :nullify
   has_many :memberships, dependent: :destroy
-  
+
   # Active Storage attachments
   has_one_attached :avatar
-  
+
   # Phase 2 - Events associations
   has_many :created_events, class_name: "Event", foreign_key: "creator_user_id", dependent: :restrict_with_error
   has_many :attendances, dependent: :destroy
@@ -58,17 +58,17 @@ class User < ApplicationRecord
   def current_membership
     memberships.personal.active_now.order(start_date: :desc).first
   end
-  
+
   # Obtenir toutes les adhésions enfants actives
   def active_children_memberships
     memberships.children.active_now.order(created_at: :desc)
   end
-  
+
   # Vérifier si l'utilisateur a des adhésions enfants actives
   def has_active_children_memberships?
     active_children_memberships.exists?
   end
-  
+
   # Obtenir toutes les adhésions (personnelle + enfants)
   def all_active_memberships
     memberships.active_now.order(is_child_membership: :asc, created_at: :desc)

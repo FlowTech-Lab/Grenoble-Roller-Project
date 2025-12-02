@@ -95,7 +95,7 @@ puts "   📧 Email: #{florian.email}"
 puts "   🆔 ID: #{florian.id}"
 
 # 👥 Utilisateurs de test
-skill_levels = ["beginner", "intermediate", "advanced"]
+skill_levels = [ "beginner", "intermediate", "advanced" ]
 20.times do |i|
   confirmed = rand > 0.2  # 80% des utilisateurs confirmés
   user = User.new(
@@ -941,7 +941,7 @@ puts "\n👥 Création des adhésions..."
 def season_dates_for_year(year)
   start_date = Date.new(year, 9, 1)
   end_date = Date.new(year + 1, 8, 31)
-  [start_date, end_date]
+  [ start_date, end_date ]
 end
 
 current_year = Date.today.year
@@ -952,7 +952,7 @@ current_season_name = "#{current_season_start.year}-#{current_season_end.year}"
 previous_season_name = "#{previous_season_start.year}-#{previous_season_end.year}"
 
 # Récupérer les utilisateurs réguliers (pas admin)
-regular_users = User.where.not(email: ["T3rorX@hotmail.fr", "admin@roller.com"]).limit(15)
+regular_users = User.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com" ]).limit(15)
 
 if regular_users.any?
   # Créer des paiements pour les adhésions
@@ -961,20 +961,20 @@ if regular_users.any?
     membership_payments << Payment.create!(
       provider: "helloasso",
       provider_payment_id: "ha_#{SecureRandom.hex(8)}",
-      amount_cents: [1000, 5655, 2400].sample, # 10€ standard, 56.55€ FFRS, 24€ avec T-shirt
+      amount_cents: [ 1000, 5655, 2400 ].sample, # 10€ standard, 56.55€ FFRS, 24€ avec T-shirt
       currency: "EUR",
       status: "succeeded",
       created_at: Time.now - rand(1..60).days
     )
   end
-  
+
   # Adhésions personnelles ACTIVES pour cette année
   puts "  📝 Création d'adhésions personnelles actives..."
   active_users = regular_users.first(5)
   active_users.each_with_index do |user, index|
     payment = membership_payments[index] if index < membership_payments.count
-    category = [:standard, :with_ffrs].sample
-    
+    category = [ :standard, :with_ffrs ].sample
+
     Membership.create!(
       user: user,
       payment: payment,
@@ -995,14 +995,14 @@ if regular_users.any?
     )
   end
   puts "    ✅ #{active_users.count} adhésions personnelles actives créées"
-  
+
   # Adhésions personnelles EXPIRÉES pour l'année précédente
   puts "  📝 Création d'adhésions personnelles expirées..."
   expired_users = regular_users[5..7] || []
   expired_users.each_with_index do |user, index|
     payment = membership_payments[5 + index] if (5 + index) < membership_payments.count
-    category = [:standard, :with_ffrs].sample
-    
+    category = [ :standard, :with_ffrs ].sample
+
     Membership.create!(
       user: user,
       payment: payment,
@@ -1023,7 +1023,7 @@ if regular_users.any?
     )
   end
   puts "    ✅ #{expired_users.count} adhésions personnelles expirées créées"
-  
+
   # Adhésions ENFANTS ACTIVES pour cette année
   puts "  📝 Création d'adhésions enfants actives..."
   users_with_active_children = regular_users[8..10] || []
@@ -1033,7 +1033,7 @@ if regular_users.any?
     child_birth_year = current_year - child_age
     child_birth_month = rand(1..12)
     child_birth_day = rand(1..28)
-    
+
     Membership.create!(
       user: user,
       payment: payment,
@@ -1046,7 +1046,7 @@ if regular_users.any?
       currency: "EUR",
       is_child_membership: true,
       is_minor: true,
-      child_first_name: ["Emma", "Lucas", "Sophie", "Max", "Léa", "Tom", "Chloé", "Hugo"].sample,
+      child_first_name: [ "Emma", "Lucas", "Sophie", "Max", "Léa", "Tom", "Chloé", "Hugo" ].sample,
       child_last_name: user.last_name || "Dupont",
       child_date_of_birth: Date.new(child_birth_year, child_birth_month, child_birth_day),
       parent_authorization: child_age < 16,
@@ -1062,7 +1062,7 @@ if regular_users.any?
     )
   end
   puts "    ✅ #{users_with_active_children.count} adhésions enfants actives créées"
-  
+
   # Adhésions ENFANTS EXPIRÉES pour l'année précédente
   puts "  📝 Création d'adhésions enfants expirées..."
   users_with_expired_children = regular_users[11..13] || []
@@ -1072,7 +1072,7 @@ if regular_users.any?
     child_birth_year = previous_season_start.year - child_age_last_year
     child_birth_month = rand(1..12)
     child_birth_day = rand(1..28)
-    
+
     Membership.create!(
       user: user,
       payment: payment,
@@ -1085,7 +1085,7 @@ if regular_users.any?
       currency: "EUR",
       is_child_membership: true,
       is_minor: true,
-      child_first_name: ["Léo", "Manon", "Nathan", "Inès", "Ethan", "Zoé", "Noah", "Lilou"].sample,
+      child_first_name: [ "Léo", "Manon", "Nathan", "Inès", "Ethan", "Zoé", "Noah", "Lilou" ].sample,
       child_last_name: user.last_name || "Martin",
       child_date_of_birth: Date.new(child_birth_year, child_birth_month, child_birth_day),
       parent_authorization: child_age_last_year < 16,
@@ -1101,7 +1101,7 @@ if regular_users.any?
     )
   end
   puts "    ✅ #{users_with_expired_children.count} adhésions enfants expirées créées"
-  
+
   # Adhésions EN ATTENTE (pending)
   puts "  📝 Création d'adhésions en attente..."
   pending_user = regular_users[14] || regular_users.first
@@ -1153,7 +1153,7 @@ unless florian
   all_users = User.pluck(:id, :email, :first_name, :last_name)
   puts "  📋 Utilisateurs en base (#{all_users.count}) :"
   all_users.each { |u| puts "     - ID: #{u[0]}, Email: #{u[1]}, Nom: #{u[2]} #{u[3]}" }
-  
+
   # Essayer différentes variantes
   florian = User.find_by("LOWER(email) = ?", "t3rorx@hotmail.fr") ||
             User.where("email ILIKE ?", "%t3rorx%").first ||
@@ -1165,13 +1165,13 @@ if florian
   # Récupérer les variantes de produits pour les commandes
   variant_ids = ProductVariant.ids
   tshirt_variants = ProductVariant.joins(:product).where(products: { slug: "tshirt-grenoble-roller" })
-  
+
   # ========================================
   # 🛒 COMMANDES BOUTIQUE - TOUS LES CAS
   # ========================================
-  
+
   puts "  🛒 Création de commandes boutique (tous les statuts)..."
-  
+
   # 1. Commande PAYÉE et EXPÉDIÉE (avec plusieurs articles)
   payment1 = Payment.create!(
     provider: "stripe",
@@ -1181,7 +1181,7 @@ if florian
     status: "succeeded",
     created_at: Time.now - 10.days
   )
-  
+
   order1 = Order.create!(
     user: florian,
     payment: payment1,
@@ -1191,7 +1191,7 @@ if florian
     donation_cents: 0,
     created_at: payment1.created_at + 1.hour
   )
-  
+
   # Ajouter plusieurs articles à cette commande
   if variant_ids.any?
     OrderItem.create!(
@@ -1210,7 +1210,7 @@ if florian
     )
   end
   puts "    ✅ Commande payée et expédiée créée"
-  
+
   # 2. Commande PAYÉE mais EN ATTENTE D'EXPÉDITION
   payment2 = Payment.create!(
     provider: "helloasso",
@@ -1220,7 +1220,7 @@ if florian
     status: "succeeded",
     created_at: Time.now - 5.days
   )
-  
+
   order2 = Order.create!(
     user: florian,
     payment: payment2,
@@ -1230,7 +1230,7 @@ if florian
     donation_cents: 200,
     created_at: payment2.created_at + 30.minutes
   )
-  
+
   if variant_ids.any?
     OrderItem.create!(
       order: order2,
@@ -1241,7 +1241,7 @@ if florian
     )
   end
   puts "    ✅ Commande payée en attente d'expédition créée"
-  
+
   # 3. Commande EN ATTENTE DE PAIEMENT
   order3 = Order.create!(
     user: florian,
@@ -1252,7 +1252,7 @@ if florian
     donation_cents: 0,
     created_at: Time.now - 2.days
   )
-  
+
   if variant_ids.any?
     OrderItem.create!(
       order: order3,
@@ -1263,7 +1263,7 @@ if florian
     )
   end
   puts "    ✅ Commande en attente de paiement créée"
-  
+
   # 4. Commande ANNULÉE
   payment4 = Payment.create!(
     provider: "stripe",
@@ -1273,7 +1273,7 @@ if florian
     status: "failed",
     created_at: Time.now - 7.days
   )
-  
+
   order4 = Order.create!(
     user: florian,
     payment: payment4,
@@ -1283,7 +1283,7 @@ if florian
     donation_cents: 0,
     created_at: payment4.created_at + 1.hour
   )
-  
+
   if variant_ids.any?
     OrderItem.create!(
       order: order4,
@@ -1294,7 +1294,7 @@ if florian
     )
   end
   puts "    ✅ Commande annulée créée"
-  
+
   # 5. Commande avec DON
   payment5 = Payment.create!(
     provider: "paypal",
@@ -1304,7 +1304,7 @@ if florian
     status: "succeeded",
     created_at: Time.now - 3.days
   )
-  
+
   order5 = Order.create!(
     user: florian,
     payment: payment5,
@@ -1314,7 +1314,7 @@ if florian
     donation_cents: 500, # 5€ de don
     created_at: payment5.created_at + 15.minutes
   )
-  
+
   if variant_ids.any?
     OrderItem.create!(
       order: order5,
@@ -1325,23 +1325,23 @@ if florian
     )
   end
   puts "    ✅ Commande avec don créée"
-  
+
   puts "  ✅ #{Order.where(user: florian).count} commandes créées pour Florian"
-  
+
   # ========================================
   # 👶 ADHÉSIONS ENFANTS - TOUS LES CAS
   # ========================================
-  
+
   puts "  👶 Création d'adhésions enfants (tous les cas de figure)..."
-  
+
   # Récupérer une variante T-shirt si disponible
   tshirt_variant = tshirt_variants.first
   tshirt_price = tshirt_variant ? 1400 : nil # 14€ pour le T-shirt
-  
+
   # 1. ENFANT 1 : Adhésion ACTIVE cette année - Standard SANS T-shirt
   child1_age = 8
   child1_birth = Date.new(current_year - child1_age, rand(1..12), rand(1..28))
-  
+
   payment_child1 = Payment.create!(
     provider: "helloasso",
     provider_payment_id: "ha_florian_child1_#{SecureRandom.hex(6)}",
@@ -1350,7 +1350,7 @@ if florian
     status: "succeeded",
     created_at: current_season_start + 5.days
   )
-  
+
   Membership.create!(
     user: florian,
     payment: payment_child1,
@@ -1381,11 +1381,11 @@ if florian
     created_at: current_season_start + 5.days
   )
   puts "    ✅ Enfant 1 : Adhésion active (Standard, sans T-shirt)"
-  
+
   # 2. ENFANT 2 : Adhésion ACTIVE cette année - Standard AVEC T-shirt
   child2_age = 12
   child2_birth = Date.new(current_year - child2_age, rand(1..12), rand(1..28))
-  
+
   payment_child2 = Payment.create!(
     provider: "helloasso",
     provider_payment_id: "ha_florian_child2_#{SecureRandom.hex(6)}",
@@ -1394,7 +1394,7 @@ if florian
     status: "succeeded",
     created_at: current_season_start + 10.days
   )
-  
+
   Membership.create!(
     user: florian,
     payment: payment_child2,
@@ -1425,11 +1425,11 @@ if florian
     created_at: current_season_start + 10.days
   )
   puts "    ✅ Enfant 2 : Adhésion active (Standard, avec T-shirt)"
-  
+
   # 3. ENFANT 3 : Adhésion ACTIVE cette année - FFRS SANS T-shirt
   child3_age = 15
   child3_birth = Date.new(current_year - child3_age, rand(1..12), rand(1..28))
-  
+
   payment_child3 = Payment.create!(
     provider: "helloasso",
     provider_payment_id: "ha_florian_child3_#{SecureRandom.hex(6)}",
@@ -1438,7 +1438,7 @@ if florian
     status: "succeeded",
     created_at: current_season_start + 15.days
   )
-  
+
   Membership.create!(
     user: florian,
     payment: payment_child3,
@@ -1469,11 +1469,11 @@ if florian
     created_at: current_season_start + 15.days
   )
   puts "    ✅ Enfant 3 : Adhésion active (FFRS, sans T-shirt)"
-  
+
   # 4. ENFANT 4 : Adhésion EXPIRÉE année précédente - Standard
   child4_age_last_year = 7
   child4_birth = Date.new(previous_season_start.year - child4_age_last_year, rand(1..12), rand(1..28))
-  
+
   payment_child4 = Payment.create!(
     provider: "helloasso",
     provider_payment_id: "ha_florian_child4_#{SecureRandom.hex(6)}",
@@ -1482,7 +1482,7 @@ if florian
     status: "succeeded",
     created_at: previous_season_start + 20.days
   )
-  
+
   Membership.create!(
     user: florian,
     payment: payment_child4,
@@ -1513,11 +1513,11 @@ if florian
     created_at: previous_season_start + 20.days
   )
   puts "    ✅ Enfant 4 : Adhésion expirée (Standard, année précédente)"
-  
+
   # 5. ENFANT 5 : Adhésion EXPIRÉE année précédente - FFRS AVEC T-shirt
   child5_age_last_year = 11
   child5_birth = Date.new(previous_season_start.year - child5_age_last_year, rand(1..12), rand(1..28))
-  
+
   payment_child5 = Payment.create!(
     provider: "helloasso",
     provider_payment_id: "ha_florian_child5_#{SecureRandom.hex(6)}",
@@ -1526,7 +1526,7 @@ if florian
     status: "succeeded",
     created_at: previous_season_start + 25.days
   )
-  
+
   Membership.create!(
     user: florian,
     payment: payment_child5,
@@ -1557,11 +1557,11 @@ if florian
     created_at: previous_season_start + 25.days
   )
   puts "    ✅ Enfant 5 : Adhésion expirée (FFRS avec T-shirt, année précédente)"
-  
+
   # 6. ENFANT 6 : Adhésion EN ATTENTE (pending) - Standard
   child6_age = 9
   child6_birth = Date.new(current_year - child6_age, rand(1..12), rand(1..28))
-  
+
   Membership.create!(
     user: florian,
     payment: nil,
@@ -1592,11 +1592,11 @@ if florian
     created_at: Time.now - 1.day
   )
   puts "    ✅ Enfant 6 : Adhésion en attente (Standard, pending)"
-  
+
   # 7. ENFANT 7 : Adhésion EN ATTENTE (pending) - FFRS AVEC T-shirt
   child7_age = 13
   child7_birth = Date.new(current_year - child7_age, rand(1..12), rand(1..28))
-  
+
   Membership.create!(
     user: florian,
     payment: nil,
@@ -1627,12 +1627,12 @@ if florian
     created_at: Time.now - 3.days
   )
   puts "    ✅ Enfant 7 : Adhésion en attente (FFRS avec T-shirt, pending)"
-  
+
   puts "  ✅ #{Membership.where(user: florian, is_child_membership: true).count} adhésions enfants créées pour Florian"
   puts "     - Actives : #{Membership.where(user: florian, is_child_membership: true, status: :active).count}"
   puts "     - Expirées : #{Membership.where(user: florian, is_child_membership: true, status: :expired).count}"
   puts "     - En attente : #{Membership.where(user: florian, is_child_membership: true, status: :pending).count}"
-  
+
   puts "\n  ✅ Tous les cas de figure créés pour Florian (T3rorX) !"
 else
   puts "  ⚠️ Utilisateur Florian (T3rorX) non trouvé, impossible de créer les cas de figure"

@@ -2,7 +2,7 @@ class Membership < ApplicationRecord
   belongs_to :user
   belongs_to :payment, optional: true
   belongs_to :tshirt_variant, class_name: "ProductVariant", optional: true
-  
+
   # Certificat médical (si requis par le questionnaire de santé)
   has_one_attached :medical_certificate
 
@@ -27,10 +27,10 @@ class Membership < ApplicationRecord
   validate :unique_personal_membership_per_season
   validates :start_date, :end_date, :amount_cents, :category, presence: true
   validates :start_date, comparison: { less_than: :end_date }
-  
+
   # Validations pour adhésions enfants
   validates :child_first_name, :child_last_name, :child_date_of_birth, presence: true, if: :is_child_membership?
-  validates :parent_authorization, inclusion: { in: [true] }, if: -> { is_child_membership? && child_age < 16 }
+  validates :parent_authorization, inclusion: { in: [ true ] }, if: -> { is_child_membership? && child_age < 16 }
 
   # Scopes
   scope :active_now, -> { active.where("end_date > ?", Date.current) }
@@ -41,11 +41,11 @@ class Membership < ApplicationRecord
 
   # Ransack pour ActiveAdmin
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id user_id payment_id tshirt_variant_id category status season start_date end_date 
-       amount_cents currency is_child_membership is_minor child_first_name child_last_name 
-       child_date_of_birth parent_authorization parent_authorization_date parent_name 
-       parent_email parent_phone rgpd_consent legal_notices_accepted ffrs_data_sharing_consent 
-       health_questionnaire_status health_q1 health_q2 health_q3 health_q4 health_q5 
+    %w[id user_id payment_id tshirt_variant_id category status season start_date end_date
+       amount_cents currency is_child_membership is_minor child_first_name child_last_name
+       child_date_of_birth parent_authorization parent_authorization_date parent_name
+       parent_email parent_phone rgpd_consent legal_notices_accepted ffrs_data_sharing_consent
+       health_questionnaire_status health_q1 health_q2 health_q3 health_q4 health_q5
        health_q6 health_q7 health_q8 health_q9 created_at updated_at]
   end
 
@@ -56,8 +56,8 @@ class Membership < ApplicationRecord
   # Calcul automatique du prix selon la catégorie
   def self.price_for_category(category)
     case category.to_s
-    when 'standard' then 1000      # 10€ en centimes
-    when 'with_ffrs' then 5655      # 56.55€ en centimes
+    when "standard" then 1000      # 10€ en centimes
+    when "with_ffrs" then 5655      # 56.55€ en centimes
     else 0
     end
   end
@@ -65,19 +65,19 @@ class Membership < ApplicationRecord
   # Calculer le prix total (adhésion + T-shirt si présent)
   def total_amount_cents
     base = amount_cents || 0
-    
+
     # Nouveau système simplifié : with_tshirt + tshirt_qty
     if with_tshirt && tshirt_qty.to_i > 0
       tshirt_total = tshirt_qty.to_i * 1400 # 14€ par T-shirt
       return base + tshirt_total
     end
-    
+
     # Ancien système (rétrocompatibilité) : tshirt_variant_id
     if tshirt_variant_id.present?
       tshirt = tshirt_price_cents || 1400
       return base + tshirt
     end
-    
+
     base
   end
 
@@ -96,7 +96,7 @@ class Membership < ApplicationRecord
       end_date = Date.new(year, 8, 31)
     end
 
-    [start_date, end_date]
+    [ start_date, end_date ]
   end
 
   # Génère le nom de la saison (ex: "2025-2026")
@@ -110,7 +110,7 @@ class Membership < ApplicationRecord
 
   # Vérifier si l'adhésion est active (payée ET dans la période de validité)
   def active?
-    status == 'active' && end_date >= Date.current
+    status == "active" && end_date >= Date.current
   end
 
   # Vérifier si l'adhésion est expirée
@@ -122,7 +122,7 @@ class Membership < ApplicationRecord
   def is_child_membership?
     is_child_membership == true
   end
-  
+
   # Nom complet de l'enfant
   def child_full_name
     return nil unless is_child_membership?
@@ -139,29 +139,29 @@ class Membership < ApplicationRecord
 
   def unique_personal_membership_per_season
     return if is_child_membership? # Pas de validation pour les enfants
-    
+
     existing = Membership.where(
       user_id: user_id,
       season: season,
       is_child_membership: false
     ).where.not(id: id)
-    
+
     # Empêcher plusieurs adhésions pending pour la même saison
-    if status == 'pending' && existing.where(status: 'pending').exists?
+    if status == "pending" && existing.where(status: "pending").exists?
       errors.add(:base, "Vous avez déjà une adhésion en attente de paiement pour cette saison")
       return
     end
-    
+
     # Empêcher une nouvelle adhésion si une adhésion active existe déjà
-    if existing.where(status: 'active').where("end_date > ?", Date.current).exists?
+    if existing.where(status: "active").where("end_date > ?", Date.current).exists?
       errors.add(:base, "Vous avez déjà une adhésion active pour cette saison")
-      return
+      nil
     end
   end
 
   def activate_if_paid
     # Si le statut vient de passer à 'active', envoyer l'email
-    if status == 'active' && saved_change_to_status? && saved_change_to_status[0] == 'pending'
+    if status == "active" && saved_change_to_status? && saved_change_to_status[0] == "pending"
       MembershipMailer.activated(self).deliver_later
     end
   end
@@ -196,4 +196,3 @@ class Membership < ApplicationRecord
     end
   end
 end
-

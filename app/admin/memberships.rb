@@ -2,7 +2,7 @@
 
 ActiveAdmin.register Membership do
   menu priority: 4, label: "Adhésions"
-  
+
   includes :user, :payment, :tshirt_variant
 
   permit_params :user_id, :category, :status, :start_date, :end_date, :amount_cents, :currency,
@@ -35,7 +35,7 @@ ActiveAdmin.register Membership do
       end
     end
     column :category do |membership|
-      membership.category == 'standard' ? 'Standard' : 'FFRS'
+      membership.category == "standard" ? "Standard" : "FFRS"
     end
     column :status do |membership|
       case membership.status
@@ -75,9 +75,9 @@ ActiveAdmin.register Membership do
   end
 
   filter :user
-  filter :status, as: :select, collection: Membership.statuses.map { |k, v| [k.humanize, k] }
-  filter :category, as: :select, collection: Membership.categories.map { |k, v| [k.humanize, k] }
-  filter :is_child_membership, label: "Type", as: :select, collection: [["Personnelle", false], ["Enfant", true]]
+  filter :status, as: :select, collection: Membership.statuses.map { |k, v| [ k.humanize, k ] }
+  filter :category, as: :select, collection: Membership.categories.map { |k, v| [ k.humanize, k ] }
+  filter :is_child_membership, label: "Type", as: :select, collection: [ [ "Personnelle", false ], [ "Enfant", true ] ]
   filter :season
   filter :start_date
   filter :end_date
@@ -90,7 +90,7 @@ ActiveAdmin.register Membership do
         membership.is_child_membership? ? "Enfant" : "Personnelle"
       end
       row :category do |membership|
-        membership.category == 'standard' ? 'Standard (10€)' : 'FFRS (56.55€)'
+        membership.category == "standard" ? "Standard (10€)" : "FFRS (56.55€)"
       end
       row :status do |membership|
         case membership.status
@@ -192,7 +192,7 @@ ActiveAdmin.register Membership do
     f.semantic_errors
 
     f.inputs "Adhésion" do
-      f.input :user, collection: User.order(:email).map { |u| [u.email, u.id] }
+      f.input :user, collection: User.order(:email).map { |u| [ u.email, u.id ] }
       f.input :category, as: :select, collection: {
         "Standard (10€)" => "standard",
         "FFRS (56.55€)" => "with_ffrs"
@@ -230,4 +230,3 @@ ActiveAdmin.register Membership do
     f.actions
   end
 end
-

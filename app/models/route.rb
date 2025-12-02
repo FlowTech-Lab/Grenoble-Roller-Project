@@ -1,6 +1,6 @@
 class Route < ApplicationRecord
   has_many :events, dependent: :nullify
-  
+
   # Active Storage attachments
   has_one_attached :map_image
 

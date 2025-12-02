@@ -12,7 +12,7 @@ class CreateMemberships < ActiveRecord::Migration[8.1]
       t.references :payment, foreign_key: true, null: true
       t.string :provider_order_id # ID HelloAsso pour réconciliation
       t.jsonb :metadata # Informations supplémentaires
-      
+
       # Champs pour mineurs (optionnels)
       t.boolean :is_minor, default: false
       t.string :parent_name
@@ -32,10 +32,10 @@ class CreateMemberships < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :memberships, [:user_id, :status]
-    add_index :memberships, [:user_id, :season]
-    add_index :memberships, [:status, :end_date]
+    add_index :memberships, [ :user_id, :status ]
+    add_index :memberships, [ :user_id, :season ]
+    add_index :memberships, [ :status, :end_date ]
     add_index :memberships, :provider_order_id
-    add_index :memberships, [:user_id, :season], unique: true, name: "index_memberships_on_user_id_and_season_unique"
+    add_index :memberships, [ :user_id, :season ], unique: true, name: "index_memberships_on_user_id_and_season_unique"
   end
 end

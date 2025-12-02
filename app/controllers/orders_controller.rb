@@ -35,11 +35,11 @@ class OrdersController < ApplicationController
     end
 
     total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
-    
+
     # Récupérer le don (en centimes) depuis les params
     donation_cents = params[:donation_cents].to_i
     donation_cents = 0 if donation_cents < 0 # Sécurité : pas de don négatif
-    
+
     # Le total de la commande inclut le don
     order_total_cents = total_cents + donation_cents
 
@@ -134,27 +134,27 @@ class OrdersController < ApplicationController
 
   def payment_status
     @order = current_user.orders.includes(:payment).find(params[:id])
-    
+
     # Si pas de payment mais commande pending → considérer comme pending
     if @order.payment.nil?
       order_status = @order.status.downcase
-      if ['pending', 'en attente'].include?(order_status)
-        render json: { status: 'pending' }
+      if [ "pending", "en attente" ].include?(order_status)
+        render json: { status: "pending" }
         return
       else
-        render json: { status: 'unknown' }
+        render json: { status: "unknown" }
         return
       end
     end
-    
+
     # Si le paiement est pending et HelloAsso, faire un check réel
     if @order.payment.provider == "helloasso" && @order.payment.status == "pending"
       HelloassoService.fetch_and_update_payment(@order.payment)
       @order.reload
       @order.payment.reload
     end
-    
-    render json: { status: @order.payment.status || 'unknown' }
+
+    render json: { status: @order.payment.status || "unknown" }
   end
 
   def pay
@@ -171,22 +171,22 @@ class OrdersController < ApplicationController
 
     # Vérifier les conditions APRÈS le check
     order_status = @order.status&.downcase
-    is_cancelled = ["cancelled", "annulé", "canceled"].include?(order_status)
+    is_cancelled = [ "cancelled", "annulé", "canceled" ].include?(order_status)
     is_pending = order_status == "pending"
-    
+
     # Permettre le paiement si : commande pending + non annulée + (pas de payment OU payment pending helloasso)
-    can_pay = is_pending && 
-              !is_cancelled && 
+    can_pay = is_pending &&
+              !is_cancelled &&
               (payment.nil? || (payment.provider == "helloasso" && payment.status == "pending"))
-    
+
     unless can_pay
       # Si déjà payé, annulé ou autre statut, rediriger vers la liste des commandes à jour
       message = if is_cancelled
-                  "Cette commande est annulée et ne peut plus être payée."
-                else
-                  "Le statut de cette commande a été mis à jour. " \
-                  "Statut actuel : #{@order.status} / #{payment&.status || 'pas de paiement'}"
-                end
+        "Cette commande est annulée et ne peut plus être payée."
+      else
+        "Le statut de cette commande a été mis à jour. " \
+        "Statut actuel : #{@order.status} / #{payment&.status || 'pas de paiement'}"
+      end
       redirect_to orders_path, notice: message
       return
     end
@@ -203,19 +203,19 @@ class OrdersController < ApplicationController
       )
     rescue => e
       Rails.logger.error("[OrdersController#pay] Erreur lors de la création du checkout-intent : #{e.class} - #{e.message}")
-      
+
       # Message d'erreur adapté selon le type d'erreur
       error_message = if e.message.include?("429") || e.message.include?("Rate limit")
-                        "Les serveurs HelloAsso sont temporairement surchargés. " \
-                        "Merci de réessayer dans quelques minutes."
-                      elsif e.message.include?("access_token")
-                        "Erreur de configuration HelloAsso. " \
-                        "Merci de contacter l'association."
-                      else
-                        "Erreur lors de l'initialisation du paiement HelloAsso. " \
-                        "Merci de réessayer plus tard ou de contacter l'association."
-                      end
-      
+        "Les serveurs HelloAsso sont temporairement surchargés. " \
+        "Merci de réessayer dans quelques minutes."
+      elsif e.message.include?("access_token")
+        "Erreur de configuration HelloAsso. " \
+        "Merci de contacter l'association."
+      else
+        "Erreur lors de l'initialisation du paiement HelloAsso. " \
+        "Merci de réessayer plus tard ou de contacter l'association."
+      end
+
       redirect_to order_path(@order), alert: error_message
       return
     end

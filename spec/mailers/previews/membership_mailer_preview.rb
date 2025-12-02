@@ -1,6 +1,5 @@
 # Preview all emails at http://localhost:3000/rails/mailers/membership_mailer_mailer
 class MembershipMailerPreview < ActionMailer::Preview
-
   # Preview this email at http://localhost:3000/rails/mailers/membership_mailer_mailer/activated
   def activated
     MembershipMailer.activated
@@ -20,5 +19,4 @@ class MembershipMailerPreview < ActionMailer::Preview
   def payment_failed
     MembershipMailer.payment_failed
   end
-
 end
