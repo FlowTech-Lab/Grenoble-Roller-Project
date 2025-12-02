@@ -43,8 +43,10 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - Page `/memberships/new` disponible
 
 **2. User adhère**
-- Remplit formulaire simplifié (ton app)
-- Choisit catégorie
+- **Étape 0** : Page de choix `/memberships/choose` - "Adhésion Simple" (10€) ou "Adhésion + T-shirt" (24€)
+- **Étape 1** : Choisit catégorie (Standard 10€ ou FFRS 56.55€)
+- **Étape 2** (si T-shirt) : Sélection T-shirt (taille, quantité) - Prix membre 14€ au lieu de 20€
+- **Étape 3** : Remplit formulaire complet (informations, coordonnées, consentements)
 - App crée Membership (pending)
 - Paiement HelloAsso
 - Membership → active
@@ -64,12 +66,14 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 **5. User Profile**
 - Affiche : "Adhésion active jusqu'au 31 août N+1"
 - Ou : "Adhésion expirée - Renouveler"
-- Bouton "Renouveler adhésion"
+- Bouton "Renouveler adhésion" → Redirige vers `/memberships/choose` (avec option T-shirt pour renouvellement)
+- **Gestion enfants** : Possibilité d'ajouter des enfants un par un, paiement groupé possible
 
 **6. 31 Août N+1 (Auto)**
 - Rake task : Toutes adhésions expirent
 - Email : "Adhésion expirée"
 - User voit : Status = "expired"
+- **Renouvellement** : Possibilité de renouveler avec ou sans nouveau T-shirt
 
 **7. Sept N+1 (Nouveau Cycle)**
 - Adhésions N+2 disponibles
@@ -93,10 +97,11 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - `season` : "2025-2026" (string, pour historique)
 - `payment_id` (FK vers payments, optionnel)
 - `provider_order_id` : ID HelloAsso pour réconciliation (string)
-- `tshirt_variant_id` (FK vers product_variants, optionnel) ✅ **Ajouté pour HelloAsso réel**
-- `tshirt_price_cents` (integer, default: 1400) ✅ **Ajouté pour HelloAsso réel**
-- `wants_whatsapp` (boolean) ✅ **Ajouté pour HelloAsso réel**
-- `wants_email_info` (boolean) ✅ **Ajouté pour HelloAsso réel**
+- `with_tshirt` (boolean, default: false) ✅ **Ajouté pour upsell T-shirt**
+- `tshirt_size` (string, nullable) ✅ **Ajouté pour upsell T-shirt**
+- `tshirt_qty` (integer, default: 0) ✅ **Ajouté pour upsell T-shirt**
+- `tshirt_variant_id` (FK vers product_variants, optionnel) ✅ **Déprécié - Utiliser with_tshirt/tshirt_size/tshirt_qty**
+- `tshirt_price_cents` (integer, default: 1400) ✅ **Déprécié - Prix calculé dynamiquement**
 - `created_at`, `updated_at`
 
 **Champs pour mineurs** (si nécessaire) :
@@ -230,26 +235,41 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 
 ### **ENFANT < 16 ans**
 
-**ÉTAPE 1** : Sélection catégorie
-- L'app détecte : `age < 16`
-- Message : "Vous êtes mineur, un accord parental est nécessaire"
+**ÉTAPE 0** : Page de choix `/memberships/choose?child=true`
+- "Adhésion Simple" (10€ ou 56.55€ selon catégorie)
+- "Adhésion + T-shirt" (24€ ou 70.55€ selon catégorie + T-shirt 14€)
 
-**ÉTAPE 2** : Formulaire avec accord parent
+**ÉTAPE 1** : Sélection catégorie
+- L'app détecte : `age < 16` (calculé automatiquement)
+- Message : "Vous êtes mineur, un accord parental est nécessaire"
+- Catégorie Standard (10€) ou FFRS (56.55€)
+
+**ÉTAPE 2** (si T-shirt sélectionné) : Sélection T-shirt
+- Choix taille et quantité
+- Prix membre : 14€ au lieu de 20€
+- Total affiché dynamiquement
+
+**ÉTAPE 3** : Formulaire avec accord parent
 - Prénom, Nom (enfant)
-- Date naissance (enfant)
+- Date naissance (enfant) - 3 dropdowns (jour, mois, année)
 - Email, Téléphone (parent)
-- ☑️ "Le parent/tuteur accepte l'adhésion"
+- ☑️ "Le parent/tuteur accepte l'adhésion" (obligatoire si < 16 ans)
 - ☑️ "Le parent/tuteur accepte le paiement"
 
-**ÉTAPE 3** : Santé
-- "L'enfant a-t-il des problèmes de santé ?"
-  - ☐ Non → Attestation parentale suffit
-  - ☐ Oui → Certificat médical requis (upload PDF)
+**ÉTAPE 4** : Questionnaire de santé (9 questions)
+- Questions spécifiques sur la santé
+- Si au moins une réponse "OUI" → Upload certificat médical requis
+- Si toutes "NON" → Pas de certificat requis
 
-**ÉTAPE 4** : Paiement
+**ÉTAPE 5** : Consentements
+- RGPD, FFRS, Notices légales
+- Préférences communication : `wants_initiation_mail`, `wants_events_mail` (dans User)
+
+**ÉTAPE 6** : Paiement
 - Parent paie (email parent saisi)
+- Possibilité de payer plusieurs enfants en une seule transaction
 
-**ÉTAPE 5** : Confirmation
+**ÉTAPE 7** : Confirmation
 - Email parent : "Adhésion enfant en attente de paiement"
 
 ---
@@ -282,6 +302,34 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 ---
 
 ### **ADULTE >= 18 ans**
+
+**ÉTAPE 0** : Page de choix `/memberships/choose`
+- "Adhésion Simple" (10€ ou 56.55€ selon catégorie)
+- "Adhésion + T-shirt" (24€ ou 70.55€ selon catégorie + T-shirt 14€)
+
+**ÉTAPE 1** : Sélection catégorie
+- Catégorie Standard (10€) ou FFRS (56.55€)
+
+**ÉTAPE 2** (si T-shirt sélectionné) : Sélection T-shirt
+- Choix taille et quantité
+- Prix membre : 14€ au lieu de 20€
+- Total affiché dynamiquement
+
+**ÉTAPE 3** : Formulaire informations
+- Prénom, Nom (pré-rempli depuis User)
+- Date naissance (3 dropdowns)
+- Email (pré-rempli, confirmation affichée)
+- Téléphone
+
+**ÉTAPE 4** : Coordonnées
+- Adresse, Ville, Code postal
+- Préférences communication : `wants_initiation_mail`, `wants_events_mail` (dans User)
+
+**ÉTAPE 5** : Consentements
+- RGPD, FFRS, Notices légales
+
+**ÉTAPE 6** : Paiement
+- Paiement HelloAsso
 
 **Flux normal** :
 - Pas de vérification parentale
@@ -537,6 +585,104 @@ end
 ✅ Admin dashboard = visibilité totale  
 ✅ Ça tourne seul année après année  
 ✅ Zero maintenance à faire
+
+---
+
+## 🆕 NOUVELLES FONCTIONNALITÉS (2025)
+
+### **1. Page de Choix T-shirt (Upsell)**
+
+**Route** : `/memberships/choose`
+
+**Fonctionnalité** :
+- Deux cartes cliquables : "Adhésion Simple" et "Adhésion + T-shirt"
+- Prix T-shirt membre : 14€ au lieu de 20€ (réduction de 6€)
+- Total affiché : "24€ au lieu de 30€" (économie de 6€)
+- Disponible pour adultes et enfants
+- Disponible lors du renouvellement (avec option de nouveau T-shirt)
+
+**Flux** :
+1. User clique sur "Adhérer" → Redirige vers `/memberships/choose`
+2. User choisit "Adhésion Simple" ou "Adhésion + T-shirt"
+3. Si T-shirt : Étape supplémentaire dans le formulaire pour sélection taille/quantité
+4. Ordre des étapes : Catégorie d'abord, puis T-shirt (pour calcul dynamique du prix)
+
+---
+
+### **2. Gestion Enfants Simplifiée**
+
+**Fonctionnalité** :
+- Ajout d'enfants un par un (plus de formulaire multi-enfants)
+- Page `/memberships` centralisée : affiche toutes les adhésions (personnelle + enfants)
+- Possibilité de payer plusieurs enfants en attente en une seule transaction
+- Modification et suppression des adhésions enfants en attente
+- Renouvellement avec option T-shirt
+
+**Routes RESTful** :
+- `GET /memberships` : Liste toutes les adhésions
+- `GET /memberships/choose` : Page de choix T-shirt
+- `POST /memberships` : Créer adhésion (personnelle ou enfant)
+- `GET /memberships/:id` : Détail adhésion
+- `PATCH /memberships/:id` : Modifier adhésion enfant
+- `DELETE /memberships/:id` : Supprimer adhésion enfant
+- `POST /memberships/pay_multiple` : Payer plusieurs enfants en une fois
+
+---
+
+### **3. Préférences Communication**
+
+**Champs dans User** (remplacement de `wants_whatsapp` et `wants_email_info`) :
+- `wants_initiation_mail` (boolean) : Emails initiations et randos
+- `wants_events_mail` (boolean) : Emails événements
+
+**Gestion** :
+- Collectées dans le formulaire d'adhésion (section "Communication")
+- Modifiables dans le profil utilisateur (`/users/edit`)
+- Stockées dans le modèle `User`, pas dans `Membership`
+
+---
+
+### **4. Questionnaire de Santé (9 Questions)**
+
+**Fonctionnalité** :
+- 9 questions spécifiques sur la santé (au lieu d'une simple question OUI/NON)
+- Si au moins une réponse "OUI" → Upload certificat médical requis (Active Storage)
+- Si toutes "NON" → Pas de certificat requis
+- Certificat stocké via `has_one_attached :medical_certificate` dans `Membership`
+
+**Champs dans Membership** :
+- `health_q1` à `health_q9` (string, enum: "oui", "non")
+- `health_questionnaire_status` (enum: "ok", "medical_required")
+- `medical_certificate` (Active Storage attachment)
+
+---
+
+### **5. Ordre des Étapes Inversé**
+
+**Ancien ordre** :
+1. T-shirt (si sélectionné)
+2. Catégorie
+
+**Nouvel ordre** :
+1. Catégorie (obligatoire)
+2. T-shirt (si sélectionné)
+
+**Raison** : Permet le calcul dynamique du prix total (adhésion + T-shirt) basé sur la catégorie sélectionnée.
+
+---
+
+### **6. Fusion Pages Index/New**
+
+**Ancien** :
+- `/memberships` : Liste des adhésions
+- `/memberships/new` : Formulaire de création
+
+**Nouveau** :
+- `/memberships` : Liste des adhésions + options de création (tout en un)
+- Hero section avec CTA "Adhérer maintenant"
+- Sidebar avec actions rapides
+- Section "Mes adhésions" avec cartes améliorées
+- Section historique (adhésions expirées)
 
 ---
 

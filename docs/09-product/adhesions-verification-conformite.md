@@ -51,10 +51,12 @@
   - [x] `ffrs_data_sharing_consent` (boolean)
   - [x] `legal_notices_accepted` (boolean)
 - [x] **Champs supplémentaires (HelloAsso réel)** :
-  - [x] `tshirt_variant_id` (references product_variants, null: true)
-  - [x] `tshirt_price_cents` (integer, default: 1400)
-  - [x] `wants_whatsapp` (boolean, default: false)
-  - [x] `wants_email_info` (boolean, default: true)
+  - [x] `with_tshirt` (boolean, default: false) ✅ **Nouveau système upsell**
+  - [x] `tshirt_size` (string, nullable) ✅ **Nouveau système upsell**
+  - [x] `tshirt_qty` (integer, default: 0) ✅ **Nouveau système upsell**
+  - [x] `health_q1` à `health_q9` (string, enum: "oui", "non") ✅ **Questionnaire 9 questions**
+  - [x] `health_questionnaire_status` (enum: "ok", "medical_required") ✅ **Statut questionnaire**
+  - [x] `medical_certificate` (Active Storage attachment) ✅ **Upload certificat**
 - [x] Index :
   - [x] `add_index :memberships, [:user_id, :status]`
   - [x] `add_index :memberships, [:user_id, :season]`
@@ -114,7 +116,7 @@
 - [x] Champs :
   - [x] Migration `add_date_of_birth_to_users` (date) ✅ **Créée**
   - [x] Migration `add_address_fields_to_users` (address, postal_code, city) ✅ **Créée**
-  - [x] Migration `add_options_to_users` (wants_whatsapp, wants_email_info) ✅ **Créée**
+  - [x] Migration `add_email_preferences_to_users` (wants_initiation_mail, wants_events_mail) ✅ **Créée - Remplace wants_whatsapp/wants_email_info**
 - [x] `phone` : ✅ **Déjà présent dans schema**
 
 **Status** : ✅ **100% conforme**
@@ -155,15 +157,23 @@
 - [x] Créer `app/controllers/memberships_controller.rb`
 - [x] `before_action :authenticate_user!`
 - [x] `before_action :ensure_email_confirmed, only: [:create, :step2, :step3]`
+- [x] Action `choose` :
+  - [x] Page de choix T-shirt (Adhésion Simple vs Adhésion + T-shirt) ✅ **Nouvelle fonctionnalité**
+  - [x] Gestion renouvellement avec option T-shirt ✅ **Nouvelle fonctionnalité**
 - [x] Action `index` :
-  - [x] Liste des adhésions de l'utilisateur
-  - [x] Ordre : `created_at: :desc`
-  - [x] Affichage T-shirt si présent ✅ **Ajouté**
-- [x] Action `new` (Étape 1) :
+  - [x] Hero section avec CTA ✅ **Nouvelle fonctionnalité**
+  - [x] Sidebar avec actions rapides ✅ **Nouvelle fonctionnalité**
+  - [x] Liste des adhésions (personnelle + enfants) ✅
+  - [x] Section historique (adhésions expirées) ✅ **Nouvelle fonctionnalité**
+  - [x] Paiement groupé enfants ✅ **Nouvelle fonctionnalité**
+  - [x] Affichage T-shirt si présent ✅
+- [x] Action `new` :
   - [x] Afficher 2 catégories (Standard, FFRS) ✅ **Corrigé selon HelloAsso réel**
   - [x] Afficher dates de saison courante
   - [x] Afficher prix pour chaque catégorie (10€, 56.55€) ✅ **Corrigé**
-  - [x] Option T-shirt avec choix de taille ✅ **Ajouté pour HelloAsso réel**
+  - [x] Étape T-shirt avec choix taille/quantité (ordre inversé) ✅ **Nouveau système**
+  - [x] Questionnaire de santé (9 questions) ✅ **Nouvelle fonctionnalité**
+  - [x] Upload certificat médical (Active Storage) ✅ **Nouvelle fonctionnalité**
 - [x] Action `step2` (Étape 2) :
   - [x] Formulaire informations adhérent (Prénom, Nom, Date naissance, Téléphone, Email) ✅ **Ajouté pour HelloAsso réel**
   - [x] Pré-remplir depuis User si connecté
@@ -413,12 +423,20 @@
 ### **Conformité avec Formulaire HelloAsso Réel**
 
 - [x] **Catégories corrigées** : Standard (10€) et FFRS (56.55€) ✅
-- [x] **T-shirt à 14€** : Option avec choix de taille ✅
-- [x] **Formulaire multi-étapes** : 3 étapes (Choix, Adhérents, Coordonnées) ✅
+- [x] **Page de choix T-shirt** : Upsell avec 2 cartes cliquables ✅ **Nouvelle fonctionnalité**
+- [x] **T-shirt à 14€ (prix membre)** : Option avec choix taille/quantité ✅ **Nouveau système**
+- [x] **Ordre inversé** : Catégorie d'abord, puis T-shirt (pour calcul dynamique) ✅ **Nouvelle fonctionnalité**
+- [x] **Formulaire multi-étapes** : 5 étapes avec stepper ✅
 - [x] **Champs collectés** : Prénom, Nom, Date naissance, Téléphone, Email, Adresse, Ville, Code postal ✅
-- [x] **Options** : WhatsApp, Réception emails ✅
+- [x] **Préférences communication** : wants_initiation_mail, wants_events_mail (dans User) ✅ **Remplace wants_whatsapp/wants_email_info**
+- [x] **Questionnaire de santé** : 9 questions spécifiques ✅ **Nouvelle fonctionnalité**
+- [x] **Upload certificat médical** : Active Storage si requis ✅ **Nouvelle fonctionnalité**
 - [x] **Progress bar** : Affichage des étapes ✅
-- [x] **Flux mineurs simplifié** : Formulaire unique pour tous ✅
+- [x] **Flux mineurs simplifié** : Formulaire unique, ajout un par un ✅
+- [x] **Paiement groupé enfants** : Payer plusieurs enfants en une transaction ✅ **Nouvelle fonctionnalité**
+- [x] **Renouvellement avec T-shirt** : Option de nouveau T-shirt lors du renouvellement ✅ **Nouvelle fonctionnalité**
+- [x] **Routes RESTful** : edit, update, destroy pour enfants ✅ **Nouvelle fonctionnalité**
+- [x] **Fusion pages** : index.html.erb centralise tout ✅ **Nouvelle fonctionnalité**
 
 **Status** : ✅ **100% conforme avec HelloAsso réel**
 

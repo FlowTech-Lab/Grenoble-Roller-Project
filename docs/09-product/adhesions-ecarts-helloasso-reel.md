@@ -40,8 +40,8 @@
 - ☑️ "Réception de mail d'information (rando/initiation) ou d'évènement Grenoble Roller"
 
 **Action** : 
-- Vérifier si `phone` existe dans User
-- Ajouter champs `wants_whatsapp` et `wants_email_info` dans User ou Membership
+- ✅ Vérifier si `phone` existe dans User (déjà présent)
+- ✅ Ajouter champs `wants_initiation_mail` et `wants_events_mail` dans User (remplace wants_whatsapp/wants_email_info)
 
 ---
 
@@ -107,16 +107,21 @@
 
 ```ruby
 # Migration déjà créée : AddPersonalFieldsToUsers
-# Vérifier si phone existe, sinon ajouter
+# Vérifier si phone existe (déjà présent)
+# Migration créée : AddEmailPreferencesToUsers
 # Ajouter :
-- wants_whatsapp (boolean, default: false)
-- wants_email_info (boolean, default: true)
+- wants_initiation_mail (boolean, default: true) # Remplace wants_whatsapp
+- wants_events_mail (boolean, default: true)   # Remplace wants_email_info
 ```
 
 ### **2. Migration Membership - T-shirt**
 
 ```ruby
-# Ajouter :
+# Nouveau système upsell :
+- with_tshirt (boolean, default: false)
+- tshirt_size (string, null: true)
+- tshirt_qty (integer, default: 0)
+# Ancien système (déprécié mais conservé pour compatibilité) :
 - tshirt_variant_id (references product_variants, null: true)
 - tshirt_price_cents (integer, default: 1400) # 14€
 ```
@@ -133,18 +138,26 @@ enum :category, {
 ### **4. Controller - Formulaire Multi-Étapes**
 
 Adapter `MembershipsController` pour gérer :
-- Étape 1 : Choix catégorie + T-shirt (optionnel)
-- Étape 2 : Informations adhérent (pré-remplir depuis User si connecté)
-- Étape 3 : Coordonnées (adresse, etc.)
-- Étape 4 : Récapitulatif + Paiement
+- **Action `choose`** : Page de choix T-shirt (nouvelle route `/memberships/choose`)
+- **Action `new`** : Formulaire multi-étapes
+  - Étape 1 : Choix catégorie (Standard ou FFRS)
+  - Étape 2 : T-shirt (si sélectionné) - Ordre inversé pour calcul dynamique
+  - Étape 3 : Informations adhérent (pré-remplir depuis User si connecté)
+  - Étape 4 : Coordonnées (adresse, etc.)
+  - Étape 5 : Consentements + Préférences communication
+- **Action `pay_multiple`** : Payer plusieurs enfants en une seule transaction
 
 ### **5. Vue - Formulaire Multi-Étapes**
 
 Créer un formulaire avec :
-- Progress bar (comme HelloAsso)
-- Étapes séparées
-- Validation par étape
-- Sauvegarde temporaire (session ou draft)
+- **Page `choose.html.erb`** : Deux cartes cliquables (Adhésion Simple / Adhésion + T-shirt)
+- **Formulaire multi-étapes** avec stepper :
+  - Progress bar (comme HelloAsso)
+  - Étapes séparées
+  - Validation par étape
+  - Ordre inversé : Catégorie d'abord, puis T-shirt
+- **Questionnaire de santé** : 9 questions spécifiques (au lieu d'une simple question OUI/NON)
+- **Upload certificat médical** : Active Storage si au moins une réponse "OUI"
 
 ### **6. Service HelloAsso - T-shirt dans Checkout**
 
@@ -177,9 +190,9 @@ t.string :address
 t.string :postal_code
 t.string :city
 
-# À ajouter :
-t.boolean :wants_whatsapp, default: false
-t.boolean :wants_email_info, default: true
+# Migration AddEmailPreferencesToUsers :
+t.boolean :wants_initiation_mail, default: true  # Remplace wants_whatsapp
+t.boolean :wants_events_mail, default: true        # Remplace wants_email_info
 ```
 
 ### **Prix Adhésions**
@@ -223,13 +236,22 @@ end
 
 ## ✅ CHECKLIST CORRECTIONS
 
-- [x] Migration User : Vérifier `phone`, ajouter `wants_whatsapp`, `wants_email_info` ✅
-- [x] Migration Membership : Ajouter `tshirt_variant_id`, `tshirt_price_cents` ✅
+- [x] Migration User : Vérifier `phone`, ajouter `wants_initiation_mail`, `wants_events_mail` ✅
+- [x] Migration Membership : Ajouter `with_tshirt`, `tshirt_size`, `tshirt_qty` ✅
+- [x] Migration Membership : Ajouter `health_q1` à `health_q9`, `health_questionnaire_status` ✅
+- [x] Migration Membership : Ajouter Active Storage pour `medical_certificate` ✅
 - [x] Modèle Membership : Changer catégories (standard, with_ffrs) et prix ✅
-- [x] Controller : Adapter pour formulaire multi-étapes ✅
-- [x] Vue : Créer formulaire avec progress bar et étapes ✅
+- [x] Controller : Ajouter action `choose` pour page de choix T-shirt ✅
+- [x] Controller : Adapter pour formulaire multi-étapes avec ordre inversé ✅
+- [x] Controller : Ajouter action `pay_multiple` pour paiement groupé enfants ✅
+- [x] Vue : Créer page `choose.html.erb` avec 2 cartes cliquables ✅
+- [x] Vue : Créer formulaire avec progress bar et étapes (ordre inversé) ✅
+- [x] Vue : Ajouter questionnaire de santé (9 questions) ✅
+- [x] Vue : Ajouter upload certificat médical (Active Storage) ✅
+- [x] Vue : Fusionner `index.html.erb` et `new.html.erb` ✅
 - [x] Service HelloAsso : Inclure T-shirt dans checkout-intent ✅
-- [x] Flux mineurs : Simplifier (formulaire unique) ✅
+- [x] Flux mineurs : Simplifier (formulaire unique, ajout un par un) ✅
+- [x] Routes : Routes RESTful complètes (edit, update, destroy) ✅
 - [ ] Tests : Vérifier nouveau flux complet ⚠️ **À tester manuellement**
 
 ---

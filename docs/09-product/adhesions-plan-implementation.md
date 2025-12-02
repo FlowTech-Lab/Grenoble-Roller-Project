@@ -51,10 +51,12 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
   - [x] `ffrs_data_sharing_consent` (boolean) ✅
   - [x] `legal_notices_accepted` (boolean) ✅
 - [x] **Champs supplémentaires (HelloAsso réel)** :
-  - [x] `tshirt_variant_id` (references product_variants) ✅
-  - [x] `tshirt_price_cents` (integer, default: 1400) ✅
-  - [x] `wants_whatsapp` (boolean) ✅
-  - [x] `wants_email_info` (boolean) ✅
+  - [x] `with_tshirt` (boolean, default: false) ✅ **Nouveau système upsell**
+  - [x] `tshirt_size` (string, nullable) ✅ **Nouveau système upsell**
+  - [x] `tshirt_qty` (integer, default: 0) ✅ **Nouveau système upsell**
+  - [x] `health_q1` à `health_q9` (string, enum: "oui", "non") ✅ **Questionnaire 9 questions**
+  - [x] `health_questionnaire_status` (enum: "ok", "medical_required") ✅ **Statut questionnaire**
+  - [x] `medical_certificate` (Active Storage attachment) ✅ **Upload certificat**
 - [x] Index :
   - [x] `add_index :memberships, [:user_id, :status]` ✅
   - [x] `add_index :memberships, [:user_id, :season]` ✅
@@ -108,7 +110,7 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 - [x] Champs à ajouter (si manquants) :
   - [x] Migration `add_date_of_birth_to_users` (date) ✅
   - [x] Migration `add_address_fields_to_users` (address, postal_code, city) ✅
-  - [x] Migration `add_options_to_users` (wants_whatsapp, wants_email_info) ✅ **Ajouté pour HelloAsso réel**
+  - [x] Migration `add_email_preferences_to_users` (wants_initiation_mail, wants_events_mail) ✅ **Remplace wants_whatsapp/wants_email_info**
 - [x] `phone` : ✅ **Déjà présent dans schema**
 
 ---
@@ -143,15 +145,22 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 - [x] Créer `app/controllers/memberships_controller.rb` ✅
 - [x] `before_action :authenticate_user!` ✅
 - [x] `before_action :ensure_email_confirmed, only: [:create, :step2, :step3]` ✅
+- [x] Action `choose` :
+  - [x] Page de choix T-shirt (Adhésion Simple vs Adhésion + T-shirt) ✅ **Nouvelle fonctionnalité**
+  - [x] Gestion paramètre `renew_from` pour renouvellement ✅ **Nouvelle fonctionnalité**
+  - [x] Adaptation texte pour renouvellement ✅ **Nouvelle fonctionnalité**
 - [x] Action `index` :
-  - [x] Liste des adhésions de l'utilisateur ✅
-  - [x] Ordre : `created_at: :desc` ✅
-  - [x] Affichage T-shirt si présent ✅ **Ajouté**
-- [x] Action `new` (Étape 1) :
+  - [x] Liste des adhésions de l'utilisateur (personnelle + enfants) ✅
+  - [x] Hero section avec CTA ✅ **Nouvelle fonctionnalité**
+  - [x] Sidebar avec actions rapides ✅ **Nouvelle fonctionnalité**
+  - [x] Section historique (adhésions expirées) ✅ **Nouvelle fonctionnalité**
+  - [x] Paiement groupé enfants ✅ **Nouvelle fonctionnalité**
+- [x] Action `new` :
   - [x] Afficher 2 catégories (Standard, FFRS) ✅ **Corrigé selon HelloAsso réel**
   - [x] Afficher dates de saison courante ✅
   - [x] Afficher prix pour chaque catégorie (10€, 56.55€) ✅ **Corrigé**
-  - [x] Option T-shirt avec choix de taille ✅ **Ajouté pour HelloAsso réel**
+  - [x] Étape T-shirt (si `with_tshirt=true`) avec choix taille/quantité ✅ **Nouveau système**
+  - [x] Ordre inversé : Catégorie d'abord, puis T-shirt ✅ **Nouvelle fonctionnalité**
 - [x] Action `step2` (Étape 2) :
   - [x] Formulaire informations adhérent (Prénom, Nom, Date naissance, Téléphone, Email) ✅ **Ajouté pour HelloAsso réel**
   - [x] Pré-remplir depuis User si connecté ✅
@@ -160,15 +169,21 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
   - [x] Options (WhatsApp, Emails) ✅ **Ajouté pour HelloAsso réel**
 - [x] Action `create` :
   - [x] Récupérer `category` depuis params ✅
-  - [x] Récupérer `tshirt_variant_id` depuis params ✅ **Ajouté**
+  - [x] Récupérer `with_tshirt`, `tshirt_size`, `tshirt_qty` depuis params ✅ **Nouveau système**
+  - [x] Récupérer `health_q1` à `health_q9` depuis params ✅ **Questionnaire 9 questions**
+  - [x] Gérer upload `medical_certificate` si requis ✅ **Active Storage**
   - [x] Calculer `start_date`, `end_date` via `current_season_dates` ✅
   - [x] Calculer `amount_cents` via `price_for_category` ✅
-  - [x] Mettre à jour User avec informations fournies ✅ **Ajouté**
+  - [x] Calculer `total_amount_cents` (adhésion + T-shirt si présent) ✅ **Nouveau système**
+  - [x] Mettre à jour User avec informations fournies ✅
+  - [x] Mettre à jour User avec `wants_initiation_mail`, `wants_events_mail` ✅ **Nouveaux champs**
   - [x] Créer `Membership` avec `status = "pending"` ✅
   - [x] Créer checkout-intent HelloAsso ✅
   - [x] Créer `Payment` ✅
   - [x] Rediriger vers HelloAsso ✅
   - [x] Gestion erreurs ✅
+- [x] Action `pay_multiple` :
+  - [x] Payer plusieurs enfants en attente en une seule transaction ✅ **Nouvelle fonctionnalité**
 - [x] Action `show` :
   - [x] Afficher détails adhésion ✅
   - [x] Afficher statut ✅
@@ -190,11 +205,10 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 - [x] Ajouter dans `config/routes.rb` :
   ```ruby
-  resources :memberships, only: [:index, :new, :create, :show] do
+  resources :memberships, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
     collection do
-      get :step1
-      get :step2
-      get :step3
+      get :choose
+      post :pay_multiple
     end
     member do
       post :pay
@@ -202,7 +216,7 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
     end
   end
   ```
-  ✅ **Avec étapes supplémentaires pour HelloAsso réel**
+  ✅ **Routes RESTful complètes + page choose + paiement groupé**
 - [x] Vérifier routes avec `bin/rails routes | grep memberships` ✅
 
 ---
@@ -210,22 +224,37 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 #### **2.4 Vues**
 
 - [x] `app/views/memberships/index.html.erb` :
-  - [x] Liste historique des adhésions ✅
+  - [x] Hero section avec CTA "Adhérer maintenant" ✅ **Nouvelle fonctionnalité**
+  - [x] Sidebar avec actions rapides (Adhérer, Ajouter enfant) ✅ **Nouvelle fonctionnalité**
+  - [x] Section "Mes adhésions" avec cartes améliorées ✅ **Nouvelle fonctionnalité**
+  - [x] Section historique (adhésions expirées) ✅ **Nouvelle fonctionnalité**
+  - [x] Paiement groupé enfants ✅ **Nouvelle fonctionnalité**
   - [x] Affichage : Catégorie, Dates, Statut, Prix ✅
-  - [x] Indication T-shirt si présent ✅ **Ajouté**
-  - [x] Bouton "Renouveler" si expired ✅
-- [x] `app/views/memberships/new.html.erb` (Étape 1) :
-  - [x] 2 cards (Standard / FFRS) ✅ **Corrigé selon HelloAsso réel**
-  - [x] Chaque card affiche : Prix, Dates validité, Description ✅
-  - [x] Option T-shirt avec choix de taille ✅ **Ajouté pour HelloAsso réel**
-  - [x] Progress bar ✅ **Ajouté pour HelloAsso réel**
-- [x] `app/views/memberships/step2.html.erb` (Étape 2) :
-  - [x] Formulaire informations adhérent ✅ **Ajouté pour HelloAsso réel**
-  - [x] Progress bar ✅ **Ajouté**
-- [x] `app/views/memberships/step3.html.erb` (Étape 3) :
-  - [x] Formulaire coordonnées ✅ **Ajouté pour HelloAsso réel**
-  - [x] Options WhatsApp et Emails ✅ **Ajouté pour HelloAsso réel**
-  - [x] Progress bar ✅ **Ajouté**
+  - [x] Indication T-shirt si présent ✅
+  - [x] Bouton "Renouveler" si expired (redirige vers `/memberships/choose`) ✅ **Mis à jour**
+- [x] `app/views/memberships/choose.html.erb` :
+  - [x] Page de choix T-shirt (2 cartes cliquables) ✅ **Nouvelle fonctionnalité**
+  - [x] Adaptation pour renouvellement ✅ **Nouvelle fonctionnalité**
+  - [x] Adaptation pour enfants ✅ **Nouvelle fonctionnalité**
+- [x] `app/views/memberships/adult_form.html.erb` :
+  - [x] Formulaire multi-étapes avec stepper ✅
+  - [x] Étape 1 : Catégorie (Standard / FFRS) ✅ **Ordre inversé**
+  - [x] Étape 2 : T-shirt (si sélectionné) avec choix taille/quantité ✅ **Ordre inversé**
+  - [x] Étape 3 : Informations adhérent ✅
+  - [x] Étape 4 : Coordonnées ✅
+  - [x] Étape 5 : Consentements + Préférences communication ✅ **wants_initiation_mail, wants_events_mail**
+  - [x] Progress bar ✅
+- [x] `app/views/memberships/child_form.html.erb` :
+  - [x] Formulaire multi-étapes avec stepper ✅
+  - [x] Étape 1 : Catégorie (Standard / FFRS) ✅ **Ordre inversé**
+  - [x] Étape 2 : T-shirt (si sélectionné) avec choix taille/quantité ✅ **Ordre inversé**
+  - [x] Étape 3 : Informations enfant ✅
+  - [x] Étape 4 : Autorisation parentale (si < 16 ans) ✅
+  - [x] Étape 5 : Questionnaire de santé (9 questions) ✅ **Nouvelle fonctionnalité**
+  - [x] Étape 6 : Upload certificat médical (si requis) ✅ **Nouvelle fonctionnalité**
+  - [x] Étape 7 : Consentements + Préférences communication ✅ **wants_initiation_mail, wants_events_mail**
+  - [x] Pré-remplissage pour renouvellement ✅ **Nouvelle fonctionnalité**
+  - [x] Progress bar ✅
 - [x] `app/views/memberships/show.html.erb` :
   - [x] Détail adhésion ✅
   - [x] Badge statut (pending/active/expired) ✅
@@ -558,10 +587,19 @@ Ce document détaille le plan d'implémentation complet de la feature "Adhésion
 
 ### **Adaptations HelloAsso Réel**
 - [x] Catégories corrigées (Standard 10€, FFRS 56.55€) ✅
-- [x] T-shirt à 14€ avec choix de taille ✅
-- [x] Formulaire multi-étapes (3 étapes) ✅
+- [x] Page de choix T-shirt (upsell) ✅ **Nouvelle fonctionnalité**
+- [x] T-shirt à 14€ (prix membre) avec choix taille/quantité ✅ **Nouveau système**
+- [x] Formulaire multi-étapes avec stepper ✅
+- [x] Ordre inversé : Catégorie d'abord, puis T-shirt ✅ **Nouvelle fonctionnalité**
 - [x] Champs collectés (Prénom, Nom, Date naissance, Téléphone, Email, Adresse, Ville, Code postal) ✅
-- [x] Options (WhatsApp, Réception emails) ✅
+- [x] Préférences communication (wants_initiation_mail, wants_events_mail) ✅ **Remplace wants_whatsapp/wants_email_info**
+- [x] Questionnaire de santé (9 questions) ✅ **Nouvelle fonctionnalité**
+- [x] Upload certificat médical (Active Storage) ✅ **Nouvelle fonctionnalité**
+- [x] Gestion enfants simplifiée (ajout un par un) ✅ **Nouvelle fonctionnalité**
+- [x] Paiement groupé enfants ✅ **Nouvelle fonctionnalité**
+- [x] Renouvellement avec option T-shirt ✅ **Nouvelle fonctionnalité**
+- [x] Routes RESTful complètes ✅ **Nouvelle fonctionnalité**
+- [x] Fusion pages index/new ✅ **Nouvelle fonctionnalité**
 - [x] Progress bar ✅
 
 ---
