@@ -29,7 +29,13 @@ class ApplicationController < ActionController::Base
       :email,
       :password,
       :password_confirmation,
-      :current_password  # OBLIGATOIRE pour toute modification
+      :current_password,  # OBLIGATOIRE pour toute modification
+      :date_of_birth,
+      :address,
+      :postal_code,
+      :city,
+      :wants_whatsapp,
+      :wants_email_info
     ])
   end
 

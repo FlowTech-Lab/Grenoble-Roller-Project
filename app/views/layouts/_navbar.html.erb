@@ -14,13 +14,18 @@
           <a class="nav-link" href="<%= root_path %>">Accueil</a>
         </li>
         <li class="nav-item">
-          <%= link_to about_path, class: "nav-link" do %>
-            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>L'association
+          <%= link_to events_path, class: "nav-link" do %>
+            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Événements
           <% end %>
         </li>
         <li class="nav-item">
-          <%= link_to events_path, class: "nav-link" do %>
-            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Événements
+          <%= link_to shop_path, class: "nav-link" do %>
+            <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to about_path, class: "nav-link" do %>
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>L'association
           <% end %>
         </li>
         <% if user_signed_in? && policy(Event.new).create? %>
@@ -30,11 +35,6 @@
             <% end %>
           </li>
         <% end %>
-        <li class="nav-item">
-          <%= link_to shop_path, class: "nav-link" do %>
-            <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
-          <% end %>
-        </li>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <!-- Theme toggle -->
@@ -87,6 +87,16 @@
                   <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>Mes sorties
                 <% end %>
               </li>
+              <li>
+                <%= link_to memberships_path, class: "dropdown-item" do %>
+                  <i class="bi bi-person-badge me-2" aria-hidden="true"></i>
+                  <% if current_user.has_active_children_memberships? %>
+                    Mes adhésions
+                  <% else %>
+                    Mon adhésion
+                  <% end %>
+                <% end %>
+              </li>
               <% if current_user.role&.name == 'admin' || current_user.role&.level.to_i >= 60 %>
                 <li><hr class="dropdown-divider"></li>
                 <li>
@@ -104,11 +114,11 @@
             </ul>
           </div>
         <% else %>
-          <%= link_to new_user_session_path, class: "btn btn-outline-primary" do %>
-            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Connexion
-          <% end %>
-          <%= link_to new_user_registration_path, class: "btn btn-liquid-primary" do %>
+          <%= link_to new_user_registration_path, class: "btn btn-outline-primary" do %>
             <i class="bi bi-person-plus me-2" aria-hidden="true"></i>S'inscrire
+          <% end %>
+          <%= link_to new_user_session_path, class: "btn btn-liquid-primary" do %>
+            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Connexion
           <% end %>
         <% end %>
       </div>

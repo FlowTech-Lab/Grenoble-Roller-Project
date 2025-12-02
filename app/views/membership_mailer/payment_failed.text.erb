@@ -1,0 +1,13 @@
+Échec du paiement de votre adhésion
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Le paiement de votre adhésion pour la saison <%= @membership.season %> a échoué.
+
+Votre adhésion est toujours en attente de paiement. Vous pouvez réessayer en cliquant sur le lien ci-dessous :
+
+Reprendre le paiement : <%= membership_url(@membership) %>
+
+Si le problème persiste, n'hésitez pas à nous contacter.
+
+L'équipe Grenoble Roller

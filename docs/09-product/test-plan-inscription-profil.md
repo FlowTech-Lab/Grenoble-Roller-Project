@@ -1,22 +1,24 @@
----
-title: "Plan de Test - Parcours Inscription & Profil"
-status: "active"
-version: "1.0"
-created: "2025-11-24"
-tags: ["testing", "user-journey", "devise", "registration", "profile"]
+# Plan de Test - Inscription & Profil
+
+**Date** : 2025-01-30  
+**Version** : 2.0  
+**Status** : ✅ Documentation consolidée
+
 ---
 
-# Plan de Test - Parcours Inscription & Profil
+## 📋 Vue d'ensemble
 
-**Date** : 2025-11-24  
-**Branche** : `feature/devise-quick-wins`  
-**Objectif** : Valider le parcours complet d'inscription et de modification du profil
+Ce document consolide le plan de test complet pour les fonctionnalités d'inscription et de profil utilisateur, incluant :
+- Scénarios de test détaillés
+- Checklist de tests prioritaires
+- Tests automatisés RSpec
+- Notes de test et bugs connus
 
 ---
 
 ## 🎯 Scénarios de Test
 
-### 1. Inscription - Cas Nominal ✅
+### **1. Inscription - Cas Nominal** ✅
 
 **Prérequis** : Utilisateur non connecté
 
@@ -46,7 +48,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 2. Inscription - Validation des Erreurs ⚠️
+### **2. Inscription - Validation des Erreurs** ⚠️
 
 #### 2.1 Email invalide
 - **Action** : Saisir `email-invalide`
@@ -68,9 +70,14 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 - **Action** : Ne pas cocher "J'accepte les CGU et la Politique"
 - **Attendu** : Message d'erreur "Vous devez accepter les Conditions Générales d'Utilisation et la Politique de Confidentialité pour créer un compte."
 
+#### 2.6 Email déjà utilisé
+- **Action** : Utiliser un email déjà enregistré
+- **Attendu** : Message d'erreur "Email a déjà été utilisé"
+- **Vérifier** : Reste sur `/users/sign_up` (ne redirige pas vers `/users`)
+
 ---
 
-### 3. Inscription - Toggle Mot de Passe 👁️
+### **3. Inscription - Toggle Mot de Passe** 👁️
 
 **Étapes** :
 1. Saisir un mot de passe
@@ -81,10 +88,11 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 - ✅ L'icône change (œil → œil barré)
 - ✅ `aria-label` mis à jour : "Masquer le mot de passe"
 - ✅ `aria-pressed` mis à jour : `true`
+- ✅ Contour rouge englobe input + bouton toggle
 
 ---
 
-### 4. Accès Immédiat (Période de Grâce) 🎁
+### **4. Accès Immédiat (Période de Grâce)** 🎁
 
 **Prérequis** : Utilisateur inscrit mais email non confirmé
 
@@ -102,7 +110,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 5. Profil - Consultation ✅
+### **5. Profil - Consultation** ✅
 
 **Prérequis** : Utilisateur connecté
 
@@ -122,7 +130,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 6. Profil - Modification ✅
+### **6. Profil - Modification** ✅
 
 **Prérequis** : Utilisateur connecté
 
@@ -144,7 +152,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 7. Profil - Validation des Erreurs ⚠️
+### **7. Profil - Validation des Erreurs** ⚠️
 
 #### 7.1 Prénom manquant
 - **Action** : Vider le champ prénom
@@ -164,7 +172,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 8. Profil - Skill Level Cards 🎯
+### **8. Profil - Skill Level Cards** 🎯
 
 **Étapes** :
 1. Accéder à `/users/edit`
@@ -180,7 +188,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 9. Accessibilité WCAG 2.2 ♿
+### **9. Accessibilité WCAG 2.2** ♿
 
 #### 9.1 Navigation clavier
 - **Action** : Naviguer avec Tab dans le formulaire d'inscription
@@ -204,7 +212,7 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-### 10. Responsive Design 📱
+### **10. Responsive Design** 📱
 
 **Étapes** :
 1. Tester sur mobile (375px)
@@ -219,18 +227,99 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 
 ---
 
-## 🐛 Bugs Connus / À Vérifier
+## ✅ Tests Automatisés RSpec - Statut
 
-- [ ] Vérifier que les emails sont bien envoyés (config SMTP)
-- [ ] Vérifier que la période de grâce fonctionne (2 jours)
-- [ ] Vérifier que la confirmation email bloque bien les actions critiques
-- [ ] Vérifier que le toggle password fonctionne sur tous les navigateurs
+### **RSpec - Models** (✅ Complété)
+
+**Fichier** : `spec/models/user_spec.rb`
+- ✅ `first_name` obligatoire (déjà testé)
+- ✅ Validation `skill_level` obligatoire
+- ✅ Validation `skill_level` inclusion (beginner, intermediate, advanced)
+- ✅ Méthode `active_for_authentication?` (accès non confirmé)
+- ✅ Callback `send_welcome_email_and_confirmation` (envoi email)
+
+**Factory** : `spec/factories/users.rb`
+- ✅ `skill_level` par défaut (intermediate)
+- ✅ `confirmed_at` par défaut (utilisateur confirmé)
+- ✅ Traits `:unconfirmed`, `:beginner`, `:advanced`
+
+**Helper** : `spec/support/test_data_helper.rb`
+- ✅ `skill_level` dans `build_user` et `create_user`
+
+---
+
+### **RSpec - Controllers** (✅ Créé)
+
+**Fichier créé** : `spec/requests/registrations_spec.rb`
+- ✅ Création avec consentement RGPD
+- ✅ Redirection en cas d'erreur (reste sur sign_up)
+- ✅ Message de bienvenue personnalisé
+- ✅ Envoi emails (bienvenue + confirmation)
+- ✅ Validation des erreurs (email, prénom, password, skill_level, CGU)
+- ✅ Email déjà utilisé
+- ✅ Accès immédiat (période de grâce)
+
+**Fichier complété** : `spec/requests/events_spec.rb`
+- ✅ Blocage si email non confirmé pour `attend`
+
+**Fichier créé** : `spec/requests/orders_spec.rb`
+- ✅ Blocage si email non confirmé pour `create`
+- ✅ Accès checkout pour utilisateurs confirmés
+
+**Helper** : `spec/support/request_authentication_helper.rb`
+- ✅ Méthode `logout_user`
+
+---
+
+### **RSpec - Mailers** (✅ Créé)
+
+**Fichier créé** : `spec/mailers/user_mailer_spec.rb`
+- ✅ Email de bienvenue (destinataire, sujet)
+- ✅ Contenu HTML et texte
+- ✅ Inclusion prénom utilisateur
+- ✅ Lien vers événements
+
+---
+
+### **RSpec - System/Features** (⏳ À créer - Optionnel)
+
+**Fichiers à créer** (tests end-to-end avec Capybara) :
+- [ ] `spec/features/registration_spec.rb` : Parcours complet d'inscription
+  - Formulaire 4 champs
+  - Validation des erreurs
+  - Toggle password
+  - Skill level cards
+  - Consentement RGPD
+- [ ] `spec/features/profile_spec.rb` : Modification du profil
+  - Affichage des champs
+  - Modification skill level
+  - Validation des erreurs
+
+---
+
+## 📝 Notes de Test
+
+### **Environnement de Test**
+- **URL** : `https://dev-grenoble-roller.flowtech-lab.org`
+- **Base de données** : Vérifier que les emails de test ne sont pas déjà utilisés
+- **SMTP** : Vérifier configuration pour envoi d'emails
+
+### **Bugs Connus / Résolus**
+- ✅ **Corrigé** : Message "14 caractères" → "12 caractères"
+- ✅ **Corrigé** : Redirection vers `/users` → Reste sur `/users/sign_up`
+- ✅ **Corrigé** : Contour rouge n'englobait pas le bouton toggle
+- ✅ **Corrigé** : Rack::Attack `NoMethodError` sur `match_data`
+
+### **Points d'Attention**
+- **Emails** : Vérifier que la configuration SMTP fonctionne en staging
+- **Période de grâce** : Tester que l'accès fonctionne pendant 2 jours sans confirmation
+- **Confirmation email** : Tester que le blocage fonctionne pour événements et commandes
 
 ---
 
 ## ✅ Checklist Finale
 
-### Inscription
+### **Inscription**
 - [ ] Formulaire fonctionnel (4 champs)
 - [ ] Validation côté client (HTML5)
 - [ ] Validation côté serveur (Rails)
@@ -240,25 +329,25 @@ tags: ["testing", "user-journey", "devise", "registration", "profile"]
 - [ ] Email de confirmation envoyé
 - [ ] Accès immédiat (période de grâce)
 
-### Profil
+### **Profil**
 - [ ] Affichage correct des champs
 - [ ] Modification fonctionnelle
 - [ ] Validation des erreurs
 - [ ] Skill level cards fonctionnelles
 - [ ] Redirection après modification
 
-### Accessibilité
+### **Accessibilité**
 - [ ] WCAG 2.2 (AA) conforme
 - [ ] Navigation clavier fonctionnelle
 - [ ] Erreurs associées aux champs
 - [ ] Cibles tactiles suffisantes
 
-### Responsive
+### **Responsive**
 - [ ] Mobile (375px)
 - [ ] Tablette (768px)
 - [ ] Desktop (1920px)
 
 ---
 
-**Dernière mise à jour** : 2025-11-24
-
+**Dernière mise à jour** : 2025-01-30  
+**Version** : 2.0

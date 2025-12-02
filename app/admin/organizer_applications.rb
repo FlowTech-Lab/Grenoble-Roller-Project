@@ -1,4 +1,6 @@
 ActiveAdmin.register OrganizerApplication do
+  menu priority: 11, label: "Candidatures Organisateur"
+
   includes :user, :reviewed_by
 
   permit_params :user_id, :motivation, :status, :reviewed_by_id, :reviewed_at

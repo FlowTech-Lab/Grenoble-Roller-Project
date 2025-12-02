@@ -6,7 +6,7 @@ module EventsHelper
   def event_cover_image_url(event)
     fallback_image_path
   end
-  
+
   # Helper pour obtenir l'image (Active Storage ou fallback)
   def event_cover_image(event)
     if event&.cover_image&.attached?

@@ -1,4 +1,6 @@
 ActiveAdmin.register AuditLog do
+  menu priority: 14, label: "Logs d'audit"
+
   actions :index, :show
   config.sort_order = "created_at_desc"
   includes :actor_user

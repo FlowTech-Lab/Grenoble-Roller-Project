@@ -1,0 +1,117 @@
+<% 
+  # Partial réutilisable pour la sélection de T-shirt dans les formulaires d'adhésion
+  # Variables attendues :
+  # - @tshirt_product : le produit T-shirt (Product)
+  # - @tshirt_variants : les variantes actives du T-shirt
+  # - @membership : l'adhésion en cours (optionnel, pour pré-remplir)
+  # - @with_tshirt : boolean indiquant si le T-shirt est inclus
+  # - f : le form builder
+%>
+
+<% if @tshirt_product && @tshirt_variants.any? && @with_tshirt %>
+  <div class="form-section" id="step-tshirt">
+    <h3 class="section-title">
+      <span class="section-number">2</span>
+      🎽 <%= @tshirt_product.name %>
+    </h3>
+    <p class="section-intro">Personnalisez le T-shirt pour votre adhésion</p>
+    
+    <div class="row g-4 mb-4">
+      <!-- Image produit -->
+      <div class="col-md-6">
+        <div class="card card-liquid" style="aspect-ratio: 1 / 1; max-height: 400px;">
+          <div class="card-body d-flex align-items-center justify-content-center p-4">
+            <% if @tshirt_product.image_url.present? %>
+              <%= image_tag @tshirt_product.image_url, alt: @tshirt_product.name, class: "img-fluid", style: "object-fit: contain; max-height: 100%;" %>
+            <% else %>
+              <div class="d-flex align-items-center justify-content-center h-100">
+                <i class="bi bi-tshirt" style="font-size: 8rem; color: var(--liquid-primary);"></i>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <% if @tshirt_product.description.present? %>
+          <p class="text-muted small mt-2 text-center">
+            <%= @tshirt_product.description %>
+          </p>
+        <% end %>
+      </div>
+      
+      <!-- Sélection -->
+      <div class="col-md-6">
+        <!-- Taille -->
+        <div class="mb-3">
+          <%= f.label :tshirt_size, "Taille *", class: "form-label fw-bold" %>
+          <%= f.select :tshirt_size, 
+              options_for_select(
+                @tshirt_variants.map do |variant|
+                  size_option = variant.option_values.find { |ov| 
+                    ov.option_type.name.downcase.include?('taille') || 
+                    ov.option_type.name.downcase.include?('size')
+                  }
+                  size_value = size_option&.value || variant.sku
+                  size_presentation = size_option&.presentation || size_value
+                  stock_available = variant.stock_qty.to_i > 0
+                  [size_presentation, size_value, { disabled: !stock_available }]
+                end,
+                @membership&.tshirt_size || 'M'
+              ), 
+              { prompt: @membership&.tshirt_size ? nil : "Choisissez une taille" },
+              { 
+                class: "form-select form-select-lg", 
+                id: "tshirt_size",
+                required: @with_tshirt,
+                onchange: "updateTshirtTotal()"
+              } %>
+          <div class="form-text small mt-1">
+            <i class="bi bi-info-circle me-1"></i>
+            Prix membre : <strong>14€</strong> au lieu de 20€
+          </div>
+        </div>
+        
+        <!-- Quantité -->
+        <div class="mb-3">
+          <%= f.label :tshirt_qty, "Quantité", class: "form-label fw-bold" %>
+          <div class="input-group input-group-lg">
+            <button class="btn btn-outline-secondary" 
+                    type="button" 
+                    onclick="decrementTshirtQty()">−</button>
+            <%= f.number_field :tshirt_qty, 
+                value: @membership&.tshirt_qty || 1, 
+                min: 1, 
+                max: 5,
+                id: "tshirt_qty",
+                class: "form-control text-center",
+                required: @with_tshirt,
+                onchange: "updateTshirtTotal()" %>
+            <button class="btn btn-outline-secondary" 
+                    type="button" 
+                    onclick="incrementTshirtQty()">+</button>
+          </div>
+        </div>
+        
+        <!-- Badge réduction -->
+        <div class="alert alert-info alert-tshirt-reduction mb-3">
+          <small>
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>14€ au lieu de 20€</strong> - Réduction membre
+          </small>
+        </div>
+        
+        <!-- Total -->
+        <div class="card card-liquid mt-3">
+          <div class="card-body text-center">
+            <h5 class="mb-2">Total adhésion + T-shirt</h5>
+            <div class="display-5 text-liquid-primary fw-bold" id="tshirt_total_display">
+              <%= number_to_currency(1000 + (@membership&.tshirt_qty || 1) * 1400 / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+            </div>
+            <small class="text-success">
+              <i class="bi bi-check-circle me-1"></i>
+              <strong>Économisez 6€ !</strong>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

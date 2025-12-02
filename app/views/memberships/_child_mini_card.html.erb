@@ -1,0 +1,75 @@
+<% 
+  age = membership.child_age
+  status_class = membership.pending? ? 'pending' : (membership.active? ? 'active' : 'expired')
+%>
+
+<div class="child-mini-card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+  <div class="d-flex justify-content-between align-items-start">
+    <div class="flex-grow-1">
+      <div class="d-flex align-items-center mb-1">
+        <span style="font-size: 1.5rem; margin-right: 0.5rem;">👶</span>
+        <strong><%= membership.child_full_name %></strong>
+      </div>
+      <small class="text-muted d-block mb-1">
+        Né(e) le <%= l(membership.child_date_of_birth, format: :short) if membership.child_date_of_birth %> 
+        (<%= age %> ans)
+      </small>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <small class="text-muted">
+          <%= membership.category == 'standard' ? 'Standard' : 'FFRS' %> - <%= membership.season %>
+        </small>
+        <strong>
+          <%= number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+        </strong>
+      </div>
+      <small class="text-muted d-block mt-1">
+        <%= l(membership.start_date, format: :short) if membership.start_date %> → 
+        <%= l(membership.end_date, format: :short) if membership.end_date %>
+      </small>
+    </div>
+    
+    <div class="d-flex flex-column align-items-end gap-2">
+      <span class="badge <%= status_class == 'active' ? 'bg-success' : (status_class == 'pending' ? 'bg-warning text-dark' : 'bg-secondary') %>">
+        <% if status_class == 'active' %>
+          ✓ Active
+        <% elsif status_class == 'pending' %>
+          ⏳ Pending
+        <% else %>
+          ✗ Expirée
+        <% end %>
+      </span>
+      
+      <div class="d-flex gap-1">
+        <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary", title: "Voir détails" do %>
+          <i class="bi bi-eye"></i>
+        <% end %>
+        
+        <% if is_pending %>
+          <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning", title: "Modifier" do %>
+            <i class="bi bi-pencil"></i>
+          <% end %>
+          <%= button_to membership_path(membership),
+              method: :delete,
+              class: "btn btn-sm btn-outline-danger",
+              title: "Supprimer",
+              data: { 
+                turbo: false,
+                confirm: "Supprimer l'adhésion de #{membership.child_full_name} ?"
+              },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-trash"></i>
+          <% end %>
+          <%= button_to pay_membership_path(membership),
+              method: :post,
+              class: "btn btn-sm btn-primary",
+              title: "Payer",
+              data: { turbo: false },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-credit-card"></i>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+

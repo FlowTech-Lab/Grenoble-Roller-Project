@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Votre adhésion a expiré</h1>
+    
+    <p>Bonjour <%= @user.first_name || @user.email %>,</p>
+    
+    <p>Votre adhésion pour la saison <strong><%= @membership.season %></strong> a expiré le <strong><%= l(@membership.end_date, format: :long) %></strong>.</p>
+    
+    <p>Pour continuer à profiter des avantages de l'association, nous vous invitons à renouveler votre adhésion.</p>
+    
+    <p><%= link_to "Renouveler mon adhésion", new_membership_url, class: "button" %></p>
+    
+    <p>À bientôt ! 🛼</p>
+    
+    <p>L'équipe Grenoble Roller</p>
+  </body>
+</html>

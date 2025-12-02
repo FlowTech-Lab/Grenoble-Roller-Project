@@ -1,4 +1,6 @@
 ActiveAdmin.register Attendance do
+  menu priority: 9, label: "Participations"
+
   includes :user, :event, :payment
 
   permit_params :user_id, :event_id, :status, :payment_id, :stripe_customer_id

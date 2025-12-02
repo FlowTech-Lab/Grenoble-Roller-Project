@@ -1,5 +1,5 @@
 ActiveAdmin.register Event do
-  menu priority: 1
+  menu priority: 8, label: "Événements"
   includes :creator_user, :route
 
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,

@@ -6,10 +6,11 @@ class User < ApplicationRecord
   # Relation avec Role
   belongs_to :role
   has_many :orders, dependent: :nullify
-  
+  has_many :memberships, dependent: :destroy
+
   # Active Storage attachments
   has_one_attached :avatar
-  
+
   # Phase 2 - Events associations
   has_many :created_events, class_name: "Event", foreign_key: "creator_user_id", dependent: :restrict_with_error
   has_many :attendances, dependent: :destroy
@@ -45,7 +46,50 @@ class User < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[orders created_events attendances events organizer_applications reviewed_applications audit_logs role]
+    %w[orders created_events attendances events organizer_applications reviewed_applications audit_logs role memberships]
+  end
+
+  # Helpers pour vérifier adhésion active
+  def has_active_membership?
+    memberships.personal.active_now.exists?
+  end
+
+  # Obtenir l'adhésion active actuelle (personnelle)
+  def current_membership
+    memberships.personal.active_now.order(start_date: :desc).first
+  end
+
+  # Obtenir toutes les adhésions enfants actives
+  def active_children_memberships
+    memberships.children.active_now.order(created_at: :desc)
+  end
+
+  # Vérifier si l'utilisateur a des adhésions enfants actives
+  def has_active_children_memberships?
+    active_children_memberships.exists?
+  end
+
+  # Obtenir toutes les adhésions (personnelle + enfants)
+  def all_active_memberships
+    memberships.active_now.order(is_child_membership: :asc, created_at: :desc)
+  end
+
+  # Calculer l'âge de l'utilisateur
+  def age
+    return nil unless date_of_birth.present?
+    ((Date.today - date_of_birth) / 365.25).floor
+  end
+
+  # Vérifier si l'utilisateur est mineur
+  def is_minor?
+    return false unless date_of_birth.present?
+    age < 18
+  end
+
+  # Vérifier si l'utilisateur est un enfant (< 16 ans)
+  def is_child?
+    return false unless date_of_birth.present?
+    age < 16
   end
 
   private

@@ -1,5 +1,5 @@
 ActiveAdmin.register Route do
-  menu priority: 2
+  menu priority: 10, label: "Routes"
 
   permit_params :name, :description, :distance_km, :elevation_m, :difficulty,
                 :gpx_url, :map_image_url, :safety_notes
