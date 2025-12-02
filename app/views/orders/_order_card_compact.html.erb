@@ -1,0 +1,68 @@
+<% 
+  status = order.status.downcase
+  is_pending = status.in?(%w[pending en\ attente])
+  is_prep = status.in?(%w[preparation en\ préparation preparing])
+  is_sent = status.in?(%w[sent envoyé shipped finished terminé paid payé])
+  
+  # Couleur border
+  border_color = is_pending ? "#ffc107" : is_prep ? "#17a2b8" : is_sent ? "#28a745" : "#dc3545"
+  
+  # Premier produit pour preview
+  first_item = order.order_items.includes(variant: :product).first
+  product_name = first_item&.variant&.product&.name
+  items_count = order.order_items.sum(:quantity)
+%>
+
+<div class="card border-0 shadow-sm" style="border-left: 3px solid <%= border_color %>;">
+  <div class="card-body py-2">
+    <!-- Row 1 : Num commande | Status | Prix -->
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <div class="small">
+        <strong>#<%= order.id %></strong>
+        <br>
+        <span class="text-muted"><%= l(order.created_at, format: "%d %b %Y") %></span>
+      </div>
+      
+      <div class="text-center">
+        <% if is_pending %>
+          <span class="fs-6">⏳</span>
+          <small class="d-block text-warning">En attente</small>
+        <% elsif is_prep %>
+          <span class="fs-6">⚙️</span>
+          <small class="d-block text-info">Préparation</small>
+        <% elsif is_sent %>
+          <span class="fs-6">✓</span>
+          <small class="d-block text-success">Expédié</small>
+        <% end %>
+      </div>
+      
+      <div class="text-end">
+        <strong class="h6 mb-0 text-primary">
+          <%= number_to_currency(order.total_cents / 100.0, unit: "€", format: "%n %u") %>
+        </strong>
+        <small class="d-block text-muted"><%= items_count %> article<%= 's' if items_count != 1 %></small>
+      </div>
+    </div>
+
+    <!-- Row 2 : Produits (ultra-compact) -->
+    <% if product_name %>
+      <div class="text-truncate small text-muted mb-2">
+        <i class="bi bi-box me-1"></i>
+        <%= product_name %>
+        <% if order.order_items.count > 1 %>
+          <span class="text-muted">+ <%= order.order_items.count - 1 %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- Row 3 : Actions -->
+    <div class="d-flex gap-2">
+      <%= link_to "Détails", order_path(order), class: "btn btn-sm btn-outline-primary flex-grow-1" %>
+      
+      <% if is_pending %>
+        <%= button_to "Payer", pay_order_path(order), method: :post, 
+            class: "btn btn-sm btn-warning", data: { turbo: false } %>
+      <% end %>
+    </div>
+  </div>
+</div>
