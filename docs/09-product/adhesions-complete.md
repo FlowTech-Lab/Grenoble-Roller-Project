@@ -1,18 +1,20 @@
-# Adhésions - Stratégie Complète et Plan d'Implémentation
+# Adhésions - Documentation Complète
 
-**Date** : 2025-01-27  
-**Version** : 3.0  
-**Status** : ✅ Stratégie finale validée - Prêt pour implémentation
+**Date** : 2025-01-30  
+**Version** : 4.0  
+**Status** : ✅ Documentation consolidée et à jour
 
 ---
 
 ## 📋 Vue d'ensemble
 
-Ce document consolide toute la stratégie d'implémentation des adhésions pour Grenoble Roller, incluant :
+Ce document consolide toute la documentation relative aux adhésions pour Grenoble Roller, incluant :
 - La stratégie technique (HelloAsso = paiement uniquement)
-- La gestion des mineurs (législation française)
-- Le plan d'implémentation complet
-- Les checklists détaillées
+- Les flux utilisateur complets (adultes, enfants, mineurs)
+- Les règles métier (questionnaire santé, catégories)
+- La législation (mineurs)
+- La structure technique (DB, modèles, intégration HelloAsso)
+- L'automatisation (rake tasks, emails)
 
 **🎯 Principe Fondamental** : **TOUT dans l'APP, HelloAsso = SEULEMENT paiement**
 
@@ -39,8 +41,8 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 
 **1. Admin configure adhésion pour N+1**
 - Dates fixes : 1er sept N → 31 août N+1
-- Tarifs : 10€ standard, 56.55€ avec FFRS ✅ **Corrigé selon HelloAsso réel** (au lieu de 50€/25€/80€)
-- Page `/memberships/new` disponible
+- Tarifs : 10€ standard, 56.55€ avec FFRS
+- Page `/memberships/choose` disponible
 
 **2. User adhère**
 - **Étape 0** : Page de choix `/memberships/choose` - "Adhésion Simple" (10€) ou "Adhésion + T-shirt" (24€)
@@ -58,7 +60,7 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - `send_reminders` : 30j avant expiration → email "Renouveler"
 
 **4. Admin Dashboard**
-- Vue : "20 adhérents actifs"
+- Vue : "X adhérents actifs"
 - Tableau : Liste adhésions (statut, dates, paiement)
 - Filtres : Actif, Expiré, Pending
 - Export : CSV pour courrier/stats
@@ -89,22 +91,20 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 **Champs SIMPLES** :
 - `id` (primary key)
 - `user_id` (FK vers users)
-- `category` : enum "standard" / "with_ffrs" ✅ **Corrigé selon HelloAsso réel** (au lieu de adult/student/family)
-- `amount_cents` : 1000 / 5655 ✅ **Corrigé selon HelloAsso réel** (10€ / 56.55€ au lieu de 50€/25€/80€)
+- `category` : enum "standard" / "with_ffrs"
+- `amount_cents` : 1000 / 5655 (10€ / 56.55€)
 - `status` : enum "pending" → "active" → "expired"
 - `start_date` : 1er sept N (date)
 - `end_date` : 31 août N+1 (date)
 - `season` : "2025-2026" (string, pour historique)
 - `payment_id` (FK vers payments, optionnel)
 - `provider_order_id` : ID HelloAsso pour réconciliation (string)
-- `with_tshirt` (boolean, default: false) ✅ **Ajouté pour upsell T-shirt**
-- `tshirt_size` (string, nullable) ✅ **Ajouté pour upsell T-shirt**
-- `tshirt_qty` (integer, default: 0) ✅ **Ajouté pour upsell T-shirt**
-- `tshirt_variant_id` (FK vers product_variants, optionnel) ✅ **Déprécié - Utiliser with_tshirt/tshirt_size/tshirt_qty**
-- `tshirt_price_cents` (integer, default: 1400) ✅ **Déprécié - Prix calculé dynamiquement**
+- `with_tshirt` (boolean, default: false)
+- `tshirt_size` (string, nullable)
+- `tshirt_qty` (integer, default: 0)
 - `created_at`, `updated_at`
 
-**Champs pour mineurs** (si nécessaire) :
+**Champs pour mineurs** :
 - `is_minor` (boolean) : true si age < 16
 - `parent_name` (string)
 - `parent_email` (string)
@@ -113,12 +113,15 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - `parent_authorization_date` (date)
 - `health_questionnaire_status` (string) : "ok" / "medical_required"
 - `medical_certificate_provided` (boolean)
-- `medical_certificate_url` (string) : lien PDF
+- `medical_certificate` (Active Storage attachment)
 - `emergency_contact_name` (string)
 - `emergency_contact_phone` (string)
 - `rgpd_consent` (boolean)
 - `ffrs_data_sharing_consent` (boolean)
 - `legal_notices_accepted` (boolean)
+
+**Questionnaire de santé (9 questions)** :
+- `health_q1` à `health_q9` (string, enum: "oui", "non")
 
 **Validations simples** :
 - `user_id + season` : unique (pas 2 adhésions même user même saison)
@@ -134,15 +137,15 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 
 ## 🏗️ MODÈLE MEMBERSHIP
 
-**Structure validée** :
-
 **Relations** :
 - `belongs_to :user`
 - `belongs_to :payment, optional: true`
+- `has_one_attached :medical_certificate`
 
 **Enums** :
-- `enum :status, { pending: 0, active: 1, expired: 2 }` ✅
-- `enum :category, { standard: 0, with_ffrs: 1 }` ✅ **Corrigé selon HelloAsso réel** (au lieu de adult/student/family)
+- `enum :status, { pending: 0, active: 1, expired: 2 }`
+- `enum :category, { standard: 0, with_ffrs: 1 }`
+- `enum :health_questionnaire_status, { ok: 0, medical_required: 1 }`
 
 **Scopes** :
 - `scope :active_now` : Adhésions actives (status = active ET end_date > today)
@@ -155,10 +158,14 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - `days_until_expiry` : Calculer jours restants avant expiration
 - `price_for_category(category)` : Calcul automatique du prix selon catégorie
 - `current_season_dates` : Calcul automatique des dates de saison (1er sept - 31 août)
+- `total_amount_cents` : Calculer adhésion + T-shirt (si `with_tshirt` est true)
+- `is_child_membership?` : Vérifier si c'est une adhésion enfant
+- `child_age` : Calculer l'âge de l'enfant
 
 **Validations** :
 - `validates :user_id, uniqueness: { scope: :season }`
 - `validates :start_date, :end_date, :amount_cents, presence: true`
+- `validates :parent_authorization, inclusion: { in: [true] }, if: -> { is_child_membership? && child_age < 16 }`
 
 ---
 
@@ -166,18 +173,19 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 
 ### **Service HelloassoService**
 
-**Méthodes à adapter/créer** :
+**Méthodes** :
 
-**1. `create_membership_checkout(membership, back_url:, error_url:, return_url:)`**
+**1. `create_membership_checkout_intent(membership, back_url:, error_url:, return_url:)`**
 - Crée un checkout-intent HelloAsso pour une adhésion
 - Utilise le même endpoint que pour les commandes : `POST /v5/organizations/{slug}/checkout-intents`
 - Payload simplifié :
-  - `totalAmount` = `membership.amount_cents`
-  - `initialAmount` = `membership.amount_cents`
-  - `itemName` = "Adhésion [Catégorie] Saison [Année]"
+  - `totalAmount` = `membership.total_amount_cents`
+  - `initialAmount` = `membership.total_amount_cents`
+  - `itemName` = "Cotisation Adhérent Grenoble Roller [Saison]"
   - `backUrl`, `errorUrl`, `returnUrl`
   - `containsDonation` = false
   - `metadata.membership_id` = ID de l'adhésion locale
+  - `items` : Array avec adhésion + T-shirt si présent
 
 **2. `fetch_and_update_payment(payment)`**
 - Déjà existant pour les commandes
@@ -225,9 +233,9 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
   - **VALABLE 3 ANS** si renouvellement
 
 **Dans l'app** :
-- Question simple : "L'enfant a-t-il des problèmes de santé ?"
-  - ☐ Non → Attestation parentale suffit
-  - ☐ Oui → Certificat médical requis (< 6 mois)
+- Questionnaire de santé (9 questions)
+- Si toutes réponses "NON" → Attestation parentale suffit
+- Si au moins une réponse "OUI" → Certificat médical requis (< 6 mois)
 
 ---
 
@@ -257,19 +265,7 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - ☑️ "Le parent/tuteur accepte le paiement"
 
 **ÉTAPE 4** : Questionnaire de santé (9 questions)
-
-**ADHÉSION STANDARD (10€)** :
-- Questionnaire présent (9 questions)
-- Pas obligatoire de tout cocher "NON" pour continuer
-- Juste demander de répondre honnêtement
-- Si réponse "OUI" → Pas d'upload certificat obligatoire
-- Affichage : "Consultez votre médecin avant de pratiquer"
-
-**LICENCE FFRS (56.55€)** :
-- Questionnaire OBLIGATOIRE
-- Si toutes réponses "NON" → Génération attestation automatique (si renouvellement)
-- Si au moins 1 "OUI" → Upload certificat OBLIGATOIRE
-- Si nouvelle licence FFRS → Upload certificat OBLIGATOIRE (même si toutes réponses NON)
+- Voir section "Règles Questionnaire de Santé" ci-dessous
 
 **ÉTAPE 5** : Consentements
 - RGPD, FFRS, Notices légales
@@ -336,19 +332,7 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - Préférences communication : `wants_initiation_mail`, `wants_events_mail` (dans User)
 
 **ÉTAPE 5** : Questionnaire de santé (9 questions)
-
-**ADHÉSION STANDARD (10€)** :
-- Questionnaire présent (9 questions)
-- Pas obligatoire de tout cocher "NON" pour continuer
-- Juste demander de répondre honnêtement
-- Si réponse "OUI" → Pas d'upload certificat obligatoire
-- Affichage : "Consultez votre médecin avant de pratiquer"
-
-**LICENCE FFRS (56.55€)** :
-- Questionnaire OBLIGATOIRE
-- Si toutes réponses "NON" → Génération attestation automatique (si renouvellement)
-- Si au moins 1 "OUI" → Upload certificat OBLIGATOIRE
-- Si nouvelle licence FFRS → Upload certificat OBLIGATOIRE (même si toutes réponses NON)
+- Voir section "Règles Questionnaire de Santé" ci-dessous
 
 **ÉTAPE 6** : Consentements
 - RGPD, FFRS, Notices légales
@@ -360,6 +344,60 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 - Pas de vérification parentale
 - Pas d'email parent à collecter
 - Autonomie complète
+
+---
+
+## 📊 RÈGLES QUESTIONNAIRE DE SANTÉ
+
+### **ADHÉSION STANDARD (10€)**
+
+**Comportement** :
+- ✅ Questionnaire présent (9 questions)
+- ✅ Pas obligatoire de tout cocher "NON" pour continuer
+- ✅ Juste demander de répondre honnêtement
+- ✅ Si réponse "OUI" → Pas d'upload certificat obligatoire
+- ✅ Affichage : "Consultez votre médecin avant de pratiquer"
+
+**Validation** :
+- Aucune validation stricte
+- Pas de blocage si certificat non fourni
+- Message informatif seulement
+
+---
+
+### **LICENCE FFRS (56.55€)**
+
+**Comportement** :
+- ✅ Questionnaire OBLIGATOIRE (toutes les questions doivent être répondues)
+- ✅ Si toutes réponses "NON" → Génération attestation automatique (si renouvellement) ⚠️ **TODO**
+- ✅ Si au moins 1 "OUI" → Upload certificat OBLIGATOIRE
+- ✅ Si nouvelle licence FFRS → Upload certificat OBLIGATOIRE (même si toutes réponses NON)
+
+**Validation** :
+- Toutes les questions doivent être répondues
+- Si réponse "OUI" → Certificat obligatoire (bloque la soumission)
+- Si nouvelle licence FFRS → Certificat obligatoire même si toutes réponses NON (bloque la soumission)
+- Si renouvellement FFRS avec toutes réponses NON → Attestation auto générée (TODO)
+
+---
+
+### **Implémentation Technique**
+
+**Formulaires (adult_form.html.erb et child_form.html.erb)** :
+- Messages d'introduction adaptés selon la catégorie
+- Messages d'alerte différents pour Standard vs FFRS
+- Upload certificat affiché uniquement pour FFRS avec réponse OUI
+- Message de recommandation pour Standard avec réponse OUI
+
+**JavaScript** :
+- Fonction `checkHealthQuestions()` adaptée pour détecter la catégorie
+- Affichage/masquage dynamique selon Standard/FFRS
+- Validation conditionnelle du champ certificat
+
+**Controller (memberships_controller.rb)** :
+- Validation selon catégorie avant création
+- Logique différente pour Standard vs FFRS
+- Gestion upload certificat médical (Active Storage)
 
 ---
 
@@ -375,11 +413,11 @@ Ce document consolide toute la stratégie d'implémentation des adhésions pour 
 
 **Filtres** :
 - Statut : Tous / Active / Pending / Expired
-- Catégorie : Tous / Adult / Student / Family
+- Catégorie : Tous / Standard / FFRS
 - Saison : Toutes / 2025-2026 / etc.
 
 **Actions** :
-- Export CSV
+- Export CSV (disponible par défaut dans ActiveAdmin)
 - Envoyer rappel (expirant)
 - Marquer comme "verified" si besoin
 
@@ -433,7 +471,7 @@ end
 **Logique** :
 - SELECT `memberships` WHERE `status = "active"` AND `end_date` IN [today + 30 jours]
 - Send email "Renouveler dans 30 jours"
-- Lien : `/memberships/new?renew=true`
+- Lien : `/memberships/choose`
 
 **Configuration cron** :
 ```ruby
@@ -444,23 +482,7 @@ end
 
 ---
 
-### **4. `yearly:prepare_new_season` (1er Sept à 08h00)**
-
-**Logique** :
-- Récupérer configs de la nouvelle saison
-- Enable `/memberships/new`
-- Send email à tous "Adhésion nouvelle saison ouverte"
-
-**Configuration cron** :
-```ruby
-every 1.year, at: 'September 1st at 8:00 am' do
-  runner 'Rake::Task["memberships:prepare_new_season"].invoke'
-end
-```
-
----
-
-### **5. `daily:check_minor_authorizations` (chaque jour)**
+### **4. `daily:check_minor_authorizations` (chaque jour)**
 
 **Logique** :
 - Si `Membership.is_minor?` && `parent_authorization == false` après 7 jours
@@ -469,7 +491,7 @@ end
 
 ---
 
-### **6. `daily:check_medical_certificates` (chaque jour)**
+### **5. `daily:check_medical_certificates` (chaque jour)**
 
 **Logique** :
 - Si `health_questionnaire_status == "medical_required"` && `medical_certificate_provided == false`
@@ -498,7 +520,7 @@ end
 **Contenu** :
 - "Bonjour [User],"
 - "Votre adhésion expire le 31 août."
-- "Renouveler : /memberships/new"
+- "Renouveler : /memberships/choose"
 
 ---
 
@@ -508,7 +530,7 @@ end
 
 **Contenu** :
 - "Votre adhésion a expiré le 31 août."
-- "Renouveler : /memberships/new"
+- "Renouveler : /memberships/choose"
 
 ---
 
@@ -538,9 +560,9 @@ end
 
 ### **1er Sept N**
 
-- Rake task `prepare_new_season`
+- Rake task `prepare_new_season` (optionnel - calcul automatique)
 - Email à tous : "Adhésions N+1 ouvertes"
-- `/memberships/new` disponible
+- `/memberships/choose` disponible
 
 ### **Sept-Août N+1**
 
@@ -598,18 +620,6 @@ end
 - Tu as tout documenté
 - Admin peut exporter list légale
 - Traçabilité complète
-
----
-
-## 🎁 TL;DR - LA SOLUTION FINALE
-
-✅ Adhésion = 100% dans ton app  
-✅ Dates fixes = pas de complexité  
-✅ HelloAsso = paiement seulement  
-✅ Rake tasks = automatisation complète  
-✅ Admin dashboard = visibilité totale  
-✅ Ça tourne seul année après année  
-✅ Zero maintenance à faire
 
 ---
 
@@ -725,9 +735,10 @@ end
 
 ### **Documentation interne**
 - Flux boutique HelloAsso : `docs/09-product/flux-boutique-helloasso.md`
-- Info API HelloAsso : `docs/09-product/helloasso-etape-1-api-info.md`
+- Setup HelloAsso : `docs/09-product/helloasso-setup.md`
+- Statut d'implémentation : `docs/09-product/adhesions-implementation-status.md`
 
 ---
 
-**Note** : Voir `adhesions-plan-implementation.md` pour le plan d'implémentation détaillé avec checklist complète.
+**Note** : Voir `adhesions-implementation-status.md` pour le statut d'implémentation détaillé avec checklists complètes.
 

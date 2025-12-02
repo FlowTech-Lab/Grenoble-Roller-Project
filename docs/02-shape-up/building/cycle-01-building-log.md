@@ -601,7 +601,7 @@ JOUR 15: Tests Admin + Notifications + Performance (Brakeman) (Notifications ✓
 
 ### 🔜 PHASE 2 - ÉVÉNEMENTS (À PLANIFIER - ORDRE CORRIGÉ Rails 8)
 
-> **📋 Checklist complète jour par jour** : Voir [`CHECKLIST_PHASE2.md`](CHECKLIST_PHASE2.md)
+> **📋 Checklist complète jour par jour** : Voir le plan détaillé dans [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md)
 
 > ⚠️ **CRITIQUE** : L'ordre d'implémentation a été révisé selon les bonnes pratiques Rails 8.  
 > **ActiveAdmin doit être installé APRÈS tests complets** (Jour 11-12), pas avant.  

@@ -661,7 +661,7 @@ end
 
 ## ✅ CHECKLIST PHASE 2
 
-> **📋 Checklist complète** : Voir [`CHECKLIST_PHASE2.md`](../ressources/CHECKLIST_PHASE2.md)
+> **📋 Checklist complète** : Voir le plan détaillé dans [`building/cycle-01-phase-2-plan.md`](building/cycle-01-phase-2-plan.md)
 
 ### ✅ PRÉ-REQUIS (Avant Jour 1)
 - [ ] ER Diagram créé (Event → Route, User, Attendance)
@@ -706,7 +706,7 @@ end
 6. **✅ Documentation complète**
 
 ### 🔜 Phase 2 - Événements (15 jours - À VENIR)
-1. **🔜 Checklist complète** : Voir [`CHECKLIST_PHASE2.md`](../ressources/CHECKLIST_PHASE2.md)
+1. **🔜 Checklist complète** : Voir le plan détaillé dans [`building/cycle-01-phase-2-plan.md`](building/cycle-01-phase-2-plan.md)
 2. **🔜 Développement module événements** (Jour 6-9)
 3. **✅ Tests TDD >70% coverage** (Jour 10)
 4. **✅ ActiveAdmin** (Jour 12-13)

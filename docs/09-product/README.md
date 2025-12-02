@@ -13,6 +13,20 @@ Cette section contient toute la documentation liée au **produit**, aux **parcou
 
 ## 📚 Documentation Disponible
 
+### Adhésions
+- **[`adhesions-complete.md`](adhesions-complete.md)** : Documentation complète consolidée (stratégie, flux, règles métier, législation, structure technique, automatisation)
+- **[`adhesions-implementation-status.md`](adhesions-implementation-status.md)** : Statut d'implémentation (checklists, écarts HelloAsso, conformité, points non implémentés)
+
+### HelloAsso
+- **[`helloasso-setup.md`](helloasso-setup.md)** : Guide de configuration et setup (récupération API, credentials Rails, polling automatique)
+- **[`flux-boutique-helloasso.md`](flux-boutique-helloasso.md)** : Flux détaillé boutique HelloAsso
+
+### Tests
+- **[`test-plan-inscription-profil.md`](test-plan-inscription-profil.md)** : Plan de test complet (scénarios, checklist, tests RSpec)
+
+### Quick Wins & Intégration
+- **[`quick-wins-helloasso.md`](quick-wins-helloasso.md)** : Synthèse quick wins et intégration HelloAsso (état actuel, plan d'action)
+
 ### UX Analysis
 - **[`user-journeys-analysis.md`](user-journeys-analysis.md)** : Detailed analysis of 9 user journeys with friction points and identified improvements
 - **[`ux-improvements-backlog.md`](ux-improvements-backlog.md)** : Complete backlog of 119 UX improvements (38 Quick Wins, 48 Important, 33 Future) with prioritized action plan
@@ -107,5 +121,33 @@ L'accessibilité est **intégrée transversalement** dans chaque sprint (15-20% 
 
 ---
 
-**Dernière mise à jour** : 2025-11-14
+---
+
+## 📝 Notes de Consolidation (2025-01-30)
+
+La documentation a été consolidée pour améliorer la maintenabilité :
+
+### **Adhésions** : 8 fichiers → 2 fichiers (-75%)
+- **Fichiers consolidés** :
+  - `adhesions-complete.md` : Documentation complète (stratégie, flux, règles, technique)
+  - `adhesions-implementation-status.md` : Statut d'implémentation (checklists, conformité)
+- **Anciens fichiers supprimés** : strategie-complete, plan-implementation, ecarts-helloasso-reel, verification-conformite, points-non-implementes, questionnaire-sante-regles, helloasso-contexte, mineurs-legislation
+
+### **HelloAsso** : 3 fichiers → 1 fichier (-67%)
+- **Fichier consolidé** : `helloasso-setup.md` (récupération API, credentials, polling)
+- **Anciens fichiers supprimés** : helloasso-ajouter-credentials, helloasso-etape-1-api-info, helloasso-polling-setup
+
+### **Tests** : 2 fichiers → 1 fichier (-50%)
+- **Fichier consolidé** : `test-plan-inscription-profil.md` (scénarios + checklist)
+- **Anciens fichiers supprimés** : test-checklist-inscription-profil, test-plan-inscription-profil (ancien)
+
+### **Quick Wins** : 2 fichiers → 1 fichier (-50%)
+- **Fichier consolidé** : `quick-wins-helloasso.md` (synthèse + plan d'action)
+- **Anciens fichiers supprimés** : synthese-quick-wins-helloasso, plan-action-quick-wins
+
+**Total** : **15 fichiers → 5 fichiers** (réduction de 67%)
+
+---
+
+**Dernière mise à jour** : 2025-01-30
 

@@ -589,7 +589,7 @@ Une user story est "Done" quand :
 
 - **Detailed analysis** : [`user-journeys-analysis.md`](user-journeys-analysis.md)
 - **Méthodologie** : [`../02-shape-up/`](../02-shape-up/)
-- **Pièges à éviter** : [`../../ressources/Pieges_A_Eviter.md`](../../ressources/Pieges_A_Eviter.md)
+- **Méthodologie Shape Up** : [`../02-shape-up/shape-up-methodology.md`](../02-shape-up/shape-up-methodology.md)
 
 ---
 
