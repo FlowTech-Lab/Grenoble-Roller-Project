@@ -1,7 +1,7 @@
 class Product < ApplicationRecord
   belongs_to :category, class_name: "ProductCategory"
   has_many :product_variants, dependent: :destroy
-  
+
   # Active Storage attachments
   has_one_attached :image
 
@@ -19,9 +19,9 @@ class Product < ApplicationRecord
   def self.ransackable_associations(_auth_object = nil)
     %w[category product_variants]
   end
-  
+
   private
-  
+
   def image_or_image_url_present
     return if image.attached? || image_url.present?
     errors.add(:base, "Une image (upload ou URL) est requise")

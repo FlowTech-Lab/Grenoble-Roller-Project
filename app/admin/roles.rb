@@ -1,5 +1,5 @@
 ActiveAdmin.register Role do
-  menu priority: 15, if: proc { authorized?(:read, Role) }
+  menu priority: 3, label: "Rôles", if: proc { authorized?(:read, Role) }
 
   permit_params :name, :code, :description, :level
 

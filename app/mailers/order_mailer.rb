@@ -78,4 +78,3 @@ class OrderMailer < ApplicationMailer
     )
   end
 end
-

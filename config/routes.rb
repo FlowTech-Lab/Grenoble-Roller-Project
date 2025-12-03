@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   # Standard Rails endpoint - simple check (no DB queries)
   get "up" => "rails/health#show", as: :rails_health_check
-  
+
   # Advanced health check with database connection and migrations status
   # Returns JSON with detailed status (DB + migrations) - useful for monitoring/alerting
   get "health" => "health#check", as: :health_check
@@ -47,6 +47,21 @@ Rails.application.routes.draw do
       patch :cancel
       post :pay
       post :check_payment
+      get :payment_status
+    end
+  end
+
+  # Memberships - Routes REST/CRUD
+  resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
+    collection do
+      # Page de sélection (adhésion seule ou avec T-shirt)
+      get :choose
+      # Paiement groupé pour plusieurs enfants en attente
+      post :pay_multiple
+    end
+    member do
+      # Actions personnalisées (non-CRUD)
+      post :pay
       get :payment_status
     end
   end

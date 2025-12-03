@@ -1,0 +1,136 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <!-- HERO SECTION -->
+      <div class="hero-form text-center mb-5">
+        <div class="hero-icon"><%= @is_child ? '👶' : '🎉' %></div>
+        <h1 class="hero-title">
+          <% if @is_renewal && @old_membership %>
+            RÉADHÉSION DE <%= @old_membership.child_full_name.upcase %>
+          <% elsif @is_child %>
+            INSCRIPTION DE VOTRE ENFANT
+          <% else %>
+            BIENVENUE À GRENOBLE ROLLER
+          <% end %>
+        </h1>
+        <p class="hero-subtitle">
+          <% if @is_renewal && @old_membership %>
+            Renouvellement de l'adhésion pour la nouvelle saison
+          <% elsif @is_child %>
+            Choisissez l'option d'adhésion pour votre enfant
+          <% else %>
+            Choisissez votre option d'adhésion
+          <% end %>
+        </p>
+      </div>
+
+      <div class="row g-4 justify-content-center">
+        <!-- Option 1 : Adhésion seule -->
+        <div class="col-md-5">
+          <div class="card card-liquid h-100 hover-shadow" 
+               style="cursor: pointer; transition: all 0.3s ease;"
+               onclick="window.location='<%= @is_child ? new_membership_path(type: 'child', with_tshirt: false, renew_from: @renew_from) : new_membership_path(check_age: true, with_tshirt: false) %>'"
+               onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+            <div class="card-body p-4 text-center d-flex flex-column">
+              <div style="font-size: 3rem; margin-bottom: 1rem;"><%= @is_child ? '👶' : '👤' %></div>
+              <h3 class="card-title fw-bold mb-3">Adhésion Simple</h3>
+              <p class="text-muted mb-3">
+                <% if @is_renewal && @old_membership %>
+                  Renouvellement pour <%= @old_membership.child_first_name %>
+                <% elsif @is_child %>
+                  Pour votre enfant
+                <% else %>
+                  Participez aux randos et événements
+                <% end %>
+              </p>
+              <div class="display-4 text-liquid-primary fw-bold mb-2">10€</div>
+              <small class="text-muted d-block mb-3">Valable 1 an</small>
+              
+              <div class="text-start mb-3" style="max-width: 250px; margin: 0 auto;">
+                <div class="d-flex align-items-start mb-2">
+                  <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+                  <span>Participer aux randos</span>
+                </div>
+                <div class="d-flex align-items-start mb-2">
+                  <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+                  <span>Accès à tous les événements</span>
+                </div>
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+                  <span>Soutenir l'association</span>
+                </div>
+              </div>
+              
+              <div class="mt-auto">
+                <button class="btn btn-liquid-primary btn-lg w-100">
+                  Continuer →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 2 : Adhésion + T-shirt -->
+        <div class="col-md-5">
+          <div class="card card-liquid h-100 hover-shadow border-2 border-warning position-relative" 
+               style="cursor: pointer; transition: all 0.3s ease;"
+               onclick="window.location='<%= @is_child ? new_membership_path(type: 'child', with_tshirt: true, renew_from: @renew_from) : new_membership_path(check_age: true, with_tshirt: true) %>'"
+               onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
+            <div class="position-absolute top-0 start-50 translate-middle-x mt-3">
+              <span class="badge bg-warning text-dark px-3 py-2" style="font-size: 0.875rem; font-weight: 600;">
+                MEILLEURE AFFAIRE
+              </span>
+            </div>
+            <div class="card-body p-4 text-center d-flex flex-column">
+              <div style="font-size: 3rem; margin-bottom: 1rem;"><%= @is_child ? '👶 🎽' : '👤 🎽' %></div>
+              <h3 class="card-title fw-bold mb-3">Adhésion + T-shirt</h3>
+              <p class="text-muted mb-3">
+                <% if @is_renewal && @old_membership %>
+                  Renouvellement + nouveau T-shirt pour <%= @old_membership.child_first_name %>
+                <% elsif @is_child %>
+                  Pour votre enfant + T-shirt
+                <% else %>
+                  Arborez les couleurs de l'association
+                <% end %>
+              </p>
+              <div>
+                <div class="display-4 text-liquid-primary fw-bold mb-1">24€</div>
+                <small class="text-success d-block mb-3">
+                  <i class="bi bi-check-circle me-1"></i>
+                  <strong>Économisez 6€ ✨</strong>
+                </small>
+              </div>
+              
+              <div class="text-start mb-3" style="max-width: 250px; margin: 0 auto;">
+                <div class="d-flex align-items-start mb-2">
+                  <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+                  <span>Tout ce qui est inclus dans l'adhésion simple</span>
+                </div>
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-check-circle text-success me-2 mt-1"></i>
+                  <span><strong>T-shirt blanc Grenoble Roller</strong></span>
+                </div>
+              </div>
+              
+              <div class="alert alert-info mb-3 alert-tshirt-reduction">
+                <small>
+                  <i class="bi bi-info-circle me-1"></i>
+                  <strong>14€ au lieu de 20€</strong> - Réduction membre
+                </small>
+              </div>
+              
+              <div class="mt-auto">
+                <button class="btn btn-liquid-warning btn-lg w-100">
+                  Continuer →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

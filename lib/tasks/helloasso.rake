@@ -2,8 +2,8 @@ namespace :helloasso do
   desc "Sync pending HelloAsso payments"
   task sync_payments: :environment do
     Payment
-      .where(provider: 'helloasso', status: 'pending')
-      .where('created_at > ?', 1.day.ago)
+      .where(provider: "helloasso", status: "pending")
+      .where("created_at > ?", 1.day.ago)
       .find_each do |payment|
         begin
           HelloassoService.fetch_and_update_payment(payment)

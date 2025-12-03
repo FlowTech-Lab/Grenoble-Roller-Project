@@ -140,4 +140,4 @@ attendance = create(:attendance, user: user, event: event)
 - Utiliser les traits au lieu de spécifier manuellement les valeurs
 - Créer des traits réutilisables pour les cas courants
 
-**Documentation complète** : Voir `docs/05-testing/rspec-best-practices.md` pour plus de détails.
+**Documentation complète** : Voir cette section pour plus de détails sur les bonnes pratiques RSpec.

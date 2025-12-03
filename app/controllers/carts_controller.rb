@@ -35,7 +35,7 @@ class CartsController < ApplicationController
         "#{added_qty}x #{product_name} ajoutés au panier"
       end
       flash[:notice] = message
-      flash[:notice_type] = 'success'
+      flash[:notice_type] = "success"
       flash[:show_cart_button] = true
       # Rediriger vers la boutique pour que le toast "Voir le panier" ait du sens
       redirect_to shop_path
@@ -52,7 +52,7 @@ class CartsController < ApplicationController
       variant = ProductVariant.includes(:product).find_by(id: variant_id)
       product_name = variant&.product&.name || "Article"
       flash[:notice] = "#{product_name} retiré du panier"
-      flash[:notice_type] = 'info'
+      flash[:notice_type] = "info"
       return redirect_to cart_path
     end
 
@@ -74,7 +74,7 @@ class CartsController < ApplicationController
       redirect_to cart_path, alert: "Quantité ajustée au stock disponible (#{new_qty})."
     else
       flash[:notice] = "Panier mis à jour"
-      flash[:notice_type] = 'info'
+      flash[:notice_type] = "info"
       redirect_to cart_path
     end
   end
@@ -86,14 +86,14 @@ class CartsController < ApplicationController
     product_name = variant&.product&.name || "Article"
     session[:cart].delete(key)
     flash[:notice] = "#{product_name} retiré du panier"
-    flash[:notice_type] = 'info'
+    flash[:notice_type] = "info"
     redirect_to cart_path
   end
 
   def clear
     session[:cart] = {}
     flash[:notice] = "Panier vidé"
-    flash[:notice_type] = 'info'
+    flash[:notice_type] = "info"
     redirect_to cart_path
   end
 

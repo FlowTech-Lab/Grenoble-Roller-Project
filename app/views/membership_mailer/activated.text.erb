@@ -1,0 +1,18 @@
+Bienvenue dans l'association Grenoble Roller !
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre adhésion pour la saison <%= @membership.season %> a été activée avec succès.
+
+Détails de votre adhésion :
+- Catégorie : <%= @membership.category.humanize %>
+- Montant : <%= number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+- Période : Du <%= l(@membership.start_date, format: :long) %> au <%= l(@membership.end_date, format: :long) %>
+
+Votre adhésion est valide jusqu'au <%= l(@membership.end_date, format: :long) %>.
+
+Vous pouvez maintenant profiter de tous les avantages de l'association !
+
+À bientôt sur les routes de Grenoble ! 🛼
+
+L'équipe Grenoble Roller

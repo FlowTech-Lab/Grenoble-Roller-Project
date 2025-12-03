@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Bienvenue dans l'association Grenoble Roller !</h1>
+    
+    <p>Bonjour <%= @user.first_name || @user.email %>,</p>
+    
+    <p>Votre adhésion pour la saison <strong><%= @membership.season %></strong> a été activée avec succès.</p>
+    
+    <h2>Détails de votre adhésion :</h2>
+    <ul>
+      <li><strong>Catégorie :</strong> <%= @membership.category.humanize %></li>
+      <li><strong>Montant :</strong> <%= number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %></li>
+      <li><strong>Période :</strong> Du <%= l(@membership.start_date, format: :long) %> au <%= l(@membership.end_date, format: :long) %></li>
+    </ul>
+    
+    <p>Votre adhésion est valide jusqu'au <strong><%= l(@membership.end_date, format: :long) %></strong>.</p>
+    
+    <p>Vous pouvez maintenant profiter de tous les avantages de l'association !</p>
+    
+    <p>À bientôt sur les routes de Grenoble ! 🛼</p>
+    
+    <p>L'équipe Grenoble Roller</p>
+  </body>
+</html>
