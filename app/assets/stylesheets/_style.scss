@@ -4200,6 +4200,81 @@
     }
   }
 
+  /* Hero Section Commandes - Harmonisé avec hero-memberships */
+  .hero-orders {
+    /* Mode clair : Gradient bleu harmonieux avec le thème (identique à hero-memberships) */
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 50%, #1e8dff 100%);
+    color: white;
+    border-radius: 1.6rem;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--bs-box-shadow-lg);
+    position: relative;
+    overflow: hidden;
+    
+    /* Overlay subtil pour texture et profondeur */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+      pointer-events: none;
+    }
+    
+    > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    h1 {
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .badge {
+      background: rgba(255, 255, 255, 0.95) !important;
+      color: #0056b3 !important;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  [data-bs-theme="dark"] .hero-orders {
+    /* Mode sombre : Gradient bleu plus foncé pour s'harmoniser avec le thème dark */
+    background: linear-gradient(135deg, #001f3f 0%, #002d5c 50%, #003d7a 100%);
+    box-shadow: 0 4px 24px rgba(0, 31, 63, 0.5);
+    
+    &::before {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 100%);
+    }
+    
+    h1 {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+    
+    .badge {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: white !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-orders {
+      padding: 2rem 1.5rem;
+      
+      h1 {
+        font-size: 1.75rem;
+      }
+    }
+  }
+
   /* Sidebar Sticky */
   .sidebar-sticky {
     position: sticky;
@@ -5338,5 +5413,87 @@
     
     i {
       color: #4d94ff;
+    }
+  }
+
+  /* ========================================
+     ORDERS - PAGE MES COMMANDES
+     Styles pour la page de gestion des commandes
+     Réutilise les classes existantes (card-liquid, quick-action-card, memberships-stats-item)
+     ======================================== */
+
+  /* Orders Sidebar - Réutilise styles membreships */
+  .orders-sidebar {
+    @media (max-width: 991.98px) {
+      margin-bottom: 2rem;
+    }
+  }
+
+  /* Order Cards - Réutilise styles card existants */
+  .card[style*="border-left"] {
+    transition: var(--transition-liquid);
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  /* Order Section Toggle - Réutilise styles membreships (h3 + badge) avec fonctionnalité collapse */
+  .order-section-toggle {
+    padding: 0.75rem 0;
+    background: transparent;
+    border: none;
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid-fast);
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--gr-danger);
+      opacity: 0.9;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid var(--gr-danger);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    
+    h3 {
+      margin: 0;
+      font-weight: 600;
+      color: inherit;
+    }
+    
+    .order-toggle-chevron {
+      transition: transform 0.3s ease;
+      color: inherit;
+    }
+    
+    &[aria-expanded="true"] .order-toggle-chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  [data-bs-theme="dark"] .order-section-toggle {
+    color: var(--gr-text-dark);
+    
+    &:hover {
+      color: #ff6b6b; /* Rouge plus clair pour mode sombre */
+    }
+    
+    &:focus-visible {
+      outline-color: #ff6b6b;
+    }
+    
+    h3 {
+      color: inherit;
+    }
+  }
+
+  /* Responsive Orders - Réutilise styles membreships */
+  @media (max-width: 576px) {
+    .orders-sidebar .card-body {
+      padding: 0.75rem;
     }
   }

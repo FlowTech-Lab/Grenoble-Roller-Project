@@ -1,0 +1,101 @@
+<div class="orders-sidebar">
+  <!-- QUICK ACTIONS -->
+  <div class="card card-liquid shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="h6 mb-3">
+        <i class="bi bi-lightning-charge text-liquid-primary me-2"></i>
+        Actions rapides
+      </h3>
+      
+      <!-- Voir boutique -->
+      <%= link_to shop_path, class: "text-decoration-none" do %>
+        <div class="quick-action-card teal">
+          <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-bag fs-3 text-liquid-primary me-3"></i>
+            <div class="flex-grow-1">
+              <h4 class="h6 mb-0 fw-bold">Voir la boutique</h4>
+              <small class="text-muted">Découvrir nos produits</small>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Finaliser paiement (si en attente) -->
+      <% if pending_orders.any? %>
+        <%= link_to orders_path(anchor: 'pending'), class: "text-decoration-none" do %>
+          <div class="quick-action-card orange">
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-hourglass-split fs-3 text-liquid-warning me-3"></i>
+              <div class="flex-grow-1">
+                <h4 class="h6 mb-0 fw-bold">Finaliser paiement</h4>
+                <small class="text-muted">
+                  <%= pending_orders.count %> commande<%= 's' if pending_orders.count != 1 %> en attente
+                </small>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- OVERVIEW STATS -->
+  <% if sent_orders.any? || preparation_orders.any? || pending_orders.any? || cancelled_orders.any? || total_spent > 0 %>
+    <div class="card card-liquid shadow-sm mb-4">
+      <div class="card-body">
+        <h3 class="h6 mb-3">
+          <i class="bi bi-graph-up text-liquid-primary me-2"></i>
+          Vue d'ensemble
+        </h3>
+        
+        <div class="d-flex flex-column gap-2">
+          <% if sent_orders.any? %>
+            <div class="memberships-stats-item">
+              <span><i class="bi bi-truck text-success me-2"></i>Expédiées</span>
+              <strong><%= sent_orders.count %></strong>
+            </div>
+          <% end %>
+
+          <% if preparation_orders.any? %>
+            <div class="memberships-stats-item">
+              <span><i class="bi bi-gear text-info me-2"></i>En préparation</span>
+              <strong><%= preparation_orders.count %></strong>
+            </div>
+          <% end %>
+
+          <% if pending_orders.any? %>
+            <div class="memberships-stats-item">
+              <span><i class="bi bi-hourglass-split text-warning me-2"></i>En attente</span>
+              <strong><%= pending_orders.count %></strong>
+            </div>
+          <% end %>
+
+          <% if cancelled_orders.any? %>
+            <div class="memberships-stats-item">
+              <span><i class="bi bi-x-circle text-danger me-2"></i>Annulées</span>
+              <strong><%= cancelled_orders.count %></strong>
+            </div>
+          <% end %>
+
+          <% if total_spent > 0 %>
+            <div class="memberships-stats-item">
+              <span><i class="bi bi-currency-euro text-primary me-2"></i>Total dépensé</span>
+              <strong><%= number_to_currency(total_spent, unit: "€", format: "%n %u") %></strong>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- INFO BOX -->
+  <div class="card card-liquid shadow-sm">
+    <div class="card-body">
+      <p class="small text-muted mb-0">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Vos commandes sont traitées avec soin. Vous recevrez un email de confirmation à chaque étape importante.</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
