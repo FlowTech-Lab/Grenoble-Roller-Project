@@ -1389,4 +1389,44 @@ Ce plan est solide, détaillé et réaliste. Les ajustements proposés sont mine
 
 ---
 
+### ✅ Jour 2-3 : Validations + Scopes + Tests Unitaires (2025-12-03)
+
+**Statut** : 🔄 **EN COURS**
+
+#### Réalisations
+
+**Factories créées** :
+- ✅ `spec/factories/event/initiations.rb`
+  - Factory `:event_initiation` avec calcul automatique du prochain samedi à 10h15
+  - Traits `:full` et `:with_volunteers`
+- ✅ `spec/factories/memberships.rb`
+  - Factory `:membership` avec trait `:child` pour tests adhésions enfants
+
+**Tests créés** :
+- ✅ `spec/models/event/initiation_spec.rb`
+  - Tests validations (samedi, 10h15, Gymnase Ampère, season, max_participants)
+  - Tests méthodes métier (`full?`, `available_places`, `participants_count`, `volunteers_count`)
+  - Tests scopes (`by_season`, `upcoming_initiations`)
+- ✅ `spec/models/attendance_spec.rb` (extensions)
+  - Tests scopes `volunteers` et `participants`
+  - Tests validations initiation (séance complète, bénévole bypass)
+  - Tests essai gratuit (prévention double utilisation)
+  - Tests adhésion (parent, enfant, sans adhésion)
+
+**Fichiers créés/modifiés** :
+- `spec/factories/event/initiations.rb` (nouveau)
+- `spec/factories/memberships.rb` (nouveau)
+- `spec/models/event/initiation_spec.rb` (nouveau)
+- `spec/models/attendance_spec.rb` (modifié - extensions)
+
+**Note** : Les tests nécessitent la configuration de la base de données de test. Une fois configurée, exécuter :
+```bash
+docker compose -f ops/dev/docker-compose.yml exec web bundle exec rspec spec/models/event/initiation_spec.rb
+docker compose -f ops/dev/docker-compose.yml exec web bundle exec rspec spec/models/attendance_spec.rb
+```
+
+**Prochaine étape** : Configurer base de test et exécuter les tests pour vérifier coverage >70%
+
+---
+
 **Document de référence pour le développement du module Initiations**
