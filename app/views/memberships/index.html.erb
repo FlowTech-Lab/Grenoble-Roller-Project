@@ -167,35 +167,48 @@
     <div class="col-12 col-lg-8">
       <% if @memberships.empty? %>
         <!-- EMPTY STATE AMÉLIORÉ -->
-        <div class="empty-state">
-          <div style="font-size: 4rem; margin-bottom: 1.5rem;">🎉</div>
-          <h2 class="h4 mb-3">Rejoignez Grenoble Roller !</h2>
-          <p class="text-muted mb-4">
-            Rejoignez notre communauté de passionnés de roller à Grenoble
-          </p>
+        <div class="empty-state-modern">
+          <div class="empty-state-header">
+            <div class="empty-state-icon">🎉</div>
+            <h2 class="empty-state-title">Rejoignez Grenoble Roller !</h2>
+            <p class="empty-state-subtitle">
+              Devenez membre et profitez des avantages exclusifs de l'association
+            </p>
+          </div>
           
-          <div class="text-start d-inline-block mb-4" style="max-width: 400px;">
-            <div class="d-flex align-items-start mb-2">
-              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
-              <span>Participer aux randos roller</span>
+          <div class="empty-state-benefits">
+            <div class="benefit-item">
+              <div class="benefit-icon">
+                <i class="bi bi-people-fill"></i>
+              </div>
+              <span class="benefit-text">Rejoindre une communauté passionnée</span>
             </div>
-            <div class="d-flex align-items-start mb-2">
-              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
-              <span>Rejoindre une communauté</span>
+            <div class="benefit-item">
+              <div class="benefit-icon">
+                <i class="bi bi-heart-fill"></i>
+              </div>
+              <span class="benefit-text">Soutenir l'association et ses projets</span>
             </div>
-            <div class="d-flex align-items-start mb-2">
-              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
-              <span>Tarifs avantageux toute l'année</span>
+            <div class="benefit-item">
+              <div class="benefit-icon">
+                <i class="bi bi-book-fill"></i>
+              </div>
+              <span class="benefit-text">Participer aux initiations roller</span>
             </div>
-            <div class="d-flex align-items-start">
-              <i class="bi bi-check-circle text-success me-2 mt-1"></i>
-              <span>Support des événements</span>
+            <div class="benefit-item">
+              <div class="benefit-icon">
+                <i class="bi bi-tag-fill"></i>
+              </div>
+              <span class="benefit-text">Réduction sur les t-shirts et goodies</span>
             </div>
           </div>
           
-          <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg" do %>
-            <i class="bi bi-person-plus me-2"></i>Adhérer maintenant →
-          <% end %>
+          <div class="empty-state-cta">
+            <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg btn-cta-modern" do %>
+              <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
+              <i class="bi bi-arrow-right ms-2"></i>
+            <% end %>
+          </div>
         </div>
       <% else %>
         <!-- ADHÉSION PERSONNELLE -->

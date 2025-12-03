@@ -4507,6 +4507,186 @@
     }
   }
 
+  /* Empty State Modern - Design amélioré */
+  .empty-state-modern {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 1rem;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+  }
+
+  [data-bs-theme="dark"] .empty-state-modern {
+    background: rgba(33, 128, 169, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    
+    &:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .empty-state-header {
+    margin-bottom: 2rem;
+  }
+
+  .empty-state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .empty-state-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--bs-body-color);
+  }
+
+  .empty-state-subtitle {
+    font-size: 1rem;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0;
+    opacity: 0.8;
+  }
+
+  .empty-state-benefits {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    text-align: left;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.7);
+      transform: translateX(4px);
+    }
+  }
+
+  [data-bs-theme="dark"] .benefit-item {
+    background: rgba(255, 255, 255, 0.05);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .benefit-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gr-primary), var(--gr-secondary));
+    color: white;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  .benefit-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    line-height: 1.4;
+  }
+
+  .empty-state-cta {
+    margin-top: 1.5rem;
+  }
+
+  .btn-cta-modern {
+    padding: 0.875rem 2rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    }
+    
+    i:last-child {
+      transition: transform 0.3s ease;
+    }
+    
+    &:hover i:last-child {
+      transform: translateX(4px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .empty-state-modern {
+      padding: 2rem 1.5rem;
+    }
+
+    .empty-state-title {
+      font-size: 1.5rem;
+    }
+
+    .empty-state-subtitle {
+      font-size: 0.9rem;
+    }
+
+    .empty-state-benefits {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      max-width: 100%;
+    }
+
+    .benefit-item {
+      padding: 0.625rem;
+    }
+
+    .benefit-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 0.75rem;
+    }
+
+    .benefit-text {
+      font-size: 0.85rem;
+    }
+
+    .empty-state-icon {
+      font-size: 2rem;
+    }
+  }
+
   /* Child Mini Cards - Réutilise styles card-liquid */
   .child-mini-card {
     background: var(--liquid-glass-bg);
