@@ -742,6 +742,72 @@ end
 
 ---
 
+### Jour 8-9 : ActiveAdmin + Dashboard Bénévoles + Export
+
+#### 8.0 Export CSV/WhatsApp (CRITIQUE)
+
+**⚠️ RECOMMANDATION CRITIQUE : Export Demandes Matériel**
+
+**Créer action export dans ActiveAdmin** :
+
+```ruby
+# app/admin/event/initiations.rb
+member_action :material_export, method: :get do
+  @initiation = resource
+  @demands = @initiation.attendances
+    .where("equipment_note IS NOT NULL AND equipment_note != ''")
+    .includes(:user)
+  
+  respond_to do |format|
+    format.csv do
+      send_data generate_csv(@demands), 
+                filename: "demandes-materiel-#{@initiation.id}.csv",
+                type: 'text/csv'
+    end
+    format.txt do
+      render plain: generate_whatsapp_text(@demands)
+    end
+  end
+end
+
+private
+
+def generate_csv(demands)
+  CSV.generate(headers: true) do |csv|
+    csv << ['Nom', 'Email', 'Téléphone', 'Matériel demandé']
+    demands.each do |att|
+      csv << [att.user.full_name, att.user.email, att.user.phone, att.equipment_note]
+    end
+  end
+end
+
+def generate_whatsapp_text(demands)
+  demands.map do |att|
+    phone = att.user.phone.present? ? att.user.phone : "Pas de téléphone"
+    "#{att.user.full_name} (#{phone}): #{att.equipment_note}"
+  end.join("\n")
+end
+```
+
+**Ajouter route** :
+```ruby
+# config/routes.rb (dans namespace :admin)
+resources :initiations, only: [] do
+  member do
+    get :material_export
+  end
+end
+```
+
+**Checklist** :
+- [ ] Créer action `material_export` dans ActiveAdmin
+- [ ] Format CSV (pour Excel)
+- [ ] Format TXT (pour WhatsApp copier-coller)
+- [ ] Bouton "Export demandes matériel" dans vue show
+- [ ] Tests export
+
+---
+
 ### Jour 8-9 : ActiveAdmin + Dashboard Bénévoles
 
 #### 8.1 ActiveAdmin Resource
@@ -963,6 +1029,65 @@ end
 
 ---
 
+### Jour 10 : Notifications Email + Jobs Asynchrones
+
+#### 10.0 Jobs Asynchrones (CRITIQUE)
+
+**⚠️ RECOMMANDATION CRITIQUE : Job Rappel Initiation**
+
+**Adapter `app/jobs/event_reminder_job.rb`** (existant) ou créer `app/jobs/initiation_reminder_job.rb` :
+
+```ruby
+class InitiationReminderJob < ApplicationJob
+  queue_as :default
+  
+  def perform
+    # Trouver toutes les initiations demain
+    tomorrow = Date.tomorrow
+    initiations = Event::Initiation
+      .where("DATE(start_at) = ?", tomorrow)
+      .published
+    
+    initiations.each do |initiation|
+      initiation.attendances
+        .where(wants_reminder: true, status: ['registered', 'present'])
+        .includes(:user)
+        .find_each do |attendance|
+          EventMailer.event_reminder(attendance).deliver_now
+        end
+    end
+  end
+end
+```
+
+**Scheduler (cron)** : Tous les jours à 19h
+
+**Option 1 : Whenever gem** :
+```ruby
+# config/schedule.rb
+every 1.day, at: '7:00 pm' do
+  runner "InitiationReminderJob.perform_later"
+end
+```
+
+**Option 2 : Sidekiq-Cron** (si Sidekiq utilisé) :
+```ruby
+# config/initializers/sidekiq.rb
+Sidekiq::Cron::Job.create(
+  name: 'Initiation Reminder',
+  cron: '0 19 * * *', # Tous les jours à 19h
+  class: 'InitiationReminderJob'
+)
+```
+
+**Checklist** :
+- [ ] Créer/Adapter `InitiationReminderJob`
+- [ ] Configurer scheduler (cron)
+- [ ] Tests job
+- [ ] Vérifier envoi réel (dev)
+
+---
+
 ### Jour 10 : Notifications Email
 
 #### 10.1 Adapter EventMailer
@@ -1013,6 +1138,89 @@ end
 - [ ] Adapter templates email
 - [ ] Tests mailers (RSpec)
 - [ ] Vérifier envoi réel (dev)
+
+---
+
+### Jour 11 : Génération Séries Récurrentes (Rake Task)
+
+#### 11.0 Rake Task Génération
+
+**⚠️ RECOMMANDATION CRITIQUE : Génération Automatique Séances**
+
+**Créer `lib/tasks/initiations.rake`** :
+
+```ruby
+namespace :initiations do
+  desc "Générer séances initiations pour une saison"
+  task :generate, [:season] => :environment do |_t, args|
+    season = args[:season] || Membership.current_season_name
+    start_date, end_date = Membership.current_season_dates
+    
+    # Trouver premier samedi de la saison
+    first_saturday = start_date
+    first_saturday += (6 - first_saturday.wday) % 7
+    first_saturday = first_saturday + 7 if first_saturday < start_date
+    
+    creator = User.find_by(role_id: 7) || User.first # SUPERADMIN ou premier user
+    
+    count = 0
+    current_date = first_saturday
+    
+    while current_date <= end_date
+      # Vérifier pas déjà créée
+      existing = Event::Initiation.find_by(
+        start_at: current_date.beginning_of_day + 10.hours + 15.minutes,
+        season: season
+      )
+      
+      unless existing
+        Event::Initiation.create!(
+          type: 'Event::Initiation',
+          creator_user: creator,
+          title: "Initiation Roller - Samedi #{I18n.l(current_date, format: :long)}",
+          description: "Cours d'initiation au roller",
+          start_at: current_date.beginning_of_day + 10.hours + 15.minutes,
+          duration_min: 105,
+          location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+          meeting_lat: 45.1891,
+          meeting_lng: 5.7317,
+          max_participants: 30,
+          status: 'published',
+          level: 'beginner',
+          distance_km: 0,
+          price_cents: 0,
+          currency: 'EUR',
+          season: season,
+          is_recurring: true,
+          recurring_day: 'saturday',
+          recurring_time: '10:15'
+        )
+        count += 1
+      end
+      
+      current_date += 7.days # Semaine suivante
+    end
+    
+    puts "✅ #{count} initiations créées pour la saison #{season}"
+  end
+end
+```
+
+**Usage** :
+```bash
+# Générer pour saison courante
+rails initiations:generate
+
+# Générer pour saison spécifique
+rails initiations:generate[2025-2026]
+```
+
+**Checklist** :
+- [ ] Créer rake task `initiations:generate`
+- [ ] Générer 52 séances (samedis entre dates)
+- [ ] Vérifier pas de doublons
+- [ ] Tests rake task
+- [ ] Documenter usage
 
 ---
 
@@ -1120,14 +1328,308 @@ end
 
 ---
 
+### Jour 7 : Service Objects & Query Objects (OPTIONNEL - Amélioration)
+
+#### 7.1 Service Objects (Recommandé)
+
+**Pourquoi** : Extraire logique métier des contrôleurs, rendre testable
+
+**Créer `app/services/initiations/registration_service.rb`**
+
+```ruby
+module Initiations
+  class RegistrationService
+    def initialize(initiation, user, params)
+      @initiation = initiation
+      @user = user
+      @params = params
+    end
+    
+    def call
+      # Logique inscription complète
+      # Retourne Result object (success/error)
+    end
+  end
+end
+```
+
+**Créer `app/services/initiations/cancellation_service.rb`**
+
+```ruby
+module Initiations
+  class CancellationService
+    def initialize(attendance)
+      @attendance = attendance
+    end
+    
+    def call
+      # Logique annulation + email
+    end
+  end
+end
+```
+
+**Checklist** :
+- [ ] Créer `app/services/initiations/` directory
+- [ ] Créer `RegistrationService` (extraire logique de `attend`)
+- [ ] Créer `CancellationService` (extraire logique de `cancel_attendance`)
+- [ ] Adapter contrôleur pour utiliser services
+- [ ] Tests services (>70% coverage)
+
+#### 7.2 Query Objects (Si besoin recherche avancée)
+
+**Pourquoi** : Requêtes complexes multi-paramètres
+
+**Créer `app/queries/initiation_search_query.rb`**
+
+```ruby
+class InitiationSearchQuery
+  def initialize(scope, params)
+    @scope = scope
+    @params = params
+  end
+  
+  def call
+    # Filtrer par saison, statut, date, etc.
+  end
+end
+```
+
+**Checklist** :
+- [ ] Créer `app/queries/` directory (si pas existant)
+- [ ] Créer `InitiationSearchQuery` (si besoin recherche avancée)
+- [ ] Utiliser dans contrôleur si nécessaire
+
+---
+
+### Jour 8 : Concerns & Scopes Avancés (OPTIONNEL - Amélioration)
+
+#### 8.1 Concern CapacityManageable
+
+**Pourquoi** : DRY, réutilisable pour futurs modèles (Stage, Compétition)
+
+**Créer `app/models/concerns/capacity_manageable.rb`**
+
+```ruby
+module CapacityManageable
+  extend ActiveSupport::Concern
+  
+  included do
+    # Méthodes partagées : full?, available_places, etc.
+  end
+end
+```
+
+**Checklist** :
+- [ ] Créer concern `CapacityManageable`
+- [ ] Extraire méthodes communes depuis `Event::Initiation`
+- [ ] Inclure concern dans `Event::Initiation`
+- [ ] Tests concern
+
+#### 8.2 Scopes Nommés Complets
+
+**Ajouter dans `Event::Initiation`** :
+
+```ruby
+# États
+scope :available, -> { published.where("available_places > 0") }
+scope :full, -> { where("available_places <= 0") }
+
+# Temporels
+scope :today, -> { where(start_at: Date.current.all_day) }
+scope :this_week, -> { where(start_at: Date.current.beginning_of_week..Date.current.end_of_week) }
+
+# Combinés
+scope :next_available, -> { available.upcoming_initiations.order(:start_at).first }
+scope :current_season, -> { by_season(Membership.current_season_name) }
+```
+
+**Checklist** :
+- [ ] Ajouter scopes manquants
+- [ ] Utiliser dans contrôleurs
+- [ ] Tests scopes
+
+---
+
+### Jour 9 : Jobs Asynchrones & Notifications
+
+#### 9.1 Job Rappel Initiation
+
+**Créer `app/jobs/initiation_reminder_job.rb`**
+
+```ruby
+class InitiationReminderJob < ApplicationJob
+  queue_as :default
+  
+  def perform(attendance_id)
+    attendance = Attendance.find(attendance_id)
+    return unless attendance.wants_reminder?
+    return unless attendance.event.is_a?(Event::Initiation)
+    
+    # Envoyer rappel la veille à 19h
+    EventMailer.event_reminder(attendance).deliver_now
+  end
+end
+```
+
+**Adapter `app/jobs/event_reminder_job.rb`** (existant)
+
+**Checklist** :
+- [ ] Créer `InitiationReminderJob` (ou adapter `EventReminderJob`)
+- [ ] Scheduler cron (tous les jours à 19h)
+- [ ] Tests job
+
+#### 9.2 Export CSV/WhatsApp
+
+**Ajouter dans ActiveAdmin** (voir Jour 8-9)
+
+**Créer `app/controllers/admin/initiations_controller.rb`** (extension)
+
+```ruby
+def material_export
+  @initiation = Event::Initiation.find(params[:id])
+  @demands = @initiation.attendances
+    .where("equipment_note IS NOT NULL AND equipment_note != ''")
+    .includes(:user)
+  
+  respond_to do |format|
+    format.csv do
+      send_data generate_csv(@demands), filename: "demandes-materiel-#{@initiation.id}.csv"
+    end
+    format.txt do
+      render plain: generate_whatsapp_text(@demands)
+    end
+  end
+end
+```
+
+**Checklist** :
+- [ ] Ajouter action `material_export` dans ActiveAdmin
+- [ ] Format CSV pour Excel
+- [ ] Format TXT pour WhatsApp (copier-coller)
+- [ ] Tests export
+
+---
+
+### Jour 10 : Pagination & Performance
+
+#### 10.1 Pagination
+
+**Ajouter gem `kaminari` ou `pagy`** (si pas déjà présent)
+
+**Adapter `InitiationsController#index`** :
+
+```ruby
+@initiations = Event::Initiation
+  .published
+  .upcoming_initiations
+  .includes(:creator_user)
+  .page(params[:page])
+  .per(12) # 12 par page (3 mois)
+```
+
+**Checklist** :
+- [ ] Ajouter pagination gem (kaminari ou pagy)
+- [ ] Paginer index initiations (12/page)
+- [ ] Paginer admin participations (25/page)
+- [ ] Ajouter liens pagination dans vues
+
+#### 10.2 Prévention N+1 Queries
+
+**Adapter contrôleurs** :
+
+```ruby
+# ❌ Mauvais
+@initiations = Event::Initiation.published.upcoming_initiations
+@initiations.each { |i| i.participants_count } # N+1
+
+# ✅ Bon
+@initiations = Event::Initiation
+  .published
+  .upcoming_initiations
+  .includes(:attendances) # Charger en une requête
+```
+
+**Checklist** :
+- [ ] Vérifier `index` : `includes(:creator_user)`
+- [ ] Vérifier `show` : `includes(:attendances, :users)`
+- [ ] Utiliser `bullet` gem pour détecter N+1
+- [ ] Tests performance
+
+---
+
+### Jour 11 : Génération Séries Récurrentes
+
+#### 11.1 Rake Task
+
+**Créer `lib/tasks/initiations.rake`**
+
+```ruby
+namespace :initiations do
+  desc "Générer séances initiations pour une saison"
+  task :generate, [:season] => :environment do |_t, args|
+    season = args[:season] || Membership.current_season_name
+    start_date = Date.new(2025, 9, 6) # Premier samedi
+    end_date = Date.new(2026, 8, 31)
+    
+    # Générer 52 séances
+    # ...
+  end
+end
+```
+
+**Usage** :
+```bash
+rails initiations:generate[2025-2026]
+```
+
+**Checklist** :
+- [ ] Créer rake task `initiations:generate`
+- [ ] Générer 52 séances (samedis entre dates)
+- [ ] Vérifier pas de doublons
+- [ ] Tests rake task
+
+---
+
 ### Jour 13-15 : Optimisations + Finalisation
 
 #### 13.1 Optimisations
 
-- [ ] Indexes database optimisés
-- [ ] Requêtes N+1 corrigées (`includes`, `joins`)
-- [ ] Cache fragments si nécessaire
-- [ ] Performance tests
+**⚠️ CRITIQUE : Prévention N+1 Queries**
+
+**Adapter contrôleurs avec `includes`** :
+```ruby
+# Index
+@initiations = Event::Initiation
+  .published
+  .upcoming_initiations
+  .includes(:creator_user, :attendances) # ← Charger en une requête
+
+# Show
+@initiation = Event::Initiation
+  .includes(:attendances, :users, :creator_user)
+  .find(params[:id])
+```
+
+**Utiliser `bullet` gem** pour détecter N+1 automatiquement :
+```ruby
+# Gemfile (groupe :development, :test)
+gem 'bullet'
+
+# config/environments/development.rb
+config.after_initialize do
+  Bullet.enable = true
+  Bullet.alert = true
+  Bullet.bullet_logger = true
+end
+```
+
+**Checklist** :
+- [ ] Indexes database optimisés ✅ (fait Jour 1)
+- [ ] **Requêtes N+1 corrigées** (`includes`, `joins`) 🔄
+- [ ] **Utiliser `bullet` gem** pour détecter N+1 🔄
+- [ ] Cache fragments si nécessaire (Phase 3B - futur)
+- [ ] Performance tests (< 200ms)
 
 #### 13.2 Finalisation
 
@@ -1426,6 +1928,135 @@ docker compose -f ops/dev/docker-compose.yml exec web bundle exec rspec spec/mod
 ```
 
 **Prochaine étape** : Configurer base de test et exécuter les tests pour vérifier coverage >70%
+
+---
+
+### ✅ Jour 4 : Contrôleurs + Routes Publiques (2025-12-03)
+
+**Statut** : ✅ **TERMINÉ**
+
+#### Réalisations
+
+**Routes créées** :
+- ✅ `resources :initiations, only: [:index, :show]` (pattern REST cohérent avec events)
+  - `GET /initiations` → Liste des initiations
+  - `GET /initiations/:id` → Détails d'une initiation
+  - `POST /initiations/:id/attend` → Inscription (cohérent avec `POST /events/:id/attend`)
+  - `DELETE /initiations/:id/cancel_attendance` → Annulation inscription (cohérent avec `DELETE /events/:id/cancel_attendance`)
+
+**Contrôleur créé** :
+- ✅ `app/controllers/initiations_controller.rb`
+  - `index` : Liste des prochaines initiations (12 prochaines)
+  - `show` : Détails initiation + formulaire inscription
+  - `attend` : Inscription avec gestion essai gratuit et adhésions (parent/enfant) - **cohérent avec EventsController#attend**
+  - `cancel_attendance` : Annulation inscription - **cohérent avec EventsController#cancel_attendance**
+  - Méthode helper `can_register?` pour vérifier possibilité d'inscription
+
+**Policy créée** :
+- ✅ `app/policies/initiation_policy.rb`
+  - `index?` : Tous peuvent voir la liste
+  - `show?` : Tous peuvent voir une initiation
+  - `attend?` : Vérifie adhésion ou essai gratuit disponible - **cohérent avec EventPolicy#attend?**
+  - `cancel_attendance?` : Vérifie que l'utilisateur est inscrit - **cohérent avec EventPolicy#cancel_attendance?**
+  - `manage?` : INSTRUCTOR+ (niveau 30) pour gestion
+
+**Fichiers créés/modifiés** :
+- `config/routes.rb` (modifié - ajout routes initiations)
+- `app/controllers/initiations_controller.rb` (nouveau)
+- `app/policies/initiation_policy.rb` (nouveau)
+
+**Prochaine étape** : Passer au Jour 5-6 (Vues + Formulaire inscription)
+
+---
+
+## 🔧 ÉLÉMENTS TECHNIQUES AVANCÉS (Optionnels - Amélioration)
+
+### Service Objects (Jour 7 - Optionnel)
+
+**Pourquoi** : Extraire logique métier des contrôleurs, rendre testable isolément
+
+**Services recommandés** :
+- `Initiations::RegistrationService` → Logique inscription complète
+- `Initiations::CancellationService` → Logique annulation + email
+- `Initiations::GenerationService` → Génération séries récurrentes (futur)
+
+**Pattern** : Chaque service retourne un objet `Result` (success/error)
+
+**Timeline** : Optionnel pour MVP, recommandé pour maintenabilité
+
+### Query Objects (Jour 7 - Optionnel)
+
+**Pourquoi** : Requêtes complexes multi-paramètres (scopes insuffisants)
+
+**Query Objects recommandés** :
+- `InitiationSearchQuery` → Recherche avancée (saison, statut, date)
+- `ParticipantsQuery` → Lister participants d'une séance (filtres)
+
+**Timeline** : Optionnel pour MVP, utile si recherche avancée nécessaire
+
+### Concerns (Jour 8 - Optionnel)
+
+**Pourquoi** : DRY, réutilisable pour futurs modèles (Stage, Compétition)
+
+**Concerns recommandés** :
+- `CapacityManageable` → Gestion limites de places (full?, available_places)
+- `Recurring` → Événements récurrents (Phase 3B)
+
+**Timeline** : Optionnel pour MVP, recommandé si plusieurs modèles similaires
+
+### Jobs Asynchrones (Jour 9)
+
+**Jobs nécessaires** :
+- `InitiationReminderJob` → Rappel la veille à 19h (adapter `EventReminderJob`)
+- `InitiationCancelledNotificationJob` → Notif si annulée (futur)
+
+**Scheduler** : Cron tous les jours à 19h pour rappels
+
+### Export Données (Jour 9)
+
+**Formats** :
+- CSV → Export Excel (nom, email, matériel, statut)
+- TXT → Export WhatsApp (format copier-coller)
+
+**Interface** : Bouton "Export demandes matériel" dans ActiveAdmin
+
+### Pagination (Jour 10)
+
+**Gem** : `kaminari` ou `pagy` (si pas déjà présent)
+
+**Pages à paginer** :
+- Index initiations : 12/page (3 mois)
+- Admin participations : 25/page
+
+### Génération Séries (Jour 11)
+
+**Rake Task** : `rails initiations:generate[2025-2026]`
+
+**Fonctionnalité** : Générer automatiquement 52 séances (samedis entre dates)
+
+**Timing** : Avant chaque saison (fin août)
+
+---
+
+## 📊 RÉSUMÉ DES ÉLÉMENTS TECHNIQUES
+
+| Élément | Priorité | Timeline | Statut |
+|---------|----------|----------|--------|
+| Service Objects | Optionnel | Jour 7 | 🔄 À faire |
+| Query Objects | Optionnel | Jour 7 | 🔄 À faire |
+| Concerns | Optionnel | Jour 8 | 🔄 À faire |
+| Jobs Asynchrones | **Recommandé** | Jour 9 | 🔄 À faire |
+| Export CSV/WhatsApp | **Recommandé** | Jour 9 | 🔄 À faire |
+| Pagination | **Recommandé** | Jour 10 | 🔄 À faire |
+| Génération Séries | **Recommandé** | Jour 11 | 🔄 À faire |
+| N+1 Prevention | **Critique** | Jour 10 | 🔄 À faire |
+| Indexes Performance | **Critique** | Jour 1 | ✅ Fait |
+| Callbacks | **Recommandé** | Jour 1-2 | ✅ Fait |
+
+**Légende** :
+- **Critique** : Nécessaire pour MVP
+- **Recommandé** : Améliore qualité/maintenabilité
+- Optionnel : Amélioration future
 
 ---
 
