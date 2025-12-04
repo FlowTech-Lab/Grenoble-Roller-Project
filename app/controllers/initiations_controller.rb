@@ -3,17 +3,19 @@ class InitiationsController < ApplicationController
   before_action :authenticate_user!, only: [:attend, :cancel_attendance]
   
   def index
+    # Précharger associations pour éviter N+1 queries
     @initiations = Event::Initiation
       .published
       .upcoming_initiations
       .limit(12) # 3 mois
-      .includes(:creator_user)
+      .includes(:creator_user, :attendances) # Précharger attendances pour calcul places
     
     @current_season = Membership.current_season_name
   end
   
   def show
     authorize @initiation
+    # @initiation déjà chargé avec includes dans set_initiation
     @user_attendance = current_user&.attendances&.find_by(event: @initiation)
     @can_register = can_register?
   end
@@ -31,7 +33,7 @@ class InitiationsController < ApplicationController
     attendance.assign_attributes(attendance_params)
     attendance.status = 'registered'
     
-    # Gestion essai gratuit
+    # Gestion essai gratuit (paramètre top-level, pas dans attendance)
     if params[:use_free_trial] == '1'
       if current_user.attendances.where(free_trial_used: true).exists?
         redirect_to @initiation, alert: "Vous avez déjà utilisé votre essai gratuit."
@@ -72,7 +74,8 @@ class InitiationsController < ApplicationController
   private
   
   def set_initiation
-    @initiation = Event::Initiation.find(params[:id])
+    # Précharger associations pour éviter N+1 queries
+    @initiation = Event::Initiation.includes(:attendances, :users, :creator_user).find(params[:id])
   end
   
   def attendance_params
@@ -86,8 +89,11 @@ class InitiationsController < ApplicationController
     return false if @user_attendance&.persisted?
     
     # Vérifier adhésion ou essai gratuit disponible
-    current_user.memberships.active_now.exists? || 
-      !current_user.attendances.where(free_trial_used: true).exists?
+    # Utiliser exists? (optimisé) plutôt que count > 0
+    has_membership = current_user.memberships.active_now.exists?
+    has_used_trial = current_user.attendances.where(free_trial_used: true).exists?
+    
+    has_membership || !has_used_trial
   end
   helper_method :can_register?
 end

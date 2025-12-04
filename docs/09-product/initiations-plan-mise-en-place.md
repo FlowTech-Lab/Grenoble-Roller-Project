@@ -1969,6 +1969,53 @@ docker compose -f ops/dev/docker-compose.yml exec web bundle exec rspec spec/mod
 
 ---
 
+### ✅ Jour 5-6 : Vues + Formulaire Inscription (2025-12-03)
+
+**Statut** : ✅ **TERMINÉ**
+
+#### Réalisations
+
+**Vues créées** :
+- ✅ `app/views/initiations/index.html.erb`
+  - Banner hero avec titre et sous-titre
+  - Section infos statiques (horaires, lieu, tarif, essai gratuit)
+  - Liste des prochaines initiations (12 max)
+  - Utilisation partial `_initiation_card`
+- ✅ `app/views/initiations/show.html.erb`
+  - Hero section avec image et badges
+  - 4 colonnes détails (Quand, Rendez-vous, Tarif, Places)
+  - Zone inscription/annulation conditionnelle
+  - Formulaire inscription intégré
+  - Responsive mobile
+- ✅ `app/views/initiations/_initiation_card.html.erb`
+  - Carte réutilisable pour liste
+  - Badges statut (complet, places disponibles)
+  - Actions (S'inscrire, Se désinscrire, Voir plus)
+  - Style cohérent avec `_event_card`
+- ✅ `app/views/initiations/_registration_form.html.erb`
+  - Sélection enfant (si adhésions enfants actives)
+  - Champ demande matériel (texte libre)
+  - Option essai gratuit (si disponible)
+  - Case rappel email (défaut coché)
+
+**Fonctionnalités** :
+- ✅ Affichage places disponibles (X / 30)
+- ✅ Badge "Complet" si full
+- ✅ Badge "Vous êtes inscrit(e)" si connecté et inscrit
+- ✅ Formulaire inscription avec gestion enfants
+- ✅ Formulaire inscription avec essai gratuit
+- ✅ Responsive mobile (Bootstrap 5)
+
+**Fichiers créés** :
+- `app/views/initiations/index.html.erb` (nouveau)
+- `app/views/initiations/show.html.erb` (nouveau)
+- `app/views/initiations/_initiation_card.html.erb` (nouveau)
+- `app/views/initiations/_registration_form.html.erb` (nouveau)
+
+**Prochaine étape** : Passer au Jour 7 (Permissions Pundit + Validations Métier finales)
+
+---
+
 ## 🔧 ÉLÉMENTS TECHNIQUES AVANCÉS (Optionnels - Amélioration)
 
 ### Service Objects (Jour 7 - Optionnel)

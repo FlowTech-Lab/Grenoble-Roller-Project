@@ -1,0 +1,124 @@
+<div class="col-12 col-sm-6 col-lg-4<%= ' position-relative' if local_assigns[:is_first] %>">
+  <% if local_assigns[:is_first] %>
+    <!-- Badge "Prochaine" sur la première initiation -->
+    <span class="badge bg-warning text-dark position-absolute" style="left: 2.5rem; z-index: 10;">
+      <i class="bi bi-star-fill me-1" aria-hidden="true"></i>Prochaine
+    </span>
+  <% end %>
+  <article class="card card-event card-liquid rounded-liquid shadow-liquid h-100">
+    <div class="card-event-image">
+      <!-- Image par défaut pour initiations (peut être customisée plus tard) -->
+      <%= image_tag("https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop", 
+                    alt: initiation.title, 
+                    loading: 'lazy', 
+                    class: 'w-100 h-100 object-fit-cover') %>
+      <span class="card-event-date badge badge-liquid-primary">
+        <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
+        <%= l initiation.start_at, format: :day_month, locale: :fr %>
+      </span>
+    </div>
+
+    <div class="card-body d-flex flex-column p-3 p-md-4">
+      <!-- Zone de contenu -->
+      <div class="flex-grow-1 mb-3">
+        <h5 class="card-title mb-2 text-body h6 fw-bold">
+          <%= link_to initiation.title, initiation_path(initiation), 
+              class: 'text-decoration-none text-body', 
+              aria: { label: "Voir les détails de #{initiation.title}" } %>
+        </h5>
+
+        <div class="card-event-info mb-3 text-body-secondary small">
+          <p class="mb-1">
+            <i class="bi bi-calendar-week text-liquid-primary me-2" aria-hidden="true"></i>
+            <%= l initiation.start_at, format: :event_long, locale: :fr %>
+          </p>
+          <p class="mb-1">
+            <i class="bi bi-geo-alt text-liquid-primary me-2" aria-hidden="true"></i>
+            Gymnase Ampère
+          </p>
+          <p class="mb-0">
+            <i class="bi bi-clock text-liquid-primary me-2" aria-hidden="true"></i>
+            1h45 (10h15 - 12h00)
+          </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Annulé (prioritaire) -->
+          <% if initiation.canceled? %>
+            <span class="badge bg-danger">
+              <i class="bi bi-x-octagon me-1" aria-hidden="true"></i>Annulé
+            </span>
+          <% end %>
+          
+          <span class="badge bg-primary">
+            <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
+            <%= pluralize(initiation.participants_count, "inscrit") %>
+          </span>
+          
+          <% if initiation.full? %>
+            <span class="badge bg-danger">
+              <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
+            </span>
+          <% elsif initiation.available_places <= 5 %>
+            <span class="badge bg-warning text-dark">
+              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+              <%= pluralize(initiation.available_places, "place disponible") %>
+            </span>
+          <% else %>
+            <span class="badge bg-success">
+              <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+              <%= pluralize(initiation.available_places, "place disponible") %>
+            </span>
+          <% end %>
+          
+          <% if user_signed_in? && current_user_has_attendance?(initiation) %>
+            <span class="badge bg-success">
+              <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Vous êtes inscrit(e)
+            </span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="mt-auto">
+        <div class="action-row d-flex flex-wrap gap-2">
+          <% if user_signed_in? %>
+            <% if current_user_has_attendance?(initiation) %>
+              <!-- Se désinscrire -->
+              <%= button_to cancel_attendance_initiation_path(initiation), 
+                  method: :delete, 
+                  class: "btn btn-outline-secondary btn-sm", 
+                  data: { turbo_confirm: 'Annuler votre inscription ?' },
+                  aria: { label: 'Se désinscrire de cette initiation' } do %>
+                <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
+              <% end %>
+            <% elsif policy(initiation).attend? && !initiation.full? %>
+              <!-- S'inscrire -->
+              <%= link_to initiation_path(initiation), 
+                  class: "btn btn-liquid-primary btn-sm",
+                  aria: { label: "S'inscrire à cette initiation" } do %>
+                <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>S'inscrire
+              <% end %>
+            <% elsif initiation.full? %>
+              <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Initiation complète">
+                <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
+              </button>
+            <% end %>
+          <% else %>
+            <%= link_to new_user_session_path, 
+                class: "btn btn-outline-primary btn-sm",
+                aria: { label: 'Se connecter pour s\'inscrire' } do %>
+              <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Connexion
+            <% end %>
+          <% end %>
+
+          <%= link_to(initiation_path(initiation), 
+              class: "btn btn-outline-secondary btn-sm", 
+              aria: { label: "Voir les détails de #{initiation.title}" }) do %>
+            <i class="bi bi-eye me-1" aria-hidden="true"></i>Voir plus
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
+
