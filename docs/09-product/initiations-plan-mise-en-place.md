@@ -2016,6 +2016,94 @@ docker compose -f ops/dev/docker-compose.yml exec web bundle exec rspec spec/mod
 
 ---
 
+### ✅ Jour 8-9 : ActiveAdmin + Dashboard Bénévoles + Export (2025-12-03)
+
+**Statut** : ✅ **TERMINÉ**
+
+#### Réalisations
+
+**ActiveAdmin Resource créée** :
+- ✅ `app/admin/event/initiations.rb`
+  - Menu "Initiations" sous "Événements" (priority: 7)
+  - Index avec colonnes : titre, date, saison, statut, places, participants, bénévoles
+  - Scopes : Tous, À venir, Publiées, Annulées, Saison courante
+  - Filtres : titre, saison, statut, date, créateur
+  - Show avec détails complets + tableau inscriptions
+  - Form avec sections : Informations générales, Lieu, Récurrence
+  - Panel "Actions" avec liens vers présences et exports
+
+**Actions personnalisées** :
+- ✅ `member_action :material_export` - Export demandes matériel (format texte pour WhatsApp)
+- ✅ `member_action :participants_export` - Export CSV participants (nom, email, statut, matériel, etc.)
+- ✅ `member_action :presences` - Dashboard pointage présences
+- ✅ `member_action :update_presences` - Mise à jour bulk présences
+
+**Dashboard Bénévoles** :
+- ✅ `app/views/admin/event/initiations/presences.html.erb`
+  - Tableau participants avec colonnes : Nom, Email, Téléphone, Matériel, Bénévole, Essai gratuit
+  - Radio buttons pour pointage : Présent / Absent / Non pointé
+  - Formulaire bulk update pour sauvegarder toutes les présences
+  - Section statistiques : Participants, Bénévoles, Places disponibles, Présents pointés
+  - Responsive mobile
+
+**Fonctionnalités** :
+- ✅ Export demandes matériel (format texte : "Nom (Téléphone): Demande")
+- ✅ Export CSV participants (colonnes complètes pour Excel)
+- ✅ Pointage présences avec statuts : present, no_show, registered
+- ✅ Affichage matériel demandé dans tableau présences
+- ✅ Statistiques en temps réel
+
+**Fichiers créés** :
+- `app/admin/event/initiations.rb` (nouveau)
+- `app/views/admin/event/initiations/presences.html.erb` (nouveau)
+
+**Prochaine étape** : Passer au Jour 10 (Notifications Email - Adapter EventMailer)
+
+---
+
+### ✅ Logique de génération de séries d'initiations (2025-12-03)
+
+**Statut** : ✅ **TERMINÉ**
+
+#### Réalisations
+
+**Service de génération créé** :
+- ✅ `app/services/initiations/generation_service.rb`
+  - Classe `Initiations::GenerationService`
+  - Méthode `call` qui génère toutes les séances entre deux dates
+  - Trouve automatiquement tous les samedis entre start_date et end_date
+  - Crée une `Event::Initiation` pour chaque samedi à 10h15
+  - Validation : vérifie que la date de début est un samedi
+  - Validation : vérifie qu'aucune initiation n'existe déjà pour la saison
+  - Retourne un hash avec `success`, `count`, `initiations`, `errors`
+
+**Actions ActiveAdmin** :
+- ✅ `collection_action :generate_series` - Affiche le formulaire de génération
+- ✅ `collection_action :create_series` - Traite le formulaire et appelle le service
+- ✅ `action_item :generate_series` - Bouton "Générer une série" dans l'index
+
+**Vue formulaire** :
+- ✅ `app/views/admin/event/initiations/generate_series.html.erb`
+  - Formulaire avec champs : saison, date début, date fin
+  - Alertes informatives (horaires, lieu, places)
+  - Liste des saisons existantes avec nombre de séances
+  - Confirmation avant génération
+
+**Fonctionnalités** :
+- ✅ Génération automatique de ~52 séances par saison
+- ✅ Validation des dates (début doit être samedi)
+- ✅ Protection contre doublons (vérifie saison existante)
+- ✅ Création avec valeurs par défaut (lieu, horaire, places)
+- ✅ Statut "published" par défaut (visible immédiatement)
+
+**Fichiers créés** :
+- `app/services/initiations/generation_service.rb` (nouveau)
+- `app/views/admin/event/initiations/generate_series.html.erb` (nouveau)
+
+**Prochaine étape** : Passer au Jour 10 (Notifications Email - Adapter EventMailer)
+
+---
+
 ## 🔧 ÉLÉMENTS TECHNIQUES AVANCÉS (Optionnels - Amélioration)
 
 ### Service Objects (Jour 7 - Optionnel)

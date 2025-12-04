@@ -52,7 +52,10 @@ class InitiationsController < ApplicationController
     end
     
     if attendance.save
-      EventMailer.attendance_confirmed(attendance).deliver_later
+      # Email de confirmation : vérifier wants_initiation_mail pour les initiations
+      if current_user.wants_initiation_mail?
+        EventMailer.attendance_confirmed(attendance).deliver_later
+      end
       redirect_to @initiation, notice: "Inscription confirmée pour le #{l(@initiation.start_at, format: :long)}."
     else
       redirect_to @initiation, alert: attendance.errors.full_messages.to_sentence
@@ -63,9 +66,17 @@ class InitiationsController < ApplicationController
     authorize @initiation, :cancel_attendance?
     
     attendance = @initiation.attendances.find_by(user: current_user)
-    if attendance&.destroy
-      EventMailer.attendance_cancelled(current_user, @initiation).deliver_later
-      redirect_to @initiation, notice: "Inscription annulée."
+    if attendance
+      wants_initiation_mail = current_user.wants_initiation_mail?
+      if attendance.destroy
+        # Email d'annulation : vérifier wants_initiation_mail pour les initiations
+        if wants_initiation_mail
+          EventMailer.attendance_cancelled(current_user, @initiation).deliver_later
+        end
+        redirect_to @initiation, notice: "Inscription annulée."
+      else
+        redirect_to @initiation, alert: "Impossible d'annuler votre participation."
+      end
     else
       redirect_to @initiation, alert: "Impossible d'annuler votre participation."
     end

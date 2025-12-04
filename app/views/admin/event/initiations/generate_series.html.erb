@@ -1,0 +1,106 @@
+<% content_for :title, "Générer une série d'initiations" %>
+
+<div class="admin-header">
+  <h1>
+    <i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>
+    Générer une série d'initiations
+  </h1>
+  <p class="text-muted">
+    Crée automatiquement toutes les séances d'initiation pour une saison (tous les samedis entre deux dates)
+  </p>
+</div>
+
+<div class="admin-content">
+  <div class="card">
+    <div class="card-body">
+      <%= form_with url: create_series_admin_initiations_path, method: :post, local: true do |f| %>
+        <div class="mb-4">
+          <h3 class="h5 mb-3">Paramètres de génération</h3>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :season, "Saison", class: "form-label" %>
+              <%= f.text_field :season, 
+                  value: @season, 
+                  class: "form-control",
+                  placeholder: "Ex: 2025-2026",
+                  required: true %>
+              <small class="text-muted">Format : YYYY-YYYY (ex: 2025-2026)</small>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :start_date, "Date de début", class: "form-label" %>
+              <%= f.date_field :start_date, 
+                  value: @start_date, 
+                  class: "form-control",
+                  required: true %>
+              <small class="text-muted">Doit être un samedi (le premier samedi de la saison)</small>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :end_date, "Date de fin", class: "form-label" %>
+              <%= f.date_field :end_date, 
+                  value: @end_date, 
+                  class: "form-control",
+                  required: true %>
+              <small class="text-muted">Dernier samedi de la saison</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info">
+          <h5 class="alert-heading">
+            <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+            Informations
+          </h5>
+          <ul class="mb-0">
+            <li>Les séances seront créées pour <strong>tous les samedis</strong> entre les deux dates</li>
+            <li>Horaire fixe : <strong>10h15 - 12h00</strong> (1h45)</li>
+            <li>Lieu fixe : <strong>Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble</strong></li>
+            <li>Places maximum : <strong>30 participants</strong></li>
+            <li>Statut : <strong>Publié</strong> (visible immédiatement)</li>
+            <li><strong>Attention :</strong> Si des initiations existent déjà pour cette saison, la génération échouera</li>
+          </ul>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <%= link_to "Annuler", admin_initiations_path, class: "btn btn-outline-secondary" %>
+          <%= f.submit "Générer les séances", 
+              class: "btn btn-primary",
+              data: { 
+                confirm: "Êtes-vous sûr de vouloir générer toutes les séances pour cette saison ? Cette action créera environ 52 séances."
+              } %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header">
+      <h3 class="h5 mb-0">
+        <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>
+        Saisons existantes
+      </h3>
+    </div>
+    <div class="card-body">
+      <% existing_seasons = Event::Initiation.select(:season).distinct.order(season: :desc).pluck(:season) %>
+      <% if existing_seasons.any? %>
+        <ul class="list-group">
+          <% existing_seasons.each do |season| %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><%= season %></span>
+              <span class="badge bg-primary rounded-pill">
+                <%= Event::Initiation.where(season: season).count %> séances
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-muted mb-0">Aucune saison créée pour le moment.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
