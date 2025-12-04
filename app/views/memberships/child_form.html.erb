@@ -292,42 +292,46 @@
                 <strong>Questionnaire obligatoire pour la licence FFRS.</strong> Répondez aux questions suivantes concernant la santé de votre enfant.
               </p>
               
-              <div class="health-questions">
-                <% health_questions = [
-                  { id: 'health_q1', text: "Un membre de votre famille a-t-il eu une mort subite ou inexpliquée ?" },
-                  { id: 'health_q2', text: "Avez-vous ressenti une douleur dans la poitrine, des palpitations ou un essoufflement lors d'un effort ?" },
-                  { id: 'health_q3', text: "Avez-vous eu un épisode de respiration sifflante (asthme) ?" },
-                  { id: 'health_q4', text: "Avez-vous eu une perte de connaissance ou une chute suite à un malaise ?" },
-                  { id: 'health_q5', text: "Si vous avez arrêté le sport 30 jours+, avez-vous repris sans l'avis d'un médecin ?" },
-                  { id: 'health_q6', text: "Avez-vous débuté un traitement médical de longue durée ?" },
-                  { id: 'health_q7', text: "Avez-vous des problèmes de santé survenus ces 12 derniers mois ?" },
-                  { id: 'health_q8', text: "Votre pratique sportive est-elle interrompue pour des raisons de santé ?" },
-                  { id: 'health_q9', text: "Pensez-vous avoir besoin d'un avis médical pour continuer le sport ?" }
-                ] %>
-                
-                <% health_questions.each_with_index do |question, index| %>
-                  <div class="health-question-item mb-3">
-                    <label class="form-label fw-bold">
-                      Q<%= index + 1 %> : <%= question[:text] %>
-                    </label>
-                    <div class="d-flex gap-4 mt-2">
-                      <div class="form-check">
-                        <%= f.radio_button "health_question_#{index + 1}", "no", 
-                            { class: "form-check-input", id: "#{question[:id]}_no", onchange: "checkHealthQuestions()" } %>
-                        <label class="form-check-label" for="<%= question[:id] %>_no">
-                          Non
+              <div class="card card-liquid mt-3">
+                <div class="card-body">
+                  <div class="health-questions">
+                    <% health_questions = [
+                      { id: 'health_q1', text: "Un membre de votre famille a-t-il eu une mort subite ou inexpliquée ?" },
+                      { id: 'health_q2', text: "Avez-vous ressenti une douleur dans la poitrine, des palpitations ou un essoufflement lors d'un effort ?" },
+                      { id: 'health_q3', text: "Avez-vous eu un épisode de respiration sifflante (asthme) ?" },
+                      { id: 'health_q4', text: "Avez-vous eu une perte de connaissance ou une chute suite à un malaise ?" },
+                      { id: 'health_q5', text: "Si vous avez arrêté le sport 30 jours+, avez-vous repris sans l'avis d'un médecin ?" },
+                      { id: 'health_q6', text: "Avez-vous débuté un traitement médical de longue durée ?" },
+                      { id: 'health_q7', text: "Avez-vous des problèmes de santé survenus ces 12 derniers mois ?" },
+                      { id: 'health_q8', text: "Votre pratique sportive est-elle interrompue pour des raisons de santé ?" },
+                      { id: 'health_q9', text: "Pensez-vous avoir besoin d'un avis médical pour continuer le sport ?" }
+                    ] %>
+                    
+                    <% health_questions.each_with_index do |question, index| %>
+                      <div class="health-question-item py-3 <%= 'border-top' unless index == 0 %>" style="<%= 'border-color: var(--card-border-color) !important;' unless index == 0 %>">
+                        <label class="form-label fw-bold mb-2">
+                          Q<%= index + 1 %> : <%= question[:text] %>
                         </label>
+                        <div class="d-flex gap-4">
+                          <div class="form-check">
+                            <%= f.radio_button "health_question_#{index + 1}", "no", 
+                                { class: "form-check-input", id: "#{question[:id]}_no", onchange: "checkHealthQuestions()" } %>
+                            <label class="form-check-label" for="<%= question[:id] %>_no">
+                              Non
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <%= f.radio_button "health_question_#{index + 1}", "yes", 
+                                { class: "form-check-input", id: "#{question[:id]}_yes", onchange: "checkHealthQuestions()" } %>
+                            <label class="form-check-label" for="<%= question[:id] %>_yes">
+                              Oui
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-check">
-                        <%= f.radio_button "health_question_#{index + 1}", "yes", 
-                            { class: "form-check-input", id: "#{question[:id]}_yes", onchange: "checkHealthQuestions()" } %>
-                        <label class="form-check-label" for="<%= question[:id] %>_yes">
-                          Oui
-                        </label>
-                      </div>
-                    </div>
+                    <% end %>
                   </div>
-                <% end %>
+                </div>
               </div>
               
               <!-- Message pour Standard avec réponse OUI -->
@@ -922,28 +926,9 @@
   
       // Gestion T-shirt (si avec_tshirt)
       <% if @with_tshirt %>
-        function incrementTshirtQty() {
-          const qtyInput = document.getElementById('tshirt_qty');
-          const currentQty = parseInt(qtyInput.value) || 1;
-          if (currentQty < 5) {
-            qtyInput.value = currentQty + 1;
-            updateTshirtTotal();
-          }
-        }
-        
-        function decrementTshirtQty() {
-          const qtyInput = document.getElementById('tshirt_qty');
-          const currentQty = parseInt(qtyInput.value) || 1;
-          if (currentQty > 1) {
-            qtyInput.value = currentQty - 1;
-            updateTshirtTotal();
-          }
-        }
-        
         function updateTshirtTotal() {
-          const qtyInput = document.getElementById('tshirt_qty');
           const totalDisplay = document.getElementById('tshirt_total_display');
-          if (!qtyInput || !totalDisplay) return;
+          if (!totalDisplay) return;
           
           // Récupérer la catégorie sélectionnée
           const categoryRadio = document.querySelector('input[name="membership[category]"]:checked');
@@ -955,7 +940,8 @@
             adhesionPrice = category === 'with_ffrs' ? 56.55 : 10;
           }
           
-          const qty = parseInt(qtyInput.value) || 1;
+          // Quantité fixée à 1
+          const qty = 1;
           const tshirtPrice = 14; // 14€ par T-shirt
           const total = adhesionPrice + (qty * tshirtPrice);
           

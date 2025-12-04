@@ -54,9 +54,9 @@
                   stock_available = variant.stock_qty.to_i > 0
                   [size_presentation, size_value, { disabled: !stock_available }]
                 end,
-                @membership&.tshirt_size || 'M'
+                @membership&.tshirt_size
               ), 
-              { prompt: @membership&.tshirt_size ? nil : "Choisissez une taille" },
+              { prompt: "Choisir la taille" },
               { 
                 class: "form-select form-select-lg", 
                 id: "tshirt_size",
@@ -69,26 +69,8 @@
           </div>
         </div>
         
-        <!-- Quantité -->
-        <div class="mb-3">
-          <%= f.label :tshirt_qty, "Quantité", class: "form-label fw-bold" %>
-          <div class="input-group input-group-lg">
-            <button class="btn btn-outline-secondary" 
-                    type="button" 
-                    onclick="decrementTshirtQty()">−</button>
-            <%= f.number_field :tshirt_qty, 
-                value: @membership&.tshirt_qty || 1, 
-                min: 1, 
-                max: 5,
-                id: "tshirt_qty",
-                class: "form-control text-center",
-                required: @with_tshirt,
-                onchange: "updateTshirtTotal()" %>
-            <button class="btn btn-outline-secondary" 
-                    type="button" 
-                    onclick="incrementTshirtQty()">+</button>
-          </div>
-        </div>
+        <!-- Quantité fixée à 1 -->
+        <%= f.hidden_field :tshirt_qty, value: 1, id: "tshirt_qty" %>
         
         <!-- Badge réduction -->
         <div class="alert alert-info alert-tshirt-reduction mb-3">
@@ -103,7 +85,7 @@
           <div class="card-body text-center">
             <h5 class="mb-2">Total adhésion + T-shirt</h5>
             <div class="display-5 text-liquid-primary fw-bold" id="tshirt_total_display">
-              <%= number_to_currency(1000 + (@membership&.tshirt_qty || 1) * 1400 / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+              <%= number_to_currency(1000 + 1400 / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
             </div>
             <small class="text-success">
               <i class="bi bi-check-circle me-1"></i>
