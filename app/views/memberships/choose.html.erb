@@ -29,7 +29,7 @@
         <div class="col-md-5">
           <div class="card card-liquid h-100 hover-shadow" 
                style="cursor: pointer; transition: all 0.3s ease;"
-               onclick="window.location='<%= @is_child ? new_membership_path(type: 'child', with_tshirt: false, renew_from: @renew_from) : new_membership_path(check_age: true, with_tshirt: false) %>'"
+               onclick="window.location='<%= @is_child ? new_membership_path(type: 'child', with_tshirt: false, renew_from: @renew_from) : new_membership_path(type: 'adult', with_tshirt: false) %>'"
                onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
             <div class="card-body p-4 text-center d-flex flex-column">
@@ -75,7 +75,7 @@
         <div class="col-md-5">
           <div class="card card-liquid h-100 hover-shadow border-2 border-warning position-relative" 
                style="cursor: pointer; transition: all 0.3s ease;"
-               onclick="window.location='<%= @is_child ? new_membership_path(type: 'child', with_tshirt: true, renew_from: @renew_from) : new_membership_path(check_age: true, with_tshirt: true) %>'"
+               onclick="window.location='<%= @is_child ? new_membership_path(type: 'child', with_tshirt: true, renew_from: @renew_from) : new_membership_path(type: 'adult', with_tshirt: true) %>'"
                onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='';">
             <div class="position-absolute top-0 start-50 translate-middle-x mt-3">
