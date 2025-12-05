@@ -139,6 +139,9 @@ class MembershipsController < ApplicationController
   end
 
   def check_age_and_redirect
+    # Préserver le paramètre with_tshirt pour éviter les boucles de redirection
+    with_tshirt_param = params[:with_tshirt]
+    
     # Vérifier d'abord si l'utilisateur a déjà une adhésion personnelle active ou pending
     current_season = Membership.current_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
@@ -166,7 +169,10 @@ class MembershipsController < ApplicationController
     # Si pas de date de naissance, permettre de continuer (sera renseignée dans le formulaire)
     if current_user.date_of_birth.blank?
       # Rediriger vers la page de choix (le formulaire permettra de renseigner la date de naissance)
-      redirect_to choose_memberships_path
+      # Préserver le paramètre with_tshirt pour éviter les boucles
+      redirect_params = {}
+      redirect_params[:with_tshirt] = with_tshirt_param if with_tshirt_param.present?
+      redirect_to choose_memberships_path(redirect_params)
       return
     end
 
@@ -184,7 +190,10 @@ class MembershipsController < ApplicationController
       nil
     else
       # Rediriger vers la page de choix (adhésion seule ou avec T-shirt)
-      redirect_to choose_memberships_path
+      # Préserver le paramètre with_tshirt pour éviter les boucles
+      redirect_params = {}
+      redirect_params[:with_tshirt] = with_tshirt_param if with_tshirt_param.present?
+      redirect_to choose_memberships_path(redirect_params)
       nil
     end
   end

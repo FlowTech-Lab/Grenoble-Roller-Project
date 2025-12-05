@@ -5498,16 +5498,6 @@
   /* Health Questions */
   .health-questions {
     .health-question-item {
-      padding: 1rem;
-      background: var(--liquid-glass-bg);
-      border: 1px solid var(--card-border-color);
-      border-radius: 0.5rem;
-      transition: var(--transition-liquid);
-      
-      &:hover {
-        border-color: #2180A9;
-      }
-      
       .form-label {
         font-size: 1rem;
         margin-bottom: 0.75rem;
@@ -5516,13 +5506,6 @@
       .form-check {
         margin-bottom: 0;
       }
-    }
-  }
-
-  [data-bs-theme="dark"] .health-questions {
-    .health-question-item {
-      background: var(--liquid-glass-bg);
-      border-color: var(--card-border-color);
     }
   }
 
