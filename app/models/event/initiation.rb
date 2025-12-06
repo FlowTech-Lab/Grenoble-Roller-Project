@@ -1,12 +1,8 @@
 class Event::Initiation < Event
   # Scopes spécifiques
-  scope :by_season, ->(season) { where(season: season) }
   scope :upcoming_initiations, -> { where("start_at > ?", Time.current).order(:start_at) }
-  # Note: Le scope :full sera implémenté via une méthode de classe si nécessaire
-  # Pour l'instant, utiliser full? sur chaque instance
   
   # Validations spécifiques
-  validates :season, presence: true
   validates :max_participants, presence: true, numericality: { greater_than: 0 }
   validate :is_saturday, :is_correct_time, :is_correct_location
   

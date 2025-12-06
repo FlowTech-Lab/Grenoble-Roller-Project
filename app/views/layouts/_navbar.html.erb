@@ -35,6 +35,13 @@
             <% end %>
           </li>
         <% end %>
+        <% if user_signed_in? && policy(Event::Initiation.new).create? %>
+          <li class="nav-item">
+            <%= link_to new_initiation_path, class: "nav-link fw-semibold text-liquid-primary" do %>
+              <i class="bi bi-book me-1" aria-hidden="true"></i>Créer une initiation
+            <% end %>
+          </li>
+        <% end %>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <!-- Theme toggle -->

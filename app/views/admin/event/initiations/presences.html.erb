@@ -25,11 +25,8 @@
             <thead>
               <tr>
                 <th>Nom</th>
-                <th>Email</th>
                 <th>Téléphone</th>
-                <th>Matériel demandé</th>
-                <th>Bénévole</th>
-                <th>Essai gratuit</th>
+                <th>Matériel</th>
                 <th>Présence</th>
               </tr>
             </thead>
@@ -39,35 +36,19 @@
                 <tr>
                   <td>
                     <strong><%= user.first_name %> <%= user.last_name %></strong>
+                    <% if attendance.is_volunteer? %>
+                      <span class="badge bg-success ms-2">Bénévole</span>
+                    <% end %>
                   </td>
-                  <td><%= user.email %></td>
                   <td><%= user.phone || "-" %></td>
                   <td>
                     <% if attendance.equipment_note.present? %>
                       <span class="badge bg-info">
                         <i class="bi bi-box-seam me-1" aria-hidden="true"></i>
-                        <%= truncate(attendance.equipment_note, length: 30) %>
+                        <%= truncate(attendance.equipment_note, length: 25) %>
                       </span>
                     <% else %>
                       <span class="text-muted">-</span>
-                    <% end %>
-                  </td>
-                  <td>
-                    <% if attendance.is_volunteer? %>
-                      <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Oui
-                      </span>
-                    <% else %>
-                      <span class="text-muted">Non</span>
-                    <% end %>
-                  </td>
-                  <td>
-                    <% if attendance.free_trial_used? %>
-                      <span class="badge bg-warning text-dark">
-                        <i class="bi bi-gift me-1" aria-hidden="true"></i>Oui
-                      </span>
-                    <% else %>
-                      <span class="text-muted">Non</span>
                     <% end %>
                   </td>
                   <td>

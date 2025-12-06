@@ -1,6 +1,7 @@
 class InitiationsController < ApplicationController
-  before_action :set_initiation, only: [:show, :attend, :cancel_attendance]
-  before_action :authenticate_user!, only: [:attend, :cancel_attendance]
+  before_action :set_initiation, only: [:show, :edit, :update, :destroy, :attend, :cancel_attendance]
+  before_action :authenticate_user!, except: [:index, :show]
+  before_action :load_supporting_data, only: [:new, :create, :edit, :update]
   
   def index
     # Précharger associations pour éviter N+1 queries
@@ -9,8 +10,6 @@ class InitiationsController < ApplicationController
       .upcoming_initiations
       .limit(12) # 3 mois
       .includes(:creator_user, :attendances) # Précharger attendances pour calcul places
-    
-    @current_season = Membership.current_season_name
   end
   
   def show
@@ -18,6 +17,71 @@ class InitiationsController < ApplicationController
     # @initiation déjà chargé avec includes dans set_initiation
     @user_attendance = current_user&.attendances&.find_by(event: @initiation)
     @can_register = can_register?
+  end
+  
+  def new
+    @initiation = Event::Initiation.new(
+      creator_user: current_user,
+      status: "draft",
+      start_at: next_saturday_at_10_15,
+      duration_min: 105, # 1h45
+      max_participants: 30,
+      location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+      meeting_lat: 45.1891,
+      meeting_lng: 5.7317,
+      level: 'beginner',
+      distance_km: 0,
+      price_cents: 0,
+      currency: "EUR"
+    )
+    authorize @initiation
+  end
+  
+  def create
+    @initiation = Event::Initiation.new(creator_user: current_user)
+    authorize @initiation
+    
+    initiation_params = permitted_attributes(@initiation)
+    initiation_params[:currency] = "EUR"
+    initiation_params[:status] = "draft" # Toujours en draft à la création
+    initiation_params[:price_cents] = 0 # Gratuit
+    initiation_params[:creator_user_id] = current_user.id
+    
+    if @initiation.update(initiation_params)
+      redirect_to @initiation, notice: "Initiation créée avec succès. Elle est en attente de validation par un modérateur."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+  
+  def edit
+    authorize @initiation
+  end
+  
+  def update
+    authorize @initiation
+    
+    initiation_params = permitted_attributes(@initiation)
+    initiation_params[:currency] = "EUR"
+    initiation_params[:price_cents] = 0 # Gratuit
+    
+    # Seuls les modérateurs+ peuvent changer le statut
+    unless current_user.role&.level.to_i >= 50 # MODERATOR = 50
+      initiation_params.delete(:status)
+    end
+    
+    if @initiation.update(initiation_params)
+      redirect_to @initiation, notice: "Initiation mise à jour avec succès."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+  
+  def destroy
+    authorize @initiation
+    @initiation.destroy
+    
+    redirect_to initiations_path, notice: "Initiation supprimée."
   end
   
   def attend
@@ -89,6 +153,19 @@ class InitiationsController < ApplicationController
     @initiation = Event::Initiation.includes(:attendances, :users, :creator_user).find(params[:id])
   end
   
+  def load_supporting_data
+    # Pas de routes pour les initiations, mais on garde la méthode pour cohérence
+  end
+  
+  def next_saturday_at_10_15
+    next_saturday = Date.current.next_occurring(:saturday)
+    Time.zone.local(next_saturday.year, next_saturday.month, next_saturday.day, 10, 15, 0)
+  end
+  
+  def permitted_attributes(initiation)
+    policy(initiation).permitted_attributes
+  end
+  
   def attendance_params
     # child_membership_id si c'est un enfant qui s'inscrit
     params.require(:attendance).permit(:wants_reminder, :equipment_note, :child_membership_id)
@@ -107,5 +184,10 @@ class InitiationsController < ApplicationController
     has_membership || !has_used_trial
   end
   helper_method :can_register?
+  
+  def can_moderate?
+    current_user.present? && current_user.role&.level.to_i >= 50 # MODERATOR = 50
+  end
+  helper_method :can_moderate?
 end
 

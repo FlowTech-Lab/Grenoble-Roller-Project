@@ -1,66 +1,26 @@
 ActiveAdmin.register Event::Initiation, as: "Initiation" do
-  menu priority: 7, label: "Initiations", parent: "Événements"
+  menu priority: 2, label: "Initiations", parent: "Événements"
   includes :creator_user, :attendances
-
-  # Action pour générer une série d'initiations
-  collection_action :generate_series, method: :get do
-    @season = params[:season] || Membership.current_season_name
-    @start_date = params[:start_date] || Date.new(Date.current.year, 9, 1)
-    @end_date = params[:end_date] || Date.new(Date.current.year + 1, 8, 31)
-  end
-
-  collection_action :create_series, method: :post do
-    season = params[:season]
-    start_date = Date.parse(params[:start_date]) rescue nil
-    end_date = Date.parse(params[:end_date]) rescue nil
-    # Dans ActiveAdmin, current_user est disponible et retourne l'User
-    creator_user = current_user
-
-    if season.blank? || start_date.blank? || end_date.blank?
-      redirect_to generate_series_admin_initiations_path, alert: "Tous les champs sont requis."
-      return
-    end
-
-    service = Initiations::GenerationService.new(
-      season: season,
-      start_date: start_date,
-      end_date: end_date,
-      creator_user: creator_user
-    )
-
-    result = service.call
-
-    if result[:success]
-      redirect_to admin_initiations_path(scope: "all"), 
-        notice: "#{result[:count]} séances d'initiation créées avec succès pour la saison #{season}."
-    else
-      redirect_to generate_series_admin_initiations_path, 
-        alert: "Erreurs lors de la création : #{result[:errors].join(', ')}"
-    end
+  
+  # Filtrer pour n'afficher que les initiations
+  scope :all, default: true do |scope|
+    scope.where(type: 'Event::Initiation')
   end
 
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
                 :description, :location_text, :meeting_lat, :meeting_lng,
-                :max_participants, :level, :distance_km, :season,
-                :is_recurring, :recurring_day, :recurring_time,
-                :recurring_start_date, :recurring_end_date
+                :max_participants, :level, :distance_km
 
   scope :all, default: true
   scope("À venir") { |initiations| initiations.upcoming_initiations }
   scope("Publiées") { |initiations| initiations.published }
   scope("Annulées") { |initiations| initiations.where(status: "canceled") }
-  scope("Saison courante") { |initiations| initiations.by_season(Membership.current_season_name) }
-
-  action_item :generate_series, only: :index do
-    link_to "Générer une série", generate_series_admin_initiations_path, class: "button"
-  end
 
   index do
     selectable_column
     id_column
     column :title
     column :start_at
-    column :season
     column :status do |initiation|
       case initiation.status
       when "draft"
@@ -89,7 +49,6 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   end
 
   filter :title
-  filter :season
   filter :status, as: :select, collection: {
     "En attente" => "draft",
     "Publié" => "published",
@@ -104,7 +63,6 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       row :title
       row :status
       row :start_at
-      row :season
       row :duration_min
       row :max_participants
       row "Places disponibles" do |initiation|
@@ -127,11 +85,6 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       row :meeting_lat
       row :meeting_lng
       row :description
-      row :is_recurring
-      row :recurring_day
-      row :recurring_time
-      row :recurring_start_date
-      row :recurring_end_date
       row :created_at
       row :updated_at
     end
@@ -161,12 +114,6 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       div do
         link_to "Voir les présences", presences_admin_initiation_path(initiation), class: "button"
       end
-      div style: "margin-top: 10px;" do
-        link_to "Exporter demandes matériel", material_export_admin_initiation_path(initiation), class: "button"
-      end
-      div style: "margin-top: 10px;" do
-        link_to "Exporter CSV participants", participants_export_admin_initiation_path(initiation), class: "button"
-      end
     end
   end
 
@@ -190,7 +137,6 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
       f.input :duration_min, input_html: { value: f.object.duration_min || 105 }, hint: "Durée en minutes (105 = 1h45)"
       f.input :max_participants, label: "Nombre maximum de participants", input_html: { value: f.object.max_participants || 30 }
-      f.input :season, hint: "Ex: 2025-2026"
       f.input :description
     end
 
@@ -200,59 +146,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       f.input :meeting_lng, hint: "5.7317"
     end
 
-    f.inputs "Récurrence (optionnel)" do
-      f.input :is_recurring, as: :boolean
-      f.input :recurring_day, as: :select, collection: { "Samedi" => "saturday" }, hint: "Toujours samedi pour les initiations"
-      f.input :recurring_time, input_html: { value: f.object.recurring_time || "10:15" }, hint: "Format HH:MM"
-      f.input :recurring_start_date, as: :date_picker
-      f.input :recurring_end_date, as: :date_picker
-    end
-
     f.actions
-  end
-
-  # Action personnalisée : Export demandes matériel (WhatsApp)
-  member_action :material_export, method: :get do
-    initiation = resource
-    demands = initiation.attendances
-      .where("equipment_note IS NOT NULL AND equipment_note != ''")
-      .includes(:user)
-      .order(:created_at)
-
-    text = demands.map do |attendance|
-      user = attendance.user
-      phone = user.phone.presence || "N/A"
-      "#{user.first_name} #{user.last_name} (#{phone}): #{attendance.equipment_note}"
-    end.join("\n")
-
-    send_data text, filename: "demandes_materiel_#{initiation.id}_#{Date.current.strftime('%Y%m%d')}.txt", type: "text/plain"
-  end
-
-  # Action personnalisée : Export CSV participants
-  member_action :participants_export, method: :get do
-    initiation = resource
-    attendances = initiation.attendances.includes(:user).order(:created_at)
-
-    require 'csv'
-    csv = CSV.generate(headers: true) do |csv|
-      csv << ["Nom", "Prénom", "Email", "Téléphone", "Statut", "Essai gratuit", "Bénévole", "Matériel demandé", "Date inscription"]
-      attendances.each do |attendance|
-        user = attendance.user
-        csv << [
-          user.last_name,
-          user.first_name,
-          user.email,
-          user.phone || "",
-          attendance.status,
-          attendance.free_trial_used? ? "Oui" : "Non",
-          attendance.is_volunteer? ? "Oui" : "Non",
-          attendance.equipment_note || "",
-          attendance.created_at.strftime("%d/%m/%Y %H:%M")
-        ]
-      end
-    end
-
-    send_data csv, filename: "participants_#{initiation.id}_#{Date.current.strftime('%Y%m%d')}.csv", type: "text/csv"
   end
 
   # Action personnalisée : Dashboard présences

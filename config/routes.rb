@@ -77,7 +77,7 @@ Rails.application.routes.draw do
   end
 
   # Initiations
-  resources :initiations, only: [:index, :show] do
+  resources :initiations do
     member do
       post :attend
       delete :cancel_attendance

@@ -111,6 +111,7 @@ class Event < ApplicationRecord
       creator_user_id
       max_participants
       attendances_count
+      type
       created_at
       updated_at
     ]
