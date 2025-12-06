@@ -63,13 +63,21 @@ class ApplicationController < ActionController::Base
     return if current_user.confirmed?
     return if skip_confirmation_check?
 
-    # Après période de grâce : bloquer certaines actions
-    if current_user.confirmation_sent_at && current_user.confirmation_sent_at < 2.days.ago
-      sign_out(current_user)
-      redirect_to root_path,
-                  alert: "Merci de confirmer votre email pour continuer.",
-                  status: :forbidden
-    end
+    # En développement et test, on peut permettre un accès limité pour les tests
+    return if Rails.env.development? || Rails.env.test?
+
+    # BLOQUER IMMÉDIATEMENT tous les utilisateurs non confirmés
+    # (même pendant la période de grâce de 2 jours)
+    sign_out(current_user)
+    confirmation_link = view_context.link_to(
+      "demandez un nouvel email de confirmation",
+      new_user_confirmation_path,
+      class: "alert-link"
+    )
+    redirect_to root_path,
+                alert: "Vous devez confirmer votre adresse email pour accéder à l'application. " \
+                       "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe,
+                status: :forbidden
   end
 
   # Vérifier que l'email est confirmé pour les actions critiques
@@ -96,10 +104,14 @@ class ApplicationController < ActionController::Base
     # Routes où confirmation n'est pas requise
     skipped_routes = %w[
       sessions#destroy
+      sessions#new
+      registrations#new
       confirmations#show
       confirmations#create
       passwords#new
       passwords#create
+      passwords#edit
+      passwords#update
     ]
 
     controller_action = "#{controller_name}##{action_name}"

@@ -33,29 +33,23 @@ class SessionsController < Devise::SessionsController
   private
 
   def handle_confirmed_or_unconfirmed(resource)
-    if resource.confirmed?
-      # Email confirmé : connexion normale
-      first_name = resource.first_name.presence || "membre"
-      flash[:notice] = "Bonjour #{first_name} ! 👋 Bienvenue sur Grenoble Roller."
-    elsif resource.confirmation_sent_at && resource.confirmation_sent_at > 2.days.ago
-      # Dans période de grâce : message d'avertissement
-      first_name = resource.first_name.presence || "membre"
-      resend_link = view_context.link_to(
-        "Renvoyer l'email de confirmation",
+    # Si l'email n'est pas confirmé, bloquer la connexion
+    unless resource.confirmed?
+      sign_out(resource)
+      confirmation_link = view_context.link_to(
+        "demandez un nouvel email de confirmation",
         new_user_confirmation_path(email: resource.email),
         class: "alert-link"
       )
-      flash[:warning] = 
-        "Bonjour #{first_name} ! 👋 " \
-        "Votre email n'est pas encore confirmé. #{resend_link}".html_safe
-    else
-      # Après période de grâce : déconnecter et rediriger
-      sign_out(resource)
       flash[:alert] = 
-        "Votre période de confirmation est expirée. " \
-        "Veuillez demander un nouveau lien de confirmation."
+        "Vous devez confirmer votre adresse email pour vous connecter. " \
+        "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe
       redirect_to new_user_confirmation_path(email: resource.email)
       return
     end
+
+    # Email confirmé : connexion normale
+    first_name = resource.first_name.presence || "membre"
+    flash[:notice] = "Bonjour #{first_name} ! 👋 Bienvenue sur Grenoble Roller."
   end
 end
