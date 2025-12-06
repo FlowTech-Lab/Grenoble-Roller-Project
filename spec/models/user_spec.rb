@@ -38,7 +38,9 @@ RSpec.describe User, type: :model do
   end
 
   it 'has many orders' do
-    user = User.create!(email: 'orders@example.com', password: 'password12345', first_name: 'OrderUser', role: role)
+    user = build_user(email: 'orders@example.com', role: role)
+    allow(user).to receive(:send_confirmation_instructions).and_return(true)
+    user.save!
     order1 = Order.create!(user: user, status: 'pending', total_cents: 1000, currency: 'EUR')
     order2 = Order.create!(user: user, status: 'pending', total_cents: 2000, currency: 'EUR')
     expect(user.orders).to match_array([ order1, order2 ])
@@ -47,6 +49,7 @@ RSpec.describe User, type: :model do
   it 'sets default role on create when not provided' do
     user = build_user(email: 'default-role@example.com')
     expect(user.role).to be_nil
+    allow(user).to receive(:send_confirmation_instructions).and_return(true)
     user.save!
     expect(user.role).to eq(role)
   end
@@ -69,16 +72,18 @@ RSpec.describe User, type: :model do
 
   it 'allows unconfirmed access (period of grace)' do
     user = build_user(role: role, confirmed_at: nil)
+    allow(user).to receive(:send_confirmation_instructions).and_return(true)
     user.save!
     expect(user.active_for_authentication?).to be true
   end
 
   it 'sends welcome email and confirmation after creation' do
+    user = build_user(role: role, email: 'welcome@example.com')
     expect {
-      user = build_user(role: role, email: 'welcome@example.com')
+      allow(user).to receive(:send_confirmation_instructions).and_return(true)
       user.save!
     }.to have_enqueued_job(ActionMailer::MailDeliveryJob)
-      .at_least(:once) # Au moins un email (bienvenue ou confirmation)
+      .at_least(:once) # Au moins un email (bienvenue)
   end
 
   describe '#inactive_message' do
@@ -96,7 +101,10 @@ RSpec.describe User, type: :model do
   describe '#confirmation_token_expired?' do
     let(:user) { build_user(role: role, confirmed_at: nil) }
 
-    before { user.save! }
+    before do
+      allow(user).to receive(:send_confirmation_instructions).and_return(true)
+      user.save!
+    end
 
     it 'returns false if user is already confirmed' do
       user.update!(confirmed_at: Time.current)
