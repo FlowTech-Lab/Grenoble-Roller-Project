@@ -1,6 +1,15 @@
 # Prompt Perplexity - Sécurité Mailer & Confirmation Email Devise
 
-**Objectif** : Obtenir les meilleures pratiques et solutions de sécurité pour un système de mailer Rails avec confirmation d'email Devise.
+**⚠️ STATUS : OBSOLÈTE**
+
+Ce prompt a été utilisé pour générer le guide complet de sécurité.  
+**Voir maintenant** : `docs/04-rails/setup/devise-email-security-guide.md` (guide complet avec toutes les réponses)
+
+Ce fichier est conservé uniquement pour référence historique.
+
+---
+
+**Objectif initial** : Obtenir les meilleures pratiques et solutions de sécurité pour un système de mailer Rails avec confirmation d'email Devise.
 
 ---
 

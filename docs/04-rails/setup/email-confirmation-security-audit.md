@@ -150,9 +150,11 @@
 
 ---
 
-## 📝 Questions à Résoudre avec Perplexity
+## 📝 Références
 
-Voir le prompt complet : `docs/prompts/perplexity-mailer-security-prompt.md`
+**⚠️ Mise à jour** : Le prompt Perplexity a été utilisé pour générer le guide complet.  
+Voir maintenant : `docs/04-rails/setup/devise-email-security-guide.md` (guide complet)  
+Ou : `docs/04-rails/setup/plan-implementation-email-security.md` (plan d'implémentation)
 
 **Points clés** :
 1. Meilleures pratiques sécurité confirmation email
@@ -200,5 +202,5 @@ Avant mise en production :
 
 ---
 
-**Prochaine étape** : Utiliser le prompt Perplexity pour obtenir les meilleures solutions et les implémenter.
+**Prochaine étape** : Suivre le plan d'implémentation dans `plan-implementation-email-security.md`
 
