@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :check_email_confirmation_status, if: :user_signed_in?
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
@@ -57,6 +58,20 @@ class ApplicationController < ActionController::Base
     event.attendances.exists?(user_id: current_user.id)
   end
 
+  # Vérifier le statut de confirmation de l'email (gestion générale)
+  def check_email_confirmation_status
+    return if current_user.confirmed?
+    return if skip_confirmation_check?
+
+    # Après période de grâce : bloquer certaines actions
+    if current_user.confirmation_sent_at && current_user.confirmation_sent_at < 2.days.ago
+      sign_out(current_user)
+      redirect_to root_path,
+                  alert: "Merci de confirmer votre email pour continuer.",
+                  status: :forbidden
+    end
+  end
+
   # Vérifier que l'email est confirmé pour les actions critiques
   def ensure_email_confirmed
     return unless user_signed_in?
@@ -66,8 +81,25 @@ class ApplicationController < ActionController::Base
 
     unless current_user.confirmed?
       redirect_to root_path,
-                  alert: "Vous devez confirmer votre adresse email pour effectuer cette action. Vérifiez votre boîte mail ou demandez un nouvel email de confirmation.",
+                  alert: "Vous devez confirmer votre adresse email pour effectuer cette action. " \
+                         "Vérifiez votre boîte mail ou " \
+                         "#{view_context.link_to('demandez un nouvel email de confirmation', " \
+                         "new_user_confirmation_path, class: 'alert-link')}".html_safe,
                   status: :forbidden
     end
+  end
+
+  def skip_confirmation_check?
+    # Routes où confirmation n'est pas requise
+    skipped_routes = %w[
+      sessions#destroy
+      confirmations#show
+      confirmations#create
+      passwords#new
+      passwords#create
+    ]
+
+    controller_action = "#{controller_name}##{action_name}"
+    skipped_routes.include?(controller_action)
   end
 end

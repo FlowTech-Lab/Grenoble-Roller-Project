@@ -30,6 +30,22 @@ Rack::Attack.throttle("password_resets/ip", limit: 3, period: 1.hour) do |req|
   end
 end
 
+# === PROTECTION CONFIRMATION RESEND ===
+# Limiter renvois confirmation par IP (10 par heure)
+Rack::Attack.throttle("confirmations/ip", limit: 10, period: 3600.seconds) do |req|
+  if req.path == "/users/confirmation" && req.post?
+    req.ip
+  end
+end
+
+# Limiter renvois confirmation par email (5 par heure)
+Rack::Attack.throttle("confirmations/email", limit: 5, period: 3600.seconds) do |req|
+  if req.path == "/users/confirmation" && req.post?
+    email = req.params.dig("user", "email")&.downcase
+    "confirmation:#{email}" if email
+  end
+end
+
 # === PROTECTION GLOBALE ===
 # 300 requêtes par IP par minute (protection DDoS basique)
 Rack::Attack.throttle("req/ip", limit: 300, period: 1.minute) do |req|
@@ -50,6 +66,8 @@ Rack::Attack.throttled_responder = lambda do |request|
   match_data = request.env["rack.attack.match_data"]
 
   # Extraire la période (retry_after) - valeur par défaut 60 secondes
+  throttle_name = request.env["rack.attack.matched"]
+  
   retry_after = 60
   if match_data
     # Essayer différentes méthodes d'accès selon le type d'objet
@@ -62,12 +80,24 @@ Rack::Attack.throttled_responder = lambda do |request|
     end
   end
 
+  # Messages spécifiques selon le throttle
+  message = case throttle_name
+  when "confirmations/ip", "confirmations/email"
+    "Trop de demandes de renvoi d'email. Réessayez dans 1 heure."
+  when "logins/ip", "sessions/ip"
+    "Trop de tentatives de connexion. Réessayez dans 15 minutes."
+  when "password_resets/ip"
+    "Trop de demandes de réinitialisation. Réessayez dans 1 heure."
+  else
+    "Trop de tentatives. Réessayez plus tard."
+  end
+
   [
     429,
     {
       "Content-Type" => "text/html; charset=utf-8",
       "Retry-After" => retry_after.to_s
     },
-    [ "<html><body><h1>Trop de tentatives</h1><p>Veuillez réessayer plus tard.</p></body></html>" ]
+    ["<html><body><h1>Trop de tentatives</h1><p>#{message}</p></body></html>"]
   ]
 end

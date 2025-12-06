@@ -31,6 +31,24 @@ class User < ApplicationRecord
     super || !confirmed?
   end
 
+  # Message personnalisé si compte non actif
+  def inactive_message
+    if !confirmed?
+      :unconfirmed_email
+    else
+      super
+    end
+  end
+
+  # Vérifier si le token de confirmation est expiré
+  def confirmation_token_expired?
+    return false if confirmed_at.present?
+    return false unless confirmation_sent_at.present?
+    return false unless Devise.confirm_within
+    
+    confirmation_sent_at < Devise.confirm_within.ago
+  end
+
   # Skill levels disponibles
   SKILL_LEVELS = %w[beginner intermediate advanced].freeze
 
@@ -103,5 +121,17 @@ class User < ApplicationRecord
     # Envoyer email de bienvenue ET email de confirmation
     UserMailer.welcome_email(self).deliver_later
     send_confirmation_instructions
+    
+    # Logging
+    Rails.logger.info("Confirmation email sent to #{email} at #{Time.current}")
+  end
+
+  # Callback pour logging après confirmation
+  after_confirm :log_confirmation_event
+
+  private
+
+  def log_confirmation_event
+    Rails.logger.info("User ##{id} confirmed email at #{Time.current}")
   end
 end
