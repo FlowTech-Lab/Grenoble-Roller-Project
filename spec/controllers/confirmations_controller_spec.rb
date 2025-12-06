@@ -30,8 +30,10 @@ RSpec.describe ConfirmationsController, type: :controller do
   describe 'POST #create (resend confirmation)' do
     context 'with valid email' do
       it 'sends confirmation email' do
-        # Vérifier que send_confirmation_instructions est appelé
-        expect_any_instance_of(User).to receive(:send_confirmation_instructions).at_least(:once).and_return(true)
+        # Stub sur l'instance qui sera récupérée par find_by
+        allow(User).to receive(:find_by).with(email: unconfirmed_user.email).and_return(unconfirmed_user)
+        # Vérifier que send_confirmation_instructions est appelé sur l'utilisateur
+        expect(unconfirmed_user).to receive(:send_confirmation_instructions).once.and_return(true)
         post :create, params: { user: { email: unconfirmed_user.email } }
         expect(response).to have_http_status(:success)
       end
