@@ -80,11 +80,14 @@ class ApplicationController < ActionController::Base
     return if Rails.env.development? || Rails.env.test?
 
     unless current_user.confirmed?
+      confirmation_link = view_context.link_to(
+        "demandez un nouvel email de confirmation",
+        new_user_confirmation_path,
+        class: "alert-link"
+      )
       redirect_to root_path,
                   alert: "Vous devez confirmer votre adresse email pour effectuer cette action. " \
-                         "Vérifiez votre boîte mail ou " \
-                         "#{view_context.link_to('demandez un nouvel email de confirmation', " \
-                         "new_user_confirmation_path, class: 'alert-link')}".html_safe,
+                         "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe,
                   status: :forbidden
     end
   end

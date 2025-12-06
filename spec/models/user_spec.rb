@@ -6,7 +6,7 @@ RSpec.describe User, type: :model do
   def build_user(attrs = {})
     defaults = {
       email: 'john.doe@example.com',
-      password: 'password123',
+      password: 'password12345', # Minimum 12 caractères requis
       first_name: 'John',
       skill_level: 'intermediate'
     }
@@ -38,7 +38,7 @@ RSpec.describe User, type: :model do
   end
 
   it 'has many orders' do
-    user = User.create!(email: 'orders@example.com', password: 'password123', first_name: 'OrderUser', role: role)
+    user = User.create!(email: 'orders@example.com', password: 'password12345', first_name: 'OrderUser', role: role)
     order1 = Order.create!(user: user, status: 'pending', total_cents: 1000, currency: 'EUR')
     order2 = Order.create!(user: user, status: 'pending', total_cents: 2000, currency: 'EUR')
     expect(user.orders).to match_array([ order1, order2 ])
@@ -79,5 +79,43 @@ RSpec.describe User, type: :model do
       user.save!
     }.to have_enqueued_job(ActionMailer::MailDeliveryJob)
       .at_least(:once) # Au moins un email (bienvenue ou confirmation)
+  end
+
+  describe '#inactive_message' do
+    it 'returns :unconfirmed_email for unconfirmed user' do
+      user = build_user(role: role, confirmed_at: nil)
+      expect(user.inactive_message).to eq(:unconfirmed_email)
+    end
+
+    it 'returns default message for confirmed user' do
+      user = build_user(role: role, confirmed_at: Time.current)
+      expect(user.inactive_message).not_to eq(:unconfirmed_email)
+    end
+  end
+
+  describe '#confirmation_token_expired?' do
+    let(:user) { build_user(role: role, confirmed_at: nil) }
+
+    before { user.save! }
+
+    it 'returns false if user is already confirmed' do
+      user.update!(confirmed_at: Time.current)
+      expect(user.confirmation_token_expired?).to be false
+    end
+
+    it 'returns false if confirmation_sent_at is not set' do
+      user.update!(confirmation_sent_at: nil)
+      expect(user.confirmation_token_expired?).to be false
+    end
+
+    it 'returns false if token is within confirm_within period' do
+      user.update!(confirmation_sent_at: 1.day.ago)
+      expect(user.confirmation_token_expired?).to be false
+    end
+
+    it 'returns true if token is expired (beyond confirm_within)' do
+      user.update!(confirmation_sent_at: 4.days.ago)
+      expect(user.confirmation_token_expired?).to be true
+    end
   end
 end

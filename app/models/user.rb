@@ -125,13 +125,4 @@ class User < ApplicationRecord
     # Logging
     Rails.logger.info("Confirmation email sent to #{email} at #{Time.current}")
   end
-
-  # Callback pour logging après confirmation
-  after_confirm :log_confirmation_event
-
-  private
-
-  def log_confirmation_event
-    Rails.logger.info("User ##{id} confirmed email at #{Time.current}")
-  end
 end

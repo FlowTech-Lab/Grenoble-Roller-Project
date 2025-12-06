@@ -40,12 +40,14 @@ class SessionsController < Devise::SessionsController
     elsif resource.confirmation_sent_at && resource.confirmation_sent_at > 2.days.ago
       # Dans période de grâce : message d'avertissement
       first_name = resource.first_name.presence || "membre"
+      resend_link = view_context.link_to(
+        "Renvoyer l'email de confirmation",
+        new_user_confirmation_path(email: resource.email),
+        class: "alert-link"
+      )
       flash[:warning] = 
         "Bonjour #{first_name} ! 👋 " \
-        "Votre email n'est pas encore confirmé. " \
-        "#{view_context.link_to('Renvoyer l\'email de confirmation', " \
-        "new_user_confirmation_path(email: resource.email), " \
-        "class: 'alert-link')}".html_safe
+        "Votre email n'est pas encore confirmé. #{resend_link}".html_safe
     else
       # Après période de grâce : déconnecter et rediriger
       sign_out(resource)
