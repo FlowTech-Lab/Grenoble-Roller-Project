@@ -2,6 +2,36 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-12-07] - Finalisation Complète Feature Email (OrderMailer + Tests)
+
+### Ajouté
+- **Templates texte OrderMailer** : ✅ 7 fichiers `.text.erb` créés (2025-12-07)
+  - `order_confirmation.text.erb`
+  - `order_paid.text.erb`
+  - `order_cancelled.text.erb`
+  - `order_preparation.text.erb`
+  - `order_shipped.text.erb`
+  - `refund_requested.text.erb`
+  - `refund_confirmed.text.erb`
+- **Tests RSpec OrderMailer** : ✅ `spec/mailers/order_mailer_spec.rb` créé (2025-12-07)
+  - Tests complets pour les 7 méthodes OrderMailer
+  - Vérification headers, subject, body, HTML/text parts
+- **Tests d'intégration emails** : ✅ `spec/requests/event_email_integration_spec.rb` créé (2025-12-07)
+  - Vérification envoi emails lors de l'inscription/désinscription aux événements
+  - Tests avec ActiveJob pour vérifier l'envoi asynchrone
+
+### Modifié
+- **Documentation clarifiée** :
+  - `cycle-01-building-log.md` : Mentions "non validé en production" corrigées → Notifications email ✅ TERMINÉ
+  - `cycle-01-phase-2-plan.md` : Tests d'intégration marqués comme créés
+  - `emails-recapitulatif.md` : Statut OrderMailer mis à jour (⚠️ 50% → ✅ 100%)
+- **Statistiques globales** : 75% → **100%** de complétion (tous les emails ont HTML + Texte)
+
+### Notes
+- Tous les emails de l'application sont maintenant complets (HTML + Texte) : **16/16 emails**
+- Tous les mailers ont des tests RSpec complets : **5/5 mailers testés**
+- Tests d'intégration ajoutés pour vérifier l'envoi réel des emails
+
 ## [2025-12-07] - Consolidation Documentation Confirmation Email
 
 ### Modifié

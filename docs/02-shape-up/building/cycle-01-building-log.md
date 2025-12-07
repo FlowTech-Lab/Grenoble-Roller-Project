@@ -291,7 +291,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [ ] Gestion des créneaux
 - [ ] Système de prêt matériel
 - [ ] Upload photos (Active Storage)
-- [ ] Notifications email (code présent, non validé en production)
+- [✅] Notifications email (implémentées et testées en RSpec) - ✅ TERMINÉ
 - [✅] Tests de régression (coverage >70% maintenu)
 
 #### 🛠️ **Actions par Sprint (Rails 8 TDD)**
@@ -764,7 +764,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 
 #### Médias & Notifications
 - [ ] Upload photos (Active Storage)
-- [ ] Notifications email (inscription événement, rappel) - code présent, non validé
+- [✅] Notifications email (inscription événement, rappel) - ✅ TERMINÉ (EventMailer + Job rappel + tests RSpec)
 
 #### Tests & Qualité ⚠️ **CORRIGÉ - TDD dès le début**
 - [✅] RSpec configuré ✅

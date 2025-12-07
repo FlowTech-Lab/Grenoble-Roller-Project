@@ -1,0 +1,27 @@
+✅ COMMANDE ##{@order.id} - CONFIRMATION
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre commande a été créée avec succès !
+
+─────────────────────────
+
+📋 DÉTAILS DE LA COMMANDE
+
+Commande #<%= @order.id %>
+Date : <%= l(@order.created_at, format: :long) %>
+Total : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+⏳ Statut : En attente de paiement
+
+─────────────────────────
+
+💳 PROCHAINE ÉTAPE
+Finalisez votre paiement pour confirmer votre commande.
+
+Voir la commande : <%= order_url(@order) %>
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+

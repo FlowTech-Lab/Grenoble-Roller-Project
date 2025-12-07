@@ -1,0 +1,26 @@
+✅ COMMANDE ##{@order.id} - REMBOURSEMENT CONFIRMÉ
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre remboursement pour la commande ##{@order.id} a été confirmé.
+
+─────────────────────────
+
+💰 REMBOURSEMENT EFFECTUÉ
+
+Commande #<%= @order.id %>
+Montant remboursé : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+✅ Statut : Remboursée
+
+─────────────────────────
+
+ℹ️ INFORMATION
+Le remboursement sera crédité sur votre compte bancaire dans les prochains jours (délai variable selon votre banque). Si vous avez des questions, n'hésitez pas à nous contacter.
+
+Voir mes commandes : <%= orders_url %>
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+

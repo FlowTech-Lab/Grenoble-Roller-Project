@@ -1,7 +1,8 @@
 # 📧 Récapitulatif Complet des Emails - Grenoble Roller
 
 **Date de création** : 2025-01-20  
-**Dernière mise à jour** : 2025-12-07
+**Dernière mise à jour** : 2025-12-07  
+**Statut** : ✅ **100% COMPLÉTÉ** - Tous les templates texte créés, tous les tests RSpec créés, tests d'intégration ajoutés
 
 > 📖 **Pour la documentation complète de la confirmation email** : voir [`email-confirmation.md`](email-confirmation.md)
 
@@ -58,19 +59,19 @@
 
 | Méthode | Sujet | Déclencheur | Template HTML | Template Texte | Status |
 |---------|-------|-------------|---------------|----------------|--------|
-| `order_confirmation(order)` | `✅ Commande #X - Confirmation de commande` | Création commande (pending) | ✅ `order_confirmation.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
-| `order_paid(order)` | `💳 Commande #X - Paiement confirmé` | Statut → `paid` | ✅ `order_paid.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
-| `order_cancelled(order)` | `❌ Commande #X - Commande annulée` | Statut → `cancelled` | ✅ `order_cancelled.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
-| `order_preparation(order)` | `⚙️ Commande #X - En préparation` | Statut → `preparation` | ✅ `order_preparation.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
-| `order_shipped(order)` | `📦 Commande #X - Expédiée` | Statut → `shipped` | ✅ `order_shipped.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
-| `refund_requested(order)` | `🔄 Commande #X - Demande de remboursement en cours` | Statut → `refund_requested` | ✅ `refund_requested.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
-| `refund_confirmed(order)` | `✅ Commande #X - Remboursement confirmé` | Statut → `refunded` | ✅ `refund_confirmed.html.erb` | ❌ **MANQUANT** | ⚠️ **Partiel** |
+| `order_confirmation(order)` | `✅ Commande #X - Confirmation de commande` | Création commande (pending) | ✅ `order_confirmation.html.erb` | ✅ `order_confirmation.text.erb` | ✅ **Configuré** |
+| `order_paid(order)` | `💳 Commande #X - Paiement confirmé` | Statut → `paid` | ✅ `order_paid.html.erb` | ✅ `order_paid.text.erb` | ✅ **Configuré** |
+| `order_cancelled(order)` | `❌ Commande #X - Commande annulée` | Statut → `cancelled` | ✅ `order_cancelled.html.erb` | ✅ `order_cancelled.text.erb` | ✅ **Configuré** |
+| `order_preparation(order)` | `⚙️ Commande #X - En préparation` | Statut → `preparation` | ✅ `order_preparation.html.erb` | ✅ `order_preparation.text.erb` | ✅ **Configuré** |
+| `order_shipped(order)` | `📦 Commande #X - Expédiée` | Statut → `shipped` | ✅ `order_shipped.html.erb` | ✅ `order_shipped.text.erb` | ✅ **Configuré** |
+| `refund_requested(order)` | `🔄 Commande #X - Demande de remboursement en cours` | Statut → `refund_requested` | ✅ `refund_requested.html.erb` | ✅ `refund_requested.text.erb` | ✅ **Configuré** |
+| `refund_confirmed(order)` | `✅ Commande #X - Remboursement confirmé` | Statut → `refunded` | ✅ `refund_confirmed.html.erb` | ✅ `refund_confirmed.text.erb` | ✅ **Configuré** |
 
 **Où sont appelés** :
 - `app/controllers/orders_controller.rb` ligne 57 : `order_confirmation` après création
 - `app/models/order.rb` lignes 64-74 : Tous les autres via callback `after_update :notify_status_change`
 
-**⚠️ PROBLÈME** : Les templates texte (`.text.erb`) sont **MANQUANTS** pour tous les emails OrderMailer !
+**✅ COMPLÉTÉ** : Tous les templates texte (`.text.erb`) ont été créés le 2025-12-07 !
 
 ---
 
@@ -138,16 +139,16 @@ smtp:
 | **DeviseMailer** | 1 | ✅ 1/1 | ✅ 1/1 | ✅ **100%** (QR code) |
 | **UserMailer** | 1 | ✅ 1/1 | ✅ 1/1 | ✅ **100%** |
 | **EventMailer** | 3 | ✅ 3/3 | ✅ 3/3 | ✅ **100%** |
-| **OrderMailer** | 7 | ✅ 7/7 | ❌ 0/7 | ⚠️ **50%** |
+| **OrderMailer** | 7 | ✅ 7/7 | ✅ 7/7 | ✅ **100%** |
 | **MembershipMailer** | 4 | ✅ 4/4 | ✅ 4/4 | ✅ **100%** |
-| **TOTAL** | **16** | ✅ **16/16** | ⚠️ **12/16** | ⚠️ **75%** |
+| **TOTAL** | **16** | ✅ **16/16** | ✅ **16/16** | ✅ **100%** |
 
 ### Résumé par Type
 
 | Type | Compteur |
 |------|----------|
-| ✅ **Emails complets** (HTML + Texte) | 11 |
-| ⚠️ **Emails partiels** (HTML seulement) | 4 |
+| ✅ **Emails complets** (HTML + Texte) | 16 |
+| ⚠️ **Emails partiels** (HTML seulement) | 0 |
 | ❌ **Emails manquants** | 0 |
 
 ---
@@ -156,21 +157,13 @@ smtp:
 
 ### 🔴 Priorité Haute
 
-1. **❌ Templates texte manquants pour OrderMailer**
-   - 7 fichiers `.text.erb` à créer
-   - Fichiers concernés :
-     - `order_confirmation.text.erb`
-     - `order_paid.text.erb`
-     - `order_cancelled.text.erb`
-     - `order_preparation.text.erb`
-     - `order_shipped.text.erb`
-     - `refund_requested.text.erb`
-     - `refund_confirmed.text.erb`
+1. **✅ Templates texte OrderMailer** - ✅ **COMPLÉTÉ** (2025-12-07)
+   - ✅ 7 fichiers `.text.erb` créés
+   - ✅ Tous les emails OrderMailer ont maintenant HTML + Texte
 
-2. **⚠️ Host à corriger en production**
-   - `config/environments/production.rb` ligne 60
-   - Actuellement : `host: "example.com"`
-   - À remplacer par : `host: "grenoble-roller.org"` (ou le vrai domaine)
+2. **✅ Host en production** - ✅ **CORRIGÉ**
+   - ✅ `config/environments/production.rb` : `host: "grenoble-roller.org"`
+   - ✅ Configuration SMTP complète
 
 ### 🟡 Priorité Moyenne
 
@@ -211,7 +204,8 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
 - ✅ `spec/mailers/user_mailer_spec.rb`
 - ✅ `spec/mailers/event_mailer_spec.rb`
 - ✅ `spec/mailers/membership_mailer_spec.rb`
-- ❌ `spec/mailers/order_mailer_spec.rb` - **MANQUANT**
+- ✅ `spec/mailers/order_mailer_spec.rb` - ✅ **CRÉÉ** (2025-12-07)
+- ✅ `spec/requests/event_email_integration_spec.rb` - ✅ **CRÉÉ** (2025-12-07) - Tests d'intégration emails
 
 ---
 
@@ -231,23 +225,24 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
 - [x] Configuration SMTP dans `production.rb`
 - [x] Configuration file storage dans `development.rb`
 - [x] Configuration test dans `test.rb`
-- [ ] **Host corrigé dans `production.rb`** ⚠️
+- [x] **Host en production** - ✅ **CORRIGÉ** (`host: "grenoble-roller.org"`)
 
 ### Mailers
 - [x] ApplicationMailer configuré avec bonne adresse `from`
 - [x] UserMailer : ✅ Complet
 - [x] EventMailer : ✅ Complet
 - [x] MembershipMailer : ✅ Complet
-- [ ] **OrderMailer : Templates texte à créer** ⚠️
+- [x] **OrderMailer : Templates texte** - ✅ **COMPLÉTÉ** (2025-12-07)
 
 ### Tests
 - [x] Script de test SMTP créé (`bin/test-mailer`)
 - [x] Tests RSpec pour UserMailer
 - [x] Tests RSpec pour EventMailer
 - [x] Tests RSpec pour MembershipMailer
-- [ ] **Tests RSpec pour OrderMailer** ⚠️
+- [x] **Tests RSpec pour OrderMailer** - ✅ **CRÉÉ** (2025-12-07)
+- [x] **Tests d'intégration emails** - ✅ **CRÉÉ** (2025-12-07) - Vérification envoi emails EventMailer
 
 ---
 
-**Dernière vérification** : 2025-01-20  
-**Prochaine révision recommandée** : Après ajout des templates texte OrderMailer
+**Dernière vérification** : 2025-12-07  
+**Statut** : ✅ **100% COMPLÉTÉ** - Tous les templates texte créés, tous les tests RSpec créés, tests d'intégration ajoutés

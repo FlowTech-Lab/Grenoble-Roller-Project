@@ -124,7 +124,7 @@ tags: ["shape-up", "building", "cycle-01", "phase-2", "events", "admin"]
   - [x] Templates d'emails (HTML + texte) ✅
   - [x] Configuration ActionMailer (dev/staging/prod) ✅
   - [x] Tests des mailers (16 exemples RSpec) ✅
-  - [ ] Tests d'intégration (vérifier que l'email est envoyé) ⏳
+  - [x] Tests d'intégration (vérifier que l'email est envoyé) - ✅ **CRÉÉ** (2025-12-07) - `spec/requests/event_email_integration_spec.rb`
 - [x] **Job de rappel la veille à 19h** : ✅ TERMINÉ
   - [x] Job `EventReminderJob` pour envoyer automatiquement des rappels ✅
   - [x] Planification avec Solid Queue (`config/recurring.yml`) : exécution quotidienne à 19h ✅
