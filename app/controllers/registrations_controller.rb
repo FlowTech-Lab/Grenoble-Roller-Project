@@ -11,6 +11,14 @@ class RegistrationsController < Devise::RegistrationsController
       return
     end
 
+    # Vérifier Turnstile (protection anti-bot)
+    unless verify_turnstile
+      build_resource(sign_up_params)
+      resource.errors.add(:base, "Vérification de sécurité échouée. Veuillez réessayer.")
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     build_resource(sign_up_params)
 
     if resource.save

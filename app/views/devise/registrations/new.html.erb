@@ -226,11 +226,26 @@
 
             <%= f.hidden_field :role_id, value: Role.find_by(code: 'USER')&.id || Role.find_by(name: 'Utilisateur')&.id || Role.first&.id %>
             
+            <!-- Turnstile Widget (Invisible - Protection Anti-Bot) -->
+            <% unless Rails.env.test? %>
+              <% turnstile_site_key = Rails.application.credentials.dig(:turnstile, :site_key) || ENV['TURNSTILE_SITE_KEY'] %>
+              <% if turnstile_site_key.present? %>
+                <div class="cf-turnstile" 
+                     data-sitekey="<%= turnstile_site_key %>"
+                     data-theme="light"
+                     data-size="invisible"
+                     data-callback="onTurnstileSuccess"
+                     data-error-callback="onTurnstileError">
+                </div>
+              <% end %>
+            <% end %>
+            
             <!-- Submit Button (Moderne) -->
             <div class="d-grid gap-2 mb-3">
               <%= f.submit "Créer mon compte", 
                   class: "btn btn-liquid-primary btn-lg fw-semibold",
-                  style: "font-size: 16px; min-height: 44px;" %>
+                  style: "font-size: 16px; min-height: 44px;",
+                  id: "submit-registration" %>
             </div>
           <% end %>
           
@@ -246,3 +261,48 @@
     </div>
   </div>
 </div>
+
+<% unless Rails.env.test? %>
+  <!-- Cloudflare Turnstile Script -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  
+  <script>
+    // Gestion du widget Turnstile invisible pour l'inscription
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form[action*="registration"]');
+      const submitButton = document.getElementById('submit-registration');
+      let turnstileWidgetId = null;
+
+      if (form && submitButton && typeof turnstile !== 'undefined') {
+        // Récupérer l'ID du widget Turnstile
+        const turnstileElement = document.querySelector('.cf-turnstile');
+        if (turnstileElement) {
+          turnstileWidgetId = turnstileElement.dataset.sitekey ? turnstile.render(turnstileElement) : null;
+        }
+
+        // Intercepter la soumission du formulaire
+        form.addEventListener('submit', function(e) {
+          // Si Turnstile est configuré, déclencher la vérification
+          if (turnstileWidgetId !== null && typeof turnstile !== 'undefined') {
+            e.preventDefault();
+            turnstile.execute(turnstileWidgetId);
+          }
+          // Sinon, laisser le formulaire se soumettre normalement (test/dev)
+        });
+      }
+    });
+
+    // Callback de succès Turnstile
+    function onTurnstileSuccess(token) {
+      const form = document.querySelector('form[action*="registration"]');
+      if (form) {
+        form.submit();
+      }
+    }
+
+    // Callback d'erreur Turnstile
+    function onTurnstileError() {
+      alert('Erreur lors de la vérification de sécurité. Veuillez réessayer.');
+    }
+  </script>
+<% end %>

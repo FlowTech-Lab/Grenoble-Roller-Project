@@ -3,6 +3,14 @@
 class SessionsController < Devise::SessionsController
   # POST /resource/sign_in
   def create
+    # Vérifier Turnstile (protection anti-bot) avant authentification
+    unless verify_turnstile
+      self.resource = resource_class.new(sign_in_params)
+      flash[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     super do |resource|
       if resource.persisted?
         # Vérifier si l'email est confirmé APRÈS authentification réussie

@@ -37,8 +37,22 @@
               </div>
             <% end %>
             
+            <!-- Turnstile Widget (Invisible - Protection Anti-Bot) -->
+            <% unless Rails.env.test? %>
+              <% turnstile_site_key = Rails.application.credentials.dig(:turnstile, :site_key) || ENV['TURNSTILE_SITE_KEY'] %>
+              <% if turnstile_site_key.present? %>
+                <div class="cf-turnstile" 
+                     data-sitekey="<%= turnstile_site_key %>"
+                     data-theme="light"
+                     data-size="invisible"
+                     data-callback="onTurnstileLoginSuccess"
+                     data-error-callback="onTurnstileError">
+                </div>
+              <% end %>
+            <% end %>
+            
             <!-- Submit -->
-            <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
+            <button type="submit" class="btn btn-liquid-primary w-100 mb-3" id="submit-login">
               <i class="bi bi-box-arrow-in-right me-2"></i>
               Se connecter
             </button>
@@ -63,3 +77,48 @@
     </div>
   </div>
 </div>
+
+<% unless Rails.env.test? %>
+  <!-- Cloudflare Turnstile Script -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  
+  <script>
+    // Gestion du widget Turnstile invisible pour la connexion
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form[action*="session"]');
+      const submitButton = document.getElementById('submit-login');
+      let turnstileWidgetId = null;
+
+      if (form && submitButton && typeof turnstile !== 'undefined') {
+        // Récupérer l'ID du widget Turnstile
+        const turnstileElement = document.querySelector('.cf-turnstile');
+        if (turnstileElement) {
+          turnstileWidgetId = turnstileElement.dataset.sitekey ? turnstile.render(turnstileElement) : null;
+        }
+
+        // Intercepter la soumission du formulaire
+        form.addEventListener('submit', function(e) {
+          // Si Turnstile est configuré, déclencher la vérification
+          if (turnstileWidgetId !== null && typeof turnstile !== 'undefined') {
+            e.preventDefault();
+            turnstile.execute(turnstileWidgetId);
+          }
+          // Sinon, laisser le formulaire se soumettre normalement (test/dev)
+        });
+      }
+    });
+
+    // Callback de succès Turnstile pour connexion
+    function onTurnstileLoginSuccess(token) {
+      const form = document.querySelector('form[action*="session"]');
+      if (form) {
+        form.submit();
+      }
+    }
+
+    // Callback d'erreur Turnstile
+    function onTurnstileError() {
+      alert('Erreur lors de la vérification de sécurité. Veuillez réessayer.');
+    }
+  </script>
+<% end %>
