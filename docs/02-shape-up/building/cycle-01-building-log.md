@@ -291,7 +291,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 - [ ] Gestion des créneaux
 - [ ] Système de prêt matériel
 - [ ] Upload photos (Active Storage)
-- [ ] Notifications email (code présent, non validé en production)
+- [✅] Notifications email (implémentées et testées en RSpec) - ✅ TERMINÉ
 - [✅] Tests de régression (coverage >70% maintenu)
 
 #### 🛠️ **Actions par Sprint (Rails 8 TDD)**
@@ -706,7 +706,12 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 #### Simplification formulaire inscription + Confirmation email (2025-11-24)
 - [✅] **Formulaire simplifié** : 4 champs uniquement (Email, Prénom, Mot de passe 12 caractères, Niveau)
 - [✅] **Skill level** : Cards Bootstrap visuelles (Débutant, Intermédiaire, Avancé)
-- [✅] **Confirmation email** : Accès immédiat + confirmation requise pour actions critiques
+- [✅] **Confirmation email complète** (2025-12-07) : 
+  - Sécurité renforcée (logging sécurisé, audit trail, détection d'attaques)
+  - QR code mobile (PNG en pièce jointe + inline)
+  - Blocage immédiat si email non confirmé
+  - Rate limiting et anti-énumération
+  - Documentation consolidée : [`../../04-rails/setup/email-confirmation.md`](../../04-rails/setup/email-confirmation.md)
 - [✅] **Email de bienvenue** : UserMailer avec template HTML responsive
 - [✅] **Améliorations UX** : Header moderne, labels avec icônes, help text positif
 - [✅] **Conformité** : NIST 2025 (12 caractères), WCAG 2.2 (focus 3px, cibles tactiles)
@@ -759,7 +764,7 @@ Ce fil conducteur garantit une livraison progressive, un maximum de visibilité 
 
 #### Médias & Notifications
 - [ ] Upload photos (Active Storage)
-- [ ] Notifications email (inscription événement, rappel) - code présent, non validé
+- [✅] Notifications email (inscription événement, rappel) - ✅ TERMINÉ (EventMailer + Job rappel + tests RSpec)
 
 #### Tests & Qualité ⚠️ **CORRIGÉ - TDD dès le début**
 - [✅] RSpec configuré ✅

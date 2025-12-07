@@ -1,0 +1,25 @@
+💳 COMMANDE ##{@order.id} - PAIEMENT CONFIRMÉ
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre paiement a été confirmé avec succès !
+
+─────────────────────────
+
+✅ PAIEMENT REÇU
+
+Commande #<%= @order.id %>
+Montant : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+✓ Statut : Payée
+
+─────────────────────────
+
+Votre commande va maintenant être préparée et expédiée dans les meilleurs délais.
+
+Voir ma commande : <%= order_url(@order) %>
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+
