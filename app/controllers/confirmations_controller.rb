@@ -1,6 +1,21 @@
 # frozen_string_literal: true
 
 class ConfirmationsController < Devise::ConfirmationsController
+  # ============ AFFICHAGE FORMULAIRE RENVOI ============
+
+  def new
+    # Appeler la méthode parente pour initialiser la resource
+    super
+    
+    # Pré-remplir l'email si fourni en paramètre (depuis redirection)
+    # Cela permet de pré-remplir le formulaire quand on arrive depuis :
+    # - SessionsController (tentative de connexion avec email non confirmé)
+    # - ApplicationController (accès bloqué car email non confirmé)
+    if params[:email].present? && self.resource.present?
+      self.resource.email = params[:email]
+    end
+  end
+
   # ============ RENVOI EMAIL ============
 
   def create

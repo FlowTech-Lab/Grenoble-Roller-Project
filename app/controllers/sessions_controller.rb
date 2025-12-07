@@ -5,7 +5,25 @@ class SessionsController < Devise::SessionsController
   def create
     super do |resource|
       if resource.persisted?
-        handle_confirmed_or_unconfirmed(resource)
+        # Vérifier si l'email est confirmé APRÈS authentification réussie
+        if resource.confirmed?
+          # Email confirmé : connexion normale
+          first_name = resource.first_name.presence || "membre"
+          flash[:notice] = "Bonjour #{first_name} ! 👋 Bienvenue sur Grenoble Roller."
+        else
+          # Email non confirmé : déconnecter et rediriger vers page de confirmation
+          sign_out(resource)
+          confirmation_link = view_context.link_to(
+            "demandez un nouvel email de confirmation",
+            new_user_confirmation_path(email: resource.email),
+            class: "alert-link"
+          )
+          flash[:alert] = 
+            "Vous devez confirmer votre adresse email pour vous connecter. " \
+            "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe
+          redirect_to new_user_confirmation_path(email: resource.email)
+          return
+        end
       end
     end
   end

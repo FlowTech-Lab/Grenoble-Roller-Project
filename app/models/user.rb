@@ -26,10 +26,11 @@ class User < ApplicationRecord
   before_validation :set_default_role, on: :create
   after_create :send_welcome_email_and_confirmation
 
-  # Ne pas permettre l'accès sans confirmation (sécurité renforcée)
-  # L'utilisateur doit confirmer son email avant de pouvoir se connecter
+  # Permettre l'authentification même si l'email n'est pas confirmé
+  # On vérifiera dans le contrôleur et on redirigera si nécessaire
+  # Cela permet d'afficher un message clair et de rediriger vers la page de confirmation
   def active_for_authentication?
-    super && confirmed?
+    super # Permettre l'authentification pour pouvoir vérifier après
   end
 
   # Message personnalisé si compte non actif

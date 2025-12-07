@@ -15,8 +15,8 @@ class DeviseMailer < Devise::Mailer
     @expiry_date = expiry_period.from_now.strftime("%d/%m/%Y à %H:%M")
     @hours_left = (expiry_period / 1.hour).round
     
-    # URL pour renvoyer l'email
-    @resend_url = new_user_confirmation_path
+    # URL pour renvoyer l'email (utiliser _url pour URL complète dans email)
+    @resend_url = build_resend_confirmation_url
     
     # Générer QR code pour mobile (avec gestion d'erreur)
     @qr_code = generate_qr_code(@confirmation_url)
@@ -29,7 +29,9 @@ class DeviseMailer < Devise::Mailer
     
     mail(
       to: record.email,
-      subject: "Confirmez votre adresse email - Grenoble Roller"
+      subject: "Confirmez votre adresse email - Grenoble Roller",
+      template_path: "devise/mailer",
+      template_name: "confirmation_instructions"
     )
   rescue => e
     Rails.logger.error("Failed to render confirmation email: #{e.message}")
@@ -40,14 +42,34 @@ class DeviseMailer < Devise::Mailer
 
   def build_confirmation_url(user, token)
     # Utiliser les helpers URL de Rails avec les routes Devise
-    # Le helper confirmation_url de Devise utilise automatiquement ActionMailer.default_url_options
-    # On utilise directement le helper depuis le contexte du mailer
     url_helpers = Rails.application.routes.url_helpers
+    host = ActionMailer::Base.default_url_options[:host] || 
+           Rails.application.config.action_mailer.default_url_options[:host] ||
+           (Rails.env.production? ? "grenoble-roller.org" : "localhost:3000")
+    protocol = ActionMailer::Base.default_url_options[:protocol] || 
+               Rails.application.config.action_mailer.default_url_options[:protocol] ||
+               (Rails.env.production? ? "https" : "http")
+    
     url_helpers.user_confirmation_url(
       confirmation_token: token,
-      host: ActionMailer::Base.default_url_options[:host] || 
-            Rails.application.config.action_mailer.default_url_options[:host] ||
-            (Rails.env.production? ? "grenoble-roller.org" : "localhost:3000")
+      host: host,
+      protocol: protocol
+    )
+  end
+
+  def build_resend_confirmation_url
+    # Construire l'URL pour renvoyer l'email de confirmation
+    url_helpers = Rails.application.routes.url_helpers
+    host = ActionMailer::Base.default_url_options[:host] || 
+           Rails.application.config.action_mailer.default_url_options[:host] ||
+           (Rails.env.production? ? "grenoble-roller.org" : "localhost:3000")
+    protocol = ActionMailer::Base.default_url_options[:protocol] || 
+               Rails.application.config.action_mailer.default_url_options[:protocol] ||
+               (Rails.env.production? ? "https" : "http")
+    
+    url_helpers.new_user_confirmation_url(
+      host: host,
+      protocol: protocol
     )
   end
 

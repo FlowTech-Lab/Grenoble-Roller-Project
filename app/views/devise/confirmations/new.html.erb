@@ -27,7 +27,7 @@
               <%= f.email_field :email,
                   autofocus: true,
                   autocomplete: "email",
-                  value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email),
+                  value: (params[:email].presence || (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email)),
                   class: "form-control form-control-liquid",
                   placeholder: "votre@email.com",
                   required: true,
