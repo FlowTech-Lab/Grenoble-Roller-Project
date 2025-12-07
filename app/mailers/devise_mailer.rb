@@ -19,7 +19,19 @@ class DeviseMailer < Devise::Mailer
     @resend_url = build_resend_confirmation_url
     
     # Générer QR code pour mobile (avec gestion d'erreur)
-    @qr_code = generate_qr_code(@confirmation_url)
+    qr_code_data = generate_qr_code_png(@confirmation_url)
+    
+    # Définir le Content-ID pour le template (avant l'appel à mail())
+    @qr_code_cid = qr_code_data ? "qr-code-confirmation@grenoble-roller.org" : nil
+    
+    # Attacher le QR code comme pièce jointe AVANT le rendu du template
+    if qr_code_data
+      attachments["qr-code-confirmation.png"] = {
+        mime_type: "image/png",
+        content: qr_code_data,
+        content_id: "<#{@qr_code_cid}>"
+      }
+    end
     
     # Logging (sans token)
     Rails.logger.info(
@@ -73,27 +85,28 @@ class DeviseMailer < Devise::Mailer
     )
   end
 
-  # Générer QR code pour l'URL de confirmation
-  def generate_qr_code(url)
+  # Générer QR code en PNG pour meilleure compatibilité avec les clients email
+  def generate_qr_code_png(url)
     require "rqrcode"
     
     qr = RQRCode::QRCode.new(url)
     
-    # Convertir en SVG puis en data URI pour l'inliner dans l'email
-    svg = qr.as_svg(
-      color: "000",
-      shape_rendering: "crispEdges",
-      module_size: 4,
-      standalone: true,
-      use_path: true
+    # Générer le QR code en PNG (méthode simple)
+    # Utiliser les options par défaut qui fonctionnent bien
+    png = qr.as_png(
+      size: 240,
+      border_modules: 4,
+      module_px_size: 6,
+      fill: "white",
+      color: "black"
     )
     
-    # Encoder en base64 pour data URI
-    base64_svg = Base64.strict_encode64(svg)
-    "data:image/svg+xml;base64,#{base64_svg}"
+    # Retourner les données PNG brutes (StringIO ou String)
+    png.respond_to?(:to_s) ? png.to_s : png.string
   rescue => e
     # Si génération QR échoue, ignorer gracieusement
-    Rails.logger.debug("QR code generation failed: #{e.message}")
+    Rails.logger.debug("QR code PNG generation failed: #{e.message}")
+    Rails.logger.debug(e.backtrace.first(3).join("\n")) if Rails.env.development?
     nil
   end
 end
