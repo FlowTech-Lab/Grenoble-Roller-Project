@@ -1,11 +1,32 @@
 # 📧 Récapitulatif Complet des Emails - Grenoble Roller
 
 **Date de création** : 2025-01-20  
-**Dernière mise à jour** : 2025-01-20
+**Dernière mise à jour** : 2025-12-07
+
+> 📖 **Pour la documentation complète de la confirmation email** : voir [`email-confirmation.md`](email-confirmation.md)
 
 ---
 
 ## 📋 Liste Complète des Mailers
+
+### 0. **DeviseMailer** - Email de confirmation Devise
+
+| Méthode | Sujet | Déclencheur | Template HTML | Template Texte | Status |
+|---------|-------|-------------|---------------|----------------|--------|
+| `confirmation_instructions(user, token)` | `Confirmez votre adresse email - Grenoble Roller` | Inscription ou renvoi email | ✅ `confirmation_instructions.html.erb` | ✅ `confirmation_instructions.text.erb` | ✅ **Configuré** |
+
+**Caractéristiques** :
+- ✅ Design moderne avec gradient header
+- ✅ QR code PNG (pièce jointe + inline)
+- ✅ Badge expiration visible
+- ✅ Lien fallback
+- ✅ Mobile-friendly
+
+**Où est appelé** :
+- Automatiquement par Devise lors de l'inscription
+- `app/controllers/confirmations_controller.rb` : Renvoi email
+
+---
 
 ### 1. **UserMailer** - Emails utilisateurs
 
@@ -91,15 +112,16 @@ smtp:
 ### Configuration par environnement
 
 #### ✅ Développement (`config/environments/development.rb`)
-- **Méthode** : `:file` (stockage dans `tmp/mails/`)
-- **Host** : `localhost:3000`
+- **Méthode** : `:smtp` (IONOS) - Envoi réel d'emails
+- **Host** : `dev-grenoble-roller.flowtech-lab.org` (URL publique)
+- **SMTP Settings** : ✅ **Configuré** (utilise les credentials Rails)
 - **Status** : ✅ **Configuré**
 
 #### ✅ Production (`config/environments/production.rb`)
 - **Méthode** : `:smtp` (IONOS)
-- **Host** : ⚠️ **À corriger** (actuellement `"example.com"`)
+- **Host** : `grenoble-roller.org`
 - **SMTP Settings** : ✅ **Configuré** (utilise les credentials Rails)
-- **Status** : ⚠️ **Partiel** (host à corriger)
+- **Status** : ✅ **Configuré**
 
 #### ✅ Test (`config/environments/test.rb`)
 - **Méthode** : `:test` (accumulation dans `ActionMailer::Base.deliveries`)
@@ -113,11 +135,12 @@ smtp:
 
 | Mailer | Nombre d'emails | Templates HTML | Templates Texte | Status Global |
 |--------|----------------|----------------|-----------------|---------------|
+| **DeviseMailer** | 1 | ✅ 1/1 | ✅ 1/1 | ✅ **100%** (QR code) |
 | **UserMailer** | 1 | ✅ 1/1 | ✅ 1/1 | ✅ **100%** |
 | **EventMailer** | 3 | ✅ 3/3 | ✅ 3/3 | ✅ **100%** |
 | **OrderMailer** | 7 | ✅ 7/7 | ❌ 0/7 | ⚠️ **50%** |
 | **MembershipMailer** | 4 | ✅ 4/4 | ✅ 4/4 | ✅ **100%** |
-| **TOTAL** | **15** | ✅ **15/15** | ⚠️ **11/15** | ⚠️ **73%** |
+| **TOTAL** | **16** | ✅ **16/16** | ⚠️ **12/16** | ⚠️ **75%** |
 
 ### Résumé par Type
 
@@ -194,9 +217,10 @@ docker compose -f ops/dev/docker-compose.yml run --rm \
 
 ## 📚 Documentation Associée
 
+- **Confirmation Email** : [`email-confirmation.md`](email-confirmation.md) - Documentation complète de la feature
 - **Emails Événements** : `docs/06-events/email-notifications-implementation.md`
 - **Emails Commandes** : `docs/09-product/orders-workflow-emails.md`
-- **Credentials Rails** : `docs/04-rails/setup/credentials.md`
+- **Credentials Rails** : [`credentials.md`](credentials.md)
 
 ---
 

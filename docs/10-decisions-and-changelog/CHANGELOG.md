@@ -2,6 +2,22 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-12-07] - Consolidation Documentation Confirmation Email
+
+### Modifié
+- **Documentation consolidée** : 8 fichiers → 1 document principal unique
+  - ✅ [`04-rails/setup/email-confirmation.md`](../04-rails/setup/email-confirmation.md) - Document principal consolidé (tous les éléments)
+  - ✅ [`04-rails/setup/emails-recapitulatif.md`](../04-rails/setup/emails-recapitulatif.md) - Référence mise à jour vers le nouveau document
+  - 🗑️ Supprimé : `EMAIL-CONFIRMATION-FEATURE-LIVRAISON.md`, `implementation-email-confirmation-summary.md`, `email-confirmation-security-audit.md`, `README-email-confirmation.md`, `email-security-consolidation.md`, `plan-implementation-email-security.md`
+- **Structure** : Single source of truth selon les meilleures pratiques de documentation
+- **README principal** : Références mises à jour
+- **CHANGELOG** : Références mises à jour
+- **Building logs** : Références mises à jour
+
+### Notes
+- Le guide de sécurité Devise (`devise-email-security-guide.md`, 1930 lignes) est conservé comme référence technique approfondie
+- Réduction de **75% du nombre de fichiers** (8 → 2 documents essentiels)
+
 ## [2025-11-24] - Intégration changement mot de passe dans profil
 
 ### Modifié
@@ -54,14 +70,14 @@ Ce fichier documente les changements significatifs du projet Grenoble Roller.
   - Labels avec icônes Bootstrap (envelope, person, shield-lock, speedometer)
   - Help text positif pour mot de passe avec exemple de passphrase
 
-- **Confirmation email avec accès immédiat** :
+- **Confirmation email avec accès immédiat** (améliorée en 2025-12-07) :
   - Module `:confirmable` activé dans Devise
-  - Période de grâce : `allow_unconfirmed_access_for = 2.days` (meilleure UX)
-  - Accès immédiat après inscription (navigation, consultation)
-  - Confirmation **requise** pour actions critiques :
-    - S'inscrire à un événement (`EventsController#attend`)
-    - Passer une commande (`OrdersController#create`)
-  - Email de confirmation envoyé automatiquement après inscription
+  - Blocage immédiat si email non confirmé (sécurité renforcée)
+  - Confirmation **obligatoire** avant connexion (pas de période de grâce)
+  - Email de confirmation avec QR code mobile (PNG)
+  - Sécurité renforcée : logging sécurisé, audit trail, détection d'attaques
+  - Rate limiting et anti-énumération
+  - Documentation : [`04-rails/setup/email-confirmation.md`](../04-rails/setup/email-confirmation.md)
 
 - **Email de bienvenue** :
   - `UserMailer.welcome_email` avec template HTML responsive
