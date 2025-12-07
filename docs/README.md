@@ -88,6 +88,8 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 ### Setup & Configuration
 - ✅ `04-rails/setup/local-development.md` - Guide de setup avec Docker (dev)
 - ✅ `04-rails/setup/credentials.md` - Gestion des credentials Rails
+- ✅ `04-rails/setup/email-confirmation.md` - Confirmation email (sécurité, QR code, SMTP)
+- ✅ `04-rails/setup/emails-recapitulatif.md` - Récapitulatif complet de tous les emails
 - ✅ `07-ops/runbooks/staging-setup.md` - Guide d'installation staging
 - ✅ `07-ops/runbooks/production-setup.md` - Guide d'installation production
 
@@ -103,6 +105,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `04-rails/conventions/README.md` - Conventions Rails du projet
 - ✅ `04-rails/admin-panel-research.md` - Recherche et recommandations pour le panel admin (Phase 2)
 - ✅ `04-rails/phase2-migrations-models.md` - Documentation Phase 2 (migrations et modèles)
+- ✅ `04-rails/setup/README.md` - Index de la documentation setup Rails
 
 ### Tests
 - ✅ `05-testing/strategy.md` - Stratégie de tests (RSpec configuré)
@@ -121,6 +124,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ **Pages légales créées** : Mentions Légales, RGPD, CGV, CGU, Contact (2025-11-21)
 - ✅ **Gestion des cookies** : Système conforme RGPD 2025 avec Stimulus (2025-11-21)
 - ✅ **Quick Wins Devise** : Formulaire inscription simplifié, confirmation email, profil complet avec changement mot de passe intégré (2025-11-24)
+- ✅ **Confirmation Email Complète** : Sécurité renforcée, QR code mobile, audit trail, rate limiting (2025-12-07)
 
 ### À compléter
 - `10-decisions-and-changelog/` - ADRs à créer pour décisions structurantes

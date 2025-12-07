@@ -1,5 +1,121 @@
-<p>Welcome <%= @email %>!</p>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmez votre email - Grenoble Roller</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          
+          <!-- Header avec gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
+                ✉️ Confirmez votre email
+              </h1>
+            </td>
+          </tr>
 
-<p>You can confirm your account email through the link below:</p>
+          <!-- Contenu principal -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 20px 0;">
+                Bonjour <strong><%= @user.first_name.present? ? @user.first_name : @user.email %></strong>,
+              </p>
 
-<p><%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token) %></p>
+              <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 20px 0;">
+                Merci de vous être inscrit sur <strong>Grenoble Roller</strong> !
+              </p>
+
+              <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 30px 0;">
+                Pour finaliser votre inscription et activer votre compte, veuillez confirmer votre adresse email en cliquant sur le bouton ci-dessous :
+              </p>
+
+              <!-- Bouton CTA principal -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="<%= @confirmation_url %>" 
+                       style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,123,255,0.3);">
+                      ✅ Confirmer mon email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- QR Code pour mobile -->
+              <% if @qr_code_cid.present? %>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <tr>
+                  <td align="center">
+                    <p style="font-size: 14px; color: #6c757d; margin: 0 0 10px 0; font-weight: bold;">
+                      📱 Ou scannez le QR code avec votre téléphone :
+                    </p>
+                    <img src="cid:<%= @qr_code_cid %>" alt="QR Code de confirmation" style="width: 200px; height: 200px; border: 4px solid #ffffff; border-radius: 8px;" />
+                    <p style="font-size: 12px; color: #6c757d; margin: 10px 0 0 0;">
+                      <em>Le QR code est également disponible en pièce jointe de cet email</em>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <% end %>
+
+              <!-- Badge expiration -->
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin: 30px 0;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                  <strong>⏰ Lien valable jusqu'au :</strong> <%= @expiry_date %> (<%= @hours_left %> heures)
+                </p>
+              </div>
+
+              <!-- Lien de secours (fallback) -->
+              <div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #007bff;">
+                <p style="margin: 0 0 10px 0; color: #004085; font-size: 14px; font-weight: bold;">
+                  Le bouton ne fonctionne pas ?
+                </p>
+                <p style="margin: 0; color: #004085; font-size: 13px; word-break: break-all;">
+                  Copiez et collez ce lien dans votre navigateur :<br>
+                  <a href="<%= @confirmation_url %>" style="color: #007bff; text-decoration: underline;"><%= @confirmation_url %></a>
+                </p>
+              </div>
+
+              <!-- Avertissement sécurité -->
+              <div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 4px; margin: 30px 0;">
+                <p style="margin: 0; color: #721c24; font-size: 14px;">
+                  <strong>🔒 Sécurité :</strong> Cette étape permet de vérifier que vous êtes bien le propriétaire de cette adresse email. Ne partagez jamais ce lien.
+                </p>
+              </div>
+
+              <!-- Lien renvoi -->
+              <p style="font-size: 14px; color: #6c757d; margin: 30px 0 0 0;">
+                Le lien a expiré ? <a href="<%= @resend_url %>" style="color: #007bff; text-decoration: underline;">Demandez un nouvel email de confirmation</a>
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #dee2e6;">
+              <p style="font-size: 12px; color: #6c757d; margin: 0 0 10px 0;">
+                <strong>Grenoble Roller</strong> - Association de roller à Grenoble
+              </p>
+              <p style="font-size: 12px; color: #6c757d; margin: 0;">
+                Vous n'avez pas créé de compte ? Vous pouvez ignorer cet email en toute sécurité.
+              </p>
+              <p style="font-size: 11px; color: #adb5bd; margin: 10px 0 0 0;">
+                Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

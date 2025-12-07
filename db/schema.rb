@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_02_001000) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_06_233807) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,16 +58,21 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_001000) do
 
   create_table "attendances", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.text "equipment_note"
     t.bigint "event_id", null: false
+    t.boolean "free_trial_used", default: false, null: false
+    t.boolean "is_volunteer", default: false, null: false
     t.bigint "payment_id"
     t.string "status", limit: 20, default: "registered", null: false
     t.string "stripe_customer_id", limit: 255
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.boolean "wants_reminder", default: false, null: false
+    t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
     t.index ["user_id", "event_id"], name: "index_attendances_on_user_id_and_event_id", unique: true
+    t.index ["user_id", "free_trial_used"], name: "index_attendances_on_user_id_and_free_trial_used"
     t.index ["user_id"], name: "index_attendances_on_user_id"
     t.index ["wants_reminder"], name: "index_attendances_on_wants_reminder"
   end
@@ -102,20 +107,29 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_001000) do
     t.text "description", null: false
     t.decimal "distance_km", precision: 6, scale: 2
     t.integer "duration_min", null: false
+    t.boolean "is_recurring", default: false
     t.string "level", limit: 20
     t.string "location_text", limit: 255, null: false
     t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
     t.integer "price_cents", default: 0, null: false
+    t.string "recurring_day"
+    t.date "recurring_end_date"
+    t.date "recurring_start_date"
+    t.string "recurring_time"
     t.bigint "route_id"
+    t.string "season"
     t.timestamptz "start_at", null: false
     t.string "status", limit: 20, default: "draft", null: false
     t.string "title", limit: 140, null: false
+    t.string "type"
     t.datetime "updated_at", null: false
     t.index ["creator_user_id"], name: "index_events_on_creator_user_id"
     t.index ["route_id"], name: "index_events_on_route_id"
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
+    t.index ["type", "season"], name: "index_events_on_type_and_season"
+    t.index ["type"], name: "index_events_on_type"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -315,7 +329,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_001000) do
     t.string "city"
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"
+    t.datetime "confirmation_token_last_used_at"
     t.datetime "confirmed_at"
+    t.string "confirmed_ip"
+    t.text "confirmed_user_agent"
     t.datetime "created_at", null: false
     t.date "date_of_birth"
     t.string "email", default: "", null: false
@@ -337,6 +354,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_02_001000) do
     t.boolean "wants_initiation_mail", default: true, null: false
     t.boolean "wants_whatsapp", default: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
+    t.index ["confirmed_ip"], name: "index_users_on_confirmed_ip"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["role_id"], name: "index_users_on_role_id"

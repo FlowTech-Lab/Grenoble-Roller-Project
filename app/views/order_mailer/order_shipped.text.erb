@@ -1,0 +1,26 @@
+📦 COMMANDE ##{@order.id} - EXPÉDIÉE
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Excellente nouvelle ! Votre commande ##{@order.id} a été expédiée.
+
+─────────────────────────
+
+🚚 EXPÉDITION CONFIRMÉE
+
+Commande #<%= @order.id %>
+Montant : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+📦 Statut : Expédiée
+
+─────────────────────────
+
+📬 SUIVI
+Vous recevrez un email avec le numéro de suivi dès qu'il sera disponible. Le délai de livraison dépend de votre localisation.
+
+Suivre ma commande : <%= order_url(@order) %>
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+

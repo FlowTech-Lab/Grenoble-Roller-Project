@@ -24,10 +24,10 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
+  config.mailer_sender = "Grenoble Roller <no-reply@grenoble-roller.org>"
 
   # Configure the class responsible to send e-mails.
-  # config.mailer = 'Devise::Mailer'
+  config.mailer = "DeviseMailer"
 
   # Configure the parent class responsible to send e-mails.
   # config.parent_mailer = 'ActionMailer::Base'
@@ -129,7 +129,8 @@ Devise.setup do |config|
   # config.pepper = '79e68c50fc8f19ea4c743629f15ff2403c5ebe54928f32153b9f7a4a21fccff7744103cb16ab4ef46070ccc2ddaabad6e1ca80f1daf8207ba011821013dc6c8f'
 
   # Send a notification to the original email when the user's email is changed.
-  # config.send_email_changed_notification = false
+  # Recommandation: true (alerte utilisateur en cas de changement non autorisé)
+  config.send_email_changed_notification = true
 
   # Send a notification email when the user's password is changed.
   # config.send_password_change_notification = false
@@ -143,8 +144,9 @@ Devise.setup do |config|
   # without confirming their account.
   # Default is 0.days, meaning the user cannot access the website without
   # confirming their account.
-  # Permettre l'accès immédiat pendant 2 jours sans confirmation (meilleure UX)
-  config.allow_unconfirmed_access_for = 2.days
+  # SÉCURITÉ RENFORCÉE : Aucun accès sans confirmation d'email
+  # L'utilisateur DOIT confirmer son email avant de pouvoir se connecter
+  config.allow_unconfirmed_access_for = nil
 
   # A period that the user is allowed to confirm their account before their
   # token becomes invalid. For example, if set to 3.days, the user can confirm
@@ -152,7 +154,8 @@ Devise.setup do |config|
   # their account can't be confirmed with the token any more.
   # Default is nil, meaning there is no restriction on how long a user can take
   # before confirming their account.
-  # config.confirm_within = 3.days
+  # Recommandation: 3 jours (suffit pour renvois, pas trop long)
+  config.confirm_within = 3.days
 
   # If true, requires any email changes to be confirmed (exactly the same way as
   # initial account confirmation) to be applied. Requires additional unconfirmed_email

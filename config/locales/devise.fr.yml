@@ -17,6 +17,9 @@ fr:
       timeout: "Votre session a expiré. Veuillez vous reconnecter pour continuer."
       unauthenticated: "Vous devez vous connecter ou vous inscrire avant de continuer."
       unconfirmed: "Vous devez confirmer votre adresse email avant de continuer."
+      unconfirmed_email: "Vous devez confirmer votre adresse email pour vous connecter. Vérifiez votre boîte mail ou demandez un nouvel email de confirmation."
+      user:
+        unconfirmed_email: "Vous devez confirmer votre adresse email pour vous connecter. Vérifiez votre boîte mail ou demandez un nouvel email de confirmation."
     mailer:
       confirmation_instructions:
         subject: "Instructions de confirmation"
