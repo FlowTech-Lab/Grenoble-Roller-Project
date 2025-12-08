@@ -1,8 +1,61 @@
 # frozen_string_literal: true
 
 class SessionsController < Devise::SessionsController
+  # Inclure TurnstileVerifiable explicitement car SessionsController n'hérite pas de ApplicationController
+  include TurnstileVerifiable
+  # GET /resource/sign_in
+  # Permettre l'accès à la page de connexion même si déjà connecté (pour tester)
+  def new
+    # En développement, permettre de voir la page même si connecté
+    if Rails.env.development? && user_signed_in?
+      flash.now[:info] = "Vous êtes déjà connecté·e. Déconnectez-vous pour tester la connexion."
+    end
+    super
+  end
+
   # POST /resource/sign_in
   def create
+    # ⚠️ LOG CRITIQUE - DOIT TOUJOURS APPARAÎTRE
+    Rails.logger.error("=" * 80)
+    Rails.logger.error("🔵 SessionsController#create DEBUT - IP: #{request.remote_ip}")
+    Rails.logger.error("   Params keys: #{params.keys.inspect}")
+    Rails.logger.error("   Turnstile params: #{params.keys.grep(/turnstile|cf-/).inspect}")
+    Rails.logger.error("   Token present: #{params['cf-turnstile-response'].present?}")
+    Rails.logger.error("=" * 80)
+
+    # Vérifier Turnstile (protection anti-bot) AVANT toute authentification
+    # Si échec, bloquer immédiatement et ne PAS appeler super
+    begin
+      turnstile_result = verify_turnstile
+      Rails.logger.error("🔵 Turnstile verification result: #{turnstile_result.inspect}")
+    rescue => e
+      Rails.logger.error("❌ ERREUR dans verify_turnstile: #{e.class} - #{e.message}")
+      Rails.logger.error("   Backtrace: #{e.backtrace.first(5).join(' | ')}")
+      turnstile_result = false
+    end
+    
+    unless turnstile_result
+      Rails.logger.error("=" * 80)
+      Rails.logger.error("🔴 Turnstile verification FAILED - BLOCKING authentication")
+      Rails.logger.error("   IP: #{request.remote_ip}")
+      Rails.logger.error("   Ne PAS appeler super - Blocage complet")
+      Rails.logger.error("=" * 80)
+      
+      self.resource = resource_class.new(sign_in_params)
+      resource.errors.add(:base, "Vérification de sécurité échouée. Veuillez réessayer.")
+      flash.now[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
+      # IMPORTANT: Ne pas appeler super, bloquer complètement l'authentification
+      # Utiliser render au lieu de respond_with pour éviter tout appel à Devise
+      render :new, status: :unprocessable_entity
+      Rails.logger.error("🔴 RENDER :new terminé, RETURN immédiat")
+      return # Retourner immédiatement, ne JAMAIS continuer
+    end
+
+    Rails.logger.error("=" * 80)
+    Rails.logger.error("🟢 Turnstile verification PASSED - Proceeding with authentication")
+    Rails.logger.error("=" * 80)
+
+    # Turnstile OK, procéder avec l'authentification Devise
     super do |resource|
       if resource.persisted?
         # Vérifier si l'email est confirmé APRÈS authentification réussie

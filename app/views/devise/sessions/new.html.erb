@@ -37,8 +37,19 @@
               </div>
             <% end %>
             
+            <!-- Turnstile Widget (Implicit Rendering - Protection Anti-Bot) -->
+            <% unless Rails.env.test? %>
+              <% turnstile_site_key = Rails.application.credentials.dig(:turnstile, :site_key) || ENV['TURNSTILE_SITE_KEY'] %>
+              <% if turnstile_site_key.present? %>
+                <div class="cf-turnstile mb-3 text-center" 
+                     data-sitekey="<%= turnstile_site_key %>"
+                     data-theme="light">
+                </div>
+              <% end %>
+            <% end %>
+            
             <!-- Submit -->
-            <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
+            <button type="submit" class="btn btn-liquid-primary w-100 mb-3" id="submit-login">
               <i class="bi bi-box-arrow-in-right me-2"></i>
               Se connecter
             </button>
@@ -63,3 +74,61 @@
     </div>
   </div>
 </div>
+
+<% unless Rails.env.test? %>
+  <% turnstile_site_key = Rails.application.credentials.dig(:turnstile, :site_key) || ENV['TURNSTILE_SITE_KEY'] %>
+  <% if turnstile_site_key.present? %>
+    <!-- Cloudflare Turnstile Script -->
+    <!-- Implicit Rendering : Cloudflare scanne automatiquement les divs .cf-turnstile et les rend -->
+    <!-- Le token est automatiquement ajouté au formulaire dans un champ hidden cf-turnstile-response -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    
+    <script>
+      // S'assurer que Turnstile a généré le token avant de permettre la soumission
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[action*="session"]');
+        const submitButton = document.getElementById('submit-login');
+        
+        if (form && submitButton) {
+          // Désactiver le bouton initialement si Turnstile est présent
+          const turnstileWidget = form.querySelector('.cf-turnstile');
+          if (turnstileWidget) {
+            submitButton.disabled = true;
+            submitButton.setAttribute('aria-disabled', 'true');
+            
+            // Attendre que Turnstile soit chargé et le widget rendu
+            const checkTurnstile = setInterval(function() {
+              const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+              if (tokenInput && tokenInput.value) {
+                // Token généré, activer le bouton
+                submitButton.disabled = false;
+                submitButton.removeAttribute('aria-disabled');
+                clearInterval(checkTurnstile);
+              }
+            }, 100);
+            
+            // Timeout après 10 secondes (au cas où Turnstile ne charge pas)
+            setTimeout(function() {
+              clearInterval(checkTurnstile);
+              submitButton.disabled = false;
+              submitButton.removeAttribute('aria-disabled');
+            }, 10000);
+          }
+          
+          // Vérifier au moment de la soumission que le token est présent
+          form.addEventListener('submit', function(e) {
+            const turnstileWidget = form.querySelector('.cf-turnstile');
+            if (turnstileWidget) {
+              const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+              if (!tokenInput || !tokenInput.value) {
+                e.preventDefault();
+                alert('Veuillez patienter, la vérification de sécurité est en cours...');
+                return false;
+              }
+            }
+          });
+        }
+      });
+    </script>
+  <% end %>
+<% end %>
