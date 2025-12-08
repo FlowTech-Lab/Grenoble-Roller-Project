@@ -1,18 +1,21 @@
 ActiveAdmin.register Event do
-  menu priority: 8, label: "Événements"
+  menu priority: 1, label: "Randos", parent: "Événements"
   includes :creator_user, :route
+  
+  # Filtrer pour exclure les initiations (STI)
+  scope :all, default: true do |scope|
+    scope.where("type IS NULL OR type != 'Event::Initiation'")
+  end
 
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
                 :description, :price_cents, :currency, :location_text,
                 :meeting_lat, :meeting_lng, :route_id,
                 :max_participants, :level, :distance_km
-
-  scope :all, default: true
-  scope("À venir") { |events| events.upcoming }
-  scope("Publiés") { |events| events.published }
-  scope("En attente de validation", default: true) { |events| events.pending_validation }
-  scope("Refusés") { |events| events.rejected }
-  scope("Annulés") { |events| events.where(status: "canceled") }
+  scope("À venir") { |events| events.where("type IS NULL OR type != 'Event::Initiation'").upcoming }
+  scope("Publiés") { |events| events.where("type IS NULL OR type != 'Event::Initiation'").published }
+  scope("En attente de validation", default: true) { |events| events.where("type IS NULL OR type != 'Event::Initiation'").pending_validation }
+  scope("Refusés") { |events| events.where("type IS NULL OR type != 'Event::Initiation'").rejected }
+  scope("Annulés") { |events| events.where("type IS NULL OR type != 'Event::Initiation'").where(status: "canceled") }
 
   index do
     selectable_column

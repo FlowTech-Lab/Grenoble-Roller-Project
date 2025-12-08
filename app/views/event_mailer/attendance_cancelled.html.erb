@@ -23,7 +23,7 @@
 </div>
 
 <div style="margin: 30px 0; text-align: center;">
-  <%= link_to 'Voir l\'événement', event_url(@event), 
+  <%= link_to 'Voir l\'événement', @is_initiation ? initiation_url(@event) : event_url(@event), 
       style: 'display: inline-block; background: #6c757d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
 </div>
 

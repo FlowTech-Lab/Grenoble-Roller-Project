@@ -15,6 +15,8 @@ class EventReminderJob < ApplicationJob
                   .where(start_at: tomorrow_start..tomorrow_end)
 
     events.find_each do |event|
+      is_initiation = event.is_a?(Event::Initiation)
+      
       # Envoyer un rappel uniquement aux participants actifs qui ont activé le rappel
       event.attendances.active
            .where(wants_reminder: true)
@@ -22,6 +24,11 @@ class EventReminderJob < ApplicationJob
            .find_each do |attendance|
         # Vérifier que l'utilisateur existe et a un email
         next unless attendance.user&.email.present?
+
+        # Pour les initiations, vérifier aussi la préférence globale wants_initiation_mail
+        if is_initiation && !attendance.user.wants_initiation_mail?
+          next # Skip si l'utilisateur a désactivé les emails d'initiations
+        end
 
         # Envoyer l'email de rappel
         EventMailer.event_reminder(attendance).deliver_later

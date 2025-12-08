@@ -88,6 +88,7 @@ source "${LIB_DIR}/health/checks.sh"
 # Deployment
 source "${LIB_DIR}/deployment/rollback.sh"
 source "${LIB_DIR}/deployment/metrics.sh"
+source "${LIB_DIR}/deployment/cron.sh"
 
 # Blue-green (lazy loading)
 if [ "${BLUE_GREEN_ENABLED:-false}" = "true" ]; then
@@ -343,7 +344,14 @@ main() {
         log_success "✅ Aucune migration en attente"
     fi
     
-    # 10. Health check final avec retry
+    # 10. Installation/mise à jour du crontab
+    log "⏰ Installation/mise à jour du crontab..."
+    if ! install_crontab; then
+        log_warning "⚠️  Échec de l'installation du crontab - Continuation du déploiement"
+        log_info "   Le crontab peut être installé manuellement avec: bundle exec whenever --update-crontab"
+    fi
+    
+    # 11. Health check final avec retry
     log "🏥 Health check complet avec retry..."
     MAX_RETRIES=${HEALTH_CHECK_MAX_RETRIES:-60}
     RETRY_COUNT=0
@@ -382,7 +390,7 @@ main() {
         fi
     done
     
-    # 11. Rollback si health check échoue
+    # 12. Rollback si health check échoue
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     log_error "Health check échoué après $MAX_RETRIES tentatives"
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
