@@ -2,9 +2,20 @@ class Event::Initiation < Event
   # Scopes spécifiques
   scope :upcoming_initiations, -> { where("start_at > ?", Time.current).order(:start_at) }
   
+  # Validations spécifiques aux initiations
+  # distance_km : doit être 0 (pas de parcours) - la validation du parent est désactivée avec unless: :initiation?
+  validates :distance_km, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  
+  # description : assouplir la validation (minimum 10 caractères au lieu de 20)
+  # La validation du parent est désactivée avec unless: :initiation?, on redéfinit ici
+  validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
+  
   # Validations spécifiques
   validates :max_participants, presence: true, numericality: { greater_than: 0 }
   validate :is_saturday, :is_correct_time, :is_correct_location
+  
+  # Callback pour forcer distance_km = 0 pour les initiations (avant validation)
+  before_validation :set_distance_km_to_zero, on: [:create, :update]
   
   # Méthodes métier
   def full?
@@ -29,6 +40,10 @@ class Event::Initiation < Event
   end
   
   private
+  
+  def set_distance_km_to_zero
+    self.distance_km = 0
+  end
   
   def is_saturday
     return if start_at.blank?

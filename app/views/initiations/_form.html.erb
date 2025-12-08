@@ -23,7 +23,7 @@
           </div>
         <% end %>
 
-        <%= form_with(model: initiation, html: { class: 'row g-3', multipart: true }) do |f| %>
+        <%= form_with(model: initiation, url: initiation.persisted? ? initiation_path(initiation) : initiations_path, html: { class: 'row g-3', multipart: true }) do |f| %>
           <div class="col-12">
             <%= f.label :title, "Titre", class: "form-label" %>
             <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Initiation Roller - Samedi 6 septembre 2025" %>
@@ -143,16 +143,16 @@
                     <%= f.number_field :meeting_lat, 
                         class: "form-control form-control-sm", 
                         step: "any",
-                        value: initiation.meeting_lat || 45.1891,
-                        placeholder: "45.1891" %>
+                        value: initiation.meeting_lat || 45.17323364952216,
+                        placeholder: "45.1732" %>
                   </div>
                   <div class="col-md-6">
                     <%= f.label :meeting_lng, "Longitude", class: "form-label small" %>
                     <%= f.number_field :meeting_lng, 
                         class: "form-control form-control-sm", 
                         step: "any",
-                        value: initiation.meeting_lng || 5.7317,
-                        placeholder: "5.7317" %>
+                        value: initiation.meeting_lng || 5.705659385672371,
+                        placeholder: "5.7057" %>
                   </div>
                 </div>
                 
@@ -187,8 +187,14 @@
           </div>
 
           <div class="col-12">
-            <%= f.label :description, "Description détaillée", class: "form-label" %>
-            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez la séance d'initiation, le matériel nécessaire, les prérequis..." %>
+            <%= f.label :description, "Description détaillée", class: "form-label" do %>
+              Description détaillée <span class="text-danger">*</span>
+            <% end %>
+            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, minlength: 10, placeholder: "Décrivez la séance d'initiation, le matériel nécessaire, les prérequis..." %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Minimum 10 caractères
+            </div>
           </div>
 
           <!-- Champs cachés pour initiations -->

@@ -4,12 +4,12 @@ class InitiationsController < ApplicationController
   before_action :load_supporting_data, only: [:new, :create, :edit, :update]
   
   def index
-    # Précharger associations pour éviter N+1 queries
-    @initiations = Event::Initiation
-      .published
+    # Utiliser policy_scope pour respecter les permissions Pundit
+    # Les créateurs peuvent voir leurs initiations en draft, les autres voient seulement les publiées
+    scoped_initiations = policy_scope(Event::Initiation.includes(:creator_user, :attendances))
+    @initiations = scoped_initiations
       .upcoming_initiations
       .limit(12) # 3 mois
-      .includes(:creator_user, :attendances) # Précharger attendances pour calcul places
   end
   
   def show
@@ -27,8 +27,8 @@ class InitiationsController < ApplicationController
       duration_min: 105, # 1h45
       max_participants: 30,
       location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
-      meeting_lat: 45.1891,
-      meeting_lng: 5.7317,
+      meeting_lat: 45.17323364952216,
+      meeting_lng: 5.705659385672371,
       level: 'beginner',
       distance_km: 0,
       price_cents: 0,
@@ -48,7 +48,7 @@ class InitiationsController < ApplicationController
     initiation_params[:creator_user_id] = current_user.id
     
     if @initiation.update(initiation_params)
-      redirect_to @initiation, notice: "Initiation créée avec succès. Elle est en attente de validation par un modérateur."
+      redirect_to initiation_path(@initiation), notice: "Initiation créée avec succès. Elle est en attente de validation par un modérateur."
     else
       render :new, status: :unprocessable_entity
     end
@@ -71,7 +71,7 @@ class InitiationsController < ApplicationController
     end
     
     if @initiation.update(initiation_params)
-      redirect_to @initiation, notice: "Initiation mise à jour avec succès."
+      redirect_to initiation_path(@initiation), notice: "Initiation mise à jour avec succès."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -90,7 +90,7 @@ class InitiationsController < ApplicationController
     attendance = @initiation.attendances.find_or_initialize_by(user: current_user)
     
     if attendance.persisted?
-      redirect_to @initiation, notice: "Vous êtes déjà inscrit(e)."
+      redirect_to initiation_path(@initiation), notice: "Vous êtes déjà inscrit(e)."
       return
     end
     
@@ -100,7 +100,7 @@ class InitiationsController < ApplicationController
     # Gestion essai gratuit (paramètre top-level, pas dans attendance)
     if params[:use_free_trial] == '1'
       if current_user.attendances.where(free_trial_used: true).exists?
-        redirect_to @initiation, alert: "Vous avez déjà utilisé votre essai gratuit."
+        redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
         return
       end
       attendance.free_trial_used = true
@@ -110,7 +110,7 @@ class InitiationsController < ApplicationController
       has_child_membership = current_user.memberships.active_now.where(is_child_membership: true).exists?
       
       unless has_active_membership || has_child_membership
-        redirect_to @initiation, alert: "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association."
+        redirect_to initiation_path(@initiation), alert: "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association."
         return
       end
     end
@@ -120,9 +120,9 @@ class InitiationsController < ApplicationController
       if current_user.wants_initiation_mail?
         EventMailer.attendance_confirmed(attendance).deliver_later
       end
-      redirect_to @initiation, notice: "Inscription confirmée pour le #{l(@initiation.start_at, format: :long)}."
+      redirect_to initiation_path(@initiation), notice: "Inscription confirmée pour le #{l(@initiation.start_at, format: :long)}."
     else
-      redirect_to @initiation, alert: attendance.errors.full_messages.to_sentence
+      redirect_to initiation_path(@initiation), alert: attendance.errors.full_messages.to_sentence
     end
   end
   
@@ -137,12 +137,12 @@ class InitiationsController < ApplicationController
         if wants_initiation_mail
           EventMailer.attendance_cancelled(current_user, @initiation).deliver_later
         end
-        redirect_to @initiation, notice: "Inscription annulée."
+        redirect_to initiation_path(@initiation), notice: "Inscription annulée."
       else
-        redirect_to @initiation, alert: "Impossible d'annuler votre participation."
+        redirect_to initiation_path(@initiation), alert: "Impossible d'annuler votre participation."
       end
     else
-      redirect_to @initiation, alert: "Impossible d'annuler votre participation."
+      redirect_to initiation_path(@initiation), alert: "Impossible d'annuler votre participation."
     end
   end
   
@@ -162,9 +162,6 @@ class InitiationsController < ApplicationController
     Time.zone.local(next_saturday.year, next_saturday.month, next_saturday.day, 10, 15, 0)
   end
   
-  def permitted_attributes(initiation)
-    policy(initiation).permitted_attributes
-  end
   
   def attendance_params
     # child_membership_id si c'est un enfant qui s'inscrit

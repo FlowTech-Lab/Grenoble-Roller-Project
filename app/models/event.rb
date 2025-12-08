@@ -64,7 +64,7 @@ class Event < ApplicationRecord
   validates :duration_min, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validate :duration_multiple_of_five
   validates :title, presence: true, length: { minimum: 5, maximum: 140 }
-  validates :description, presence: true, length: { minimum: 20, maximum: 1000 }
+  validates :description, presence: true, length: { minimum: 20, maximum: 1000 }, unless: :initiation?
   validates :price_cents, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :currency, presence: true, length: { is: 3 }
   validates :location_text, presence: true, length: { minimum: 3, maximum: 255 }
@@ -78,7 +78,12 @@ class Event < ApplicationRecord
 
   # Niveau et distance toujours requis
   validates :level, presence: true
-  validates :distance_km, presence: true, numericality: { greater_than_or_equal_to: 0.1 }
+  validates :distance_km, presence: true, numericality: { greater_than_or_equal_to: 0.1 }, unless: :initiation?
+  
+  # Méthode helper pour vérifier si c'est une initiation
+  def initiation?
+    is_a?(Event::Initiation)
+  end
 
   scope :upcoming, -> { where("start_at > ?", Time.current) }
   scope :past, -> { where("start_at <= ?", Time.current) }

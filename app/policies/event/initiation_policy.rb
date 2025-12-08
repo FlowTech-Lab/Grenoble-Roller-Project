@@ -1,4 +1,4 @@
-class InitiationPolicy < ApplicationPolicy
+class Event::InitiationPolicy < ApplicationPolicy
   def index?
     true # Tous peuvent voir la liste
   end
