@@ -22,7 +22,7 @@ gem "devise"
 gem "pundit"
 gem "activeadmin"
 gem "rack-attack" # Rate limiting pour sécurité
-gem "rqrcode", "~> 2.2" # QR code pour emails de confirmation
+gem "rqrcode", "~> 3.1" # QR code pour emails de confirmation
 # Note: Cloudflare Turnstile intégré manuellement (pas de gem disponible)
 
 gem "table_print"
