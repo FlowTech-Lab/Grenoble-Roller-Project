@@ -77,6 +77,14 @@ Rails.application.routes.draw do
     end
   end
 
+  # Initiations
+  resources :initiations do
+    member do
+      post :attend
+      delete :cancel_attendance
+    end
+  end
+
   # Routes pour pré-remplir les champs niveau et distance
   get "/routes/:id/info", to: "routes#info", as: "route_info", defaults: { format: "json" }
 

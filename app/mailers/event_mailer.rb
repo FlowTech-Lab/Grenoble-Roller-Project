@@ -4,10 +4,17 @@ class EventMailer < ApplicationMailer
     @attendance = attendance
     @event = attendance.event
     @user = attendance.user
+    @is_initiation = @event.is_a?(Event::Initiation)
+
+    subject = if @is_initiation
+      "✅ Inscription confirmée - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+    else
+      "✅ Inscription confirmée : #{@event.title}"
+    end
 
     mail(
       to: @user.email,
-      subject: "✅ Inscription confirmée : #{@event.title}"
+      subject: subject
     )
   end
 
@@ -15,10 +22,17 @@ class EventMailer < ApplicationMailer
   def attendance_cancelled(user, event)
     @user = user
     @event = event
+    @is_initiation = @event.is_a?(Event::Initiation)
+
+    subject = if @is_initiation
+      "❌ Désinscription confirmée - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+    else
+      "❌ Désinscription confirmée : #{@event.title}"
+    end
 
     mail(
       to: @user.email,
-      subject: "❌ Désinscription confirmée : #{@event.title}"
+      subject: subject
     )
   end
 
@@ -27,10 +41,17 @@ class EventMailer < ApplicationMailer
     @attendance = attendance
     @event = attendance.event
     @user = attendance.user
+    @is_initiation = @event.is_a?(Event::Initiation)
+
+    subject = if @is_initiation
+      "📅 Rappel : Initiation roller demain samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+    else
+      "📅 Rappel : #{@event.title} demain !"
+    end
 
     mail(
       to: @user.email,
-      subject: "📅 Rappel : #{@event.title} demain !"
+      subject: subject
     )
   end
 end
