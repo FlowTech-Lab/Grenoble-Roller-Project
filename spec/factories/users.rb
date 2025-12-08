@@ -4,7 +4,7 @@ FactoryBot.define do
     sequence(:first_name) { |n| "User#{n}" }
     sequence(:last_name) { |n| "Tester#{n}" }
     sequence(:email) { |n| "user#{n}@example.com" }
-    password { 'password123' }
+    password { 'password12345' } # Minimum 12 caractères requis
     phone { '0612345678' }
     skill_level { 'intermediate' }
     confirmed_at { Time.current } # Par défaut, utilisateur confirmé

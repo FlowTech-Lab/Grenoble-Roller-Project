@@ -1,0 +1,27 @@
+❌ COMMANDE ##{@order.id} - ANNULÉE
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre commande ##{@order.id} a été annulée.
+
+─────────────────────────
+
+📋 DÉTAILS
+
+Commande #<%= @order.id %>
+Date : <%= l(@order.created_at, format: :long) %>
+Montant : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+❌ Statut : Annulée
+
+─────────────────────────
+
+ℹ️ INFORMATION
+Le stock des articles a été restauré. Si vous aviez déjà payé, le remboursement sera traité selon les modalités de l'association.
+
+Voir mes commandes : <%= orders_url %>
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+

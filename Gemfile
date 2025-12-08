@@ -22,6 +22,7 @@ gem "devise"
 gem "pundit"
 gem "activeadmin"
 gem "rack-attack" # Rate limiting pour sécurité
+gem "rqrcode", "~> 2.2" # QR code pour emails de confirmation
 
 gem "table_print"
 

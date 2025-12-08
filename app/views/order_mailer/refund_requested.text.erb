@@ -1,0 +1,24 @@
+🔄 COMMANDE ##{@order.id} - DEMANDE DE REMBOURSEMENT
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre demande de remboursement pour la commande ##{@order.id} a été enregistrée.
+
+─────────────────────────
+
+📋 DÉTAILS
+
+Commande #<%= @order.id %>
+Montant : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+⏳ Statut : Demande de remboursement en cours
+
+─────────────────────────
+
+ℹ️ INFORMATION
+Votre demande est en cours de traitement. Le remboursement sera effectué manuellement par l'association. Vous recevrez un email de confirmation une fois le remboursement effectué.
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+

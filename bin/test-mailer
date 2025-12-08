@@ -1,0 +1,114 @@
+#!/usr/bin/env ruby
+# Script de test pour le mailer SMTP
+# Usage: bin/test-mailer <email_destinataire>
+
+require_relative "../config/environment"
+
+# Configuration SMTP pour le test
+ActionMailer::Base.delivery_method = :smtp
+ActionMailer::Base.smtp_settings = {
+  user_name: Rails.application.credentials.dig(:smtp, :user_name),
+  password: Rails.application.credentials.dig(:smtp, :password),
+  address: Rails.application.credentials.dig(:smtp, :address) || "smtp.ionos.fr",
+  port: Rails.application.credentials.dig(:smtp, :port) || 465,
+  domain: Rails.application.credentials.dig(:smtp, :domain) || "grenoble-roller.org",
+  authentication: :plain,
+  enable_starttls_auto: false,
+  ssl: true,
+  openssl_verify_mode: "peer"
+}
+
+# Vérifier que les credentials sont configurés
+puts "🧪 Test du mailer SMTP"
+puts "=" * 50
+
+user_name = Rails.application.credentials.dig(:smtp, :user_name)
+password = Rails.application.credentials.dig(:smtp, :password)
+
+if user_name.nil? || password.nil?
+  puts "❌ ERREUR: Les credentials SMTP ne sont pas configurés"
+  puts "   Exécutez: docker compose -f ops/dev/docker-compose.yml run --rm -it -e EDITOR=nano web bin/rails credentials:edit"
+  puts "   Et ajoutez:"
+  puts "   smtp:"
+  puts "     user_name: no-reply@grenoble-roller.org"
+  puts "     password: votre_mot_de_passe"
+  exit 1
+end
+
+puts "✅ Credentials SMTP trouvés"
+puts "   User: #{user_name}"
+puts "   Server: #{ActionMailer::Base.smtp_settings[:address]}"
+puts "   Port: #{ActionMailer::Base.smtp_settings[:port]}"
+puts ""
+
+# Récupérer l'adresse email de test
+test_email = ARGV[0] || ENV['TEST_EMAIL']
+
+if test_email.nil? || test_email.strip.empty?
+  puts "❌ ERREUR: Aucune adresse email de destination fournie"
+  puts "   Usage: bin/test-mailer <email@example.com>"
+  puts "   Ou: TEST_EMAIL=email@example.com bin/test-mailer"
+  exit 1
+end
+
+puts "📧 Envoi d'un email de test à: #{test_email}"
+puts ""
+
+begin
+  # Utiliser la gem Mail directement avec les paramètres SMTP
+  require 'mail'
+  
+  smtp_settings = ActionMailer::Base.smtp_settings
+  
+  Mail.defaults do
+    delivery_method :smtp, {
+      address: smtp_settings[:address],
+      port: smtp_settings[:port],
+      domain: smtp_settings[:domain],
+      user_name: smtp_settings[:user_name],
+      password: smtp_settings[:password],
+      authentication: smtp_settings[:authentication],
+      enable_starttls_auto: smtp_settings[:enable_starttls_auto],
+      ssl: smtp_settings[:ssl],
+      openssl_verify_mode: smtp_settings[:openssl_verify_mode]
+    }
+  end
+
+  # Créer et envoyer l'email de test
+  mail = Mail.new do
+    from    "Grenoble Roller <#{user_name}>"
+    to      test_email
+    subject "🧪 Test email - Grenoble Roller"
+    body    <<~BODY
+      Bonjour,
+
+      Ceci est un email de test pour vérifier la configuration SMTP.
+
+      Si vous recevez ce message, la configuration email fonctionne correctement ! ✅
+
+      Configuration utilisée:
+      - Serveur: #{smtp_settings[:address]}
+      - Port: #{smtp_settings[:port]}
+      - Expéditeur: #{user_name}
+
+      Cordialement,
+      Grenoble Roller
+    BODY
+  end
+
+  # Envoyer l'email
+  mail.deliver!
+  
+  puts "✅ Email envoyé avec succès !"
+  puts "   Vérifiez la boîte de réception (et les spams) de: #{test_email}"
+  puts ""
+  puts "📬 Message ID: #{mail.message_id}"
+  
+rescue => e
+  puts "❌ ERREUR lors de l'envoi de l'email:"
+  puts "   #{e.class}: #{e.message}"
+  puts ""
+  puts "🔍 Détails de l'erreur:"
+  puts e.backtrace.first(5).map { |line| "   #{line}" }.join("\n")
+  exit 1
+end

@@ -1,0 +1,25 @@
+⚙️ COMMANDE ##{@order.id} - EN PRÉPARATION
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre commande ##{@order.id} est maintenant en cours de préparation !
+
+─────────────────────────
+
+📦 PRÉPARATION EN COURS
+
+Commande #<%= @order.id %>
+Montant : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+
+⚙️ Statut : En préparation
+
+─────────────────────────
+
+Nous préparons votre commande avec soin. Vous recevrez un email de confirmation dès que votre colis sera expédié.
+
+Suivre ma commande : <%= order_url(@order) %>
+
+─────────────────────────
+
+Des questions ? Contactez-nous : contact@grenoble-roller.org
+

@@ -17,15 +17,21 @@ class RegistrationsController < Devise::RegistrationsController
       # Gérer l'opt-in newsletter (futur)
       # TODO: Implémenter newsletter subscription si params[:newsletter_subscription] == "1"
 
-      # Message de bienvenue personnalisé avec le prénom (si fourni)
+      # Message de bienvenue avec demande de confirmation email
       if resource.first_name.present?
-        flash[:notice] = "Bienvenue #{resource.first_name} ! 🎉 Découvrez les événements à venir."
+        flash[:warning] = "Bienvenue #{resource.first_name} ! 🎉 " \
+                         "Un email de confirmation vous a été envoyé. " \
+                         "Veuillez confirmer votre adresse email pour accéder à l'application."
       else
-        flash[:notice] = "Bienvenue ! 🎉 Découvrez les événements à venir. Complétez votre profil pour une expérience personnalisée."
+        flash[:warning] = "Bienvenue ! 🎉 " \
+                         "Un email de confirmation vous a été envoyé. " \
+                         "Veuillez confirmer votre adresse email pour accéder à l'application."
       end
 
-      # Rediriger après succès
-      respond_with resource, location: after_sign_up_path_for(resource)
+      # Ne PAS connecter l'utilisateur automatiquement - il DOIT confirmer son email
+      # Utiliser after_inactive_sign_up_path_for car le compte n'est pas actif (non confirmé)
+      sign_out(resource) if user_signed_in?
+      redirect_to after_inactive_sign_up_path_for(resource)
     else
       # En cas d'erreur, rester sur la page d'inscription (ne pas rediriger)
       render :new, status: :unprocessable_entity
@@ -36,13 +42,15 @@ class RegistrationsController < Devise::RegistrationsController
 
   # The path used after sign up.
   def after_sign_up_path_for(_resource)
-    # Rediriger vers la page des événements après inscription
-    events_path
+    # Rediriger vers la page de confirmation email
+    # L'utilisateur ne peut pas accéder à l'application sans confirmer
+    new_user_confirmation_path
   end
 
-  # The path used after sign up for inactive accounts.
+  # The path used after sign up for inactive accounts (non confirmés).
   def after_inactive_sign_up_path_for(_resource)
-    root_path
+    # Rediriger vers la page de confirmation email
+    new_user_confirmation_path
   end
 
   # The path used after updating the account.

@@ -42,12 +42,31 @@ Rails.application.configure do
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # Set URL to be used by links generated in mailer templates.
+  # Utiliser l'URL publique pour que les liens fonctionnent dans les emails reçus
+  config.action_mailer.default_url_options = { 
+    host: ENV.fetch("MAILER_HOST", "dev-grenoble-roller.flowtech-lab.org"),
+    protocol: ENV.fetch("MAILER_PROTOCOL", "https")
+  }
 
-  # Store emails in tmp/mails for development (can be viewed in browser or file system)
-  config.action_mailer.delivery_method = :file
-  config.action_mailer.file_settings = { location: Rails.root.join("tmp/mails") }
+  # En développement, vous pouvez choisir entre :
+  # Option 1: Stocker les emails dans des fichiers (par défaut)
+  # config.action_mailer.delivery_method = :file
+  # config.action_mailer.file_settings = { location: Rails.root.join("tmp/mails") }
+  
+  # Option 2: Envoyer de vrais emails par SMTP (actif)
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    user_name: Rails.application.credentials.dig(:smtp, :user_name),
+    password: Rails.application.credentials.dig(:smtp, :password),
+    address: Rails.application.credentials.dig(:smtp, :address) || "smtp.ionos.fr",
+    port: Rails.application.credentials.dig(:smtp, :port) || 465,
+    domain: Rails.application.credentials.dig(:smtp, :domain) || "grenoble-roller.org",
+    authentication: :plain,
+    enable_starttls_auto: false,
+    ssl: true,
+    openssl_verify_mode: "peer"
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
