@@ -18,10 +18,17 @@ module TurnstileVerifiable
     return true if Rails.env.test?
 
     # Récupérer le token depuis les paramètres
-    token = params['cf-turnstile-response']
+    # Turnstile ajoute automatiquement le token dans un champ caché avec ce nom
+    token = params['cf-turnstile-response'] || params[:'cf-turnstile-response']
 
     # Si pas de token, la vérification échoue
-    return false if token.blank?
+    if token.blank?
+      Rails.logger.warn(
+        "Turnstile verification failed: No token provided for IP #{request.remote_ip}. " \
+        "Available params keys: #{params.keys.grep(/turnstile|cf-/).inspect}"
+      )
+      return false
+    end
 
     # Vérifier avec l'API Cloudflare
     verify_with_cloudflare(token)
@@ -33,7 +40,14 @@ module TurnstileVerifiable
                  ENV.fetch("TURNSTILE_SECRET_KEY", "")
 
     # Si pas de clé secrète configurée, skip verification en dev
-    return true if secret_key.blank? && Rails.env.development?
+    # MAIS logger un avertissement pour indiquer que la vérification est désactivée
+    if secret_key.blank? && Rails.env.development?
+      Rails.logger.warn(
+        "Turnstile verification SKIPPED in development (no secret_key configured). " \
+        "This is UNSAFE - Turnstile should be configured even in development!"
+      )
+      return true
+    end
 
     return false if secret_key.blank?
 
@@ -51,8 +65,10 @@ module TurnstileVerifiable
     unless result['success']
       Rails.logger.warn(
         "Turnstile verification failed: #{result['error-codes']&.join(', ')} " \
-        "for IP #{request.remote_ip}"
+        "for IP #{request.remote_ip}. Response: #{result.inspect}"
       )
+    else
+      Rails.logger.debug("Turnstile verification successful for IP #{request.remote_ip}")
     end
 
     result['success'] == true

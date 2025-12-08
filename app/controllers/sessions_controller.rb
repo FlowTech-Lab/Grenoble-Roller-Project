@@ -1,16 +1,47 @@
 # frozen_string_literal: true
 
 class SessionsController < Devise::SessionsController
+  # Inclure TurnstileVerifiable explicitement car SessionsController n'hérite pas de ApplicationController
+  include TurnstileVerifiable
+  # GET /resource/sign_in
+  # Permettre l'accès à la page de connexion même si déjà connecté (pour tester)
+  def new
+    # En développement, permettre de voir la page même si connecté
+    if Rails.env.development? && user_signed_in?
+      flash.now[:info] = "Vous êtes déjà connecté·e. Déconnectez-vous pour tester la connexion."
+    end
+    super
+  end
+
   # POST /resource/sign_in
   def create
-    # Vérifier Turnstile (protection anti-bot) avant authentification
-    unless verify_turnstile
+    # Log pour debugging
+    Rails.logger.info(
+      "SessionsController#create - IP: #{request.remote_ip}, " \
+      "Params keys: #{params.keys.grep(/turnstile|cf-/).inspect}, " \
+      "Token present: #{params['cf-turnstile-response'].present?}"
+    )
+
+    # Vérifier Turnstile (protection anti-bot) AVANT toute authentification
+    # Si échec, bloquer immédiatement et ne PAS appeler super
+    turnstile_result = verify_turnstile
+    Rails.logger.debug("Turnstile verification result: #{turnstile_result.inspect}")
+    
+    unless turnstile_result
+      Rails.logger.warn(
+        "SessionsController#create - Turnstile verification FAILED - BLOCKING authentication for IP: #{request.remote_ip}"
+      )
       self.resource = resource_class.new(sign_in_params)
-      flash[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
+      flash.now[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
+      # IMPORTANT: Ne pas appeler super, bloquer complètement l'authentification
+      # Utiliser render au lieu de respond_with pour éviter tout appel à Devise
       render :new, status: :unprocessable_entity
-      return
+      return false # Retourner false pour s'assurer que rien ne continue
     end
 
+    Rails.logger.info("SessionsController#create - Turnstile verification PASSED, proceeding with authentication")
+
+    # Turnstile OK, procéder avec l'authentification Devise
     super do |resource|
       if resource.persisted?
         # Vérifier si l'email est confirmé APRÈS authentification réussie
