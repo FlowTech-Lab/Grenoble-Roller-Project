@@ -92,8 +92,17 @@ class SessionsController < Devise::SessionsController
 
   # The path used after sign in.
   def after_sign_in_path_for(_resource)
-    # Rediriger vers la page demandée ou la page d'accueil
-    stored_location_for(_resource) || root_path
+    # Toujours rediriger vers la page d'accueil après connexion
+    # (sauf si une destination spécifique est stockée et qu'elle n'est pas /admin)
+    stored_location = stored_location_for(_resource)
+    
+    # Si la location stockée est /admin, ignorer et rediriger vers l'accueil
+    # Sinon, utiliser la location stockée ou la page d'accueil
+    if stored_location&.start_with?('/admin')
+      root_path
+    else
+      stored_location || root_path
+    end
   end
 
   # The path used after sign out.
