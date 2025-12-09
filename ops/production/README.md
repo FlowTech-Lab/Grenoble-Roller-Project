@@ -57,11 +57,34 @@ Scripts dédiés à l'environnement de production.
 - **Emplacement** : `logs/deploy-production.log` (dans le projet)
 - **Backups** : `backups/production/` (dans le projet)
 
+## 🌐 Configuration Reverse Proxy (Nginx)
+
+Le docker-compose de production inclut un service **nginx** qui agit comme reverse proxy :
+
+- **Port 80** : Nginx écoute sur le port 80 et route vers l'application Rails (port 3000 interne)
+- **Configuration** : `ops/production/nginx.conf`
+- **Domaine** : `grenoble-roller.org` et `www.grenoble-roller.org`
+
+### Configuration actuelle
+
+- ✅ HTTP sur le port 80
+- ⏳ HTTPS (port 443) : À configurer avec Let's Encrypt (voir section suivante)
+
+### Pour activer HTTPS (futur)
+
+1. Installer Certbot sur l'hôte
+2. Obtenir un certificat Let's Encrypt
+3. Modifier `nginx.conf` pour ajouter la configuration SSL
+4. Décommenter le port 443 dans `docker-compose.yml`
+5. Activer `config.assume_ssl = true` dans `config/environments/production.rb`
+
 ## ⚙️ Prérequis
 
 1. **Accès GitHub** (SSH recommandé en production) - voir `ops/dev/README.md`
 
 2. **Docker** : Les conteneurs doivent être accessibles
+
+3. **Port 80 disponible** : Nginx écoute sur le port 80 (et 443 pour HTTPS)
 
 ## 🔍 Vérification rapide
 
