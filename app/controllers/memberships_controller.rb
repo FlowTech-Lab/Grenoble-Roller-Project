@@ -625,10 +625,14 @@ class MembershipsController < ApplicationController
       return
     end
 
-    if current_user.age < 18
-      redirect_to new_membership_path(type: "adult"), alert: "Vous devez avoir au moins 18 ans pour adhérer en tant qu'adulte."
+    # Validation stricte : bloquer les moins de 16 ans
+    user_age = current_user.age
+    if user_age < 16
+      redirect_to new_membership_path(type: "adult"), alert: "L'adhésion adulte n'est pas possible pour les personnes de moins de 16 ans. Veuillez contacter un membre du bureau de l'association pour procéder à l'adhésion. #{helpers.link_to('Contactez-nous', contact_path, class: 'alert-link')} pour plus d'informations.".html_safe
       return
     end
+
+    # À partir de 16 ans, l'adhésion est possible (les parents peuvent être prévenus pour les 16-17 ans)
 
     # Vérifier les réponses au questionnaire de santé (9 questions)
     has_health_issue = false

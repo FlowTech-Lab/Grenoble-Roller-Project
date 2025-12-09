@@ -1,5 +1,8 @@
 require "active_support/core_ext/integer/time"
 
+# Configuration Staging
+# Staging utilise RAILS_ENV=production mais avec des configurations spécifiques
+# pour les URLs d'email et autres paramètres
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -18,20 +21,8 @@ Rails.application.configure do
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
-  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.asset_host = "http://assets.example.com"
-
   # Store uploaded files on MinIO (S3-compatible) - see config/storage.yml for options.
   config.active_storage.service = :minio
-
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
-
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
-
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
@@ -57,9 +48,9 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  # Production utilise grenoble-roller.org
+  # Staging utilise grenoble-roller.flowtech-lab.org
   config.action_mailer.default_url_options = { 
-    host: ENV.fetch("MAILER_HOST", "grenoble-roller.org"),
+    host: ENV.fetch("MAILER_HOST", "grenoble-roller.flowtech-lab.org"),
     protocol: ENV.fetch("MAILER_PROTOCOL", "https")
   }
 
@@ -84,7 +75,7 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
-  # Only use :id for inspections in production.
+  # Only use :id for inspections in staging.
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
@@ -96,3 +87,4 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
+
