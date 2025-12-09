@@ -191,9 +191,8 @@
                   <div class="age-display mt-2" id="adult_age_display" style="display: none;">
                     <i class="bi bi-info-circle me-1"></i>Âge : <strong id="adult_age_value"></strong> ans
                   </div>
-                  <div class="form-text small mt-2">
-                    <i class="bi bi-info-circle me-1"></i>L'âge sera calculé automatiquement à partir de la date sélectionnée.
-                  </div>
+                  <div class="invalid-feedback d-block mt-2" id="date_of_birth_error" style="display: none;"></div>
+                  <div class="alert alert-warning mt-2" id="date_of_birth_warning" style="display: none;"></div>
                 </div>
               </div>
             </div>
@@ -556,16 +555,43 @@
     }
   }
   
-  // Calcul âge adulte
+  // Calcul âge adulte avec validation stricte < 16 ans
   function updateAdultAge() {
     const day = document.getElementById('date_of_birth_day').value;
     const month = document.getElementById('date_of_birth_month').value;
     const year = document.getElementById('date_of_birth_year').value;
     const ageDisplay = document.getElementById('adult_age_display');
     const ageValue = document.getElementById('adult_age_value');
+    const dateOfBirthField = document.getElementById('date_of_birth');
+    const daySelect = document.getElementById('date_of_birth_day');
+    const monthSelect = document.getElementById('date_of_birth_month');
+    const yearSelect = document.getElementById('date_of_birth_year');
     
     if (!day || !month || !year) {
       if (ageDisplay) ageDisplay.style.display = 'none';
+      if (dateOfBirthField) dateOfBirthField.value = '';
+      // Réinitialiser les erreurs
+      [daySelect, monthSelect, yearSelect].forEach(select => {
+        if (select) {
+          select.classList.remove('is-invalid', 'is-valid');
+        }
+      });
+      // Masquer tous les messages d'erreur/avertissement
+      const errorDiv = document.getElementById('date_of_birth_error');
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+      }
+      const warningDiv = document.getElementById('date_of_birth_warning');
+      if (warningDiv) {
+        warningDiv.style.display = 'none';
+        warningDiv.innerHTML = '';
+      }
+      // Réactiver le bouton si le formulaire est valide
+      const submitBtn = document.getElementById('submit_btn');
+      if (submitBtn) {
+        validateForm();
+      }
       return;
     }
     
@@ -577,8 +603,150 @@
       age--;
     }
     
-    if (ageValue) ageValue.textContent = age;
-    if (ageDisplay) ageDisplay.style.display = 'block';
+    // Validation stricte : bloquer les moins de 16 ans
+    if (age < 16) {
+      // Masquer le message d'avertissement 16-17 ans s'il existe
+      const warningDiv = document.getElementById('date_of_birth_warning');
+      if (warningDiv) {
+        warningDiv.style.display = 'none';
+        warningDiv.innerHTML = '';
+      }
+      
+      // Afficher erreur sur tous les champs de date
+      [daySelect, monthSelect, yearSelect].forEach(select => {
+        if (select) {
+          select.classList.add('is-invalid');
+          select.classList.remove('is-valid');
+        }
+      });
+      
+      // Afficher message d'erreur
+      const errorMessage = "L'adhésion adulte n'est pas possible pour les personnes de moins de 16 ans. Veuillez contacter un membre du bureau de l'association.";
+      let errorDiv = document.getElementById('date_of_birth_error');
+      if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'date_of_birth_error';
+        errorDiv.className = 'invalid-feedback d-block mt-2';
+        const dateContainer = daySelect?.closest('.col-md-12');
+        if (dateContainer) {
+          dateContainer.appendChild(errorDiv);
+        }
+      }
+      errorDiv.textContent = errorMessage;
+      errorDiv.style.display = 'block';
+      
+      // Vider le champ caché pour empêcher la soumission
+      if (dateOfBirthField) dateOfBirthField.value = '';
+      
+      // Afficher l'âge en rouge
+      if (ageValue) {
+        ageValue.textContent = age;
+        ageValue.style.color = 'var(--bs-danger)';
+      }
+      if (ageDisplay) {
+        ageDisplay.style.display = 'block';
+        ageDisplay.style.color = 'var(--bs-danger)';
+      }
+      
+      // Désactiver le bouton de soumission
+      const submitBtn = document.getElementById('submit_btn');
+      if (submitBtn) submitBtn.disabled = true;
+      
+      return;
+    }
+    
+    // Si >= 16 ans mais < 18 ans, afficher un message informatif
+    if (age >= 16 && age < 18) {
+      // Masquer le message d'erreur < 16 ans s'il existe
+      const errorDiv = document.getElementById('date_of_birth_error');
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+      }
+      
+      if (ageValue) {
+        ageValue.textContent = age;
+        ageValue.style.color = 'var(--bs-info)';
+      }
+      if (ageDisplay) {
+        ageDisplay.style.display = 'block';
+        ageDisplay.style.color = 'inherit';
+      }
+      
+      // Afficher message informatif (pas d'erreur, juste information)
+      let infoDiv = document.getElementById('date_of_birth_warning');
+      if (!infoDiv) {
+        infoDiv = document.createElement('div');
+        infoDiv.id = 'date_of_birth_warning';
+        infoDiv.className = 'alert alert-info mt-2';
+        const dateContainer = daySelect?.closest('.col-md-12');
+        if (dateContainer) {
+          dateContainer.appendChild(infoDiv);
+        }
+      }
+      infoDiv.innerHTML = '<i class="bi bi-info-circle me-2"></i><strong>Information :</strong> Vos parents peuvent être prévenus de votre adhésion.';
+      infoDiv.style.display = 'block';
+      
+      // Format: YYYY-MM-DD pour le champ caché (valide, on peut soumettre)
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      if (dateOfBirthField) dateOfBirthField.value = dateStr;
+      
+      // Marquer les champs comme valides
+      [daySelect, monthSelect, yearSelect].forEach(select => {
+        if (select) {
+          select.classList.add('is-valid');
+          select.classList.remove('is-invalid');
+        }
+      });
+      
+      // Réactiver le bouton de soumission
+      const submitBtn = document.getElementById('submit_btn');
+      if (submitBtn) {
+        validateForm();
+      }
+      
+      return;
+    }
+    
+    // Si >= 18 ans, tout est valide
+    [daySelect, monthSelect, yearSelect].forEach(select => {
+      if (select) {
+        select.classList.add('is-valid');
+        select.classList.remove('is-invalid');
+      }
+    });
+    
+    // Masquer TOUS les messages d'erreur/avertissement
+    const errorDiv = document.getElementById('date_of_birth_error');
+    if (errorDiv) {
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = ''; // Vider le contenu
+    }
+    const warningDiv = document.getElementById('date_of_birth_warning');
+    if (warningDiv) {
+      warningDiv.style.display = 'none';
+      warningDiv.innerHTML = ''; // Vider le contenu
+    }
+    
+    // Format: YYYY-MM-DD pour le champ caché
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    if (dateOfBirthField) dateOfBirthField.value = dateStr;
+    
+    if (ageValue) {
+      ageValue.textContent = age;
+      ageValue.style.color = 'var(--bs-success)';
+    }
+    if (ageDisplay) {
+      ageDisplay.style.display = 'block';
+      ageDisplay.style.color = 'inherit';
+    }
+    
+    // Réactiver le bouton de soumission
+    const submitBtn = document.getElementById('submit_btn');
+    if (submitBtn) {
+      // Réactiver le bouton et vérifier la validation complète
+      validateForm();
+    }
   }
   
   // Validation champ
@@ -938,6 +1106,36 @@
     
     // Validation avant soumission
     form?.addEventListener('submit', function(e) {
+      // Vérifier l'âge avant soumission
+      const day = document.getElementById('date_of_birth_day')?.value;
+      const month = document.getElementById('date_of_birth_month')?.value;
+      const year = document.getElementById('date_of_birth_year')?.value;
+      
+      if (day && month && year) {
+        const birthDate = new Date(year, month - 1, day);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        // Bloquer strictement les < 16 ans
+        if (age < 16) {
+          e.preventDefault();
+          updateAdultAge(); // Afficher les messages d'erreur
+          const firstInvalid = form.querySelector('.is-invalid');
+          if (firstInvalid) {
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstInvalid.focus();
+          }
+          alert("L'adhésion adulte n'est pas possible pour les personnes de moins de 16 ans. Veuillez contacter un membre du bureau de l'association.");
+          return false;
+        }
+        
+        // À partir de 16 ans, l'adhésion est possible (les parents peuvent être prévenus pour les 16-17 ans)
+      }
+      
       if (!validateForm()) {
         e.preventDefault();
         const firstInvalid = form.querySelector('.is-invalid');
