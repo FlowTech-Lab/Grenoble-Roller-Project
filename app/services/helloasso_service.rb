@@ -19,11 +19,22 @@ class HelloassoService
     end
 
     # Détermine l'environnement HelloAsso réellement utilisé
-    # - En production Rails → on force l'usage des credentials de production
-    # - En dehors de la production → sandbox par défaut
+    # - En production Rails avec APP_ENV=production → on force l'usage des credentials de production
+    # - En staging (RAILS_ENV=production mais APP_ENV=staging) → sandbox
+    # - En développement → sandbox par défaut
     def environment
+      # Vérifier si on est en staging via variable d'environnement ou host
+      is_staging = ENV["APP_ENV"] == "staging" || 
+                   ENV["DEPLOY_ENV"] == "staging" ||
+                   (Rails.env.production? && ActionMailer::Base.default_url_options[:host]&.include?("flowtech-lab.org"))
+      
+      # Si staging, utiliser sandbox
+      return "sandbox" if is_staging
+      
+      # Si production Rails ET pas staging → production HelloAsso
       return "production" if Rails.env.production?
 
+      # Sinon (dev, test) → sandbox par défaut
       config[:environment].presence || "sandbox"
     end
 

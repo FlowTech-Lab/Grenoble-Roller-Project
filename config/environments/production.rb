@@ -57,7 +57,11 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "grenoble-roller.org" }
+  # Production utilise grenoble-roller.org
+  config.action_mailer.default_url_options = { 
+    host: ENV.fetch("MAILER_HOST", "grenoble-roller.org"),
+    protocol: ENV.fetch("MAILER_PROTOCOL", "https")
+  }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   config.action_mailer.delivery_method = :smtp

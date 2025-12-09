@@ -6,6 +6,9 @@ Scripts dédiés à l'environnement de production.
 
 - **`deploy.sh`** : Script de déploiement automatique PRODUCTION
 - **`watchdog.sh`** : Script de surveillance (appelé par cron)
+- **`rebuild.sh`** : Rebuild rapide sans cache (pour prendre en compte les changements de code)
+- **`init-db.sh`** : Initialisation de la base de données (migrate + seed) - pour fresh install
+- **`config.sh`** : Configuration centralisée avec timeouts adaptés à la production
 
 ## ✨ Fonctionnalités automatiques
 
@@ -16,11 +19,30 @@ Scripts dédiés à l'environnement de production.
 
 ## 🚀 Utilisation
 
-### Test manuel
+### Déploiement automatique
 
 ```bash
 # Depuis la racine du projet
 ./ops/production/deploy.sh
+```
+
+### Rebuild manuel (après modification de code/seeds)
+
+```bash
+# ⚠️  ATTENTION: Rebuild sans cache pour prendre en compte les changements
+# Cela peut causer un downtime de 10-15 minutes
+./ops/production/rebuild.sh
+
+# Puis initialiser la DB si nécessaire
+./ops/production/init-db.sh
+```
+
+### Initialisation base de données (fresh install)
+
+```bash
+# ⚠️  ATTENTION: Migrate + Seed en PRODUCTION
+# Ce script demande une double confirmation pour sécurité
+./ops/production/init-db.sh
 ```
 
 ### Automatisation (cron)

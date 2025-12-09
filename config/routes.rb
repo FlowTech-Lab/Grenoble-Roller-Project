@@ -1,5 +1,18 @@
 Rails.application.routes.draw do
   ActiveAdmin.routes(self)
+  
+  # Route pour le toggle du mode maintenance (controller personnalisé)
+  post '/admin/maintenance/toggle', to: 'admin/maintenance_toggle#toggle', as: 'admin_maintenance_toggle'
+  
+  # Page maintenance simple (optionnel, pour tests)
+  get '/maintenance', to: proc { |env| 
+    [
+      200,
+      { 'Content-Type' => 'text/html' },
+      [File.read(Rails.root.join('public', 'maintenance.html'))]
+    ]
+  }
+  
   devise_for :users, controllers: {
     registrations: "registrations",
     sessions: "sessions",
@@ -74,6 +87,14 @@ Rails.application.routes.draw do
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
+    end
+  end
+
+  # Initiations
+  resources :initiations do
+    member do
+      post :attend
+      delete :cancel_attendance
     end
   end
 

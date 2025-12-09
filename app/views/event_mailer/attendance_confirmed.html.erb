@@ -45,8 +45,31 @@
   </table>
 </div>
 
+<% if @is_initiation %>
+  <div style="background: #e7f3ff; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #007bff;">
+    <h3 style="margin-top: 0; color: #333; font-size: 18px;">🎓 Informations spécifiques à l'initiation</h3>
+    <% if @attendance.free_trial_used? %>
+      <p style="margin: 10px 0; color: #856404; background: #fff3cd; padding: 10px; border-radius: 5px;">
+        <strong>🎁 Essai gratuit utilisé :</strong> Vous avez utilisé votre essai gratuit pour cette séance. 
+        Pour continuer à participer aux initiations, une adhésion sera requise.
+      </p>
+    <% end %>
+    <% if @attendance.equipment_note.present? %>
+      <p style="margin: 10px 0;">
+        <strong>📦 Matériel demandé :</strong> <%= @attendance.equipment_note %>
+        <br><small style="color: #666;">Votre demande a été transmise au staff. Vous serez contacté(e) via WhatsApp si nécessaire.</small>
+      </p>
+    <% end %>
+    <p style="margin: 10px 0; color: #666; font-size: 14px;">
+      <strong>📍 Lieu :</strong> Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble<br>
+      <strong>⏰ Horaires :</strong> Samedi 10h15 - 12h00 (1h45)<br>
+      <strong>🛡️ Sécurité :</strong> Casque et protections fortement recommandés
+    </p>
+  </div>
+<% end %>
+
 <div style="margin: 30px 0; text-align: center;">
-  <%= link_to 'Voir l\'événement', event_url(@event), 
+  <%= link_to 'Voir l\'événement', @is_initiation ? initiation_url(@event) : event_url(@event), 
       style: 'display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
 </div>
 

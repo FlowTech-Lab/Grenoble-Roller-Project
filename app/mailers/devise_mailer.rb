@@ -55,12 +55,23 @@ class DeviseMailer < Devise::Mailer
   def build_confirmation_url(user, token)
     # Utiliser les helpers URL de Rails avec les routes Devise
     url_helpers = Rails.application.routes.url_helpers
-    host = ActionMailer::Base.default_url_options[:host] || 
-           Rails.application.config.action_mailer.default_url_options[:host] ||
-           (Rails.env.production? ? "grenoble-roller.org" : "localhost:3000")
+    
+    # Déterminer le host selon l'environnement
+    host = if Rails.env.development?
+      ENV.fetch("MAILER_HOST", "dev-grenoble-roller.flowtech-lab.org")
+    elsif staging_environment?
+      ENV.fetch("MAILER_HOST", "grenoble-roller.flowtech-lab.org")
+    elsif Rails.env.production?
+      ENV.fetch("MAILER_HOST", "grenoble-roller.org")
+    else
+      ActionMailer::Base.default_url_options[:host] || 
+      Rails.application.config.action_mailer.default_url_options[:host] ||
+      "localhost:3000"
+    end
+    
     protocol = ActionMailer::Base.default_url_options[:protocol] || 
                Rails.application.config.action_mailer.default_url_options[:protocol] ||
-               (Rails.env.production? ? "https" : "http")
+               (Rails.env.development? ? "https" : "https")
     
     url_helpers.user_confirmation_url(
       confirmation_token: token,
@@ -68,16 +79,36 @@ class DeviseMailer < Devise::Mailer
       protocol: protocol
     )
   end
+  
+  def staging_environment?
+    # Détecter staging via variable d'environnement ou host
+    ENV["APP_ENV"] == "staging" || 
+    ENV["DEPLOY_ENV"] == "staging" ||
+    (Rails.env.production? && 
+     (ActionMailer::Base.default_url_options[:host]&.include?("flowtech-lab.org") ||
+      Rails.application.config.action_mailer.default_url_options[:host]&.include?("flowtech-lab.org")))
+  end
 
   def build_resend_confirmation_url
     # Construire l'URL pour renvoyer l'email de confirmation
     url_helpers = Rails.application.routes.url_helpers
-    host = ActionMailer::Base.default_url_options[:host] || 
-           Rails.application.config.action_mailer.default_url_options[:host] ||
-           (Rails.env.production? ? "grenoble-roller.org" : "localhost:3000")
+    
+    # Déterminer le host selon l'environnement
+    host = if Rails.env.development?
+      ENV.fetch("MAILER_HOST", "dev-grenoble-roller.flowtech-lab.org")
+    elsif staging_environment?
+      ENV.fetch("MAILER_HOST", "grenoble-roller.flowtech-lab.org")
+    elsif Rails.env.production?
+      ENV.fetch("MAILER_HOST", "grenoble-roller.org")
+    else
+      ActionMailer::Base.default_url_options[:host] || 
+      Rails.application.config.action_mailer.default_url_options[:host] ||
+      "localhost:3000"
+    end
+    
     protocol = ActionMailer::Base.default_url_options[:protocol] || 
                Rails.application.config.action_mailer.default_url_options[:protocol] ||
-               (Rails.env.production? ? "https" : "http")
+               (Rails.env.development? ? "https" : "https")
     
     url_helpers.new_user_confirmation_url(
       host: host,

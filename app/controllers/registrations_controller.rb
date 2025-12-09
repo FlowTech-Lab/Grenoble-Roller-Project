@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class RegistrationsController < Devise::RegistrationsController
+  # Inclure TurnstileVerifiable explicitement car RegistrationsController n'hérite pas de ApplicationController
+  include TurnstileVerifiable
   # POST /resource
   def create
     # Vérifier le consentement RGPD avant création
@@ -10,6 +12,21 @@ class RegistrationsController < Devise::RegistrationsController
       render :new, status: :unprocessable_entity
       return
     end
+
+    # Vérifier Turnstile (protection anti-bot) AVANT création
+    # Si échec, bloquer immédiatement et ne PAS créer l'utilisateur
+    unless verify_turnstile
+      Rails.logger.warn(
+        "RegistrationsController#create - Turnstile verification FAILED - BLOCKING registration for IP: #{request.remote_ip}"
+      )
+      build_resource(sign_up_params)
+      resource.errors.add(:base, "Vérification de sécurité échouée. Veuillez réessayer.")
+      # IMPORTANT: Ne pas créer l'utilisateur, bloquer complètement
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    Rails.logger.info("RegistrationsController#create - Turnstile verification PASSED, proceeding with registration")
 
     build_resource(sign_up_params)
 

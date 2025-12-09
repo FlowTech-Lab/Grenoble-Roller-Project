@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby
+# Script de test pour vérifier le blocage Turnstile
+# Usage: bin/test-turnstile-block
+
+require_relative "../config/environment"
+require 'net/http'
+require 'uri'
+
+puts "=== TEST DE BLOCAGE TURNSTILE ==="
+puts ""
+
+# 1. Vérifier que Turnstile est configuré
+site_key = Rails.application.credentials.dig(:turnstile, :site_key)
+secret_key = Rails.application.credentials.dig(:turnstile, :secret_key)
+
+puts "1. Configuration Turnstile:"
+puts "   Site Key: #{site_key.present? ? '✅ Présente' : '❌ MANQUANTE'}"
+puts "   Secret Key: #{secret_key.present? ? '✅ Présente' : '❌ MANQUANTE'}"
+puts ""
+
+# 2. Vérifier que verify_turnstile est accessible
+puts "2. Vérification méthode verify_turnstile:"
+begin
+  controller = SessionsController.new
+  request = ActionDispatch::TestRequest.create
+  controller.instance_variable_set(:@_request, request)
+  controller.params = ActionController::Parameters.new({})
+  
+  result = controller.send(:verify_turnstile)
+  puts "   ✅ Méthode accessible, retour sans token: #{result} (devrait être false)"
+rescue => e
+  puts "   ❌ Erreur: #{e.message}"
+end
+puts ""
+
+# 3. Vérifier le code du contrôleur
+puts "3. Vérification code SessionsController#create:"
+create_method = SessionsController.instance_method(:create)
+source_file, source_line = create_method.source_location
+puts "   Défini dans: #{source_file}:#{source_line}"
+
+# Lire le code source pour vérifier la structure
+source_lines = File.readlines(source_file)
+start_line = source_line - 1
+end_line = start_line + 30 # Lire les 30 premières lignes de la méthode
+
+puts "   Code (lignes #{start_line + 1}-#{[end_line, source_lines.length].min}):"
+source_lines[start_line...[end_line, source_lines.length].min].each_with_index do |line, idx|
+  line_num = start_line + idx + 1
+  if line.strip.include?('unless verify_turnstile') || 
+     line.strip.include?('return') || 
+     line.strip.include?('render :new') ||
+     line.strip.include?('super do')
+    puts "   [#{line_num}] #{line.rstrip} ⬅️"
+  end
+end
+puts ""
+
+# 4. Simuler une requête POST sans token Turnstile
+puts "4. Test simulation requête sans token:"
+puts "   ⚠️  Ce test nécessite un serveur Rails en cours d'exécution"
+puts "   Pour tester réellement:"
+puts "   1. Démarrer le serveur: docker compose -f ops/dev/docker-compose.yml up web"
+puts "   2. Faire une requête POST vers /users/sign_in sans cf-turnstile-response"
+puts "   3. Vérifier dans les logs que 'BLOCKING authentication' apparaît"
+puts "   4. Vérifier que l'utilisateur n'est PAS connecté après"
+puts ""
+
+# 5. Recommandations
+puts "5. Points à vérifier:"
+puts "   - Le 'return' est-il bien placé après 'render :new' ?"
+puts "   - Y a-t-il du code après le 'return' qui pourrait s'exécuter ?"
+puts "   - Le 'super' est-il bien dans un bloc conditionnel séparé ?"
+puts "   - Y a-t-il des callbacks Devise qui pourraient continuer l'authentification ?"
+puts ""
+
+puts "=== FIN DU TEST ==="
+

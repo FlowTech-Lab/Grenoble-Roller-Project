@@ -120,7 +120,8 @@ Le script charge automatiquement les Rails credentials :
 7. **Vérification migrations** : S'assure que tous les fichiers sont dans le conteneur
 8. **Application migrations** : Avec détection destructives
 9. **Health checks** : DB, Redis, Migrations, HTTP
-10. **Métriques** : Export Prometheus
+10. **Installation crontab** : Mise à jour automatique des tâches planifiées (whenever)
+11. **Métriques** : Export Prometheus
 
 ## 🛡️ Sécurité
 
