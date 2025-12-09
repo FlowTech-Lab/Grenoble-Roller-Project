@@ -19,6 +19,10 @@ services:
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: grenoble_roller_production
       RAILS_ENV: production
+      APP_ENV: staging
+      DEPLOY_ENV: staging
+      MAILER_HOST: grenoble-roller.flowtech-lab.org
+      MAILER_PROTOCOL: https
       PORT: 3000
     ports:
       - "3001:3000"

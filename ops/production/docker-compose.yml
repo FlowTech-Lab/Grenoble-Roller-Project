@@ -19,6 +19,10 @@ services:
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: grenoble_roller_production
       RAILS_ENV: production
+      APP_ENV: production
+      DEPLOY_ENV: production
+      MAILER_HOST: grenoble-roller.org
+      MAILER_PROTOCOL: https
       PORT: 3000
     ports:
       - "3002:3000"
