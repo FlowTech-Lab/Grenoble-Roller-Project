@@ -1,4 +1,13 @@
 <!-- Grenoble Roller Navbar -->
+<% if defined?(MaintenanceMode) && MaintenanceMode.enabled? %>
+  <!-- Bandeau de maintenance - Rouge en haut de la page -->
+  <div class="maintenance-banner" style="background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); color: white; padding: 12px 0; text-align: center; font-weight: 600; position: sticky; top: 0; z-index: 1050; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3); border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
+    <div class="container-fluid">
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true" style="font-size: 1.1rem;"></i>
+      <span>Mode maintenance actif - Accès réservé aux administrateurs (ADMIN/SUPERADMIN)</span>
+    </div>
+  </div>
+<% end %>
 <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid sticky-top shadow-liquid mb-4">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center" href="<%= root_path %>">

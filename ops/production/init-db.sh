@@ -1,0 +1,105 @@
+#!/bin/bash
+###############################################################################
+# Script d'initialisation de la base de données PRODUCTION
+# Usage: ./ops/production/init-db.sh
+# Effectue: db:migrate + db:seed
+# ⚠️  ATTENTION: Ce script est pour PRODUCTION - utilisez avec précaution
+###############################################################################
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# Charger les modules nécessaires
+LIB_DIR="${SCRIPT_DIR}/../lib"
+source "${LIB_DIR}/core/colors.sh"
+source "${LIB_DIR}/core/logging.sh"
+source "${LIB_DIR}/docker/containers.sh"
+
+CONTAINER_NAME="grenoble-roller-production"
+
+log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log "🌱 INITIALISATION BASE DE DONNÉES - PRODUCTION"
+log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+log_warning "⚠️  ⚠️  ⚠️  ATTENTION : ENVIRONNEMENT PRODUCTION ⚠️  ⚠️  ⚠️"
+log_warning "Ce script va modifier la base de données PRODUCTION"
+log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+read -p "Confirmez-vous que vous êtes en PRODUCTION et voulez continuer ? (tapez 'PRODUCTION') : " confirmation || confirmation=""
+if [ "$confirmation" != "PRODUCTION" ]; then
+    log_error "Annulation - Confirmation incorrecte"
+    exit 1
+fi
+
+# Vérifier que le conteneur est running
+if ! container_is_running "$CONTAINER_NAME"; then
+    log_error "❌ Le conteneur ${CONTAINER_NAME} n'est pas en cours d'exécution"
+    log_error "Démarrez-le avec: docker compose -f ops/production/docker-compose.yml up -d"
+    exit 1
+fi
+
+log_success "✅ Conteneur ${CONTAINER_NAME} est running"
+
+# 1. Vérifier si seeds.rb a changé (comparaison MD5)
+log "🔍 Vérification de seeds.rb..."
+if [ -f "$REPO_DIR/db/seeds.rb" ]; then
+    LOCAL_SEEDS_HASH=$(md5sum "$REPO_DIR/db/seeds.rb" 2>/dev/null | cut -d' ' -f1 || echo "")
+    CONTAINER_SEEDS_HASH=$(docker exec "$CONTAINER_NAME" md5sum /rails/db/seeds.rb 2>/dev/null | cut -d' ' -f1 || echo "")
+    
+    if [ -n "$LOCAL_SEEDS_HASH" ] && [ -n "$CONTAINER_SEEDS_HASH" ]; then
+        if [ "$LOCAL_SEEDS_HASH" != "$CONTAINER_SEEDS_HASH" ]; then
+            log_warning "⚠️  seeds.rb a changé localement"
+            log_warning "   Local:    ${LOCAL_SEEDS_HASH:0:8}..."
+            log_warning "   Conteneur: ${CONTAINER_SEEDS_HASH:0:8}..."
+            log_warning "   → Rebuild nécessaire pour prendre en compte les changements"
+            log_warning "   Exécutez: ./ops/production/rebuild.sh"
+            read -p "Continuer quand même ? (o/N) : " choice || choice="N"
+            if [[ ! "$choice" =~ ^[OoYy]$ ]]; then
+                log_info "Annulé"
+                exit 0
+            fi
+        else
+            log_success "✅ seeds.rb identique (pas de rebuild nécessaire)"
+        fi
+    fi
+else
+    log_error "❌ Fichier seeds.rb introuvable: $REPO_DIR/db/seeds.rb"
+    exit 1
+fi
+
+# 2. Appliquer les migrations
+log "🔄 Application des migrations..."
+if docker exec "$CONTAINER_NAME" bin/rails db:migrate 2>&1 | tee -a /tmp/init-db-prod.log; then
+    log_success "✅ Migrations appliquées avec succès"
+else
+    log_error "❌ Échec des migrations"
+    exit 1
+fi
+
+# 3. Seed de la base de données
+log "🌱 Exécution du seed..."
+log_warning "⚠️  ⚠️  ⚠️  ATTENTION : Cette opération va peupler la base de données PRODUCTION ⚠️  ⚠️  ⚠️"
+log_warning "Assurez-vous que c'est bien ce que vous voulez faire !"
+read -p "Confirmez le seed en PRODUCTION ? (tapez 'OUI' en majuscules) : " seed_confirmation || seed_confirmation=""
+if [ "$seed_confirmation" != "OUI" ]; then
+    log_info "Seed annulé"
+    exit 0
+fi
+
+if docker exec "$CONTAINER_NAME" bin/rails db:seed 2>&1 | tee -a /tmp/init-db-prod.log; then
+    log_success "✅ Seed terminé avec succès"
+    
+    # Vérifier le résultat
+    USER_COUNT=$(docker exec "$CONTAINER_NAME" bin/rails runner "puts User.count" 2>/dev/null | tr -d '\n\r' || echo "0")
+    log_info "📊 ${USER_COUNT} utilisateur(s) créé(s)"
+else
+    log_error "❌ Échec du seed"
+    log_error "Consultez les logs ci-dessus pour plus de détails"
+    exit 1
+fi
+
+log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_success "✅ INITIALISATION TERMINÉE"
+log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+

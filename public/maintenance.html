@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maintenance en cours - Grenoble Roller</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Grenoble Roller Colors */
+      --gr-primary: #007bff;
+      --gr-primary-light: #5aa9fa;
+      --gr-primary-dark: #0056b3;
+      --gr-white: #f8f9fa;
+      --gr-bg-light: #f2f4f6;
+      --gr-muted: #5a6268;
+      
+      /* Liquid Design Gradients */
+      --gradient-liquid-primary: linear-gradient(135deg, #1e8dff 0%, #1ea0ff 100%);
+      --gradient-liquid-pastel: linear-gradient(135deg, #f0f5f9 0%, #e8eef3 50%, #f5f7fa 100%);
+      
+      /* Glass Effects */
+      --liquid-glass-bg: rgba(255, 255, 255, 0.85);
+      --liquid-glass-border: rgba(255, 255, 255, 0.3);
+      --liquid-blur: blur(12px);
+      
+      /* Shadows */
+      --shadow-liquid: 0 4px 20px rgba(0, 123, 255, 0.15);
+      --shadow-hover: 0 6px 30px rgba(0, 123, 255, 0.25);
+      
+      /* Transitions */
+      --transition-liquid: all 300ms ease;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--gradient-liquid-pastel);
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .maintenance-container {
+      text-align: center;
+      background: var(--liquid-glass-bg);
+      backdrop-filter: var(--liquid-blur);
+      -webkit-backdrop-filter: var(--liquid-blur);
+      padding: 60px 40px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-liquid);
+      max-width: 600px;
+      width: 100%;
+      border: 1px solid var(--liquid-glass-border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .maintenance-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(30, 141, 255, 0.1), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    .icon-container {
+      margin-bottom: 30px;
+    }
+
+    .icon-maintenance {
+      font-size: 80px;
+      background: var(--gradient-liquid-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--gr-primary-dark);
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .icon-maintenance {
+        font-size: 60px;
+      }
+    }
+
+    .status-message {
+      color: var(--gr-muted);
+      font-size: 1.1rem;
+      margin-bottom: 40px;
+      line-height: 1.7;
+      font-weight: 400;
+    }
+
+    .status-message p {
+      margin-bottom: 12px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .btn-maintenance {
+      padding: 14px 28px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: var(--transition-liquid);
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .btn-maintenance::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: var(--transition-liquid);
+    }
+
+    .btn-maintenance:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: var(--gradient-liquid-primary);
+      color: white;
+      box-shadow: 0 4px 15px rgba(30, 141, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .btn-secondary {
+      background: var(--liquid-glass-bg);
+      color: var(--gr-primary);
+      border: 2px solid var(--gr-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(30, 141, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-old-site {
+      background: rgba(90, 169, 250, 0.1);
+      color: var(--gr-primary-dark);
+      border: 1px solid rgba(90, 169, 250, 0.3);
+      font-size: 0.9rem;
+      padding: 10px 20px;
+    }
+
+    .btn-old-site:hover {
+      background: rgba(90, 169, 250, 0.2);
+      border-color: var(--gr-primary-light);
+    }
+
+    .loading-indicator {
+      margin-top: 30px;
+      color: var(--gr-muted);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--gr-primary);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite;
+    }
+
+    .dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(1) translateY(0);
+      }
+      40% {
+        opacity: 1;
+        transform: scale(1.2) translateY(-8px);
+      }
+    }
+
+    /* Bouton admin discret en haut à droite */
+    .admin-corner {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .admin-corner a {
+      padding: 14px 24px;
+      font-size: 1rem;
+      background: var(--gr-primary);
+      backdrop-filter: blur(8px);
+      border: 2px solid var(--gr-primary-dark);
+      color: white;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: var(--transition-liquid);
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .admin-corner a:hover {
+      background: var(--gr-primary-dark);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+
+    .admin-corner a::before {
+      content: "🔐";
+      font-size: 1.1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .maintenance-container {
+        padding: 40px 25px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn-maintenance {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .admin-corner {
+        top: 10px;
+        right: 10px;
+      }
+
+      .admin-corner a {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Bouton accès admin/app -->
+  <div class="admin-corner">
+    <a href="/users/sign_in">Accès Admin</a>
+  </div>
+
+  <div class="maintenance-container">
+    <div class="icon-container">
+      <div class="icon-maintenance">🔧</div>
+    </div>
+    
+    <h1>Maintenance en cours</h1>
+    
+    <div class="status-message">
+      <p>Nous améliorons la plateforme Grenoble Roller pour vous offrir une meilleure expérience.</p>
+      <p>Nous serons de retour très bientôt !</p>
+    </div>
+    
+    <div class="button-group">
+      <!-- Bouton ancien site temporaire -->
+      <a href="https://ancien-site.grenoble-roller.fr" class="btn-maintenance btn-old-site" target="_blank" rel="noopener noreferrer">
+        <span>↩️</span>
+        <span>Accéder à l'ancien site</span>
+      </a>
+    </div>
+    
+    <div class="loading-indicator">
+      <span>Chargement</span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</body>
+</html>
+
