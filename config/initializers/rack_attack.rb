@@ -67,7 +67,7 @@ Rack::Attack.throttled_responder = lambda do |request|
 
   # Extraire la période (retry_after) - valeur par défaut 60 secondes
   throttle_name = request.env["rack.attack.matched"]
-  
+
   retry_after = 60
   if match_data
     # Essayer différentes méthodes d'accès selon le type d'objet
@@ -98,6 +98,6 @@ Rack::Attack.throttled_responder = lambda do |request|
       "Content-Type" => "text/html; charset=utf-8",
       "Retry-After" => retry_after.to_s
     },
-    ["<html><body><h1>Trop de tentatives</h1><p>#{message}</p></body></html>"]
+    [ "<html><body><h1>Trop de tentatives</h1><p>#{message}</p></body></html>" ]
   ]
 end

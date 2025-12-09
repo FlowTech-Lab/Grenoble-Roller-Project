@@ -19,7 +19,7 @@ module TurnstileVerifiable
 
     # Récupérer le token depuis les paramètres
     # Turnstile ajoute automatiquement le token dans un champ caché avec ce nom
-    token = params['cf-turnstile-response'] || params[:'cf-turnstile-response']
+    token = params["cf-turnstile-response"] || params[:'cf-turnstile-response']
 
     # Si pas de token, la vérification échoue
     if token.blank?
@@ -62,7 +62,7 @@ module TurnstileVerifiable
     result = JSON.parse(response.body)
 
     # Log en cas d'échec pour debugging
-    unless result['success']
+    unless result["success"]
       Rails.logger.warn(
         "Turnstile verification failed: #{result['error-codes']&.join(', ')} " \
         "for IP #{request.remote_ip}. Response: #{result.inspect}"
@@ -71,11 +71,10 @@ module TurnstileVerifiable
       Rails.logger.debug("Turnstile verification successful for IP #{request.remote_ip}")
     end
 
-    result['success'] == true
+    result["success"] == true
   rescue => e
     # En cas d'erreur, log et retourner false pour sécurité
     Rails.logger.error("Turnstile verification error: #{e.message}")
     false
   end
 end
-

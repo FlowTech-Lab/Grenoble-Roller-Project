@@ -141,7 +141,7 @@ class MembershipsController < ApplicationController
   def check_age_and_redirect
     # Préserver le paramètre with_tshirt pour éviter les boucles de redirection
     with_tshirt_param = params[:with_tshirt]
-    
+
     # Vérifier d'abord si l'utilisateur a déjà une adhésion personnelle active ou pending
     current_season = Membership.current_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)

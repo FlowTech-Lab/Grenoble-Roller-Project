@@ -16,7 +16,7 @@ class EventReminderJob < ApplicationJob
 
     events.find_each do |event|
       is_initiation = event.is_a?(Event::Initiation)
-      
+
       # Envoyer un rappel uniquement aux participants actifs qui ont activé le rappel
       event.attendances.active
            .where(wants_reminder: true)

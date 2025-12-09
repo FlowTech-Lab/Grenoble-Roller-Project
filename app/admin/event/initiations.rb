@@ -1,10 +1,10 @@
 ActiveAdmin.register Event::Initiation, as: "Initiation" do
   menu priority: 2, label: "Initiations", parent: "Événements"
   includes :creator_user, :attendances
-  
+
   # Filtrer pour n'afficher que les initiations
   scope :all, default: true do |scope|
-    scope.where(type: 'Event::Initiation')
+    scope.where(type: "Event::Initiation")
   end
 
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
@@ -131,7 +131,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         },
         prompt: "Sélectionnez un statut"
       f.input :creator_user,
-        collection: User.order(:email).map { |u| [u.email, u.id] },
+        collection: User.order(:email).map { |u| [ u.email, u.id ] },
         label_method: :email,
         value_method: :id
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
@@ -154,7 +154,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     @initiation = resource
     @attendances = @initiation.attendances
       .includes(:user)
-      .where(status: ['registered', 'present'])
+      .where(status: [ "registered", "present" ])
       .order(:created_at)
   end
 
@@ -177,4 +177,3 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     redirect_to presences_admin_initiation_path(@initiation), notice: "Présences mises à jour avec succès."
   end
 end
-

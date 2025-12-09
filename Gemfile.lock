@@ -323,6 +323,9 @@ GEM
     rack (3.2.4)
     rack-attack (6.8.0)
       rack (>= 1.0, < 4)
+    rack-cors (3.0.0)
+      logger
+      rack (>= 3.0.14)
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -539,6 +542,7 @@ DEPENDENCIES
   puma (>= 5.0)
   pundit
   rack-attack
+  rack-cors
   rails (~> 8.1.1)
   rqrcode (~> 2.2)
   rspec-rails

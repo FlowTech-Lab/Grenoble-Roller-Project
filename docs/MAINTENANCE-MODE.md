@@ -77,7 +77,7 @@ Un bouton "Ancien site" est présent sur la page de maintenance pour rediriger t
 
 ```html
 <!-- Remplacer # par l'URL réelle de l'ancien site -->
-<a href="https://ancien-site.grenoble-roller.fr" class="btn-maintenance btn-old-site" target="_blank" rel="noopener noreferrer">
+<a href="https://ancien-site.grenoble-roller.org" class="btn-maintenance btn-old-site" target="_blank" rel="noopener noreferrer">
   <span>↩️</span>
   <span>Ancien site</span>
 </a>

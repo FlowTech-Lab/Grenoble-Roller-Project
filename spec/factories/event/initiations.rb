@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :event_initiation, class: 'Event::Initiation' do
     association :creator_user, factory: :user
     type { 'Event::Initiation' }
-    
+
     # Calculer le prochain samedi à 10h15
     start_at do
       today = Date.today
@@ -10,7 +10,7 @@ FactoryBot.define do
       days_until_saturday = 7 if days_until_saturday == 0 && Time.current.hour >= 10
       (today + days_until_saturday.days).beginning_of_day + 10.hours + 15.minutes
     end
-    
+
     duration_min { 105 } # 1h45
     title { "Initiation Roller - Samedi #{start_at.strftime('%d %B %Y')}" }
     description { "Cours d'initiation au roller pour débutants" }
@@ -27,13 +27,13 @@ FactoryBot.define do
     distance_km { 0 }
     price_cents { 0 }
     currency { 'EUR' }
-    
+
     trait :full do
       after(:create) do |initiation|
         create_list(:attendance, initiation.max_participants, event: initiation, is_volunteer: false, status: 'registered')
       end
     end
-    
+
     trait :with_volunteers do
       after(:create) do |initiation|
         create_list(:attendance, 3, event: initiation, is_volunteer: true, status: 'registered')
@@ -41,4 +41,3 @@ FactoryBot.define do
     end
   end
 end
-

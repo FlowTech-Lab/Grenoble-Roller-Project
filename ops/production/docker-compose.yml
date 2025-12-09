@@ -1,7 +1,42 @@
 # --- ops/production/docker-compose.yml ---
 # Usage: docker compose -f ops/production/docker-compose.yml up -d
+#
+# Configuration automatique HTTPS avec Let's Encrypt via nginx-proxy + acme-companion
+# - nginx-proxy génère automatiquement la config nginx
+# - acme-companion gère Let's Encrypt (obtention + renouvellement automatique)
+# - Il suffit d'ajouter les labels VIRTUAL_HOST et LETSENCRYPT_EMAIL sur le service web
 
 services:
+  # nginx-proxy : génère automatiquement la configuration nginx
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: grenoble-roller-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginx-proxy-certs:/etc/nginx/certs:ro
+      - nginx-proxy-vhost:/etc/nginx/vhost.d
+      - nginx-proxy-html:/usr/share/nginx/html
+      - nginx-proxy-dhparam:/etc/nginx/dhparam
+    labels:
+      - "com.github.nginx-proxy.nginx-proxy.version=alpine"
+
+  # acme-companion : gère automatiquement Let's Encrypt (obtention + renouvellement)
+  acme-companion:
+    image: nginxproxy/acme-companion:latest
+    container_name: grenoble-roller-acme-companion
+    restart: unless-stopped
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx-proxy-acme:/etc/acme.sh
+    depends_on:
+      - nginx-proxy
+
   web:
     build:
       context: ../..
@@ -24,9 +59,23 @@ services:
       MAILER_HOST: grenoble-roller.org
       MAILER_PROTOCOL: https
       PORT: 3000
-    ports:
-      - "3002:3000"
+      # Configuration pour nginx-proxy
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-grenoble-roller.org,www.grenoble-roller.org}
+      VIRTUAL_PORT: 3000
+      # Forcer HTTPS uniquement (bloquer HTTP)
+      HTTPS_METHOD: nohttp
+    # Labels pour nginx-proxy et acme-companion (HTTPS automatique)
+    labels:
+      - "com.github.nginx-proxy.nginx-proxy=true"
+      - "com.github.nginx-proxy.letsencrypt.email=${LETSENCRYPT_EMAIL:-contact@grenoble-roller.org}"
+      - "com.github.nginx-proxy.letsencrypt.host=${VIRTUAL_HOST:-grenoble-roller.org,www.grenoble-roller.org}"
+    expose:
+      - "3000"
     depends_on:
+      nginx-proxy:
+        condition: service_started
+      acme-companion:
+        condition: service_started
       db:
         condition: service_healthy
       minio:
@@ -80,3 +129,9 @@ volumes:
   # grenoble-roller-prod-data:  # Commenté car volume /rails/db non utilisé
   grenoble-roller-prod-db-data:
   grenoble-roller-prod-minio-data:
+  # Volumes pour nginx-proxy et acme-companion
+  nginx-proxy-certs:
+  nginx-proxy-vhost:
+  nginx-proxy-html:
+  nginx-proxy-dhparam:
+  nginx-proxy-acme:

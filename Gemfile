@@ -23,6 +23,7 @@ gem "pundit"
 gem "activeadmin"
 gem "rack-attack" # Rate limiting pour sécurité
 gem "rqrcode", "~> 2.2" # QR code pour emails de confirmation
+gem "rack-cors" # CORS pour applications mobiles
 # Note: Cloudflare Turnstile intégré manuellement (pas de gem disponible)
 
 gem "table_print"

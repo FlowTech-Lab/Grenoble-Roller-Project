@@ -13,7 +13,7 @@ class Attendance < ApplicationRecord
 
   validates :status, presence: true
   validates :user_id, uniqueness: { scope: :event_id, message: "a déjà une inscription pour cet événement" }
-  validates :free_trial_used, inclusion: { in: [true, false] }
+  validates :free_trial_used, inclusion: { in: [ true, false ] }
   validate :event_has_available_spots, on: :create
   validate :can_use_free_trial, on: :create
   validate :can_register_to_initiation, on: :create

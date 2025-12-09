@@ -12,4 +12,3 @@ class FixExistingEventsType < ActiveRecord::Migration[8.0]
     # On laisse vide car c'est une correction de données
   end
 end
-

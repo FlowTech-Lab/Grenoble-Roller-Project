@@ -9,21 +9,21 @@ class DeviseMailer < Devise::Mailer
     @user = record
     @token = token
     @confirmation_url = build_confirmation_url(record, token)
-    
+
     # Calculer date d'expiration (3 jours par défaut)
     expiry_period = Devise.confirm_within || 3.days
     @expiry_date = expiry_period.from_now.strftime("%d/%m/%Y à %H:%M")
     @hours_left = (expiry_period / 1.hour).round
-    
+
     # URL pour renvoyer l'email (utiliser _url pour URL complète dans email)
     @resend_url = build_resend_confirmation_url
-    
+
     # Générer QR code pour mobile (avec gestion d'erreur)
     qr_code_data = generate_qr_code_png(@confirmation_url)
-    
+
     # Définir le Content-ID pour le template (avant l'appel à mail())
     @qr_code_cid = qr_code_data ? "qr-code-confirmation@grenoble-roller.org" : nil
-    
+
     # Attacher le QR code comme pièce jointe AVANT le rendu du template
     if qr_code_data
       attachments["qr-code-confirmation.png"] = {
@@ -32,13 +32,13 @@ class DeviseMailer < Devise::Mailer
         content_id: "<#{@qr_code_cid}>"
       }
     end
-    
+
     # Logging (sans token)
     Rails.logger.info(
       "Sending confirmation email to #{@user.email} " \
       "(expires: #{@expiry_date})"
     )
-    
+
     mail(
       to: record.email,
       subject: "Confirmez votre adresse email - Grenoble Roller",
@@ -55,7 +55,7 @@ class DeviseMailer < Devise::Mailer
   def build_confirmation_url(user, token)
     # Utiliser les helpers URL de Rails avec les routes Devise
     url_helpers = Rails.application.routes.url_helpers
-    
+
     # Déterminer le host selon l'environnement
     host = if Rails.env.development?
       ENV.fetch("MAILER_HOST", "dev-grenoble-roller.flowtech-lab.org")
@@ -64,27 +64,27 @@ class DeviseMailer < Devise::Mailer
     elsif Rails.env.production?
       ENV.fetch("MAILER_HOST", "grenoble-roller.org")
     else
-      ActionMailer::Base.default_url_options[:host] || 
+      ActionMailer::Base.default_url_options[:host] ||
       Rails.application.config.action_mailer.default_url_options[:host] ||
       "localhost:3000"
     end
-    
-    protocol = ActionMailer::Base.default_url_options[:protocol] || 
+
+    protocol = ActionMailer::Base.default_url_options[:protocol] ||
                Rails.application.config.action_mailer.default_url_options[:protocol] ||
                (Rails.env.development? ? "https" : "https")
-    
+
     url_helpers.user_confirmation_url(
       confirmation_token: token,
       host: host,
       protocol: protocol
     )
   end
-  
+
   def staging_environment?
     # Détecter staging via variable d'environnement ou host
-    ENV["APP_ENV"] == "staging" || 
+    ENV["APP_ENV"] == "staging" ||
     ENV["DEPLOY_ENV"] == "staging" ||
-    (Rails.env.production? && 
+    (Rails.env.production? &&
      (ActionMailer::Base.default_url_options[:host]&.include?("flowtech-lab.org") ||
       Rails.application.config.action_mailer.default_url_options[:host]&.include?("flowtech-lab.org")))
   end
@@ -92,7 +92,7 @@ class DeviseMailer < Devise::Mailer
   def build_resend_confirmation_url
     # Construire l'URL pour renvoyer l'email de confirmation
     url_helpers = Rails.application.routes.url_helpers
-    
+
     # Déterminer le host selon l'environnement
     host = if Rails.env.development?
       ENV.fetch("MAILER_HOST", "dev-grenoble-roller.flowtech-lab.org")
@@ -101,15 +101,15 @@ class DeviseMailer < Devise::Mailer
     elsif Rails.env.production?
       ENV.fetch("MAILER_HOST", "grenoble-roller.org")
     else
-      ActionMailer::Base.default_url_options[:host] || 
+      ActionMailer::Base.default_url_options[:host] ||
       Rails.application.config.action_mailer.default_url_options[:host] ||
       "localhost:3000"
     end
-    
-    protocol = ActionMailer::Base.default_url_options[:protocol] || 
+
+    protocol = ActionMailer::Base.default_url_options[:protocol] ||
                Rails.application.config.action_mailer.default_url_options[:protocol] ||
                (Rails.env.development? ? "https" : "https")
-    
+
     url_helpers.new_user_confirmation_url(
       host: host,
       protocol: protocol
@@ -119,9 +119,9 @@ class DeviseMailer < Devise::Mailer
   # Générer QR code en PNG pour meilleure compatibilité avec les clients email
   def generate_qr_code_png(url)
     require "rqrcode"
-    
+
     qr = RQRCode::QRCode.new(url)
-    
+
     # Générer le QR code en PNG (méthode simple)
     # Utiliser les options par défaut qui fonctionnent bien
     png = qr.as_png(
@@ -131,7 +131,7 @@ class DeviseMailer < Devise::Mailer
       fill: "white",
       color: "black"
     )
-    
+
     # Retourner les données PNG brutes (StringIO ou String)
     png.respond_to?(:to_s) ? png.to_s : png.string
   rescue => e

@@ -6,7 +6,7 @@ class ConfirmationsController < Devise::ConfirmationsController
   def new
     # Appeler la méthode parente pour initialiser la resource
     super
-    
+
     # Pré-remplir l'email si fourni en paramètre (depuis redirection)
     # Cela permet de pré-remplir le formulaire quand on arrive depuis :
     # - SessionsController (tentative de connexion avec email non confirmé)
@@ -42,7 +42,7 @@ class ConfirmationsController < Devise::ConfirmationsController
 
   def show
     token = params[:confirmation_token]
-    
+
     # SÉCURITÉ : Ne JAMAIS logguer le token en clair
     # Logging sécurisé (sans token)
     Rails.logger.info(
@@ -56,10 +56,10 @@ class ConfirmationsController < Devise::ConfirmationsController
     if resource.errors.empty?
       # Confirmation réussie - enregistrer audit trail
       record_confirmation_audit(resource)
-      
+
       # Détection auto-click email scanner (après confirmation réussie)
       detect_email_scanner(resource) if resource.confirmation_sent_at
-      
+
       set_flash_message! :notice, :confirmed
       sign_in(resource_name, resource)
       redirect_to after_confirmation_path_for(resource)
@@ -79,7 +79,7 @@ class ConfirmationsController < Devise::ConfirmationsController
       confirmed_user_agent: request.user_agent&.truncate(500),
       confirmation_token_last_used_at: Time.current
     )
-    
+
     # Logging sécurisé (sans token)
     Rails.logger.info(
       "✅ Email confirmed successfully - User ID: #{user.id}, " \
@@ -91,7 +91,7 @@ class ConfirmationsController < Devise::ConfirmationsController
   # Calculer temps écoulé depuis envoi email
   def time_since_confirmation_sent(user)
     return "N/A" unless user.confirmation_sent_at
-    
+
     seconds = (Time.current - user.confirmation_sent_at).to_i
     if seconds < 60
       "#{seconds} secondes"
@@ -105,16 +105,16 @@ class ConfirmationsController < Devise::ConfirmationsController
   # Détecter auto-click email scanner (token cliqué < 10sec après envoi)
   def detect_email_scanner(user)
     return unless user.confirmation_sent_at
-    
+
     time_since_sent = Time.current - user.confirmation_sent_at
-    
+
     if time_since_sent < 10.seconds
       # Potentiel email scanner (auto-click trop rapide)
       Rails.logger.warn(
         "⚠️ Suspicious confirmation attempt - Possible email scanner detected. " \
         "User ID: #{user.id}, Time since sent: #{time_since_sent.to_i}s, IP: #{request.remote_ip}"
       )
-      
+
       # Notifier service de sécurité
       EmailSecurityService.detect_email_scanner(user, request.remote_ip, time_since_sent)
     end
@@ -124,13 +124,13 @@ class ConfirmationsController < Devise::ConfirmationsController
   def detect_brute_force_attempt(ip)
     cache_key = "confirmation_brute_force:#{ip}:#{Time.current.hour}"
     failure_count = Rails.cache.increment(cache_key, 1, expires_in: 1.hour) || 1
-    
+
     if failure_count > 50 # Seuil : 50 échecs/heure depuis même IP
       Rails.logger.error(
         "🚨 BRUTE FORCE ATTACK DETECTED - Confirmation failures: #{failure_count}, " \
         "IP: #{ip}, Hour: #{Time.current.hour}"
       )
-      
+
       # Notifier service de sécurité (si configuré)
       EmailSecurityService.detect_brute_force(ip, failure_count) if defined?(EmailSecurityService)
     end

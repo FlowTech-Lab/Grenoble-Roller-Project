@@ -2,14 +2,14 @@
 # Gestion du mode maintenance avec cache Redis ou Rails.cache
 
 class MaintenanceMode
-  CACHE_KEY = 'maintenance_mode:enabled'
+  CACHE_KEY = "maintenance_mode:enabled"
 
   def self.enabled?
-    Rails.cache.read(CACHE_KEY) == 'true'
+    Rails.cache.read(CACHE_KEY) == "true"
   end
 
   def self.enable!
-    Rails.cache.write(CACHE_KEY, 'true', expires_in: 30.days)
+    Rails.cache.write(CACHE_KEY, "true", expires_in: 30.days)
     Rails.logger.warn("🔒 MAINTENANCE MODE ACTIVÉ")
   end
 
@@ -23,7 +23,6 @@ class MaintenanceMode
   end
 
   def self.status
-    enabled? ? 'ACTIF' : 'INACTIF'
+    enabled? ? "ACTIF" : "INACTIF"
   end
 end
-

@@ -49,7 +49,7 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
   # Staging utilise grenoble-roller.flowtech-lab.org
-  config.action_mailer.default_url_options = { 
+  config.action_mailer.default_url_options = {
     host: ENV.fetch("MAILER_HOST", "grenoble-roller.flowtech-lab.org"),
     protocol: ENV.fetch("MAILER_PROTOCOL", "https")
   }
@@ -87,4 +87,3 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
-
