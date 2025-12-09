@@ -8,7 +8,7 @@
 # Charger explicitement le middleware depuis lib/middleware/
 # (sous-répertoire standard pour les middlewares, ignoré par autoload)
 # Utiliser require_relative pour un chargement plus fiable
-require_relative '../../lib/middleware/maintenance_middleware'
+require_relative "../../lib/middleware/maintenance_middleware"
 
 # Enregistrer le middleware APRÈS Warden/Devise pour pouvoir détecter l'utilisateur connecté
 # mais AVANT les controllers pour intercepter les requêtes
@@ -18,4 +18,3 @@ Rails.application.config.middleware.insert_after(
   ActionDispatch::Flash,
   MaintenanceMiddleware
 )
-

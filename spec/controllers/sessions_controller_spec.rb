@@ -69,13 +69,13 @@ RSpec.describe SessionsController, type: :controller do
         # Vérifier que confirmation_sent_at existe et est dans le passé (expiré)
         expect(expired_user.confirmation_sent_at).to be_present
         expect(expired_user.confirmation_sent_at).to be < Time.current
-        
+
         # S'assurer que sign_out sera appelé
         sign_out_called = false
         allow(controller).to receive(:sign_out) do |*args|
           sign_out_called = true
         end
-        
+
         # S'assurer que redirect_to sera appelé
         redirect_called = false
         allow(controller).to receive(:redirect_to) do |*args|
@@ -83,10 +83,10 @@ RSpec.describe SessionsController, type: :controller do
           # À ce moment, le flash devrait être défini
           expect(controller.flash[:alert]).to include('période de confirmation est expirée')
         end
-        
+
         # Appeler la méthode qui devrait signer out et définir le flash
         controller.send(:handle_confirmed_or_unconfirmed, expired_user)
-        
+
         # Vérifier que sign_out a été appelé
         expect(sign_out_called).to be true
         # Vérifier que redirect_to a été appelé

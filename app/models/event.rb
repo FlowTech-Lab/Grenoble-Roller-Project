@@ -79,7 +79,7 @@ class Event < ApplicationRecord
   # Niveau et distance toujours requis
   validates :level, presence: true
   validates :distance_km, presence: true, numericality: { greater_than_or_equal_to: 0.1 }, unless: :initiation?
-  
+
   # Méthode helper pour vérifier si c'est une initiation
   def initiation?
     is_a?(Event::Initiation)

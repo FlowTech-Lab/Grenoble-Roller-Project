@@ -47,7 +47,7 @@ class User < ApplicationRecord
     return false if confirmed_at.present?
     return false unless confirmation_sent_at.present?
     return false unless Devise.confirm_within
-    
+
     confirmation_sent_at < Devise.confirm_within.ago
   end
 
@@ -122,7 +122,7 @@ class User < ApplicationRecord
   def send_welcome_email_and_confirmation
     # Envoyer email de bienvenue ET email de confirmation
     UserMailer.welcome_email(self).deliver_later
-    
+
     # Envoyer confirmation seulement si le contexte Devise est disponible
     # (évite erreur dans les tests sans contexte HTTP)
     begin
@@ -130,7 +130,7 @@ class User < ApplicationRecord
       Rails.logger.info("Confirmation email sent to #{email} at #{Time.current}")
     rescue RuntimeError => e
       # Ignorer erreur de mapping Devise en test
-      raise e unless Rails.env.test? || e.message.include?('mapping')
+      raise e unless Rails.env.test? || e.message.include?("mapping")
     end
   end
 end

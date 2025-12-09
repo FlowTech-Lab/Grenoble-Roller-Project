@@ -3,7 +3,7 @@
 module Admin
   class MaintenanceToggleController < ApplicationController
     before_action :authenticate_user!
-    
+
     def toggle
       # Vérifier que l'utilisateur est ADMIN ou SUPERADMIN
       user = current_user
@@ -11,16 +11,16 @@ module Admin
       if user.present? && user.respond_to?(:role) && user.role.present?
         role_code = user.role.code.to_s.upcase
         role_level = user.role.level.to_i
-        user_is_admin = ['ADMIN', 'SUPERADMIN'].include?(role_code) || role_level >= 60
+        user_is_admin = [ "ADMIN", "SUPERADMIN" ].include?(role_code) || role_level >= 60
       end
-      
+
       unless user_is_admin
         redirect_to admin_maintenance_path, alert: "Accès refusé : Seuls les administrateurs (ADMIN/SUPERADMIN) peuvent modifier le mode maintenance"
         return
       end
-      
-      user_email = user&.email || 'unknown'
-      
+
+      user_email = user&.email || "unknown"
+
       if MaintenanceMode.enabled?
         MaintenanceMode.disable!
         message = "✓ Mode maintenance DÉSACTIVÉ"
@@ -32,9 +32,8 @@ module Admin
         Rails.logger.warn("🔒 MAINTENANCE ACTIVÉE par #{user_email}")
         status = :notice
       end
-      
+
       redirect_to admin_maintenance_path, status => message
     end
   end
 end
-

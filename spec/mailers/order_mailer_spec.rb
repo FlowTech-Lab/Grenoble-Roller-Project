@@ -9,7 +9,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.order_confirmation(order) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -46,7 +46,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.order_paid(order_paid) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -69,7 +69,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.order_cancelled(order_cancelled) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -92,7 +92,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.order_preparation(order_prep) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -115,7 +115,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.order_shipped(order_shipped) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -138,7 +138,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.refund_requested(order_refund_req) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -157,7 +157,7 @@ RSpec.describe OrderMailer, type: :mailer do
     let(:mail) { OrderMailer.refund_confirmed(order_refunded) }
 
     it 'sends to user email' do
-      expect(mail.to).to eq([user.email])
+      expect(mail.to).to eq([ user.email ])
     end
 
     it 'includes order id in subject' do
@@ -175,4 +175,3 @@ RSpec.describe OrderMailer, type: :mailer do
     end
   end
 end
-

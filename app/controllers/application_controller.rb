@@ -46,9 +46,9 @@ class ApplicationController < ActionController::Base
 
   def user_not_authorized(_exception)
     if api_request?
-      render json: { 
-        error: "Non autorisé", 
-        message: "Vous n'êtes pas autorisé·e à effectuer cette action." 
+      render json: {
+        error: "Non autorisé",
+        message: "Vous n'êtes pas autorisé·e à effectuer cette action."
       }, status: :forbidden
     else
       redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")

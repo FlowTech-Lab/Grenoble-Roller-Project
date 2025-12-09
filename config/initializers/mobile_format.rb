@@ -25,4 +25,3 @@ ActionController::Base.class_eval do
   end
   helper_method :mobile_device?
 end
-

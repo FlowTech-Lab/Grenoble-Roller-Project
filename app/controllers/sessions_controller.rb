@@ -33,14 +33,14 @@ class SessionsController < Devise::SessionsController
       Rails.logger.error("   Backtrace: #{e.backtrace.first(5).join(' | ')}")
       turnstile_result = false
     end
-    
+
     unless turnstile_result
       Rails.logger.error("=" * 80)
       Rails.logger.error("🔴 Turnstile verification FAILED - BLOCKING authentication")
       Rails.logger.error("   IP: #{request.remote_ip}")
       Rails.logger.error("   Ne PAS appeler super - Blocage complet")
       Rails.logger.error("=" * 80)
-      
+
       self.resource = resource_class.new(sign_in_params)
       resource.errors.add(:base, "Vérification de sécurité échouée. Veuillez réessayer.")
       flash.now[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
@@ -71,7 +71,7 @@ class SessionsController < Devise::SessionsController
             new_user_confirmation_path(email: resource.email),
             class: "alert-link"
           )
-          flash[:alert] = 
+          flash[:alert] =
             "Vous devez confirmer votre adresse email pour vous connecter. " \
             "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe
           redirect_to new_user_confirmation_path(email: resource.email)
@@ -95,10 +95,10 @@ class SessionsController < Devise::SessionsController
     # Toujours rediriger vers la page d'accueil après connexion
     # (sauf si une destination spécifique est stockée et qu'elle n'est pas /admin)
     stored_location = stored_location_for(_resource)
-    
+
     # Si la location stockée est /admin, ignorer et rediriger vers l'accueil
     # Sinon, utiliser la location stockée ou la page d'accueil
-    if stored_location&.start_with?('/admin')
+    if stored_location&.start_with?("/admin")
       root_path
     else
       stored_location || root_path
@@ -121,7 +121,7 @@ class SessionsController < Devise::SessionsController
         new_user_confirmation_path(email: resource.email),
         class: "alert-link"
       )
-      flash[:alert] = 
+      flash[:alert] =
         "Vous devez confirmer votre adresse email pour vous connecter. " \
         "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe
       redirect_to new_user_confirmation_path(email: resource.email)

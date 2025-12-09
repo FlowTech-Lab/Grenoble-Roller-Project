@@ -1,7 +1,7 @@
 ActiveAdmin.register Event do
   menu priority: 1, label: "Randos", parent: "Événements"
   includes :creator_user, :route
-  
+
   # Filtrer pour exclure les initiations (STI)
   scope :all, default: true do |scope|
     scope.where("type IS NULL OR type != 'Event::Initiation'")

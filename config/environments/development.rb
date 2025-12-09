@@ -44,7 +44,7 @@ Rails.application.configure do
 
   # Set URL to be used by links generated in mailer templates.
   # Utiliser l'URL publique pour que les liens fonctionnent dans les emails reçus
-  config.action_mailer.default_url_options = { 
+  config.action_mailer.default_url_options = {
     host: ENV.fetch("MAILER_HOST", "dev-grenoble-roller.flowtech-lab.org"),
     protocol: ENV.fetch("MAILER_PROTOCOL", "https")
   }
@@ -53,7 +53,7 @@ Rails.application.configure do
   # Option 1: Stocker les emails dans des fichiers (par défaut)
   # config.action_mailer.delivery_method = :file
   # config.action_mailer.file_settings = { location: Rails.root.join("tmp/mails") }
-  
+
   # Option 2: Envoyer de vrais emails par SMTP (actif)
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {

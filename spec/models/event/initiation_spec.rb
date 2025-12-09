@@ -4,7 +4,7 @@ RSpec.describe Event::Initiation, type: :model do
   include ActiveSupport::Testing::TimeHelpers
 
   let(:creator) { create_user }
-  
+
   def next_saturday_at_10_15
     today = Date.today
     days_until_saturday = (6 - today.wday) % 7
@@ -124,7 +124,7 @@ RSpec.describe Event::Initiation, type: :model do
       it 'filters by season' do
         initiation_2025 = create(:event_initiation, creator_user: creator, season: '2025-2026')
         initiation_2026 = create(:event_initiation, creator_user: creator, season: '2026-2027')
-        
+
         expect(Event::Initiation.by_season('2025-2026')).to contain_exactly(initiation_2025)
       end
     end
@@ -133,11 +133,10 @@ RSpec.describe Event::Initiation, type: :model do
       it 'returns only future initiations' do
         future = create(:event_initiation, creator_user: creator, start_at: 1.week.from_now)
         past = create(:event_initiation, creator_user: creator, start_at: 1.week.ago)
-        
+
         expect(Event::Initiation.upcoming_initiations).to include(future)
         expect(Event::Initiation.upcoming_initiations).not_to include(past)
       end
     end
   end
 end
-

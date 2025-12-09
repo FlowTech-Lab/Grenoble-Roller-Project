@@ -17,7 +17,7 @@ module ApiResponder
 
   # Détecter si c'est une requête API (format JSON ou header Accept: application/json)
   def api_request?
-    request.format.json? || 
+    request.format.json? ||
     request.headers["Accept"]&.include?("application/json") ||
     params[:format] == "json"
   end
@@ -30,9 +30,9 @@ module ApiResponder
   # Gérer les erreurs d'authentification pour les requêtes API
   def handle_api_authentication_error(exception)
     if api_request?
-      render json: { 
-        error: "Non authentifié", 
-        message: "Vous devez être connecté pour accéder à cette ressource" 
+      render json: {
+        error: "Non authentifié",
+        message: "Vous devez être connecté pour accéder à cette ressource"
       }, status: :unauthorized
     else
       raise exception
@@ -45,11 +45,10 @@ module ApiResponder
   end
 
   def render_json_error(message, errors: {}, status: :unprocessable_entity)
-    render json: { 
-      success: false, 
-      error: message, 
-      errors: errors 
+    render json: {
+      success: false,
+      error: message,
+      errors: errors
     }, status: status
   end
 end
-

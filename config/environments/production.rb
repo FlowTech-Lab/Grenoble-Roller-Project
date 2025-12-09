@@ -60,7 +60,7 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
   # Production utilise grenoble-roller.org
-  config.action_mailer.default_url_options = { 
+  config.action_mailer.default_url_options = {
     host: ENV.fetch("MAILER_HOST", "grenoble-roller.org"),
     protocol: ENV.fetch("MAILER_PROTOCOL", "https")
   }
