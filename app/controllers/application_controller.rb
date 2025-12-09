@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
   include TurnstileVerifiable
+  include ApiResponder
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
@@ -44,7 +45,14 @@ class ApplicationController < ActionController::Base
   private
 
   def user_not_authorized(_exception)
-    redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+    if api_request?
+      render json: { 
+        error: "Non autorisé", 
+        message: "Vous n'êtes pas autorisé·e à effectuer cette action." 
+      }, status: :forbidden
+    else
+      redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+    end
   end
 
   def active_admin_access_denied(exception)

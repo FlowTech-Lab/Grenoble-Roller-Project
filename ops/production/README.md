@@ -57,26 +57,62 @@ Scripts dédiés à l'environnement de production.
 - **Emplacement** : `logs/deploy-production.log` (dans le projet)
 - **Backups** : `backups/production/` (dans le projet)
 
-## 🌐 Configuration Reverse Proxy (Nginx)
+## 🌐 Configuration Reverse Proxy avec HTTPS Automatique
 
-Le docker-compose de production inclut un service **nginx** qui agit comme reverse proxy :
+Le docker-compose de production utilise **nginx-proxy** + **acme-companion** pour automatiser complètement HTTPS :
 
-- **Port 80** : Nginx écoute sur le port 80 et route vers l'application Rails (port 3000 interne)
-- **Configuration** : `ops/production/nginx.conf`
-- **Domaine** : `grenoble-roller.org` et `www.grenoble-roller.org`
+- ❌ **HTTP (port 80) : BLOQUÉ** - Toutes les requêtes HTTP sont refusées
+- ✅ **HTTPS (port 443) : OBLIGATOIRE** - Seul accès autorisé avec Let's Encrypt (automatique)
+- ✅ **Renouvellement automatique** des certificats SSL
+- ✅ **Configuration automatique** de nginx (pas besoin de nginx.conf manuel)
+- ✅ **Double sécurité** : nginx-proxy bloque HTTP + Rails force SSL
 
-### Configuration actuelle
+### Services utilisés
 
-- ✅ HTTP sur le port 80
-- ⏳ HTTPS (port 443) : À configurer avec Let's Encrypt (voir section suivante)
+1. **nginx-proxy** : Génère automatiquement la configuration nginx
+2. **acme-companion** : Gère Let's Encrypt (obtention + renouvellement automatique)
 
-### Pour activer HTTPS (futur)
+### Configuration
 
-1. Installer Certbot sur l'hôte
-2. Obtenir un certificat Let's Encrypt
-3. Modifier `nginx.conf` pour ajouter la configuration SSL
-4. Décommenter le port 443 dans `docker-compose.yml`
-5. Activer `config.assume_ssl = true` dans `config/environments/production.rb`
+La configuration se fait via des **variables d'environnement et labels Docker** sur le service `web` :
+
+- `VIRTUAL_HOST` : Domaines à exposer (par défaut : `grenoble-roller.org,www.grenoble-roller.org`)
+- `LETSENCRYPT_EMAIL` : Email pour Let's Encrypt (par défaut : `contact@grenoble-roller.org`)
+- `HTTPS_METHOD: nohttp` : **Bloque complètement HTTP** (pas de redirection, refus direct)
+
+### Variables d'environnement optionnelles
+
+Vous pouvez personnaliser via un fichier `.env` ou des variables d'environnement :
+
+```bash
+# .env dans ops/production/
+VIRTUAL_HOST=grenoble-roller.org,www.grenoble-roller.org
+LETSENCRYPT_EMAIL=contact@grenoble-roller.org
+```
+
+### Première utilisation
+
+1. **Démarrer les services** :
+   ```bash
+   docker compose -f ops/production/docker-compose.yml up -d
+   ```
+
+2. **Vérifier les certificats** :
+   ```bash
+   docker logs grenoble-roller-acme-companion
+   ```
+
+3. **Tester HTTPS** :
+   ```bash
+   curl https://grenoble-roller.org/up
+   ```
+
+### Notes importantes
+
+- ⚠️ **Premier démarrage** : La génération du certificat Let's Encrypt peut prendre 1-2 minutes
+- ⚠️ **DNS requis** : Le domaine `grenoble-roller.org` doit pointer vers le serveur avant le démarrage
+- ✅ **Renouvellement automatique** : Les certificats sont renouvelés automatiquement avant expiration
+- ✅ **Redirection HTTP → HTTPS** : Automatique via nginx-proxy
 
 ## ⚙️ Prérequis
 

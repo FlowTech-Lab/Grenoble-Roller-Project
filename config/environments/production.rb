@@ -25,10 +25,12 @@ Rails.application.configure do
   config.active_storage.service = :minio
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
+  # nginx-proxy gère HTTPS, donc on active assume_ssl
+  config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  # Double sécurité : même si nginx-proxy redirige, Rails force aussi HTTPS
+  config.force_ssl = true
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
