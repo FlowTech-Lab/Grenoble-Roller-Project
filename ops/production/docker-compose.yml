@@ -1,51 +1,50 @@
 # --- ops/production/docker-compose.yml ---
 # Usage: docker compose -f ops/production/docker-compose.yml up -d
 #
-# Configuration automatique HTTPS avec Let's Encrypt via nginx-proxy + acme-companion
-# - nginx-proxy génère automatiquement la config nginx
-# - acme-companion gère Let's Encrypt (obtention + renouvellement automatique)
-# - Il suffit d'ajouter les labels VIRTUAL_HOST et LETSENCRYPT_EMAIL sur le service web
+# Configuration sécurisée production :
+# - Caddy reverse proxy avec HTTPS automatique (Let's Encrypt)
+# - Application Rails isolée (pas de ports exposés)
+# - Tout le trafic passe par Caddy (ports 80/443 uniquement)
+# - Réseau Docker interne pour communication entre services
 
 services:
-  # nginx-proxy : génère automatiquement la configuration nginx
-  nginx-proxy:
-    image: nginxproxy/nginx-proxy:alpine
-    container_name: grenoble-roller-nginx-proxy
+  # Nginx reverse proxy - Point d'entrée unique
+  nginx:
+    image: nginx:alpine
+    container_name: grenoble-roller-nginx-production
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"  # HTTP/3 (QUIC)
+      - "2019:2019"    # API admin (optionnel pour debug)
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - nginx-proxy-certs:/etc/nginx/certs:ro
-      - nginx-proxy-vhost:/etc/nginx/vhost.d
-      - nginx-proxy-html:/usr/share/nginx/html
-      - nginx-proxy-dhparam:/etc/nginx/dhparam
-    labels:
-      - "com.github.nginx-proxy.nginx-proxy.version=alpine"
-
-  # acme-companion : gère automatiquement Let's Encrypt (obtention + renouvellement)
-  acme-companion:
-    image: nginxproxy/acme-companion:latest
-    container_name: grenoble-roller-acme-companion
-    restart: unless-stopped
-    volumes_from:
-      - nginx-proxy
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nginx-proxy-acme:/etc/acme.sh
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data          # Certificats Let's Encrypt et données persistantes
+      - caddy-config:/config       # Configuration runtime Caddy
     depends_on:
-      - nginx-proxy
+      web:
+        condition: service_healthy
+    networks:
+    - app-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Permettre à Caddy d'accéder à internet pour Let's Encrypt
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
+  # Application Rails - ISOLÉE (pas de ports exposés)
   web:
     build:
       context: ../..
-      dockerfile: Dockerfile  # Dockerfile à la racine (correct car context = ../..)
+      dockerfile: Dockerfile
       args:
         BUILD_ID: ${BUILD_ID:-latest}
     container_name: grenoble-roller-production
-    # Pas de .env nécessaire : tout passe par les credentials Rails
-    # Variables minimales pour la connexion PostgreSQL (réseau Docker interne uniquement)
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_production
       DATABASE_HOST: db
@@ -56,40 +55,33 @@ services:
       RAILS_ENV: production
       APP_ENV: production
       DEPLOY_ENV: production
-      MAILER_HOST: grenoble-roller.org
+      MAILER_HOST: ${VIRTUAL_HOST:-grenoble-roller.org}
       MAILER_PROTOCOL: https
       PORT: 3000
-      # Configuration pour nginx-proxy
-      VIRTUAL_HOST: ${VIRTUAL_HOST:-grenoble-roller.org,www.grenoble-roller.org}
-      VIRTUAL_PORT: 3000
-      # Forcer HTTPS uniquement (bloquer HTTP)
-      HTTPS_METHOD: nohttp
-    # Labels pour nginx-proxy et acme-companion (HTTPS automatique)
-    labels:
-      - "com.github.nginx-proxy.nginx-proxy=true"
-      - "com.github.nginx-proxy.letsencrypt.email=${LETSENCRYPT_EMAIL:-contact@grenoble-roller.org}"
-      - "com.github.nginx-proxy.letsencrypt.host=${VIRTUAL_HOST:-grenoble-roller.org,www.grenoble-roller.org}"
+      # Rails doit savoir qu'il est derrière un proxy HTTPS
+      RAILS_FORCE_SSL: "true"
+      # Master key Rails (nécessaire pour décrypter les credentials)
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-}
+    # AUCUN port exposé - accès uniquement via réseau Docker interne
     expose:
       - "3000"
+    # Monter le fichier master.key pour que Rails puisse décrypter les credentials
+    volumes:
+      - ../../config/master.key:/rails/config/master.key:ro
     depends_on:
-      nginx-proxy:
-        condition: service_started
-      acme-companion:
-        condition: service_started
       db:
         condition: service_healthy
       minio:
         condition: service_healthy
-    # Volume /rails/db commenté pour cohérence avec staging
-    # Si nécessaire pour Solid Queue/Cache/Cable, monter seulement les fichiers spécifiques
-    # volumes:
-    #   - grenoble-roller-prod-data:/rails/db
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
+  # Base de données PostgreSQL - ISOLÉE
   db:
     image: postgres:16-alpine
     container_name: grenoble-roller-db-production
@@ -104,19 +96,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+    # AUCUN port exposé - accès uniquement via réseau Docker interne
 
+  # MinIO pour Active Storage - ISOLÉ
   minio:
     image: minio/minio:latest
     container_name: grenoble-roller-minio-production
     command: server /data --console-address ":9001"
-    # ⚠️ IMPORTANT: Ces valeurs doivent correspondre aux credentials Rails
-    # Vérifier dans config/storage.yml : Rails.application.credentials.dig(:minio, ...)
-    # Réseau Docker interne uniquement (non exposé)
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-    # Pas de ports exposés : accès uniquement via réseau Docker interne
-    # Rails accède via http://minio:9000 (nom du service Docker)
     volumes:
       - grenoble-roller-prod-minio-data:/data
     healthcheck:
@@ -124,14 +115,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+    # AUCUN port exposé - accès uniquement via réseau Docker interne
 
 volumes:
-  # grenoble-roller-prod-data:  # Commenté car volume /rails/db non utilisé
   grenoble-roller-prod-db-data:
   grenoble-roller-prod-minio-data:
-  # Volumes pour nginx-proxy et acme-companion
-  nginx-proxy-certs:
-  nginx-proxy-vhost:
-  nginx-proxy-html:
-  nginx-proxy-dhparam:
-  nginx-proxy-acme:
+  caddy-data:      # Certificats Let's Encrypt et données persistantes Caddy
+  caddy-config:    # Configuration runtime Caddy
+
+networks:
+  app-network:
+    driver: bridge
+    internal: false  # Caddy doit pouvoir accéder à internet pour Let's Encrypt

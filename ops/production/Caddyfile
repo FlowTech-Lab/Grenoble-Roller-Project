@@ -1,0 +1,117 @@
+# Caddyfile pour Grenoble Roller - Production
+# HTTPS automatique avec Let's Encrypt
+# Documentation: https://caddyserver.com/docs/
+
+{
+    # Configuration globale
+    # HTTPS automatique activé par défaut (Let's Encrypt)
+    email contact@grenoble-roller.org  # Email pour notifications Let's Encrypt
+    log {
+        output stdout
+        format json
+        level INFO
+    }
+}
+
+# Configuration principale - Support grenoble-roller.org ET www.grenoble-roller.org
+grenoble-roller.org, www.grenoble-roller.org {
+    # HTTPS automatique (Let's Encrypt)
+    # Caddy obtient et renouvelle automatiquement les certificats
+    
+    # Compression
+    encode gzip zstd
+    
+    # Headers de sécurité
+    header {
+        # HSTS (Strict Transport Security)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        
+        # Protection XSS
+        X-Content-Type-Options "nosniff"
+        # X-Frame-Options retiré car incompatible avec Cloudflare Turnstile (iframes)
+        # Utilisation de frame-ancestors dans CSP à la place
+        X-XSS-Protection "1; mode=block"
+        
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Content Security Policy - Compatible avec Cloudflare Turnstile
+        # Autorise Cloudflare Turnstile pour la protection anti-bot
+        Content-Security-Policy "default-src 'self' https://challenges.cloudflare.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://challenges.cloudflare.com/cdn-cgi; style-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; frame-ancestors 'self'; worker-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:;"
+        
+        # Permissions Policy
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        
+        # Supprimer le header Server pour la sécurité
+        -Server
+    }
+    
+    # Health check endpoint (répondu directement par Caddy)
+    handle /up {
+        respond "healthy" 200
+    }
+    
+    # Cache pour les assets statiques avec header Cache-Control
+    handle /assets/* {
+        reverse_proxy web:3000 {
+            # Health check continu vers Rails
+            health_uri /up
+            health_interval 10s
+            health_timeout 5s
+            
+            # Timeouts pour Rails
+            transport http {
+                versions 2 1.1
+                dial_timeout 10s
+                response_header_timeout 60s
+                expect_continue_timeout 60s
+            }
+        }
+        header Cache-Control "public, max-age=31536000, immutable"
+    }
+    
+    # Cache pour les images (1 jour)
+    handle /images/* {
+        reverse_proxy web:3000 {
+            health_uri /up
+            health_interval 10s
+            health_timeout 5s
+            
+            transport http {
+                versions 2 1.1
+                dial_timeout 10s
+                response_header_timeout 60s
+                expect_continue_timeout 60s
+            }
+        }
+        header Cache-Control "public, max-age=86400"
+    }
+    
+    # Reverse proxy vers l'application Rails (catch-all pour toutes les autres routes)
+    handle {
+        reverse_proxy web:3000 {
+            # Health check continu vers Rails
+            health_uri /up
+            health_interval 10s
+            health_timeout 5s
+            
+            # Timeouts pour Rails
+            transport http {
+                versions 2 1.1
+                dial_timeout 10s
+                response_header_timeout 60s
+                expect_continue_timeout 60s
+            }
+            
+            # Gestion gracieuse des connexions
+            flush_interval -1
+        }
+    }
+    
+    # Logs structurés avec détails
+    log {
+        output stdout
+        format json
+        level INFO
+    }
+}
