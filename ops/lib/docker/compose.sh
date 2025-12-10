@@ -2,10 +2,26 @@
 ###############################################################################
 # Module: docker/compose.sh
 # Description: Wrappers pour docker compose
-# Dependencies: core/logging.sh
+# Dependencies: core/logging.sh, docker/containers.sh (pour DOCKER_CMD)
 # Author: FlowTech Lab
 # Version: 1.0.0
 ###############################################################################
+
+# Utiliser DOCKER_CMD si défini, sinon détecter automatiquement
+if [ -z "${DOCKER_CMD:-}" ]; then
+    # Détecter si sudo est nécessaire (même logique que containers.sh)
+    if [ "$(id -u)" -eq 0 ]; then
+        # On est root, docker devrait fonctionner directement
+        DOCKER_CMD="docker"
+    elif docker ps >/dev/null 2>&1; then
+        DOCKER_CMD="docker"
+    elif command -v sudo >/dev/null 2>&1 && sudo docker ps >/dev/null 2>&1; then
+        DOCKER_CMD="sudo docker"
+    else
+        DOCKER_CMD="docker"
+    fi
+    export DOCKER_CMD
+fi
 
 # Force un rebuild sans cache complet
 force_rebuild_without_cache() {
@@ -28,16 +44,16 @@ force_rebuild_without_cache() {
     
     log_info "✅ Branche vérifiée : ${current_branch} (commit: ${current_commit})"
     log_info "Arrêt des conteneurs..."
-    docker compose -f "$compose_file" down > /dev/null 2>&1 || true
+    $DOCKER_CMD compose -f "$compose_file" down > /dev/null 2>&1 || true
     
     # Nettoyage CRITIQUE : Supprimer les migrations et schémas du volume
     # Le volume ne doit contenir QUE les fichiers SQLite de Solid Queue/Cache/Cable
     # Les migrations et schémas doivent venir de l'image, pas du volume
     log_info "🧹 Nettoyage du volume /rails/db (suppression migrations/schémas qui écrase l'image)..."
-    local volume_name=$(docker compose -f "$compose_file" config --volumes 2>/dev/null | grep -E "staging.*data|prod.*data" | head -1 || echo "")
+    local volume_name=$($DOCKER_CMD compose -f "$compose_file" config --volumes 2>/dev/null | grep -E "staging.*data|prod.*data" | head -1 || echo "")
     if [ -n "$volume_name" ]; then
         # Supprimer migrations, schémas, seeds du volume (ils doivent venir de l'image)
-        docker run --rm -v "${volume_name}:/data" alpine sh -c "
+        $DOCKER_CMD run --rm -v "${volume_name}:/data" alpine sh -c "
             if [ -d /data/migrate ]; then
                 rm -rf /data/migrate
                 echo '  ✅ Dossier migrate supprimé du volume'
@@ -59,25 +75,25 @@ force_rebuild_without_cache() {
     fi
     
     log_info "Nettoyage du cache de build (garde cache récent pour performance)..."
-    docker builder prune -f > /dev/null 2>&1 || true
+    $DOCKER_CMD builder prune -f > /dev/null 2>&1 || true
     
     log_info "Nettoyage BuildKit cache (cache persistant)..."
-    docker buildx prune -a -f > /dev/null 2>&1 || true
+    $DOCKER_CMD buildx prune -a -f > /dev/null 2>&1 || true
     
     log_info "Nettoyage AGRESSIF des images (supprime TOUTES les images non utilisées, y compris intermédiaires)..."
     # Supprimer toutes les images non utilisées (pas seulement dangling)
     # Ceci inclut les images intermédiaires du multi-stage build qui peuvent contenir d'anciennes migrations
-    docker image prune -a -f > /dev/null 2>&1 || true
+    $DOCKER_CMD image prune -a -f > /dev/null 2>&1 || true
     
     # Supprimer l'image actuelle si elle existe (force rebuild complet)
     if [ -n "$container_name" ]; then
         log_info "Suppression de l'image actuelle (force rebuild from scratch)..."
-        docker rmi $(docker images -q "$container_name" 2>/dev/null | head -1) --force 2>/dev/null || true
+        $DOCKER_CMD rmi $($DOCKER_CMD images -q "$container_name" 2>/dev/null | head -1) --force 2>/dev/null || true
     fi
     
     # Supprimer aussi les images intermédiaires du multi-stage build (base, build stages)
     log_info "Suppression des images intermédiaires du multi-stage build..."
-    docker images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep -E "staging-web|ruby.*slim" | awk '{print $2}' | xargs -r docker rmi --force 2>/dev/null || true
+    $DOCKER_CMD images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | grep -E "staging-web|production-web|ruby.*slim" | awk '{print $2}' | xargs -r $DOCKER_CMD rmi --force 2>/dev/null || true
     
     # Vérifier que les fichiers de migration sont bien dans le build context
     log_info "Vérification que les migrations sont dans le build context..."
@@ -92,7 +108,7 @@ force_rebuild_without_cache() {
     log_warning "⚠️  Ce build peut prendre 5-10 minutes (sans cache complet)..."
     
     # Build avec --no-cache
-    if docker compose --progress=plain -f "$compose_file" build --pull --no-cache --build-arg BUILD_ID="$BUILD_ID" 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+    if $DOCKER_CMD compose --progress=plain -f "$compose_file" build --pull --no-cache --build-arg BUILD_ID="$BUILD_ID" 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
         BUILD_EXIT_CODE=0
         log_success "✅ Build réussi"
     else
@@ -104,7 +120,7 @@ force_rebuild_without_cache() {
     if [ $BUILD_EXIT_CODE -eq 0 ]; then
         log_info "Démarrage de tous les services (web, db, minio, etc.)..."
         # Démarrer tous les services pour s'assurer que les nouveaux services ajoutés au docker-compose.yml sont créés
-        if docker compose -f "$compose_file" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+        if $DOCKER_CMD compose -f "$compose_file" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
             log_success "✅ Tous les services démarrés avec succès"
             return 0
         else
@@ -131,15 +147,35 @@ docker_compose_build() {
         return 1
     fi
     
-    local build_output=$(docker compose -f "$compose_file" up -d --build 2>&1)
+    local build_output=$($DOCKER_CMD compose -f "$compose_file" up -d --build 2>&1)
     local build_exit_code=$?
     
     # Vérifier que l'image a été créée après build
     if [ $build_exit_code -eq 0 ]; then
-        local image_name=$(docker compose -f "$compose_file" images -q web 2>/dev/null | head -1)
+        # Chercher l'image du service web (peut être "web" ou le nom du conteneur)
+        local image_name=$($DOCKER_CMD compose -f "$compose_file" images -q web 2>/dev/null | head -1)
+        
+        # Si pas trouvé avec "web", essayer avec le nom du conteneur depuis CONTAINER_NAME
+        if [ -z "$image_name" ] && [ -n "${CONTAINER_NAME:-}" ]; then
+            # Extraire le nom de l'image depuis le conteneur
+            image_name=$($DOCKER_CMD inspect --format='{{.Image}}' "${CONTAINER_NAME}" 2>/dev/null || echo "")
+        fi
+        
+        # Si toujours pas trouvé, chercher par pattern
+        if [ -z "$image_name" ]; then
+            image_name=$($DOCKER_CMD images --format "{{.ID}}" --filter "reference=*production-web*" 2>/dev/null | head -1 || echo "")
+        fi
+        
         if [ -z "$image_name" ]; then
             log_error "❌ Image non trouvée après build réussi"
-            log_error "Le build a peut-être échoué silencieusement"
+            log_error "   Compose file: $compose_file"
+            log_error "   Service: web"
+            log_error "   Conteneur: ${CONTAINER_NAME:-non défini}"
+            log_error "   Le build a peut-être échoué silencieusement"
+            log_info "   Debug: Liste des images disponibles:"
+            $DOCKER_CMD images --format "{{.Repository}}:{{.Tag}} {{.ID}}" | head -5 | while read line; do
+                log_info "      $line"
+            done
             return 1
         else
             log_success "✅ Image créée: ${image_name:0:12}..."
