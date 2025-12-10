@@ -28,13 +28,21 @@ ActiveAdmin.register AuditLog do
 
   show do
     attributes_table do
+      row :id
       row :created_at
+      row :updated_at
       row :actor_user
-      row :action
+      row :action do |log|
+        status_tag(log.action)
+      end
       row :target_type
       row :target_id
       row :metadata do |log|
-        pre JSON.pretty_generate(log.metadata || {})
+        if log.metadata.present?
+          pre JSON.pretty_generate(log.metadata)
+        else
+          "-"
+        end
       end
     end
   end
