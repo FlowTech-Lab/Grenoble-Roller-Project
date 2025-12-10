@@ -9,10 +9,66 @@
 # Version: 1.0.0
 ###############################################################################
 
+# Détecter automatiquement si sudo est nécessaire pour docker
+_detect_docker_cmd() {
+    # Si DOCKER_CMD est déjà défini, l'utiliser
+    if [ -n "${DOCKER_CMD:-}" ]; then
+        echo "$DOCKER_CMD"
+        return
+    fi
+    
+    # Si on est root (via sudo), docker devrait fonctionner directement
+    if [ "$(id -u)" -eq 0 ]; then
+        if docker ps >/dev/null 2>&1; then
+            echo "docker"
+            return
+        fi
+    fi
+    
+    # Tester si docker fonctionne sans sudo
+    if docker ps >/dev/null 2>&1; then
+        echo "docker"
+    # Sinon, tester avec sudo (si disponible)
+    elif command -v sudo >/dev/null 2>&1 && sudo docker ps >/dev/null 2>&1; then
+        echo "sudo docker"
+    else
+        # Fallback : docker (échouera avec un message d'erreur clair)
+        echo "docker"
+    fi
+}
+
+# Initialiser DOCKER_CMD une seule fois (export pour que les autres modules l'utilisent)
+if [ -z "${DOCKER_CMD_INITIALIZED:-}" ]; then
+    export DOCKER_CMD=$(_detect_docker_cmd)
+    export DOCKER_CMD_INITIALIZED=1
+fi
+
 # Vérifier si un conteneur est running
 container_is_running() {
     local container_name=$1
-    docker ps --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null || return 1
+    # Capturer les erreurs pour debug si nécessaire
+    local output
+    output=$($DOCKER_CMD ps --format '{{.Names}}' 2>&1)
+    local exit_code=$?
+    
+    if [ $exit_code -ne 0 ]; then
+        # Si erreur de permission, essayer avec sudo explicitement
+        if echo "$output" | grep -q "permission denied\|Cannot connect to the Docker daemon"; then
+            if command -v sudo >/dev/null 2>&1; then
+                output=$(sudo docker ps --format '{{.Names}}' 2>&1)
+                exit_code=$?
+                if [ $exit_code -eq 0 ]; then
+                    export DOCKER_CMD="sudo docker"
+                fi
+            fi
+        fi
+    fi
+    
+    if [ $exit_code -eq 0 ]; then
+        echo "$output" | grep -q "^${container_name}$" || return 1
+    else
+        return 1
+    fi
 }
 
 # Vérification stable (anti-race condition)
@@ -22,7 +78,7 @@ container_is_running_stable() {
     local interval=1
     
     for i in $(seq 1 $checks); do
-        if ! docker inspect --format='{{.State.Running}}' "$container_name" 2>/dev/null | grep -q "true"; then
+        if ! $DOCKER_CMD inspect --format='{{.State.Running}}' "$container_name" 2>/dev/null | grep -q "true"; then
             return 1
         fi
         [ $i -lt $checks ] && sleep $interval
@@ -33,13 +89,13 @@ container_is_running_stable() {
 # Vérifier si un conteneur existe (running ou stopped)
 container_exists() {
     local container_name=$1
-    docker ps -a --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null || return 1
+    $DOCKER_CMD ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${container_name}$" || return 1
 }
 
 # Vérifier si un conteneur est healthy
 container_is_healthy() {
     local container_name=$1
-    local health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container_name" 2>/dev/null || echo "none")
+    local health_status=$($DOCKER_CMD inspect --format='{{.State.Health.Status}}' "$container_name" 2>/dev/null || echo "none")
     [ "$health_status" = "healthy" ]
 }
 
@@ -49,9 +105,9 @@ start_existing_container() {
     local compose_file=$2
     
     log_info "Démarrage du conteneur ${container_name}..."
-    docker start "$container_name" 2>/dev/null || {
+    $DOCKER_CMD start "$container_name" 2>/dev/null || {
         log_info "Tentative avec docker compose..."
-        docker compose -f "$compose_file" up -d "$container_name" 2>/dev/null || {
+        $DOCKER_CMD compose -f "$compose_file" up -d "$container_name" 2>/dev/null || {
             log_error "Échec du démarrage du conteneur"
             return 1
         }
@@ -85,7 +141,7 @@ create_new_container() {
     local compose_file=$2
     
     log_info "Création et démarrage du conteneur ${container_name}..."
-    if docker compose -f "$compose_file" up -d --build; then
+    if $DOCKER_CMD compose -f "$compose_file" up -d --build; then
         # Charger wait_for_container_running si disponible
         if command -v wait_for_container_running > /dev/null 2>&1; then
             if wait_for_container_running "$container_name" 120; then
