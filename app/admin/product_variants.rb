@@ -18,7 +18,7 @@ ActiveAdmin.register ProductVariant do
     selectable_column
     id_column
     column "Produit" do |variant|
-      link_to variant.product.name, admin_product_path(variant.product)
+      link_to variant.product.name, activeadmin_product_path(variant.product)
     end
     column "SKU" do |variant|
       variant.sku
@@ -62,7 +62,7 @@ ActiveAdmin.register ProductVariant do
   show do
     attributes_table do
       row :product do |variant|
-        link_to variant.product.name, admin_product_path(variant.product)
+        link_to variant.product.name, activeadmin_product_path(variant.product)
       end
       row :sku
       row "Options" do |variant|
