@@ -88,7 +88,16 @@
                   <%= f.telephone_field :phone, 
                       class: "form-control", 
                       value: @user.phone,
-                      required: true %>
+                      required: true,
+                      placeholder: "0612345678",
+                      maxlength: 10,
+                      pattern: "[0-9]{10}",
+                      oninput: "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);",
+                      onblur: "validatePhoneField(this)" %>
+                  <div class="form-text small mt-1">
+                    Format : 10 chiffres uniquement (ex: 0612345678)
+                  </div>
+                  <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-12">
                   <%= f.label :email, "Email *", class: "form-label" %>
@@ -153,7 +162,16 @@
                   <%= f.label :parent_phone, "Téléphone du parent/tuteur", class: "form-label" %>
                   <%= f.telephone_field :parent_phone, 
                       class: "form-control", 
-                      value: @user.phone %>
+                      value: @user.phone,
+                      placeholder: "0612345678",
+                      maxlength: 10,
+                      pattern: "[0-9]{10}",
+                      oninput: "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);",
+                      onblur: "validatePhoneField(this)" %>
+                  <div class="form-text small mt-1">
+                    Format : 10 chiffres uniquement (ex: 0612345678)
+                  </div>
+                  <div class="invalid-feedback"></div>
                 </div>
               </div>
             </div>
@@ -192,4 +210,44 @@
     </div>
   </div>
 </div>
+
+<script>
+  function validatePhoneField(field) {
+    const value = field.value.replace(/[^0-9]/g, '');
+    const feedback = field.parentElement.querySelector('.invalid-feedback');
+    
+    // Validation téléphone : uniquement 10 chiffres
+    if (value.length !== 10) {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      field.style.borderColor = '#dc3545';
+      if (feedback) {
+        feedback.textContent = 'Le numéro de téléphone doit contenir exactement 10 chiffres (ex: 0612345678)';
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Vérifier que le numéro commence par 0
+    if (value[0] !== '0') {
+      field.classList.add('is-invalid');
+      field.classList.remove('is-valid');
+      field.style.borderColor = '#dc3545';
+      if (feedback) {
+        feedback.textContent = 'Le numéro de téléphone doit commencer par 0 (ex: 0612345678)';
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Si valide
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    field.style.borderColor = '';
+    if (feedback) {
+      feedback.style.display = 'none';
+    }
+    return true;
+  }
+</script>
 
