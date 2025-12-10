@@ -1,0 +1,63 @@
+{
+  "timestamp": "2025-12-09T23:04:13Z",
+  "level": "INFO",
+  "message": "🔐 Master key chargée depuis config/master.key (dev)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-09T23:04:13Z",
+  "level": "INFO",
+  "message": "⚠️ Branche actuelle: Dev, passage sur staging...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-09T23:04:14Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-09T23:04:14Z",
+  "level": "INFO",
+  "message": "🚀 DEPLOYMENT START - staging - 2025-12-10 00:04:14",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-09T23:04:14Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-09T23:04:14Z",
+  "level": "INFO",
+  "message": "🧹 Nettoyage préventif Docker...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-09T23:04:30Z",
+  "level": "INFO",
+  "message": "📥 Vérification des mises à jour (branche: staging)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251210-000413-27474",
+  "deploy_duration_seconds": 16
+}
