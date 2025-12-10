@@ -137,10 +137,13 @@
                       class: "form-control form-control-lg", 
                       value: @user.phone,
                       required: true,
-                      placeholder: "+33 ou 06XX",
+                      placeholder: "0612345678",
+                      maxlength: 10,
+                      pattern: "[0-9]{10}",
+                      oninput: "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10); validateField(this);",
                       onblur: "validateField(this)" %>
                   <div class="form-text small mt-1">
-                    Format : +33 ou 06XX
+                    Format : 10 chiffres uniquement (ex: 0612345678)
                   </div>
                   <div class="invalid-feedback"></div>
                 </div>
@@ -781,13 +784,24 @@
       }
     }
     
-    // Validation téléphone
+    // Validation téléphone : uniquement 10 chiffres
     if (field.type === 'tel' && value) {
-      const phoneRegex = /^(\+33|0)[1-9](\d{2}){4}$/;
-      if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+      // Enlever tous les caractères non numériques
+      const phoneDigits = value.replace(/[^0-9]/g, '');
+      if (phoneDigits.length !== 10) {
         field.classList.add('is-invalid');
+        field.style.borderColor = '#dc3545';
         if (feedback && feedback.classList.contains('invalid-feedback')) {
-          feedback.textContent = 'Format invalide (ex: +33 6 12 34 56 78 ou 06 12 34 56 78)';
+          feedback.textContent = 'Le numéro de téléphone doit contenir exactement 10 chiffres (ex: 0612345678)';
+        }
+        return false;
+      }
+      // Vérifier que le numéro commence par 0
+      if (phoneDigits[0] !== '0') {
+        field.classList.add('is-invalid');
+        field.style.borderColor = '#dc3545';
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+          feedback.textContent = 'Le numéro de téléphone doit commencer par 0 (ex: 0612345678)';
         }
         return false;
       }
