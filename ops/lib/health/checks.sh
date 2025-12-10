@@ -19,7 +19,7 @@ health_check_comprehensive() {
     
     # 1. Vérifier DB connectivité depuis Rails
     log_info "  → Vérification DB..."
-    if ! docker exec "$container" bin/rails runner \
+    if ! $DOCKER_CMD exec "$container" bin/rails runner \
         "ActiveRecord::Base.connection.execute('SELECT 1')" > /dev/null 2>&1; then
         log_error "  ❌ DB inaccessible depuis Rails"
         errors=$((errors + 1))
@@ -29,9 +29,9 @@ health_check_comprehensive() {
     
     # 2. Vérifier Redis (si utilisé)
     log_info "  → Vérification Redis..."
-    if docker exec "$container" bin/rails runner \
+    if $DOCKER_CMD exec "$container" bin/rails runner \
        "Redis.current.ping rescue nil" > /dev/null 2>&1; then
-        if docker exec "$container" bin/rails runner \
+        if $DOCKER_CMD exec "$container" bin/rails runner \
            "Redis.current.ping" > /dev/null 2>&1; then
             log_success "  ✅ Redis accessible"
         else
@@ -43,7 +43,7 @@ health_check_comprehensive() {
     
     # 3. Vérifier migrations appliquées
     log_info "  → Vérification migrations..."
-    local pending=$(docker exec "$container" bin/rails db:migrate:status 2>/dev/null | \
+    local pending=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>/dev/null | \
                    awk '/^\s*down/ {count++} END {print count+0}' || echo "999")
     if [ "$pending" -gt 0 ]; then
         log_error "  ❌ Migrations en attente: $pending"

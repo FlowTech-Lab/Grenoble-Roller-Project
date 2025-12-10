@@ -160,8 +160,14 @@ main() {
     
     # Nettoyage préventif
     log "🧹 Nettoyage préventif Docker..."
-    docker image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
-    docker builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
+    
+    # Arrêter les conteneurs orphelins qui pourraient bloquer les ports
+    log_info "Arrêt des conteneurs orphelins (Caddy/Certbot/Nginx)..."
+    $DOCKER_CMD stop grenoble-roller-caddy-production grenoble-roller-certbot-production 2>/dev/null || true
+    $DOCKER_CMD rm grenoble-roller-caddy-production grenoble-roller-certbot-production 2>/dev/null || true
+    
+    $DOCKER_CMD image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
+    $DOCKER_CMD builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
     
     # 1. Vérifier les mises à jour Git
     log "📥 Vérification des mises à jour (branche: ${BRANCH})..."
@@ -263,7 +269,7 @@ main() {
     # Décider du type de build
     NEED_NO_CACHE_BUILD=false
     if container_is_running "$CONTAINER_NAME"; then
-        CURRENT_CONTAINER_MIGRATIONS=$(docker exec "$CONTAINER_NAME" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+        CURRENT_CONTAINER_MIGRATIONS=$($DOCKER_CMD exec "$CONTAINER_NAME" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
         if [ -n "$CURRENT_CONTAINER_MIGRATIONS" ]; then
             CURRENT_COUNT=$(echo "$CURRENT_CONTAINER_MIGRATIONS" | wc -l | tr -d ' ')
             NEW_IN_LOCAL=$(comm -23 <(echo "$LOCAL_MIGRATIONS_LIST") <(echo "$CURRENT_CONTAINER_MIGRATIONS") || echo "")
@@ -309,7 +315,7 @@ main() {
     fi
     
     # 8. Attendre que le conteneur soit healthy
-    if docker inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
+    if $DOCKER_CMD inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
         if ! wait_for_container_healthy "$CONTAINER_NAME" ${CONTAINER_HEALTHY_WAIT:-120}; then
             log_error "Le conteneur web n'est pas devenu healthy"
             rollback "$CURRENT_COMMIT"
@@ -328,7 +334,7 @@ main() {
     fi
     
     # Calculer timeout adaptatif
-    MIGRATION_STATUS=$(docker exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
+    MIGRATION_STATUS=$($DOCKER_CMD exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
     PENDING_MIGRATIONS=$(echo "$MIGRATION_STATUS" | grep "^\s*down" || echo "")
     PENDING_COUNT=$(echo "$PENDING_MIGRATIONS" | wc -l | tr -d ' ')
     MIGRATION_TIMEOUT=$(calculate_migration_timeout $PENDING_COUNT)

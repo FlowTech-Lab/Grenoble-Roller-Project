@@ -37,7 +37,7 @@ restore_database_from_backup() {
         # Sinon, depuis le conteneur
         elif container_is_running "${CONTAINER_NAME:-}"; then
             log_info "Récupération de la clé de chiffrement depuis master.key (conteneur)..."
-            encryption_key=$(docker exec "${CONTAINER_NAME}" cat /rails/config/master.key 2>/dev/null | tr -d '\n\r')
+            encryption_key=$($DOCKER_CMD exec "${CONTAINER_NAME}" cat /rails/config/master.key 2>/dev/null | tr -d '\n\r')
             
             if [ -z "$encryption_key" ]; then
                 log_error "master.key introuvable dans le conteneur"
@@ -54,7 +54,7 @@ restore_database_from_backup() {
         if echo -n "$encryption_key" | openssl enc -aes-256-cbc -d -pbkdf2 \
             -pass stdin \
             -in "$backup_file" 2>/dev/null | \
-            docker exec -i "${DB_CONTAINER}" \
+            $DOCKER_CMD exec -i "${DB_CONTAINER}" \
             psql -U postgres "${DB_NAME}" --single-transaction 2>/dev/null; then
             log_success "✅ Base de données restaurée depuis backup chiffré"
             return 0
@@ -64,7 +64,7 @@ restore_database_from_backup() {
         fi
     else
         log_info "Restauration depuis backup non chiffré: $(basename $backup_file)"
-        if cat "$backup_file" | docker exec -i "${DB_CONTAINER}" \
+        if cat "$backup_file" | $DOCKER_CMD exec -i "${DB_CONTAINER}" \
             psql -U postgres "${DB_NAME}" --single-transaction 2>/dev/null; then
             log_success "✅ Base de données restaurée depuis backup non chiffré"
             return 0

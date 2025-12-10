@@ -30,9 +30,9 @@ rollback() {
     # 1. Arrêter l'app immédiatement (éviter corruption)
     log_info "🛑 Arrêt de l'application pour éviter corruption..."
     if [ "${BLUE_GREEN_ENABLED:-false}" = "true" ]; then
-        docker compose -f "${BLUE_GREEN_COMPOSE_FILE}" stop web-blue web-green 2>/dev/null || true
+        $DOCKER_CMD compose -f "${BLUE_GREEN_COMPOSE_FILE}" stop web-blue web-green 2>/dev/null || true
     else
-        docker compose -f "${COMPOSE_FILE}" stop "${CONTAINER_NAME}" 2>/dev/null || true
+        $DOCKER_CMD compose -f "${COMPOSE_FILE}" stop "${CONTAINER_NAME}" 2>/dev/null || true
     fi
     
     # 2. Restaurer DB AVANT le code (ordre critique)
@@ -73,15 +73,15 @@ rollback() {
         if command -v get_active_environment > /dev/null 2>&1; then
             local active_env=$(get_active_environment)
             if [ "$active_env" != "none" ]; then
-                build_output=$(docker compose -f "${BLUE_GREEN_COMPOSE_FILE}" up -d --build "web-${active_env}" 2>&1)
+                build_output=$($DOCKER_CMD compose -f "${BLUE_GREEN_COMPOSE_FILE}" up -d --build "web-${active_env}" 2>&1)
             else
-                build_output=$(docker compose -f "${BLUE_GREEN_COMPOSE_FILE}" up -d --build web-blue 2>&1)
+                build_output=$($DOCKER_CMD compose -f "${BLUE_GREEN_COMPOSE_FILE}" up -d --build web-blue 2>&1)
             fi
         else
-            build_output=$(docker compose -f "${BLUE_GREEN_COMPOSE_FILE}" up -d --build web-blue 2>&1)
+            build_output=$($DOCKER_CMD compose -f "${BLUE_GREEN_COMPOSE_FILE}" up -d --build web-blue 2>&1)
         fi
     else
-        build_output=$(docker compose -f "${COMPOSE_FILE}" up -d --build 2>&1)
+        build_output=$($DOCKER_CMD compose -f "${COMPOSE_FILE}" up -d --build 2>&1)
     fi
     build_exit_code=$?
     

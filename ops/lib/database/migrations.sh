@@ -17,7 +17,7 @@ verify_migrations_synced() {
     local local_list=$3
     
     # Lister migrations dans le conteneur
-    local container_list=$(docker exec "$container" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    local container_list=$($DOCKER_CMD exec "$container" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
     
     if [ -z "$container_list" ]; then
         log_error "❌ Impossible de lister les migrations dans le conteneur"
@@ -51,7 +51,7 @@ verify_migrations_synced() {
 # IMPORTANT : Vérifie si les migrations destructives sont déjà appliquées (up) ou nouvelles (down)
 analyze_destructive_migrations() {
     local container=$1
-    local migration_status=$(docker exec "$container" bin/rails db:migrate:status 2>&1 | grep -v "Generating image" | grep -v "Please add" || echo "")
+    local migration_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1 | grep -v "Generating image" | grep -v "Please add" || echo "")
     local pending_migrations=$(echo "$migration_status" | grep "^\s*down" || echo "")
     
     if [ -z "$pending_migrations" ]; then
@@ -171,11 +171,11 @@ apply_migrations() {
     local migration_exit_code
     
     if [ -n "$timeout_cmd" ]; then
-        migration_output=$($timeout_cmd ${migration_timeout} docker exec "$container" bin/rails db:migrate 2>&1)
+        migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
         migration_exit_code=$?
     else
         log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
-        migration_output=$(docker exec "$container" bin/rails db:migrate 2>&1)
+        migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
         migration_exit_code=$?
     fi
     
@@ -203,7 +203,7 @@ apply_migrations() {
     log_success "✅ Migrations exécutées avec succès (durée: ${migration_duration}s)"
     
     # Vérification post-migration
-    local post_status=$(docker exec "$container" bin/rails db:migrate:status 2>&1)
+    local post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
     local post_pending=$(echo "$post_status" | awk '/^\s*down/ {count++} END {print count+0}' 2>/dev/null || echo "0")
     
     if [ "$post_pending" -gt 0 ]; then
