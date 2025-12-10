@@ -1,0 +1,246 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <div class="card card-liquid rounded-liquid shadow-liquid auth-form auth-form--wide">
+      <div class="card-body p-4 p-lg-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-book fs-1 text-liquid-primary"></i>
+          <h3 class="mt-2"><%= initiation.persisted? ? 'Modifier l\'initiation' : 'Créer une initiation' %></h3>
+          <p class="text-muted small">
+            Complétez les informations nécessaires pour publier votre séance d'initiation.
+          </p>
+        </div>
+
+        <% if initiation.errors.any? %>
+          <div class="alert alert-liquid-danger rounded-liquid mb-4">
+            <h4 class="h6 fw-semibold mb-2">
+              <%= pluralize(initiation.errors.count, "erreur") %> empêchent l'enregistrement :
+            </h4>
+            <ul class="mb-0 small">
+              <% initiation.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%= form_with(model: initiation, url: initiation.persisted? ? initiation_path(initiation) : initiations_path, html: { class: 'row g-3', multipart: true }) do |f| %>
+          <div class="col-12">
+            <%= f.label :title, "Titre", class: "form-label" %>
+            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Initiation Roller - Samedi 6 septembre 2025" %>
+          </div>
+
+          <!-- Le statut n'est pas modifiable par l'instructeur, seulement par les modérateurs -->
+          <% if can_moderate? %>
+            <div class="col-12 col-md-6">
+              <%= f.label :status, "Statut", class: "form-label" %>
+              <%= f.select :status, 
+                  Event::Initiation.statuses.keys.map { |status| 
+                    label = case status
+                            when 'draft' then 'En attente de validation'
+                            when 'published' then 'Publié'
+                            when 'canceled' then 'Annulé'
+                            else status.humanize
+                            end
+                    [label, status]
+                  }, 
+                  {}, 
+                  class: "form-select form-select-liquid" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Seuls les modérateurs peuvent changer le statut.
+              </div>
+            </div>
+          <% else %>
+            <%= f.hidden_field :status, value: 'draft' %>
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>En attente de validation</strong> : Votre initiation sera soumise à validation par un modérateur avant d'être publiée.
+              </div>
+            </div>
+          <% end %>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :start_at, "Date et heure de début", class: "form-label" %>
+            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              <strong>Doit être un samedi à 10h15</strong>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :duration_min, "Durée (minutes)", class: "form-label" %>
+            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 60, step: 5, required: true, value: initiation.duration_min || 105 %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Durée standard : 105 minutes (1h45)
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
+            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 1, step: 1, required: true, value: initiation.max_participants || 30 %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Capacité standard : 30 participants
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <%= f.label :level, "Niveau", class: "form-label" %>
+            <%= f.select :level, 
+                options_for_select([
+                  ['Débutant', 'beginner'],
+                  ['Intermédiaire', 'intermediate'],
+                  ['Confirmé', 'advanced'],
+                  ['Tous niveaux', 'all_levels']
+                ], initiation.level || 'beginner'),
+                { include_blank: false },
+                class: "form-select form-select-liquid" %>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :location_text, "Lieu / Point de rendez-vous", class: "form-label" do %>
+              Lieu / Point de rendez-vous <span class="text-danger">*</span>
+            <% end %>
+            <%= f.text_field :location_text, 
+                class: "form-control form-control-liquid", 
+                maxlength: 255, 
+                required: true, 
+                value: initiation.location_text || "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+                placeholder: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+                aria: { describedby: 'locationHelp' } %>
+            <div id="locationHelp" class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              <strong>Lieu fixe :</strong> Gymnase Ampère
+            </div>
+          </div>
+
+          <!-- Coordonnées GPS optionnelles (collapsed par défaut) -->
+          <div class="col-12">
+            <button class="btn btn-link text-decoration-none p-0" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#gpsCoordinates"
+                    aria-expanded="<%= initiation.has_gps_coordinates? ? 'true' : 'false' %>"
+                    aria-controls="gpsCoordinates">
+              <i class="bi bi-geo-alt me-1"></i>
+              <span class="text-muted">(Optionnel) Ajouter les coordonnées GPS précises</span>
+              <i class="bi bi-chevron-<%= initiation.has_gps_coordinates? ? 'up' : 'down' %> ms-1"></i>
+            </button>
+            
+            <div class="collapse<%= ' show' if initiation.has_gps_coordinates? %> mt-2" id="gpsCoordinates">
+              <div class="card card-body bg-light gps-coordinates-card">
+                <p class="small text-muted mb-3">
+                  <i class="bi bi-lightbulb me-1"></i>
+                  <strong>Bonus:</strong> Les coordonnées GPS permettent d'afficher une carte interactive et un lien Google Maps.
+                </p>
+                
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <%= f.label :meeting_lat, "Latitude", class: "form-label small" %>
+                    <%= f.number_field :meeting_lat, 
+                        class: "form-control form-control-sm", 
+                        step: "any",
+                        value: initiation.meeting_lat || 45.17323364952216,
+                        placeholder: "45.1732" %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= f.label :meeting_lng, "Longitude", class: "form-label small" %>
+                    <%= f.number_field :meeting_lng, 
+                        class: "form-control form-control-sm", 
+                        step: "any",
+                        value: initiation.meeting_lng || 5.705659385672371,
+                        placeholder: "5.7057" %>
+                  </div>
+                </div>
+                
+                <div class="mt-2">
+                  <a href="https://www.google.com/maps" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-map me-1"></i>
+                    Trouver les coordonnées sur Google Maps
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :cover_image, "Image de couverture", class: "form-label" %>
+            <% if initiation.persisted? && initiation.cover_image.attached? %>
+              <div class="mb-2">
+                <%= image_tag rails_representation_path(initiation.cover_image_thumb), class: "img-thumbnail", style: "max-height: 200px;" %>
+                <div class="form-text">
+                  <i class="bi bi-check-circle text-success me-1"></i>Image actuelle (optimisée)
+                </div>
+              </div>
+            <% end %>
+            <%= f.file_field :cover_image, accept: "image/*", class: "form-control form-control-liquid" %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Upload une image paysage (1200x800 recommandé) ou laissez vide pour le visuel par défaut.
+            </div>
+          </div>
+
+          <div class="col-12">
+            <%= f.label :description, "Description détaillée", class: "form-label" do %>
+              Description détaillée <span class="text-danger">*</span>
+            <% end %>
+            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, minlength: 10, placeholder: "Décrivez la séance d'initiation, le matériel nécessaire, les prérequis..." %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Minimum 10 caractères
+            </div>
+          </div>
+
+          <!-- Champs cachés pour initiations -->
+          <%= f.hidden_field :type, value: 'Event::Initiation' %>
+          <%= f.hidden_field :currency, value: "EUR" %>
+          <%= f.hidden_field :price_cents, value: 0 %>
+          <%= f.hidden_field :distance_km, value: 0 %>
+
+          <div class="col-12 mt-3 d-grid gap-2">
+            <%= f.submit (initiation.persisted? ? "Mettre à jour l'initiation" : "Créer l'initiation"), class: "btn btn-liquid-primary btn-lg w-100" %>
+            <%= link_to 'Annuler', initiations_path, class: "btn btn-outline-secondary w-100" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if initiation.persisted? && policy(initiation).destroy? %>
+  <div class="text-center mt-3">
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+      <i class="bi bi-trash me-2"></i>Supprimer l'initiation
+    </button>
+  </div>
+
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="confirmDeleteModalLabel">Supprimer l'initiation</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">
+            Cette action est irréversible. Confirmez-vous la suppression de
+            <strong><%= initiation.title %></strong> ?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <%= button_to initiation_path(initiation), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
+            <i class="bi bi-trash me-2"></i>Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+

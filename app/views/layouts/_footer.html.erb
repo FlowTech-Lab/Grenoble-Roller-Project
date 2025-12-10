@@ -1,100 +1,267 @@
 <!-- FOOTER START -->
-<footer class="footer-grenoble-roller">
-  <div class="container py-5">
+<footer class="footer-grenoble-roller" role="contentinfo" itemscope itemtype="https://schema.org/Organization">
+  <!-- Schema.org meta (propres) -->
+  <link itemprop="url" href="https://grenoble-roller.org">
+  <meta itemprop="slogan" content="Communauté de passionnés">
+  <meta itemprop="legalName" content="Association Grenoble Roller">
+  
+  <div class="container py-4">
     <!-- Main footer content -->
-    <div class="row g-4">
+    <div class="row g-3 g-lg-4">
       <!-- Column 1: À propos -->
-      <div class="col-6 col-md-3">
-        <h5 class="footer-title mb-3">
-          <i class="bi bi-info-circle me-2"></i>
+      <div class="col-12 col-md-6 col-lg-3">
+        <!-- Bouton accordéon mobile uniquement -->
+        <button class="footer-title-toggle w-100 text-start border-0 bg-transparent d-flex justify-content-between align-items-center d-md-none mb-2"
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#footerAbout" 
+                aria-expanded="false" 
+                aria-controls="footerAbout"
+                aria-label="Afficher ou masquer la section À propos">
+          <h5 class="footer-title mb-0">
+            <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+            À propos
+          </h5>
+          <i class="bi bi-chevron-down footer-chevron" aria-hidden="true"></i>
+        </button>
+        
+        <!-- Titre desktop -->
+        <h5 class="footer-title mb-2 d-none d-md-block">
+          <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
           À propos
         </h5>
-        <ul class="footer-links list-unstyled">
-          <li><a href="#">Qui sommes-nous</a></li>
-          <li><a href="#">Équipe</a></li>
-          <li><a href="#">Carrières</a></li>
-          <li><a href="#">Blog</a></li>
-        </ul>
+        
+        <!-- Contenu avec accordéon mobile -->
+        <div class="collapse d-md-block" id="footerAbout">
+          <ul class="footer-links list-unstyled">
+            <li><%= link_to "Qui sommes-nous", about_path, class: "footer-link" %></li>
+            <li><%= link_to "Adhérer / Devenir membre", "#", class: "footer-link" %></li>
+            <%# TODO: Créer pages Équipe, Carrières, Blog quand nécessaire %>
+            <% if false %>
+              <li><a href="#" class="footer-link">Équipe</a></li>
+              <li><a href="#" class="footer-link">Carrières</a></li>
+              <li><a href="#" class="footer-link">Blog</a></li>
+            <% end %>
+          </ul>
+        </div>
       </div>
       
-      <!-- Column 2: Événements -->
-      <div class="col-6 col-md-3">
-        <h5 class="footer-title mb-3">
-          <i class="bi bi-calendar-event me-2"></i>
+      <!-- Column 2: Événements & Liens rapides -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <!-- Bouton accordéon mobile uniquement -->
+        <button class="footer-title-toggle w-100 text-start border-0 bg-transparent d-flex justify-content-between align-items-center d-md-none mb-2"
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#footerEvents" 
+                aria-expanded="false" 
+                aria-controls="footerEvents"
+                aria-label="Afficher ou masquer la section Événements">
+          <h5 class="footer-title mb-0">
+            <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+            Événements
+          </h5>
+          <i class="bi bi-chevron-down footer-chevron" aria-hidden="true"></i>
+        </button>
+        
+        <!-- Titre desktop -->
+        <h5 class="footer-title mb-2 d-none d-md-block">
+          <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
           Événements
         </h5>
-        <ul class="footer-links list-unstyled">
-          <li><a href="#">Parcourir</a></li>
-          <li><a href="#">Catégories</a></li>
-          <li><a href="#">Villes</a></li>
-          <li><a href="#">Créer un événement</a></li>
-        </ul>
-      </div>
-      
-      <!-- Column 3: Support -->
-      <div class="col-6 col-md-3">
-        <h5 class="footer-title mb-3">
-          <i class="bi bi-question-circle me-2"></i>
-          Support
-        </h5>
-        <ul class="footer-links list-unstyled">
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">CGU</a></li>
-          <li><a href="#">Confidentialité</a></li>
-        </ul>
-      </div>
-      
-      <!-- Column 4: Suivez-nous -->
-      <div class="col-6 col-md-3">
-        <h5 class="footer-title mb-3">
-          <i class="bi bi-share me-2"></i>
-          Suivez-nous
-        </h5>
-        <div class="footer-social d-flex gap-3 flex-wrap">
-          <a href="#" class="social-link" aria-label="Facebook">
-            <i class="bi bi-facebook"></i>
-          </a>
-          <a href="#" class="social-link" aria-label="Twitter">
-            <i class="bi bi-twitter"></i>
-          </a>
-          <a href="#" class="social-link" aria-label="Instagram">
-            <i class="bi bi-instagram"></i>
-          </a>
-          <a href="#" class="social-link" aria-label="TikTok">
-            <i class="bi bi-tiktok"></i>
-          </a>
-          <a href="#" class="social-link" aria-label="YouTube">
-            <i class="bi bi-youtube"></i>
-          </a>
-        </div>
         
-        <!-- Newsletter -->
-        <div class="mt-4">
-          <p class="small text-muted mb-2">Restez informé</p>
-          <form class="d-flex gap-2">
-            <input type="email" class="form-control form-control-sm" 
-                    placeholder="Email" aria-label="Email">
-            <button class="btn btn-liquid-primary btn-sm" type="submit">
-              <i class="bi bi-arrow-right"></i>
-            </button>
-          </form>
+        <!-- Contenu avec accordéon mobile -->
+        <div class="collapse d-md-block" id="footerEvents">
+          <ul class="footer-links list-unstyled">
+            <li><%= link_to "Parcourir les événements", events_path, class: "footer-link" %></li>
+            <% if user_signed_in? && policy(Event).create? %>
+              <li><%= link_to "Créer un événement", new_event_path, class: "footer-link" %></li>
+            <% end %>
+            <%# TODO: Créer pages Catégories et Villes quand filtres implémentés %>
+            <% if false %>
+              <li><a href="#" class="footer-link">Catégories</a></li>
+              <li><a href="#" class="footer-link">Villes</a></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Column 3: Support & Légal -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <!-- Bouton accordéon mobile uniquement -->
+        <button class="footer-title-toggle w-100 text-start border-0 bg-transparent d-flex justify-content-between align-items-center d-md-none mb-2"
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#footerSupport" 
+                aria-expanded="false" 
+                aria-controls="footerSupport"
+                aria-label="Afficher ou masquer la section Support & Légal">
+          <h5 class="footer-title mb-0">
+            <i class="bi bi-shield-check me-2" aria-hidden="true"></i>
+            Support & Légal
+          </h5>
+          <i class="bi bi-chevron-down footer-chevron" aria-hidden="true"></i>
+        </button>
+        
+        <!-- Titre desktop -->
+        <h5 class="footer-title mb-2 d-none d-md-block">
+          <i class="bi bi-shield-check me-2" aria-hidden="true"></i>
+          Support & Légal
+        </h5>
+        
+        <!-- Contenu avec accordéon mobile -->
+        <div class="collapse d-md-block" id="footerSupport">
+          <ul class="footer-links list-unstyled">
+            <li><%= link_to "Contact", contact_path, class: "footer-link" %></li>
+            <li><%= link_to "FAQ", "#", class: "footer-link" %></li>
+            <li class="mt-2 pt-2 border-top border-secondary border-opacity-25">
+              <small class="text-muted text-uppercase fw-semibold">Légal</small>
+            </li>
+            <li><%= link_to "Mentions Légales", mentions_legales_path, class: "footer-link" %></li>
+            <li><%= link_to "Politique de Confidentialité", politique_confidentialite_path, class: "footer-link" %></li>
+            <li><%= link_to "CGV", cgv_path, class: "footer-link" %></li>
+            <li><%= link_to "CGU", cgu_path, class: "footer-link" %></li>
+            <li><%= link_to "Gestion des cookies", preferences_cookie_consent_path, class: "footer-link" %></li>
+            <li><%= link_to "Accessibilité", "#", class: "footer-link" %></li>
+            <li><%= link_to "Plan du site", "#", class: "footer-link" %></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Column 4: Suivez-nous & Newsletter -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <!-- Bouton accordéon mobile uniquement -->
+        <button class="footer-title-toggle w-100 text-start border-0 bg-transparent d-flex justify-content-between align-items-center d-md-none mb-2"
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#footerSocial" 
+                aria-expanded="false" 
+                aria-controls="footerSocial"
+                aria-label="Afficher ou masquer la section Restons connectés">
+          <h5 class="footer-title mb-0">
+            <i class="bi bi-share me-2" aria-hidden="true"></i>
+            Restons connectés
+          </h5>
+          <i class="bi bi-chevron-down footer-chevron" aria-hidden="true"></i>
+        </button>
+        
+        <!-- Titre desktop -->
+        <h5 class="footer-title mb-2 d-none d-md-block">
+          <i class="bi bi-share me-2" aria-hidden="true"></i>
+          Restons connectés
+        </h5>
+        
+        <!-- Contenu avec accordéon mobile -->
+        <div class="collapse d-md-block" id="footerSocial">
+          <!-- Social Media Links -->
+          <div class="footer-social mb-3">
+            <p class="small text-muted mb-2">Suivez-nous sur les réseaux</p>
+            <div class="d-flex gap-3 flex-wrap">
+              <a href="https://www.facebook.com/GrenobleRoller/" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 class="social-link social-link-lg" 
+                 aria-label="Suivez-nous sur Facebook"
+                 title="Facebook">
+                <i class="bi bi-facebook" aria-hidden="true"></i>
+                <span class="visually-hidden">Facebook</span>
+              </a>
+              <a href="https://www.instagram.com/grenoble_roller/" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 class="social-link social-link-lg" 
+                 aria-label="Suivez-nous sur Instagram"
+                 title="Instagram">
+                <i class="bi bi-instagram" aria-hidden="true"></i>
+                <span class="visually-hidden">Instagram</span>
+              </a>
+              <%# Réseaux sociaux non utilisés masqués %>
+              <% if false %>
+                <a href="#" class="social-link social-link-lg" aria-label="Twitter" title="Twitter">
+                  <i class="bi bi-twitter" aria-hidden="true"></i>
+                  <span class="visually-hidden">Twitter</span>
+                </a>
+                <a href="#" class="social-link social-link-lg" aria-label="TikTok" title="TikTok">
+                  <i class="bi bi-tiktok" aria-hidden="true"></i>
+                  <span class="visually-hidden">TikTok</span>
+                </a>
+                <a href="#" class="social-link social-link-lg" aria-label="YouTube" title="YouTube">
+                  <i class="bi bi-youtube" aria-hidden="true"></i>
+                  <span class="visually-hidden">YouTube</span>
+                </a>
+              <% end %>
+            </div>
+          </div>
+          
+          <!-- Newsletter -->
+          <%# TODO: Implémenter backend newsletter (modèle NewsletterSubscription + service email) %>
+          <%# Recommandation RGPD : Ajouter double opt-in + CAPTCHA invisible (Google reCAPTCHA v3) pour éviter le spam %>
+          <% if false %>
+            <div class="newsletter-section">
+              <p class="small text-muted mb-2 fw-semibold">Newsletter</p>
+              <p class="small text-muted mb-3">Restez informé de nos événements</p>
+              <form class="d-flex gap-2" data-turbo="false">
+                <input type="email" 
+                       class="form-control form-control-sm" 
+                       placeholder="Votre email" 
+                       aria-label="Adresse email pour newsletter"
+                       required>
+                <button class="btn btn-liquid-primary btn-sm" type="submit" aria-label="S'abonner à la newsletter">
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                  <span class="visually-hidden">S'abonner</span>
+                </button>
+              </form>
+              <p class="small text-muted mt-2 mb-0">
+                <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
+                Vos données sont protégées. 
+                <%= link_to "En savoir plus", politique_confidentialite_path, class: "text-decoration-underline" %>.
+              </p>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>
     
     <!-- Divider -->
-    <hr class="my-4">
+    <hr class="my-4 border-secondary border-opacity-25" aria-hidden="true">
     
-    <!-- Copyright -->
-    <div class="row">
-      <div class="col-12 text-center">
-        <p class="footer-copyright mb-2">
+    <!-- Informations légales & Copyright -->
+    <div class="row g-2">
+      <!-- Informations association - Version compacte -->
+      <div class="col-12 col-lg-6">
+        <div class="footer-legal-info">
+          <p class="small mb-1">
+            <strong itemprop="name">Grenoble Roller</strong> - Association loi 1901
+          </p>
+          <p class="small text-muted mb-1">
+            <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>
+            <span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+              <span itemprop="streetAddress">6 rue Berthe de Boissieux</span>, 
+              <span itemprop="postalCode">38000</span> <span itemprop="addressLocality">Grenoble</span>
+            </span>
+            <span class="mx-2">•</span>
+            <i class="bi bi-envelope me-1" aria-hidden="true"></i>
+            <a href="mailto:contact@grenoble-roller.org" itemprop="email" class="text-decoration-none">contact@grenoble-roller.org</a>
+          </p>
+          <p class="small text-muted mb-0">
+            <i class="bi bi-calendar me-1" aria-hidden="true"></i>
+            <time itemprop="foundingDate" datetime="2005-10-15">Créée le 15 octobre 2005</time>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Copyright -->
+      <div class="col-12 col-lg-6 text-lg-end">
+        <p class="footer-copyright mb-1">
           <strong>Grenoble Roller</strong> - Communauté de passionnés
         </p>
-        <p class="footer-copyright small text-muted mb-0">
-          © <%= Date.current.year %> Grenoble Roller - Tous droits réservés | 
-          Fait avec <i class="bi bi-heart-fill text-danger"></i> à Grenoble
+        <p class="footer-copyright small text-muted mb-1">
+          Fait avec <i class="bi bi-heart-fill text-danger" aria-label="amour"></i> à Grenoble | 
+          © <%= Date.current.year %> Grenoble Roller - Tous droits réservés
+        </p>
+        <p class="small text-muted mb-0">
+          Engagement 
+          <abbr lang="fr" title="Règlement Général sur la Protection des Données">RGPD</abbr> et 
+          <abbr lang="fr" title="Référentiel Général d'Amélioration de l'Accessibilité">RGAA</abbr>
         </p>
       </div>
     </div>

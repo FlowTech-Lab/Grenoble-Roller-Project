@@ -1,0 +1,13 @@
+Rappel : Renouvellement d'adhésion
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre adhésion pour la saison <%= @membership.season %> expire dans 30 jours (le <%= l(@membership.end_date, format: :long) %>).
+
+Pour continuer à profiter des avantages de l'association, nous vous invitons à renouveler votre adhésion dès maintenant.
+
+Renouveler mon adhésion : <%= new_membership_url %>
+
+Merci de votre fidélité ! 🛼
+
+L'équipe Grenoble Roller

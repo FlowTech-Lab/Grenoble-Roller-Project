@@ -29,7 +29,11 @@
               <% @cart_items.each do |ci| %>
                 <div class="cart-item">
                   <div class="cart-item-image">
-                    <%= image_tag ci[:product].image_url, alt: ci[:product].name, loading: "lazy" %>
+                    <% if ci[:product].image.attached? %>
+                      <%= image_tag ci[:product].image, alt: ci[:product].name, loading: "lazy" %>
+                    <% elsif ci[:product].image_url.present? %>
+                      <%= image_tag ci[:product].image_url, alt: ci[:product].name, loading: "lazy" %>
+                    <% end %>
                   </div>
                   
                   <div class="cart-item-content">
@@ -111,8 +115,11 @@
               <%= link_to cart_path, class: "btn btn-outline-primary flex-fill" do %>
                 <i class="bi bi-arrow-left me-1"></i>Modifier le panier
               <% end %>
-              <%= button_to orders_path, method: :post, class: "btn btn-liquid-primary flex-fill" do %>
-                <i class="bi bi-check-circle me-2"></i>Payer Via HelloAsso*
+              <%= form_with url: orders_path, method: :post, class: "flex-fill", data: { turbo: false } do |form| %>
+                <%= form.hidden_field :donation_cents, id: "donationCentsInput", value: 0 %>
+                <%= form.submit "Payer Via HelloAsso*", class: "btn btn-liquid-primary w-100" do %>
+                  <i class="bi bi-check-circle me-2"></i>Payer Via HelloAsso*
+                <% end %>
               <% end %>
             </div>
 
@@ -133,53 +140,87 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    let donationAmount = 0;
-    const cartSubtotal = <%= @total_cents %> / 100.0;
-
-    function formatPrice(amount) {
-      const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
-      return formatted.replace('.', ',') + '€';
-    }
-
-    function setDonation(amount) {
-      donationAmount = Number(amount) || 0;
-      const customInput = document.getElementById('donationCustomInput');
-      if (customInput) customInput.disabled = true;
-      updateDonationDisplay();
-    }
-
-    function enableCustomDonation() {
-      const customInput = document.getElementById('donationCustomInput');
-      if (customInput) {
-        customInput.disabled = false;
-        customInput.focus();
-      }
-    }
-
-    function setDonationCustom(value) {
-      const val = parseFloat(String(value).replace(',', '.'));
-      donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
-      updateDonationDisplay();
-    }
-
-    function updateDonationDisplay() {
-      const donationDisplay = document.getElementById('donationDisplay');
-      const orderTotalWithDonation = document.getElementById('orderTotalWithDonation');
+  (function() {
+    // Utiliser un namespace pour éviter les conflits et les redéclarations
+    if (!window.orderDonation) {
+      window.orderDonation = {
+        donationAmount: 0,
+        cartSubtotal: <%= @total_cents %> / 100.0,
+        
+        formatPrice: function(amount) {
+          const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
+          return formatted.replace('.', ',') + '€';
+        },
+        
+        setDonation: function(amount) {
+          window.orderDonation.donationAmount = Number(amount) || 0;
+          const customInput = document.getElementById('donationCustomInput');
+          if (customInput) customInput.disabled = true;
+          window.orderDonation.updateDonationDisplay();
+        },
+        
+        enableCustomDonation: function() {
+          const customInput = document.getElementById('donationCustomInput');
+          if (customInput) {
+            customInput.disabled = false;
+            customInput.focus();
+          }
+        },
+        
+        setDonationCustom: function(value) {
+          const val = parseFloat(String(value).replace(',', '.'));
+          window.orderDonation.donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
+          window.orderDonation.updateDonationDisplay();
+        },
+        
+        updateDonationDisplay: function() {
+          const donationDisplay = document.getElementById('donationDisplay');
+          const orderTotalWithDonation = document.getElementById('orderTotalWithDonation');
+          const donationCentsInput = document.getElementById('donationCentsInput');
+          
+          if (donationDisplay) {
+            donationDisplay.textContent = window.orderDonation.formatPrice(window.orderDonation.donationAmount);
+          }
+          
+          if (orderTotalWithDonation) {
+            const total = window.orderDonation.cartSubtotal + window.orderDonation.donationAmount;
+            orderTotalWithDonation.textContent = window.orderDonation.formatPrice(total);
+          }
+          
+          // Mettre à jour le champ hidden pour l'envoyer au serveur
+          if (donationCentsInput) {
+            donationCentsInput.value = Math.round(window.orderDonation.donationAmount * 100);
+          }
+        },
+        
+        init: function() {
+          // Réinitialiser donationAmount à 0 au chargement de la page
+          window.orderDonation.donationAmount = 0;
+          window.orderDonation.updateDonationDisplay();
+        }
+      };
       
-      if (donationDisplay) {
-        donationDisplay.textContent = formatPrice(donationAmount);
-      }
-      
-      if (orderTotalWithDonation) {
-        const total = cartSubtotal + donationAmount;
-        orderTotalWithDonation.textContent = formatPrice(total);
-      }
+      // Expose functions globally pour compatibilité avec les attributs HTML
+      window.setDonation = window.orderDonation.setDonation;
+      window.enableCustomDonation = window.orderDonation.enableCustomDonation;
+      window.setDonationCustom = window.orderDonation.setDonationCustom;
+    } else {
+      // Mettre à jour cartSubtotal si la page est rechargée
+      window.orderDonation.cartSubtotal = <%= @total_cents %> / 100.0;
     }
-
-    // Expose functions globally
-    window.setDonation = setDonation;
-    window.enableCustomDonation = enableCustomDonation;
-    window.setDonationCustom = setDonationCustom;
-  });
+    
+    // Initialiser au chargement
+    function initDonation() {
+      window.orderDonation.init();
+    }
+    
+    // Écouter DOMContentLoaded et turbo:load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDonation);
+    } else {
+      initDonation();
+    }
+    
+    document.addEventListener('turbo:load', initDonation);
+  })();
 </script>

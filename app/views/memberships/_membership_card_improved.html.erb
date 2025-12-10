@@ -1,0 +1,159 @@
+<% 
+  # Calculer les jours restants
+  days_remaining = 0
+  if membership.active? && membership.end_date.present?
+    days_remaining = (membership.end_date - Date.current).to_i
+    days_remaining = [days_remaining, 0].max
+  end
+  
+  # Calculer le pourcentage de progression
+  progress_percent = 0
+  if membership.start_date.present? && membership.end_date.present?
+    total_days = (membership.end_date - membership.start_date).to_i
+    elapsed_days = (Date.current - membership.start_date).to_i
+    progress_percent = total_days > 0 ? [(elapsed_days.to_f / total_days * 100), 100].min : 0
+  end
+  
+  # Couleur de la progress bar
+  progress_color = if days_remaining > 180
+    "green"
+  elsif days_remaining > 60
+    "orange"
+  else
+    "red"
+  end
+  
+  # Classe CSS pour la card
+  card_class = case membership.status
+    when 'active'
+      'membership-card active'
+    when 'pending'
+      'membership-card pending'
+    when 'expired'
+      'membership-card expired'
+    else
+      'membership-card'
+  end
+%>
+
+<div class="<%= card_class %> card-liquid position-relative">
+  <!-- Status Badge -->
+  <span class="status-badge <%= membership.status %>">
+    <% case membership.status %>
+      <% when 'active' %>
+        ✓ ACTIVE
+      <% when 'pending' %>
+        ⏳ PENDING
+      <% when 'expired' %>
+        ✗ EXPIRED
+      <% else %>
+        <%= membership.status.humanize.upcase %>
+    <% end %>
+  </span>
+
+  <!-- Header -->
+  <div class="mb-3">
+    <div class="d-flex align-items-center mb-2">
+      <i class="bi <%= is_child ? 'bi-person-heart' : 'bi-person-badge' %> fs-3 text-liquid-primary me-3"></i>
+      <div>
+        <h4 class="h5 mb-0">
+          <% if is_child %>
+            <%= membership.child_full_name %>
+          <% else %>
+            Mon adhésion principale
+          <% end %>
+        </h4>
+        <small class="text-muted">
+          <% if is_child %>
+            Enfant - <%= membership.season %>
+          <% else %>
+            Adulte - <%= membership.season %>
+          <% end %>
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Informations -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-4">
+      <div class="p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+        <small class="text-muted d-block">Catégorie</small>
+        <strong>
+          <%= membership.category == 'standard' ? 'Standard' : 'FFRS' %>
+        </strong>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+        <small class="text-muted d-block">Tarif</small>
+        <strong>
+          <%= number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+        </strong>
+        <% if membership.tshirt_variant_id.present? %>
+          <small class="text-muted d-block">+ T-shirt</small>
+        <% end %>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+        <small class="text-muted d-block">Dates</small>
+        <strong>
+          <%= l(membership.start_date, format: :short) if membership.start_date %> → 
+          <%= l(membership.end_date, format: :short) if membership.end_date %>
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar (si actif) -->
+  <% if membership.active? && days_remaining > 0 %>
+    <div class="mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-muted">Jours restants</small>
+        <strong><%= days_remaining %> jours</strong>
+      </div>
+      <div class="progress-bar-custom">
+        <div class="progress-fill <%= progress_color %>" style="width: <%= progress_percent %>%"></div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Actions -->
+  <div class="d-flex gap-2 flex-wrap">
+    <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary" do %>
+      <i class="bi bi-eye me-1"></i>Voir détails
+    <% end %>
+    
+    <% if membership.status == 'pending' %>
+      <% if is_child %>
+        <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning" do %>
+          <i class="bi bi-pencil me-1"></i>Modifier
+        <% end %>
+        <%= button_to membership_path(membership),
+            method: :delete,
+            class: "btn btn-sm btn-outline-danger",
+            data: { 
+              turbo: false,
+              confirm: "Êtes-vous sûr de vouloir supprimer l'adhésion de #{membership.child_full_name} ?"
+            },
+            form: { style: "display: inline-block;" } do %>
+          <i class="bi bi-trash me-1"></i>Supprimer
+        <% end %>
+      <% end %>
+      
+      <%= button_to pay_membership_path(membership),
+          method: :post,
+          class: "btn btn-sm btn-primary",
+          data: { turbo: false },
+          form: { style: "display: inline-block;" } do %>
+        <i class="bi bi-credit-card me-1"></i>Finaliser paiement →
+      <% end %>
+    <% elsif membership.status == 'expired' %>
+      <%= link_to new_membership_path(check_age: true), class: "btn btn-sm btn-success" do %>
+        <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+      <% end %>
+    <% end %>
+  </div>
+</div>
+

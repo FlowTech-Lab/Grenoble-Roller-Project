@@ -1,5 +1,5 @@
 <div class="container py-4">
-  <h1 class="mb-4 text-center"><i class="bi bi-basket me-2"></i>Panier</h1>
+  <h1 class="mb-4 text-center"><i class="bi bi-basket me-2" aria-hidden="true"></i>Panier</h1>
 
   <div class="row">
     <div class="col-12 col-lg-8 mx-auto">
@@ -7,19 +7,23 @@
         <div class="card-body p-4">
           <% if @cart_items.empty? %>
             <div class="empty-state">
-              <i class="bi bi-bag"></i>
+              <i class="bi bi-bag" aria-hidden="true"></i>
               <p class="mb-3">Votre panier est vide.</p>
               <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
-                <i class="bi bi-arrow-left me-1"></i>Retour à la boutique
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Retour à la boutique
               <% end %>
             </div>
           <% else %>
             <!-- Cart items list -->
-            <div class="mb-4">
+            <div class="mb-4" role="region" aria-label="Articles du panier" aria-live="polite" aria-atomic="false">
               <% @cart_items.each do |ci| %>
                 <div class="cart-item">
                   <div class="cart-item-image">
-                    <%= image_tag ci[:product].image_url, alt: ci[:product].name, loading: "lazy" %>
+                    <% if ci[:product].image.attached? %>
+                      <%= image_tag ci[:product].image, alt: ci[:product].name, loading: "lazy" %>
+                    <% elsif ci[:product].image_url.present? %>
+                      <%= image_tag ci[:product].image_url, alt: ci[:product].name, loading: "lazy" %>
+                    <% end %>
                   </div>
                   
                   <div class="cart-item-content">
@@ -38,18 +42,18 @@
                         <%= hidden_field_tag :original_quantity, ci[:quantity], id: "original-qty-#{ci[:variant].id}" %>
                         <div class="qty-control" id="qty-control-<%= ci[:variant].id %>">
                           <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQty(#{ci[:variant].id}, #{ci[:variant].stock_qty})" do %>
-                            <i class="bi bi-dash"></i>
+                            <i class="bi bi-dash" aria-hidden="true"></i>
                           <% end %>
                           <%= number_field_tag :quantity, ci[:quantity], min: 1, max: ci[:variant].stock_qty, class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "qty-#{ci[:variant].id}", data: { original: ci[:quantity], max: ci[:variant].stock_qty }, oninput: "checkQuantityChange(#{ci[:variant].id})" %>
                           <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, onclick: "incrementQty(#{ci[:variant].id}, #{ci[:variant].stock_qty})" do %>
-                            <i class="bi bi-plus"></i>
+                            <i class="bi bi-plus" aria-hidden="true"></i>
                           <% end %>
                         </div>
                         <button type="submit" class="btn btn-sm btn-outline-primary qty-update-btn" id="update-btn-<%= ci[:variant].id %>" aria-label="Mettre à jour" onclick="resetQuantityState(<%= ci[:variant].id %>)" style="display: none;">
-                          <i class="bi bi-check"></i>
+                          <i class="bi bi-check" aria-hidden="true"></i>
                         </button>
                       <% end %>
-                      <div class="qty-error-text" id="invalid-feedback-<%= ci[:variant].id %>" style="display: none;">
+                      <div class="qty-error-text" id="invalid-feedback-<%= ci[:variant].id %>" role="alert" style="display: none;">
                         Max: <%= ci[:variant].stock_qty %>
                       </div>
                     </div>
@@ -62,7 +66,7 @@
                     
                     <div class="cart-item-actions">
                       <%= button_to remove_item_cart_path(variant_id: ci[:variant].id), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Supprimer", aria: { label: "Supprimer" } do %>
-                        <i class="bi bi-trash"></i>
+                        <i class="bi bi-trash" aria-hidden="true"></i>
                       <% end %>
                     </div>
                   </div>
@@ -74,12 +78,10 @@
             <div class="border-top pt-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <%= button_to clear_cart_path, method: :delete, class: "btn btn-outline-secondary btn-sm", data: { confirm: "Êtes-vous sûr de vouloir vider le panier ?" } do %>
-                  <i class="bi bi-trash me-1"></i>Vider le panier
+                  <i class="bi bi-trash me-1" aria-hidden="true"></i>Vider le panier
                 <% end %>
                 <div class="text-end">
-                  <div class="small text-muted mb-1">Sous-total: <%= format_price(@total_cents) %></div>
-                  <div class="small text-muted mb-1">Don: <span id="donationDisplay">0€</span></div>
-                  <strong class="fs-5">Total: <span id="cartTotalWithDonation"><%= format_price(@total_cents) %></span></strong>
+                  <strong class="fs-5">Total: <%= format_price(@total_cents) %></strong>
                 </div>
               </div>
             </div>
@@ -87,15 +89,15 @@
             <!-- Action buttons -->
             <div class="d-flex flex-column flex-md-row gap-2">
               <%= link_to shop_path, class: "btn btn-outline-primary flex-fill" do %>
-                <i class="bi bi-arrow-left me-1"></i>Continuer les achats
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Continuer les achats
               <% end %>
               <% if user_signed_in? %>
                 <%= link_to new_order_path, class: "btn btn-liquid-primary flex-fill" do %>
-                  <i class="bi bi-credit-card me-1"></i>Confirmer et payer
+                  <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Confirmer et payer
                 <% end %>
               <% else %>
                 <%= link_to new_user_session_path, class: "btn btn-liquid-primary flex-fill" do %>
-                  <i class="bi bi-box-arrow-in-right me-1"></i>Se connecter pour commander
+                  <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Se connecter pour commander
                 <% end %>
               <% end %>
             </div>
@@ -107,51 +109,6 @@
 </div>
 
 <script>
-  // Donation management
-  let donationAmount = 0;
-  const cartSubtotal = <%= @total_cents %> / 100.0;
-
-  function setDonation(amount) {
-    donationAmount = Number(amount) || 0;
-    const customInput = document.getElementById('donationCustomInput');
-    if (customInput) customInput.disabled = true;
-    updateDonationDisplay();
-  }
-
-  function enableCustomDonation() {
-    const customInput = document.getElementById('donationCustomInput');
-    if (customInput) {
-      customInput.disabled = false;
-      customInput.focus();
-    }
-  }
-
-  function setDonationCustom(value) {
-    const val = parseFloat(String(value).replace(',', '.'));
-    donationAmount = Number.isFinite(val) ? Math.max(0, val) : 0;
-    updateDonationDisplay();
-  }
-
-  function formatPrice(amount) {
-    // Formater sans décimales si c'est un nombre entier
-    const formatted = amount === Math.floor(amount) ? amount.toString() : amount.toFixed(2);
-    return formatted.replace('.', ',') + '€';
-  }
-
-  function updateDonationDisplay() {
-    const donationDisplay = document.getElementById('donationDisplay');
-    const cartTotalWithDonation = document.getElementById('cartTotalWithDonation');
-    
-    if (donationDisplay) {
-      donationDisplay.textContent = formatPrice(donationAmount);
-    }
-    
-    if (cartTotalWithDonation) {
-      const total = cartSubtotal + donationAmount;
-      cartTotalWithDonation.textContent = formatPrice(total);
-    }
-  }
-
   // Quantity management
   function incrementQty(variantId, maxStock) {
     const qtyInput = document.getElementById('qty-' + variantId);

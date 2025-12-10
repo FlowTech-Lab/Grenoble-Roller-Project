@@ -1,0 +1,1102 @@
+  <% 
+  # Définir l'étape courante (pour le stepper)
+  # Catégorie en premier (étape 1), puis T-shirt si avec_tshirt (étape 2)
+  current_step = 1 # Commence toujours par la catégorie
+  total_steps = @with_tshirt ? 6 : 5
+%>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+          <!-- HERO SECTION -->
+          <div class="hero-form">
+            <div class="text-center">
+              <div class="hero-icon">👶</div>
+              <h1 class="hero-title">
+                <% if @old_membership %>
+                  RÉADHÉSION DE <%= @old_membership.child_full_name.upcase %>
+                <% else %>
+                  INSCRIPTION DE VOTRE ENFANT
+                <% end %>
+              </h1>
+              <p class="hero-subtitle">
+                <% if @old_membership %>
+                  Renouvellement de l'adhésion pour la saison <%= @season %>
+                <% else %>
+                  Rejoignez Grenoble Roller en toute simplicité
+                <% end %>
+              </p>
+          
+          <div class="hero-badges">
+            <span class="badge">
+              <i class="bi bi-calendar-event me-1"></i>
+              Saison <%= @season %>
+            </span>
+            <span class="badge">
+              <i class="bi bi-calendar-range me-1"></i>
+              <%= l(@start_date, format: :short) %> → <%= l(@end_date, format: :short) %>
+            </span>
+          </div>
+          
+          <div class="hero-progress">
+            <div class="progress-text">
+              <span>
+                Étape <%= current_step %>/<%= total_steps %> — 
+                Catégorie
+              </span>
+              <span><%= ((current_step.to_f / total_steps * 100).round) %>% complété</span>
+            </div>
+            <div class="progress-bar-custom">
+              <div class="progress-fill green" style="width: <%= ((current_step.to_f / total_steps * 100)) %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPPER -->
+      <%= render partial: 'form_stepper', locals: { form_type: 'child', current_step: current_step, with_tshirt: @with_tshirt } %>
+
+      <!-- MAIN FORM -->
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+              <%= form_with model: @membership || Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "child_membership_form", multipart: true do |f| %>
+            <%= f.hidden_field :is_child_membership, value: true %>
+            <%= f.hidden_field :with_tshirt, value: @with_tshirt ? 'true' : 'false', id: "with_tshirt_hidden" %>
+            
+            <!-- ÉTAPE 1 : CATÉGORIE -->
+            <div class="form-section" id="step-category">
+              <h3 class="section-title">
+                <span class="section-number">1</span>
+                Choisissez l'adhésion
+              </h3>
+              <p class="section-intro">Sélectionnez la formule qui correspond à votre enfant</p>
+              
+                  <div class="row g-3">
+                    <% @categories.each do |key, cat| %>
+                      <div class="col-md-6">
+                        <label for="category_<%= key %>" class="category-card <%= 'selected' if (@membership&.category&.to_sym == key) || (key == :standard && @membership.nil?) %>" onclick="selectCategory('<%= key %>')">
+                      <div class="category-icon">
+                        <%= key == :standard ? '👶' : '🎓' %>
+                      </div>
+                      <div class="category-title"><%= cat[:name] %></div>
+                      <div class="category-description"><%= cat[:description] %></div>
+                      <div class="category-footer d-flex justify-content-between align-items-center mt-auto">
+                        <div class="category-select">
+                          <%= f.radio_button :category, key, 
+                              { class: "form-check-input", id: "category_#{key}", required: true, onchange: "updateCategorySelection()" } %>
+                          <span id="category_label_<%= key %>">Sélectionner</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="category-price">
+                            <%= number_to_currency(cat[:price_cents] / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                          </div>
+                          <% if key == :standard %>
+                            <span class="category-badge">
+                              <i class="bi bi-star-fill me-1"></i>Best-seller
+                            </span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- ÉTAPE 2 : SÉLECTION T-SHIRT (si avec_tshirt) -->
+            <%= render partial: 'tshirt_selection', locals: { f: f } %>
+
+            <!-- ÉTAPE <%= @with_tshirt ? 3 : 2 %> : INFORMATIONS ENFANT -->
+            <div class="form-section" id="step-info">
+              <h3 class="section-title">
+                <span class="section-number"><%= @with_tshirt ? 3 : 2 %></span>
+                Informations de votre enfant
+              </h3>
+              <p class="section-intro">Ces informations permettront d'adapter le formulaire d'adhésion</p>
+              
+                  <% if @old_membership %>
+                    <div class="alert alert-info mb-4">
+                      <i class="bi bi-info-circle me-2"></i>
+                      <strong>Renouvellement d'adhésion</strong> : Les informations de <%= @old_membership.child_full_name %> ont été pré-remplies. 
+                      Vous pouvez les modifier si nécessaire.
+                    </div>
+                  <% end %>
+                  
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <%= f.label :child_first_name, "Prénom de l'enfant *", class: "form-label fw-bold" %>
+                      <%= f.text_field :child_first_name, 
+                          class: "form-control form-control-lg", 
+                          required: true,
+                          placeholder: "Prénom",
+                          value: @membership&.child_first_name,
+                          onblur: "validateField(this)" %>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-6">
+                      <%= f.label :child_last_name, "Nom de l'enfant *", class: "form-label fw-bold" %>
+                      <%= f.text_field :child_last_name, 
+                          class: "form-control form-control-lg", 
+                          required: true,
+                          placeholder: "Nom",
+                          value: @membership&.child_last_name,
+                          onblur: "validateField(this)" %>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-12">
+                      <%= f.label :child_date_of_birth, "Date de naissance *", class: "form-label fw-bold" do %>
+                        <i class="bi bi-calendar3 me-1"></i>Date de naissance de l'enfant
+                      <% end %>
+                      <div class="row g-2">
+                        <div class="col-4">
+                          <%= f.select :child_date_of_birth_day, 
+                              options_for_select((1..31).map { |d| [d, d] }, @membership&.child_date_of_birth&.day), 
+                              { prompt: "Jour", include_blank: true },
+                              { 
+                                class: "form-select form-select-lg", 
+                                id: "child_date_of_birth_day",
+                                required: true,
+                                onchange: "updateChildDateOfBirth()"
+                              } %>
+                        </div>
+                        <div class="col-4">
+                          <%= f.select :child_date_of_birth_month, 
+                              options_for_select([
+                                ["Janvier", 1], ["Février", 2], ["Mars", 3], ["Avril", 4],
+                                ["Mai", 5], ["Juin", 6], ["Juillet", 7], ["Août", 8],
+                                ["Septembre", 9], ["Octobre", 10], ["Novembre", 11], ["Décembre", 12]
+                              ], @membership&.child_date_of_birth&.month), 
+                              { prompt: "Mois", include_blank: true },
+                              { 
+                                class: "form-select form-select-lg", 
+                                id: "child_date_of_birth_month",
+                                required: true,
+                                onchange: "updateChildDateOfBirth()"
+                              } %>
+                        </div>
+                        <div class="col-4">
+                          <%= f.select :child_date_of_birth_year, 
+                              options_for_select(Date.today.year.downto(Date.today.year - 18).map { |y| [y, y] }, @membership&.child_date_of_birth&.year), 
+                              { prompt: "Année", include_blank: true },
+                              { 
+                                class: "form-select form-select-lg", 
+                                id: "child_date_of_birth_year",
+                                required: true,
+                                onchange: "updateChildDateOfBirth()"
+                              } %>
+                        </div>
+                      </div>
+                      <%= f.hidden_field :child_date_of_birth, id: "child_date_of_birth" %>
+                      <div class="age-display mt-2" id="child_age_display" style="display: none;">
+                        <i class="bi bi-info-circle me-1"></i>Âge : <strong id="child_age_value"></strong> ans
+                      </div>
+                      <div class="form-text small mt-2">
+                        <i class="bi bi-info-circle me-1"></i>L'âge sera calculé automatiquement à partir de la date sélectionnée.
+                      </div>
+                      <div id="category_inference" class="mt-2" style="display: none;">
+                        <div class="alert alert-info mb-0">
+                          <i class="bi bi-check-circle me-2"></i>
+                          <span id="category_inference_text"></span>
+                        </div>
+                      </div>
+                    </div>
+              </div>
+            </div>
+
+            <!-- ÉTAPE <%= @with_tshirt ? 4 : 3 %> : AUTORISATION PARENTALE -->
+            <div class="form-section" id="parent_authorization_section" style="display: none;">
+              <h3 class="section-title">
+                <span class="section-number"><%= @with_tshirt ? 4 : 3 %></span>
+                Autorisation parentale
+              </h3>
+              <p class="section-intro">
+                <i class="bi bi-shield-check me-2"></i>
+                <strong>Obligatoire pour les enfants de moins de 16 ans</strong>
+              </p>
+              
+              <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>En tant que parent/tuteur légal</strong>, veuillez accepter les conditions suivantes :
+              </div>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-shield-check consent-icon text-liquid-primary"></i>
+                  En tant que parent/tuteur légal, j'accepte les conditions suivantes :
+                </div>
+                
+                <ul class="list-unstyled mb-3">
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Mon enfant adhère à Grenoble Roller
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Mon enfant pratique le roller (sport avec risques d'accident)
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Je paye la cotisation (<span id="parent_auth_price"></span>)
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    J'accepte les conditions d'adhésion et la politique de confidentialité
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    J'accepte les risques liés à la pratique du roller
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="card card-liquid mt-3" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                <div class="card-body">
+                  <h6 class="fw-bold mb-3">Signature digitale</h6>
+                  <p class="small mb-2">
+                    Je soussigné(e) <strong><%= "#{@user.first_name} #{@user.last_name}" %></strong>
+                  </p>
+                  <p class="small mb-2">
+                    Parent de l'enfant <strong id="parent_child_name"></strong>
+                  </p>
+                  <p class="small mb-3">
+                    Signe ce formulaire le <strong><%= l(Date.today, format: :long) %></strong>
+                  </p>
+                  
+                  <div class="form-check">
+                    <%= f.check_box :parent_authorization, 
+                        { class: "form-check-input", id: "parent_authorization" }, 
+                        "1", "0" %>
+                    <label class="form-check-label" for="parent_authorization">
+                      <strong>J'ai lu et j'accepte</strong>
+                    </label>
+                  </div>
+                  
+                  <div class="alert alert-light mt-3 mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>Cet accord est stocké numériquement et fait office de signature légale</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ÉTAPE <%= @with_tshirt ? 5 : 4 %> : QUESTIONNAIRE SANTÉ -->
+            <div class="form-section" id="step-health">
+              <h3 class="section-title">
+                <span class="section-number"><%= @with_tshirt ? 5 : 4 %></span>
+                Questionnaire de santé
+              </h3>
+              <p class="section-intro" id="health_intro_standard" style="display: none;">
+                Répondez honnêtement aux questions suivantes concernant la santé de votre enfant. Vos réponses nous aident à mieux l'accompagner.
+              </p>
+              <p class="section-intro" id="health_intro_ffrs" style="display: none;">
+                <strong>Questionnaire obligatoire pour la licence FFRS.</strong> Répondez aux questions suivantes concernant la santé de votre enfant.
+              </p>
+              
+              <div class="card card-liquid mt-3">
+                <div class="card-body">
+                  <div class="health-questions">
+                    <% health_questions = [
+                      { id: 'health_q1', text: "Un membre de votre famille a-t-il eu une mort subite ou inexpliquée ?" },
+                      { id: 'health_q2', text: "Avez-vous ressenti une douleur dans la poitrine, des palpitations ou un essoufflement lors d'un effort ?" },
+                      { id: 'health_q3', text: "Avez-vous eu un épisode de respiration sifflante (asthme) ?" },
+                      { id: 'health_q4', text: "Avez-vous eu une perte de connaissance ou une chute suite à un malaise ?" },
+                      { id: 'health_q5', text: "Si vous avez arrêté le sport 30 jours+, avez-vous repris sans l'avis d'un médecin ?" },
+                      { id: 'health_q6', text: "Avez-vous débuté un traitement médical de longue durée ?" },
+                      { id: 'health_q7', text: "Avez-vous des problèmes de santé survenus ces 12 derniers mois ?" },
+                      { id: 'health_q8', text: "Votre pratique sportive est-elle interrompue pour des raisons de santé ?" },
+                      { id: 'health_q9', text: "Pensez-vous avoir besoin d'un avis médical pour continuer le sport ?" }
+                    ] %>
+                    
+                    <% health_questions.each_with_index do |question, index| %>
+                      <div class="health-question-item py-3 <%= 'border-top' unless index == 0 %>" style="<%= 'border-color: var(--card-border-color) !important;' unless index == 0 %>">
+                        <label class="form-label fw-bold mb-2">
+                          Q<%= index + 1 %> : <%= question[:text] %>
+                        </label>
+                        <div class="d-flex gap-4">
+                          <div class="form-check">
+                            <%= f.radio_button "health_question_#{index + 1}", "no", 
+                                { class: "form-check-input", id: "#{question[:id]}_no", onchange: "checkHealthQuestions()" } %>
+                            <label class="form-check-label" for="<%= question[:id] %>_no">
+                              Non
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <%= f.radio_button "health_question_#{index + 1}", "yes", 
+                                { class: "form-check-input", id: "#{question[:id]}_yes", onchange: "checkHealthQuestions()" } %>
+                            <label class="form-check-label" for="<%= question[:id] %>_yes">
+                              Oui
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Message pour Standard avec réponse OUI -->
+              <div id="health_standard_yes_info" class="alert alert-info mt-3" style="display: none;">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Consultez votre médecin avant de pratiquer</strong>
+                <p class="mb-0 mt-2">Votre enfant a indiqué avoir des problèmes de santé. Nous vous recommandons fortement de consulter votre médecin avant qu'il pratique le roller.</p>
+              </div>
+              
+              <!-- Upload certificat médical (affiché si FFRS avec au moins une réponse = OUI) -->
+              <div id="health_certificate_upload" class="mt-4" style="display: none;">
+                <div class="alert alert-warning mb-3">
+                  <i class="bi bi-exclamation-triangle me-2"></i>
+                  <strong>Certificat médical requis</strong>
+                  <p class="mb-0 mt-2">Pour la licence FFRS, un certificat médical est obligatoire si vous avez répondu "Oui" à au moins une question.</p>
+                </div>
+                
+                <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 2px solid var(--card-border-color);">
+                  <div class="card-body">
+                    <label class="form-label fw-bold mb-3">
+                      <i class="bi bi-file-earmark-medical me-2"></i>
+                      Certificat médical *
+                    </label>
+                    
+                    <div class="file-upload-area" id="certificate_upload_area">
+                      <div class="file-upload-content">
+                        <i class="bi bi-cloud-upload fs-1 text-muted mb-3"></i>
+                        <p class="mb-2">
+                          <strong>Glissez-déposez votre certificat</strong> ou cliquez pour sélectionner
+                        </p>
+                        <p class="text-muted small mb-0">
+                          Formats acceptés : PDF, JPG, PNG (max 10 Mo)
+                        </p>
+                      </div>
+                      <%= f.file_field :medical_certificate, 
+                          class: "form-control d-none", 
+                          id: "medical_certificate_input",
+                          accept: ".pdf,.jpg,.jpeg,.png",
+                          onchange: "handleFileSelect(this)" %>
+                      <button type="button" class="btn btn-outline-primary mt-3" onclick="document.getElementById('medical_certificate_input').click()">
+                        <i class="bi bi-folder2-open me-2"></i>Sélectionner un fichier
+                      </button>
+                    </div>
+                    
+                    <div id="certificate_preview" class="mt-3" style="display: none;">
+                      <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
+                          <div>
+                            <strong id="certificate_filename"></strong>
+                            <small class="text-muted d-block" id="certificate_filesize"></small>
+                          </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCertificate()">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div class="form-text small mt-2">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Le certificat médical doit être valide et daté de moins de 6 mois
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Message pour Standard avec toutes réponses NON -->
+              <div id="health_standard_no_info" class="alert alert-success mt-3" style="display: none;">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Parfait !</strong> Aucun problème de santé détecté. Vous pouvez continuer.
+              </div>
+              
+              <!-- Message pour FFRS avec toutes réponses NON (attestation auto) -->
+              <div id="health_ffrs_no_info" class="alert alert-success mt-3" style="display: none;">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Parfait !</strong> Aucun problème de santé détecté. Une attestation de santé sera générée automatiquement.
+              </div>
+            </div>
+
+            <!-- ÉTAPE <%= @with_tshirt ? 6 : 5 %> : CONSENTEMENTS -->
+            <div class="form-section" id="step-consents">
+              <h3 class="section-title">
+                <span class="section-number"><%= @with_tshirt ? 6 : 5 %></span>
+                Consentements & Confidentialité
+              </h3>
+              <p class="section-intro">Pour finaliser votre adhésion, veuillez accepter :</p>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-file-text consent-icon text-liquid-primary"></i>
+                  Conditions d'adhésion
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :legal_notices_accepted, 
+                        { class: "form-check-input", id: "legal_notices_accepted", required: true }, 
+                        "1", "0" %>
+                    <label class="form-check-label" for="legal_notices_accepted">
+                      Je m'engage à respecter le règlement intérieur et les CGU de Grenoble Roller
+                      <%= link_to cgu_path, target: "_blank", class: "ms-2" do %>
+                        Lire les CGU <i class="bi bi-box-arrow-up-right"></i>
+                      <% end %>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-shield-lock consent-icon text-liquid-primary"></i>
+                  Données personnelles (RGPD)
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :rgpd_consent, 
+                        { class: "form-check-input", id: "rgpd_consent", required: true }, 
+                        "1", "0" %>
+                        <label class="form-check-label" for="rgpd_consent">
+                          J'autorise Grenoble Roller à collecter les données de l'enfant pour l'adhésion (conservation 3 ans)
+                          <%= link_to politique_confidentialite_path, target: "_blank", class: "ms-2" do %>
+                            Politique confidentialité <i class="bi bi-box-arrow-up-right"></i>
+                          <% end %>
+                        </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="consent-group">
+                <div class="consent-group-title">
+                  <i class="bi bi-bell consent-icon text-liquid-primary"></i>
+                  Communication
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= check_box_tag "user[wants_initiation_mail]", "1", @user.wants_initiation_mail, 
+                        { class: "form-check-input", id: "wants_initiation_mail" } %>
+                    <label class="form-check-label" for="wants_initiation_mail">
+                      Je souhaite recevoir les informations sur les initiations
+                    </label>
+                  </div>
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= check_box_tag "user[wants_events_mail]", "1", @user.wants_events_mail, 
+                        { class: "form-check-input", id: "wants_events_mail" } %>
+                    <label class="form-check-label" for="wants_events_mail">
+                      Je souhaite recevoir les informations sur les événements/randonnées
+                    </label>
+                  </div>
+                </div>
+                <div class="form-text small mt-2">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Vous pourrez modifier ces préférences à tout moment dans votre profil
+                </div>
+              </div>
+              
+              <div class="consent-group" id="ffrs_consent_group" style="display: none;">
+                <div class="consent-group-title">
+                  <i class="bi bi-people consent-icon text-liquid-primary"></i>
+                  Partage FFRS (Si licence)
+                </div>
+                <div class="consent-item">
+                  <div class="form-check">
+                    <%= f.check_box :ffrs_data_sharing_consent, 
+                        { class: "form-check-input", id: "ffrs_data_sharing_consent" }, 
+                        "1", "0" %>
+                        <label class="form-check-label" for="ffrs_data_sharing_consent">
+                          J'autorise le partage de mes données avec la FFRS pour la licence
+                          <%= link_to "#", class: "ms-2" do %>
+                            En savoir plus <i class="bi bi-box-arrow-up-right"></i>
+                          <% end %>
+                        </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="alert alert-success mt-3" id="all_consents_accepted" style="display: none;">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Tous les consentements acceptés</strong>
+              </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="form-navigation">
+              <%= link_to memberships_path, class: "btn btn-outline-secondary btn-nav btn-back" do %>
+                <i class="bi bi-arrow-left me-1"></i>Retour
+              <% end %>
+              <%= f.submit "Ajouter l'enfant", 
+                  class: "btn btn-liquid-warning btn-lg btn-nav",
+                  id: "submit_btn" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Sélection catégorie
+  function selectCategory(key) {
+    document.getElementById('category_' + key).checked = true;
+    updateCategorySelection();
+  }
+  
+  function updateCategorySelection() {
+    document.querySelectorAll('.category-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    
+    document.querySelectorAll('input[name="membership[category]"]:checked').forEach(radio => {
+      const card = radio.closest('.category-card');
+      if (card) {
+        card.classList.add('selected');
+        const label = card.querySelector('#category_label_' + radio.value);
+        if (label) label.textContent = 'Sélectionné';
+      }
+    });
+    
+    // Afficher/masquer consentement FFRS
+    const ffrsGroup = document.getElementById('ffrs_consent_group');
+    const selectedCategory = document.querySelector('input[name="membership[category]"]:checked')?.value;
+    if (ffrsGroup) {
+      ffrsGroup.style.display = selectedCategory === 'with_ffrs' ? 'block' : 'none';
+    }
+    
+    // Re-vérifier les questions de santé quand la catégorie change
+    checkHealthQuestions();
+    
+    // Mettre à jour le total T-shirt si présent
+    <% if @with_tshirt %>
+    if (typeof updateTshirtTotal === 'function') {
+      updateTshirtTotal();
+    }
+    <% end %>
+  }
+  
+      // Mettre à jour le champ caché date_of_birth à partir des 3 sélecteurs
+      function updateChildDateOfBirth() {
+        const day = document.getElementById('child_date_of_birth_day').value;
+        const month = document.getElementById('child_date_of_birth_month').value;
+        const year = document.getElementById('child_date_of_birth_year').value;
+        const hiddenField = document.getElementById('child_date_of_birth');
+        
+        if (day && month && year) {
+          // Format: YYYY-MM-DD pour le champ caché
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          hiddenField.value = dateStr;
+          checkChildAge();
+        } else {
+          hiddenField.value = '';
+          checkChildAge();
+        }
+      }
+      
+      // Calcul âge enfant
+      function checkChildAge() {
+        const day = document.getElementById('child_date_of_birth_day').value;
+        const month = document.getElementById('child_date_of_birth_month').value;
+        const year = document.getElementById('child_date_of_birth_year').value;
+        const ageDisplay = document.getElementById('child_age_display');
+        const ageValue = document.getElementById('child_age_value');
+        const categoryInference = document.getElementById('category_inference');
+        const categoryText = document.getElementById('category_inference_text');
+        const authSection = document.getElementById('parent_authorization_section');
+        const parentChildName = document.getElementById('parent_child_name');
+        const firstName = document.getElementById('membership_child_first_name')?.value || '';
+        const lastName = document.getElementById('membership_child_last_name')?.value || '';
+        
+        if (!day || !month || !year) {
+          if (ageDisplay) ageDisplay.style.display = 'none';
+          if (categoryInference) categoryInference.style.display = 'none';
+          if (authSection) authSection.style.display = 'none';
+          return;
+        }
+        
+        const birthDate = new Date(year, month - 1, day); // month est 0-indexed en JS
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (ageValue) ageValue.textContent = age;
+        if (ageDisplay) ageDisplay.style.display = 'block';
+        
+        // Inférence catégorie
+        if (categoryInference && categoryText) {
+          if (age < 16) {
+            categoryText.textContent = 'Catégorie automatique : ENFANT (< 16 ans) — Accord parent requis';
+            categoryInference.style.display = 'block';
+          } else if (age >= 16 && age < 18) {
+            categoryText.textContent = 'Catégorie automatique : ADOLESCENT (16-17 ans) — Information parentale';
+            categoryInference.style.display = 'block';
+          } else {
+            categoryInference.style.display = 'none';
+          }
+        }
+        
+        // Afficher section autorisation si < 16 ans
+        if (authSection) {
+          if (age < 16) {
+            authSection.style.display = 'block';
+            document.getElementById('parent_authorization')?.setAttribute('required', 'required');
+            if (parentChildName && firstName && lastName) {
+              parentChildName.textContent = firstName + ' ' + lastName;
+            }
+          } else {
+            authSection.style.display = 'none';
+            document.getElementById('parent_authorization')?.removeAttribute('required');
+          }
+        }
+      }
+  
+      // Vérifier les réponses au questionnaire de santé
+      function checkHealthQuestions() {
+        let hasYesAnswer = false;
+        let allAnswered = true;
+        
+        // Vérifier les 9 questions
+        for (let i = 1; i <= 9; i++) {
+          const yesRadio = document.getElementById(`health_q${i}_yes`);
+          const noRadio = document.getElementById(`health_q${i}_no`);
+          
+          if (yesRadio && yesRadio.checked) {
+            hasYesAnswer = true;
+          }
+          
+          // Vérifier si toutes les questions sont répondues
+          if (!yesRadio?.checked && !noRadio?.checked) {
+            allAnswered = false;
+          }
+        }
+        
+        // Récupérer la catégorie sélectionnée
+        const selectedCategory = document.querySelector('input[name="membership[category]"]:checked')?.value;
+        const isFFRS = selectedCategory === 'with_ffrs';
+        const isStandard = selectedCategory === 'standard';
+        
+        // Afficher/masquer les intros selon la catégorie
+        const introStandard = document.getElementById('health_intro_standard');
+        const introFFRS = document.getElementById('health_intro_ffrs');
+        if (introStandard) introStandard.style.display = isStandard ? 'block' : 'none';
+        if (introFFRS) introFFRS.style.display = isFFRS ? 'block' : 'none';
+        
+        const uploadDiv = document.getElementById('health_certificate_upload');
+        const standardYesInfo = document.getElementById('health_standard_yes_info');
+        const standardNoInfo = document.getElementById('health_standard_no_info');
+        const ffrsNoInfo = document.getElementById('health_ffrs_no_info');
+        const certificateInput = document.getElementById('medical_certificate_input');
+        
+        if (isStandard) {
+          // ADHÉSION STANDARD : Pas d'upload obligatoire
+          if (uploadDiv) uploadDiv.style.display = 'none';
+          if (ffrsNoInfo) ffrsNoInfo.style.display = 'none';
+          
+          if (hasYesAnswer) {
+            // Afficher message de recommandation
+            if (standardYesInfo) standardYesInfo.style.display = 'block';
+            if (standardNoInfo) standardNoInfo.style.display = 'none';
+            if (certificateInput) {
+              certificateInput.removeAttribute('required');
+              certificateInput.value = '';
+              removeCertificate();
+            }
+          } else if (allAnswered) {
+            // Toutes réponses NON
+            if (standardYesInfo) standardYesInfo.style.display = 'none';
+            if (standardNoInfo) standardNoInfo.style.display = 'block';
+            if (certificateInput) {
+              certificateInput.removeAttribute('required');
+              certificateInput.value = '';
+              removeCertificate();
+            }
+          } else {
+            // Pas encore toutes répondues
+            if (standardYesInfo) standardYesInfo.style.display = 'none';
+            if (standardNoInfo) standardNoInfo.style.display = 'none';
+          }
+        } else if (isFFRS) {
+          // LICENCE FFRS : Upload obligatoire si OUI, attestation auto si NON
+          if (standardYesInfo) standardYesInfo.style.display = 'none';
+          if (standardNoInfo) standardNoInfo.style.display = 'none';
+          
+          if (hasYesAnswer) {
+            // Afficher l'upload et rendre le champ requis
+            if (uploadDiv) uploadDiv.style.display = 'block';
+            if (ffrsNoInfo) ffrsNoInfo.style.display = 'none';
+            if (certificateInput) certificateInput.setAttribute('required', 'required');
+          } else if (allAnswered) {
+            // Toutes réponses NON : attestation auto
+            if (uploadDiv) uploadDiv.style.display = 'none';
+            if (ffrsNoInfo) ffrsNoInfo.style.display = 'block';
+            if (certificateInput) {
+              certificateInput.removeAttribute('required');
+              certificateInput.value = '';
+              removeCertificate();
+            }
+          } else {
+            // Pas encore toutes répondues
+            if (uploadDiv) uploadDiv.style.display = 'none';
+            if (ffrsNoInfo) ffrsNoInfo.style.display = 'none';
+          }
+        }
+        
+        validateForm();
+      }
+      
+      // Gérer la sélection de fichier
+      function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+          const file = input.files[0];
+          const maxSize = 10 * 1024 * 1024; // 10 Mo
+          
+          if (file.size > maxSize) {
+            alert('Le fichier est trop volumineux. Taille maximale : 10 Mo');
+            input.value = '';
+            return;
+          }
+          
+          // Afficher la preview
+          const preview = document.getElementById('certificate_preview');
+          const filename = document.getElementById('certificate_filename');
+          const filesize = document.getElementById('certificate_filesize');
+          const uploadArea = document.getElementById('certificate_upload_area');
+          const fileIcon = preview?.querySelector('i');
+          
+          if (preview && filename && filesize) {
+            filename.textContent = file.name;
+            filesize.textContent = formatFileSize(file.size);
+            
+            // Changer l'icône selon le type de fichier
+            if (fileIcon) {
+              if (file.type === 'application/pdf') {
+                fileIcon.className = 'bi bi-file-earmark-pdf fs-3 text-danger me-3';
+              } else if (file.type.startsWith('image/')) {
+                fileIcon.className = 'bi bi-file-earmark-image fs-3 text-primary me-3';
+              } else {
+                fileIcon.className = 'bi bi-file-earmark fs-3 text-secondary me-3';
+              }
+            }
+            
+            preview.style.display = 'block';
+            if (uploadArea) uploadArea.style.display = 'none';
+          }
+        }
+      }
+      
+      // Supprimer le certificat
+      function removeCertificate() {
+        const input = document.getElementById('medical_certificate_input');
+        const preview = document.getElementById('certificate_preview');
+        const uploadArea = document.getElementById('certificate_upload_area');
+        
+        if (input) input.value = '';
+        if (preview) preview.style.display = 'none';
+        if (uploadArea) uploadArea.style.display = 'block';
+      }
+      
+      // Formater la taille du fichier
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+      }
+  
+  // Validation champ
+  function validateField(field) {
+    const value = field.value.trim();
+    const feedback = field.nextElementSibling;
+    
+    // Réinitialiser
+    field.classList.remove('is-invalid', 'is-valid');
+    if (feedback && feedback.classList.contains('invalid-feedback')) {
+      feedback.textContent = '';
+    }
+    
+    // Validation selon le type
+    if (field.hasAttribute('required') && !value) {
+      field.classList.add('is-invalid');
+      if (feedback && feedback.classList.contains('invalid-feedback')) {
+        feedback.textContent = 'Champ obligatoire';
+      }
+      return false;
+    }
+    
+    // Validation email
+    if (field.type === 'email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        field.classList.add('is-invalid');
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+          feedback.textContent = 'Email invalide';
+        }
+        return false;
+      }
+    }
+    
+    // Validation téléphone
+    if (field.type === 'tel' && value) {
+      const phoneRegex = /^(\+33|0)[1-9](\d{2}){4}$/;
+      if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+        field.classList.add('is-invalid');
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+          feedback.textContent = 'Format invalide (ex: +33 6 12 34 56 78 ou 06 12 34 56 78)';
+        }
+        return false;
+      }
+    }
+    
+    // Si valide
+    if (value) {
+      field.classList.add('is-valid');
+    }
+    
+    return true;
+  }
+  
+  // Validation complète du formulaire
+  function validateForm() {
+    const form = document.getElementById('child_membership_form');
+    if (!form) return false;
+    
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+      if (!validateField(field)) {
+        isValid = false;
+      }
+    });
+    
+        // Vérifier date de naissance
+        const day = document.getElementById('child_date_of_birth_day');
+        const month = document.getElementById('child_date_of_birth_month');
+        const year = document.getElementById('child_date_of_birth_year');
+        if (day && day.hasAttribute('required') && !day.value) {
+          day.classList.add('is-invalid');
+          isValid = false;
+        }
+        if (month && month.hasAttribute('required') && !month.value) {
+          month.classList.add('is-invalid');
+          isValid = false;
+        }
+        if (year && year.hasAttribute('required') && !year.value) {
+          year.classList.add('is-invalid');
+          isValid = false;
+        }
+        
+        // Vérifier autorisation parentale si nécessaire
+        const authSection = document.getElementById('parent_authorization_section');
+        if (authSection && authSection.style.display !== 'none') {
+          const authCheckbox = document.getElementById('parent_authorization');
+          if (authCheckbox && authCheckbox.hasAttribute('required') && !authCheckbox.checked) {
+            authCheckbox.classList.add('is-invalid');
+            isValid = false;
+          }
+        }
+        
+        // Vérifier certificat médical si requis
+        const certificateUpload = document.getElementById('health_certificate_upload');
+        if (certificateUpload && certificateUpload.style.display !== 'none') {
+          const certificateInput = document.getElementById('medical_certificate_input');
+          if (certificateInput && certificateInput.hasAttribute('required') && !certificateInput.files || certificateInput.files.length === 0) {
+            certificateInput.classList.add('is-invalid');
+            isValid = false;
+          }
+        }
+    
+    // Activer/désactiver bouton submit
+    const submitBtn = document.getElementById('submit_btn');
+    if (submitBtn) {
+      submitBtn.disabled = !isValid;
+    }
+    
+    return isValid;
+  }
+  
+  // Vérifier tous les consentements
+  function checkAllConsents() {
+    const required = ['legal_notices_accepted', 'rgpd_consent'];
+    const allChecked = required.every(id => document.getElementById(id)?.checked);
+    const allConsentsDiv = document.getElementById('all_consents_accepted');
+    if (allConsentsDiv) {
+      allConsentsDiv.style.display = allChecked ? 'block' : 'none';
+    }
+  }
+  
+      // Gestion T-shirt (si avec_tshirt)
+      <% if @with_tshirt %>
+        function updateTshirtTotal() {
+          const totalDisplay = document.getElementById('tshirt_total_display');
+          if (!totalDisplay) return;
+          
+          // Récupérer la catégorie sélectionnée
+          const categoryRadio = document.querySelector('input[name="membership[category]"]:checked');
+          let adhesionPrice = 10; // Par défaut : 10€ pour standard
+          
+          if (categoryRadio) {
+            const category = categoryRadio.value;
+            // Prix selon la catégorie : standard = 10€, with_ffrs = 56.55€
+            adhesionPrice = category === 'with_ffrs' ? 56.55 : 10;
+          }
+          
+          // Quantité fixée à 1
+          const qty = 1;
+          const tshirtPrice = 14; // 14€ par T-shirt
+          const total = adhesionPrice + (qty * tshirtPrice);
+          
+          // Formater avec virgule comme séparateur décimal et espace comme séparateur de milliers (format français)
+          const parts = total.toFixed(2).split('.');
+          const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+          const formatted = integerPart + ',' + parts[1] + ' €';
+          totalDisplay.textContent = formatted;
+        }
+      <% end %>
+
+      // Initialisation
+      document.addEventListener('DOMContentLoaded', function() {
+        <% if @with_tshirt %>
+          updateTshirtTotal(); // Initialiser le total T-shirt
+        <% end %>
+        updateCategorySelection();
+        checkChildAge(); // Vérifier au chargement si une date est déjà présente
+        checkHealthQuestions(); // Vérifier les questions de santé
+        checkAllConsents();
+        validateForm();
+        
+        // Drag & drop pour l'upload
+        const uploadArea = document.getElementById('certificate_upload_area');
+        const certificateInput = document.getElementById('medical_certificate_input');
+        
+        if (uploadArea && certificateInput) {
+          ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+          });
+          
+          ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.add('drag-over'), false);
+          });
+          
+          ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('drag-over'), false);
+          });
+          
+          uploadArea.addEventListener('drop', handleDrop, false);
+        }
+        
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
+        function handleDrop(e) {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          if (files.length > 0) {
+            certificateInput.files = files;
+            handleFileSelect(certificateInput);
+          }
+        }
+    
+    // Écouter changements consentements
+    ['legal_notices_accepted', 'rgpd_consent'].forEach(id => {
+      const checkbox = document.getElementById(id);
+      if (checkbox) {
+        checkbox.addEventListener('change', function() {
+          checkAllConsents();
+          validateForm();
+        });
+      }
+    });
+    
+    // Écouter changements champs
+    const form = document.getElementById('child_membership_form');
+    if (form) {
+      form.addEventListener('input', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+          validateField(e.target);
+          validateForm();
+        }
+      });
+      
+      form.addEventListener('change', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+          validateField(e.target);
+          validateForm();
+        }
+      });
+    }
+    
+    // Mettre à jour prix autorisation parentale
+    const updateAuthPrice = () => {
+      const selectedCategory = document.querySelector('input[name="membership[category]"]:checked');
+      if (selectedCategory) {
+        const price = selectedCategory.closest('.category-card')?.querySelector('.category-price')?.textContent;
+        const priceEl = document.getElementById('parent_auth_price');
+        if (priceEl && price) {
+          priceEl.textContent = price.trim();
+        }
+      }
+    };
+    
+    document.querySelectorAll('input[name="membership[category]"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        updateAuthPrice();
+        validateForm();
+      });
+    });
+    updateAuthPrice();
+    
+    // Initialiser les valeurs si renouvellement depuis une adhésion expirée
+    <% if @old_membership %>
+      // Pré-remplir le nom de l'enfant dans l'autorisation parentale
+      const parentChildName = document.getElementById('parent_child_name');
+      if (parentChildName) {
+        parentChildName.textContent = '<%= @old_membership.child_full_name %>';
+      }
+      
+      // Initialiser la date de naissance si elle est pré-remplie
+      <% if @membership&.child_date_of_birth %>
+        setTimeout(() => {
+          updateChildDateOfBirth();
+          checkChildAge(); // Calculer l'âge et afficher/masquer la section d'autorisation
+        }, 100);
+      <% end %>
+      
+      // Sélectionner la catégorie si elle était pré-remplie
+      <% if @membership&.category %>
+        const categoryRadio = document.getElementById('category_<%= @membership.category %>');
+        if (categoryRadio) {
+          categoryRadio.checked = true;
+          selectCategory('<%= @membership.category %>');
+        }
+      <% end %>
+    <% end %>
+    
+    // Validation avant soumission
+    form?.addEventListener('submit', function(e) {
+      // Retirer le required des champs cachés pour éviter l'erreur "not focusable"
+      const authSection = document.getElementById('parent_authorization_section');
+      const authCheckbox = document.getElementById('parent_authorization');
+      if (authSection && authSection.style.display === 'none' && authCheckbox) {
+        authCheckbox.removeAttribute('required');
+      }
+      
+      const certificateUpload = document.getElementById('health_certificate_upload');
+      const certificateInput = document.getElementById('medical_certificate_input');
+      if (certificateUpload && certificateUpload.style.display === 'none' && certificateInput) {
+        certificateInput.removeAttribute('required');
+      }
+      
+      if (!validateForm()) {
+        e.preventDefault();
+        const firstInvalid = form.querySelector('.is-invalid');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus();
+        }
+        return false;
+      }
+    });
+  });
+</script>

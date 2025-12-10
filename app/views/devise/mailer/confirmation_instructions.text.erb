@@ -1,0 +1,39 @@
+✉️ CONFIRMEZ VOTRE ADRESSE EMAIL
+
+Bonjour <%= @user.first_name.present? ? @user.first_name : @user.email %>,
+
+Merci de vous être inscrit sur Grenoble Roller !
+
+Pour finaliser votre inscription et activer votre compte, veuillez confirmer votre adresse email en cliquant sur le lien ci-dessous :
+
+<%= @confirmation_url %>
+
+─────────────────────────────────────────────────────────────
+
+⏰ IMPORTANT : Lien valable jusqu'au <%= @expiry_date %> (<%= @hours_left %> heures)
+
+Si le lien a expiré, vous pouvez en demander un nouveau ici :
+<%= @resend_url %>
+
+─────────────────────────────────────────────────────────────
+
+🔒 SÉCURITÉ
+Cette étape permet de vérifier que vous êtes bien le propriétaire de cette adresse email. Ne partagez jamais ce lien.
+
+─────────────────────────────────────────────────────────────
+
+📱 POUR MOBILE
+Si vous êtes sur mobile, vous pouvez scanner le QR code dans la version HTML de cet email.
+
+─────────────────────────────────────────────────────────────
+
+❓ BESOIN D'AIDE ?
+- Le lien ne fonctionne pas ? Copiez-le entièrement dans votre navigateur
+- Le lien a expiré ? Demandez un nouvel email de confirmation
+- Vous n'avez pas créé de compte ? Ignorez cet email
+
+─────────────────────────────────────────────────────────────
+
+Grenoble Roller - Association de roller à Grenoble
+
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.

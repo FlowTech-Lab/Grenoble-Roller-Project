@@ -16,5 +16,3 @@ class AddFkOrderItemsVariantId < ActiveRecord::Migration[8.0]
     remove_foreign_key :order_items, column: :variant_id
   end
 end
-
-

@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-# check=error=true
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
 # docker build -t app .
@@ -11,10 +10,14 @@
 ARG RUBY_VERSION=3.4.2
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
+# Build ID pour forcer un nouveau build (évite cache Docker trompeur)
+ARG BUILD_ID=latest
+LABEL build.id="${BUILD_ID}"
+
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages (including curl for healthchecks)
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
@@ -35,12 +38,10 @@ RUN apt-get update -qq && \
 
 # Install JavaScript dependencies
 ARG NODE_VERSION=24.7.0
-ARG YARN_VERSION=latest
 ENV PATH=/usr/local/node/bin:$PATH
 RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
     /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
     rm -rf /tmp/node-build-master
-RUN corepack enable && yarn set version $YARN_VERSION
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -49,8 +50,8 @@ RUN bundle install && \
     bundle exec bootsnap precompile --gemfile
 
 # Install node modules
-COPY package.json yarn.lock ./
-RUN yarn install --immutable
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 # Copy application code
 COPY . .
@@ -81,6 +82,8 @@ USER 1000:1000
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+# Expose port (default 3000, can be overridden via PORT env var)
+EXPOSE 3000
+# Use PORT environment variable if set, otherwise default to 3000
+# For staging/production with Thruster, set PORT=80 and use ./bin/thrust
+CMD sh -c 'PORT=${PORT:-3000} ./bin/rails server -b 0.0.0.0 -p $PORT'

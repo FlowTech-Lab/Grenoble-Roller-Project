@@ -1,0 +1,34 @@
+<% content_for :title, 'Mes sorties' %>
+
+<section class="container py-4 py-lg-5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="display-5 fw-semibold mb-1">Mes sorties</h1>
+      <p class="text-body-secondary mb-0">
+        Retrouvez ici toutes les sorties auxquelles vous êtes inscrit(e). Gérez vos inscriptions en un clic.
+      </p>
+    </div>
+    <%= link_to events_path, class: 'btn btn-outline-primary' do %>
+      <i class="bi bi-calendar-event me-2"></i>Voir toutes les sorties
+    <% end %>
+  </div>
+
+  <% if @attendances.any? %>
+    <div class="event-grid">
+      <div class="row g-4">
+        <% @attendances.each do |attendance| %>
+          <%= render 'events/event_card',
+                     event: attendance.event,
+                     render_signup_button: true,
+                     current_user: current_user %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="alert alert-info border-0 shadow-sm">
+      <i class="bi bi-info-circle me-2"></i>Vous n’êtes inscrit(e) à aucune sortie pour le moment.
+      <%= link_to 'Découvrir les événements', events_path, class: 'alert-link ms-1' %>
+    </div>
+  <% end %>
+</section>
+

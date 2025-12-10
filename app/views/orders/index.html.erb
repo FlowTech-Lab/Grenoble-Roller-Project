@@ -1,111 +1,174 @@
+<% 
+  pending_orders = @orders.select { |o| o.status.downcase.in?(%w[pending en\ attente]) }
+  preparation_orders = @orders.select { |o| o.status.downcase.in?(%w[preparation en\ préparation preparing]) }
+  sent_orders = @orders.select { |o| o.status.downcase.in?(%w[sent envoyé shipped finished terminé paid payé]) }
+  cancelled_orders = @orders.select { |o| o.status.downcase.in?(%w[cancelled annulé canceled]) }
+  total_spent = sent_orders.sum(&:total_cents) / 100.0
+%>
+
 <div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-12 col-lg-8">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body p-4">
-          <!-- Header -->
-          <div class="text-center mb-4 pb-3 border-bottom">
-            <h1 class="h4 mb-2">
-              <i class="bi bi-box-seam text-liquid-primary me-2"></i>Mes commandes
-            </h1>
-            <p class="text-muted small mb-0">Consultez l'historique de vos commandes</p>
-          </div>
-
-          <% if @orders.empty? %>
-            <!-- Empty state -->
-            <div class="text-center py-5">
-              <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-              <h3 class="h6 text-muted mt-3 mb-2">Vous n'avez pas encore de commande</h3>
-              <p class="text-muted small mb-4">Découvrez notre boutique et trouvez des produits qui vous plaisent !</p>
-              <%= link_to shop_path, class: "btn btn-liquid-primary" do %>
-                <i class="bi bi-bag me-2"></i>Aller à la boutique
-              <% end %>
-            </div>
-          <% else %>
-            <!-- Orders list -->
-            <% @orders.each do |order| %>
-              <div class="mb-3 pb-3 border-bottom <%= 'border-0 pb-0 mb-0' if order == @orders.last %>">
-                <div class="d-flex flex-wrap align-items-center gap-3">
-                  <!-- Order icon and number -->
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-receipt-cutoff text-liquid-primary"></i>
-                    <div>
-                      <span class="text-muted small">Commande</span>
-                      <strong class="d-block">#<%= order.id %></strong>
-                    </div>
-                  </div>
-
-                  <!-- Status button -->
-                  <% 
-                    status_btn = case order.status.downcase
-                      when 'pending', 'en attente'
-                        'btn-warning'
-                      when 'preparation', 'en préparation', 'preparing'
-                        'btn-info'
-                      when 'sent', 'envoyé', 'shipped', 'finished', 'terminé'
-                        'btn-success'
-                      when 'cancelled', 'annulé', 'canceled'
-                        'btn-danger'
-                      else
-                        'btn-success'
-                    end
-                  %>
-                  <button type="button" class="btn <%= status_btn %> btn-sm" disabled>
-                    <i class="bi <%= case order.status.downcase
-                      when 'pending', 'en attente'
-                        'bi-hourglass-split'
-                      when 'preparation', 'en préparation', 'preparing'
-                        'bi-gear'
-                      when 'sent', 'envoyé', 'shipped'
-                        'bi-truck'
-                      when 'cancelled', 'annulé', 'canceled'
-                        'bi-x-circle'
-                      else
-                        'bi-check-circle'
-                    end %> me-1"></i>
-                    <%= order.status %>
-                  </button>
-
-                  <!-- Date -->
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-calendar text-muted"></i>
-                    <span class="text-muted small"><%= l(order.created_at, format: :short) %></span>
-                  </div>
-
-                  <!-- Articles count -->
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-box-seam text-muted"></i>
-                    <span class="small"><%= order.order_items.sum(:quantity) %> article(s)</span>
-                  </div>
-
-                  <!-- Total -->
-                  <div class="ms-auto d-flex align-items-center gap-2">
-                    <strong class="text-liquid-primary"><%= format_price(order.total_cents) %></strong>
-                  </div>
-
-                  <!-- Action buttons -->
-                  <div class="d-flex gap-2">
-                    <%= link_to order_path(order), class: "btn btn-outline-primary btn-sm" do %>
-                      <i class="bi bi-eye me-1"></i>Détails
-                    <% end %>
-                    <% if ['pending', 'en attente', 'preparation', 'en préparation', 'preparing'].include?(order.status.downcase) %>
-                      <%= button_to cancel_order_path(order), 
-                          method: :patch,
-                          class: "btn btn-outline-danger btn-sm",
-                          data: { 
-                            confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible.",
-                            turbo_confirm: "Êtes-vous sûr(e) de vouloir annuler cette commande ? Cette action est irréversible."
-                          } do %>
-                        <i class="bi bi-x-circle me-1"></i>Annuler
-                      <% end %>
-                    <% end %>
-                  </div>
-                </div>
-              </div>
+  <!-- HERO SECTION -->
+  <div class="hero-orders">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <div>
+        <h1 class="h2 mb-2">
+          <i class="bi bi-box-seam me-2 fs-2"></i>
+          Mes commandes
+        </h1>
+        <p class="mb-2 opacity-75" style="font-style: italic;">
+          Suivez l'aventure de vos achats
+        </p>
+        <% if @orders.any? %>
+          <div class="d-flex align-items-center gap-3 flex-wrap mt-3">
+            <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
+              <i class="bi bi-box me-1"></i>
+              <%= @orders.count %> commande<%= 's' if @orders.count != 1 %>
+            </span>
+            <% if pending_orders.any? %>
+              <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
+                <i class="bi bi-hourglass-split text-warning me-1"></i>
+                <%= pending_orders.count %> en attente
+              </span>
             <% end %>
+            <% if sent_orders.any? %>
+              <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
+                <i class="bi bi-truck text-success me-1"></i>
+                <%= sent_orders.count %> expédiée<%= 's' if sent_orders.count != 1 %>
+              </span>
+            <% end %>
+            <% if total_spent > 0 %>
+              <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
+                <i class="bi bi-currency-euro text-primary me-1"></i>
+                <%= number_to_currency(total_spent, unit: "€", format: "%n %u") %> total
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <% if @orders.empty? %>
+        <div class="mt-3 mt-md-0">
+          <%= link_to shop_path, class: "btn btn-light btn-lg" do %>
+            <i class="bi bi-bag me-2"></i>Découvrir la boutique
           <% end %>
         </div>
-      </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- LAYOUT 2 COLONNES -->
+  <div class="row">
+    <!-- SIDEBAR (COL-4) -->
+    <div class="col-12 col-lg-4 mb-4 mb-lg-0">
+      <%= render 'sidebar', 
+          pending_orders: pending_orders, 
+          sent_orders: sent_orders,
+          preparation_orders: preparation_orders,
+          cancelled_orders: cancelled_orders,
+          total_spent: total_spent %>
+    </div>
+
+    <!-- CONTENU PRINCIPAL (COL-8) -->
+    <div class="col-12 col-lg-8">
+      <% if @orders.empty? %>
+        <!-- EMPTY STATE -->
+        <div class="text-center py-5">
+          <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">🛍️</div>
+          <h2 class="h5 fw-bold mb-2">Aucune commande</h2>
+          <p class="text-muted small mb-4">Découvrez notre sélection de produits</p>
+          <%= link_to "Voir la boutique →", shop_path, class: "btn btn-primary" %>
+        </div>
+      <% else %>
+        <!-- EN ATTENTE -->
+        <% if pending_orders.any? %>
+          <div id="pending" class="mb-4">
+            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+              <i class="bi bi-hourglass-split me-2 fs-5" style="color: #ffc107;"></i>
+              <h3 class="h5 mb-0">En attente de paiement</h3>
+              <span class="badge bg-warning text-dark ms-2"><%= pending_orders.count %></span>
+            </div>
+            
+            <div class="d-flex flex-column gap-2">
+              <% pending_orders.each do |order| %>
+                <%= render 'order_card_compact', order: order %>
+              <% end %>
+            </div>
+          </div>
+          <hr class="my-4">
+        <% end %>
+
+        <!-- EN PRÉPARATION -->
+        <% if preparation_orders.any? %>
+          <div id="preparation" class="mb-4">
+            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+              <i class="bi bi-gear me-2 fs-5" style="color: #17a2b8;"></i>
+              <h3 class="h5 mb-0">En préparation</h3>
+              <span class="badge bg-info text-white ms-2"><%= preparation_orders.count %></span>
+            </div>
+            
+            <div class="d-flex flex-column gap-2">
+              <% preparation_orders.each do |order| %>
+                <%= render 'order_card_compact', order: order %>
+              <% end %>
+            </div>
+          </div>
+          <hr class="my-4">
+        <% end %>
+
+        <!-- EXPÉDIÉES -->
+        <% if sent_orders.any? %>
+          <div id="sent" class="mb-4">
+            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+              <i class="bi bi-truck me-2 fs-5" style="color: #28a745;"></i>
+              <h3 class="h5 mb-0">Expédiées / Terminées</h3>
+              <span class="badge bg-success ms-2"><%= sent_orders.count %></span>
+            </div>
+            
+            <div class="d-flex flex-column gap-2">
+              <% sent_orders.each do |order| %>
+                <%= render 'order_card_compact', order: order %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- ANNULÉES : Collapsible -->
+        <% if cancelled_orders.any? %>
+          <div id="cancelled" class="mt-4">
+            <button class="order-section-toggle d-flex align-items-center w-100 text-start" 
+                    type="button" data-bs-toggle="collapse" data-bs-target="#cancelledList"
+                    aria-expanded="false" aria-controls="cancelledList">
+              <i class="bi bi-chevron-down order-toggle-chevron me-2"></i>
+              <i class="bi bi-x-circle me-2 text-danger"></i>
+              <h3 class="h6 mb-0">Annulées</h3>
+              <span class="badge bg-danger ms-2"><%= cancelled_orders.count %></span>
+            </button>
+            
+            <div id="cancelledList" class="collapse mt-2">
+              <div class="d-flex flex-column gap-2">
+                <% cancelled_orders.each do |order| %>
+                  <div class="card border-0 shadow-sm" style="border-left: 3px solid #dc3545;">
+                    <div class="card-body py-2">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div class="small">
+                          <strong>Commande #<%= order.id %></strong>
+                          <br>
+                          <span class="text-muted">
+                            <%= l(order.created_at, format: "%d %b %Y") %>
+                            • <%= order.order_items.sum(:quantity) %> article<%= 's' if order.order_items.sum(:quantity) != 1 %>
+                          </span>
+                        </div>
+                        <strong class="text-danger">
+                          <%= number_to_currency(order.total_cents / 100.0, unit: "€", format: "%n %u") %>
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
     </div>
   </div>
 </div>

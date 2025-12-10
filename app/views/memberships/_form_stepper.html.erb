@@ -1,0 +1,97 @@
+<% 
+  # Définir les étapes selon le type de formulaire
+  if local_assigns[:form_type] == 'child'
+    # Si avec T-shirt, ajouter l'étape T-shirt après la catégorie
+    with_tshirt = local_assigns[:with_tshirt] || false
+    if with_tshirt
+      steps = [
+        { number: 1, name: 'Catégorie', icon: 'bi-tag' },
+        { number: 2, name: 'T-shirt', icon: 'bi-tshirt' },
+        { number: 3, name: 'Info Enfant', icon: 'bi-person-heart' },
+        { number: 4, name: 'Autorisation', icon: 'bi-shield-check' },
+        { number: 5, name: 'Santé', icon: 'bi-heart-pulse' },
+        { number: 6, name: 'Consentements', icon: 'bi-check-circle' }
+      ]
+      total_steps = 6
+    else
+      steps = [
+        { number: 1, name: 'Catégorie', icon: 'bi-tag' },
+        { number: 2, name: 'Info Enfant', icon: 'bi-person-heart' },
+        { number: 3, name: 'Autorisation', icon: 'bi-shield-check' },
+        { number: 4, name: 'Santé', icon: 'bi-heart-pulse' },
+        { number: 5, name: 'Consentements', icon: 'bi-check-circle' }
+      ]
+      total_steps = 5
+    end
+  else
+    # Si avec T-shirt, ajouter l'étape T-shirt après la catégorie
+    with_tshirt = local_assigns[:with_tshirt] || false
+    if with_tshirt
+      steps = [
+        { number: 1, name: 'Catégorie', icon: 'bi-tag' },
+        { number: 2, name: 'T-shirt', icon: 'bi-tshirt' },
+        { number: 3, name: 'Infos', icon: 'bi-person' },
+        { number: 4, name: 'Coordonnées', icon: 'bi-geo-alt' },
+        { number: 5, name: 'Santé', icon: 'bi-heart-pulse' },
+        { number: 6, name: 'Consentements', icon: 'bi-check-circle' }
+      ]
+      total_steps = 6
+    else
+      steps = [
+        { number: 1, name: 'Catégorie', icon: 'bi-tag' },
+        { number: 2, name: 'Infos', icon: 'bi-person' },
+        { number: 3, name: 'Coordonnées', icon: 'bi-geo-alt' },
+        { number: 4, name: 'Santé', icon: 'bi-heart-pulse' },
+        { number: 5, name: 'Consentements', icon: 'bi-check-circle' }
+      ]
+      total_steps = 5
+    end
+  end
+  
+  current_step = local_assigns[:current_step] || 1
+  current_step = current_step.to_i
+  # Ajuster l'affichage : si current_step est 0, on affiche l'étape 1 (catégorie)
+  display_step = current_step == 0 ? 1 : current_step
+%>
+
+<!-- Stepper Desktop -->
+<div class="form-stepper d-none d-md-block mb-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <% steps.each_with_index do |step, index| %>
+      <div class="d-flex align-items-center flex-grow-1">
+        <div class="step-item <%= 'active' if step[:number] == display_step %> <%= 'completed' if step[:number] < display_step %>">
+          <div class="step-number">
+            <% if step[:number] < display_step %>
+              <i class="bi bi-check-circle"></i>
+            <% else %>
+              <%= step[:number] %>
+            <% end %>
+          </div>
+          <div class="step-label">
+            <i class="bi <%= step[:icon] %> me-1"></i>
+            <%= step[:name] %>
+          </div>
+        </div>
+        <% unless index == steps.length - 1 %>
+          <div class="step-connector <%= 'completed' if step[:number] < display_step %>"></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Stepper Mobile -->
+<div class="form-stepper-mobile d-md-none mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="step-counter">
+      Étape <%= display_step %>/<%= total_steps %>
+    </span>
+    <span class="step-name">
+      <%= steps.find { |s| s[:number] == display_step }&.dig(:name) || 'Catégorie' %>
+    </span>
+  </div>
+  <div class="progress-bar-custom">
+    <div class="progress-fill green" style="width: <%= (display_step.to_f / total_steps * 100) %>%"></div>
+  </div>
+</div>
+

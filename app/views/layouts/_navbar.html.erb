@@ -1,12 +1,21 @@
 <!-- Grenoble Roller Navbar -->
+<% if defined?(MaintenanceMode) && MaintenanceMode.enabled? %>
+  <!-- Bandeau de maintenance - Rouge en haut de la page -->
+  <div class="maintenance-banner" style="background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%); color: white; padding: 12px 0; text-align: center; font-weight: 600; position: sticky; top: 0; z-index: 1050; box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3); border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
+    <div class="container-fluid">
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true" style="font-size: 1.1rem;"></i>
+      <span>Mode maintenance actif - Accès réservé aux administrateurs (ADMIN/SUPERADMIN)</span>
+    </div>
+  </div>
+<% end %>
 <nav class="navbar navbar-grenoble-roller navbar-expand-lg navbar-liquid sticky-top shadow-liquid mb-4">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center" href="<%= root_path %>">
       <%= image_tag('logo/logo_grenobleroller_color.png', alt: 'Grenoble Roller', class: 'navbar-logo navbar-logo-light', style: 'height: 40px;') %>
       <%= image_tag('logo/logo_grenobleroller_white.png', alt: 'Grenoble Roller', class: 'navbar-logo navbar-logo-dark', style: 'height: 40px;') %>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarComponent">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarComponent" aria-controls="navbarComponent" aria-expanded="false" aria-label="Basculer la navigation">
+      <span class="navbar-toggler-icon" aria-hidden="true"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarComponent">
       <ul class="navbar-nav me-auto">
@@ -14,24 +23,56 @@
           <a class="nav-link" href="<%= root_path %>">Accueil</a>
         </li>
         <li class="nav-item">
-          <%= link_to association_path, class: "nav-link" do %>
-            <i class="bi bi-info-circle me-1"></i>L'association
+          <%= link_to events_path, class: "nav-link" do %>
+            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Événements
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to initiations_path, class: "nav-link" do %>
+            <i class="bi bi-book me-1" aria-hidden="true"></i>Initiations
           <% end %>
         </li>
         <li class="nav-item">
           <%= link_to shop_path, class: "nav-link" do %>
-            <i class="bi bi-bag me-1"></i>Boutique
+            <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
           <% end %>
         </li>
+        <li class="nav-item">
+          <%= link_to about_path, class: "nav-link" do %>
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>L'association
+          <% end %>
+        </li>
+        <% if user_signed_in? && policy(Event.new).create? %>
+          <li class="nav-item">
+            <%= link_to new_event_path, class: "nav-link fw-semibold text-liquid-primary" do %>
+              <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Créer un événement
+            <% end %>
+          </li>
+        <% end %>
+        <% if user_signed_in? && policy(Event::Initiation.new).create? %>
+          <li class="nav-item">
+            <%= link_to new_initiation_path, class: "nav-link fw-semibold text-liquid-primary" do %>
+              <i class="bi bi-book me-1" aria-hidden="true"></i>Créer une initiation
+            <% end %>
+          </li>
+        <% end %>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <!-- Theme toggle -->
-        <button class="btn btn-outline-primary" onclick="toggleTheme()">
-          <i class="bi bi-moon-fill" id="theme-icon"></i>
+        <button 
+          type="button"
+          class="btn btn-outline-primary theme-toggle" 
+          id="theme-toggle"
+          aria-label="Basculer entre thème clair et thème sombre"
+          aria-pressed="false"
+          onclick="toggleTheme()">
+          <i class="bi bi-sun-fill d-none" id="theme-icon-sun" aria-hidden="true"></i>
+          <i class="bi bi-moon-fill" id="theme-icon-moon" aria-hidden="true"></i>
+          <span class="visually-hidden">Changer le thème</span>
         </button>
         
-        <%= link_to cart_path, class: "btn btn-outline-primary cart-button", id: "cart-button" do %>
-          <i class="bi bi-basket"></i>
+        <%= link_to cart_path, class: "btn btn-outline-primary cart-button", id: "cart-button", "aria-label" => "Voir le panier" do %>
+          <i class="bi bi-basket" aria-hidden="true"></i>
           <% if cart_items_count > 0 %>
             <span class="badge text-bg-danger cart-badge" id="cartCount" data-cart-count="<%= cart_items_count %>"><%= cart_items_count %></span>
           <% else %>
@@ -42,48 +83,63 @@
         <!-- User menu -->
         <% if user_signed_in? %>
           <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-person-circle me-2"></i>
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu utilisateur">
+              <i class="bi bi-person-circle me-2" aria-hidden="true"></i>
               <%= current_user.first_name.presence || current_user.email %>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
               <li>
                 <h6 class="dropdown-header">
-                  <i class="bi bi-person me-2"></i>Mon compte
+                  <i class="bi bi-person me-2" aria-hidden="true"></i>Mon compte
                 </h6>
               </li>
               <li>
                 <%= link_to edit_user_registration_path, class: "dropdown-item" do %>
-                  <i class="bi bi-person me-2"></i>Mon profil
+                  <i class="bi bi-person me-2" aria-hidden="true"></i>Mon profil
                 <% end %>
               </li>
               <li>
                 <%= link_to orders_path, class: "dropdown-item" do %>
-                  <i class="bi bi-box-seam me-2"></i>Mes commandes
+                  <i class="bi bi-box-seam me-2" aria-hidden="true"></i>Mes commandes
                 <% end %>
               </li>
-              <% if current_user.role&.name == 'admin' %>
+              <li>
+                <%= link_to attendances_path, class: "dropdown-item" do %>
+                  <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>Mes sorties
+                <% end %>
+              </li>
+              <li>
+                <%= link_to memberships_path, class: "dropdown-item" do %>
+                  <i class="bi bi-person-badge me-2" aria-hidden="true"></i>
+                  <% if current_user.has_active_children_memberships? %>
+                    Mes adhésions
+                  <% else %>
+                    Mon adhésion
+                  <% end %>
+                <% end %>
+              </li>
+              <% if current_user.role&.name == 'admin' || current_user.role&.level.to_i >= 60 %>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                  <%= link_to "#", class: "dropdown-item" do %>
-                    <i class="bi bi-shield-check me-2"></i>Administration
+                  <%= link_to admin_root_path, class: "dropdown-item" do %>
+                    <i class="bi bi-shield-check me-2" aria-hidden="true"></i>Administration
                   <% end %>
                 </li>
               <% end %>
               <li><hr class="dropdown-divider"></li>
               <li>
                 <%= button_to destroy_user_session_path, method: :delete, class: "dropdown-item text-danger" do %>
-                  <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                  <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Déconnexion
                 <% end %>
               </li>
             </ul>
           </div>
         <% else %>
-          <%= link_to new_user_session_path, class: "btn btn-outline-primary" do %>
-            <i class="bi bi-box-arrow-in-right me-2"></i>Connexion
+          <%= link_to new_user_registration_path, class: "btn btn-outline-primary" do %>
+            <i class="bi bi-person-plus me-2" aria-hidden="true"></i>S'inscrire
           <% end %>
-          <%= link_to new_user_registration_path, class: "btn btn-liquid-primary" do %>
-            <i class="bi bi-person-plus me-2"></i>S'inscrire
+          <%= link_to new_user_session_path, class: "btn btn-liquid-primary" do %>
+            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Connexion
           <% end %>
         <% end %>
       </div>

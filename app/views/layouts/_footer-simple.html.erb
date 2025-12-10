@@ -1,21 +1,89 @@
 <!-- ========================================
-      VARIATION: SIMPLE
+      VARIATION: SIMPLE - Optimisée 2025
+      Conforme SEO, RGPD, accessibilité
     ======================================== -->
 
-<footer class="footer-grenoble-roller footer-simple">
-    <div class="container py-4">
-        <div class="row">
-            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                <p class="mb-0">
-                    <strong>Grenoble Roller</strong> © 2025
-                </p>
-            </div>
-            <div class="col-md-6 text-center text-md-end">
-                <a href="#" class="footer-link me-3">À propos</a>
-                <a href="#" class="footer-link me-3">Contact</a>
-                <a href="#" class="footer-link me-3">CGU</a>
-                <a href="#" class="footer-link">Confidentialité</a>
-            </div>
+<footer class="footer-grenoble-roller footer-simple" 
+        role="contentinfo"
+        itemscope 
+        itemtype="https://schema.org/Organization">
+  
+  <!-- Métadonnées SEO (invisibles) -->
+  <link itemprop="url" href="https://grenoble-roller.org">
+  
+  <div class="container py-4">
+    <div class="row g-3">
+      <!-- Colonne gauche : Informations association -->
+      <div class="col-md-6 text-center text-md-start order-2 order-md-1">
+        <h2 class="footer-title h6 mb-2">
+          <strong class="footer-brand" itemprop="name">Grenoble Roller</strong>
+        </h2>
+        <p class="small text-muted mb-2" itemprop="slogan">
+          Communauté de passionnés de roller à Grenoble
+        </p>
+        <p class="small text-muted mb-0">
+          © <%= Date.current.year %> Grenoble Roller - Tous droits réservés
+        </p>
+      </div>
+      
+      <!-- Colonne droite : Navigation et réseaux sociaux -->
+      <div class="col-md-6 text-center text-md-end order-1 order-md-2">
+        <!-- Navigation + Socials fusionnés en 1 ligne -->
+        <div class="footer-nav-social mb-3">
+          <!-- Navigation principale -->
+          <nav class="footer-nav" aria-label="Navigation principale du pied de page">
+            <%= link_to "À propos", about_path, class: "footer-link" %>
+            <span class="mx-2 text-muted" aria-hidden="true">•</span>
+            <%= link_to "Événements", events_path, class: "footer-link" %>
+            <span class="mx-2 text-muted" aria-hidden="true">•</span>
+            <%= link_to "Contact", contact_path, class: "footer-link" %>
+          </nav>
+          
+          <!-- Réseaux sociaux - Version optimisée avec couleurs de marque -->
+          <div class="footer-social d-flex gap-3" 
+               role="group" 
+               aria-label="Réseaux sociaux">
+            <a href="https://www.facebook.com/GrenobleRoller/" 
+               target="_blank" 
+               rel="me noopener noreferrer" 
+               class="social-link social-link-facebook" 
+               aria-label="Suivez-nous sur Facebook"
+               title="Facebook">
+              <i class="bi bi-facebook" aria-hidden="true"></i>
+              <span class="visually-hidden">Facebook</span>
+            </a>
+            <a href="https://www.instagram.com/grenoble_roller/" 
+               target="_blank" 
+               rel="me noopener noreferrer" 
+               class="social-link social-link-instagram" 
+               aria-label="Suivez-nous sur Instagram"
+               title="Instagram">
+              <i class="bi bi-instagram" aria-hidden="true"></i>
+              <span class="visually-hidden">Instagram</span>
+            </a>
+          </div>
         </div>
+        
+        <!-- Liens légaux -->
+        <nav aria-label="Liens légaux" class="footer-legal-links small">
+          <%= link_to "Mentions Légales", mentions_legales_path, class: "footer-link" %>
+          <span class="mx-2 text-muted" aria-hidden="true">•</span>
+          <%= link_to "Confidentialité", politique_confidentialite_path, class: "footer-link" %>
+          <span class="mx-2 text-muted" aria-hidden="true">•</span>
+          <%= link_to "Cookies", preferences_cookie_consent_path, class: "footer-link" %>
+          <span class="mx-2 text-muted" aria-hidden="true">•</span>
+          <%= link_to "CGU", cgu_path, class: "footer-link" %>
+          <span class="mx-2 text-muted" aria-hidden="true">•</span>
+          <%= link_to "CGV", cgv_path, class: "footer-link" %>
+          <%# TODO: Créer pages Accessibilité et Plan du site %>
+          <% if false %>
+            <span class="mx-2 text-muted" aria-hidden="true">•</span>
+            <%= link_to "Accessibilité", "#", class: "footer-link" %>
+            <span class="mx-2 text-muted" aria-hidden="true">•</span>
+            <%= link_to "Plan du site", "#", class: "footer-link" %>
+          <% end %>
+        </nav>
+      </div>
     </div>
+  </div>
 </footer>

@@ -1,0 +1,13 @@
+Votre adhésion a expiré
+
+Bonjour <%= @user.first_name || @user.email %>,
+
+Votre adhésion pour la saison <%= @membership.season %> a expiré le <%= l(@membership.end_date, format: :long) %>.
+
+Pour continuer à profiter des avantages de l'association, nous vous invitons à renouveler votre adhésion.
+
+Renouveler mon adhésion : <%= new_membership_url %>
+
+À bientôt ! 🛼
+
+L'équipe Grenoble Roller

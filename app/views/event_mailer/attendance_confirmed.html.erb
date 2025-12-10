@@ -1,0 +1,83 @@
+<h1 style="color: #007bff; margin-top: 0;">✅ Inscription confirmée !</h1>
+
+<p>Bonjour <%= @user.first_name %>,</p>
+
+<p>Votre inscription à l'événement <strong><%= @event.title %></strong> a bien été enregistrée.</p>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #007bff;">
+  <h3 style="margin-top: 0; color: #333; font-size: 18px;">📅 Détails de l'événement</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #666; width: 120px;">📍 Lieu :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.location_text %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">🕐 Date :</td>
+      <td style="padding: 8px 0;"><strong><%= l @event.start_at, format: :event_long, locale: :fr %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">⏱️ Durée :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.duration_min %> minutes</strong></td>
+    </tr>
+    <% if @event.price_cents > 0 %>
+      <tr>
+        <td style="padding: 8px 0; color: #666;">💰 Prix :</td>
+        <td style="padding: 8px 0;"><strong><%= number_to_currency(@event.price_cents / 100.0, unit: '€') %></strong></td>
+      </tr>
+    <% end %>
+    <% if @event.route.present? %>
+      <tr>
+        <td style="padding: 8px 0; color: #666;">🗺️ Parcours :</td>
+        <td style="padding: 8px 0;"><strong><%= @event.route.name %></strong></td>
+      </tr>
+    <% end %>
+    <% unless @event.unlimited? %>
+      <tr>
+        <td style="padding: 8px 0; color: #666;">👥 Participants :</td>
+        <td style="padding: 8px 0;">
+          <strong><%= @event.active_attendances_count %> / <%= @event.max_participants %></strong>
+          <% if @event.remaining_spots > 0 %>
+            <span style="color: #28a745;">(<%= pluralize(@event.remaining_spots, 'place disponible') %>)</span>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+
+<% if @is_initiation %>
+  <div style="background: #e7f3ff; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #007bff;">
+    <h3 style="margin-top: 0; color: #333; font-size: 18px;">🎓 Informations spécifiques à l'initiation</h3>
+    <% if @attendance.free_trial_used? %>
+      <p style="margin: 10px 0; color: #856404; background: #fff3cd; padding: 10px; border-radius: 5px;">
+        <strong>🎁 Essai gratuit utilisé :</strong> Vous avez utilisé votre essai gratuit pour cette séance. 
+        Pour continuer à participer aux initiations, une adhésion sera requise.
+      </p>
+    <% end %>
+    <% if @attendance.equipment_note.present? %>
+      <p style="margin: 10px 0;">
+        <strong>📦 Matériel demandé :</strong> <%= @attendance.equipment_note %>
+        <br><small style="color: #666;">Votre demande a été transmise au staff. Vous serez contacté(e) via WhatsApp si nécessaire.</small>
+      </p>
+    <% end %>
+    <p style="margin: 10px 0; color: #666; font-size: 14px;">
+      <strong>📍 Lieu :</strong> Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble<br>
+      <strong>⏰ Horaires :</strong> Samedi 10h15 - 12h00 (1h45)<br>
+      <strong>🛡️ Sécurité :</strong> Casque et protections fortement recommandés
+    </p>
+  </div>
+<% end %>
+
+<div style="margin: 30px 0; text-align: center;">
+  <%= link_to 'Voir l\'événement', @is_initiation ? initiation_url(@event) : event_url(@event), 
+      style: 'display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+  À bientôt sur les routes de Grenoble ! 🛼
+</p>
+
+<p style="color: #6c757d; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+  <strong>💡 Rappel :</strong> Vous pouvez annuler votre inscription à tout moment depuis la page de l'événement ou depuis "Mes sorties".
+</p>
+

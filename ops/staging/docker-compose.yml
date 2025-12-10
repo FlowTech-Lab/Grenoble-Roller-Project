@@ -5,7 +5,9 @@ services:
   web:
     build:
       context: ../..
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  # Dockerfile à la racine (correct car context = ../..)
+      args:
+        BUILD_ID: ${BUILD_ID:-latest}
     container_name: grenoble-roller-staging
     env_file:
       - ../../.env
@@ -17,13 +19,22 @@ services:
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: grenoble_roller_production
       RAILS_ENV: production
+      APP_ENV: staging
+      DEPLOY_ENV: staging
+      MAILER_HOST: grenoble-roller.flowtech-lab.org
+      MAILER_PROTOCOL: https
+      PORT: 3000
     ports:
       - "3001:3000"
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - grenoble-roller-staging-data:/rails/db
+      minio:
+        condition: service_healthy
+    # Volume /rails/db supprimé car il écrasait les migrations de l'image
+    # Si Solid Queue/Cache/Cable nécessitent SQLite, monter seulement les fichiers spécifiques
+    # volumes:
+    #   - grenoble-roller-staging-data:/rails/db
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s
@@ -45,6 +56,24 @@ services:
       timeout: 5s
       retries: 5
 
+  minio:
+    image: minio/minio:latest
+    container_name: grenoble-roller-minio-staging
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    # Pas de ports exposés : accès uniquement via réseau Docker interne
+    # Rails accède via http://minio:9000 (nom du service Docker)
+    volumes:
+      - grenoble-roller-staging-minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
-  grenoble-roller-staging-data:
+  # grenoble-roller-staging-data:  # Supprimé car écrasait les migrations de l'image
   grenoble-roller-staging-db-data:
+  grenoble-roller-staging-minio-data:

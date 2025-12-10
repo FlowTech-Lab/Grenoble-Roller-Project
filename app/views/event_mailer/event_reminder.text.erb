@@ -1,0 +1,42 @@
+📅 RAPPEL : ÉVÉNEMENT DEMAIN
+
+Bonjour <%= @user.first_name %>,
+
+Nous vous rappelons que vous êtes inscrit(e) à l'événement <%= @event.title %> qui aura lieu demain !
+
+📅 DÉTAILS DE L'ÉVÉNEMENT
+─────────────────────────
+
+📍 Lieu : <%= @event.location_text %>
+🕐 Date : <%= l @event.start_at, format: :event_long, locale: :fr %>
+⏱️ Durée : <%= @event.duration_min %> minutes
+<% if @event.price_cents > 0 %>
+💰 Prix : <%= number_to_currency(@event.price_cents / 100.0, unit: '€') %>
+<% end %>
+<% if @event.route.present? %>
+🗺️ Parcours : <%= @event.route.name %>
+<% end %>
+
+<% if @is_initiation %>
+─────────────────────────
+🎓 RAPPEL INITIATION
+─────────────────────────
+<% if @attendance.equipment_note.present? %>
+📦 Matériel demandé : <%= @attendance.equipment_note %>
+(N'oubliez pas votre matériel demandé !)
+<% end %>
+
+📍 Lieu : Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble
+⏰ Horaires : Samedi 10h15 - 12h00 (1h45)
+🛡️ Sécurité : Pensez à apporter votre casque et vos protections
+─────────────────────────
+<% end %>
+
+Voir l'événement : <%= @is_initiation ? initiation_url(@event) : event_url(@event) %>
+
+─────────────────────────
+
+À demain sur les routes de Grenoble ! 🛼
+
+💡 Rappel : Si vous ne pouvez pas venir, n'oubliez pas d'annuler votre inscription depuis la page de l'événement ou depuis "Mes sorties".
+

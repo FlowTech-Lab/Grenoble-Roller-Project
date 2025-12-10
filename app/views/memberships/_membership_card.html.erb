@@ -1,0 +1,112 @@
+<div class="mb-3 pb-3 border-bottom <%= 'border-0 pb-0 mb-0' if local_assigns[:last] %>">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <!-- Membership icon and season -->
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi <%= is_child ? 'bi-person-heart' : 'bi-person-badge' %> text-liquid-primary"></i>
+      <div>
+        <% if is_child %>
+          <span class="text-muted small">Enfant</span>
+          <strong class="d-block"><%= membership.child_full_name %></strong>
+        <% else %>
+          <span class="text-muted small">Saison</span>
+          <strong class="d-block"><%= membership.season %></strong>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Status badge -->
+    <% 
+      status_btn = case membership.status
+        when 'pending'
+          'btn-warning'
+        when 'active'
+          'btn-success'
+        when 'expired'
+          'btn-secondary'
+        else
+          'btn-secondary'
+      end
+      
+      status_text = case membership.status
+        when 'pending'
+          'En attente'
+        when 'active'
+          'Active'
+        when 'expired'
+          'Expirée'
+        else
+          membership.status.humanize
+      end
+    %>
+    <span class="badge <%= status_btn %>"><%= status_text %></span>
+
+    <!-- Category and amount -->
+    <div class="ms-auto text-end">
+      <div class="small text-muted">
+        <%= membership.category == 'standard' ? 'Standard' : 'FFRS' %>
+        <% if is_child %>
+          - <%= membership.season %>
+        <% end %>
+      </div>
+      <strong>
+        <%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+        <% if membership.tshirt_variant_id.present? %>
+          <span class="small">+ T-shirt</span>
+        <% end %>
+      </strong>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2">
+      <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary" do %>
+        <i class="bi bi-eye me-1"></i>Détails
+      <% end %>
+      
+      <% if membership.status == 'pending' %>
+        <% if is_child && local_assigns[:is_pending] %>
+          <!-- Actions pour enfants pending : Modifier, Supprimer, Payer individuellement -->
+          <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning" do %>
+            <i class="bi bi-pencil me-1"></i>Modifier
+          <% end %>
+          <%= button_to membership_path(membership),
+              method: :delete,
+              class: "btn btn-sm btn-outline-danger",
+              data: { 
+                turbo: false,
+                confirm: "Êtes-vous sûr de vouloir supprimer l'adhésion de #{membership.child_full_name} ? Cette action est irréversible."
+              },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-trash me-1"></i>Supprimer
+          <% end %>
+          <%= button_to pay_membership_path(membership),
+              method: :post,
+              class: "btn btn-sm btn-primary",
+              data: { turbo: false },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-credit-card me-1"></i>Payer
+          <% end %>
+        <% else %>
+          <!-- Paiement individuel pour adhésions personnelles pending -->
+          <%= button_to pay_membership_path(membership),
+              method: :post,
+              class: "btn btn-sm btn-primary",
+              data: { turbo: false },
+              form: { style: "display: inline-block;" } do %>
+            <i class="bi bi-credit-card me-1"></i>Payer
+          <% end %>
+        <% end %>
+      <% elsif membership.status == 'expired' %>
+        <% if membership.is_child_membership? %>
+          <%= link_to choose_memberships_path(child: true, renew_from: membership.id), class: "btn btn-sm btn-success" do %>
+            <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
+          <% end %>
+        <% else %>
+          <%= link_to choose_memberships_path, class: "btn btn-sm btn-success" do %>
+            <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
+

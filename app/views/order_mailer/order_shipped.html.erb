@@ -1,0 +1,27 @@
+<h1 style="color: #28a745; margin-top: 0;">📦 Commande ##{@order.id} - Expédiée</h1>
+
+<p>Bonjour <%= @user.first_name || @user.email %>,</p>
+
+<p>Excellente nouvelle ! Votre commande ##{@order.id} a été expédiée.</p>
+
+<div style="background: #d4edda; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #28a745;">
+  <h3 style="margin-top: 0; color: #155724; font-size: 18px;">🚚 Expédition confirmée</h3>
+  <p style="margin: 5px 0;"><strong>Commande #<%= @order.id %></strong></p>
+  <p style="margin: 5px 0;">Montant : <%= number_to_currency(@order.total_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %></p>
+  <p style="margin: 5px 0; color: #28a745;"><strong>📦 Statut : Expédiée</strong></p>
+</div>
+
+<div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffc107;">
+  <p style="margin: 0; color: #856404;"><strong>📬 Suivi :</strong> Vous recevrez un email avec le numéro de suivi dès qu'il sera disponible. Le délai de livraison dépend de votre localisation.</p>
+</div>
+
+<div style="margin: 30px 0; text-align: center;">
+  <%= link_to 'Suivre ma commande →', order_url(@order), 
+      style: 'display: inline-block; background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+  Des questions ? 
+  <%= link_to 'Contactez-nous', 'mailto:contact@grenoble-roller.org', style: 'color: #007bff;' %>
+</p>
+

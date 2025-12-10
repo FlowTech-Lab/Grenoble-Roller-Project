@@ -1,0 +1,81 @@
+<% content_for :title, 'Événements Grenoble Roller' %>
+<% content_for :description, "Découvrez tous les événements Roller à Grenoble. Randonnées urbaines, cours d'initiation, événements à thème. Rejoignez la communauté et participez aux sorties !" %>
+
+<section class="banner-page mb-4">
+  <div class="banner-overlay"></div>
+  <div class="banner-content">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 text-center">
+          <i class="bi bi-calendar-event banner-icon-small mb-2" aria-hidden="true"></i>
+          <h1 class="banner-title-page mb-3">Nos Événements</h1>
+          <p class="banner-subtitle-page mb-4">
+            Découvrez toutes nos sorties roller
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container pb-5">
+  <div id="events-upcoming" class="mb-5">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1"><i class="bi bi-stars me-2" aria-hidden="true"></i>À venir</h2>
+        <p class="text-body-secondary mb-0">
+          Les prochains rendez-vous roller ouverts à la communauté.
+        </p>
+      </div>
+      <span class="badge badge-liquid-primary fs-6"><%= pluralize(@upcoming_events.size, "événement", "événements") %></span>
+    </div>
+
+    <% if @upcoming_events.any? %>
+      <div class="event-grid">
+        <div class="row g-4">
+          <% @upcoming_events.each_with_index do |event, index| %>
+            <%= render 'events/event_card',
+                       event: event,
+                       render_signup_button: true,
+                       current_user: current_user,
+                       is_first: (index == 0) %>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="alert alert-info border-0 shadow-sm">
+        <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Aucun événement planifié pour le moment — une annonce arrive bientôt !
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1"><i class="bi bi-archive me-2" aria-hidden="true"></i>Événements passés</h2>
+        <p class="text-body-secondary mb-0">
+          Un aperçu des dernières sorties et initiations organisées.
+        </p>
+      </div>
+    </div>
+
+    <% if @past_events.any? %>
+      <div class="event-grid">
+        <div class="row g-4">
+          <% @past_events.each do |event| %>
+            <%= render 'events/event_card',
+                       event: event,
+                       render_signup_button: false,
+                       current_user: current_user,
+                       past: true %>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="alert alert-secondary border-0 shadow-sm">
+        Les événements passés apparaîtront ici prochainement.
+      </div>
+    <% end %>
+  </div>
+</section>
+

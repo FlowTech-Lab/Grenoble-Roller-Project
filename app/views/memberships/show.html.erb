@@ -1,0 +1,312 @@
+<!-- Modal pour utilisateur déjà adhérent -->
+<% if flash[:show_membership_modal] %>
+  <div class="modal fade" id="membershipInfoModal" tabindex="-1" aria-labelledby="membershipInfoModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header <%= @membership.active? ? 'bg-success text-white' : 'bg-warning text-dark' %>">
+          <h5 class="modal-title" id="membershipInfoModalLabel">
+            <i class="bi <%= @membership.active? ? 'bi-check-circle' : 'bi-exclamation-triangle' %> me-2"></i>
+            <% if @membership.active? %>
+              Adhésion déjà active
+            <% else %>
+              Adhésion en attente
+            <% end %>
+          </h5>
+          <button type="button" class="btn-close <%= @membership.active? ? 'btn-close-white' : '' %>" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <% if @membership.active? %>
+            <p class="mb-3">
+              <strong>Vous avez déjà une adhésion active pour la saison <%= @membership.season %>.</strong>
+            </p>
+            <p class="mb-2">
+              <i class="bi bi-calendar-check me-2 text-success"></i>
+              <strong>Valable jusqu'au :</strong> <%= l(@membership.end_date, format: :long) %>
+            </p>
+            <p class="mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              Vous pouvez renouveler votre adhésion à partir du <%= l(@membership.end_date - 30.days, format: :long) %>.
+            </p>
+          <% else %>
+            <p class="mb-3">
+              <strong>Vous avez déjà une adhésion en attente de paiement pour cette saison.</strong>
+            </p>
+            <p class="mb-2">
+              <i class="bi bi-credit-card me-2 text-warning"></i>
+              <strong>Statut :</strong> En attente de paiement
+            </p>
+            <p class="mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              Veuillez finaliser le paiement avant de créer une nouvelle adhésion.
+            </p>
+          <% end %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+          <% if @membership.pending? %>
+            <%= link_to "Finaliser le paiement", membership_path(@membership), class: "btn btn-primary" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = new bootstrap.Modal(document.getElementById('membershipInfoModal'));
+      modal.show();
+    });
+  </script>
+<% end %>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          
+          <!-- ALERTE PAIEMENT PENDING avec bouton Rafraîchir + Auto-poll -->
+          <% 
+            membership_status = @membership.status.downcase
+            is_pending = membership_status == 'pending'
+            # Afficher l'alerte si : adhésion pending + (payment pending helloasso OU pas de payment)
+            show_payment_alert = is_pending && 
+                                 (@membership.payment.nil? || 
+                                  (@membership.payment.status == 'pending' && @membership.payment.provider == 'helloasso'))
+          %>
+          <% if show_payment_alert %>
+            <div class="alert alert-warning mb-4" role="alert">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <strong>⏳ Paiement en attente</strong>
+                  <p class="small mb-0">Vérification automatique en cours...</p>
+                </div>
+                <%= button_to payment_status_membership_path(@membership),
+                    method: :get,
+                    class: "btn btn-sm btn-warning",
+                    data: { turbo: false },
+                    aria: { label: "Vérifier le statut du paiement maintenant" } do %>
+                  <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Vérifier maintenant
+                <% end %>
+              </div>
+            </div>
+            
+            <!-- Auto-poll JS discret en arrière-plan (1 min max) -->
+            <script>
+              (function() {
+                let attempts = 0;
+                const maxAttempts = 12; // 12 * 5s = 1 min
+                let isPolling = true;
+                
+                const poll = async () => {
+                  if (!isPolling) return;
+                  
+                  try {
+                    const response = await fetch('<%= payment_status_membership_path(@membership) %>', {
+                      method: 'GET',
+                      headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                      },
+                      credentials: 'same-origin',
+                      cache: 'no-cache'
+                    });
+                    
+                    if (!response.ok) {
+                      console.warn('[MembershipPoll] Failed to fetch status:', response.status);
+                      if (attempts < maxAttempts) {
+                        attempts++;
+                        setTimeout(poll, 5000);
+                      }
+                      return;
+                    }
+                    
+                    const data = await response.json();
+                    const status = data.status;
+                    
+                    console.log('[MembershipPoll] Status check #' + attempts + ':', status);
+                    
+                    if (status !== 'pending' && status !== 'unknown') {
+                      console.log('[MembershipPoll] Status changed to:', status, '- Reloading page');
+                      isPolling = false;
+                      window.location.reload();
+                    } else if (attempts < maxAttempts) {
+                      attempts++;
+                      setTimeout(poll, 5000);
+                    } else {
+                      console.log('[MembershipPoll] Max attempts reached, stopping');
+                      isPolling = false;
+                    }
+                  } catch (error) {
+                    console.error('[MembershipPoll] Error:', error);
+                    if (attempts < maxAttempts) {
+                      attempts++;
+                      setTimeout(poll, 5000);
+                    }
+                  }
+                };
+                
+                // Démarrer le polling après 2 secondes
+                setTimeout(poll, 2000);
+              })();
+            </script>
+          <% end %>
+
+          <!-- Header -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="h4 mb-2">
+              <% if @membership.is_child_membership? %>
+                <i class="bi bi-person-heart text-liquid-warning me-2"></i>Adhésion de <%= @membership.child_full_name %>
+              <% else %>
+                <i class="bi bi-person-badge text-liquid-primary me-2"></i>Mon adhésion
+              <% end %>
+            </h1>
+            <p class="text-muted small mb-0">
+              Saison <%= @membership.season %> - 
+              Valable du <%= l(@membership.start_date, format: :long) %> au <%= l(@membership.end_date, format: :long) %>
+            </p>
+          </div>
+
+          <!-- Status badge -->
+          <div class="text-center mb-4">
+            <% 
+              status_btn = case @membership.status
+                when 'pending'
+                  'btn-warning'
+                when 'active'
+                  'btn-success'
+                when 'expired'
+                  'btn-secondary'
+                else
+                  'btn-secondary'
+              end
+              
+              status_text = case @membership.status
+                when 'pending'
+                  'En attente de paiement'
+                when 'active'
+                  'Active'
+                when 'expired'
+                  'Expirée'
+                else
+                  @membership.status.humanize
+              end
+            %>
+            <span class="badge <%= status_btn %> fs-6 px-3 py-2"><%= status_text %></span>
+          </div>
+
+          <!-- Details -->
+          <div class="row g-3 mb-4">
+            <% if @membership.is_child_membership? %>
+              <div class="col-12">
+                <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                  <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Informations de l'enfant</h6>
+                    <p class="card-text">
+                      <strong><%= @membership.child_full_name %></strong><br>
+                      Date de naissance : <%= l(@membership.child_date_of_birth, format: :long) if @membership.child_date_of_birth.present? %><br>
+                      Âge : <%= @membership.child_age %> ans
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            <div class="col-12 col-md-6">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">Catégorie</h6>
+                  <p class="card-text h5">
+                    <%= @membership.category == 'standard' ? 'Cotisation Adhérent Grenoble Roller' : 'Cotisation Adhérent Grenoble Roller + Licence FFRS' %>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">Montant adhésion</h6>
+                  <p class="card-text h5">
+                    <%= number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                  </p>
+                  <% if @membership.tshirt_variant_id.present? %>
+                    <p class="card-text small mb-0">
+                      + T-shirt : <%= number_to_currency(@membership.tshirt_price_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                    </p>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            <% if @membership.tshirt_variant_id.present? %>
+              <div class="col-12">
+                <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                  <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">T-shirt</h6>
+                    <p class="card-text">
+                      <% size = @membership.tshirt_variant&.option_values&.find { |ov| 
+                           ov.option_type.name.downcase.include?('taille') || 
+                           ov.option_type.name.downcase.include?('size') ||
+                           ov.option_type.name.downcase.include?('dimension')
+                         }&.value || "N/A" %>
+                      Taille : <strong><%= size %></strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+            <div class="col-12 col-md-6">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">Date de début</h6>
+                  <p class="card-text"><%= l(@membership.start_date, format: :long) %></p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-2 text-muted">Date de fin</h6>
+                  <p class="card-text"><%= l(@membership.end_date, format: :long) %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-2 justify-content-center">
+            <% if @membership.status == 'pending' %>
+              <%= button_to pay_membership_path(@membership),
+                  method: :post,
+                  class: "btn btn-primary",
+                  data: { turbo: false } do %>
+                <i class="bi bi-credit-card me-2"></i>Payer via HelloAsso
+              <% end %>
+            <% elsif @membership.status == 'active' %>
+              <div class="alert alert-success mb-0">
+                <i class="bi bi-check-circle me-2"></i>
+                Votre adhésion est active jusqu'au <%= l(@membership.end_date, format: :long) %>
+              </div>
+            <% elsif @membership.status == 'expired' %>
+              <% if @membership.is_child_membership? %>
+                <%= link_to choose_memberships_path(child: true, renew_from: @membership.id), class: "btn btn-primary" do %>
+                  <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
+                <% end %>
+              <% else %>
+                <%= link_to choose_memberships_path, class: "btn btn-primary" do %>
+                  <i class="bi bi-arrow-repeat me-2"></i>Renouveler mon adhésion
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+
+          <!-- Back link -->
+          <div class="text-center mt-4 pt-3 border-top">
+            <%= link_to memberships_path, class: "btn btn-link" do %>
+              <i class="bi bi-arrow-left me-1"></i>Retour à mes adhésions
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

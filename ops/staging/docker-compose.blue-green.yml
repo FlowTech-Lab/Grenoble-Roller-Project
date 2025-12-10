@@ -1,0 +1,103 @@
+# --- ops/staging/docker-compose.blue-green.yml ---
+# Blue-Green Deployment Configuration
+# Usage: docker compose -f ops/staging/docker-compose.blue-green.yml up -d
+
+services:
+  # BLUE environment (production actuelle)
+  web-blue:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: grenoble-roller-staging-blue
+    env_file:
+      - ../../.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_production
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: grenoble_roller_production
+      RAILS_ENV: production
+      PORT: 3000
+    ports:
+      - "3002:3000"  # Port blue (non exposé publiquement)
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - grenoble-roller-staging-blue-data:/rails/db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - blue
+
+  # GREEN environment (nouvelle version)
+  web-green:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: grenoble-roller-staging-green
+    env_file:
+      - ../../.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/grenoble_roller_production
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: grenoble_roller_production
+      RAILS_ENV: production
+      PORT: 3000
+    ports:
+      - "3003:3000"  # Port green (non exposé publiquement)
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - grenoble-roller-staging-green-data:/rails/db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - green
+
+  # Reverse proxy pour basculer entre blue/green
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: grenoble-roller-staging-proxy
+    ports:
+      - "3001:80"  # Port public (toujours le même)
+    volumes:
+      - ./nginx-blue-green.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web-blue
+      - web-green
+    restart: unless-stopped
+
+  # Database partagée entre blue et green
+  db:
+    image: postgres:16-alpine
+    container_name: grenoble-roller-db-staging
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: grenoble_roller_production
+    volumes:
+      - grenoble-roller-staging-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  grenoble-roller-staging-blue-data:
+  grenoble-roller-staging-green-data:
+  grenoble-roller-staging-db-data:
+

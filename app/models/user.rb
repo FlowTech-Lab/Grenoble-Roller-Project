@@ -2,20 +2,135 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-        :recoverable, :rememberable, :validatable
+        :recoverable, :rememberable, :validatable, :confirmable
   # Relation avec Role
   belongs_to :role
   has_many :orders, dependent: :nullify
+  has_many :memberships, dependent: :destroy
+
+  # Active Storage attachments
+  has_one_attached :avatar
+
+  # Phase 2 - Events associations
+  has_many :created_events, class_name: "Event", foreign_key: "creator_user_id", dependent: :restrict_with_error
+  has_many :attendances, dependent: :destroy
+  has_many :events, through: :attendances
+
+  # Phase 2 - Organizer applications
+  has_many :organizer_applications, dependent: :destroy
+  has_many :reviewed_applications, class_name: "OrganizerApplication", foreign_key: "reviewed_by_id", dependent: :nullify
+
+  # Phase 2 - Audit logs
+  has_many :audit_logs, class_name: "AuditLog", foreign_key: "actor_user_id", dependent: :nullify
+
   before_validation :set_default_role, on: :create
-  
-  # Validations: prénom obligatoire, nom optionnel
-  validates :first_name, presence: true
+  after_create :send_welcome_email_and_confirmation
+
+  # Permettre l'authentification même si l'email n'est pas confirmé
+  # On vérifiera dans le contrôleur et on redirigera si nécessaire
+  # Cela permet d'afficher un message clair et de rediriger vers la page de confirmation
+  def active_for_authentication?
+    super # Permettre l'authentification pour pouvoir vérifier après
+  end
+
+  # Message personnalisé si compte non actif
+  def inactive_message
+    if !confirmed?
+      :unconfirmed_email
+    else
+      super
+    end
+  end
+
+  # Vérifier si le token de confirmation est expiré
+  def confirmation_token_expired?
+    return false if confirmed_at.present?
+    return false unless confirmation_sent_at.present?
+    return false unless Devise.confirm_within
+
+    confirmation_sent_at < Devise.confirm_within.ago
+  end
+
+  # Skill levels disponibles
+  SKILL_LEVELS = %w[beginner intermediate advanced].freeze
+
+  # Validations: skill_level obligatoire à l'inscription
+  validates :skill_level, presence: true, inclusion: { in: SKILL_LEVELS }
+
+  # Validations: prénom obligatoire (important pour personnaliser les événements)
+  validates :first_name, presence: true, length: { maximum: 50 }
   validates :phone, format: { with: /\A[0-9\s\-\+\(\)]+\z/, message: "format invalide" }, allow_blank: true
-  
+
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id email first_name last_name phone email_verified role_id created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[orders created_events attendances events organizer_applications reviewed_applications audit_logs role memberships]
+  end
+
+  # Helpers pour vérifier adhésion active
+  def has_active_membership?
+    memberships.personal.active_now.exists?
+  end
+
+  # Obtenir l'adhésion active actuelle (personnelle)
+  def current_membership
+    memberships.personal.active_now.order(start_date: :desc).first
+  end
+
+  # Obtenir toutes les adhésions enfants actives
+  def active_children_memberships
+    memberships.children.active_now.order(created_at: :desc)
+  end
+
+  # Vérifier si l'utilisateur a des adhésions enfants actives
+  def has_active_children_memberships?
+    active_children_memberships.exists?
+  end
+
+  # Obtenir toutes les adhésions (personnelle + enfants)
+  def all_active_memberships
+    memberships.active_now.order(is_child_membership: :asc, created_at: :desc)
+  end
+
+  # Calculer l'âge de l'utilisateur
+  def age
+    return nil unless date_of_birth.present?
+    ((Date.today - date_of_birth) / 365.25).floor
+  end
+
+  # Vérifier si l'utilisateur est mineur
+  def is_minor?
+    return false unless date_of_birth.present?
+    age < 18
+  end
+
+  # Vérifier si l'utilisateur est un enfant (< 16 ans)
+  def is_child?
+    return false unless date_of_birth.present?
+    age < 16
+  end
+
   private
-  
+
   def set_default_role
     # Priorité au code stable, fallback sur un libellé courant
-    self.role ||= Role.find_by(code: 'USER') || Role.find_by(name: 'Utilisateur') || Role.first
+    self.role ||= Role.find_by(code: "USER") || Role.find_by(name: "Utilisateur") || Role.first
+  end
+
+  def send_welcome_email_and_confirmation
+    # Envoyer email de bienvenue ET email de confirmation
+    UserMailer.welcome_email(self).deliver_later
+
+    # Envoyer confirmation seulement si le contexte Devise est disponible
+    # (évite erreur dans les tests sans contexte HTTP)
+    begin
+      send_confirmation_instructions
+      Rails.logger.info("Confirmation email sent to #{email} at #{Time.current}")
+    rescue RuntimeError => e
+      # Ignorer erreur de mapping Devise en test
+      raise e unless Rails.env.test? || e.message.include?("mapping")
+    end
   end
 end

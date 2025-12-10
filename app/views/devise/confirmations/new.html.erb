@@ -1,16 +1,188 @@
-<h2>Resend confirmation instructions</h2>
+<div class="container-fluid py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card card-liquid rounded-liquid shadow-liquid auth-form">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <i class="bi bi-envelope-check fs-1 text-liquid-primary"></i>
+            <h3 class="mt-2">Renvoyer l'email de confirmation</h3>
+            <p class="text-muted small">
+              Entrez votre adresse email pour recevoir un nouveau lien de confirmation
+            </p>
+          </div>
 
-<%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }, data: { turbo: false }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+          <%= form_for(resource, as: resource_name,
+                       url: confirmation_path(resource_name),
+                       html: { method: :post, data: { turbo: false } }) do |f| %>
+            <%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email", value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email) %>
+            <!-- Légende champs obligatoires -->
+            <p class="form-required-legend">
+              <span class="required-marker">*</span> Champs obligatoires
+            </p>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <%= f.label :email, "Email", class: "form-label required" %>
+              <%= f.email_field :email,
+                  autofocus: true,
+                  autocomplete: "email",
+                  value: (params[:email].presence || (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email)),
+                  class: "form-control form-control-liquid",
+                  placeholder: "votre@email.com",
+                  required: true,
+                  aria: { required: true } %>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
+              <i class="bi bi-send me-2"></i>
+              Renvoyer l'email de confirmation
+            </button>
+          <% end %>
+
+          <!-- Links -->
+          <div class="text-center mb-4">
+            <%= link_to "Retour à la connexion", new_session_path(resource_name),
+                class: "small text-decoration-none" %>
+          </div>
+
+          <!-- FAQ Section -->
+          <div class="mt-4 pt-4 border-top">
+            <h5 class="mb-3">
+              <i class="bi bi-question-circle me-2"></i>
+              Questions fréquentes
+            </h5>
+
+            <div class="accordion" id="confirmationFAQ">
+              <!-- FAQ 1 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                    <i class="bi bi-envelope-at me-2"></i>
+                    Où est mon email de confirmation ?
+                  </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#confirmationFAQ">
+                  <div class="accordion-body">
+                    <p>L'email de confirmation a été envoyé à l'adresse que vous avez fournie lors de l'inscription.</p>
+                    <p><strong>Vérifiez :</strong></p>
+                    <ul>
+                      <li>Votre boîte de réception</li>
+                      <li>Votre dossier <strong>Spam / Courrier indésirable</strong></li>
+                      <li>Les emails avec l'expéditeur <code>no-reply@grenoble-roller.org</code></li>
+                    </ul>
+                    <p class="mb-0">Si vous ne le trouvez toujours pas après quelques minutes, utilisez le formulaire ci-dessus pour en demander un nouveau.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ 2 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Le lien a expiré, que faire ?
+                  </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#confirmationFAQ">
+                  <div class="accordion-body">
+                    <p>Les liens de confirmation sont valables pendant <strong>3 jours</strong> après l'envoi.</p>
+                    <p>Si votre lien a expiré :</p>
+                    <ol>
+                      <li>Utilisez le formulaire ci-dessus pour demander un nouvel email</li>
+                      <li>Vous recevrez un nouveau lien valable pour 3 jours</li>
+                      <li>Confirmez rapidement pour éviter une nouvelle expiration</li>
+                    </ol>
+                    <p class="mb-0"><strong>Conseil :</strong> Vérifiez votre email régulièrement après avoir demandé un renvoi.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ 3 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                    <i class="bi bi-link-45deg me-2"></i>
+                    Le lien ne fonctionne pas, que faire ?
+                  </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#confirmationFAQ">
+                  <div class="accordion-body">
+                    <p>Si le lien dans l'email ne fonctionne pas :</p>
+                    <ol>
+                      <li><strong>Copiez le lien en entier</strong> depuis l'email</li>
+                      <li>Collez-le dans la barre d'adresse de votre navigateur</li>
+                      <li>Vérifiez qu'il n'y a pas d'espaces ou de caractères manquants</li>
+                      <li>Essayez avec un autre navigateur (Chrome, Firefox, Safari)</li>
+                    </ol>
+                    <p class="mb-0">Si le problème persiste, demandez un nouvel email de confirmation ci-dessus.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ 4 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                    <i class="bi bi-shield-exclamation me-2"></i>
+                    Pourquoi dois-je confirmer mon email ?
+                  </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#confirmationFAQ">
+                  <div class="accordion-body">
+                    <p>La confirmation d'email est nécessaire pour :</p>
+                    <ul>
+                      <li>🔒 <strong>Sécurité :</strong> Vérifier que vous êtes bien le propriétaire de cette adresse email</li>
+                      <li>📧 <strong>Communication :</strong> Nous assurer de pouvoir vous contacter pour les événements et notifications importantes</li>
+                      <li>✅ <strong>Activation :</strong> Activer votre compte et accéder à toutes les fonctionnalités</li>
+                    </ul>
+                    <p class="mb-0">Sans confirmation, vous ne pourrez pas vous connecter ni utiliser les services de l'application.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FAQ 5 -->
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Message "Trop de demandes", que faire ?
+                  </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#confirmationFAQ">
+                  <div class="accordion-body">
+                    <p>Pour protéger contre les abus, nous limitons le nombre de renvois d'email :</p>
+                    <ul>
+                      <li><strong>Maximum 5 renvois par heure</strong> pour chaque adresse email</li>
+                      <li><strong>Maximum 10 renvois par heure</strong> depuis la même adresse IP</li>
+                    </ul>
+                    <p><strong>Solutions :</strong></p>
+                    <ol>
+                      <li>Attendez <strong>1 heure</strong> avant de redemander</li>
+                      <li>Vérifiez vos dossiers spam pendant ce temps</li>
+                      <li>Contactez le support si le problème persiste</li>
+                    </ol>
+                    <p class="mb-0"><strong>Important :</strong> Cette limitation protège votre sécurité. Ne tentez pas de la contourner.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Support -->
+          <div class="mt-4 pt-4 border-top text-center">
+            <p class="text-muted mb-2">
+              <i class="bi bi-headset me-2"></i>
+              <strong>Besoin d'aide ?</strong>
+            </p>
+            <p class="text-muted small mb-0">
+              Si vous rencontrez des difficultés, contactez notre support à 
+              <a href="mailto:support@grenoble-roller.org" class="text-decoration-none">support@grenoble-roller.org</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <div class="actions">
-    <%= f.submit "Resend confirmation instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>

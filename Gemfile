@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.4"
+gem "rails", "~> 8.1.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
@@ -18,9 +18,15 @@ gem "stimulus-rails"
 gem "cssbundling-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
-gem 'devise'
+gem "devise"
+gem "pundit"
+gem "activeadmin"
+gem "rack-attack" # Rate limiting pour sécurité
+gem "rqrcode", "~> 2.2" # QR code pour emails de confirmation
+gem "rack-cors" # CORS pour applications mobiles
+# Note: Cloudflare Turnstile intégré manuellement (pas de gem disponible)
 
-gem 'table_print'
+gem "table_print"
 
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
@@ -40,26 +46,47 @@ gem "bootsnap", require: false
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
 
+# Cron jobs management
+gem "whenever", require: false
+
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 1.2"
+
+# AWS SDK for S3 (used with MinIO for Active Storage)
+gem "aws-sdk-s3", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
+  gem "brakeman", "~> 7.1.1", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # RSpec testing framework
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+
+  # N+1 query detection [https://github.com/flyerhzm/bullet]
+  gem "bullet", require: false
+end
+
+group :development, :test, :production do
+  # iCalendar file generation [https://github.com/icalendar/icalendar]
+  gem "icalendar"
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # File watcher for auto-reload in development (required for Docker volumes)
+  gem "listen", "~> 3.8"
 end
 
 group :test do
