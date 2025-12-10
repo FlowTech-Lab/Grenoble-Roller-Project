@@ -21,6 +21,14 @@ class Payment < ApplicationRecord
       )
     end
   end
+
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id amount_cents created_at updated_at currency provider provider_payment_id status]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[orders memberships attendances]
+  end
 end
 
 # Un paiement peut être associé à plusieurs commandes et attendances

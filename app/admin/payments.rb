@@ -8,7 +8,18 @@ ActiveAdmin.register Payment do
     id_column
     column :provider
     column :status do |payment|
-      status_tag payment.status, payment.status == "completed" ? :ok : (payment.status == "pending" ? :warning : :error)
+      case payment.status
+      when "completed"
+        status_tag("Complété", class: "ok")
+      when "pending"
+        status_tag("En attente", class: "warning")
+      when "failed"
+        status_tag("Échoué", class: "error")
+      when "cancelled"
+        status_tag("Annulé", class: "error")
+      else
+        status_tag(payment.status.to_s)
+      end
     end
     column :amount_cents do |payment|
       number_to_currency(payment.amount_cents / 100.0)
@@ -37,7 +48,18 @@ ActiveAdmin.register Payment do
       row :id
       row :provider
       row :status do |payment|
-        status_tag payment.status, payment.status == "completed" ? :ok : (payment.status == "pending" ? :warning : :error)
+        case payment.status
+        when "completed"
+          status_tag("Complété", class: "ok")
+        when "pending"
+          status_tag("En attente", class: "warning")
+        when "failed"
+          status_tag("Échoué", class: "error")
+        when "cancelled"
+          status_tag("Annulé", class: "error")
+        else
+          status_tag(payment.status.to_s)
+        end
       end
       row :amount_cents do |payment|
         number_to_currency(payment.amount_cents / 100.0)
