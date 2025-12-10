@@ -59,7 +59,11 @@ class User < ApplicationRecord
 
   # Validations: prénom obligatoire (important pour personnaliser les événements)
   validates :first_name, presence: true, length: { maximum: 50 }
-  validates :phone, format: { with: /\A[0-9\s\-\+\(\)]+\z/, message: "format invalide" }, allow_blank: true
+  # Validation téléphone : uniquement 10 chiffres (format français)
+  validates :phone, format: { with: /\A[0-9]{10}\z/, message: "doit contenir exactement 10 chiffres (ex: 0612345678)" }, allow_blank: true
+  
+  # Normaliser le téléphone avant validation (enlever espaces, tirets, etc.)
+  before_validation :normalize_phone, if: :phone_changed?
 
   def self.ransackable_attributes(_auth_object = nil)
     %w[id email first_name last_name phone email_verified role_id created_at updated_at]
@@ -117,6 +121,18 @@ class User < ApplicationRecord
   def set_default_role
     # Priorité au code stable, fallback sur un libellé courant
     self.role ||= Role.find_by(code: "USER") || Role.find_by(name: "Utilisateur") || Role.first
+  end
+
+  def normalize_phone
+    return if phone.blank?
+    # Enlever tous les caractères non numériques
+    self.phone = phone.gsub(/[^0-9]/, '')
+    # Si le numéro commence par +33, remplacer par 0
+    self.phone = "0#{phone[2..-1]}" if phone.start_with?("33") && phone.length == 11
+    # Si le numéro commence par 0033, remplacer par 0
+    self.phone = "0#{phone[3..-1]}" if phone.start_with?("0033") && phone.length == 12
+    # Limiter à 10 chiffres maximum
+    self.phone = phone[0..9] if phone.length > 10
   end
 
   def send_welcome_email_and_confirmation
