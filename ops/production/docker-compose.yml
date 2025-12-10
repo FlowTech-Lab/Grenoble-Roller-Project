@@ -8,10 +8,10 @@
 # - Réseau Docker interne pour communication entre services
 
 services:
-  # Nginx reverse proxy - Point d'entrée unique
-  nginx:
-    image: nginx:alpine
-    container_name: grenoble-roller-nginx-production
+  # Caddy reverse proxy - Point d'entrée unique avec HTTPS automatique
+  caddy:
+    image: caddy:2-alpine
+    container_name: grenoble-roller-caddy-production
     restart: unless-stopped
     ports:
       - "80:80"

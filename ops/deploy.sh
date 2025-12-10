@@ -163,9 +163,28 @@ main() {
     log "🧹 Nettoyage préventif Docker..."
     
     # Arrêter les conteneurs orphelins qui pourraient bloquer les ports
-    log_info "Arrêt des conteneurs orphelins (Caddy/Certbot/Nginx)..."
-    $DOCKER_CMD stop grenoble-roller-caddy-production grenoble-roller-certbot-production 2>/dev/null || true
-    $DOCKER_CMD rm grenoble-roller-caddy-production grenoble-roller-certbot-production 2>/dev/null || true
+    # Ces conteneurs sont des restes d'une ancienne configuration (Nginx/Certbot)
+    # et ne sont plus dans le docker-compose.yml actuel qui utilise Caddy
+    log_info "Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)..."
+    
+    local orphan_found=false
+    
+    # Vérifier et arrêter les anciens conteneurs Nginx/Certbot s'ils existent encore (migration)
+    # Ces conteneurs ne sont plus dans le docker-compose.yml actuel (migration Nginx → Caddy)
+    # Note: Le conteneur Caddy actuel (grenoble-roller-caddy-production) ne doit PAS être arrêté
+    for old_container in "grenoble-roller-nginx-production" "grenoble-roller-certbot-production"; do
+        if $DOCKER_CMD ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${old_container}$"; then
+            log_warning "⚠️  Ancien conteneur détecté (migration Nginx → Caddy) : $old_container"
+            log_info "   Arrêt et suppression de $old_container..."
+            $DOCKER_CMD stop "$old_container" 2>/dev/null || true
+            $DOCKER_CMD rm "$old_container" 2>/dev/null || true
+            orphan_found=true
+        fi
+    done
+    
+    if [ "$orphan_found" = "false" ]; then
+        log_info "✅ Aucun conteneur orphelin détecté (ancienne config propre)"
+    fi
     
     $DOCKER_CMD image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
     $DOCKER_CMD builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
