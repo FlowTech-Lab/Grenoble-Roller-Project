@@ -27,7 +27,15 @@ rollback() {
         cleanup_docker
     fi
     
-    # 1. Arrêter l'app immédiatement (éviter corruption)
+    # 1. Activer le mode maintenance AVANT d'arrêter (évite downtime si possible)
+    log_info "🔒 Activation du mode maintenance avant rollback..."
+    if container_is_running "${CONTAINER_NAME:-}"; then
+        if command -v enable_maintenance_mode > /dev/null 2>&1; then
+            enable_maintenance_mode "${CONTAINER_NAME}" || log_warning "⚠️  Impossible d'activer le mode maintenance"
+        fi
+    fi
+    
+    # 2. Arrêter l'app immédiatement (éviter corruption)
     log_info "🛑 Arrêt de l'application pour éviter corruption..."
     if [ "${BLUE_GREEN_ENABLED:-false}" = "true" ]; then
         $DOCKER_CMD compose -f "${BLUE_GREEN_COMPOSE_FILE}" stop web-blue web-green 2>/dev/null || true
@@ -35,7 +43,7 @@ rollback() {
         $DOCKER_CMD compose -f "${COMPOSE_FILE}" stop "${CONTAINER_NAME}" 2>/dev/null || true
     fi
     
-    # 2. Restaurer DB AVANT le code (ordre critique)
+    # 3. Restaurer DB AVANT le code (ordre critique)
     if [ -n "$backup_file" ] && [ -f "$backup_file" ]; then
         log_info "📦 Restauration DB depuis backup..."
         if ! restore_database_from_backup "$backup_file"; then
@@ -47,7 +55,7 @@ rollback() {
         log_warning "⚠️  Aucun backup disponible - Rollback code uniquement"
     fi
     
-    # 3. Restaurer code
+    # 4. Restaurer code
     log_info "📝 Restauration du code vers ${current_commit:0:7}..."
     if ! git -C "$repo_dir" checkout "$current_commit" 2>/dev/null; then
         log_error "Échec du checkout vers ${current_commit:0:7}"
@@ -63,7 +71,7 @@ rollback() {
         fi
     fi
     
-    # 4. Rebuild et démarrage
+    # 5. Rebuild et démarrage
     log_info "🔨 Rebuild et démarrage avec l'ancienne version..."
     local build_output
     local build_exit_code
@@ -90,7 +98,15 @@ rollback() {
         return 1
     fi
     
-    # 5. Vérification sanity (health check)
+    # 6. Désactiver le mode maintenance après rollback réussi
+    log_info "🔓 Désactivation du mode maintenance..."
+    if container_is_running_stable "$container_to_check"; then
+        if command -v disable_maintenance_mode > /dev/null 2>&1; then
+            disable_maintenance_mode "$container_to_check" || log_warning "⚠️  Impossible de désactiver le mode maintenance"
+        fi
+    fi
+    
+    # 7. Vérification sanity (health check)
     log_info "🔍 Vérification de l'état après rollback..."
     sleep 5  # Attendre le démarrage
     

@@ -89,6 +89,7 @@ source "${LIB_DIR}/health/checks.sh"
 source "${LIB_DIR}/deployment/rollback.sh"
 source "${LIB_DIR}/deployment/metrics.sh"
 source "${LIB_DIR}/deployment/cron.sh"
+source "${LIB_DIR}/deployment/maintenance.sh"
 
 # Blue-green (lazy loading)
 if [ "${BLUE_GREEN_ENABLED:-false}" = "true" ]; then
@@ -168,6 +169,12 @@ main() {
     
     $DOCKER_CMD image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
     $DOCKER_CMD builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
+    
+    # Activer le mode maintenance AVANT le build (évite downtime)
+    if container_is_running "$CONTAINER_NAME"; then
+        log "🔒 Activation du mode maintenance (évite downtime)..."
+        enable_maintenance_mode "$CONTAINER_NAME" || log_warning "⚠️  Impossible d'activer le mode maintenance, continuation..."
+    fi
     
     # 1. Vérifier les mises à jour Git
     log "📥 Vérification des mises à jour (branche: ${BRANCH})..."
@@ -357,17 +364,16 @@ main() {
         log_info "   Le crontab peut être installé manuellement avec: bundle exec whenever --update-crontab"
     fi
     
-    # 11. Health check final avec retry
+    # 11. Désactiver le mode maintenance AVANT le health check
+    log "🔓 Désactivation du mode maintenance..."
+    disable_maintenance_mode "$CONTAINER_NAME" || log_warning "⚠️  Impossible de désactiver le mode maintenance, continuation..."
+    
+    # 12. Health check final avec retry
     log "🏥 Health check complet avec retry..."
     MAX_RETRIES=${HEALTH_CHECK_MAX_RETRIES:-60}
     RETRY_COUNT=0
     
-    if ! command -v curl > /dev/null 2>&1; then
-        log_error "curl n'est pas disponible sur le système"
-        rollback "$CURRENT_COMMIT"
-        exit 1
-    fi
-    
+    # Note: curl n'est pas nécessaire sur l'hôte car le health check teste depuis le conteneur
     sleep ${HEALTH_CHECK_INITIAL_SLEEP:-10}
     
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
@@ -396,7 +402,7 @@ main() {
         fi
     done
     
-    # 12. Rollback si health check échoue
+    # 13. Rollback si health check échoue
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     log_error "Health check échoué après $MAX_RETRIES tentatives"
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

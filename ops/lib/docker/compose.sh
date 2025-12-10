@@ -43,6 +43,15 @@ force_rebuild_without_cache() {
     fi
     
     log_info "✅ Branche vérifiée : ${current_branch} (commit: ${current_commit})"
+    
+    # Activer le mode maintenance AVANT d'arrêter les conteneurs (si possible)
+    if [ -n "$container_name" ] && container_is_running "$container_name"; then
+        if command -v enable_maintenance_mode > /dev/null 2>&1; then
+            log_info "🔒 Activation du mode maintenance avant rebuild..."
+            enable_maintenance_mode "$container_name" || log_warning "⚠️  Impossible d'activer le mode maintenance"
+        fi
+    fi
+    
     log_info "Arrêt des conteneurs..."
     $DOCKER_CMD compose -f "$compose_file" down > /dev/null 2>&1 || true
     

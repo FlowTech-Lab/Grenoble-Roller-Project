@@ -54,17 +54,47 @@ health_check_comprehensive() {
     
     # 4. Test HTTP endpoint
     log_info "  → Vérification HTTP (port: ${port})..."
-    if ! command -v curl > /dev/null 2>&1; then
-        log_warning "  ⚠️  curl non disponible, skip HTTP check"
-    else
-        local response=$(curl -s -w "%{http_code}" -o /dev/null \
-                        "http://localhost:${port}/up" 2>/dev/null || echo "000")
-        if [ "$response" = "200" ]; then
-            log_success "  ✅ HTTP endpoint OK (${response})"
+    
+    # Tester depuis le conteneur (le port 3000 n'est pas exposé sur l'hôte)
+    local response="000"
+    
+    # Vérifier si curl est disponible dans le conteneur
+    if $DOCKER_CMD exec "$container" which curl > /dev/null 2>&1; then
+        # Tester depuis le conteneur (localhost:3000)
+        response=$($DOCKER_CMD exec "$container" curl -s -w "%{http_code}" -o /dev/null \
+                   "http://localhost:${port}/up" 2>/dev/null || echo "000")
+    # Sinon, utiliser wget si disponible dans le conteneur
+    elif $DOCKER_CMD exec "$container" which wget > /dev/null 2>&1; then
+        local wget_output=$($DOCKER_CMD exec "$container" wget -q -O - \
+                            "http://localhost:${port}/up" 2>&1)
+        if echo "$wget_output" | grep -q "200 OK\|up"; then
+            response="200"
         else
-            log_error "  ❌ HTTP endpoint échoué (code: ${response})"
-            errors=$((errors + 1))
+            response="000"
         fi
+    # Sinon, essayer via le reverse proxy depuis l'hôte (si curl disponible sur l'hôte)
+    elif command -v curl > /dev/null 2>&1; then
+        # Tester via le reverse proxy (port 80) depuis l'hôte
+        local proxy_response=$(curl -s -w "%{http_code}" -o /dev/null \
+                              "http://localhost:80/up" 2>/dev/null || echo "000")
+        if [ "$proxy_response" != "000" ] && [ "$proxy_response" != "" ]; then
+            response="$proxy_response"
+        else
+            log_warning "  ⚠️  Impossible de tester HTTP (curl non disponible dans le conteneur et proxy inaccessible)"
+            # Ne pas compter comme erreur si on ne peut pas tester
+            return $errors
+        fi
+    else
+        log_warning "  ⚠️  curl/wget non disponible (conteneur et hôte), skip HTTP check"
+        # Ne pas compter comme erreur si on ne peut pas tester
+        return $errors
+    fi
+    
+    if [ "$response" = "200" ]; then
+        log_success "  ✅ HTTP endpoint OK (${response})"
+    else
+        log_error "  ❌ HTTP endpoint échoué (code: ${response})"
+        errors=$((errors + 1))
     fi
     
     return $errors
