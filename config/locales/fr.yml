@@ -48,4 +48,32 @@ fr:
     formats:
       day_month: "%d %B"
       event_long: "%A %d %B %Y à %Hh%M"
+  
+  activerecord:
+    models:
+      user: "Utilisateur"
+    attributes:
+      user:
+        role: "Rôle"
+        role_id: "Rôle"
+        email: "Email"
+        password: "Mot de passe"
+        first_name: "Prénom"
+        last_name: "Nom"
+        skill_level: "Niveau"
+    errors:
+      models:
+        user:
+          attributes:
+            role:
+              required: "doit être renseigné"
+            role_id:
+              required: "doit être renseigné"
+  
+  errors:
+    messages:
+      required: "doit être renseigné"
+    attributes:
+      role:
+        required: "doit être renseigné"
 
