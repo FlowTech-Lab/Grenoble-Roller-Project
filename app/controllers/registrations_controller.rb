@@ -81,6 +81,26 @@ class RegistrationsController < Devise::RegistrationsController
 
   # Override update_resource pour gérer le changement de mot de passe optionnel
   def update_resource(resource, params)
+    # Gérer les paramètres de date de naissance (3 menus déroulants)
+    if params[:date_of_birth].blank? && params[:date_of_birth_day].present? && params[:date_of_birth_month].present? && params[:date_of_birth_year].present?
+      day = params[:date_of_birth_day].to_i
+      month = params[:date_of_birth_month].to_i
+      year = params[:date_of_birth_year].to_i
+      
+      begin
+        date_of_birth = Date.new(year, month, day)
+        params[:date_of_birth] = date_of_birth.to_s
+      rescue ArgumentError
+        resource.errors.add(:date_of_birth, "est invalide")
+        return false
+      end
+    end
+    
+    # Supprimer les paramètres temporaires
+    params.delete(:date_of_birth_day)
+    params.delete(:date_of_birth_month)
+    params.delete(:date_of_birth_year)
+    
     # Si password et password_confirmation sont vides, mise à jour sans changer le mot de passe
     if params[:password].blank? && params[:password_confirmation].blank?
       # Vérifier quand même current_password pour la sécurité

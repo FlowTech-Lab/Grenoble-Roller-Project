@@ -100,15 +100,50 @@
                 <%= f.label :date_of_birth, "Date de naissance", class: "form-label" do %>
                   <i class="bi bi-calendar3 me-1"></i>Date de naissance
                 <% end %>
-                <%= f.date_field :date_of_birth, 
-                    class: "form-control form-control-liquid", 
-                    value: resource.date_of_birth,
-                    max: Date.today,
-                    min: Date.today - 120.years,
-                    placeholder: "JJ/MM/AAAA" %>
-                <div class="form-text small">
+                <div class="row g-2">
+                  <div class="col-4">
+                    <%= select_tag "user[date_of_birth_day]", 
+                        options_for_select((1..31).map { |d| [d, d] }, resource.date_of_birth&.day), 
+                        { 
+                          prompt: "Jour", 
+                          include_blank: true,
+                          class: "form-select", 
+                          id: "date_of_birth_day_edit",
+                          onchange: "updateEditDateOfBirth()"
+                        } %>
+                  </div>
+                  <div class="col-4">
+                    <%= select_tag "user[date_of_birth_month]", 
+                        options_for_select([
+                          ["Janvier", 1], ["Février", 2], ["Mars", 3], ["Avril", 4],
+                          ["Mai", 5], ["Juin", 6], ["Juillet", 7], ["Août", 8],
+                          ["Septembre", 9], ["Octobre", 10], ["Novembre", 11], ["Décembre", 12]
+                        ], resource.date_of_birth&.month), 
+                        { 
+                          prompt: "Mois", 
+                          include_blank: true,
+                          class: "form-select", 
+                          id: "date_of_birth_month_edit",
+                          onchange: "updateEditDateOfBirth()"
+                        } %>
+                  </div>
+                  <div class="col-4">
+                    <%= select_tag "user[date_of_birth_year]", 
+                        options_for_select(Date.today.year.downto(Date.today.year - 120).map { |y| [y, y] }, resource.date_of_birth&.year), 
+                        { 
+                          prompt: "Année", 
+                          include_blank: true,
+                          class: "form-select",
+                          id: "date_of_birth_year_edit",
+                          onchange: "updateEditDateOfBirth()"
+                        } %>
+                  </div>
+                </div>
+                <%= f.hidden_field :date_of_birth, id: "date_of_birth_edit" %>
+                <div class="form-text small mt-2">
                   <i class="bi bi-info-circle me-1"></i>Nécessaire pour les adhésions
                 </div>
+                <div class="invalid-feedback d-block mt-2" id="date_of_birth_error_edit" style="display: none;"></div>
               </div>
             </div>
 
@@ -404,3 +439,39 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Mettre à jour le champ caché date_of_birth à partir des 3 sélecteurs (profil)
+  function updateEditDateOfBirth() {
+    const day = document.getElementById('date_of_birth_day_edit').value;
+    const month = document.getElementById('date_of_birth_month_edit').value;
+    const year = document.getElementById('date_of_birth_year_edit').value;
+    const hiddenField = document.getElementById('date_of_birth_edit');
+    
+    if (day && month && year) {
+      // Vérifier que la date est valide (ex: pas de 31 février)
+      const date = new Date(year, month - 1, day);
+      if (date.getDate() != day || date.getMonth() != month - 1 || date.getFullYear() != year) {
+        const errorDiv = document.getElementById('date_of_birth_error_edit');
+        if (errorDiv) {
+          errorDiv.textContent = 'Date invalide';
+          errorDiv.style.display = 'block';
+        }
+        hiddenField.value = '';
+        return;
+      }
+      
+      // Format: YYYY-MM-DD pour le champ caché
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      hiddenField.value = dateStr;
+      
+      // Masquer l'erreur si elle existe
+      const errorDiv = document.getElementById('date_of_birth_error_edit');
+      if (errorDiv) {
+        errorDiv.style.display = 'none';
+      }
+    } else {
+      hiddenField.value = '';
+    }
+  }
+</script>
