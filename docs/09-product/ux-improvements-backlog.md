@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **14/41 Quick Wins terminés** (34%) + **2 partiellement faits**
+**Avancement** : **20/41 Quick Wins terminés** (49%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -51,22 +51,22 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 3 : Découverte des Événements**
 - [x] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours) ✅ Implémenté
-- [ ] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes) ⚠️ **ACTUELLEMENT 35 caractères** - À améliorer
+- [x] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes) ✅ **TERMINÉ** (2025-01-30) - Troncature passée de 35 à 50 caractères
 - [x] Ajouter compteur d'événements ("X événements à venir" visible en haut) ✅ Implémenté
 - [x] Refactoriser highlighted_event : intégration dans la grille avec badge "Prochain" ✅ Implémenté (Badge "Prochain" aligné avec badge de date, grille Bootstrap fonctionnelle)
 - [ ] Lien "Voir tous les événements passés" (Si >6 événements passés) ⚠️ **À FAIRE** - Section passés existe mais pas de lien "Voir plus"
 
 ### **Parcours 4 : Inscription à un Événement**
 - [x] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation) ✅ **TERMINÉ** (2025-01-30) - Résumé avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier"
-- [ ] Message de succès personnalisé ("Inscription confirmée ! À bientôt le [date] à [heure]") ⚠️ **À FAIRE** - Message générique actuellement
-- [ ] Indicateur de chargement (Spinner/loader pendant soumission) ⚠️ **À FAIRE** - Pas d'indicateur visible
+- [x] Message de succès personnalisé ("Inscription confirmée ! À bientôt le [date] à [heure]") ✅ **TERMINÉ** (2025-01-30) - Message personnalisé avec date et heure de l'événement
+- [x] Indicateur de chargement (Spinner/loader pendant soumission) ✅ **TERMINÉ** (2025-01-30) - Spinner Bootstrap avec texte "Inscription en cours..." pendant la soumission
 - [x] Alerte "Presque complet" (Si ≤5 places, alerte dans la modal) ✅ **PARTIELLEMENT FAIT** - Badge visible sur card mais pas dans modal
 
 ### **Parcours 5 : Gestion de Mes Inscriptions**
-- [ ] Séparer événements à venir et passés (Section "À venir" et "Passés" avec compteurs) ⚠️ **À FAIRE** - Tous mélangés actuellement
-- [ ] Badge "Passé" (Badge distinctif pour les événements passés) ⚠️ **À FAIRE** - Pas de badge distinctif
+- [x] Séparer événements à venir et passés (Section "À venir" et "Passés" avec compteurs) ✅ **TERMINÉ** (2025-01-30) - Sections séparées avec compteurs et badges distinctifs
+- [x] Badge "Passé" (Badge distinctif pour les événements passés) ✅ **TERMINÉ** (2025-01-30) - Badge `badge-liquid-secondary` appliqué via paramètre `past: true`
 - [ ] Indicateur rappel dans la liste (Badge "Rappel activé" / "Rappel désactivé" sur chaque card) ⚠️ **À FAIRE** - Rappel visible sur page détail mais pas dans liste
-- [ ] Compteur d'inscriptions ("X sorties à venir" visible en haut) ⚠️ **À FAIRE** - Pas de compteur visible
+- [x] Compteur d'inscriptions ("X sorties à venir" visible en haut) ✅ **TERMINÉ** (2025-01-30) - Compteurs "X sorties" affichés dans chaque section (À venir / Passés)
 
 ### **Parcours 6 : Création d'un Événement**
 - [ ] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie)
@@ -278,9 +278,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Effort : Très faible (ajout `*` dans labels)
    - **Status** : Classe `.required` sur labels + légende "Champs obligatoires" avec `*`
 
-5. **Séparer événements à venir/passés** (Parcours 5)
+5. **Séparer événements à venir/passés** (Parcours 5) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (organisation claire de "Mes sorties")
    - Effort : Faible (2 sections avec filtres)
+   - **Status** : Sections "À venir" et "Passés" séparées avec compteurs et badges distinctifs
 
 6. **Filtres par catégories boutique** (Parcours 7)
    - Impact : Haut (navigation facilitée dans le catalogue)
@@ -610,13 +611,13 @@ Une user story est "Done" quand :
 - ✅ Audit trail (modèle `AuditLog` existe, interface à améliorer)
 
 **Avancement actuel** :
-- ✅ **14 Quick Wins terminés (34%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30)
+- ✅ **20 Quick Wins terminés (49%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30)
 - 🟡 **2 partiellement faits** : Alerte "Presque complet" (badge sur card mais pas dans modal), Pages footer (FAQ et Équipe manquantes)
-- ⏳ **25 Quick Wins en attente (66%)**
+- ⏳ **19 Quick Wins en attente (51%)**
 
 **Phases globales** :
 - ✅ **Phase 0 (Accessibilité)** : 100% - Corrections critiques terminées
-- ⏳ **Phase 1 (Quick Wins)** : 34% - 14/41 terminés, 2 partiellement faits
+- ⏳ **Phase 1 (Quick Wins)** : 49% - 20/41 terminés, 2 partiellement faits
 - ✅ **Phase 2 (HelloAsso)** : 90% - Checkout & polling fonctionnels
 - ✅ **Phase 3 (Adhésions)** : 95% - Formulaire multi-étapes complet
 - ✅ **Phase 4 (Événements)** : 95% - Fonctionnalités core complètes

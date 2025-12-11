@@ -304,7 +304,7 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false } do |f| %>
+        <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false }, id: "attendFormShow", class: "attend-form" do |f| %>
           <div class="modal-body">
             <p class="lead mb-3">
               Confirmez votre participation à <strong><%= @event.title %></strong>
@@ -371,9 +371,24 @@
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-            <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", data: { bs_dismiss: "modal" } %>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelBtnShow">Annuler</button>
+            <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", id: "submitBtnShow", data: { bs_dismiss: "modal" } %>
           </div>
+          <script>
+            (function() {
+              var formShow = document.getElementById('attendFormShow');
+              var submitBtnShow = document.getElementById('submitBtnShow');
+              var cancelBtnShow = document.getElementById('cancelBtnShow');
+              
+              if (formShow && submitBtnShow) {
+                formShow.addEventListener('submit', function() {
+                  submitBtnShow.disabled = true;
+                  submitBtnShow.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Inscription en cours...';
+                  if (cancelBtnShow) cancelBtnShow.disabled = true;
+                });
+              }
+            })();
+          </script>
         <% end %>
       </div>
     </div>

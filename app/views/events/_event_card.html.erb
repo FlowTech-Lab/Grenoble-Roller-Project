@@ -32,7 +32,7 @@
           </p>
           <p class="mb-1">
             <i class="bi bi-geo-alt text-liquid-primary me-2" aria-hidden="true"></i>
-            <%= truncate(event.location_text, length: 35) %>
+            <%= truncate(event.location_text, length: 50) %>
           </p>
           <p class="mb-1">
             <i class="bi bi-signpost-2 text-liquid-primary me-2" aria-hidden="true"></i>
@@ -47,6 +47,12 @@
         <p class="text-muted small mb-3"><%= truncate(event.description, length: 100, omission: '...') %></p>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Passé (si événement passé) -->
+          <% if (defined?(past) && past) || event.past? %>
+            <span class="badge badge-liquid-secondary">
+              <i class="bi bi-archive me-1" aria-hidden="true"></i>Passé
+            </span>
+          <% end %>
           <!-- Badge Annulé (prioritaire) -->
           <% if event.canceled? %>
             <span class="badge bg-danger">
@@ -198,7 +204,7 @@
             </h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
           </div>
-          <%= form_with url: attend_event_path(event), method: :post, data: { turbo: false } do |f| %>
+          <%= form_with url: attend_event_path(event), method: :post, data: { turbo: false }, id: "attendForm#{event.id}", class: "attend-form" do |f| %>
             <div class="modal-body">
               <p class="lead mb-3">
                 Confirmez votre participation à <strong><%= event.title %></strong>
@@ -265,9 +271,25 @@
               </p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-              <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", data: { bs_dismiss: "modal" } %>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelBtn<%= event.id %>">Annuler</button>
+              <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", id: "submitBtn#{event.id}", data: { bs_dismiss: "modal" } %>
             </div>
+            <script>
+              (function() {
+                var eventId = <%= event.id %>;
+                var form = document.getElementById('attendForm' + eventId);
+                var submitBtn = document.getElementById('submitBtn' + eventId);
+                var cancelBtn = document.getElementById('cancelBtn' + eventId);
+                
+                if (form && submitBtn) {
+                  form.addEventListener('submit', function() {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Inscription en cours...';
+                    if (cancelBtn) cancelBtn.disabled = true;
+                  });
+                }
+              })();
+            </script>
           <% end %>
         </div>
       </div>

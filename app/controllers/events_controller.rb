@@ -104,7 +104,8 @@ class EventsController < ApplicationController
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       if attendance.save
         EventMailer.attendance_confirmed(attendance).deliver_later
-        redirect_to @event, notice: "Inscription confirmée."
+        event_date = l(@event.start_at, format: :event_long, locale: :fr)
+        redirect_to @event, notice: "Inscription confirmée ! À bientôt le #{event_date}."
       else
         redirect_to @event, alert: attendance.errors.full_messages.to_sentence
       end
