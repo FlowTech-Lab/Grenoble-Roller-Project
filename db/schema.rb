@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_11_222505) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
   end
 
   create_table "attendances", force: :cascade do |t|
+    t.bigint "child_membership_id"
     t.datetime "created_at", null: false
     t.text "equipment_note"
     t.bigint "event_id", null: false
@@ -68,6 +69,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.boolean "wants_reminder", default: false, null: false
+    t.index ["child_membership_id"], name: "index_attendances_on_child_membership_id"
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
@@ -387,6 +389,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "attendances", "events"
+  add_foreign_key "attendances", "memberships", column: "child_membership_id"
   add_foreign_key "attendances", "payments"
   add_foreign_key "attendances", "users"
   add_foreign_key "audit_logs", "users", column: "actor_user_id"

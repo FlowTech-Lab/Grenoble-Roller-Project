@@ -102,6 +102,7 @@ Rails.application.routes.draw do
     member do
       post :attend
       delete :cancel_attendance
+      get :ical, defaults: { format: "ics" }
     end
   end
 

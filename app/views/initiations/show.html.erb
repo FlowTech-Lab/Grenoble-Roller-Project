@@ -157,20 +157,63 @@
       </section>
 
       <!-- Zone inscription/annulation -->
-      <% if user_signed_in? && @user_attendance %>
-        <div class="alert alert-success mb-4" role="alert">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
-              <strong>Vous êtes inscrit(e) à cette séance</strong>
-              <p class="mb-0 small">Un rappel vous sera envoyé la veille à 19h.</p>
-            </div>
-            <%= button_to cancel_attendance_initiation_path(@initiation), 
-                method: :delete, 
-                class: "btn btn-outline-danger btn-sm", 
-                data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
-                aria: { label: 'Se désinscrire de cette initiation' } do %>
-              <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+      <% if user_signed_in? && (@user_attendance || @child_attendances&.any?) %>
+        <!-- Affichage des inscriptions existantes -->
+        <div class="card card-liquid shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 mb-3">
+              <i class="bi bi-check-circle text-success me-2" aria-hidden="true"></i>
+              Inscriptions confirmées
+            </h3>
+            
+            <!-- Inscription parent -->
+            <% if @user_attendance %>
+              <div class="alert alert-success mb-3" role="alert">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
+                    <strong>Vous êtes inscrit(e)</strong>
+                    <p class="mb-0 small">Un rappel email vous sera envoyé la veille à 19h.</p>
+                  </div>
+                  <%= button_to cancel_attendance_initiation_path(@initiation), 
+                      method: :delete, 
+                      class: "btn btn-outline-danger btn-sm", 
+                      data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
+                      aria: { label: 'Se désinscrire' } do %>
+                    <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Inscriptions enfants -->
+            <% if @child_attendances&.any? %>
+              <% @child_attendances.each do |child_attendance| %>
+                <div class="alert alert-info mb-3" role="alert">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                      <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
+                      <strong><%= child_attendance.participant_name %> est inscrit(e)</strong>
+                      <p class="mb-0 small">Un rappel email vous sera envoyé la veille à 19h.</p>
+                    </div>
+                    <%= button_to cancel_attendance_initiation_path(@initiation), 
+                        method: :delete, 
+                        params: { child_membership_id: child_attendance.child_membership_id },
+                        class: "btn btn-outline-danger btn-sm", 
+                        data: { turbo_confirm: "Annuler l'inscription de #{child_attendance.participant_name} ?" },
+                        aria: { label: "Désinscrire #{child_attendance.participant_name}" } do %>
+                      <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+
+            <!-- Formulaire pour inscrire un enfant supplémentaire -->
+            <% if @can_register_child %>
+              <div class="mt-4 pt-3 border-top">
+                <%= render 'initiations/child_registration_form', initiation: @initiation %>
+              </div>
             <% end %>
           </div>
         </div>

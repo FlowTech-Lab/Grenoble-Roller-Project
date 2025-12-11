@@ -23,7 +23,7 @@
               child_memberships, 
               :id, 
               ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
-              { prompt: "S'inscrire pour moi-même", include_blank: true }, 
+              { prompt: "S'inscrire pour moi-même" }, 
               { class: "form-select" } %>
           <small class="text-muted">Laissez vide pour vous inscrire vous-même</small>
         </div>
@@ -38,7 +38,7 @@
             placeholder: "Ex: Demande rollers taille 40" %>
         <small class="text-muted">
           <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-          Votre demande sera transmise au staff via WhatsApp
+          Sous réserve de disponibilité du matériel.
         </small>
       </div>
 

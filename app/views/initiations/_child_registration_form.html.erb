@@ -1,0 +1,62 @@
+<div class="card card-liquid shadow-sm">
+  <div class="card-body p-3">
+    <h4 class="h6 mb-3">
+      <i class="bi bi-person-plus text-liquid-primary me-2" aria-hidden="true"></i>
+      Inscrire un enfant supplémentaire
+    </h4>
+
+    <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
+      <!-- Sélection enfant -->
+      <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
+      <% registered_child_ids = @child_attendances&.pluck(:child_membership_id).compact || [] %>
+      <% available_children = child_memberships.where.not(id: registered_child_ids) %>
+      
+      <% if available_children.any? %>
+        <div class="mb-3">
+          <%= f.label :child_membership_id, "Sélectionner un enfant", class: "form-label" %>
+          <%= f.collection_select :child_membership_id, 
+              available_children, 
+              :id, 
+              ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
+              { prompt: "Choisir un enfant" }, 
+              { class: "form-select", required: true } %>
+        </div>
+
+        <!-- Demande matériel -->
+        <div class="mb-3">
+          <%= f.label :equipment_note, "Demande de matériel (optionnel)", class: "form-label" %>
+          <%= f.text_area :equipment_note, 
+              class: "form-control", 
+              rows: 2,
+              placeholder: "Ex: Demande rollers taille 32" %>
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            Sous réserve de disponibilité du matériel.
+          </small>
+        </div>
+
+        <!-- Rappel email -->
+        <div class="mb-3 form-check">
+          <%= f.check_box :wants_reminder, { checked: true, class: "form-check-input" }, "1", "0" %>
+          <%= f.label :wants_reminder, class: "form-check-label" do %>
+            <i class="bi bi-bell me-1" aria-hidden="true"></i>
+            Recevoir un rappel email la veille à 19h
+          <% end %>
+        </div>
+
+        <!-- Bouton submit -->
+        <div class="d-grid">
+          <%= f.submit "Inscrire cet enfant", 
+              class: "btn btn-liquid-primary",
+              data: { disable_with: "Inscription en cours..." } %>
+        </div>
+      <% else %>
+        <p class="text-muted mb-0">
+          <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+          Tous vos enfants sont déjà inscrits à cette séance.
+        </p>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
