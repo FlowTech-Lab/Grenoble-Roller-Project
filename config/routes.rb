@@ -94,6 +94,7 @@ Rails.application.routes.draw do
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
       get :loop_routes, defaults: { format: "json" }
+      patch :reject
     end
   end
 

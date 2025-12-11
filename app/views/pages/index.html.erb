@@ -290,6 +290,23 @@
                     Confirmez votre participation à <strong><%= @highlighted_event.title %></strong>
                   </p>
                   
+                  <!-- Sélection enfant si applicable -->
+                  <% if user_signed_in? %>
+                    <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
+                    <% if child_memberships.any? %>
+                      <div class="mb-3">
+                        <%= f.label :child_membership_id, "S'inscrire pour un enfant (optionnel)", class: "form-label" %>
+                        <%= f.collection_select :child_membership_id, 
+                            child_memberships, 
+                            :id, 
+                            ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
+                            { prompt: "S'inscrire pour moi-même" }, 
+                            { class: "form-select" } %>
+                        <small class="text-muted">Laissez vide pour vous inscrire vous-même</small>
+                      </div>
+                    <% end %>
+                  <% end %>
+                  
                   <div class="form-check mb-3">
                     <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
                     <label class="form-check-label" for="wants_reminder">

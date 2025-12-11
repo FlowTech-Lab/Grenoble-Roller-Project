@@ -112,7 +112,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
 
     panel "Actions" do
       div do
-        link_to "Voir les présences", presences_admin_initiation_path(initiation), class: "button"
+        link_to "Voir les présences", presences_activeadmin_initiation_path(initiation), class: "button"
       end
     end
   end
@@ -174,7 +174,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       end
     end
 
-    redirect_to presences_admin_initiation_path(@initiation), notice: "Présences mises à jour avec succès."
+    redirect_to presences_activeadmin_initiation_path(@initiation), notice: "Présences mises à jour avec succès."
   end
 
   controller do

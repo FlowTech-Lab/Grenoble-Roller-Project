@@ -29,6 +29,11 @@ class EventPolicy < ApplicationPolicy
     admin? || owner?
   end
 
+  def reject?
+    # Seuls les modérateurs et admins peuvent refuser un événement
+    admin? || moderator?
+  end
+
   def attend?
     return false unless user.present?
     return false if record.full?

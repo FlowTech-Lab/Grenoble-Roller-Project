@@ -173,7 +173,6 @@
                   <div>
                     <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
                     <strong>Vous êtes inscrit(e)</strong>
-                    <p class="mb-0 small">Un rappel email vous sera envoyé la veille à 19h.</p>
                   </div>
                   <%= button_to cancel_attendance_initiation_path(@initiation), 
                       method: :delete, 
@@ -194,7 +193,6 @@
                     <div>
                       <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
                       <strong><%= child_attendance.participant_name %> est inscrit(e)</strong>
-                      <p class="mb-0 small">Un rappel email vous sera envoyé la veille à 19h.</p>
                     </div>
                     <%= button_to cancel_attendance_initiation_path(@initiation), 
                         method: :delete, 
@@ -215,8 +213,43 @@
                 <%= render 'initiations/child_registration_form', initiation: @initiation %>
               </div>
             <% end %>
+            
+            <!-- Note importante pour les initiations enfants -->
+            <% if @child_attendances&.any? %>
+              <div class="alert alert-warning mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+                <strong>Important :</strong> Pour les initiations enfants, la présence d'un adulte sur place est obligatoire. 
+                L'adulte n'a pas besoin de s'inscrire s'il ne pratique pas.
+              </div>
+            <% end %>
           </div>
         </div>
+        
+        <!-- Notification rappel globale (uniquement si inscrit) -->
+        <% if @user_attendance || @child_attendances&.any? %>
+          <% any_reminder_active = (@user_attendance&.wants_reminder? || @child_attendances&.any? { |a| a.wants_reminder? }) %>
+          <% if any_reminder_active %>
+            <div class="alert alert-info alert-reminder mb-4 border-start border-info border-4" role="alert">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-bell-fill me-2 mt-1 text-info" aria-hidden="true"></i>
+                <div class="flex-grow-1">
+                  <strong class="d-block mb-1">Rappel activé</strong>
+                  <p class="mb-2 small text-muted">Vous recevrez un email la veille à 19h pour vous rappeler la séance.</p>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="alert alert-light border border-warning mb-4" role="alert">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-bell me-2 mt-1 text-warning" aria-hidden="true"></i>
+                <div class="flex-grow-1">
+                  <strong class="d-block mb-1">Rappel désactivé</strong>
+                  <p class="mb-2 small text-muted">Le rappel peut être activé lors de l'inscription.</p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
       <% elsif @can_register %>
         <%= render 'initiations/registration_form', initiation: @initiation %>
       <% elsif !user_signed_in? %>
