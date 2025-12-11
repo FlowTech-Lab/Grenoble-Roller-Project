@@ -8,7 +8,16 @@ class EventsController < ApplicationController
     scoped_events = policy_scope(Event.includes(:route, :creator_user))
     # Seuls les événements publiés sont visibles pour les utilisateurs normaux
     @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
-    @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
+    
+    # Compter le total d'événements passés
+    @past_events_total = scoped_events.visible.past.count
+    
+    # Afficher tous les événements passés si show_all_past=true, sinon limiter à 6
+    if params[:show_all_past] == 'true'
+      @past_events = scoped_events.visible.past.order(start_at: :desc)
+    else
+      @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
+    end
   end
 
   def show

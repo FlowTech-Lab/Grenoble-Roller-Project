@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **24/41 Quick Wins terminés** (59%) + **2 partiellement faits**
+**Avancement** : **26/41 Quick Wins terminés** (63%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -54,7 +54,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes) ✅ **TERMINÉ** (2025-01-30) - Troncature passée de 35 à 50 caractères
 - [x] Ajouter compteur d'événements ("X événements à venir" visible en haut) ✅ Implémenté
 - [x] Refactoriser highlighted_event : intégration dans la grille avec badge "Prochain" ✅ Implémenté (Badge "Prochain" aligné avec badge de date, grille Bootstrap fonctionnelle)
-- [ ] Lien "Voir tous les événements passés" (Si >6 événements passés) ⚠️ **À FAIRE** - Section passés existe mais pas de lien "Voir plus"
+- [x] Lien "Voir tous les événements passés" (Si >6 événements passés) ✅ **TERMINÉ** (2025-01-30) - Lien conditionnel affiché si >6 événements, badge avec compteur total, bouton "Voir moins" pour réduire
 
 ### **Parcours 4 : Inscription à un Événement**
 - [x] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation) ✅ **TERMINÉ** (2025-01-30) - Résumé avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier"
