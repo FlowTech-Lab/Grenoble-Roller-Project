@@ -2,6 +2,25 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-01-20] - Correction scripts de déploiement : exclusion fichiers de logs
+
+### Corrigé
+- **Vérification post-pull dans les scripts de déploiement** :
+  - Les fichiers de logs (`logs/` et `ops/logs/`) sont maintenant exclus de la vérification Git
+  - Les fichiers de logs peuvent être créés/modifiés sans bloquer le déploiement
+  - Les autres modifications non commitées continuent de bloquer le déploiement (comportement attendu)
+  - **Impact** : Évite les blocages inutiles lors des déploiements automatiques
+
+### Fichiers modifiés
+- `ops/staging/deploy.sh` (ligne 248-249)
+- `ops/production/deploy.sh` (ligne 248-249)
+
+### Détails techniques
+- **AVANT** : `GIT_STATUS=$(git status --porcelain 2>/dev/null || echo "")`
+- **APRÈS** : `GIT_STATUS=$(git status --porcelain 2>/dev/null | grep -vE "(logs/|ops/logs/)" || echo "")`
+- Les fichiers de logs sont ignorés par Git (`.gitignore`) mais peuvent apparaître dans `git status` s'ils sont créés/modifiés localement
+- La commande `grep -vE` filtre les lignes contenant `logs/` ou `ops/logs/` pour exclure ces fichiers de la vérification
+
 ## [2025-12-07] - Finalisation Complète Feature Email (OrderMailer + Tests)
 
 ### Ajouté

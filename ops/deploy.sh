@@ -245,8 +245,8 @@ main() {
         exit 1
     fi
     
-    # Vérification post-pull
-    GIT_STATUS=$(git status --porcelain 2>/dev/null || echo "")
+    # Vérification post-pull (exclure les fichiers de logs qui sont ignorés par Git)
+    GIT_STATUS=$(git status --porcelain 2>/dev/null | grep -vE "(logs/|ops/logs/)" || echo "")
     if [ -n "$GIT_STATUS" ]; then
         log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         log_error "⚠️  CONFLITS OU CHANGEMENTS NON COMMITTÉS DÉTECTÉS"
