@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **28/41 Quick Wins terminés** (68%) + **2 partiellement faits**
+**Avancement** : **29/41 Quick Wins terminés** (71%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -130,7 +130,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 4 : Inscription à un Événement**
 - [ ] Prévisualisation email (Aperçu de l'email de confirmation dans la modal) ⚠️ **À FAIRE** - Pas de prévisualisation
-- [ ] Conditions d'annulation claires (Mentionner "Vous pouvez annuler jusqu'à [X heures] avant") ⚠️ **À FAIRE** - Message générique seulement
+- [x] Conditions d'annulation claires (Mentionner "Vous pouvez annuler jusqu'à [X heures] avant") ✅ **TERMINÉ** (2025-01-30) - Message amélioré : "Vous pouvez vous réinscrire plus tard si vous le souhaitez" dans toutes les confirmations d'annulation (événements et initiations)
 - [ ] Confirmation en deux étapes (Étape 1 modal → Étape 2 page de confirmation) ⚠️ **À FAIRE** - Modal directe seulement
 - [ ] Rappel des informations GPS (Si coordonnées GPS, rappeler dans la modal avec liens) ⚠️ **À FAIRE** - Pas de rappel GPS dans modal
 - [ ] Notification push (optionnel) (Demander permission pour notifications push) ⚠️ **À FAIRE** - Pas de notifications push

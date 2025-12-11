@@ -134,7 +134,7 @@
                 <!-- Se désinscrire en second (action destructive) -->
                 <%= button_to cancel_attendance_event_path(event), method: :delete, 
                     class: "btn btn-outline-secondary btn-sm", 
-                    data: { turbo_confirm: 'Annuler votre inscription ?' },
+                    data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
                     aria: { label: 'Se désinscrire de cet événement' } do %>
                   <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
                 <% end %>

@@ -203,7 +203,7 @@
                     <div class="d-grid mb-3">
                       <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, 
                           class: 'btn btn-outline-secondary btn-lg', 
-                          data: { turbo_confirm: 'Annuler votre inscription ?' },
+                          data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
                           aria: { label: 'Se désinscrire de cet événement' } do %>
                         <i class="bi bi-calendar-x me-2"></i>Se désinscrire
                       <% end %>
