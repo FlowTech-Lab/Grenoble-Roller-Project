@@ -65,7 +65,6 @@ admin = User.new(
   phone: "0698765432",
   role: admin_role,
   skill_level: "advanced",
-  email_verified: true,
   confirmed_at: Time.now  # Confirmation automatique pour admin
 )
 admin.skip_confirmation_notification!
@@ -83,7 +82,6 @@ florian = User.new(
   phone: "0652556832",
   role: superadmin_role,
   skill_level: "advanced",
-  email_verified: true,
   confirmed_at: Time.now  # Confirmation automatique pour superadmin
 )
 florian.skip_confirmation_notification!
@@ -108,7 +106,6 @@ skill_levels = [ "beginner", "intermediate", "advanced" ]
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
     skill_level: skill_levels.sample,
-    email_verified: confirmed,
     confirmed_at: confirmed ? (Time.now - rand(0..7).days) : nil,  # Confirmation à des dates variées
     created_at: Time.now - rand(1..30).days,
     updated_at: Time.now
