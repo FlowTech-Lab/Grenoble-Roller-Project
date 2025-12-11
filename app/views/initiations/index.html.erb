@@ -91,9 +91,51 @@
         </div>
       </div>
     <% else %>
-      <div class="alert alert-info border-0 shadow-sm">
-        <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-        Aucune séance d'initiation planifiée pour le moment — de nouvelles séances seront bientôt disponibles !
+      <div class="card card-liquid border-liquid shadow-sm">
+        <div class="card-body p-4 p-md-5 text-center">
+          <i class="bi bi-mortarboard fs-1 text-muted mb-3 d-block" aria-hidden="true"></i>
+          <h3 class="h5 fw-bold mb-3">Aucune séance d'initiation à venir</h3>
+          
+          <% if user_signed_in? %>
+            <% if policy(Event::Initiation.new).create? %>
+              <p class="text-body-secondary mb-4">
+                Il n'y a pas encore de séance d'initiation planifiée. En tant qu'administrateur, vous pouvez créer la première séance !
+              </p>
+              <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+                <%= link_to new_initiation_path, class: "btn btn-liquid-primary" do %>
+                  <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Créer une séance d'initiation
+                <% end %>
+                <%= link_to events_path, class: "btn btn-outline-primary" do %>
+                  <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Voir les événements
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-body-secondary mb-4">
+                Aucune séance d'initiation n'est prévue pour le moment. Revenez bientôt pour découvrir les prochaines séances !
+              </p>
+              <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+                <%= link_to events_path, class: "btn btn-liquid-primary" do %>
+                  <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Voir les événements
+                <% end %>
+                <%= link_to about_path, class: "btn btn-outline-secondary" do %>
+                  <i class="bi bi-info-circle me-2" aria-hidden="true"></i>En savoir plus sur l'association
+                <% end %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-body-secondary mb-4">
+              Aucune séance d'initiation n'est prévue pour le moment. Connectez-vous pour être informé des prochaines séances !
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+              <%= link_to new_user_session_path, class: "btn btn-liquid-primary" do %>
+                <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Se connecter
+              <% end %>
+              <%= link_to events_path, class: "btn btn-outline-primary" do %>
+                <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Voir les événements
+              <% end %>
+            </div>
+          <% end %>
+        </div>
       </div>
     <% end %>
   </div>
