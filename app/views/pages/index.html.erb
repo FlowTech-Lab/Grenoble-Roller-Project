@@ -42,6 +42,29 @@
     </div>
 </div>
 
+<!-- Section À propos -->
+<section class="py-5 section-alt">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="h3 fw-bold mb-3">
+          <i class="bi bi-heart-fill text-liquid-primary me-2" aria-hidden="true"></i>
+          À propos de Grenoble Roller
+        </h2>
+        <p class="lead text-body-secondary mb-4">
+          Association loi 1901, nous organisons des randonnées urbaines encadrées 
+          pour favoriser le lien social dans un esprit convivial et sportif. 
+          Rejoignez une communauté passionnée depuis plus de 15 ans !
+        </p>
+        <%= link_to about_path, class: "btn btn-liquid-primary" do %>
+          <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
+          En savoir plus sur l'association
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="container pb-5">
   <% if @highlighted_event.present? %>
     <div class="mb-5">

@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **20/41 Quick Wins terminés** (49%) + **2 partiellement faits**
+**Avancement** : **21/41 Quick Wins terminés** (51%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -39,7 +39,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 1 : Découverte de l'Association**
 - [x] ⚠️ **URGENT : Corriger les liens morts du footer** ✅ **TERMINÉ** - Tous les liens principaux fonctionnent (Contact, CGU, Confidentialité, Mentions Légales, CGV)
-- [x] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus") ✅ Section "Pourquoi nous rejoindre ?" + lien vers `/a-propos`
+- [x] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus") ✅ **TERMINÉ** (2025-01-30) - Section dédiée "À propos de Grenoble Roller" ajoutée juste après le hero banner avec description concise et CTA vers page complète
 - [x] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer") ✅ Implémenté
 - [x] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés") ✅ Bloc "Chiffres clés" (4 stats) sur la homepage et sur `/a-propos`
 
@@ -269,9 +269,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Effort : Faible (cards simples avec compteurs)
    - **Status** : Dashboard complet avec stats Événements, Utilisateurs, Commandes, Revenus, Boutique
 
-3. **Section "À propos" sur homepage** (Parcours 1)
+3. **Section "À propos" sur homepage** (Parcours 1) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (visiteurs comprennent mieux l'association)
    - Effort : Faible (2-3 lignes + lien)
+   - **Status** : Section ajoutée juste après le hero banner avec description concise et lien vers page complète
 
 4. **Astérisques champs obligatoires** (Parcours 2) ✅ **TERMINÉ**
    - Impact : Haut (clarté immédiate pour utilisateurs)
@@ -611,13 +612,13 @@ Une user story est "Done" quand :
 - ✅ Audit trail (modèle `AuditLog` existe, interface à améliorer)
 
 **Avancement actuel** :
-- ✅ **20 Quick Wins terminés (49%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30)
+- ✅ **21 Quick Wins terminés (51%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30), **Section "À propos" homepage** ✅ (2025-01-30)
 - 🟡 **2 partiellement faits** : Alerte "Presque complet" (badge sur card mais pas dans modal), Pages footer (FAQ et Équipe manquantes)
-- ⏳ **19 Quick Wins en attente (51%)**
+- ⏳ **18 Quick Wins en attente (49%)**
 
 **Phases globales** :
 - ✅ **Phase 0 (Accessibilité)** : 100% - Corrections critiques terminées
-- ⏳ **Phase 1 (Quick Wins)** : 49% - 20/41 terminés, 2 partiellement faits
+- ⏳ **Phase 1 (Quick Wins)** : 51% - 21/41 terminés, 2 partiellement faits
 - ✅ **Phase 2 (HelloAsso)** : 90% - Checkout & polling fonctionnels
 - ✅ **Phase 3 (Adhésions)** : 95% - Formulaire multi-étapes complet
 - ✅ **Phase 4 (Événements)** : 95% - Fonctionnalités core complètes
