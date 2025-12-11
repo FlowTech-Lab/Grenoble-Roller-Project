@@ -1,8 +1,14 @@
 Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
-  # Route pour le toggle du mode maintenance (controller personnalisé)
-  post "/admin/maintenance/toggle", to: "admin/maintenance_toggle#toggle", as: "admin_maintenance_toggle"
+  # Ressource REST pour le mode maintenance
+  namespace :activeadmin do
+    resource :maintenance, only: [:update], controller: "admin/maintenance_toggle" do
+      member do
+        patch :toggle
+      end
+    end
+  end
 
   # Page maintenance simple (optionnel, pour tests)
   get "/maintenance", to: proc { |env|

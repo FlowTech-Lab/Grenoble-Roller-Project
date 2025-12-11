@@ -26,11 +26,11 @@ class User < ApplicationRecord
   before_validation :set_default_role, on: :create
   after_create :send_welcome_email_and_confirmation
 
-  # Permettre l'authentification même si l'email n'est pas confirmé
-  # On vérifiera dans le contrôleur et on redirigera si nécessaire
-  # Cela permet d'afficher un message clair et de rediriger vers la page de confirmation
+  # Bloquer l'authentification si l'email n'est pas confirmé
+  # En développement/test, on permet quand même pour faciliter les tests
   def active_for_authentication?
-    super # Permettre l'authentification pour pouvoir vérifier après
+    return super if Rails.env.development? || Rails.env.test?
+    super && confirmed?
   end
 
   # Message personnalisé si compte non actif
@@ -66,7 +66,7 @@ class User < ApplicationRecord
   before_validation :normalize_phone, if: :phone_changed?
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id email first_name last_name phone email_verified role_id created_at updated_at]
+    %w[id email unconfirmed_email first_name last_name phone email_verified role_id created_at updated_at confirmed_at date_of_birth city address postal_code]
   end
 
   def self.ransackable_associations(_auth_object = nil)
@@ -149,4 +149,5 @@ class User < ApplicationRecord
       raise e unless Rails.env.test? || e.message.include?("mapping")
     end
   end
+
 end

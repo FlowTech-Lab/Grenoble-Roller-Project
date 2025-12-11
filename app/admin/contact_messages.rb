@@ -24,13 +24,17 @@ ActiveAdmin.register ContactMessage do
 
   show do
     attributes_table do
+      row :id
       row :name
-      row :email
+      row :email do |message|
+        mail_to(message.email, message.email)
+      end
       row :subject
       row :message do |record|
         simple_format(record.message)
       end
       row :created_at
+      row :updated_at
     end
   end
 end
