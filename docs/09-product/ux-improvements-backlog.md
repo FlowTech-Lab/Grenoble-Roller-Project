@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **32/41 Quick Wins terminés** (78%) + **2 partiellement faits**
+**Avancement** : **33/41 Quick Wins terminés** (80%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -70,7 +70,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 6 : Création d'un Événement**
 - [x] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie) ✅ **TERMINÉ** (2025-01-30) - Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée 7 jours, restauration et nettoyage automatiques
-- [ ] Validation en temps réel (Vérifier les champs au blur)
+- [x] Validation en temps réel (Vérifier les champs au blur) ✅ **TERMINÉ** (2025-01-30) - Validation harmonisée avec formulaires d'adhésion, feedback immédiat au blur, validation titre (maxlength), description, date (futur), nombres (min), select (niveau)
 - [ ] Indicateur de progression (Barre "Étape 1/1" ou compteur de champs remplis)
 - [x] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?") ✅ **TERMINÉ** (2025-01-30) - Confirmation Turbo ajoutée uniquement pour la création (pas pour la modification)
 

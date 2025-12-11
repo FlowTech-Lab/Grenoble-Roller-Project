@@ -26,7 +26,8 @@
         <%= form_with(model: event, html: { class: 'row g-3', multipart: true, data: { controller: 'event-form' } }) do |f| %>
           <div class="col-12">
             <%= f.label :title, "Titre", class: "form-label" %>
-            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble" %>
+            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble", onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <!-- Le statut n'est pas modifiable par l'organisateur, seulement par les modérateurs dans Active Admin -->
@@ -120,7 +121,9 @@
                 { include_blank: "Sélectionnez un niveau" },
                 class: "form-select form-select-liquid",
                 data: { event_form_target: "levelSelect" },
-                required: true %>
+                required: true,
+                onchange: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
           
           <div class="col-12 col-md-6">
@@ -136,7 +139,9 @@
                   event_form_target: "distanceInput",
                   action: "input->event-form#distanceChanged"
                 },
-                required: true %>
+                required: true,
+                onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Distance d'une boucle en kilomètres.
@@ -149,21 +154,24 @@
 
           <div class="col-12 col-md-6">
             <%= f.label :start_at, "Date et heure de début", class: "form-label" %>
-            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true %>
+            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true, onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 col-md-6">
             <%= f.label :duration_min, "Durée (minutes)", class: "form-label" %>
-            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 30, step: 5, required: true %>
+            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 30, step: 5, required: true, onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 col-md-6">
             <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
-            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0 %>
+            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0, onblur: "validateField(this)" %>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Mettez <strong>0</strong> pour un illimité.
             </div>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -176,7 +184,9 @@
                 min: 0, 
                 step: 0.01,
                 placeholder: "Ex: 5.00",
-                required: true %>
+                required: true,
+                onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
             <%= f.hidden_field :currency, value: "EUR" %>
           </div>
 
@@ -189,7 +199,9 @@
                 maxlength: 255, 
                 required: true, 
                 placeholder: "Ex: Parc Paul Mistral, Grenoble",
-                aria: { describedby: 'locationHelp' } %>
+                aria: { describedby: 'locationHelp' },
+                onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
             <div id="locationHelp" class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Indiquez où se retrouver (parc, place, adresse...)
@@ -265,7 +277,8 @@
 
           <div class="col-12">
             <%= f.label :description, "Description détaillée", class: "form-label" %>
-            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez le parcours, le niveau requis, le matériel conseillé..." %>
+            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez le parcours, le niveau requis, le matériel conseillé...", onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 mt-3 d-grid gap-2">
@@ -447,3 +460,100 @@
     </div>
   </div>
 <% end %>
+<script>
+  // Validation champ en temps réel (harmonisé avec formulaires d'adhésion)
+  function validateField(field) {
+    const value = field.value.trim();
+    // Chercher le feedback dans le parent (car structure peut varier)
+    let feedback = field.nextElementSibling;
+    if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+      // Si pas trouvé, chercher dans le parent
+      const parent = field.closest('.col-12, .col-md-6');
+      if (parent) {
+        feedback = parent.querySelector('.invalid-feedback');
+      }
+    }
+    
+    // Réinitialiser
+    field.classList.remove('is-invalid', 'is-valid');
+    if (feedback) {
+      feedback.textContent = '';
+      feedback.style.display = 'none';
+    }
+    
+    // Validation selon le type
+    if (field.hasAttribute('required') && !value) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = 'Champ obligatoire';
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Validation longueur max
+    if (field.hasAttribute('maxlength') && value.length > parseInt(field.getAttribute('maxlength'))) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = `Maximum ${field.getAttribute('maxlength')} caractères`;
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Validation longueur min (pour textarea description)
+    if (field.tagName === 'TEXTAREA' && field.hasAttribute('minlength') && value.length < parseInt(field.getAttribute('minlength'))) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = `Minimum ${field.getAttribute('minlength')} caractères`;
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Validation nombre (min)
+    if (field.type === 'number' && value) {
+      const numValue = parseFloat(value);
+      if (field.hasAttribute('min') && numValue < parseFloat(field.getAttribute('min'))) {
+        field.classList.add('is-invalid');
+        if (feedback) {
+          feedback.textContent = `La valeur doit être supérieure ou égale à ${field.getAttribute('min')}`;
+          feedback.style.display = 'block';
+        }
+        return false;
+      }
+    }
+    
+    // Validation date (doit être dans le futur pour start_at)
+    if (field.type === 'datetime-local' && value) {
+      const selectedDate = new Date(value);
+      const now = new Date();
+      if (selectedDate <= now) {
+        field.classList.add('is-invalid');
+        if (feedback) {
+          feedback.textContent = 'La date doit être dans le futur';
+          feedback.style.display = 'block';
+        }
+        return false;
+      }
+    }
+    
+    // Validation select (niveau)
+    if (field.tagName === 'SELECT' && field.hasAttribute('required') && !value) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = 'Veuillez sélectionner une option';
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Si valide
+    if (value) {
+      field.classList.add('is-valid');
+    }
+    
+    return true;
+  }
+  
+</script>
