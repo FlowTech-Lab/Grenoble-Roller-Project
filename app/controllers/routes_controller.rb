@@ -44,7 +44,13 @@ class RoutesController < ApplicationController
   private
 
   def route_params
-    params.require(:route).permit(:name, :description, :distance_km, :elevation_m, :difficulty, :gpx_url, :map_image_url, :safety_notes, :map_image)
+    # Gérer les deux formats : route[...] (formulaire Rails) ou directement (FormData JS)
+    if params[:route].present?
+      params.require(:route).permit(:name, :description, :distance_km, :elevation_m, :difficulty, :gpx_url, :map_image_url, :safety_notes, :map_image)
+    else
+      # Format direct depuis FormData JavaScript
+      params.permit(:name, :description, :distance_km, :elevation_m, :difficulty, :gpx_url, :map_image_url, :safety_notes, :map_image)
+    end
   end
 
   def ensure_admin

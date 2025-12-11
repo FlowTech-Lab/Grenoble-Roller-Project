@@ -37,8 +37,64 @@ install_crontab() {
     fi
     
     # Générer et installer le crontab depuis le conteneur
-    if $DOCKER_CMD exec "$container" bundle exec whenever --update-crontab --set "environment=${env}" 2>&1; then
+    local whenever_output
+    whenever_output=$($DOCKER_CMD exec "$container" bundle exec whenever --update-crontab --set "environment=${env}" 2>&1)
+    local whenever_exit_code=$?
+    
+    # Vérifier si whenever a réellement installé le crontab
+    # Le message "your crontab file was not updated" indique un échec silencieux
+    if echo "$whenever_output" | grep -q "your crontab file was not updated"; then
+        log_error "❌ Échec de l'installation du crontab (whenever n'a pas pu mettre à jour le crontab)"
+        log_error "   Message: your crontab file was not updated"
+        log_info "   Cela peut être dû à des permissions insuffisantes ou à un accès crontab limité"
+        log_info "   Tentative alternative : installation manuelle via crontab -"
+        
+        # Tentative alternative : générer le crontab et l'installer manuellement
+        local crontab_content
+        crontab_content=$($DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>/dev/null)
+        
+        if [ -n "$crontab_content" ]; then
+            log_info "   Installation via crontab - (pipe)..."
+            # Installer le crontab via stdin
+            if echo "$crontab_content" | $DOCKER_CMD exec -i "$container" crontab - 2>/dev/null; then
+                log_success "✅ Crontab installé via méthode alternative"
+                
+                # Vérifier que le crontab est bien installé
+                local installed_count
+                installed_count=$($DOCKER_CMD exec "$container" crontab -l 2>/dev/null | grep -c "rails runner" || echo "0")
+                if [ "$installed_count" -gt 0 ]; then
+                    log_success "✅ Vérification : $installed_count entrée(s) cron installée(s)"
+                    
+                    # Afficher les entrées installées
+                    log_info "📋 Entrées cron installées:"
+                    $DOCKER_CMD exec "$container" crontab -l 2>/dev/null | while IFS= read -r line; do
+                        log_info "   $line"
+                    done
+                    
+                    return 0
+                else
+                    log_error "❌ Le crontab n'a pas été installé (vérification échouée)"
+                    return 1
+                fi
+            else
+                log_error "❌ Échec de l'installation alternative du crontab"
+                return 1
+            fi
+        else
+            log_error "❌ Impossible de générer le contenu du crontab"
+            return 1
+        fi
+    elif [ $whenever_exit_code -eq 0 ]; then
         log_success "✅ Crontab installé/mis à jour avec succès"
+        
+        # Vérifier que le crontab est bien installé
+        local installed_count
+        installed_count=$($DOCKER_CMD exec "$container" crontab -l 2>/dev/null | grep -c "rails runner" || echo "0")
+        if [ "$installed_count" -gt 0 ]; then
+            log_success "✅ Vérification : $installed_count entrée(s) cron installée(s)"
+        else
+            log_warning "⚠️  Le crontab semble installé mais aucune entrée trouvée (peut être normal si vide)"
+        fi
         
         # Afficher les entrées installées (pour vérification)
         log_info "📋 Entrées cron installées:"
@@ -48,7 +104,10 @@ install_crontab() {
         
         return 0
     else
-        log_error "❌ Échec de l'installation du crontab"
+        log_error "❌ Échec de l'installation du crontab (exit code: $whenever_exit_code)"
+        echo "$whenever_output" | while IFS= read -r line; do
+            log_error "   $line"
+        done
         return 1
     fi
 }

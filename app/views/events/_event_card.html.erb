@@ -224,6 +224,14 @@
           </div>
           <%= form_with url: attend_event_path(event), method: :post, data: { turbo: false }, id: "attendForm#{event.id}", class: "attend-form" do |f| %>
             <div class="modal-body">
+              <!-- Alerte "Presque complet" si ≤5 places restantes -->
+              <% if !event.unlimited? && event.remaining_spots <= 5 && event.remaining_spots > 0 %>
+                <div class="alert alert-warning mb-3" role="alert">
+                  <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+                  <strong>Attention !</strong> Il ne reste que <%= pluralize(event.remaining_spots, "place disponible", "places disponibles") %> pour cet événement.
+                </div>
+              <% end %>
+              
               <p class="lead mb-3">
                 Confirmez votre participation à <strong><%= event.title %></strong>
               </p>

@@ -2,9 +2,17 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
-## [2025-12-11] - Correction health check HTTP en staging
+## [2025-12-11] - Correction installation crontab et health check HTTP en staging
 
 ### Corrigé
+- **Installation crontab dans les scripts de déploiement** :
+  - `whenever --update-crontab` retournait un succès même quand le crontab n'était pas installé
+  - Le message "your crontab file was not updated" n'était pas détecté
+  - **Impact** : Le crontab n'était pas réellement installé malgré le message de succès
+  - Détection du message d'erreur "your crontab file was not updated"
+  - Méthode alternative avec `crontab -` si `whenever --update-crontab` échoue
+  - Vérification que le crontab est réellement installé après l'installation
+
 - **Health check HTTP dans les scripts de déploiement** :
   - Le health check utilisait le port externe (3001) pour tester depuis l'intérieur du conteneur
   - Le conteneur écoute sur le port interne (3000) défini par la variable d'environnement PORT
@@ -13,13 +21,19 @@ Ce fichier documente les changements significatifs du projet Grenoble Roller.
   - Le health check teste maintenant sur le port interne (3000) depuis le conteneur
 
 ### Fichiers modifiés
+- `ops/lib/deployment/cron.sh` (lignes 39-110)
 - `ops/lib/health/checks.sh` (lignes 55-69)
 
 ### Détails techniques
-- **AVANT** : Test HTTP sur `http://localhost:${port}/up` où `port` = port externe (3001)
-- **APRÈS** : Détection automatique du port interne via `${PORT:-3000}` et test sur ce port
-- Le port externe (3001) reste utilisé pour l'affichage dans les logs
-- Compatible avec staging (3001:3000) et production (80:3000)
+- **Crontab** :
+  - Capture de la sortie de `whenever --update-crontab` pour détecter les échecs silencieux
+  - Méthode alternative : génération du crontab avec `whenever --set` puis installation via `crontab -`
+  - Vérification post-installation avec `crontab -l` pour confirmer l'installation
+- **Health check** :
+  - **AVANT** : Test HTTP sur `http://localhost:${port}/up` où `port` = port externe (3001)
+  - **APRÈS** : Détection automatique du port interne via `${PORT:-3000}` et test sur ce port
+  - Le port externe (3001) reste utilisé pour l'affichage dans les logs
+  - Compatible avec staging (3001:3000) et production (80:3000)
 
 ## [2025-12-11] - Correction installation Node.js dans Dockerfile
 
