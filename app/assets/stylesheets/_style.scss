@@ -3365,6 +3365,74 @@
     border: 1px solid var(--liquid-glass-border);
   }
 
+  /* Sidebar filtres catégories - Style arrondi harmonieux */
+  .category-filter-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 0.75rem;
+    transition: var(--transition-liquid-fast);
+    color: var(--bs-body-color);
+    overflow: hidden;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+      border-color: var(--gr-primary);
+      transform: translateX(4px);
+      box-shadow: var(--bs-box-shadow);
+      text-decoration: none;
+      color: var(--gr-primary);
+    }
+    
+    &.active {
+      background: var(--gradient-liquid-primary);
+      border-color: var(--gr-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      
+      &:hover {
+        background: var(--gradient-liquid-primary);
+        transform: translateX(4px);
+        color: white;
+      }
+      
+      .badge {
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        color: var(--gr-primary) !important;
+      }
+    }
+    
+    span:first-child {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    
+    .badge {
+      flex-shrink: 0;
+    }
+  }
+  
+  [data-bs-theme="dark"] .category-filter-item {
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--gr-primary-dark);
+      color: var(--gr-primary-dark);
+    }
+    
+    &.active {
+      background: var(--gradient-liquid-primary);
+      border-color: var(--gr-primary-dark);
+      
+      &:hover {
+        background: var(--gradient-liquid-primary);
+        color: white;
+      }
+    }
+  }
+
   .checkout-total {
     font-weight: 800;
     color: var(--gr-primary);

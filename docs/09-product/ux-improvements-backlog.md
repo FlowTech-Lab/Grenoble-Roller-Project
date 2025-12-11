@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **23/41 Quick Wins terminés** (56%) + **2 partiellement faits**
+**Avancement** : **24/41 Quick Wins terminés** (59%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -75,7 +75,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?")
 
 ### **Parcours 7 : Achat en Boutique**
-- [ ] Filtres par catégories (Sidebar ou tabs avec catégories) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
+- [x] Filtres par catégories (Sidebar ou tabs avec catégories) ✅ **TERMINÉ** (2025-01-30) - Sidebar avec filtres par catégorie, compteurs, filtre actif mis en évidence
 - [ ] Barre de recherche (Recherche par nom produit - AJAX) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
 - [x] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url) ✅ **DÉJÀ GÉRÉ** - Image obligatoire (validation `presence: true`)
 - [ ] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ⚠️ **PRIORITÉ MOYENNE** - Pas de lightbox actuellement
@@ -284,9 +284,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Effort : Faible (2 sections avec filtres)
    - **Status** : Sections "À venir" et "Passés" séparées avec compteurs et badges distinctifs
 
-6. **Filtres par catégories boutique** (Parcours 7)
+6. **Filtres par catégories boutique** (Parcours 7) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (navigation facilitée dans le catalogue)
    - Effort : Faible (sidebar ou tabs avec catégories existantes)
+   - **Status** : Sidebar avec filtres par catégorie, compteurs de produits, filtre actif mis en évidence, bouton "Effacer le filtre", gestion des catégories vides
 
 7. **Résumé dans modal inscription** (Parcours 4) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (rassure l'utilisateur avant confirmation)
@@ -393,11 +394,11 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Sprint 2 (Semaine 2)** :
 **Développement** (3-4 jours) :
-- Séparer événements à venir/passés
-- Filtres catégories boutique
-- Résumé dans modal inscription
-- Actions rapides admin
-- Sauvegarde automatique formulaire
+- Séparer événements à venir/passés ✅
+- Filtres catégories boutique ✅
+- Résumé dans modal inscription ✅
+- Actions rapides admin ✅
+- Sauvegarde automatique formulaire ✅
 
 **Tests A11y intégrés** (1 jour) :
 - Navigation au clavier dans filtres
