@@ -269,7 +269,15 @@
           </div>
 
           <div class="col-12 mt-3 d-grid gap-2">
-            <%= f.submit (event.persisted? ? "Mettre à jour l’événement" : "Créer l’événement"), class: "btn btn-liquid-primary btn-lg w-100" %>
+            <% if event.persisted? %>
+              <%= f.submit "Mettre à jour l'événement", class: "btn btn-liquid-primary btn-lg w-100" %>
+            <% else %>
+              <%= f.submit "Créer l'événement", 
+                  class: "btn btn-liquid-primary btn-lg w-100",
+                  data: { 
+                    turbo_confirm: "Votre événement sera en attente de validation par un modérateur. Continuer ?" 
+                  } %>
+            <% end %>
             <%= link_to 'Annuler', events_path, class: "btn btn-outline-secondary w-100" %>
           </div>
         <% end %>

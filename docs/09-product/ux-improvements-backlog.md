@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **27/41 Quick Wins terminés** (66%) + **2 partiellement faits**
+**Avancement** : **28/41 Quick Wins terminés** (68%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -72,7 +72,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie) ✅ **TERMINÉ** (2025-01-30) - Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée 7 jours, restauration et nettoyage automatiques
 - [ ] Validation en temps réel (Vérifier les champs au blur)
 - [ ] Indicateur de progression (Barre "Étape 1/1" ou compteur de champs remplis)
-- [ ] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?")
+- [x] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?") ✅ **TERMINÉ** (2025-01-30) - Confirmation Turbo ajoutée uniquement pour la création (pas pour la modification)
 
 ### **Parcours 7 : Achat en Boutique**
 - [x] Filtres par catégories (Sidebar ou tabs avec catégories) ✅ **TERMINÉ** (2025-01-30) - Sidebar avec filtres par catégorie, compteurs, filtre actif mis en évidence
