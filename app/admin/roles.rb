@@ -1,5 +1,5 @@
 ActiveAdmin.register Role do
-  menu priority: 3, label: "Rôles", if: proc { authorized?(:read, Role) }
+  menu priority: 2, label: "Rôles", parent: "Utilisateurs", if: proc { authorized?(:read, Role) }
 
   permit_params :name, :code, :description, :level
 
@@ -55,5 +55,16 @@ ActiveAdmin.register Role do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @role = resource
+      if @role.destroy
+        redirect_to collection_path, notice: "Le rôle ##{@role.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@role), alert: "Impossible de supprimer le rôle : #{@role.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

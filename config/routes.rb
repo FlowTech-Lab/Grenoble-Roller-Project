@@ -1,8 +1,14 @@
 Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
-  # Route pour le toggle du mode maintenance (controller personnalisé)
-  post "/admin/maintenance/toggle", to: "admin/maintenance_toggle#toggle", as: "admin_maintenance_toggle"
+  # Ressource REST pour le mode maintenance
+  namespace :activeadmin do
+    resource :maintenance, only: [:update], controller: "admin/maintenance_toggle" do
+      member do
+        patch :toggle
+      end
+    end
+  end
 
   # Page maintenance simple (optionnel, pour tests)
   get "/maintenance", to: proc { |env|
@@ -87,6 +93,7 @@ Rails.application.routes.draw do
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
+      get :loop_routes, defaults: { format: "json" }
     end
   end
 
@@ -98,8 +105,12 @@ Rails.application.routes.draw do
     end
   end
 
-  # Routes pour pré-remplir les champs niveau et distance
-  get "/routes/:id/info", to: "routes#info", as: "route_info", defaults: { format: "json" }
+  # Routes REST pour les parcours
+  resources :routes, only: [:create] do
+    member do
+      get :info, defaults: { format: "json" }
+    end
+  end
 
   resources :attendances, only: :index
 
@@ -112,6 +123,8 @@ Rails.application.routes.draw do
   get "/cgu", to: "legal_pages#cgu", as: "cgu"
   get "/conditions-generales-utilisation", to: "legal_pages#cgu" # Alias pour CGU
   get "/contact", to: "legal_pages#contact", as: "contact"
+  get "/faq", to: "legal_pages#faq", as: "faq"
+  get "/questions-frequentes", to: "legal_pages#faq" # Alias pour FAQ
 
   # Cookie consent
   resource :cookie_consent, only: [] do

@@ -22,7 +22,7 @@ class MaintenanceMiddleware
 
       # Routes autorisées en maintenance (pour visiteurs non connectés)
       allowed_paths = [
-        "/admin",           # ActiveAdmin dashboard
+        "/activeadmin",     # ActiveAdmin dashboard
         "/users/sign_in",   # Devise login (page de connexion)
         "/users/sign_up",   # Devise registration (inscription)
         "/users/sign_out",  # Logout

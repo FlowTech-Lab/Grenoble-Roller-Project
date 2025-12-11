@@ -11,7 +11,7 @@ ActiveAdmin.register_page "Dashboard" do
         div style: "font-size: 32px; font-weight: bold; color: #d9534f; margin-bottom: 10px;" do
           pending_count = Event.pending_validation.count
           if pending_count > 0
-            link_to pending_count, admin_events_path(scope: "en_attente_de_validation"), style: "color: #d9534f; text-decoration: none;"
+            link_to pending_count, activeadmin_events_path(scope: "en_attente_de_validation"), style: "color: #d9534f; text-decoration: none;"
           else
             pending_count
           end
@@ -24,7 +24,7 @@ ActiveAdmin.register_page "Dashboard" do
       # Card Utilisateurs
       div style: "background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" do
         div style: "font-size: 32px; font-weight: bold; color: #337ab7; margin-bottom: 10px;" do
-          link_to User.count, admin_users_path, style: "color: #337ab7; text-decoration: none;"
+          link_to User.count, activeadmin_users_path, style: "color: #337ab7; text-decoration: none;"
         end
         div style: "color: #666; font-size: 14px;" do
           "Utilisateurs"
@@ -36,7 +36,7 @@ ActiveAdmin.register_page "Dashboard" do
         div style: "font-size: 32px; font-weight: bold; color: #f0ad4e; margin-bottom: 10px;" do
           pending_orders = Order.where(status: "pending").count
           if pending_orders > 0
-            link_to pending_orders, admin_orders_path(scope: "pending"), style: "color: #f0ad4e; text-decoration: none;"
+            link_to pending_orders, activeadmin_orders_path(scope: "pending"), style: "color: #f0ad4e; text-decoration: none;"
           else
             span pending_orders
           end
@@ -63,7 +63,7 @@ ActiveAdmin.register_page "Dashboard" do
         div style: "font-size: 32px; font-weight: bold; color: #5cb85c; margin-bottom: 10px;" do
           active_memberships = Membership.active_now.count
           if active_memberships > 0
-            link_to active_memberships, admin_memberships_path(scope: "actives"), style: "color: #5cb85c; text-decoration: none;"
+            link_to active_memberships, activeadmin_memberships_path(scope: "actives"), style: "color: #5cb85c; text-decoration: none;"
           else
             active_memberships
           end
@@ -78,7 +78,7 @@ ActiveAdmin.register_page "Dashboard" do
         div style: "font-size: 32px; font-weight: bold; color: #f0ad4e; margin-bottom: 10px;" do
           pending_memberships = Membership.pending.count
           if pending_memberships > 0
-            link_to pending_memberships, admin_memberships_path(scope: "en_attente"), style: "color: #f0ad4e; text-decoration: none;"
+            link_to pending_memberships, activeadmin_memberships_path(scope: "en_attente"), style: "color: #f0ad4e; text-decoration: none;"
           else
             pending_memberships
           end
@@ -137,7 +137,7 @@ ActiveAdmin.register_page "Dashboard" do
 
         table_for pending_events, style: "width: 100%;" do
           column "Titre" do |event|
-            link_to event.title, admin_event_path(event), style: "color: #337ab7; text-decoration: none; font-weight: 500;"
+            link_to event.title, activeadmin_event_path(event), style: "color: #337ab7; text-decoration: none; font-weight: 500;"
           end
           column "Créateur" do |event|
             event.creator_user&.email || "N/A"
@@ -151,7 +151,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
 
         div style: "margin-top: 20px; text-align: center;" do
-          link_to "Voir tous les événements à valider →", admin_events_path(scope: "en_attente_de_validation"),
+          link_to "Voir tous les événements à valider →", activeadmin_events_path(scope: "en_attente_de_validation"),
                   class: "button",
                   style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
         end
@@ -165,7 +165,7 @@ ActiveAdmin.register_page "Dashboard" do
       div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" do
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #337ab7;" do
-            link_to Product.count, admin_products_path, style: "color: #337ab7; text-decoration: none;"
+            link_to Product.count, activeadmin_products_path, style: "color: #337ab7; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Produits en catalogue"
@@ -173,7 +173,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #d9534f;" do
-            link_to Product.where("stock_qty <= 0").count, admin_products_path(scope: "en_rupture_de_stock"), style: "color: #d9534f; text-decoration: none;"
+            link_to Product.where("stock_qty <= 0").count, activeadmin_products_path(scope: "en_rupture_de_stock"), style: "color: #d9534f; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "En rupture de stock"
@@ -182,7 +182,7 @@ ActiveAdmin.register_page "Dashboard" do
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
             completed_orders_count = Order.where(status: %w[paid shipped completed]).count
-            link_to completed_orders_count, admin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
+            link_to completed_orders_count, activeadmin_orders_path(scope: "complétées"), style: "color: #5cb85c; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Commandes payées / complétées"
@@ -209,7 +209,7 @@ ActiveAdmin.register_page "Dashboard" do
         table_for recent_orders, style: "width: 100%;" do
           column "Utilisateur" do |order|
             if order.user
-              link_to order.user.email, admin_user_path(order.user), style: "color: #337ab7; text-decoration: none;"
+              link_to order.user.email, activeadmin_user_path(order.user), style: "color: #337ab7; text-decoration: none;"
             else
               "N/A"
             end
@@ -234,7 +234,7 @@ ActiveAdmin.register_page "Dashboard" do
           end
         end
         div style: "margin-top: 15px; text-align: center;" do
-          link_to "Voir toutes les commandes →", admin_orders_path,
+          link_to "Voir toutes les commandes →", activeadmin_orders_path,
                   class: "button",
                   style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
         end
@@ -246,7 +246,7 @@ ActiveAdmin.register_page "Dashboard" do
       div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" do
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #5cb85c;" do
-            link_to Membership.active_now.count, admin_memberships_path(scope: "actives"), style: "color: #5cb85c; text-decoration: none;"
+            link_to Membership.active_now.count, activeadmin_memberships_path(scope: "actives"), style: "color: #5cb85c; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Adhésions actives"
@@ -254,7 +254,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #f0ad4e;" do
-            link_to Membership.pending.count, admin_memberships_path(scope: "en_attente"), style: "color: #f0ad4e; text-decoration: none;"
+            link_to Membership.pending.count, activeadmin_memberships_path(scope: "en_attente"), style: "color: #f0ad4e; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "En attente de paiement"
@@ -262,7 +262,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #337ab7;" do
-            link_to Membership.personal.count, admin_memberships_path(scope: "personnelles"), style: "color: #337ab7; text-decoration: none;"
+            link_to Membership.personal.count, activeadmin_memberships_path(scope: "personnelles"), style: "color: #337ab7; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Adhésions personnelles (toutes saisons)"
@@ -270,7 +270,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #d9534f;" do
-            link_to Membership.children.count, admin_memberships_path(scope: "enfants"), style: "color: #d9534f; text-decoration: none;"
+            link_to Membership.children.count, activeadmin_memberships_path(scope: "enfants"), style: "color: #d9534f; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Adhésions enfants (toutes saisons)"
@@ -278,7 +278,7 @@ ActiveAdmin.register_page "Dashboard" do
         end
         div style: "background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd;" do
           div style: "font-size: 24px; font-weight: bold; color: #f0ad4e;" do
-            link_to Membership.expiring_soon.count, admin_memberships_path(scope: "expirent_bientot"), style: "color: #f0ad4e; text-decoration: none;"
+            link_to Membership.expiring_soon.count, activeadmin_memberships_path(scope: "expirent_bientot"), style: "color: #f0ad4e; text-decoration: none;"
           end
           div style: "color: #666; font-size: 13px; margin-top: 5px;" do
             "Expirent bientôt (30j)"
@@ -302,7 +302,7 @@ ActiveAdmin.register_page "Dashboard" do
         table_for recent_memberships, style: "width: 100%;" do
           column "Utilisateur" do |membership|
             if membership.user
-              link_to membership.user.email, admin_user_path(membership.user), style: "color: #337ab7; text-decoration: none;"
+              link_to membership.user.email, activeadmin_user_path(membership.user), style: "color: #337ab7; text-decoration: none;"
             else
               "N/A"
             end
@@ -337,7 +337,7 @@ ActiveAdmin.register_page "Dashboard" do
           end
         end
         div style: "margin-top: 15px; text-align: center;" do
-          link_to "Voir toutes les adhésions →", admin_memberships_path,
+          link_to "Voir toutes les adhésions →", activeadmin_memberships_path,
                   class: "button",
                   style: "background: #337ab7; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;"
         end
@@ -348,27 +348,27 @@ ActiveAdmin.register_page "Dashboard" do
     panel "🔗 Accès rapide", style: "margin-top: 20px;" do
       div style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;" do
         div do
-          link_to "📅 Tous les événements", admin_events_path,
+          link_to "📅 Tous les événements", activeadmin_events_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "👥 Tous les utilisateurs", admin_users_path,
+          link_to "👥 Tous les utilisateurs", activeadmin_users_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "🛒 Toutes les commandes", admin_orders_path,
+          link_to "🛒 Toutes les commandes", activeadmin_orders_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "📦 Tous les produits", admin_products_path,
+          link_to "📦 Tous les produits", activeadmin_products_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "📧 Messages de contact", admin_contact_messages_path,
+          link_to "📧 Messages de contact", activeadmin_contact_messages_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
         div do
-          link_to "👥 Toutes les adhésions", admin_memberships_path,
+          link_to "👥 Toutes les adhésions", activeadmin_memberships_path,
                   style: "display: block; padding: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #333;"
         end
       end

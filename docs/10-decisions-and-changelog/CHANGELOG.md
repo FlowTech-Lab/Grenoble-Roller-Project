@@ -2,6 +2,77 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-12-11] - Correction installation crontab et health check HTTP en staging
+
+### Corrigé
+- **Installation crontab dans les scripts de déploiement** :
+  - `whenever --update-crontab` retournait un succès même quand le crontab n'était pas installé
+  - Le message "your crontab file was not updated" n'était pas détecté
+  - **Impact** : Le crontab n'était pas réellement installé malgré le message de succès
+  - Détection du message d'erreur "your crontab file was not updated"
+  - Méthode alternative avec `crontab -` si `whenever --update-crontab` échoue
+  - Vérification que le crontab est réellement installé après l'installation
+
+- **Health check HTTP dans les scripts de déploiement** :
+  - Le health check utilisait le port externe (3001) pour tester depuis l'intérieur du conteneur
+  - Le conteneur écoute sur le port interne (3000) défini par la variable d'environnement PORT
+  - **Impact** : Le health check échouait en staging avec le code "000000" (connexion impossible)
+  - Détection automatique du port interne depuis la variable d'environnement PORT du conteneur
+  - Le health check teste maintenant sur le port interne (3000) depuis le conteneur
+
+### Fichiers modifiés
+- `ops/lib/deployment/cron.sh` (lignes 39-110)
+- `ops/lib/health/checks.sh` (lignes 55-69)
+
+### Détails techniques
+- **Crontab** :
+  - Capture de la sortie de `whenever --update-crontab` pour détecter les échecs silencieux
+  - Méthode alternative : génération du crontab avec `whenever --set` puis installation via `crontab -`
+  - Vérification post-installation avec `crontab -l` pour confirmer l'installation
+- **Health check** :
+  - **AVANT** : Test HTTP sur `http://localhost:${port}/up` où `port` = port externe (3001)
+  - **APRÈS** : Détection automatique du port interne via `${PORT:-3000}` et test sur ce port
+  - Le port externe (3001) reste utilisé pour l'affichage dans les logs
+  - Compatible avec staging (3001:3000) et production (80:3000)
+
+## [2025-12-11] - Correction installation Node.js dans Dockerfile
+
+### Corrigé
+- **Installation Node.js dans Dockerfile** :
+  - Remplacement de l'installation via `node-build` (GitHub) par téléchargement direct depuis `nodejs.org`
+  - Détection automatique de l'architecture système (x64, arm64)
+  - **Impact** : Résout l'erreur "gzip: stdin: not in gzip format" lors du build Docker
+  - Installation plus fiable et plus rapide (pas de compilation)
+
+### Fichiers modifiés
+- `Dockerfile` (lignes 39-44)
+
+### Détails techniques
+- **AVANT** : `curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz`
+- **APRÈS** : Téléchargement direct depuis `nodejs.org/dist/v${NODE_VERSION}/`
+- Détection automatique de l'architecture avec `uname -m`
+- Support des architectures x86_64 (x64) et aarch64/arm64
+- Utilisation de `.tar.xz` au lieu de `.tar.gz` pour les binaires officiels Node.js
+
+## [2025-01-20] - Correction scripts de déploiement : exclusion fichiers de logs
+
+### Corrigé
+- **Vérification post-pull dans les scripts de déploiement** :
+  - Les fichiers de logs (`logs/` et `ops/logs/`) sont maintenant exclus de la vérification Git
+  - Les fichiers de logs peuvent être créés/modifiés sans bloquer le déploiement
+  - Les autres modifications non commitées continuent de bloquer le déploiement (comportement attendu)
+  - **Impact** : Évite les blocages inutiles lors des déploiements automatiques
+
+### Fichiers modifiés
+- `ops/staging/deploy.sh` (ligne 248-249)
+- `ops/production/deploy.sh` (ligne 248-249)
+
+### Détails techniques
+- **AVANT** : `GIT_STATUS=$(git status --porcelain 2>/dev/null || echo "")`
+- **APRÈS** : `GIT_STATUS=$(git status --porcelain 2>/dev/null | grep -vE "(logs/|ops/logs/)" || echo "")`
+- Les fichiers de logs sont ignorés par Git (`.gitignore`) mais peuvent apparaître dans `git status` s'ils sont créés/modifiés localement
+- La commande `grep -vE` filtre les lignes contenant `logs/` ou `ops/logs/` pour exclure ces fichiers de la vérification
+
 ## [2025-12-07] - Finalisation Complète Feature Email (OrderMailer + Tests)
 
 ### Ajouté

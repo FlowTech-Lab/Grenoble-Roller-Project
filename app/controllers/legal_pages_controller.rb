@@ -34,4 +34,10 @@ class LegalPagesController < ApplicationController
     @page_title = "Contact"
     @page_description = "Contactez l'association Grenoble Roller"
   end
+
+  # Page FAQ - Questions fréquemment posées
+  def faq
+    @page_title = "FAQ - Questions Fréquemment Posées"
+    @page_description = "Réponses aux questions fréquemment posées sur l'association Grenoble Roller, les adhésions, les événements et la boutique"
+  end
 end

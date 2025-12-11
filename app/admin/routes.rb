@@ -1,5 +1,5 @@
 ActiveAdmin.register Route do
-  menu priority: 10, label: "Routes"
+  menu priority: 3, label: "Routes", parent: "Événements"
 
   permit_params :name, :description, :distance_km, :elevation_m, :difficulty,
                 :gpx_url, :map_image_url, :safety_notes
@@ -78,5 +78,16 @@ ActiveAdmin.register Route do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @route = resource
+      if @route.destroy
+        redirect_to collection_path, notice: "Le parcours ##{@route.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@route), alert: "Impossible de supprimer le parcours : #{@route.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

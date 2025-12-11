@@ -1,6 +1,8 @@
 class Event < ApplicationRecord
   belongs_to :creator_user, class_name: "User"
-  belongs_to :route, optional: true
+  belongs_to :route, optional: true # Parcours principal (rétrocompatibilité)
+  has_many :event_loop_routes, dependent: :destroy
+  has_many :loop_routes, through: :event_loop_routes, source: :route
   has_many :attendances, dependent: :destroy
   has_many :users, through: :attendances
 
@@ -158,6 +160,60 @@ class Event < ApplicationRecord
   # Vérifie si l'événement est passé
   def past?
     start_at <= Time.current
+  end
+
+  # Calculer la distance totale si plusieurs boucles
+  def total_distance_km
+    # Si on utilise le nouveau système avec event_loop_routes
+    if event_loop_routes.any?
+      event_loop_routes.sum(:distance_km)
+    # Sinon, utiliser l'ancien système (rétrocompatibilité)
+    elsif loops_count && loops_count > 1
+      (distance_km || 0) * loops_count
+    else
+      distance_km
+    end
+  end
+
+  # Retourne les parcours par boucle (pour affichage)
+  def loops_with_routes
+    return [] unless loops_count && loops_count > 1
+    
+    if event_loop_routes.any?
+      # Nouveau système : parcours différents par boucle
+      # S'assurer que toutes les boucles sont présentes (y compris la boucle 1)
+      loops_data = {}
+      
+      # Charger les boucles depuis event_loop_routes
+      event_loop_routes.order(:loop_number).each do |elr|
+        loops_data[elr.loop_number] = {
+          loop_number: elr.loop_number,
+          route: elr.route,
+          distance_km: elr.distance_km
+        }
+      end
+      
+      # Si la boucle 1 n'est pas dans event_loop_routes, utiliser le parcours principal
+      unless loops_data[1]
+        loops_data[1] = {
+          loop_number: 1,
+          route: route,
+          distance_km: distance_km
+        }
+      end
+      
+      # Retourner dans l'ordre des boucles
+      (1..loops_count).map { |num| loops_data[num] }.compact
+    else
+      # Ancien système : même parcours pour toutes les boucles
+      (1..loops_count).map do |num|
+        {
+          loop_number: num,
+          route: route,
+          distance_km: distance_km
+        }
+      end
+    end
   end
 
   # Vérifie si l'événement a été créé récemment (dans les 4 dernières semaines)

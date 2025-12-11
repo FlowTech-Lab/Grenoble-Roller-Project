@@ -5,6 +5,14 @@
       S'inscrire à cette séance
     </h3>
 
+    <!-- Alerte "Presque complet" si ≤5 places restantes -->
+    <% if initiation.available_places <= 5 && initiation.available_places > 0 %>
+      <div class="alert alert-warning mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <strong>Attention !</strong> Il ne reste que <%= pluralize(initiation.available_places, "place disponible", "places disponibles") %> pour cette séance.
+      </div>
+    <% end %>
+
     <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
       <!-- Sélection enfant si applicable -->
       <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>

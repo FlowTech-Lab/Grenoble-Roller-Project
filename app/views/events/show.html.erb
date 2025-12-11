@@ -34,7 +34,12 @@
               <i class="bi bi-clock" aria-hidden="true"></i>
               <%= @event.duration_min %> min
             </span>
-            <% if @event.route.present? %>
+            <% if @event.loops_count && @event.loops_count > 1 %>
+              <span class="meta-item">
+                <i class="bi bi-signpost-2" aria-hidden="true"></i>
+                <%= @event.loops_count %> boucles • <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+              </span>
+            <% elsif @event.route.present? %>
               <span class="meta-item">
                 <i class="bi bi-signpost" aria-hidden="true"></i>
                 <%= @event.route.name %>
@@ -147,7 +152,7 @@
           <div class="detail-content">
             <p class="detail-label">Tarif</p>
             <p class="detail-value">
-              <%= number_to_currency(@event.price_cents / 100.0, unit: @event.currency) %>
+              <%= format_event_price(@event.price_cents) %>
             </p>
           </div>
         </div>
@@ -159,61 +164,193 @@
           </div>
           <div class="detail-content">
             <p class="detail-label">Organisateur</p>
-            <p class="detail-value"><%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %></p>
+            <p class="detail-value"><%= @event.creator_user.display_name %></p>
           </div>
         </div>
       </section>
 
-      <!-- Zone 3 - Alerte rappel (conditionnelle) -->
-      <% if current_user_has_attendance?(@event) && @user_attendance %>
-        <% if @user_attendance.wants_reminder? %>
-          <div class="alert alert-info alert-reminder d-flex align-items-center justify-content-between mb-4" role="alert">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-bell-fill me-2 fs-5 reminder-icon" aria-hidden="true"></i>
-              <div>
-                <strong>Rappel activé</strong>
-                <p class="mb-0 small">Vous recevrez un email la veille à 19h pour vous rappeler l'événement.</p>
+      <!-- Zone 3 - Description (placée tôt pour comprendre rapidement l'événement) -->
+      <% if @event.description.present? %>
+        <div class="event-description mb-4">
+          <div class="card card-liquid border-liquid shadow-liquid rounded-liquid overflow-hidden" style="background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.05) 0%, rgba(var(--bs-primary-rgb), 0.02) 100%); border-left: 4px solid var(--liquid-primary);">
+            <div class="card-body p-4 p-md-5">
+              <div class="text-center mb-4">
+                <span class="badge badge-liquid-primary mb-3 px-4 py-2 fs-6 shadow-sm">
+                  <i class="bi bi-info-circle me-2" aria-hidden="true"></i>À propos
+                </span>
+              </div>
+              <div class="text-body text-center" style="line-height: 1.9; max-width: 800px; margin: 0 auto; font-size: 1.05rem;">
+                <%= simple_format(@event.description) %>
               </div>
             </div>
-            <%= button_to toggle_reminder_event_path(@event), method: :patch, 
-                class: "btn btn-sm btn-outline-secondary", 
-                data: { turbo: false },
-                aria: { label: 'Désactiver le rappel' } do %>
-              <i class="bi bi-bell me-1" aria-hidden="true"></i>Désactiver
-            <% end %>
           </div>
-        <% else %>
-          <div class="alert alert-warning alert-reminder d-flex align-items-center justify-content-between mb-4" role="alert">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-bell-exclamation me-2 fs-5 reminder-icon" aria-hidden="true"></i>
-              <div>
-                <strong>Rappel désactivé</strong>
-                <p class="mb-0 small">Activez-le pour ne pas oublier cette sortie.</p>
-              </div>
-            </div>
-            <%= button_to toggle_reminder_event_path(@event), method: :patch, 
-                class: "btn btn-sm btn-outline-primary", 
-                data: { turbo: false },
-                aria: { label: 'Activer le rappel' } do %>
-              <i class="bi bi-bell-plus me-1" aria-hidden="true"></i>Activer le rappel
-            <% end %>
-          </div>
-        <% end %>
+        </div>
       <% end %>
 
-      <!-- Zone 4 - Description -->
-      <div class="event-description mb-4">
-        <h2 class="h5 fw-semibold mb-3">
-          <i class="bi bi-info-circle me-2 text-liquid-primary" aria-hidden="true"></i>À propos
-        </h2>
-        <div class="text-body" style="line-height: 1.7;">
-          <%= simple_format(@event.description) %>
+      <!-- Zone 4 - Parcours par boucle (si plusieurs boucles) -->
+      <% if @event.loops_count && @event.loops_count > 1 && @event.loops_with_routes.any? %>
+        <div class="event-loops-section mb-4">
+          <h2 class="h5 fw-semibold mb-3">
+            <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours par boucle
+          </h2>
+          <div class="row g-4">
+            <% @event.loops_with_routes.each_with_index do |loop_data, index| %>
+              <div class="col-12 <%= @event.loops_count == 2 ? 'col-md-6' : 'col-md-4' %>">
+                <div class="card card-liquid border-liquid h-100">
+                  <% if loop_data[:route]&.map_image&.attached? %>
+                    <div class="card-img-top" 
+                         style="height: 200px; overflow: hidden; cursor: pointer;"
+                         data-bs-toggle="modal" 
+                         data-bs-target="#routeImageModal<%= loop_data[:loop_number] %>"
+                         aria-label="Agrandir l'image du parcours <%= loop_data[:route].name %>">
+                      <%= image_tag(rails_representation_path(loop_data[:route].map_image.variant(resize_to_limit: [800, 400])), 
+                          alt: loop_data[:route].name, 
+                          class: "w-100 h-100 object-fit-cover") %>
+                    </div>
+                  <% end %>
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="badge bg-primary me-2">
+                        <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Boucle <%= loop_data[:loop_number] %>
+                      </span>
+                      <% if loop_data[:distance_km] %>
+                        <span class="text-muted small">
+                          <i class="bi bi-signpost-2 me-1" aria-hidden="true"></i>
+                          <%= number_with_precision(loop_data[:distance_km], precision: 1, strip_insignificant_zeros: true) %> km
+                        </span>
+                      <% end %>
+                    </div>
+                    <% if loop_data[:route] %>
+                      <h6 class="card-title mb-2">
+                        <%= loop_data[:route].name %>
+                      </h6>
+                      <% if loop_data[:route].difficulty.present? %>
+                        <span class="badge bg-info mb-2">
+                          <% difficulty_label = case loop_data[:route].difficulty
+                              when 'easy' then 'Facile'
+                              when 'medium' then 'Moyen'
+                              when 'hard' then 'Difficile'
+                              else loop_data[:route].difficulty.humanize
+                            end %>
+                          <%= difficulty_label %>
+                        </span>
+                      <% end %>
+                      <% if loop_data[:route].elevation_m.present? %>
+                        <p class="text-muted small mb-0">
+                          <i class="bi bi-mountain me-1" aria-hidden="true"></i>
+                          Dénivelé : <%= loop_data[:route].elevation_m %> m
+                        </p>
+                      <% end %>
+                    <% else %>
+                      <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                        Parcours non défini
+                      </p>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="mt-3 text-center">
+            <p class="text-muted small mb-0">
+              <i class="bi bi-calculator me-1" aria-hidden="true"></i>
+              <strong>Distance totale :</strong> <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            </p>
+          </div>
         </div>
-      </div>
+      <% elsif @event.route.present? %>
+        <!-- Affichage du parcours unique si une seule boucle -->
+        <div class="event-route-section mb-4">
+          <h2 class="h5 fw-semibold mb-3">
+            <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours
+          </h2>
+          <div class="card card-liquid border-liquid">
+            <% if @event.route.map_image.attached? %>
+              <div class="card-img-top" 
+                   style="height: 300px; overflow: hidden; cursor: pointer;"
+                   data-bs-toggle="modal" 
+                   data-bs-target="#routeImageModalSingle"
+                   aria-label="Agrandir l'image du parcours <%= @event.route.name %>">
+                <%= image_tag(rails_representation_path(@event.route.map_image.variant(resize_to_limit: [1200, 600])), 
+                    alt: @event.route.name, 
+                    class: "w-100 h-100 object-fit-cover") %>
+              </div>
+            <% end %>
+            <div class="card-body">
+              <h6 class="card-title mb-2">
+                <%= @event.route.name %>
+              </h6>
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <% if @event.route.difficulty.present? %>
+                  <span class="badge bg-info">
+                    <% difficulty_label = case @event.route.difficulty
+                        when 'easy' then 'Facile'
+                        when 'medium' then 'Moyen'
+                        when 'hard' then 'Difficile'
+                        else @event.route.difficulty.humanize
+                      end %>
+                    <%= difficulty_label %>
+                  </span>
+                <% end %>
+                <% if @event.distance_km.present? %>
+                  <span class="badge bg-primary">
+                    <i class="bi bi-signpost-2 me-1" aria-hidden="true"></i>
+                    <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                  </span>
+                <% end %>
+                <% if @event.route.elevation_m.present? %>
+                  <span class="badge bg-secondary">
+                    <i class="bi bi-mountain me-1" aria-hidden="true"></i>
+                    <%= @event.route.elevation_m %> m
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
 
 
       <!-- Zone 5 - Actions principales -->
       <div class="event-actions-sticky">
+        <!-- Notification rappel (uniquement si inscrit) - Placée en haut de la zone d'actions pour visibilité contextuelle -->
+        <% if current_user_has_attendance?(@event) && @user_attendance %>
+          <% if @user_attendance.wants_reminder? %>
+            <div class="alert alert-info alert-reminder mb-3 border-start border-info border-4" role="alert">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-bell-fill me-2 mt-1 text-info" aria-hidden="true"></i>
+                <div class="flex-grow-1">
+                  <strong class="d-block mb-1">Rappel activé</strong>
+                  <p class="mb-2 small text-muted">Vous recevrez un email la veille à 19h pour vous rappeler l'événement.</p>
+                  <%= button_to toggle_reminder_event_path(@event), method: :patch, 
+                      class: "btn btn-sm btn-outline-secondary", 
+                      data: { turbo: false },
+                      aria: { label: 'Désactiver le rappel' } do %>
+                    <i class="bi bi-bell-slash me-1" aria-hidden="true"></i>Désactiver le rappel
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="alert alert-light border border-warning mb-3" role="alert">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-bell me-2 mt-1 text-warning" aria-hidden="true"></i>
+                <div class="flex-grow-1">
+                  <strong class="d-block mb-1">Rappel désactivé</strong>
+                  <p class="mb-2 small text-muted">Activez le rappel pour recevoir un email la veille à 19h.</p>
+                  <%= button_to toggle_reminder_event_path(@event), method: :patch, 
+                      class: "btn btn-sm btn-outline-primary", 
+                      data: { turbo: false },
+                      aria: { label: 'Activer le rappel' } do %>
+                    <i class="bi bi-bell-plus me-1" aria-hidden="true"></i>Activer le rappel
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
         <!-- Boutons secondaires (Calendrier en premier) -->
         <div class="secondary-actions mb-3">
           <% if user_signed_in? %>
@@ -237,7 +374,7 @@
           <% if current_user_has_attendance?(@event) %>
             <%= button_to cancel_attendance_event_path(@event), method: :delete, 
                 class: 'btn btn-outline-secondary btn-lg w-100', 
-                data: { turbo_confirm: 'Annuler votre inscription ?' },
+                data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
                 aria: { label: 'Se désinscrire de cet événement' } do %>
               <i class="bi bi-calendar-x me-2" aria-hidden="true"></i>Se désinscrire
             <% end %>
@@ -304,11 +441,72 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false } do |f| %>
+        <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false }, id: "attendFormShow", class: "attend-form" do |f| %>
           <div class="modal-body">
+            <!-- Alerte "Presque complet" si ≤5 places restantes -->
+            <% if !@event.unlimited? && @event.remaining_spots <= 5 && @event.remaining_spots > 0 %>
+              <div class="alert alert-warning mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+                <strong>Attention !</strong> Il ne reste que <%= pluralize(@event.remaining_spots, "place disponible", "places disponibles") %> pour cet événement.
+              </div>
+            <% end %>
+            
             <p class="lead mb-3">
               Confirmez votre participation à <strong><%= @event.title %></strong>
             </p>
+            
+            <!-- Résumé de l'événement -->
+            <div class="event-summary mb-3 p-3 bg-light rounded">
+              <div class="row g-2">
+                <div class="col-12">
+                  <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé de l'événement</p>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <p class="mb-1">
+                    <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
+                    <strong>Date :</strong> <%= l @event.start_at, format: :event_long, locale: :fr %>
+                  </p>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <p class="mb-1">
+                    <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
+                    <strong>Lieu :</strong> <%= truncate(@event.location_text, length: 50) %>
+                  </p>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <p class="mb-1">
+                    <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
+                    <strong>Durée :</strong> <%= @event.duration_min %> minutes
+                  </p>
+                </div>
+                <% if @event.distance_km.present? && @event.distance_km > 0 %>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-0">
+                      <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
+                      <strong>Distance :</strong>
+                      <% if @event.loops_count && @event.loops_count > 1 %>
+                        <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                        <span class="badge bg-info ms-2"><%= @event.loops_count %> boucles</span>
+                      <% else %>
+                        <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                      <% end %>
+                    </p>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            
+            <!-- Bouton Ajouter au calendrier -->
+            <% if user_signed_in? %>
+              <div class="mb-3 text-center">
+                <%= link_to ical_event_path(@event, format: :ics), 
+                    class: "btn btn-outline-primary btn-sm w-100", 
+                    title: 'Ajouter au calendrier',
+                    aria: { label: 'Ajouter au calendrier' } do %>
+                  <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Ajouter à mon calendrier
+                <% end %>
+              </div>
+            <% end %>
             
             <div class="form-check mb-3">
               <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
@@ -324,9 +522,24 @@
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-            <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", data: { bs_dismiss: "modal" } %>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelBtnShow">Annuler</button>
+            <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", id: "submitBtnShow", data: { bs_dismiss: "modal" } %>
           </div>
+          <script>
+            (function() {
+              var formShow = document.getElementById('attendFormShow');
+              var submitBtnShow = document.getElementById('submitBtnShow');
+              var cancelBtnShow = document.getElementById('cancelBtnShow');
+              
+              if (formShow && submitBtnShow) {
+                formShow.addEventListener('submit', function() {
+                  submitBtnShow.disabled = true;
+                  submitBtnShow.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Inscription en cours...';
+                  if (cancelBtnShow) cancelBtnShow.disabled = true;
+                });
+              }
+            })();
+          </script>
         <% end %>
       </div>
     </div>
@@ -353,6 +566,51 @@
           <%= button_to event_path(@event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
             <i class="bi bi-trash me-2" aria-hidden="true"></i>Oui, supprimer
           <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Modals pour agrandir les images de parcours -->
+<% if @event.loops_count && @event.loops_count > 1 && @event.loops_with_routes.any? %>
+  <% @event.loops_with_routes.each do |loop_data| %>
+    <% if loop_data[:route]&.map_image&.attached? %>
+      <div class="modal fade" id="routeImageModal<%= loop_data[:loop_number] %>" tabindex="-1" aria-labelledby="routeImageModalLabel<%= loop_data[:loop_number] %>" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 pb-0">
+              <h5 class="modal-title text-white" id="routeImageModalLabel<%= loop_data[:loop_number] %>">
+                <%= loop_data[:route].name %> - Boucle <%= loop_data[:loop_number] %>
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+              <%= image_tag(rails_representation_path(loop_data[:route].map_image), 
+                  alt: loop_data[:route].name, 
+                  class: "img-fluid rounded", 
+                  style: "max-height: 85vh; width: auto;") %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% elsif @event.route.present? && @event.route.map_image.attached? %>
+  <div class="modal fade" id="routeImageModalSingle" tabindex="-1" aria-labelledby="routeImageModalLabelSingle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-white" id="routeImageModalLabelSingle">
+            <%= @event.route.name %>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body p-0 text-center">
+          <%= image_tag(rails_representation_path(@event.route.map_image), 
+              alt: @event.route.name, 
+              class: "img-fluid rounded", 
+              style: "max-height: 85vh; width: auto;") %>
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 ActiveAdmin.register Order do
-  menu priority: 5, label: "Commandes"
+  menu priority: 1, label: "Commandes", parent: "Commandes"
 
   includes :user, :payment, :order_items
 
-  permit_params :user_id, :status, :total_cents, :currency, :payment_id
+  permit_params :user_id, :status, :total_cents, :donation_cents, :currency, :payment_id
 
   scope :all, default: true
   scope("En attente", default: true) { |orders| orders.where(status: "pending") }
@@ -43,10 +43,29 @@ ActiveAdmin.register Order do
 
   show do
     attributes_table do
+      row :id
       row :user
-      row :status
+      row :status do |order|
+        case order.status
+        when "pending"
+          status_tag("En attente", class: "warning")
+        when "completed"
+          status_tag("Complétée", class: "ok")
+        when "cancelled", "canceled"
+          status_tag("Annulée", class: "error")
+        else
+          status_tag(order.status)
+        end
+      end
       row :total_cents do |order|
         number_to_currency(order.total_cents / 100.0, unit: order.currency)
+      end
+      row :donation_cents do |order|
+        if order.donation_cents > 0
+          number_to_currency(order.donation_cents / 100.0, unit: order.currency)
+        else
+          "-"
+        end
       end
       row :currency
       row :payment
@@ -77,10 +96,22 @@ ActiveAdmin.register Order do
         "Annulée" => "cancelled"
       }, prompt: "Sélectionnez un statut"
       f.input :total_cents, label: "Total (cents)"
+      f.input :donation_cents, label: "Don (cents)", hint: "Montant du don optionnel"
       f.input :currency, input_html: { value: f.object.currency || "EUR" }
       f.input :payment
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @order = resource
+      if @order.destroy
+        redirect_to collection_path, notice: "La commande ##{@order.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@order), alert: "Impossible de supprimer la commande : #{@order.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

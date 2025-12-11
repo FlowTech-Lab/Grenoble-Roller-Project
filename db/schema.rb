@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_06_233807) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -98,6 +98,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_233807) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "event_loop_routes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "distance_km", precision: 5, scale: 1
+    t.bigint "event_id", null: false
+    t.integer "loop_number", null: false
+    t.bigint "route_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id", "loop_number"], name: "index_event_loop_routes_on_event_id_and_loop_number", unique: true
+    t.index ["event_id"], name: "index_event_loop_routes_on_event_id"
+    t.index ["route_id"], name: "index_event_loop_routes_on_route_id"
+  end
+
   create_table "events", force: :cascade do |t|
     t.integer "attendances_count", default: 0, null: false
     t.string "cover_image_url", limit: 255
@@ -110,6 +122,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_233807) do
     t.boolean "is_recurring", default: false
     t.string "level", limit: 20
     t.string "location_text", limit: 255, null: false
+    t.integer "loops_count", default: 1, null: false
     t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
@@ -377,6 +390,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_06_233807) do
   add_foreign_key "attendances", "payments"
   add_foreign_key "attendances", "users"
   add_foreign_key "audit_logs", "users", column: "actor_user_id"
+  add_foreign_key "event_loop_routes", "events"
+  add_foreign_key "event_loop_routes", "routes"
   add_foreign_key "events", "routes"
   add_foreign_key "events", "users", column: "creator_user_id"
   add_foreign_key "memberships", "payments"

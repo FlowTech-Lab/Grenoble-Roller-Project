@@ -1,5 +1,5 @@
 ActiveAdmin.register OrganizerApplication do
-  menu priority: 11, label: "Candidatures Organisateur"
+  menu priority: 4, label: "Candidatures Organisateur", parent: "Utilisateurs"
 
   includes :user, :reviewed_by
 
@@ -11,11 +11,11 @@ ActiveAdmin.register OrganizerApplication do
   scope("Refusées") { |scope| scope.where(status: "rejected") }
 
   action_item :approve, only: :show, if: proc { resource.pending? } do
-    link_to "Approuver", approve_admin_organizer_application_path(resource), method: :put
+    link_to "Approuver", approve_activeadmin_organizer_application_path(resource), method: :put
   end
 
   action_item :reject, only: :show, if: proc { resource.pending? } do
-    link_to "Refuser", reject_admin_organizer_application_path(resource), method: :put
+    link_to "Refuser", reject_activeadmin_organizer_application_path(resource), method: :put
   end
 
   member_action :approve, method: :put do
@@ -78,5 +78,16 @@ ActiveAdmin.register OrganizerApplication do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @application = resource
+      if @application.destroy
+        redirect_to collection_path, notice: "La candidature ##{@application.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@application), alert: "Impossible de supprimer la candidature : #{@application.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end
