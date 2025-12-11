@@ -2023,6 +2023,21 @@
   }
 }
 
+/* Résumé événement dans modal d'inscription */
+.event-summary {
+  border-left: 3px solid var(--bs-primary);
+  background-color: var(--bs-light) !important;
+  
+  [data-bs-theme="dark"] & {
+    background-color: var(--bs-dark) !important;
+    border-left-color: var(--bs-primary);
+  }
+  
+  .text-primary {
+    color: var(--bs-primary) !important;
+  }
+}
+
 [data-bs-theme="dark"] .event-summary-grid .event-summary-item,
 [data-bs-theme="dark"] .event-summary-secondary .event-summary-item,
 [data-bs-theme="dark"] .event-detail-card .event-summary-item {

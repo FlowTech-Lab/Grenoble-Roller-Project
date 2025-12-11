@@ -204,6 +204,53 @@
                 Confirmez votre participation à <strong><%= event.title %></strong>
               </p>
               
+              <!-- Résumé de l'événement -->
+              <div class="event-summary mb-3 p-3 bg-light rounded">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé de l'événement</p>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-1">
+                      <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
+                      <strong>Date :</strong> <%= l event.start_at, format: :event_long, locale: :fr %>
+                    </p>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-1">
+                      <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
+                      <strong>Lieu :</strong> <%= truncate(event.location_text, length: 50) %>
+                    </p>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-1">
+                      <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
+                      <strong>Durée :</strong> <%= event.duration_min %> minutes
+                    </p>
+                  </div>
+                  <% if event.distance_km.present? && event.distance_km > 0 %>
+                    <div class="col-12 col-sm-6">
+                      <p class="mb-0">
+                        <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
+                        <strong>Distance :</strong> <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                      </p>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              
+              <!-- Bouton Ajouter au calendrier -->
+              <% if user_signed_in? %>
+                <div class="mb-3 text-center">
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm w-100", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Ajouter à mon calendrier
+                  <% end %>
+                </div>
+              <% end %>
+              
               <div class="form-check mb-3">
                 <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
                 <label class="form-check-label" for="wants_reminder">

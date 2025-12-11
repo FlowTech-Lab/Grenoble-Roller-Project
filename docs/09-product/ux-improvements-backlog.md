@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **13/41 Quick Wins terminés** (32%) + **2 partiellement faits**
+**Avancement** : **14/41 Quick Wins terminés** (34%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -57,7 +57,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Lien "Voir tous les événements passés" (Si >6 événements passés) ⚠️ **À FAIRE** - Section passés existe mais pas de lien "Voir plus"
 
 ### **Parcours 4 : Inscription à un Événement**
-- [ ] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation) ⚠️ **À FAIRE** - Modal existe mais pas de résumé visible
+- [x] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation) ✅ **TERMINÉ** (2025-01-30) - Résumé avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier"
 - [ ] Message de succès personnalisé ("Inscription confirmée ! À bientôt le [date] à [heure]") ⚠️ **À FAIRE** - Message générique actuellement
 - [ ] Indicateur de chargement (Spinner/loader pendant soumission) ⚠️ **À FAIRE** - Pas d'indicateur visible
 - [x] Alerte "Presque complet" (Si ≤5 places, alerte dans la modal) ✅ **PARTIELLEMENT FAIT** - Badge visible sur card mais pas dans modal
@@ -286,9 +286,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Impact : Haut (navigation facilitée dans le catalogue)
    - Effort : Faible (sidebar ou tabs avec catégories existantes)
 
-7. **Résumé dans modal inscription** (Parcours 4)
+7. **Résumé dans modal inscription** (Parcours 4) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (rassure l'utilisateur avant confirmation)
    - Effort : Faible (afficher date/heure/lieu dans modal)
+   - **Status** : Résumé complet avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier" (iCal)
 
 8. **Message de bienvenue après inscription** (Parcours 2)
    - Impact : Haut (première impression positive)
@@ -598,7 +599,7 @@ Une user story est "Done" quand :
 
 **Document créé le** : 2025-11-14  
 **Dernière mise à jour** : 2025-01-30  
-**Version** : 1.8 (Vérification complète backlog - Quick Wins + Importantes + Futures vérifiés)
+**Version** : 1.9 (Quick Win #7 implémentée - Résumé modal + Ajout calendrier)
 
 **Points déjà implémentés identifiés** :
 - ✅ Validation email Devise (`:confirmable` activé)
@@ -609,13 +610,13 @@ Une user story est "Done" quand :
 - ✅ Audit trail (modèle `AuditLog` existe, interface à améliorer)
 
 **Avancement actuel** :
-- ✅ **13 Quick Wins terminés (32%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅
+- ✅ **14 Quick Wins terminés (34%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30)
 - 🟡 **2 partiellement faits** : Alerte "Presque complet" (badge sur card mais pas dans modal), Pages footer (FAQ et Équipe manquantes)
-- ⏳ **26 Quick Wins en attente (68%)**
+- ⏳ **25 Quick Wins en attente (66%)**
 
 **Phases globales** :
 - ✅ **Phase 0 (Accessibilité)** : 100% - Corrections critiques terminées
-- ⏳ **Phase 1 (Quick Wins)** : 32% - 13/41 terminés, 2 partiellement faits
+- ⏳ **Phase 1 (Quick Wins)** : 34% - 14/41 terminés, 2 partiellement faits
 - ✅ **Phase 2 (HelloAsso)** : 90% - Checkout & polling fonctionnels
 - ✅ **Phase 3 (Adhésions)** : 95% - Formulaire multi-étapes complet
 - ✅ **Phase 4 (Événements)** : 95% - Fonctionnalités core complètes
