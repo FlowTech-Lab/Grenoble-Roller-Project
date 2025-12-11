@@ -3365,6 +3365,52 @@
     border: 1px solid var(--liquid-glass-border);
   }
 
+  /* Lightbox images produits */
+  .product-image-clickable {
+    transition: opacity 0.2s ease;
+    
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+  
+  .modal#productImageModalShow,
+  .modal[id^="productImageModal"] {
+    .modal-content {
+      background: rgba(0, 0, 0, 0.85) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .modal-header {
+      .modal-title {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+    }
+    
+    .modal-body {
+      img {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.02);
+        }
+      }
+    }
+    
+    .btn-close-white {
+      filter: invert(1) grayscale(100%) brightness(200%);
+    }
+  }
+  
+  [data-bs-theme="dark"] .modal#productImageModalShow,
+  [data-bs-theme="dark"] .modal[id^="productImageModal"] {
+    .modal-content {
+      background: rgba(0, 0, 0, 0.9) !important;
+    }
+  }
+
   /* Sidebar filtres catégories - Style arrondi harmonieux */
   .category-filter-item {
     display: block;

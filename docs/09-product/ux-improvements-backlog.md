@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **29/41 Quick Wins terminés** (71%) + **2 partiellement faits**
+**Avancement** : **30/41 Quick Wins terminés** (73%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -78,7 +78,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Filtres par catégories (Sidebar ou tabs avec catégories) ✅ **TERMINÉ** (2025-01-30) - Sidebar avec filtres par catégorie, compteurs, filtre actif mis en évidence
 - [ ] Barre de recherche (Recherche par nom produit - AJAX) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
 - [x] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url) ✅ **DÉJÀ GÉRÉ** - Image obligatoire (validation `presence: true`)
-- [ ] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ⚠️ **PRIORITÉ MOYENNE** - Pas de lightbox actuellement
+- [x] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ✅ **TERMINÉ** (2025-01-30) - Modal Bootstrap avec fond sombre, image agrandie (max 80vh), effet hover sur l'image cliquable, accessible depuis liste et détail produit
 - [x] Message "Article ajouté" plus visible (Toast/notification persistante) ✅ **TERMINÉ** (2025-01-20)
 - [x] **UX Liste commandes : Bouton "Payer" visible** ✅ **TERMINÉ** (2025-01-26)
   - Bouton "Payer" directement dans la liste pour commandes `pending`

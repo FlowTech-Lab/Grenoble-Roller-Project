@@ -11,7 +11,8 @@ export default class extends Controller {
     "qtyField",
     "priceDisplay",
     "unitPriceValue",
-    "productImage"
+    "productImage",
+    "modal"
   ]
 
   static values = {
@@ -24,12 +25,29 @@ export default class extends Controller {
     if (this.hasProductImageTarget && this.productImageTarget.src) {
       this.initialImageSrc = this.productImageTarget.src
     }
+    
+    // Écouter l'ouverture du modal pour mettre à jour l'image juste avant l'affichage
+    const modalElement = document.getElementById('productImageModalShow')
+    if (modalElement) {
+      modalElement.addEventListener('show.bs.modal', () => {
+        this.updateModalImage()
+      })
+    }
+    
     // Ne mettre à jour que si une option est déjà sélectionnée
     // Sinon, garder l'image initiale et les valeurs par défaut
     const hasSelection = (this.hasSizeSelectTarget && this.sizeSelectTarget.value) || 
                         (this.hasColorSelectTarget && this.colorSelectTarget.value)
     if (hasSelection) {
       this.updateVariant()
+    }
+  }
+  
+  updateModalImage() {
+    // Mettre à jour l'image du modal avec l'image actuelle du produit
+    const modalImage = document.getElementById('productModalImage')
+    if (modalImage && this.hasProductImageTarget && this.productImageTarget.src) {
+      modalImage.src = this.productImageTarget.src
     }
   }
 
@@ -149,16 +167,26 @@ export default class extends Controller {
 
     // Mettre à jour l'image indépendamment de la variante complète
     // (peut changer même si seule la couleur est sélectionnée)
-    if (this.hasProductImageTarget) {
-      if (imageVariant && imageVariant.imageUrl && imageVariant.imageUrl !== this.defaultImageUrlValue) {
-        this.productImageTarget.src = imageVariant.imageUrl
-      } else if (this.initialImageSrc) {
-        // Revenir à l'image initiale si aucune variante d'image trouvée
-        this.productImageTarget.src = this.initialImageSrc
-      } else {
-        // Fallback sur l'image par défaut
-        this.productImageTarget.src = this.defaultImageUrlValue
-      }
+    let imageUrlToUse = null
+    if (imageVariant && imageVariant.imageUrl && imageVariant.imageUrl !== this.defaultImageUrlValue) {
+      imageUrlToUse = imageVariant.imageUrl
+    } else if (this.initialImageSrc) {
+      // Revenir à l'image initiale si aucune variante d'image trouvée
+      imageUrlToUse = this.initialImageSrc
+    } else {
+      // Fallback sur l'image par défaut
+      imageUrlToUse = this.defaultImageUrlValue
+    }
+
+    // Mettre à jour l'image principale
+    if (this.hasProductImageTarget && imageUrlToUse) {
+      this.productImageTarget.src = imageUrlToUse
+    }
+
+    // Mettre à jour l'image du modal lightbox (si le modal existe)
+    const modalImage = document.getElementById('productModalImage')
+    if (modalImage && imageUrlToUse) {
+      modalImage.src = imageUrlToUse
     }
 
     if (!variant) {
