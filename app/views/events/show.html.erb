@@ -169,41 +169,22 @@
         </div>
       </section>
 
-      <!-- Zone 3 - Alerte rappel (conditionnelle) -->
-      <% if current_user_has_attendance?(@event) && @user_attendance %>
-        <% if @user_attendance.wants_reminder? %>
-          <div class="alert alert-info alert-reminder d-flex align-items-center justify-content-between mb-4" role="alert">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-bell-fill me-2 fs-5 reminder-icon" aria-hidden="true"></i>
-              <div>
-                <strong>Rappel activé</strong>
-                <p class="mb-0 small">Vous recevrez un email la veille à 19h pour vous rappeler l'événement.</p>
+      <!-- Zone 3 - Description (placée tôt pour comprendre rapidement l'événement) -->
+      <% if @event.description.present? %>
+        <div class="event-description mb-4">
+          <div class="card card-liquid border-liquid shadow-liquid rounded-liquid overflow-hidden" style="background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.05) 0%, rgba(var(--bs-primary-rgb), 0.02) 100%); border-left: 4px solid var(--liquid-primary);">
+            <div class="card-body p-4 p-md-5">
+              <div class="text-center mb-4">
+                <span class="badge badge-liquid-primary mb-3 px-4 py-2 fs-6 shadow-sm">
+                  <i class="bi bi-info-circle me-2" aria-hidden="true"></i>À propos
+                </span>
+              </div>
+              <div class="text-body text-center" style="line-height: 1.9; max-width: 800px; margin: 0 auto; font-size: 1.05rem;">
+                <%= simple_format(@event.description) %>
               </div>
             </div>
-            <%= button_to toggle_reminder_event_path(@event), method: :patch, 
-                class: "btn btn-sm btn-outline-secondary", 
-                data: { turbo: false },
-                aria: { label: 'Désactiver le rappel' } do %>
-              <i class="bi bi-bell me-1" aria-hidden="true"></i>Désactiver
-            <% end %>
           </div>
-        <% else %>
-          <div class="alert alert-warning alert-reminder d-flex align-items-center justify-content-between mb-4" role="alert">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-bell-exclamation me-2 fs-5 reminder-icon" aria-hidden="true"></i>
-              <div>
-                <strong>Rappel désactivé</strong>
-                <p class="mb-0 small">Activez-le pour ne pas oublier cette sortie.</p>
-              </div>
-            </div>
-            <%= button_to toggle_reminder_event_path(@event), method: :patch, 
-                class: "btn btn-sm btn-outline-primary", 
-                data: { turbo: false },
-                aria: { label: 'Activer le rappel' } do %>
-              <i class="bi bi-bell-plus me-1" aria-hidden="true"></i>Activer le rappel
-            <% end %>
-          </div>
-        <% end %>
+        </div>
       <% end %>
 
       <!-- Zone 4 - Parcours par boucle (si plusieurs boucles) -->
@@ -213,11 +194,15 @@
             <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours par boucle
           </h2>
           <div class="row g-4">
-            <% @event.loops_with_routes.each do |loop_data| %>
+            <% @event.loops_with_routes.each_with_index do |loop_data, index| %>
               <div class="col-12 <%= @event.loops_count == 2 ? 'col-md-6' : 'col-md-4' %>">
                 <div class="card card-liquid border-liquid h-100">
                   <% if loop_data[:route]&.map_image&.attached? %>
-                    <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                    <div class="card-img-top" 
+                         style="height: 200px; overflow: hidden; cursor: pointer;"
+                         data-bs-toggle="modal" 
+                         data-bs-target="#routeImageModal<%= loop_data[:loop_number] %>"
+                         aria-label="Agrandir l'image du parcours <%= loop_data[:route].name %>">
                       <%= image_tag(rails_representation_path(loop_data[:route].map_image.variant(resize_to_limit: [800, 400])), 
                           alt: loop_data[:route].name, 
                           class: "w-100 h-100 object-fit-cover") %>
@@ -282,7 +267,11 @@
           </h2>
           <div class="card card-liquid border-liquid">
             <% if @event.route.map_image.attached? %>
-              <div class="card-img-top" style="height: 300px; overflow: hidden;">
+              <div class="card-img-top" 
+                   style="height: 300px; overflow: hidden; cursor: pointer;"
+                   data-bs-toggle="modal" 
+                   data-bs-target="#routeImageModalSingle"
+                   aria-label="Agrandir l'image du parcours <%= @event.route.name %>">
                 <%= image_tag(rails_representation_path(@event.route.map_image.variant(resize_to_limit: [1200, 600])), 
                     alt: @event.route.name, 
                     class: "w-100 h-100 object-fit-cover") %>
@@ -322,19 +311,46 @@
         </div>
       <% end %>
 
-      <!-- Zone 4 - Description -->
-      <div class="event-description mb-4">
-        <h2 class="h5 fw-semibold mb-3">
-          <i class="bi bi-info-circle me-2 text-liquid-primary" aria-hidden="true"></i>À propos
-        </h2>
-        <div class="text-body" style="line-height: 1.7;">
-          <%= simple_format(@event.description) %>
-        </div>
-      </div>
-
 
       <!-- Zone 5 - Actions principales -->
       <div class="event-actions-sticky">
+        <!-- Notification rappel (uniquement si inscrit) - Placée en haut de la zone d'actions pour visibilité contextuelle -->
+        <% if current_user_has_attendance?(@event) && @user_attendance %>
+          <% if @user_attendance.wants_reminder? %>
+            <div class="alert alert-info alert-reminder mb-3 border-start border-info border-4" role="alert">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-bell-fill me-2 mt-1 text-info" aria-hidden="true"></i>
+                <div class="flex-grow-1">
+                  <strong class="d-block mb-1">Rappel activé</strong>
+                  <p class="mb-2 small text-muted">Vous recevrez un email la veille à 19h pour vous rappeler l'événement.</p>
+                  <%= button_to toggle_reminder_event_path(@event), method: :patch, 
+                      class: "btn btn-sm btn-outline-secondary", 
+                      data: { turbo: false },
+                      aria: { label: 'Désactiver le rappel' } do %>
+                    <i class="bi bi-bell-slash me-1" aria-hidden="true"></i>Désactiver le rappel
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="alert alert-light border border-warning mb-3" role="alert">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-bell me-2 mt-1 text-warning" aria-hidden="true"></i>
+                <div class="flex-grow-1">
+                  <strong class="d-block mb-1">Rappel désactivé</strong>
+                  <p class="mb-2 small text-muted">Activez le rappel pour recevoir un email la veille à 19h.</p>
+                  <%= button_to toggle_reminder_event_path(@event), method: :patch, 
+                      class: "btn btn-sm btn-outline-primary", 
+                      data: { turbo: false },
+                      aria: { label: 'Activer le rappel' } do %>
+                    <i class="bi bi-bell-plus me-1" aria-hidden="true"></i>Activer le rappel
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
         <!-- Boutons secondaires (Calendrier en premier) -->
         <div class="secondary-actions mb-3">
           <% if user_signed_in? %>
@@ -542,6 +558,51 @@
           <%= button_to event_path(@event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
             <i class="bi bi-trash me-2" aria-hidden="true"></i>Oui, supprimer
           <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Modals pour agrandir les images de parcours -->
+<% if @event.loops_count && @event.loops_count > 1 && @event.loops_with_routes.any? %>
+  <% @event.loops_with_routes.each do |loop_data| %>
+    <% if loop_data[:route]&.map_image&.attached? %>
+      <div class="modal fade" id="routeImageModal<%= loop_data[:loop_number] %>" tabindex="-1" aria-labelledby="routeImageModalLabel<%= loop_data[:loop_number] %>" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 pb-0">
+              <h5 class="modal-title text-white" id="routeImageModalLabel<%= loop_data[:loop_number] %>">
+                <%= loop_data[:route].name %> - Boucle <%= loop_data[:loop_number] %>
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+              <%= image_tag(rails_representation_path(loop_data[:route].map_image), 
+                  alt: loop_data[:route].name, 
+                  class: "img-fluid rounded", 
+                  style: "max-height: 85vh; width: auto;") %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% elsif @event.route.present? && @event.route.map_image.attached? %>
+  <div class="modal fade" id="routeImageModalSingle" tabindex="-1" aria-labelledby="routeImageModalLabelSingle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-white" id="routeImageModalLabelSingle">
+            <%= @event.route.name %>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body p-0 text-center">
+          <%= image_tag(rails_representation_path(@event.route.map_image), 
+              alt: @event.route.name, 
+              class: "img-fluid rounded", 
+              style: "max-height: 85vh; width: auto;") %>
         </div>
       </div>
     </div>
