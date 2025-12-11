@@ -60,7 +60,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation) ✅ **TERMINÉ** (2025-01-30) - Résumé avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier"
 - [x] Message de succès personnalisé ("Inscription confirmée ! À bientôt le [date] à [heure]") ✅ **TERMINÉ** (2025-01-30) - Message personnalisé avec date et heure de l'événement
 - [x] Indicateur de chargement (Spinner/loader pendant soumission) ✅ **TERMINÉ** (2025-01-30) - Spinner Bootstrap avec texte "Inscription en cours..." pendant la soumission
-- [x] Alerte "Presque complet" (Si ≤5 places, alerte dans la modal) ✅ **PARTIELLEMENT FAIT** - Badge visible sur card mais pas dans modal
+- [x] Alerte "Presque complet" (Si ≤5 places, alerte dans la modal) ✅ **TERMINÉ** (2025-01-30) - Alerte ajoutée dans modals d'inscription événements et formulaire initiations
 
 ### **Parcours 5 : Gestion de Mes Inscriptions**
 - [x] Séparer événements à venir et passés (Section "À venir" et "Passés" avec compteurs) ✅ **TERMINÉ** (2025-01-30) - Sections séparées avec compteurs et badges distinctifs
@@ -71,7 +71,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ### **Parcours 6 : Création d'un Événement**
 - [x] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie) ✅ **TERMINÉ** (2025-01-30) - Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée 7 jours, restauration et nettoyage automatiques
 - [x] Validation en temps réel (Vérifier les champs au blur) ✅ **TERMINÉ** (2025-01-30) - Validation harmonisée avec formulaires d'adhésion, feedback immédiat au blur, validation titre (maxlength), description, date (futur), nombres (min), select (niveau)
-- [ ] Indicateur de progression (Barre "Étape 1/1" ou compteur de champs remplis)
+- [ ] Indicateur de progression (Barre "Étape 1/1" ou compteur de champs remplis) ❌ **SUPPRIMÉ** - Inutile selon retour utilisateur
 - [x] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?") ✅ **TERMINÉ** (2025-01-30) - Confirmation Turbo ajoutée uniquement pour la création (pas pour la modification)
 
 ### **Parcours 7 : Achat en Boutique**
@@ -108,10 +108,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Créer les pages manquantes du footer (Pages statiques : FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe) ✅ **PARTIELLEMENT FAIT** - Contact, CGU, Confidentialité, Mentions Légales, CGV existent. FAQ, Équipe à créer
 - [ ] Implémenter newsletter fonctionnelle (Formulaire footer + backend avec service email) ⚠️ **À FAIRE** - Newsletter masquée actuellement
 - [x] Lier réseaux sociaux (Ajouter vraies URLs dans variables d'environnement) ✅ **TERMINÉ** - Facebook et Instagram avec vraies URLs
-- [ ] Section "Pourquoi nous rejoindre ?" (3-4 cards avec valeurs + icônes)
-- [ ] Section "Derniers événements" (Carrousel ou grille avec 3-4 derniers événements passés)
-- [ ] Section "Tarifs d'adhésion" (Tableau simple avec 3 tarifs + CTA)
-- [ ] Améliorer le message vide (Si aucun événement, proposer actions selon rôle)
+- [x] Section "Pourquoi nous rejoindre ?" (3-4 cards avec valeurs + icônes) ✅ **DÉJÀ FAIT** - Section existante avec 3 cards (Tous niveaux, Convivialité, Sport)
+- [ ] Section "Derniers événements" (Carrousel ou grille avec 3-4 derniers événements passés) ⏳ **À FAIRE PLUS TARD** - Page d'accueil méritera refonte complète avec carrousel
+- [ ] Section "Tarifs d'adhésion" (Tableau simple avec 3 tarifs + CTA) ⏳ **À FAIRE PLUS TARD** - Page d'accueil méritera refonte complète avec carrousel
+- [ ] Améliorer le message vide (Si aucun événement, proposer actions selon rôle) ⏳ **À FAIRE PLUS TARD** - Page d'accueil méritera refonte complète avec carrousel
 
 ### **Parcours 2 : Inscription**
 - [ ] Validation email en temps réel (Vérifier si email existe déjà via AJAX) ⚠️ **À FAIRE** - Pas de validation AJAX
@@ -132,7 +132,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Prévisualisation email (Aperçu de l'email de confirmation dans la modal) ⚠️ **À FAIRE** - Pas de prévisualisation
 - [x] Conditions d'annulation claires (Mentionner "Vous pouvez annuler jusqu'à [X heures] avant") ✅ **TERMINÉ** (2025-01-30) - Message amélioré : "Vous pouvez vous réinscrire plus tard si vous le souhaitez" dans toutes les confirmations d'annulation (événements et initiations)
 - [ ] Confirmation en deux étapes (Étape 1 modal → Étape 2 page de confirmation) ⚠️ **À FAIRE** - Modal directe seulement
-- [ ] Rappel des informations GPS (Si coordonnées GPS, rappeler dans la modal avec liens) ⚠️ **À FAIRE** - Pas de rappel GPS dans modal
+- [x] Rappel des informations GPS (Si coordonnées GPS, rappeler dans la modal avec liens) ✅ **TERMINÉ** (2025-01-30) - Coordonnées GPS ajoutées dans l'export iCal (champ GEO + location formatée)
 - [ ] Notification push (optionnel) (Demander permission pour notifications push) ⚠️ **À FAIRE** - Pas de notifications push
 
 ### **Parcours 5 : Gestion de Mes Inscriptions**

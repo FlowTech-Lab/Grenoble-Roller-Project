@@ -180,7 +180,18 @@ class EventsController < ApplicationController
     event_ical.dtend = Icalendar::Values::DateTime.new(@event.start_at + @event.duration_min.minutes)
     event_ical.summary = @event.title
     event_ical.description = @event.description.presence || "Événement organisé par #{@event.creator_user.first_name}"
-    event_ical.location = @event.location_text
+    
+    # Location avec adresse et coordonnées GPS si disponibles
+    if @event.has_gps_coordinates?
+      # Format iCal : adresse avec coordonnées GPS dans le champ location
+      event_ical.location = "#{@event.location_text} (#{@event.meeting_lat},#{@event.meeting_lng})"
+      # Ajout du champ GEO pour les coordonnées GPS (standard iCal RFC 5545)
+      # Format: [latitude, longitude]
+      event_ical.geo = [@event.meeting_lat, @event.meeting_lng]
+    else
+      event_ical.location = @event.location_text
+    end
+    
     event_ical.url = event_url(@event)
     event_ical.uid = "event-#{@event.id}@grenobleroller.fr"
     event_ical.last_modified = @event.updated_at
