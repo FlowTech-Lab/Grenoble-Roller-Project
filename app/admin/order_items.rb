@@ -64,5 +64,16 @@ ActiveAdmin.register OrderItem do
     end
     f.actions
   end
+
+  controller do
+    def destroy
+      @order_item = resource
+      if @order_item.destroy
+        redirect_to collection_path, notice: "L'article de commande ##{@order_item.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@order_item), alert: "Impossible de supprimer l'article : #{@order_item.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end
 

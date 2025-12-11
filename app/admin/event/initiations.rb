@@ -176,4 +176,15 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
 
     redirect_to presences_admin_initiation_path(@initiation), notice: "Présences mises à jour avec succès."
   end
+
+  controller do
+    def destroy
+      @initiation = resource
+      if @initiation.destroy
+        redirect_to collection_path, notice: "L'initiation ##{@initiation.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@initiation), alert: "Impossible de supprimer l'initiation : #{@initiation.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

@@ -53,5 +53,16 @@ ActiveAdmin.register VariantOptionValue do
     end
     f.actions
   end
+
+  controller do
+    def destroy
+      @vov = resource
+      if @vov.destroy
+        redirect_to collection_path, notice: "L'association ##{@vov.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@vov), alert: "Impossible de supprimer l'association : #{@vov.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end
 

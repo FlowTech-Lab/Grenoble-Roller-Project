@@ -79,4 +79,15 @@ ActiveAdmin.register OrganizerApplication do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @application = resource
+      if @application.destroy
+        redirect_to collection_path, notice: "La candidature ##{@application.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@application), alert: "Impossible de supprimer la candidature : #{@application.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

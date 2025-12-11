@@ -130,4 +130,15 @@ ActiveAdmin.register ProductVariant do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @variant = resource
+      if @variant.destroy
+        redirect_to collection_path, notice: "La variante ##{@variant.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@variant), alert: "Impossible de supprimer la variante : #{@variant.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

@@ -123,5 +123,16 @@ ActiveAdmin.register Payment do
     end
     f.actions
   end
+
+  controller do
+    def destroy
+      @payment = resource
+      if @payment.destroy
+        redirect_to collection_path, notice: "Le paiement ##{@payment.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@payment), alert: "Impossible de supprimer le paiement : #{@payment.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end
 

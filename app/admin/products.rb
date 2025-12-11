@@ -153,4 +153,15 @@ ActiveAdmin.register Product do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @product = resource
+      if @product.destroy
+        redirect_to collection_path, notice: "Le produit ##{@product.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@product), alert: "Impossible de supprimer le produit : #{@product.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

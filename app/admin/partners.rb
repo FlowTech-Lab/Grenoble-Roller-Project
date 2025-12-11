@@ -67,4 +67,15 @@ ActiveAdmin.register Partner do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @partner = resource
+      if @partner.destroy
+        redirect_to collection_path, notice: "Le partenaire ##{@partner.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@partner), alert: "Impossible de supprimer le partenaire : #{@partner.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

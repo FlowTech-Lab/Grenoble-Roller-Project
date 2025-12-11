@@ -51,5 +51,16 @@ ActiveAdmin.register ProductCategory do
     end
     f.actions
   end
+
+  controller do
+    def destroy
+      @category = resource
+      if @category.destroy
+        redirect_to collection_path, notice: "La catégorie ##{@category.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@category), alert: "Impossible de supprimer la catégorie : #{@category.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end
 

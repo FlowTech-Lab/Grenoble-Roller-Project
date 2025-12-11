@@ -76,4 +76,15 @@ ActiveAdmin.register Attendance do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @attendance = resource
+      if @attendance.destroy
+        redirect_to collection_path, notice: "La participation ##{@attendance.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@attendance), alert: "Impossible de supprimer la participation : #{@attendance.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

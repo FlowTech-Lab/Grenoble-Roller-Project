@@ -56,4 +56,15 @@ ActiveAdmin.register Role do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @role = resource
+      if @role.destroy
+        redirect_to collection_path, notice: "Le rôle ##{@role.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@role), alert: "Impossible de supprimer le rôle : #{@role.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

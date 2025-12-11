@@ -47,5 +47,16 @@ ActiveAdmin.register OptionValue do
     end
     f.actions
   end
+
+  controller do
+    def destroy
+      @option_value = resource
+      if @option_value.destroy
+        redirect_to collection_path, notice: "La valeur d'option ##{@option_value.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@option_value), alert: "Impossible de supprimer la valeur d'option : #{@option_value.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end
 

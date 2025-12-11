@@ -186,6 +186,21 @@ ActiveAdmin.register Membership do
       row :created_at
       row :updated_at
     end
+
+    active_admin_comments
+  end
+
+  # Action destroy personnalisée avec confirmation
+  controller do
+    def destroy
+      @membership = resource
+      
+      if @membership.destroy
+        redirect_to collection_path, notice: "L'adhésion ##{@membership.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@membership), alert: "Impossible de supprimer l'adhésion : #{@membership.errors.full_messages.join(', ')}"
+      end
+    end
   end
 
   form do |f|
