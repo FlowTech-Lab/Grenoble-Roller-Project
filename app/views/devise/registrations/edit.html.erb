@@ -90,7 +90,7 @@
                 <%= f.label :phone, "Téléphone", class: "form-label" %>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                  <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "06 12 34 56 78", autocomplete: "tel", inputmode: "tel" %>
+                  <%= f.text_field :phone, class: "form-control form-control-liquid", placeholder: "Téléphone", autocomplete: "tel", inputmode: "tel", data: { controller: "phone-mask", phone_mask_target: "input", action: "input->phone-mask#format" } %>
                 </div>
               </div>
             </div>
@@ -120,7 +120,7 @@
                 <% end %>
                 <%= f.text_field :address, 
                     class: "form-control form-control-liquid", 
-                    placeholder: "123 Rue de la République",
+                    placeholder: "Adresse",
                     autocomplete: "street-address" %>
               </div>
               <div class="col-md-6">
@@ -129,7 +129,7 @@
                 <% end %>
                 <%= f.text_field :postal_code, 
                     class: "form-control form-control-liquid", 
-                    placeholder: "38000",
+                    placeholder: "Code postal",
                     autocomplete: "postal-code",
                     maxlength: 5,
                     pattern: "[0-9]{5}" %>
@@ -140,7 +140,7 @@
                 <% end %>
                 <%= f.text_field :city, 
                     class: "form-control form-control-liquid", 
-                    placeholder: "Grenoble",
+                    placeholder: "Ville",
                     autocomplete: "address-level2" %>
               </div>
             </div>

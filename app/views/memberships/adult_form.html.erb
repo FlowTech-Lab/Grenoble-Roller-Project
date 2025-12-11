@@ -104,7 +104,7 @@
                   <%= f.label :first_name, "Prénom *", class: "form-label fw-bold" %>
                   <%= f.text_field :first_name, 
                       class: "form-control form-control-lg", 
-                      value: @user.first_name,
+                      value: @user.first_name.presence,
                       required: true,
                       onblur: "validateField(this)" %>
                   <div class="invalid-feedback"></div>
@@ -113,7 +113,7 @@
                   <%= f.label :last_name, "Nom *", class: "form-label fw-bold" %>
                   <%= f.text_field :last_name, 
                       class: "form-control form-control-lg", 
-                      value: @user.last_name,
+                      value: @user.last_name.presence,
                       required: true,
                       onblur: "validateField(this)" %>
                   <div class="invalid-feedback"></div>
@@ -133,17 +133,22 @@
                 </div>
                 <div class="col-md-6">
                   <%= f.label :phone, "Téléphone *", class: "form-label fw-bold" %>
-                  <%= f.telephone_field :phone, 
-                      class: "form-control form-control-lg", 
-                      value: @user.phone,
-                      required: true,
-                      placeholder: "0612345678",
-                      maxlength: 10,
-                      pattern: "[0-9]{10}",
-                      oninput: "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10); validateField(this);",
-                      onblur: "validateField(this)" %>
+                  <div data-controller="phone-mask">
+                    <%= f.telephone_field :phone, 
+                        class: "form-control form-control-lg", 
+                        value: @user.phone.presence,
+                        required: true,
+                        placeholder: "Téléphone",
+                        maxlength: 14,
+                        pattern: "[0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2}",
+                        data: { 
+                          phone_mask_target: "input",
+                          action: "input->phone-mask#format"
+                        },
+                        onblur: "validateField(this)" %>
+                  </div>
                   <div class="form-text small mt-1">
-                    Format : 10 chiffres uniquement (ex: 0612345678)
+                    Format : 10 chiffres avec espaces (ex: 06 12 34 56 78)
                   </div>
                   <div class="invalid-feedback"></div>
                 </div>
@@ -210,11 +215,11 @@
               <div class="row g-3">
                 <div class="col-12">
                   <%= f.label :address, "Adresse *", class: "form-label fw-bold" %>
-                  <%= f.text_field :address, 
-                      class: "form-control form-control-lg", 
-                      value: @user.address,
-                      required: true,
-                      placeholder: "Numéro et nom de rue",
+                <%= f.text_field :address, 
+                    class: "form-control form-control-lg", 
+                    value: @user.address.presence,
+                    required: true,
+                    placeholder: "Adresse",
                       onblur: "validateField(this)" %>
                   <div class="form-text small mt-1">
                     <i class="bi bi-info-circle me-1"></i>
@@ -224,21 +229,21 @@
                 </div>
                 <div class="col-md-6">
                   <%= f.label :city, "Ville *", class: "form-label fw-bold" %>
-                  <%= f.text_field :city, 
-                      class: "form-control form-control-lg", 
-                      value: @user.city,
-                      required: true,
+                <%= f.text_field :city, 
+                    class: "form-control form-control-lg", 
+                    value: @user.city.presence,
+                    required: true,
                       onblur: "validateField(this)" %>
                   <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-6">
                   <%= f.label :postal_code, "Code postal *", class: "form-label fw-bold" %>
-                  <%= f.text_field :postal_code, 
-                      class: "form-control form-control-lg", 
-                      value: @user.postal_code,
-                      required: true,
+                <%= f.text_field :postal_code, 
+                    class: "form-control form-control-lg", 
+                    value: @user.postal_code.presence,
+                    required: true,
                       pattern: "[0-9]{5}",
-                      placeholder: "38000",
+                      placeholder: "Code postal",
                       onblur: "validateField(this)" %>
                   <div class="invalid-feedback"></div>
                 </div>
@@ -786,13 +791,13 @@
     
     // Validation téléphone : uniquement 10 chiffres
     if (field.type === 'tel' && value) {
-      // Enlever tous les caractères non numériques
+      // Enlever tous les caractères non numériques (espaces inclus)
       const phoneDigits = value.replace(/[^0-9]/g, '');
       if (phoneDigits.length !== 10) {
         field.classList.add('is-invalid');
         field.style.borderColor = '#dc3545';
         if (feedback && feedback.classList.contains('invalid-feedback')) {
-          feedback.textContent = 'Le numéro de téléphone doit contenir exactement 10 chiffres (ex: 0612345678)';
+          feedback.textContent = 'Le numéro de téléphone doit contenir exactement 10 chiffres (ex: 06 12 34 56 78)';
         }
         return false;
       }
@@ -801,7 +806,7 @@
         field.classList.add('is-invalid');
         field.style.borderColor = '#dc3545';
         if (feedback && feedback.classList.contains('invalid-feedback')) {
-          feedback.textContent = 'Le numéro de téléphone doit commencer par 0 (ex: 0612345678)';
+          feedback.textContent = 'Le numéro de téléphone doit commencer par 0 (ex: 06 12 34 56 78)';
         }
         return false;
       }

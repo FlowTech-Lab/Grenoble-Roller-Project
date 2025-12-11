@@ -58,14 +58,14 @@
                   <%= f.label :first_name, "Prénom *", class: "form-label" %>
                   <%= f.text_field :first_name, 
                       class: "form-control", 
-                      value: @user.first_name,
+                      value: @user.first_name.presence,
                       required: true %>
                 </div>
                 <div class="col-md-6">
                   <%= f.label :last_name, "Nom *", class: "form-label" %>
                   <%= f.text_field :last_name, 
                       class: "form-control", 
-                      value: @user.last_name,
+                      value: @user.last_name.presence,
                       required: true %>
                 </div>
                 <div class="col-md-6">
@@ -74,7 +74,7 @@
                   <% end %>
                   <%= f.date_field :date_of_birth, 
                       class: "form-control", 
-                      value: @user.date_of_birth,
+                      value: @user.date_of_birth.presence,
                       required: true,
                       max: Date.today,
                       min: Date.today - 120.years,
@@ -85,17 +85,22 @@
                 </div>
                 <div class="col-md-6">
                   <%= f.label :phone, "Téléphone *", class: "form-label" %>
-                  <%= f.telephone_field :phone, 
-                      class: "form-control", 
-                      value: @user.phone,
-                      required: true,
-                      placeholder: "0612345678",
-                      maxlength: 10,
-                      pattern: "[0-9]{10}",
-                      oninput: "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);",
-                      onblur: "validatePhoneField(this)" %>
+                  <div data-controller="phone-mask">
+                    <%= f.telephone_field :phone, 
+                        class: "form-control", 
+                        value: @user.phone.presence,
+                        required: true,
+                        placeholder: "Téléphone",
+                        maxlength: 14,
+                        pattern: "[0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2}",
+                        data: { 
+                          phone_mask_target: "input",
+                          action: "input->phone-mask#format"
+                        },
+                        onblur: "validatePhoneField(this)" %>
+                  </div>
                   <div class="form-text small mt-1">
-                    Format : 10 chiffres uniquement (ex: 0612345678)
+                    Format : 10 chiffres (ex: 06 12 34 56 78)
                   </div>
                   <div class="invalid-feedback"></div>
                 </div>
@@ -117,21 +122,21 @@
                   <%= f.label :address, "Adresse *", class: "form-label" %>
                   <%= f.text_field :address, 
                       class: "form-control", 
-                      value: @user.address,
+                      value: @user.address.presence,
                       required: true %>
                 </div>
                 <div class="col-md-6">
                   <%= f.label :city, "Ville *", class: "form-label" %>
                   <%= f.text_field :city, 
                       class: "form-control", 
-                      value: @user.city,
+                      value: @user.city.presence,
                       required: true %>
                 </div>
                 <div class="col-md-6">
                   <%= f.label :postal_code, "Code postal *", class: "form-label" %>
                   <%= f.text_field :postal_code, 
                       class: "form-control", 
-                      value: @user.postal_code,
+                      value: @user.postal_code.presence,
                       required: true %>
                 </div>
               </div>
@@ -148,7 +153,7 @@
                   <%= f.label :parent_name, "Nom du parent/tuteur *", class: "form-label" %>
                   <%= f.text_field :parent_name, 
                       class: "form-control", 
-                      value: "#{@user.first_name} #{@user.last_name}",
+                      value: (@user.first_name.presence && @user.last_name.presence) ? "#{@user.first_name} #{@user.last_name}" : nil,
                       required: true %>
                 </div>
                 <div class="col-md-6">
@@ -160,14 +165,19 @@
                 </div>
                 <div class="col-md-6">
                   <%= f.label :parent_phone, "Téléphone du parent/tuteur", class: "form-label" %>
-                  <%= f.telephone_field :parent_phone, 
-                      class: "form-control", 
-                      value: @user.phone,
-                      placeholder: "0612345678",
-                      maxlength: 10,
-                      pattern: "[0-9]{10}",
-                      oninput: "this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);",
-                      onblur: "validatePhoneField(this)" %>
+                  <div data-controller="phone-mask">
+                    <%= f.telephone_field :parent_phone, 
+                        class: "form-control", 
+                        value: @user.phone.presence,
+                        placeholder: "Téléphone",
+                        maxlength: 14,
+                        pattern: "[0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2} [0-9]{2}",
+                        data: { 
+                          phone_mask_target: "input",
+                          action: "input->phone-mask#format"
+                        },
+                        onblur: "validatePhoneField(this)" %>
+                  </div>
                   <div class="form-text small mt-1">
                     Format : 10 chiffres uniquement (ex: 0612345678)
                   </div>
@@ -213,6 +223,7 @@
 
 <script>
   function validatePhoneField(field) {
+    // Enlever tous les caractères non numériques (espaces inclus)
     const value = field.value.replace(/[^0-9]/g, '');
     const feedback = field.parentElement.querySelector('.invalid-feedback');
     
@@ -222,7 +233,7 @@
       field.classList.remove('is-valid');
       field.style.borderColor = '#dc3545';
       if (feedback) {
-        feedback.textContent = 'Le numéro de téléphone doit contenir exactement 10 chiffres (ex: 0612345678)';
+        feedback.textContent = 'Le numéro de téléphone doit contenir exactement 10 chiffres (ex: 06 12 34 56 78)';
         feedback.style.display = 'block';
       }
       return false;
@@ -234,7 +245,7 @@
       field.classList.remove('is-valid');
       field.style.borderColor = '#dc3545';
       if (feedback) {
-        feedback.textContent = 'Le numéro de téléphone doit commencer par 0 (ex: 0612345678)';
+        feedback.textContent = 'Le numéro de téléphone doit commencer par 0 (ex: 06 12 34 56 78)';
         feedback.style.display = 'block';
       }
       return false;

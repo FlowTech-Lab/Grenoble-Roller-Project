@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **30/41 Quick Wins terminés** (73%) + **2 partiellement faits**
+**Avancement** : **32/41 Quick Wins terminés** (78%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -78,7 +78,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Filtres par catégories (Sidebar ou tabs avec catégories) ✅ **TERMINÉ** (2025-01-30) - Sidebar avec filtres par catégorie, compteurs, filtre actif mis en évidence
 - [ ] Barre de recherche (Recherche par nom produit - AJAX) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
 - [x] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url) ✅ **DÉJÀ GÉRÉ** - Image obligatoire (validation `presence: true`)
-- [x] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ✅ **TERMINÉ** (2025-01-30) - Modal Bootstrap avec fond sombre, image agrandie (max 80vh), effet hover sur l'image cliquable, accessible depuis liste et détail produit
+- [x] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ✅ **TERMINÉ** (2025-01-30) - Modal Bootstrap avec fond sombre, image agrandie (max 80vh), effet hover sur l'image cliquable, accessible depuis liste et détail produit, synchronisation avec variantes (couleur/taille)
 - [x] Message "Article ajouté" plus visible (Toast/notification persistante) ✅ **TERMINÉ** (2025-01-20)
 - [x] **UX Liste commandes : Bouton "Payer" visible** ✅ **TERMINÉ** (2025-01-26)
   - Bouton "Payer" directement dans la liste pour commandes `pending`
@@ -117,7 +117,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Validation email en temps réel (Vérifier si email existe déjà via AJAX) ⚠️ **À FAIRE** - Pas de validation AJAX
 - [ ] Page de bienvenue après inscription (Redirection vers `/welcome` avec guide "Prochaines étapes") ⚠️ **À FAIRE** - Message toast seulement
 - [x] Activation validation email (Devise :confirmable - Envoyer email de confirmation) ✅ **TERMINÉ** - `:confirmable` activé dans User model, email envoyé automatiquement
-- [ ] Améliorer la validation téléphone (Format français avec masque de saisie) ⚠️ **À FAIRE** - Pas de masque, juste placeholder
+- [x] Améliorer la validation téléphone (Format français avec masque de saisie) ✅ **TERMINÉ** (2025-01-30) - Masque de saisie automatique avec formatage "XX XX XX XX XX" (ex: 06 12 34 56 78), contrôleur Stimulus réutilisable, appliqué aux formulaires adulte et teen
 - [ ] Indicateur de progression du formulaire (Barre "Étape 1/1" pour préparer futures étapes) ⚠️ **À FAIRE** - Pas d'indicateur
 
 ### **Parcours 3 : Découverte des Événements**
