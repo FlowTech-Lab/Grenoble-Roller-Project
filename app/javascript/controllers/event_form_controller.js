@@ -14,6 +14,9 @@ export default class extends Controller {
     this.storageKey = 'event_draft'
     this.storageExpiryDays = 7 // Durée maximale RGPD pour données temporaires
     
+    // Initialiser les données des parcours par boucle
+    this.existingLoopRoutesData = {}
+    
     // Restaurer les données sauvegardées au chargement
     this.restoreDraft()
     
@@ -28,6 +31,12 @@ export default class extends Controller {
     
     // Gérer la création de parcours depuis la modal
     this.setupRouteCreation()
+    
+    // Charger les parcours existants si on est en mode édition
+    this.loadExistingLoopRoutes().then(() => {
+      // Initialiser les champs de parcours par boucle (après chargement des données)
+      this.updateLoopRoutesFields()
+    })
   }
 
   loadRouteInfo(routeId) {
@@ -74,6 +83,204 @@ export default class extends Controller {
   // Calculer et afficher la distance totale (boucles × distance par boucle)
   loopsCountChanged() {
     this.updateTotalDistance()
+    this.updateLoopRoutesFields()
+    this.saveDraft()
+  }
+
+  // Mettre à jour les champs de parcours par boucle
+  updateLoopRoutesFields() {
+    const loopsCountInput = this.hasLoopsCountInputTarget ? this.loopsCountInputTarget : null
+    const container = document.getElementById('loop-routes-container')
+    const fieldsContainer = document.getElementById('loop-routes-fields')
+    
+    if (!loopsCountInput || !container || !fieldsContainer) return
+
+    const loopsCount = parseInt(loopsCountInput.value) || 1
+    
+    // Afficher/masquer le container
+    if (loopsCount > 1) {
+      container.style.display = 'block'
+    } else {
+      container.style.display = 'none'
+      return
+    }
+
+    // Générer les champs pour les boucles supplémentaires (à partir de la boucle 2)
+    // La boucle 1 utilise le parcours principal du formulaire
+    const routes = this.getRoutes() // Récupérer la liste des routes depuis le select
+    let html = ''
+    
+    // Récupérer les parcours existants depuis le serveur si l'événement existe
+    const eventId = this.getEventId()
+    const existingLoopRoutes = eventId ? this.existingLoopRoutesData : {}
+    
+    // Commencer à partir de la boucle 2 (la boucle 1 utilise le parcours principal)
+    for (let i = 2; i <= loopsCount; i++) {
+      const existingLoopRoute = existingLoopRoutes[i] || this.getExistingLoopRoute(i)
+      const selectedRouteId = existingLoopRoute ? existingLoopRoute.route_id : ''
+      const distanceKm = existingLoopRoute ? existingLoopRoute.distance_km : ''
+      
+      html += `
+        <div class="row g-3 mb-3 loop-route-row" data-loop-number="${i}">
+          <div class="col-12">
+            <h6 class="text-muted mb-2">
+              <i class="bi bi-arrow-repeat me-1"></i>Boucle ${i}
+            </h6>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Parcours</label>
+            <select name="event_loop_routes[${i}][route_id]" 
+                    class="form-select form-select-liquid loop-route-select"
+                    data-loop-number="${i}"
+                    data-action="change->event-form#loopRouteChanged">
+              <option value="">Sans parcours</option>
+              ${routes.map(route => `
+                <option value="${route.id}" ${route.id == selectedRouteId ? 'selected' : ''}>
+                  ${route.name}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Distance (km)</label>
+            <input type="number" 
+                   name="event_loop_routes[${i}][distance_km]" 
+                   class="form-control form-control-liquid loop-route-distance"
+                   data-loop-number="${i}"
+                   min="0.1" 
+                   step="0.1" 
+                   value="${distanceKm}"
+                   placeholder="Ex: 15.5"
+                   data-action="input->event-form#loopRouteDistanceChanged">
+          </div>
+        </div>
+      `
+    }
+    
+    fieldsContainer.innerHTML = html
+    this.updateTotalDistance()
+  }
+
+  // Récupérer la liste des routes depuis le select principal
+  getRoutes() {
+    const routeSelect = this.hasRouteSelectTarget ? this.routeSelectTarget : null
+    if (!routeSelect) return []
+    
+    const routes = []
+    routeSelect.querySelectorAll('option').forEach(option => {
+      if (option.value) {
+        routes.push({
+          id: parseInt(option.value),
+          name: option.textContent.trim()
+        })
+      }
+    })
+    return routes
+  }
+
+  // Récupérer les parcours existants depuis les données du formulaire ou depuis les données chargées
+  getExistingLoopRoute(loopNumber) {
+    // Chercher dans les champs déjà générés
+    const form = this.element.querySelector('form')
+    if (!form) return null
+    
+    const existingSelect = form.querySelector(`select[name="event_loop_routes[${loopNumber}][route_id]"]`)
+    const existingDistance = form.querySelector(`input[name="event_loop_routes[${loopNumber}][distance_km]"]`)
+    
+    if (existingSelect && existingSelect.value) {
+      return {
+        route_id: parseInt(existingSelect.value),
+        distance_km: existingDistance ? existingDistance.value : ''
+      }
+    }
+    
+    return null
+  }
+
+  // Récupérer l'ID de l'événement depuis le formulaire
+  getEventId() {
+    const form = this.element.querySelector('form')
+    if (!form) return null
+    
+    // Chercher un input caché avec l'ID
+    const idInput = form.querySelector('input[name="event[id]"]')
+    if (idInput && idInput.value) {
+      return parseInt(idInput.value)
+    }
+    
+    // Ou chercher dans l'action du formulaire
+    const formAction = form.action
+    const match = formAction.match(/\/events\/(\d+)/)
+    if (match) {
+      return parseInt(match[1])
+    }
+    
+    return null
+  }
+
+  // Charger les parcours existants depuis le serveur
+  async loadExistingLoopRoutes() {
+    const eventId = this.getEventId()
+    if (!eventId) {
+      this.existingLoopRoutesData = {}
+      return Promise.resolve()
+    }
+    
+    try {
+      const response = await fetch(`/events/${eventId}/loop_routes.json`)
+      if (response.ok) {
+        const data = await response.json()
+        this.existingLoopRoutesData = {}
+        // Ne charger que les boucles 2 et suivantes (la boucle 1 utilise le parcours principal)
+        data.forEach(loopRoute => {
+          if (loopRoute.loop_number > 1) {
+            this.existingLoopRoutesData[loopRoute.loop_number] = {
+              route_id: loopRoute.route_id,
+              distance_km: loopRoute.distance_km
+            }
+          }
+        })
+      } else {
+        this.existingLoopRoutesData = {}
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des parcours par boucle:', error)
+      this.existingLoopRoutesData = {}
+    }
+    
+    return Promise.resolve()
+  }
+
+  // Quand un parcours est sélectionné pour une boucle, pré-remplir la distance
+  loopRouteChanged(event) {
+    const select = event.target
+    const loopNumber = parseInt(select.dataset.loopNumber)
+    const routeId = select.value
+    
+    if (!routeId) return
+    
+    // Charger les infos du parcours
+    fetch(`/routes/${routeId}/info`)
+      .then(response => {
+        if (!response.ok) throw new Error('Erreur lors du chargement du parcours')
+        return response.json()
+      })
+      .then(data => {
+        const distanceInput = this.element.querySelector(`input[name="event_loop_routes[${loopNumber}][distance_km]"]`)
+        if (distanceInput && data.distance_km) {
+          distanceInput.value = data.distance_km
+        }
+        this.updateTotalDistance()
+        this.saveDraft()
+      })
+      .catch(error => {
+        console.error('Erreur:', error)
+      })
+  }
+
+  // Mettre à jour la distance totale quand la distance d'une boucle change
+  loopRouteDistanceChanged() {
+    this.updateTotalDistance()
     this.saveDraft()
   }
 
@@ -88,13 +295,31 @@ export default class extends Controller {
     const totalDisplay = document.getElementById('total-distance-display')
     const totalValue = document.getElementById('total-distance-value')
 
-    if (!distanceInput || !loopsInput || !totalDisplay || !totalValue) return
+    if (!loopsInput || !totalDisplay || !totalValue) return
 
-    const distance = parseFloat(distanceInput.value) || 0
     const loops = parseInt(loopsInput.value) || 1
-    const total = distance * loops
+    
+    // Calculer la distance totale selon le système utilisé
+    let total = 0
+    
+    if (loops > 1) {
+      // Nouveau système : distance boucle 1 (champ principal) + distances boucles supplémentaires
+      const distanceBoucle1 = distanceInput ? (parseFloat(distanceInput.value) || 0) : 0
+      total = distanceBoucle1
+      
+      // Ajouter les distances des boucles supplémentaires (2, 3, etc.)
+      const loopDistanceInputs = this.element.querySelectorAll('.loop-route-distance')
+      loopDistanceInputs.forEach(input => {
+        const distance = parseFloat(input.value) || 0
+        total += distance
+      })
+    } else {
+      // Une seule boucle
+      const distance = distanceInput ? (parseFloat(distanceInput.value) || 0) : 0
+      total = distance
+    }
 
-    if (loops > 1 && distance > 0) {
+    if (loops > 1 && total > 0) {
       totalValue.textContent = total.toFixed(1)
       totalDisplay.style.display = 'block'
     } else {
@@ -382,16 +607,25 @@ export default class extends Controller {
       const errorsDiv = document.getElementById('createRouteErrors')
       const formData = new FormData(createRouteForm)
       
+      // S'assurer que le format est correct pour Rails (route[...])
+      // Rails form_with génère automatiquement route[name], route[distance_km], etc.
+      // Mais FormData les envoie directement, donc on doit les wrapper
+      const wrappedFormData = new FormData()
+      for (const [key, value] of formData.entries()) {
+        wrappedFormData.append(`route[${key}]`, value)
+      }
+      
       // Désactiver le bouton pendant la requête
       submitBtn.disabled = true
       submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...'
       errorsDiv.style.display = 'none'
       
-      fetch('/routes', {
+      fetch('/routes.json', {
         method: 'POST',
-        body: formData,
+        body: wrappedFormData,
         headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
         }
       })
       .then(response => response.json())

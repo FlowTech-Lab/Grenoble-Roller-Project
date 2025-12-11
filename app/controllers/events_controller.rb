@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes]
   before_action :authenticate_user!, except: %i[index show]
   before_action :ensure_email_confirmed, only: [ :attend ] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
@@ -61,7 +61,13 @@ class EventsController < ApplicationController
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
     
+    # Gérer les parcours par boucle
+    loop_routes_params = params[:event_loop_routes] || {}
+    
     if @event.update(event_params)
+      # Sauvegarder les parcours par boucle
+      save_loop_routes(@event, loop_routes_params)
+      
       redirect_to @event, notice: "Événement créé avec succès. Il est en attente de validation par un modérateur."
     else
       render :new, status: :unprocessable_entity
@@ -92,7 +98,13 @@ class EventsController < ApplicationController
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
     
+    # Gérer les parcours par boucle
+    loop_routes_params = params[:event_loop_routes] || {}
+    
     if @event.update(event_params)
+      # Sauvegarder les parcours par boucle
+      save_loop_routes(@event, loop_routes_params)
+      
       redirect_to @event, notice: "Événement mis à jour avec succès."
     else
       render :edit, status: :unprocessable_entity
@@ -184,15 +196,63 @@ class EventsController < ApplicationController
               disposition: "attachment"
   end
 
+  # Retourner les parcours par boucle en JSON (pour le formulaire)
+  def loop_routes
+    authorize @event, :show?
+    
+    loop_routes_data = @event.event_loop_routes.where('loop_number > 1').order(:loop_number).map do |elr|
+      {
+        loop_number: elr.loop_number,
+        route_id: elr.route_id,
+        distance_km: elr.distance_km
+      }
+    end
+    
+    render json: loop_routes_data
+  end
+
   private
 
   def set_event
-    @event = Event.includes(:route, :creator_user).find(params[:id])
+    @event = Event.includes(:route, :creator_user, event_loop_routes: :route).find(params[:id])
     # Charger l'attendance de l'utilisateur connecté si présent
     @user_attendance = current_user&.attendances&.find_by(event: @event) if user_signed_in?
   end
 
   def load_supporting_data
     @routes = Route.order(:name)
+  end
+
+  # Sauvegarder les parcours par boucle
+  def save_loop_routes(event, loop_routes_params)
+    # Supprimer les anciens parcours par boucle
+    event.event_loop_routes.destroy_all
+    
+    # Si plusieurs boucles, sauvegarder le parcours principal pour la boucle 1
+    if event.loops_count && event.loops_count > 1 && event.route_id.present? && event.distance_km.present?
+      event.event_loop_routes.create!(
+        loop_number: 1,
+        route_id: event.route_id,
+        distance_km: event.distance_km
+      )
+    end
+    
+    # Créer les parcours pour les boucles supplémentaires (2, 3, etc.)
+    loop_routes_params.each do |loop_number_str, route_data|
+      next unless route_data[:route_id].present? && route_data[:distance_km].present?
+      
+      loop_number = loop_number_str.to_i
+      route_id = route_data[:route_id].to_i
+      distance_km = route_data[:distance_km].to_f
+      
+      # Ignorer la boucle 1 (déjà gérée avec le parcours principal)
+      next if loop_number < 2 || route_id < 1 || distance_km < 0.1
+      
+      event.event_loop_routes.create!(
+        loop_number: loop_number,
+        route_id: route_id,
+        distance_km: distance_km
+      )
+    end
   end
 end

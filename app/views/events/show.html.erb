@@ -34,7 +34,12 @@
               <i class="bi bi-clock" aria-hidden="true"></i>
               <%= @event.duration_min %> min
             </span>
-            <% if @event.route.present? %>
+            <% if @event.loops_count && @event.loops_count > 1 %>
+              <span class="meta-item">
+                <i class="bi bi-signpost-2" aria-hidden="true"></i>
+                <%= @event.loops_count %> boucles • <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+              </span>
+            <% elsif @event.route.present? %>
               <span class="meta-item">
                 <i class="bi bi-signpost" aria-hidden="true"></i>
                 <%= @event.route.name %>
@@ -199,6 +204,122 @@
             <% end %>
           </div>
         <% end %>
+      <% end %>
+
+      <!-- Zone 4 - Parcours par boucle (si plusieurs boucles) -->
+      <% if @event.loops_count && @event.loops_count > 1 && @event.loops_with_routes.any? %>
+        <div class="event-loops-section mb-4">
+          <h2 class="h5 fw-semibold mb-3">
+            <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours par boucle
+          </h2>
+          <div class="row g-4">
+            <% @event.loops_with_routes.each do |loop_data| %>
+              <div class="col-12 <%= @event.loops_count == 2 ? 'col-md-6' : 'col-md-4' %>">
+                <div class="card card-liquid border-liquid h-100">
+                  <% if loop_data[:route]&.map_image&.attached? %>
+                    <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                      <%= image_tag(rails_representation_path(loop_data[:route].map_image.variant(resize_to_limit: [800, 400])), 
+                          alt: loop_data[:route].name, 
+                          class: "w-100 h-100 object-fit-cover") %>
+                    </div>
+                  <% end %>
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="badge bg-primary me-2">
+                        <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Boucle <%= loop_data[:loop_number] %>
+                      </span>
+                      <% if loop_data[:distance_km] %>
+                        <span class="text-muted small">
+                          <i class="bi bi-signpost-2 me-1" aria-hidden="true"></i>
+                          <%= number_with_precision(loop_data[:distance_km], precision: 1, strip_insignificant_zeros: true) %> km
+                        </span>
+                      <% end %>
+                    </div>
+                    <% if loop_data[:route] %>
+                      <h6 class="card-title mb-2">
+                        <%= loop_data[:route].name %>
+                      </h6>
+                      <% if loop_data[:route].difficulty.present? %>
+                        <span class="badge bg-info mb-2">
+                          <% difficulty_label = case loop_data[:route].difficulty
+                              when 'easy' then 'Facile'
+                              when 'medium' then 'Moyen'
+                              when 'hard' then 'Difficile'
+                              else loop_data[:route].difficulty.humanize
+                            end %>
+                          <%= difficulty_label %>
+                        </span>
+                      <% end %>
+                      <% if loop_data[:route].elevation_m.present? %>
+                        <p class="text-muted small mb-0">
+                          <i class="bi bi-mountain me-1" aria-hidden="true"></i>
+                          Dénivelé : <%= loop_data[:route].elevation_m %> m
+                        </p>
+                      <% end %>
+                    <% else %>
+                      <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                        Parcours non défini
+                      </p>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="mt-3 text-center">
+            <p class="text-muted small mb-0">
+              <i class="bi bi-calculator me-1" aria-hidden="true"></i>
+              <strong>Distance totale :</strong> <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            </p>
+          </div>
+        </div>
+      <% elsif @event.route.present? %>
+        <!-- Affichage du parcours unique si une seule boucle -->
+        <div class="event-route-section mb-4">
+          <h2 class="h5 fw-semibold mb-3">
+            <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours
+          </h2>
+          <div class="card card-liquid border-liquid">
+            <% if @event.route.map_image.attached? %>
+              <div class="card-img-top" style="height: 300px; overflow: hidden;">
+                <%= image_tag(rails_representation_path(@event.route.map_image.variant(resize_to_limit: [1200, 600])), 
+                    alt: @event.route.name, 
+                    class: "w-100 h-100 object-fit-cover") %>
+              </div>
+            <% end %>
+            <div class="card-body">
+              <h6 class="card-title mb-2">
+                <%= @event.route.name %>
+              </h6>
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <% if @event.route.difficulty.present? %>
+                  <span class="badge bg-info">
+                    <% difficulty_label = case @event.route.difficulty
+                        when 'easy' then 'Facile'
+                        when 'medium' then 'Moyen'
+                        when 'hard' then 'Difficile'
+                        else @event.route.difficulty.humanize
+                      end %>
+                    <%= difficulty_label %>
+                  </span>
+                <% end %>
+                <% if @event.distance_km.present? %>
+                  <span class="badge bg-primary">
+                    <i class="bi bi-signpost-2 me-1" aria-hidden="true"></i>
+                    <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                  </span>
+                <% end %>
+                <% if @event.route.elevation_m.present? %>
+                  <span class="badge bg-secondary">
+                    <i class="bi bi-mountain me-1" aria-hidden="true"></i>
+                    <%= @event.route.elevation_m %> m
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
       <% end %>
 
       <!-- Zone 4 - Description -->

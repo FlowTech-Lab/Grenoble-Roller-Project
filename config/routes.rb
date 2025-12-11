@@ -93,6 +93,7 @@ Rails.application.routes.draw do
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
+      get :loop_routes, defaults: { format: "json" }
     end
   end
 
@@ -104,10 +105,12 @@ Rails.application.routes.draw do
     end
   end
 
-  # Routes pour pré-remplir les champs niveau et distance
-  get "/routes/:id/info", to: "routes#info", as: "route_info", defaults: { format: "json" }
-  # Créer un parcours (réservé aux admins)
-  post "/routes", to: "routes#create", as: "routes", defaults: { format: "json" }
+  # Routes REST pour les parcours
+  resources :routes, only: [:create] do
+    member do
+      get :info, defaults: { format: "json" }
+    end
+  end
 
   resources :attendances, only: :index
 
