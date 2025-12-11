@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **22/41 Quick Wins terminés** (54%) + **2 partiellement faits**
+**Avancement** : **23/41 Quick Wins terminés** (56%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -69,7 +69,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Compteur d'inscriptions ("X sorties à venir" visible en haut) ✅ **TERMINÉ** (2025-01-30) - Compteurs "X sorties" affichés dans chaque section (À venir / Passés)
 
 ### **Parcours 6 : Création d'un Événement**
-- [ ] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie)
+- [x] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie) ✅ **TERMINÉ** (2025-01-30) - Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée 7 jours, restauration et nettoyage automatiques
 - [ ] Validation en temps réel (Vérifier les champs au blur)
 - [ ] Indicateur de progression (Barre "Étape 1/1" ou compteur de champs remplis)
 - [ ] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?")
@@ -308,9 +308,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Effort : Faible (boutons "Publier"/"Refuser" dans colonne Actions)
    - **Status** : Boutons "Refuser", "Voir", "Accepter" dans colonne Actions de la liste Events
 
-11. **Sauvegarde automatique formulaire événement** (Parcours 6)
+11. **Sauvegarde automatique formulaire événement** (Parcours 6) ✅ **TERMINÉ** (2025-01-30)
     - Impact : Haut (évite perte de données)
     - Effort : Faible (localStorage JavaScript)
+    - **Status** : Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée limitée 7 jours, restauration automatique, nettoyage après soumission
 
 ---
 
@@ -613,13 +614,13 @@ Une user story est "Done" quand :
 - ✅ Audit trail (modèle `AuditLog` existe, interface à améliorer)
 
 **Avancement actuel** :
-- ✅ **22 Quick Wins terminés (54%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30), **Section "À propos" homepage** ✅ (2025-01-30), **Message de bienvenue après inscription** ✅ (2025-01-30)
+- ✅ **23 Quick Wins terminés (56%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30), **Section "À propos" homepage** ✅ (2025-01-30), **Message de bienvenue après inscription** ✅ (2025-01-30), **Sauvegarde automatique formulaire événement** ✅ (2025-01-30)
 - 🟡 **2 partiellement faits** : Alerte "Presque complet" (badge sur card mais pas dans modal), Pages footer (FAQ et Équipe manquantes)
-- ⏳ **17 Quick Wins en attente (46%)**
+- ⏳ **16 Quick Wins en attente (44%)**
 
 **Phases globales** :
 - ✅ **Phase 0 (Accessibilité)** : 100% - Corrections critiques terminées
-- ⏳ **Phase 1 (Quick Wins)** : 54% - 22/41 terminés, 2 partiellement faits
+- ⏳ **Phase 1 (Quick Wins)** : 56% - 23/41 terminés, 2 partiellement faits
 - ✅ **Phase 2 (HelloAsso)** : 90% - Checkout & polling fonctionnels
 - ✅ **Phase 3 (Adhésions)** : 95% - Formulaire multi-étapes complet
 - ✅ **Phase 4 (Événements)** : 95% - Fonctionnalités core complètes
