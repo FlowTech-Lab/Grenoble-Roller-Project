@@ -49,6 +49,9 @@ class EventsController < ApplicationController
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
+    # Initialiser loops_count à 1 si non défini
+    event_params[:loops_count] ||= 1
+    
     if @event.update(event_params)
       redirect_to @event, notice: "Événement créé avec succès. Il est en attente de validation par un modérateur."
     else
@@ -77,6 +80,9 @@ class EventsController < ApplicationController
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
+    # Initialiser loops_count à 1 si non défini
+    event_params[:loops_count] ||= 1
+    
     if @event.update(event_params)
       redirect_to @event, notice: "Événement mis à jour avec succès."
     else

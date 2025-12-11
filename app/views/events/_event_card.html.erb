@@ -36,7 +36,12 @@
           </p>
           <p class="mb-1">
             <i class="bi bi-signpost-2 text-liquid-primary me-2" aria-hidden="true"></i>
-            <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            <% if event.loops_count && event.loops_count > 1 %>
+              <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+              <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+            <% else %>
+              <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            <% end %>
           </p>
           <p class="mb-0">
             <i class="bi bi-clock text-liquid-primary me-2" aria-hidden="true"></i>
@@ -238,7 +243,13 @@
                     <div class="col-12 col-sm-6">
                       <p class="mb-0">
                         <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
-                        <strong>Distance :</strong> <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                        <strong>Distance :</strong>
+                        <% if event.loops_count && event.loops_count > 1 %>
+                          <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                          <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+                        <% else %>
+                          <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                        <% end %>
                       </p>
                     </div>
                   <% end %>

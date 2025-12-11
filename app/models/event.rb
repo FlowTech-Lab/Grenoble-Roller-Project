@@ -160,6 +160,12 @@ class Event < ApplicationRecord
     start_at <= Time.current
   end
 
+  # Calculer la distance totale si plusieurs boucles
+  def total_distance_km
+    return distance_km unless loops_count && loops_count > 1
+    (distance_km || 0) * loops_count
+  end
+
   # Vérifie si l'événement a été créé récemment (dans les 4 dernières semaines)
   def recent?
     created_at >= 7.days.ago

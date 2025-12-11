@@ -62,7 +62,18 @@
           <% end %>
 
           <div class="col-12 col-md-6">
-            <%= f.label :route_id, "Parcours associé", class: "form-label" %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <%= f.label :route_id, "Parcours associé", class: "form-label mb-0" %>
+              <% if current_user&.role&.level.to_i >= 60 %>
+                <button type="button" 
+                        class="btn btn-sm btn-outline-primary" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#createRouteModal"
+                        data-event-form-target="createRouteButton">
+                  <i class="bi bi-plus-circle me-1"></i>Créer un parcours
+                </button>
+              <% end %>
+            </div>
             <%= f.collection_select :route_id, @routes, :id, :name, { include_blank: "Sans parcours" }, 
                 class: "form-select form-select-liquid",
                 data: { 
@@ -72,6 +83,25 @@
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Si vous sélectionnez un parcours, le niveau et la distance seront pré-remplis automatiquement.
+            </div>
+          </div>
+          
+          <!-- Nombre de boucles -->
+          <div class="col-12 col-md-6">
+            <%= f.label :loops_count, "Nombre de boucles", class: "form-label" %>
+            <%= f.number_field :loops_count, 
+                class: "form-control form-control-liquid", 
+                min: 1, 
+                max: 10, 
+                step: 1, 
+                value: event.loops_count || 1,
+                data: { 
+                  event_form_target: "loopsCountInput",
+                  action: "change->event-form#loopsCountChanged"
+                } %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Nombre de fois que le parcours sera effectué. La distance totale sera calculée automatiquement.
             </div>
           </div>
           
@@ -94,19 +124,26 @@
           </div>
           
           <div class="col-12 col-md-6">
-            <%= f.label :distance_km, "Distance (km)", class: "form-label" do %>
-              Distance (km) <span class="text-danger">*</span>
+            <%= f.label :distance_km, "Distance par boucle (km)", class: "form-label" do %>
+              Distance par boucle (km) <span class="text-danger">*</span>
             <% end %>
             <%= f.number_field :distance_km, 
                 class: "form-control form-control-liquid", 
                 min: 0.1, 
                 step: 0.1,
                 placeholder: "Ex: 15.5",
-                data: { event_form_target: "distanceInput" },
+                data: { 
+                  event_form_target: "distanceInput",
+                  action: "input->event-form#distanceChanged"
+                },
                 required: true %>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
-              Distance totale du parcours en kilomètres.
+              Distance d'une boucle en kilomètres.
+            </div>
+            <div id="total-distance-display" class="alert alert-info mt-2" style="display: none;">
+              <i class="bi bi-calculator me-2"></i>
+              <strong>Distance totale :</strong> <span id="total-distance-value">0</span> km
             </div>
           </div>
 
@@ -241,6 +278,71 @@
   </div>
 </div>
 
+<!-- Modal de création de parcours (visible uniquement pour admins) -->
+<% if current_user&.role&.level.to_i >= 60 %>
+  <div class="modal fade" id="createRouteModal" tabindex="-1" aria-labelledby="createRouteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="createRouteModalLabel">
+            <i class="bi bi-map me-2" aria-hidden="true"></i>Créer un nouveau parcours
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <%= form_with url: routes_path, method: :post, data: { turbo: false }, id: "createRouteForm" do |f| %>
+          <div class="modal-body">
+            <div class="mb-3">
+              <%= f.label :name, "Nom du parcours", class: "form-label" do %>
+                Nom <span class="text-danger">*</span>
+              <% end %>
+              <%= f.text_field :name, class: "form-control", required: true, placeholder: "Ex: Tour de Grenoble" %>
+            </div>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <%= f.label :distance_km, "Distance (km)", class: "form-label" %>
+                <%= f.number_field :distance_km, class: "form-control", min: 0.1, step: 0.1, placeholder: "Ex: 15.5" %>
+              </div>
+              
+              <div class="col-md-6">
+                <%= f.label :difficulty, "Difficulté", class: "form-label" %>
+                <%= f.select :difficulty, 
+                    options_for_select([
+                      ['Facile', 'easy'],
+                      ['Intermédiaire', 'medium'],
+                      ['Difficile', 'hard']
+                    ]), 
+                    { include_blank: "Non défini" },
+                    class: "form-select" %>
+              </div>
+            </div>
+            
+            <div class="mb-3 mt-3">
+              <%= f.label :description, "Description", class: "form-label" %>
+              <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Description du parcours..." %>
+            </div>
+            
+            <div class="mb-3">
+              <%= f.label :map_image, "Carte du parcours", class: "form-label" %>
+              <%= f.file_field :map_image, accept: "image/*", class: "form-control" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Image de la carte du parcours (optionnel)
+              </div>
+            </div>
+            
+            <div id="createRouteErrors" class="alert alert-danger" style="display: none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= f.submit "Créer le parcours", class: "btn btn-liquid-primary", id: "createRouteSubmit" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <% if event.persisted? && policy(event).destroy? %>
   <div class="text-center mt-3">
     <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
@@ -272,3 +374,68 @@
   </div>
 <% end %>
 
+
+<!-- Modal de création de parcours (visible uniquement pour admins) -->
+<% if current_user&.role&.level.to_i >= 60 %>
+  <div class="modal fade" id="createRouteModal" tabindex="-1" aria-labelledby="createRouteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="createRouteModalLabel">
+            <i class="bi bi-map me-2" aria-hidden="true"></i>Créer un nouveau parcours
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <%= form_with url: routes_path, method: :post, data: { turbo: false }, id: "createRouteForm", multipart: true do |f| %>
+          <div class="modal-body">
+            <div class="mb-3">
+              <%= f.label :name, "Nom du parcours", class: "form-label" do %>
+                Nom <span class="text-danger">*</span>
+              <% end %>
+              <%= f.text_field :name, class: "form-control", required: true, placeholder: "Ex: Tour de Grenoble", maxlength: 140 %>
+            </div>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <%= f.label :distance_km, "Distance (km)", class: "form-label" %>
+                <%= f.number_field :distance_km, class: "form-control", min: 0.1, step: 0.1, placeholder: "Ex: 15.5" %>
+              </div>
+              
+              <div class="col-md-6">
+                <%= f.label :difficulty, "Difficulté", class: "form-label" %>
+                <%= f.select :difficulty, 
+                    options_for_select([
+                      ['Facile', 'easy'],
+                      ['Intermédiaire', 'medium'],
+                      ['Difficile', 'hard']
+                    ]), 
+                    { include_blank: "Non défini" },
+                    class: "form-select" %>
+              </div>
+            </div>
+            
+            <div class="mb-3 mt-3">
+              <%= f.label :description, "Description", class: "form-label" %>
+              <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Description du parcours..." %>
+            </div>
+            
+            <div class="mb-3">
+              <%= f.label :map_image, "Carte du parcours", class: "form-label" %>
+              <%= f.file_field :map_image, accept: "image/*", class: "form-control" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Image de la carte du parcours (optionnel)
+              </div>
+            </div>
+            
+            <div id="createRouteErrors" class="alert alert-danger" style="display: none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= f.submit "Créer le parcours", class: "btn btn-liquid-primary", id: "createRouteSubmit" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

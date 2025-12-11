@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="event-form"
 export default class extends Controller {
-  static targets = ["levelSelect", "distanceInput", "routeSelect"]
+  static targets = ["levelSelect", "distanceInput", "routeSelect", "loopsCountInput"]
 
   connect() {
     // Si un parcours est déjà sélectionné au chargement, pré-remplir les champs
@@ -22,6 +22,12 @@ export default class extends Controller {
     
     // Nettoyer après soumission réussie
     this.setupCleanup()
+    
+    // Initialiser l'affichage de la distance totale
+    this.updateTotalDistance()
+    
+    // Gérer la création de parcours depuis la modal
+    this.setupRouteCreation()
   }
 
   loadRouteInfo(routeId) {
@@ -63,6 +69,37 @@ export default class extends Controller {
     this.loadRouteInfo(routeId)
     // Sauvegarder après changement de parcours
     this.saveDraft()
+  }
+
+  // Calculer et afficher la distance totale (boucles × distance par boucle)
+  loopsCountChanged() {
+    this.updateTotalDistance()
+    this.saveDraft()
+  }
+
+  distanceChanged() {
+    this.updateTotalDistance()
+    this.saveDraft()
+  }
+
+  updateTotalDistance() {
+    const distanceInput = this.hasDistanceInputTarget ? this.distanceInputTarget : null
+    const loopsInput = this.hasLoopsCountInputTarget ? this.loopsCountInputTarget : null
+    const totalDisplay = document.getElementById('total-distance-display')
+    const totalValue = document.getElementById('total-distance-value')
+
+    if (!distanceInput || !loopsInput || !totalDisplay || !totalValue) return
+
+    const distance = parseFloat(distanceInput.value) || 0
+    const loops = parseInt(loopsInput.value) || 1
+    const total = distance * loops
+
+    if (loops > 1 && distance > 0) {
+      totalValue.textContent = total.toFixed(1)
+      totalDisplay.style.display = 'block'
+    } else {
+      totalDisplay.style.display = 'none'
+    }
   }
 
   // ========================================
@@ -331,5 +368,71 @@ export default class extends Controller {
         setTimeout(() => alertDiv.remove(), 300)
       }
     }, 5000)
+  }
+
+  // Gérer la création de parcours depuis la modal
+  setupRouteCreation() {
+    const createRouteForm = document.getElementById('createRouteForm')
+    if (!createRouteForm) return
+
+    createRouteForm.addEventListener('submit', (e) => {
+      e.preventDefault()
+      
+      const submitBtn = document.getElementById('createRouteSubmit')
+      const errorsDiv = document.getElementById('createRouteErrors')
+      const formData = new FormData(createRouteForm)
+      
+      // Désactiver le bouton pendant la requête
+      submitBtn.disabled = true
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...'
+      errorsDiv.style.display = 'none'
+      
+      fetch('/routes', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.id) {
+          // Parcours créé avec succès
+          // Ajouter au select et sélectionner
+          const routeSelect = this.hasRouteSelectTarget ? this.routeSelectTarget : null
+          if (routeSelect) {
+            const option = document.createElement('option')
+            option.value = data.id
+            option.textContent = data.name
+            option.selected = true
+            routeSelect.appendChild(option)
+            
+            // Déclencher le changement pour pré-remplir les champs
+            routeSelect.dispatchEvent(new Event('change', { bubbles: true }))
+          }
+          
+          // Fermer la modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('createRouteModal'))
+          if (modal) modal.hide()
+          
+          // Réinitialiser le formulaire
+          createRouteForm.reset()
+        } else if (data.errors) {
+          // Afficher les erreurs
+          errorsDiv.innerHTML = '<strong>Erreurs :</strong><ul class="mb-0 mt-2"><li>' + 
+            data.errors.join('</li><li>') + '</li></ul>'
+          errorsDiv.style.display = 'block'
+        }
+      })
+      .catch(error => {
+        console.error('Erreur lors de la création du parcours:', error)
+        errorsDiv.innerHTML = '<strong>Erreur :</strong> Impossible de créer le parcours. Veuillez réessayer.'
+        errorsDiv.style.display = 'block'
+      })
+      .finally(() => {
+        submitBtn.disabled = false
+        submitBtn.innerHTML = 'Créer le parcours'
+      })
+    })
   }
 }
