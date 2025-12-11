@@ -1,5 +1,5 @@
 ActiveAdmin.register OrganizerApplication do
-  menu priority: 11, label: "Candidatures Organisateur"
+  menu priority: 4, label: "Candidatures Organisateur", parent: "Utilisateurs"
 
   includes :user, :reviewed_by
 

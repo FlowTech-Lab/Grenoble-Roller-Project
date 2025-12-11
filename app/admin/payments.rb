@@ -1,5 +1,5 @@
 ActiveAdmin.register Payment do
-  menu priority: 4, parent: "Orders"
+  menu priority: 2, label: "Paiements", parent: "Commandes"
 
   permit_params :provider, :status, :amount_cents, :external_id, :metadata
 

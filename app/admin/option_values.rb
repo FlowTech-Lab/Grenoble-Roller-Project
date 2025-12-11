@@ -1,5 +1,5 @@
 ActiveAdmin.register OptionValue do
-  menu priority: 7, parent: "Shop"
+  menu priority: 5, label: "Valeurs d'options", parent: "Boutique"
 
   permit_params :option_type_id, :value
 

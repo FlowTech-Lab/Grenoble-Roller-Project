@@ -1,5 +1,5 @@
 ActiveAdmin.register VariantOptionValue do
-  menu priority: 8, parent: "Shop"
+  menu priority: 6, label: "Associations variantes-options", parent: "Boutique"
 
   permit_params :variant_id, :option_value_id
 

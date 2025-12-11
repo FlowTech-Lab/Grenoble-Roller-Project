@@ -1,5 +1,5 @@
 ActiveAdmin.register Order do
-  menu priority: 5, label: "Commandes"
+  menu priority: 1, label: "Commandes", parent: "Commandes"
 
   includes :user, :payment, :order_items
 

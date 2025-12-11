@@ -1,5 +1,5 @@
 ActiveAdmin.register Partner do
-  menu priority: 12, label: "Partenaires"
+  menu priority: 2, label: "Partenaires", parent: "Communication"
 
   permit_params :name, :url, :logo_url, :description, :is_active
 

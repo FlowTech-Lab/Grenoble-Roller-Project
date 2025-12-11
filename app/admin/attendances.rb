@@ -1,5 +1,5 @@
 ActiveAdmin.register Attendance do
-  menu priority: 9, label: "Participations"
+  menu priority: 4, label: "Participations", parent: "Événements"
 
   includes :user, :event, :payment
 

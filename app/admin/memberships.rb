@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register Membership do
-  menu priority: 4, label: "Adhésions"
+  menu priority: 3, label: "Adhésions", parent: "Utilisateurs"
 
   includes :user, :payment, :tshirt_variant
 

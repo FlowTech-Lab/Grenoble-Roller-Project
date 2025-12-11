@@ -1,5 +1,5 @@
 ActiveAdmin.register OrderItem do
-  menu priority: 5, parent: "Orders"
+  menu priority: 3, label: "Articles de commande", parent: "Commandes"
 
   permit_params :order_id, :variant_id, :quantity, :unit_price_cents
 

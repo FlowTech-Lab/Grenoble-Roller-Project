@@ -1,5 +1,5 @@
 ActiveAdmin.register OptionType do
-  menu priority: 6, parent: "Shop"
+  menu priority: 4, label: "Types d'options", parent: "Boutique"
 
   permit_params :name
 

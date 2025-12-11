@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register ProductVariant do
-  menu priority: 7, label: "Variantes Produits"
+  menu priority: 3, label: "Variantes Produits", parent: "Boutique"
 
   includes :product, :option_values
 

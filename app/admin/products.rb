@@ -1,5 +1,5 @@
 ActiveAdmin.register Product do
-  menu priority: 6, label: "Produits"
+  menu priority: 1, label: "Produits", parent: "Boutique"
 
   includes :category
 

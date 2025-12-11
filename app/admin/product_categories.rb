@@ -1,5 +1,5 @@
 ActiveAdmin.register ProductCategory do
-  menu priority: 2, parent: "Shop"
+  menu priority: 2, label: "Catégories", parent: "Boutique"
 
   permit_params :name, :slug
 
