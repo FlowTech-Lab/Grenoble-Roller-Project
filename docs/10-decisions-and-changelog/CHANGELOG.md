@@ -2,6 +2,25 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2025-12-11] - Correction installation Node.js dans Dockerfile
+
+### Corrigé
+- **Installation Node.js dans Dockerfile** :
+  - Remplacement de l'installation via `node-build` (GitHub) par téléchargement direct depuis `nodejs.org`
+  - Détection automatique de l'architecture système (x64, arm64)
+  - **Impact** : Résout l'erreur "gzip: stdin: not in gzip format" lors du build Docker
+  - Installation plus fiable et plus rapide (pas de compilation)
+
+### Fichiers modifiés
+- `Dockerfile` (lignes 39-44)
+
+### Détails techniques
+- **AVANT** : `curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz`
+- **APRÈS** : Téléchargement direct depuis `nodejs.org/dist/v${NODE_VERSION}/`
+- Détection automatique de l'architecture avec `uname -m`
+- Support des architectures x86_64 (x64) et aarch64/arm64
+- Utilisation de `.tar.xz` au lieu de `.tar.gz` pour les binaires officiels Node.js
+
 ## [2025-01-20] - Correction scripts de déploiement : exclusion fichiers de logs
 
 ### Corrigé
