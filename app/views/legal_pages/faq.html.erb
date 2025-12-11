@@ -1,0 +1,386 @@
+<% content_for :title, "FAQ - Questions Fréquemment Posées - Grenoble Roller" %>
+<% content_for :description, "Réponses aux questions fréquemment posées sur l'association Grenoble Roller, les adhésions, les événements et la boutique" %>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-xl-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-question-circle text-liquid-primary me-3" aria-hidden="true"></i>
+            Questions Fréquemment Posées
+          </h1>
+          <p class="lead text-muted">
+            Trouvez rapidement les réponses à vos questions sur l'association Grenoble Roller
+          </p>
+          <hr class="w-50 mx-auto">
+        </div>
+
+        <!-- Barre de recherche FAQ (optionnel, pour futures améliorations) -->
+        <div class="mb-4">
+          <div class="input-group">
+            <span class="input-group-text bg-light border-0">
+              <i class="bi bi-search text-muted" aria-hidden="true"></i>
+            </span>
+            <input type="text" 
+                   class="form-control border-0 bg-light" 
+                   id="faqSearch" 
+                   placeholder="Rechercher dans la FAQ..." 
+                   aria-label="Rechercher dans la FAQ">
+          </div>
+        </div>
+
+        <!-- Accordéon FAQ -->
+        <div class="accordion accordion-flush" id="faqAccordion" role="tablist" aria-label="Questions fréquemment posées">
+          
+          <!-- Section : Adhésion -->
+          <div class="mb-4">
+            <h2 class="h4 fw-bold mb-3 text-liquid-primary">
+              <i class="bi bi-person-plus me-2" aria-hidden="true"></i>
+              Adhésion
+            </h2>
+            
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq1">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                  <strong>Comment adhérer à l'association Grenoble Roller ?</strong>
+                </button>
+              </h3>
+              <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="faq1" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p>Pour adhérer à l'association Grenoble Roller :</p>
+                  <ol>
+                    <li>Créez un compte sur le site en cliquant sur "S'inscrire"</li>
+                    <li>Remplissez le formulaire d'adhésion avec vos informations</li>
+                    <li>Choisissez votre formule (adulte ou enfant)</li>
+                    <li>Effectuez le paiement en ligne via HelloAsso</li>
+                  </ol>
+                  <p class="mb-0">
+                    <%= link_to "Adhérer maintenant", new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-sm mt-2" %>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq2">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                  <strong>Quels sont les tarifs d'adhésion ?</strong>
+                </button>
+              </h3>
+              <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p>Les tarifs d'adhésion varient selon l'âge :</p>
+                  <ul>
+                    <li><strong>Adulte</strong> : 10€ par an</li>
+                    <li><strong>Enfant</strong> : Tarif réduit (voir formulaire d'adhésion)</li>
+                  </ul>
+                  <p class="mb-0">L'adhésion est valable pour une année civile et donne accès à tous les événements et initiations.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq3">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                  <strong>Puis-je essayer avant d'adhérer ?</strong>
+                </button>
+              </h3>
+              <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Oui ! Nous proposons un <strong>essai gratuit</strong> pour une séance d'initiation. Si vous n'avez pas encore utilisé votre essai gratuit et que vous n'avez pas d'adhésion active, vous pouvez l'utiliser lors de votre première inscription à une initiation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section : Événements -->
+          <div class="mb-4">
+            <h2 class="h4 fw-bold mb-3 text-liquid-primary">
+              <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+              Événements
+            </h2>
+            
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq4">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                  <strong>Comment s'inscrire à un événement ?</strong>
+                </button>
+              </h3>
+              <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <ol>
+                    <li>Connectez-vous à votre compte</li>
+                    <li>Consultez la liste des événements à venir</li>
+                    <li>Cliquez sur "S'inscrire" sur l'événement de votre choix</li>
+                    <li>Confirmez votre inscription dans la modal</li>
+                  </ol>
+                  <p class="mb-0">Vous recevrez une confirmation par email et pourrez ajouter l'événement à votre calendrier.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq5">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                  <strong>Puis-je annuler mon inscription à un événement ?</strong>
+                </button>
+              </h3>
+              <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Oui, vous pouvez annuler votre inscription à tout moment depuis la page de l'événement ou depuis "Mes sorties". Vous pourrez vous réinscrire plus tard si vous le souhaitez.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq6">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                  <strong>Les événements sont-ils gratuits ?</strong>
+                </button>
+              </h3>
+              <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="faq6" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Oui, tous les événements sont gratuits pour les membres de l'association. L'adhésion annuelle (10€) donne accès à tous les événements et initiations de l'année.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq7">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                  <strong>Que faire si un événement est complet ?</strong>
+                </button>
+              </h3>
+              <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="faq7" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Si un événement affiche "Complet", toutes les places sont prises. Vous pouvez consulter les autres dates disponibles ou contacter l'organisateur pour être informé en cas de désistement.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section : Initiations -->
+          <div class="mb-4">
+            <h2 class="h4 fw-bold mb-3 text-liquid-primary">
+              <i class="bi bi-mortarboard me-2" aria-hidden="true"></i>
+              Initiations
+            </h2>
+            
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq8">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
+                  <strong>Quand ont lieu les séances d'initiation ?</strong>
+                </button>
+              </h3>
+              <div id="collapse8" class="accordion-collapse collapse" aria-labelledby="faq8" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p>Les séances d'initiation ont lieu :</p>
+                  <ul>
+                    <li><strong>Jour</strong> : Tous les samedis</li>
+                    <li><strong>Heure</strong> : De 10h15 à 12h00</li>
+                    <li><strong>Lieu</strong> : Gymnase Ampère, Grenoble</li>
+                  </ul>
+                  <p class="mb-0">La durée d'une séance est d'environ 1h45.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq9">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                  <strong>Dois-je apporter mon propre matériel ?</strong>
+                </button>
+              </h3>
+              <div id="collapse9" class="accordion-collapse collapse" aria-labelledby="faq9" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Vous pouvez apporter votre propre matériel ou en faire la demande lors de l'inscription. Le matériel (rollers, protections) peut être prêté par l'association selon les disponibilités. Indiquez votre demande dans le formulaire d'inscription.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq10">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
+                  <strong>Les initiations sont-elles adaptées aux débutants ?</strong>
+                </button>
+              </h3>
+              <div id="collapse10" class="accordion-collapse collapse" aria-labelledby="faq10" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Absolument ! Les initiations sont spécialement conçues pour les débutants. Nos moniteurs encadrent les participants de tous niveaux, des débutants complets aux personnes souhaitant se perfectionner.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section : Boutique -->
+          <div class="mb-4">
+            <h2 class="h4 fw-bold mb-3 text-liquid-primary">
+              <i class="bi bi-shop me-2" aria-hidden="true"></i>
+              Boutique
+            </h2>
+            
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq11">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
+                  <strong>Comment commander des produits dans la boutique ?</strong>
+                </button>
+              </h3>
+              <div id="collapse11" class="accordion-collapse collapse" aria-labelledby="faq11" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <ol>
+                    <li>Parcourez le catalogue de produits</li>
+                    <li>Ajoutez les articles souhaités au panier</li>
+                    <li>Réglez votre commande via HelloAsso (paiement sécurisé)</li>
+                    <li>Vous recevrez une confirmation par email</li>
+                  </ol>
+                  <p class="mb-0">
+                    <%= link_to "Voir la boutique", shop_path, class: "btn btn-liquid-primary btn-sm mt-2" %>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq12">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
+                  <strong>Quels modes de paiement sont acceptés ?</strong>
+                </button>
+              </h3>
+              <div id="collapse12" class="accordion-collapse collapse" aria-labelledby="faq12" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Nous acceptons les paiements via HelloAsso, qui accepte les cartes bancaires (CB, Visa, Mastercard) et les virements bancaires. Le paiement est sécurisé et conforme aux normes bancaires.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq13">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse13" aria-expanded="false" aria-controls="collapse13">
+                  <strong>Puis-je annuler ou modifier ma commande ?</strong>
+                </button>
+              </h3>
+              <div id="collapse13" class="accordion-collapse collapse" aria-labelledby="faq13" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Vous pouvez annuler votre commande tant qu'elle n'a pas été expédiée. Pour toute modification ou annulation, contactez-nous via la page <%= link_to "Contact", contact_path %> en indiquant le numéro de votre commande.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section : Général -->
+          <div class="mb-4">
+            <h2 class="h4 fw-bold mb-3 text-liquid-primary">
+              <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+              Général
+            </h2>
+            
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq14">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse14" aria-expanded="false" aria-controls="collapse14">
+                  <strong>Comment contacter l'association ?</strong>
+                </button>
+              </h3>
+              <div id="collapse14" class="accordion-collapse collapse" aria-labelledby="faq14" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p>Vous pouvez nous contacter :</p>
+                  <ul>
+                    <li>Par email (voir la page <%= link_to "Contact", contact_path %>)</li>
+                    <li>Via nos réseaux sociaux (Facebook, Instagram)</li>
+                    <li>Lors des événements et initiations</li>
+                  </ul>
+                  <p class="mb-0">
+                    <%= link_to "Voir la page Contact", contact_path, class: "btn btn-outline-primary btn-sm mt-2" %>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq15">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
+                  <strong>Où se déroulent les événements ?</strong>
+                </button>
+              </h3>
+              <div id="collapse15" class="accordion-collapse collapse" aria-labelledby="faq15" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Les événements se déroulent principalement dans la région grenobloise. Le lieu de rendez-vous est indiqué sur chaque événement, avec les coordonnées GPS et des liens vers Google Maps et Waze pour vous y rendre facilement.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq16">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse16" aria-expanded="false" aria-controls="collapse16">
+                  <strong>Dois-je être un excellent patineur pour participer ?</strong>
+                </button>
+              </h3>
+              <div id="collapse16" class="accordion-collapse collapse" aria-labelledby="faq16" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Non ! L'association accueille tous les niveaux, des débutants aux experts. Les événements sont adaptés selon le niveau indiqué, et les initiations sont spécialement conçues pour les débutants. L'important est la convivialité et le plaisir de patiner ensemble.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item card card-liquid border-liquid mb-2">
+              <h3 class="accordion-header" id="faq17">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse17" aria-expanded="false" aria-controls="collapse17">
+                  <strong>Comment recevoir les rappels des événements ?</strong>
+                </button>
+              </h3>
+              <div id="collapse17" class="accordion-collapse collapse" aria-labelledby="faq17" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p class="mb-0">Lors de votre inscription à un événement, vous pouvez cocher l'option "Recevoir un rappel par email la veille à 19h". Vous pouvez également ajouter l'événement à votre calendrier (Google Calendar, Apple Calendar, etc.) pour recevoir des notifications automatiques.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Contact si pas de réponse -->
+        <div class="card card-liquid border-liquid shadow-liquid mt-5">
+          <div class="card-body p-4 text-center">
+            <h3 class="h5 mb-3">
+              <i class="bi bi-envelope-paper text-liquid-primary me-2" aria-hidden="true"></i>
+              Vous ne trouvez pas la réponse à votre question ?
+            </h3>
+            <p class="text-muted mb-3">
+              N'hésitez pas à nous contacter directement. Nous répondrons à vos questions dans les plus brefs délais.
+            </p>
+            <%= link_to contact_path, class: "btn btn-liquid-primary" do %>
+              <i class="bi bi-envelope me-2" aria-hidden="true"></i>
+              Nous contacter
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Recherche simple dans la FAQ (filtrage des questions)
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('faqSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const accordionItems = document.querySelectorAll('#faqAccordion .accordion-item');
+        
+        accordionItems.forEach(function(item) {
+          const question = item.querySelector('.accordion-button strong')?.textContent.toLowerCase() || '';
+          const answer = item.querySelector('.accordion-body')?.textContent.toLowerCase() || '';
+          const matches = question.includes(searchTerm) || answer.includes(searchTerm);
+          
+          if (searchTerm === '' || matches) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+  });
+</script>
+

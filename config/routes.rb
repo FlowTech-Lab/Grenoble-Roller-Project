@@ -123,6 +123,8 @@ Rails.application.routes.draw do
   get "/cgu", to: "legal_pages#cgu", as: "cgu"
   get "/conditions-generales-utilisation", to: "legal_pages#cgu" # Alias pour CGU
   get "/contact", to: "legal_pages#contact", as: "contact"
+  get "/faq", to: "legal_pages#faq", as: "faq"
+  get "/questions-frequentes", to: "legal_pages#faq" # Alias pour FAQ
 
   # Cookie consent
   resource :cookie_consent, only: [] do

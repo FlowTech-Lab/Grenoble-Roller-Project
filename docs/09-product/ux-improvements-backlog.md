@@ -105,7 +105,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ## 🟡 AMÉLIORATIONS IMPORTANTES (Impact Haut, Effort Moyen)
 
 ### **Parcours 1 : Découverte de l'Association**
-- [x] Créer les pages manquantes du footer (Pages statiques : FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe) ✅ **PARTIELLEMENT FAIT** - Contact, CGU, Confidentialité, Mentions Légales, CGV existent. FAQ, Équipe à créer
+- [x] Créer les pages manquantes du footer (Pages statiques : FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe) ✅ **PARTIELLEMENT FAIT** - Contact, CGU, Confidentialité, Mentions Légales, CGV, **FAQ** ✅ (2025-01-30) existent. Équipe à créer
 - [ ] Implémenter newsletter fonctionnelle (Formulaire footer + backend avec service email) ⚠️ **À FAIRE** - Newsletter masquée actuellement
 - [x] Lier réseaux sociaux (Ajouter vraies URLs dans variables d'environnement) ✅ **TERMINÉ** - Facebook et Instagram avec vraies URLs
 - [x] Section "Pourquoi nous rejoindre ?" (3-4 cards avec valeurs + icônes) ✅ **DÉJÀ FAIT** - Section existante avec 3 cards (Tous niveaux, Convivialité, Sport)
