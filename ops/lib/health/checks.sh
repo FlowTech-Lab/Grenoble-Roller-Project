@@ -53,20 +53,23 @@ health_check_comprehensive() {
     fi
     
     # 4. Test HTTP endpoint
-    log_info "  → Vérification HTTP (port: ${port})..."
+    # Détecter le port interne du conteneur (variable d'environnement PORT)
+    # Le port passé en paramètre est le port externe, mais dans le conteneur l'app écoute sur PORT (généralement 3000)
+    local internal_port=$($DOCKER_CMD exec "$container" sh -c 'echo ${PORT:-3000}' 2>/dev/null || echo "3000")
+    log_info "  → Vérification HTTP (port externe: ${port}, port interne: ${internal_port})..."
     
-    # Tester depuis le conteneur (le port 3000 n'est pas exposé sur l'hôte)
+    # Tester depuis le conteneur (le port interne, pas le port externe)
     local response="000"
     
     # Vérifier si curl est disponible dans le conteneur
     if $DOCKER_CMD exec "$container" which curl > /dev/null 2>&1; then
-        # Tester depuis le conteneur (localhost:3000)
+        # Tester depuis le conteneur (localhost avec le port interne)
         response=$($DOCKER_CMD exec "$container" curl -s -w "%{http_code}" -o /dev/null \
-                   "http://localhost:${port}/up" 2>/dev/null || echo "000")
+                   "http://localhost:${internal_port}/up" 2>/dev/null || echo "000")
     # Sinon, utiliser wget si disponible dans le conteneur
     elif $DOCKER_CMD exec "$container" which wget > /dev/null 2>&1; then
         local wget_output=$($DOCKER_CMD exec "$container" wget -q -O - \
-                            "http://localhost:${port}/up" 2>&1)
+                            "http://localhost:${internal_port}/up" 2>&1)
         if echo "$wget_output" | grep -q "200 OK\|up"; then
             response="200"
         else
