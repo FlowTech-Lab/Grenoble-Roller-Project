@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register ProductVariant do
-  menu priority: 7, label: "Variantes Produits"
+  menu priority: 3, label: "Variantes Produits", parent: "Boutique"
 
   includes :product, :option_values
 
@@ -129,5 +129,16 @@ ActiveAdmin.register ProductVariant do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @variant = resource
+      if @variant.destroy
+        redirect_to collection_path, notice: "La variante ##{@variant.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@variant), alert: "Impossible de supprimer la variante : #{@variant.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

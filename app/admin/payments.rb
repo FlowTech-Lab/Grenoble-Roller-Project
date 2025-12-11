@@ -1,5 +1,5 @@
 ActiveAdmin.register Payment do
-  menu priority: 4, parent: "Orders"
+  menu priority: 2, label: "Paiements", parent: "Commandes"
 
   permit_params :provider, :status, :amount_cents, :external_id, :metadata
 
@@ -122,6 +122,17 @@ ActiveAdmin.register Payment do
       f.input :metadata, as: :text, input_html: { rows: 5 }
     end
     f.actions
+  end
+
+  controller do
+    def destroy
+      @payment = resource
+      if @payment.destroy
+        redirect_to collection_path, notice: "Le paiement ##{@payment.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@payment), alert: "Impossible de supprimer le paiement : #{@payment.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end
 

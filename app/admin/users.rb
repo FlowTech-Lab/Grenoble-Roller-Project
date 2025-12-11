@@ -1,5 +1,5 @@
 ActiveAdmin.register User do
-  menu priority: 2, label: "Utilisateurs"
+  menu priority: 1, label: "Utilisateurs", parent: "Utilisateurs"
 
   permit_params :email, :password, :password_confirmation,
                 :first_name, :last_name, :bio, :phone, :avatar_url,

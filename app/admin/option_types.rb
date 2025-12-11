@@ -1,5 +1,5 @@
 ActiveAdmin.register OptionType do
-  menu priority: 6, parent: "Shop"
+  menu priority: 4, label: "Types d'options", parent: "Boutique"
 
   permit_params :name
 
@@ -39,6 +39,17 @@ ActiveAdmin.register OptionType do
       f.input :name
     end
     f.actions
+  end
+
+  controller do
+    def destroy
+      @option_type = resource
+      if @option_type.destroy
+        redirect_to collection_path, notice: "Le type d'option ##{@option_type.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@option_type), alert: "Impossible de supprimer le type d'option : #{@option_type.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end
 

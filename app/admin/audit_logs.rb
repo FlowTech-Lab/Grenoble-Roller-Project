@@ -1,5 +1,5 @@
 ActiveAdmin.register AuditLog do
-  menu priority: 14, label: "Logs d'audit"
+  menu priority: 1, label: "Logs d'audit", parent: "Système"
 
   actions :index, :show
   config.sort_order = "created_at_desc"

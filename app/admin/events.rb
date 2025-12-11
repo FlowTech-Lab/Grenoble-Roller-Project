@@ -166,4 +166,15 @@ ActiveAdmin.register Event do
 
     f.actions
   end
+
+  controller do
+    def destroy
+      @event = resource
+      if @event.destroy
+        redirect_to collection_path, notice: "L'événement ##{@event.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@event), alert: "Impossible de supprimer l'événement : #{@event.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

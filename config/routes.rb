@@ -106,6 +106,8 @@ Rails.application.routes.draw do
 
   # Routes pour pré-remplir les champs niveau et distance
   get "/routes/:id/info", to: "routes#info", as: "route_info", defaults: { format: "json" }
+  # Créer un parcours (réservé aux admins)
+  post "/routes", to: "routes#create", as: "routes", defaults: { format: "json" }
 
   resources :attendances, only: :index
 

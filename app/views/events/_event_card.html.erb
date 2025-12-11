@@ -32,11 +32,16 @@
           </p>
           <p class="mb-1">
             <i class="bi bi-geo-alt text-liquid-primary me-2" aria-hidden="true"></i>
-            <%= truncate(event.location_text, length: 35) %>
+            <%= truncate(event.location_text, length: 50) %>
           </p>
           <p class="mb-1">
             <i class="bi bi-signpost-2 text-liquid-primary me-2" aria-hidden="true"></i>
-            <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            <% if event.loops_count && event.loops_count > 1 %>
+              <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+              <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+            <% else %>
+              <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            <% end %>
           </p>
           <p class="mb-0">
             <i class="bi bi-clock text-liquid-primary me-2" aria-hidden="true"></i>
@@ -47,6 +52,12 @@
         <p class="text-muted small mb-3"><%= truncate(event.description, length: 100, omission: '...') %></p>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Passé (si événement passé) -->
+          <% if (defined?(past) && past) || event.past? %>
+            <span class="badge badge-liquid-secondary">
+              <i class="bi bi-archive me-1" aria-hidden="true"></i>Passé
+            </span>
+          <% end %>
           <!-- Badge Annulé (prioritaire) -->
           <% if event.canceled? %>
             <span class="badge bg-danger">
@@ -91,6 +102,19 @@
               <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Vous êtes inscrit(e)
             </span>
           <% end %>
+          
+          <!-- Badge Rappel (si attendance est passé et wants_reminder est défini) -->
+          <% if defined?(attendance) && attendance.present? && attendance.wants_reminder != nil %>
+            <% if attendance.wants_reminder %>
+              <span class="badge badge-liquid-success">
+                <i class="bi bi-bell-fill me-1" aria-hidden="true"></i>Rappel activé
+              </span>
+            <% else %>
+              <span class="badge badge-liquid-secondary">
+                <i class="bi bi-bell-slash me-1" aria-hidden="true"></i>Rappel désactivé
+              </span>
+            <% end %>
+          <% end %>
         </div>
       </div>
 
@@ -110,7 +134,7 @@
                 <!-- Se désinscrire en second (action destructive) -->
                 <%= button_to cancel_attendance_event_path(event), method: :delete, 
                     class: "btn btn-outline-secondary btn-sm", 
-                    data: { turbo_confirm: 'Annuler votre inscription ?' },
+                    data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
                     aria: { label: 'Se désinscrire de cet événement' } do %>
                   <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
                 <% end %>
@@ -198,11 +222,64 @@
             </h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
           </div>
-          <%= form_with url: attend_event_path(event), method: :post, data: { turbo: false } do |f| %>
+          <%= form_with url: attend_event_path(event), method: :post, data: { turbo: false }, id: "attendForm#{event.id}", class: "attend-form" do |f| %>
             <div class="modal-body">
               <p class="lead mb-3">
                 Confirmez votre participation à <strong><%= event.title %></strong>
               </p>
+              
+              <!-- Résumé de l'événement -->
+              <div class="event-summary mb-3 p-3 bg-light rounded">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé de l'événement</p>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-1">
+                      <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
+                      <strong>Date :</strong> <%= l event.start_at, format: :event_long, locale: :fr %>
+                    </p>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-1">
+                      <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
+                      <strong>Lieu :</strong> <%= truncate(event.location_text, length: 50) %>
+                    </p>
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <p class="mb-1">
+                      <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
+                      <strong>Durée :</strong> <%= event.duration_min %> minutes
+                    </p>
+                  </div>
+                  <% if event.distance_km.present? && event.distance_km > 0 %>
+                    <div class="col-12 col-sm-6">
+                      <p class="mb-0">
+                        <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
+                        <strong>Distance :</strong>
+                        <% if event.loops_count && event.loops_count > 1 %>
+                          <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                          <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+                        <% else %>
+                          <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                        <% end %>
+                      </p>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+              
+              <!-- Bouton Ajouter au calendrier -->
+              <% if user_signed_in? %>
+                <div class="mb-3 text-center">
+                  <%= link_to ical_event_path(event, format: :ics), 
+                      class: "btn btn-outline-primary btn-sm w-100", 
+                      title: 'Ajouter au calendrier',
+                      aria: { label: 'Ajouter au calendrier' } do %>
+                    <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Ajouter à mon calendrier
+                  <% end %>
+                </div>
+              <% end %>
               
               <div class="form-check mb-3">
                 <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
@@ -218,9 +295,25 @@
               </p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-              <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", data: { bs_dismiss: "modal" } %>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelBtn<%= event.id %>">Annuler</button>
+              <%= f.submit "Confirmer l'inscription", class: "btn btn-liquid-primary", id: "submitBtn#{event.id}", data: { bs_dismiss: "modal" } %>
             </div>
+            <script>
+              (function() {
+                var eventId = <%= event.id %>;
+                var form = document.getElementById('attendForm' + eventId);
+                var submitBtn = document.getElementById('submitBtn' + eventId);
+                var cancelBtn = document.getElementById('cancelBtn' + eventId);
+                
+                if (form && submitBtn) {
+                  form.addEventListener('submit', function() {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Inscription en cours...';
+                    if (cancelBtn) cancelBtn.disabled = true;
+                  });
+                }
+              })();
+            </script>
           <% end %>
         </div>
       </div>

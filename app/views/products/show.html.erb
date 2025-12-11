@@ -30,8 +30,16 @@
       <!-- Image principale -->
       <div class="col-12 col-lg-5">
         <div class="card-product-image-wrapper product-show-image-wrapper" style="aspect-ratio: 1 / 1; max-height: 600px;">
-          <div class="card-product-image">
-            <% if @product.image_url.present? %>
+          <div class="card-product-image" 
+               style="<%= 'cursor: pointer;' if @product.image.attached? || @product.image_url.present? %>"
+               <% if @product.image.attached? || @product.image_url.present? %>
+                 data-bs-toggle="modal" 
+                 data-bs-target="#productImageModalShow"
+                 aria-label="Agrandir l'image de <%= @product.name %>"
+               <% end %>>
+            <% if @product.image.attached? %>
+              <%= image_tag @product.image, alt: @product.name, loading: "eager", decoding: "async", style: "object-fit: contain;", data: { product_show_target: "productImage" } %>
+            <% elsif @product.image_url.present? %>
               <%= image_tag @product.image_url, alt: @product.name, loading: "eager", decoding: "async", style: "object-fit: contain;", data: { product_show_target: "productImage" } %>
             <% else %>
               <div class="d-flex align-items-center justify-content-center h-100 bg-light">
@@ -212,3 +220,25 @@
     </div> <!-- /.row -->
   </div> <!-- /.card product-show-card -->
 </div>
+
+<!-- Modal Lightbox pour image produit (en dehors de la card pour le z-index Bootstrap) -->
+<% if @product.image_url.present? || @product.image.attached? %>
+  <div class="modal fade" id="productImageModalShow" tabindex="-1" aria-labelledby="productImageModalLabelShow" aria-hidden="true"
+       data-product-show-target="modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-white" id="productImageModalLabelShow"><%= @product.name %></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body p-0 text-center">
+          <% if @product.image.attached? %>
+            <%= image_tag @product.image, alt: @product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;", id: "productModalImage" %>
+          <% elsif @product.image_url.present? %>
+            <%= image_tag @product.image_url, alt: @product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;", id: "productModalImage" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

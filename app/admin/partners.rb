@@ -1,5 +1,5 @@
 ActiveAdmin.register Partner do
-  menu priority: 12, label: "Partenaires"
+  menu priority: 2, label: "Partenaires", parent: "Communication"
 
   permit_params :name, :url, :logo_url, :description, :is_active
 
@@ -66,5 +66,16 @@ ActiveAdmin.register Partner do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @partner = resource
+      if @partner.destroy
+        redirect_to collection_path, notice: "Le partenaire ##{@partner.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@partner), alert: "Impossible de supprimer le partenaire : #{@partner.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

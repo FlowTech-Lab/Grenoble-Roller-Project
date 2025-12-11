@@ -1,5 +1,5 @@
 ActiveAdmin.register VariantOptionValue do
-  menu priority: 8, parent: "Shop"
+  menu priority: 6, label: "Associations variantes-options", parent: "Boutique"
 
   permit_params :variant_id, :option_value_id
 
@@ -52,6 +52,17 @@ ActiveAdmin.register VariantOptionValue do
       f.input :option_value
     end
     f.actions
+  end
+
+  controller do
+    def destroy
+      @vov = resource
+      if @vov.destroy
+        redirect_to collection_path, notice: "L'association ##{@vov.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@vov), alert: "Impossible de supprimer l'association : #{@vov.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end
 

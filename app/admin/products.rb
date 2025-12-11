@@ -1,5 +1,5 @@
 ActiveAdmin.register Product do
-  menu priority: 6, label: "Produits"
+  menu priority: 1, label: "Produits", parent: "Boutique"
 
   includes :category
 
@@ -152,5 +152,16 @@ ActiveAdmin.register Product do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @product = resource
+      if @product.destroy
+        redirect_to collection_path, notice: "Le produit ##{@product.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@product), alert: "Impossible de supprimer le produit : #{@product.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

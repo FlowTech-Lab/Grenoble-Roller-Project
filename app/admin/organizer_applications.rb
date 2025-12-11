@@ -1,5 +1,5 @@
 ActiveAdmin.register OrganizerApplication do
-  menu priority: 11, label: "Candidatures Organisateur"
+  menu priority: 4, label: "Candidatures Organisateur", parent: "Utilisateurs"
 
   includes :user, :reviewed_by
 
@@ -78,5 +78,16 @@ ActiveAdmin.register OrganizerApplication do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @application = resource
+      if @application.destroy
+        redirect_to collection_path, notice: "La candidature ##{@application.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@application), alert: "Impossible de supprimer la candidature : #{@application.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

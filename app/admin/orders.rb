@@ -1,5 +1,5 @@
 ActiveAdmin.register Order do
-  menu priority: 5, label: "Commandes"
+  menu priority: 1, label: "Commandes", parent: "Commandes"
 
   includes :user, :payment, :order_items
 
@@ -102,5 +102,16 @@ ActiveAdmin.register Order do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @order = resource
+      if @order.destroy
+        redirect_to collection_path, notice: "La commande ##{@order.id} a été supprimée avec succès."
+      else
+        redirect_to resource_path(@order), alert: "Impossible de supprimer la commande : #{@order.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

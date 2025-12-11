@@ -26,7 +26,8 @@
         <%= form_with(model: event, html: { class: 'row g-3', multipart: true, data: { controller: 'event-form' } }) do |f| %>
           <div class="col-12">
             <%= f.label :title, "Titre", class: "form-label" %>
-            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble" %>
+            <%= f.text_field :title, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Sortie nocturne Grenoble", onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <!-- Le statut n'est pas modifiable par l'organisateur, seulement par les modérateurs dans Active Admin -->
@@ -62,7 +63,18 @@
           <% end %>
 
           <div class="col-12 col-md-6">
-            <%= f.label :route_id, "Parcours associé", class: "form-label" %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <%= f.label :route_id, "Parcours associé", class: "form-label mb-0" %>
+              <% if current_user&.role&.level.to_i >= 60 %>
+                <button type="button" 
+                        class="btn btn-sm btn-outline-primary" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#createRouteModal"
+                        data-event-form-target="createRouteButton">
+                  <i class="bi bi-plus-circle me-1"></i>Créer un parcours
+                </button>
+              <% end %>
+            </div>
             <%= f.collection_select :route_id, @routes, :id, :name, { include_blank: "Sans parcours" }, 
                 class: "form-select form-select-liquid",
                 data: { 
@@ -72,6 +84,25 @@
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Si vous sélectionnez un parcours, le niveau et la distance seront pré-remplis automatiquement.
+            </div>
+          </div>
+          
+          <!-- Nombre de boucles -->
+          <div class="col-12 col-md-6">
+            <%= f.label :loops_count, "Nombre de boucles", class: "form-label" %>
+            <%= f.number_field :loops_count, 
+                class: "form-control form-control-liquid", 
+                min: 1, 
+                max: 10, 
+                step: 1, 
+                value: event.loops_count || 1,
+                data: { 
+                  event_form_target: "loopsCountInput",
+                  action: "change->event-form#loopsCountChanged"
+                } %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Nombre de fois que le parcours sera effectué. La distance totale sera calculée automatiquement.
             </div>
           </div>
           
@@ -90,43 +121,57 @@
                 { include_blank: "Sélectionnez un niveau" },
                 class: "form-select form-select-liquid",
                 data: { event_form_target: "levelSelect" },
-                required: true %>
+                required: true,
+                onchange: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
           
           <div class="col-12 col-md-6">
-            <%= f.label :distance_km, "Distance (km)", class: "form-label" do %>
-              Distance (km) <span class="text-danger">*</span>
+            <%= f.label :distance_km, "Distance par boucle (km)", class: "form-label" do %>
+              Distance par boucle (km) <span class="text-danger">*</span>
             <% end %>
             <%= f.number_field :distance_km, 
                 class: "form-control form-control-liquid", 
                 min: 0.1, 
                 step: 0.1,
                 placeholder: "Ex: 15.5",
-                data: { event_form_target: "distanceInput" },
-                required: true %>
+                data: { 
+                  event_form_target: "distanceInput",
+                  action: "input->event-form#distanceChanged"
+                },
+                required: true,
+                onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
-              Distance totale du parcours en kilomètres.
+              Distance d'une boucle en kilomètres.
+            </div>
+            <div id="total-distance-display" class="alert alert-info mt-2" style="display: none;">
+              <i class="bi bi-calculator me-2"></i>
+              <strong>Distance totale :</strong> <span id="total-distance-value">0</span> km
             </div>
           </div>
 
           <div class="col-12 col-md-6">
             <%= f.label :start_at, "Date et heure de début", class: "form-label" %>
-            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true %>
+            <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true, onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 col-md-6">
             <%= f.label :duration_min, "Durée (minutes)", class: "form-label" %>
-            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 30, step: 5, required: true %>
+            <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 30, step: 5, required: true, onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 col-md-6">
             <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
-            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0 %>
+            <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0, onblur: "validateField(this)" %>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Mettez <strong>0</strong> pour un illimité.
             </div>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -139,7 +184,9 @@
                 min: 0, 
                 step: 0.01,
                 placeholder: "Ex: 5.00",
-                required: true %>
+                required: true,
+                onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
             <%= f.hidden_field :currency, value: "EUR" %>
           </div>
 
@@ -152,7 +199,9 @@
                 maxlength: 255, 
                 required: true, 
                 placeholder: "Ex: Parc Paul Mistral, Grenoble",
-                aria: { describedby: 'locationHelp' } %>
+                aria: { describedby: 'locationHelp' },
+                onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
             <div id="locationHelp" class="form-text">
               <i class="bi bi-info-circle me-1"></i>
               Indiquez où se retrouver (parc, place, adresse...)
@@ -228,11 +277,20 @@
 
           <div class="col-12">
             <%= f.label :description, "Description détaillée", class: "form-label" %>
-            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez le parcours, le niveau requis, le matériel conseillé..." %>
+            <%= f.text_area :description, class: "form-control form-control-liquid", rows: 5, required: true, placeholder: "Décrivez le parcours, le niveau requis, le matériel conseillé...", onblur: "validateField(this)" %>
+            <div class="invalid-feedback"></div>
           </div>
 
           <div class="col-12 mt-3 d-grid gap-2">
-            <%= f.submit (event.persisted? ? "Mettre à jour l’événement" : "Créer l’événement"), class: "btn btn-liquid-primary btn-lg w-100" %>
+            <% if event.persisted? %>
+              <%= f.submit "Mettre à jour l'événement", class: "btn btn-liquid-primary btn-lg w-100" %>
+            <% else %>
+              <%= f.submit "Créer l'événement", 
+                  class: "btn btn-liquid-primary btn-lg w-100",
+                  data: { 
+                    turbo_confirm: "Votre événement sera en attente de validation par un modérateur. Continuer ?" 
+                  } %>
+            <% end %>
             <%= link_to 'Annuler', events_path, class: "btn btn-outline-secondary w-100" %>
           </div>
         <% end %>
@@ -240,6 +298,71 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de création de parcours (visible uniquement pour admins) -->
+<% if current_user&.role&.level.to_i >= 60 %>
+  <div class="modal fade" id="createRouteModal" tabindex="-1" aria-labelledby="createRouteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="createRouteModalLabel">
+            <i class="bi bi-map me-2" aria-hidden="true"></i>Créer un nouveau parcours
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <%= form_with url: routes_path, method: :post, data: { turbo: false }, id: "createRouteForm" do |f| %>
+          <div class="modal-body">
+            <div class="mb-3">
+              <%= f.label :name, "Nom du parcours", class: "form-label" do %>
+                Nom <span class="text-danger">*</span>
+              <% end %>
+              <%= f.text_field :name, class: "form-control", required: true, placeholder: "Ex: Tour de Grenoble" %>
+            </div>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <%= f.label :distance_km, "Distance (km)", class: "form-label" %>
+                <%= f.number_field :distance_km, class: "form-control", min: 0.1, step: 0.1, placeholder: "Ex: 15.5" %>
+              </div>
+              
+              <div class="col-md-6">
+                <%= f.label :difficulty, "Difficulté", class: "form-label" %>
+                <%= f.select :difficulty, 
+                    options_for_select([
+                      ['Facile', 'easy'],
+                      ['Intermédiaire', 'medium'],
+                      ['Difficile', 'hard']
+                    ]), 
+                    { include_blank: "Non défini" },
+                    class: "form-select" %>
+              </div>
+            </div>
+            
+            <div class="mb-3 mt-3">
+              <%= f.label :description, "Description", class: "form-label" %>
+              <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Description du parcours..." %>
+            </div>
+            
+            <div class="mb-3">
+              <%= f.label :map_image, "Carte du parcours", class: "form-label" %>
+              <%= f.file_field :map_image, accept: "image/*", class: "form-control" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Image de la carte du parcours (optionnel)
+              </div>
+            </div>
+            
+            <div id="createRouteErrors" class="alert alert-danger" style="display: none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= f.submit "Créer le parcours", class: "btn btn-liquid-primary", id: "createRouteSubmit" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
 
 <% if event.persisted? && policy(event).destroy? %>
   <div class="text-center mt-3">
@@ -272,3 +395,165 @@
   </div>
 <% end %>
 
+
+<!-- Modal de création de parcours (visible uniquement pour admins) -->
+<% if current_user&.role&.level.to_i >= 60 %>
+  <div class="modal fade" id="createRouteModal" tabindex="-1" aria-labelledby="createRouteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="createRouteModalLabel">
+            <i class="bi bi-map me-2" aria-hidden="true"></i>Créer un nouveau parcours
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <%= form_with url: routes_path, method: :post, data: { turbo: false }, id: "createRouteForm", multipart: true do |f| %>
+          <div class="modal-body">
+            <div class="mb-3">
+              <%= f.label :name, "Nom du parcours", class: "form-label" do %>
+                Nom <span class="text-danger">*</span>
+              <% end %>
+              <%= f.text_field :name, class: "form-control", required: true, placeholder: "Ex: Tour de Grenoble", maxlength: 140 %>
+            </div>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <%= f.label :distance_km, "Distance (km)", class: "form-label" %>
+                <%= f.number_field :distance_km, class: "form-control", min: 0.1, step: 0.1, placeholder: "Ex: 15.5" %>
+              </div>
+              
+              <div class="col-md-6">
+                <%= f.label :difficulty, "Difficulté", class: "form-label" %>
+                <%= f.select :difficulty, 
+                    options_for_select([
+                      ['Facile', 'easy'],
+                      ['Intermédiaire', 'medium'],
+                      ['Difficile', 'hard']
+                    ]), 
+                    { include_blank: "Non défini" },
+                    class: "form-select" %>
+              </div>
+            </div>
+            
+            <div class="mb-3 mt-3">
+              <%= f.label :description, "Description", class: "form-label" %>
+              <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Description du parcours..." %>
+            </div>
+            
+            <div class="mb-3">
+              <%= f.label :map_image, "Carte du parcours", class: "form-label" %>
+              <%= f.file_field :map_image, accept: "image/*", class: "form-control" %>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Image de la carte du parcours (optionnel)
+              </div>
+            </div>
+            
+            <div id="createRouteErrors" class="alert alert-danger" style="display: none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= f.submit "Créer le parcours", class: "btn btn-liquid-primary", id: "createRouteSubmit" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+<script>
+  // Validation champ en temps réel (harmonisé avec formulaires d'adhésion)
+  function validateField(field) {
+    const value = field.value.trim();
+    // Chercher le feedback dans le parent (car structure peut varier)
+    let feedback = field.nextElementSibling;
+    if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+      // Si pas trouvé, chercher dans le parent
+      const parent = field.closest('.col-12, .col-md-6');
+      if (parent) {
+        feedback = parent.querySelector('.invalid-feedback');
+      }
+    }
+    
+    // Réinitialiser
+    field.classList.remove('is-invalid', 'is-valid');
+    if (feedback) {
+      feedback.textContent = '';
+      feedback.style.display = 'none';
+    }
+    
+    // Validation selon le type
+    if (field.hasAttribute('required') && !value) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = 'Champ obligatoire';
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Validation longueur max
+    if (field.hasAttribute('maxlength') && value.length > parseInt(field.getAttribute('maxlength'))) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = `Maximum ${field.getAttribute('maxlength')} caractères`;
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Validation longueur min (pour textarea description)
+    if (field.tagName === 'TEXTAREA' && field.hasAttribute('minlength') && value.length < parseInt(field.getAttribute('minlength'))) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = `Minimum ${field.getAttribute('minlength')} caractères`;
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Validation nombre (min)
+    if (field.type === 'number' && value) {
+      const numValue = parseFloat(value);
+      if (field.hasAttribute('min') && numValue < parseFloat(field.getAttribute('min'))) {
+        field.classList.add('is-invalid');
+        if (feedback) {
+          feedback.textContent = `La valeur doit être supérieure ou égale à ${field.getAttribute('min')}`;
+          feedback.style.display = 'block';
+        }
+        return false;
+      }
+    }
+    
+    // Validation date (doit être dans le futur pour start_at)
+    if (field.type === 'datetime-local' && value) {
+      const selectedDate = new Date(value);
+      const now = new Date();
+      if (selectedDate <= now) {
+        field.classList.add('is-invalid');
+        if (feedback) {
+          feedback.textContent = 'La date doit être dans le futur';
+          feedback.style.display = 'block';
+        }
+        return false;
+      }
+    }
+    
+    // Validation select (niveau)
+    if (field.tagName === 'SELECT' && field.hasAttribute('required') && !value) {
+      field.classList.add('is-invalid');
+      if (feedback) {
+        feedback.textContent = 'Veuillez sélectionner une option';
+        feedback.style.display = 'block';
+      }
+      return false;
+    }
+    
+    // Si valide
+    if (value) {
+      field.classList.add('is-valid');
+    }
+    
+    return true;
+  }
+  
+</script>

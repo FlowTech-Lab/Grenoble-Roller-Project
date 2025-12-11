@@ -1,5 +1,5 @@
 ActiveAdmin.register ContactMessage do
-  menu priority: 13, label: "Messages de contact"
+  menu priority: 1, label: "Messages de contact", parent: "Communication"
 
   actions :all, except: %i[new create edit update]
 
