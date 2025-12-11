@@ -152,7 +152,7 @@
           <div class="detail-content">
             <p class="detail-label">Tarif</p>
             <p class="detail-value">
-              <%= number_to_currency(@event.price_cents / 100.0, unit: @event.currency) %>
+              <%= format_event_price(@event.price_cents) %>
             </p>
           </div>
         </div>
@@ -164,7 +164,7 @@
           </div>
           <div class="detail-content">
             <p class="detail-label">Organisateur</p>
-            <p class="detail-value"><%= @event.creator_user.first_name %> <%= @event.creator_user.last_name %></p>
+            <p class="detail-value"><%= @event.creator_user.display_name %></p>
           </div>
         </div>
       </section>

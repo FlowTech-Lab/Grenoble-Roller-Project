@@ -42,6 +42,13 @@ class User < ApplicationRecord
     end
   end
 
+  # Formater le nom pour l'affichage public (prénom + première lettre du nom)
+  # Exemple: "Florian A." au lieu de "Florian Astier"
+  def display_name
+    return first_name if last_name.blank?
+    "#{first_name} #{last_name.first.upcase}."
+  end
+
   # Vérifier si le token de confirmation est expiré
   def confirmation_token_expired?
     return false if confirmed_at.present?
