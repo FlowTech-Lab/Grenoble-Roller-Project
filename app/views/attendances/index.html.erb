@@ -32,6 +32,7 @@
             <% @upcoming_attendances.each do |attendance| %>
               <%= render 'events/event_card',
                          event: attendance.event,
+                         attendance: attendance,
                          render_signup_button: true,
                          current_user: current_user %>
             <% end %>
@@ -58,6 +59,7 @@
             <% @past_attendances.each do |attendance| %>
               <%= render 'events/event_card',
                          event: attendance.event,
+                         attendance: attendance,
                          render_signup_button: false,
                          current_user: current_user,
                          past: true %>

@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **26/41 Quick Wins terminés** (63%) + **2 partiellement faits**
+**Avancement** : **27/41 Quick Wins terminés** (66%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -65,7 +65,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ### **Parcours 5 : Gestion de Mes Inscriptions**
 - [x] Séparer événements à venir et passés (Section "À venir" et "Passés" avec compteurs) ✅ **TERMINÉ** (2025-01-30) - Sections séparées avec compteurs et badges distinctifs
 - [x] Badge "Passé" (Badge distinctif pour les événements passés) ✅ **TERMINÉ** (2025-01-30) - Badge `badge-liquid-secondary` appliqué via paramètre `past: true`
-- [ ] Indicateur rappel dans la liste (Badge "Rappel activé" / "Rappel désactivé" sur chaque card) ⚠️ **À FAIRE** - Rappel visible sur page détail mais pas dans liste
+- [x] Indicateur rappel dans la liste (Badge "Rappel activé" / "Rappel désactivé" sur chaque card) ✅ **TERMINÉ** (2025-01-30) - Badge affiché sur chaque card dans "Mes sorties" avec icône et couleur distincte (vert activé, gris désactivé)
 - [x] Compteur d'inscriptions ("X sorties à venir" visible en haut) ✅ **TERMINÉ** (2025-01-30) - Compteurs "X sorties" affichés dans chaque section (À venir / Passés)
 
 ### **Parcours 6 : Création d'un Événement**
