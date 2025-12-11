@@ -3401,7 +3401,8 @@
   /* === SECTION BACKGROUNDS - DUAL THEME === */
   /* Section avec fond alterné qui s'adapte au thème */
   .section-alt {
-    background: rgba(248, 249, 250, 0.5); /* Légèrement plus clair que le body */
+    background: rgba(202, 210, 216, 0.4
+    ); /* Plus foncé que le body (gradient pastel) */
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }

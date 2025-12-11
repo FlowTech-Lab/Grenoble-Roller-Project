@@ -1,7 +1,7 @@
 <% content_for :description, "Découvrez la communauté Roller Grenobloise ! Participez à des événements, partagez vos sorties et connectez-vous avec d'autres riders à Grenoble. Randonnées urbaines, cours d'initiation, événements à thème." %>
 
 <!-- Hero Banner -->
-<div class="banner-hero mb-3">
+<div class="banner-hero mb-0">
     <div class="banner-overlay"></div>
     <div class="banner-content">
         <div class="container">
@@ -42,6 +42,9 @@
     </div>
 </div>
 
+<!-- Ligne de séparation blanche (pleine largeur) -->
+<div style="height: 2px; background: #ffffff; width: 100%;"></div>
+
 <!-- Section À propos -->
 <section class="py-5 section-alt">
   <div class="container">
@@ -51,6 +54,10 @@
           <i class="bi bi-heart-fill text-liquid-primary me-2" aria-hidden="true"></i>
           À propos de Grenoble Roller
         </h2>
+        
+        <!-- Ligne de séparation blanche -->
+        <div style="height: 2px; background: #ffffff; width: 100%; max-width: 200px; margin: 0 auto 1.5rem;"></div>
+        
         <p class="lead text-body-secondary mb-4">
           Association loi 1901, nous organisons des randonnées urbaines encadrées 
           pour favoriser le lien social dans un esprit convivial et sportif. 
@@ -65,7 +72,10 @@
   </div>
 </section>
 
-<section class="container pb-5">
+<!-- Ligne de séparation blanche (pleine largeur) -->
+<div style="height: 2px; background: #ffffff; width: 100%;"></div>
+
+<section class="container pb-5 pt-4">
   <% if @highlighted_event.present? %>
     <div class="mb-5">
       <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between mb-4">
