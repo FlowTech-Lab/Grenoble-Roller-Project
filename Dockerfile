@@ -39,9 +39,15 @@ RUN apt-get update -qq && \
 # Install JavaScript dependencies
 ARG NODE_VERSION=24.7.0
 ENV PATH=/usr/local/node/bin:$PATH
-RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
-    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
-    rm -rf /tmp/node-build-master
+RUN ARCH=$(uname -m) && \
+    case "$ARCH" in \
+        x86_64) ARCH_SUFFIX="x64" ;; \
+        aarch64|arm64) ARCH_SUFFIX="arm64" ;; \
+        *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
+    esac && \
+    curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${ARCH_SUFFIX}.tar.xz | tar -xJ -C /tmp/ && \
+    mv /tmp/node-v${NODE_VERSION}-linux-${ARCH_SUFFIX} /usr/local/node && \
+    rm -rf /tmp/node-v${NODE_VERSION}-linux-${ARCH_SUFFIX}
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
