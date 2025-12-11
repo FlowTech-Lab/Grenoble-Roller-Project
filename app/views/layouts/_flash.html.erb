@@ -1,6 +1,6 @@
 <!-- Toast container -->
 <% if notice || alert %>
-  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+  <div class="toast-container position-fixed end-0 p-3" style="top: 80px; z-index: 1050;">
     <% if notice %>
       <% 
         # Déterminer le type de toast (success par défaut si flash[:type] == 'success', sinon info)

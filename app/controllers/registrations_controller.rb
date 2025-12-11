@@ -34,15 +34,19 @@ class RegistrationsController < Devise::RegistrationsController
       # Gérer l'opt-in newsletter (futur)
       # TODO: Implémenter newsletter subscription si params[:newsletter_subscription] == "1"
 
-      # Message de bienvenue avec demande de confirmation email
+      # Message de bienvenue personnalisé avec demande de confirmation email
       if resource.first_name.present?
-        flash[:warning] = "Bienvenue #{resource.first_name} ! 🎉 " \
-                         "Un email de confirmation vous a été envoyé. " \
-                         "Veuillez confirmer votre adresse email pour accéder à l'application."
+        flash[:notice] = "Bienvenue #{resource.first_name} ! 🎉 " \
+                        "Votre compte a été créé avec succès. " \
+                        "Un email de confirmation vous a été envoyé. " \
+                        "Veuillez confirmer votre adresse email pour accéder à toutes les fonctionnalités."
+        flash[:type] = 'success'
       else
-        flash[:warning] = "Bienvenue ! 🎉 " \
-                         "Un email de confirmation vous a été envoyé. " \
-                         "Veuillez confirmer votre adresse email pour accéder à l'application."
+        flash[:notice] = "Bienvenue ! 🎉 " \
+                        "Votre compte a été créé avec succès. " \
+                        "Un email de confirmation vous a été envoyé. " \
+                        "Veuillez confirmer votre adresse email pour accéder à toutes les fonctionnalités."
+        flash[:type] = 'success'
       end
 
       # Ne PAS connecter l'utilisateur automatiquement - il DOIT confirmer son email

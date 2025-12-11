@@ -29,7 +29,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
 
-**Avancement** : **21/41 Quick Wins terminés** (51%) + **2 partiellement faits**
+**Avancement** : **22/41 Quick Wins terminés** (54%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -293,9 +293,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Effort : Faible (afficher date/heure/lieu dans modal)
    - **Status** : Résumé complet avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier" (iCal)
 
-8. **Message de bienvenue après inscription** (Parcours 2)
+8. **Message de bienvenue après inscription** (Parcours 2) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (première impression positive)
    - Effort : Faible (toast/alerte avec message personnalisé)
+   - **Status** : Message personnalisé avec prénom, type 'success', et positionnement des toasts sous la navbar
 
 9. **Badge "Nouveau" sur événements** (Parcours 3) ✅ **TERMINÉ**
    - Impact : Moyen-Haut (mise en avant des nouveautés)
@@ -612,13 +613,13 @@ Une user story est "Done" quand :
 - ✅ Audit trail (modèle `AuditLog` existe, interface à améliorer)
 
 **Avancement actuel** :
-- ✅ **21 Quick Wins terminés (51%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30), **Section "À propos" homepage** ✅ (2025-01-30)
+- ✅ **22 Quick Wins terminés (54%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30), **Section "À propos" homepage** ✅ (2025-01-30), **Message de bienvenue après inscription** ✅ (2025-01-30)
 - 🟡 **2 partiellement faits** : Alerte "Presque complet" (badge sur card mais pas dans modal), Pages footer (FAQ et Équipe manquantes)
-- ⏳ **18 Quick Wins en attente (49%)**
+- ⏳ **17 Quick Wins en attente (46%)**
 
 **Phases globales** :
 - ✅ **Phase 0 (Accessibilité)** : 100% - Corrections critiques terminées
-- ⏳ **Phase 1 (Quick Wins)** : 51% - 21/41 terminés, 2 partiellement faits
+- ⏳ **Phase 1 (Quick Wins)** : 54% - 22/41 terminés, 2 partiellement faits
 - ✅ **Phase 2 (HelloAsso)** : 90% - Checkout & polling fonctionnels
 - ✅ **Phase 3 (Adhésions)** : 95% - Formulaire multi-étapes complet
 - ✅ **Phase 4 (Événements)** : 95% - Fonctionnalités core complètes
