@@ -111,7 +111,7 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [x] Section "Pourquoi nous rejoindre ?" (3-4 cards avec valeurs + icônes) ✅ **DÉJÀ FAIT** - Section existante avec 3 cards (Tous niveaux, Convivialité, Sport)
 - [ ] Section "Derniers événements" (Carrousel ou grille avec 3-4 derniers événements passés) ⏳ **À FAIRE PLUS TARD** - Page d'accueil méritera refonte complète avec carrousel
 - [ ] Section "Tarifs d'adhésion" (Tableau simple avec 3 tarifs + CTA) ⏳ **À FAIRE PLUS TARD** - Page d'accueil méritera refonte complète avec carrousel
-- [ ] Améliorer le message vide (Si aucun événement, proposer actions selon rôle) ⏳ **À FAIRE PLUS TARD** - Page d'accueil méritera refonte complète avec carrousel
+- [x] Améliorer le message vide (Si aucun événement, proposer actions selon rôle) ✅ **TERMINÉ** (2025-01-30) - Messages contextuels avec actions selon rôle (organisateur/admin, connecté, non connecté) pour événements à venir et passés, design cohérent avec cards. Également appliqué aux initiations avec logique adaptée (admin uniquement pour créer)
 
 ### **Parcours 2 : Inscription**
 - [ ] Validation email en temps réel (Vérifier si email existe déjà via AJAX) ⚠️ **À FAIRE** - Pas de validation AJAX
