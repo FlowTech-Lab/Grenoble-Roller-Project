@@ -12,7 +12,64 @@
 
   <section class="mb-5" aria-label="Catalogue produits">
     <div class="row">
-      <div class="col-12 col-lg-8 mx-auto">
+      <!-- Sidebar filtres catégories -->
+      <aside class="col-12 col-md-3 mb-4 mb-md-0" aria-label="Filtres par catégorie">
+        <div class="card card-liquid rounded-liquid shadow-sm">
+          <div class="card-body">
+            <h2 class="h6 mb-3">
+              <i class="bi bi-funnel text-liquid-primary me-2" aria-hidden="true"></i>Catégories
+            </h2>
+            
+            <div class="d-flex flex-column gap-2">
+              <%= link_to products_path, 
+                  class: "category-filter-item text-decoration-none #{'active' unless @selected_category}" do %>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-truncate me-2">
+                    <i class="bi bi-grid me-2" aria-hidden="true"></i>Tous les produits
+                  </span>
+                  <span class="badge <%= @selected_category.nil? ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= Product.where(is_active: true).count %></span>
+                </div>
+              <% end %>
+              
+              <% @categories.each do |category| %>
+                <% 
+                  is_active = @selected_category&.id == category.id
+                  count = @category_counts[category.id] || 0
+                %>
+                <% if count > 0 %>
+                  <%= link_to products_path(category: category.slug), 
+                      class: "category-filter-item text-decoration-none #{'active' if is_active}" do %>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="text-truncate me-2">
+                        <i class="bi bi-tag me-2" aria-hidden="true"></i><%= category.name %>
+                      </span>
+                      <span class="badge <%= is_active ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= count %></span>
+                    </div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Contenu principal -->
+      <div class="col-12 col-md-9">
+        <% if @selected_category %>
+          <div class="mb-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <h2 class="h5 mb-0">
+                <i class="bi bi-tag-fill text-liquid-primary me-2" aria-hidden="true"></i>
+                <%= @selected_category.name %>
+                <span class="badge bg-secondary ms-2"><%= @products.count %> produit<%= 's' if @products.count > 1 %></span>
+              </h2>
+              <%= link_to products_path, class: "btn btn-sm btn-outline-secondary" do %>
+                <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Effacer le filtre
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
         <div class="product-grid">
           <% @products.each do |product| %>
             <% 
@@ -46,7 +103,13 @@
                      data-product-url="<%= product_path(product.slug.presence || product) %>" 
                      style="cursor: pointer;">
               <div class="card-product-image-wrapper">
-                <div class="card-product-image">
+                <div class="card-product-image <%= 'product-image-clickable' if product.image.attached? || product.image_url.present? %>" 
+                     <% if product.image.attached? || product.image_url.present? %>
+                       style="cursor: pointer;" 
+                       data-bs-toggle="modal" 
+                       data-bs-target="#productImageModal<%= product.id %>"
+                       aria-label="Agrandir l'image de <%= product.name %>"
+                     <% end %>>
                   <% if product.image.attached? %>
                     <%= image_tag product.image, alt: product.name, loading: "lazy", decoding: "async" %>
                   <% elsif product.image_url.present? %>
@@ -136,7 +199,51 @@
             </article>
           <% end %>
         </div>
+        
+        <% if @products.empty? %>
+          <div class="text-center py-5">
+            <div class="card card-liquid rounded-liquid shadow-sm p-5">
+              <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+              <h3 class="h5 fw-bold mt-3 mb-2">Aucun produit trouvé</h3>
+              <p class="text-body-secondary mb-4">
+                <% if @selected_category %>
+                  Aucun produit disponible dans la catégorie "<%= @selected_category.name %>".
+                <% else %>
+                  Aucun produit disponible pour le moment.
+                <% end %>
+              </p>
+              <% if @selected_category %>
+                <%= link_to products_path, class: "btn btn-liquid-primary" do %>
+                  <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Voir tous les produits
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
       </div>
     </div>
   </section>
 </div>
+
+<!-- Modals Lightbox pour images produits -->
+<% @products.each do |product| %>
+  <% if product.image.attached? || product.image_url.present? %>
+    <div class="modal fade" id="productImageModal<%= product.id %>" tabindex="-1" aria-labelledby="productImageModalLabel<%= product.id %>" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title text-white" id="productImageModalLabel<%= product.id %>"><%= product.name %></h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body p-0 text-center">
+            <% if product.image.attached? %>
+              <%= image_tag product.image, alt: product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;" %>
+            <% elsif product.image_url.present? %>
+              <%= image_tag product.image_url, alt: product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

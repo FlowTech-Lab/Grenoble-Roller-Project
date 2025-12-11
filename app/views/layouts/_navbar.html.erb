@@ -118,11 +118,16 @@
                   <% end %>
                 <% end %>
               </li>
-              <% if current_user.role&.name == 'admin' || current_user.role&.level.to_i >= 60 %>
+              <% if current_user.role&.code.in?(%w[ADMIN SUPERADMIN]) %>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                  <%= link_to admin_root_path, class: "dropdown-item" do %>
+                  <%= link_to Rails.application.routes.url_helpers.activeadmin_root_path, class: "dropdown-item" do %>
                     <i class="bi bi-shield-check me-2" aria-hidden="true"></i>Administration
+                  <% end %>
+                </li>
+                <li>
+                  <%= link_to Rails.application.routes.url_helpers.activeadmin_root_path, class: "dropdown-item" do %>
+                    <i class="bi bi-gear me-2" aria-hidden="true"></i>Active Admin
                   <% end %>
                 </li>
               <% end %>

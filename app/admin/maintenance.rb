@@ -46,7 +46,7 @@ ActiveAdmin.register_page "Maintenance" do
             p style: "color: #666; margin: 0 0 20px 0;" do
               "Les utilisateurs pourront à nouveau accéder au site normalement."
             end
-            text_node raw(form_tag(admin_maintenance_toggle_path, method: :post, style: "display: inline;") {
+            text_node raw(form_tag(toggle_activeadmin_maintenance_path, method: :patch, style: "display: inline;") {
               hidden_field_tag(:authenticity_token, form_authenticity_token) +
               submit_tag("Désactiver Maintenance ✓",
                 class: "button",
@@ -62,7 +62,7 @@ ActiveAdmin.register_page "Maintenance" do
             p style: "color: #666; margin: 0 0 20px 0;" do
               "Les visiteurs non connectés verront la page de maintenance. Seuls les administrateurs (ADMIN/SUPERADMIN) pourront continuer à accéder au site."
             end
-            text_node raw(form_tag(admin_maintenance_toggle_path, method: :post, style: "display: inline;") {
+            text_node raw(form_tag(toggle_activeadmin_maintenance_path, method: :patch, style: "display: inline;") {
               hidden_field_tag(:authenticity_token, form_authenticity_token) +
               submit_tag("Activer Maintenance 🔒",
                 class: "button",
@@ -100,7 +100,7 @@ ActiveAdmin.register_page "Maintenance" do
           li "Seuls les ADMIN/SUPERADMIN peuvent activer le mode maintenance"
           li "Les changements prennent effet immédiatement (pas de redémarrage nécessaire)"
           li "L'état est stocké dans le cache Rails (Redis ou fichier selon configuration)"
-          li "Les routes /admin, /users/sign_in, /assets sont toujours accessibles en maintenance"
+          li "Les routes /activeadmin, /users/sign_in, /assets sont toujours accessibles en maintenance"
         end
       end
 

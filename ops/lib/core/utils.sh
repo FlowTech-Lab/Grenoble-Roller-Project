@@ -13,7 +13,7 @@ show_container_logs() {
     local lines=${2:-50}
     
     log_error "=== Dernières ${lines} lignes des logs de ${container_name} ==="
-    docker logs --tail "$lines" "$container_name" 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}" || true
+    $DOCKER_CMD logs --tail "$lines" "$container_name" 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}" || true
     log_error "=== Fin des logs ==="
 }
 

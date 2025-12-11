@@ -47,7 +47,6 @@ superadmin = User.find_or_create_by!(email: "T3rorX@hotmail.fr") do |user|
   user.phone = "0652556832"
   user.role = superadmin_role
   user.skill_level = "advanced"
-  user.email_verified = true
   user.confirmed_at = Time.now
 end
 

@@ -4,6 +4,10 @@ module Admin
   class MaintenanceToggleController < ApplicationController
     before_action :authenticate_user!
 
+    def update
+      toggle
+    end
+
     def toggle
       # Vérifier que l'utilisateur est ADMIN ou SUPERADMIN
       user = current_user

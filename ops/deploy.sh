@@ -89,6 +89,7 @@ source "${LIB_DIR}/health/checks.sh"
 source "${LIB_DIR}/deployment/rollback.sh"
 source "${LIB_DIR}/deployment/metrics.sh"
 source "${LIB_DIR}/deployment/cron.sh"
+source "${LIB_DIR}/deployment/maintenance.sh"
 
 # Blue-green (lazy loading)
 if [ "${BLUE_GREEN_ENABLED:-false}" = "true" ]; then
@@ -160,8 +161,39 @@ main() {
     
     # Nettoyage préventif
     log "🧹 Nettoyage préventif Docker..."
-    docker image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
-    docker builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
+    
+    # Arrêter les conteneurs orphelins qui pourraient bloquer les ports
+    # Ces conteneurs sont des restes d'une ancienne configuration (Nginx/Certbot)
+    # et ne sont plus dans le docker-compose.yml actuel qui utilise Caddy
+    log_info "Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)..."
+    
+    local orphan_found=false
+    
+    # Vérifier et arrêter les anciens conteneurs Nginx/Certbot s'ils existent encore (migration)
+    # Ces conteneurs ne sont plus dans le docker-compose.yml actuel (migration Nginx → Caddy)
+    # Note: Le conteneur Caddy actuel (grenoble-roller-caddy-production) ne doit PAS être arrêté
+    for old_container in "grenoble-roller-nginx-production" "grenoble-roller-certbot-production"; do
+        if $DOCKER_CMD ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^${old_container}$"; then
+            log_warning "⚠️  Ancien conteneur détecté (migration Nginx → Caddy) : $old_container"
+            log_info "   Arrêt et suppression de $old_container..."
+            $DOCKER_CMD stop "$old_container" 2>/dev/null || true
+            $DOCKER_CMD rm "$old_container" 2>/dev/null || true
+            orphan_found=true
+        fi
+    done
+    
+    if [ "$orphan_found" = "false" ]; then
+        log_info "✅ Aucun conteneur orphelin détecté (ancienne config propre)"
+    fi
+    
+    $DOCKER_CMD image prune -f > /dev/null 2>&1 && log_info "Images sans tag nettoyées" || true
+    $DOCKER_CMD builder prune -f > /dev/null 2>&1 && log_info "Cache build nettoyé" || true
+    
+    # Activer le mode maintenance AVANT le build (évite downtime)
+    if container_is_running "$CONTAINER_NAME"; then
+        log "🔒 Activation du mode maintenance (évite downtime)..."
+        enable_maintenance_mode "$CONTAINER_NAME" || log_warning "⚠️  Impossible d'activer le mode maintenance, continuation..."
+    fi
     
     # 1. Vérifier les mises à jour Git
     log "📥 Vérification des mises à jour (branche: ${BRANCH})..."
@@ -263,7 +295,7 @@ main() {
     # Décider du type de build
     NEED_NO_CACHE_BUILD=false
     if container_is_running "$CONTAINER_NAME"; then
-        CURRENT_CONTAINER_MIGRATIONS=$(docker exec "$CONTAINER_NAME" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+        CURRENT_CONTAINER_MIGRATIONS=$($DOCKER_CMD exec "$CONTAINER_NAME" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
         if [ -n "$CURRENT_CONTAINER_MIGRATIONS" ]; then
             CURRENT_COUNT=$(echo "$CURRENT_CONTAINER_MIGRATIONS" | wc -l | tr -d ' ')
             NEW_IN_LOCAL=$(comm -23 <(echo "$LOCAL_MIGRATIONS_LIST") <(echo "$CURRENT_CONTAINER_MIGRATIONS") || echo "")
@@ -309,7 +341,7 @@ main() {
     fi
     
     # 8. Attendre que le conteneur soit healthy
-    if docker inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
+    if $DOCKER_CMD inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
         if ! wait_for_container_healthy "$CONTAINER_NAME" ${CONTAINER_HEALTHY_WAIT:-120}; then
             log_error "Le conteneur web n'est pas devenu healthy"
             rollback "$CURRENT_COMMIT"
@@ -328,7 +360,7 @@ main() {
     fi
     
     # Calculer timeout adaptatif
-    MIGRATION_STATUS=$(docker exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
+    MIGRATION_STATUS=$($DOCKER_CMD exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
     PENDING_MIGRATIONS=$(echo "$MIGRATION_STATUS" | grep "^\s*down" || echo "")
     PENDING_COUNT=$(echo "$PENDING_MIGRATIONS" | wc -l | tr -d ' ')
     MIGRATION_TIMEOUT=$(calculate_migration_timeout $PENDING_COUNT)
@@ -351,17 +383,16 @@ main() {
         log_info "   Le crontab peut être installé manuellement avec: bundle exec whenever --update-crontab"
     fi
     
-    # 11. Health check final avec retry
+    # 11. Désactiver le mode maintenance AVANT le health check
+    log "🔓 Désactivation du mode maintenance..."
+    disable_maintenance_mode "$CONTAINER_NAME" || log_warning "⚠️  Impossible de désactiver le mode maintenance, continuation..."
+    
+    # 12. Health check final avec retry
     log "🏥 Health check complet avec retry..."
     MAX_RETRIES=${HEALTH_CHECK_MAX_RETRIES:-60}
     RETRY_COUNT=0
     
-    if ! command -v curl > /dev/null 2>&1; then
-        log_error "curl n'est pas disponible sur le système"
-        rollback "$CURRENT_COMMIT"
-        exit 1
-    fi
-    
+    # Note: curl n'est pas nécessaire sur l'hôte car le health check teste depuis le conteneur
     sleep ${HEALTH_CHECK_INITIAL_SLEEP:-10}
     
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
@@ -390,7 +421,7 @@ main() {
         fi
     done
     
-    # 12. Rollback si health check échoue
+    # 13. Rollback si health check échoue
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     log_error "Health check échoué après $MAX_RETRIES tentatives"
     log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

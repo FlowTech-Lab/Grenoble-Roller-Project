@@ -6,23 +6,47 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/../lib"
+
+# Charger les modules nécessaires
+source "${LIB_DIR}/core/colors.sh"
+source "${LIB_DIR}/core/logging.sh"
+source "${LIB_DIR}/docker/containers.sh"
+source "${LIB_DIR}/deployment/maintenance.sh"
+
 CONTAINER_NAME="grenoble-roller-production"
 ACTION="${1:-status}"
 
 case "$ACTION" in
   enable|on|start)
-    echo "🔒 Activation du mode maintenance..."
-    sudo docker exec "$CONTAINER_NAME" bin/rails runner "MaintenanceMode.enable!"
-    echo "✅ Mode maintenance activé"
+    log "🔒 Activation du mode maintenance..."
+    if enable_maintenance_mode "$CONTAINER_NAME"; then
+        log_success "✅ Mode maintenance activé"
+    else
+        log_error "❌ Échec de l'activation"
+        exit 1
+    fi
     ;;
   disable|off|stop)
-    echo "✅ Désactivation du mode maintenance..."
-    sudo docker exec "$CONTAINER_NAME" bin/rails runner "MaintenanceMode.disable!"
-    echo "✅ Mode maintenance désactivé"
+    log "✅ Désactivation du mode maintenance..."
+    if disable_maintenance_mode "$CONTAINER_NAME"; then
+        log_success "✅ Mode maintenance désactivé"
+    else
+        log_error "❌ Échec de la désactivation"
+        exit 1
+    fi
     ;;
   status|check)
-    echo "📊 Vérification du statut du mode maintenance..."
-    sudo docker exec "$CONTAINER_NAME" bin/rails runner "puts 'Mode maintenance: ' + MaintenanceMode.status"
+    log "📊 Vérification du statut du mode maintenance..."
+    local status=$(check_maintenance_status "$CONTAINER_NAME")
+    if [ "$status" = "enabled" ]; then
+        log_info "Mode maintenance: 🔒 ACTIVÉ"
+    elif [ "$status" = "disabled" ]; then
+        log_info "Mode maintenance: ✅ DÉSACTIVÉ"
+    else
+        log_warning "Mode maintenance: ❓ INCONNU"
+    fi
     ;;
   *)
     echo "Usage: $0 [enable|disable|status]"

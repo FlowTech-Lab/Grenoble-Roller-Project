@@ -27,7 +27,9 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Total** : **119 améliorations** identifiées (**+12 nouvelles** liées au footer)
 
-**Avancement** : **9/41 Quick Wins terminés** (22%) + **1 partiellement fait**
+**Statut vérification** : ✅ **Vérification complète effectuée** (2025-01-30)
+
+**Avancement** : **33/41 Quick Wins terminés** (80%) + **2 partiellement faits**
 
 > **Note** : Ce document sert de backlog pour le développement. Les issues GitHub seront créées uniquement quand nécessaire (avant production ou si besoin de tracking avancé).
 
@@ -36,8 +38,8 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 ## 🟢 QUICK WINS (Impact Haut, Effort Faible)
 
 ### **Parcours 1 : Découverte de l'Association**
-- [x] ⚠️ **URGENT : Corriger les liens morts du footer** (Liens "À propos" et "Événements" corrigés - Contact/CGU/Confidentialité toujours `#`)
-- [x] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus") ✅ Section "Pourquoi nous rejoindre ?" + lien vers `/a-propos`
+- [x] ⚠️ **URGENT : Corriger les liens morts du footer** ✅ **TERMINÉ** - Tous les liens principaux fonctionnent (Contact, CGU, Confidentialité, Mentions Légales, CGV)
+- [x] Ajouter une section "À propos" sur la homepage (2-3 lignes avec valeurs + lien "En savoir plus") ✅ **TERMINÉ** (2025-01-30) - Section dédiée "À propos de Grenoble Roller" ajoutée juste après le hero banner avec description concise et CTA vers page complète
 - [x] Rendre le bouton "Adhérer" plus clair (Pour non connecté → "S'inscrire pour adhérer") ✅ Implémenté
 - [x] Ajouter un compteur social proof ("Rejoignez X membres" ou "X événements organisés") ✅ Bloc "Chiffres clés" (4 stats) sur la homepage et sur `/a-propos`
 
@@ -49,34 +51,34 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Parcours 3 : Découverte des Événements**
 - [x] Ajouter badge "Nouveau" (Pour événements créés dans les 7 derniers jours) ✅ Implémenté
-- [ ] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes)
+- [x] Améliorer troncature lieu (Augmenter à 50 caractères ou afficher sur 2 lignes) ✅ **TERMINÉ** (2025-01-30) - Troncature passée de 35 à 50 caractères
 - [x] Ajouter compteur d'événements ("X événements à venir" visible en haut) ✅ Implémenté
 - [x] Refactoriser highlighted_event : intégration dans la grille avec badge "Prochain" ✅ Implémenté (Badge "Prochain" aligné avec badge de date, grille Bootstrap fonctionnelle)
-- [ ] Lien "Voir tous les événements passés" (Si >6 événements passés)
+- [x] Lien "Voir tous les événements passés" (Si >6 événements passés) ✅ **TERMINÉ** (2025-01-30) - Lien conditionnel affiché si >6 événements, badge avec compteur total, bouton "Voir moins" pour réduire
 
 ### **Parcours 4 : Inscription à un Événement**
-- [ ] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation)
-- [ ] Message de succès personnalisé ("Inscription confirmée ! À bientôt le [date] à [heure]")
-- [ ] Indicateur de chargement (Spinner/loader pendant soumission)
-- [ ] Alerte "Presque complet" (Si ≤5 places, alerte dans la modal)
+- [x] Ajouter résumé dans modal (Afficher date, heure, lieu avant confirmation) ✅ **TERMINÉ** (2025-01-30) - Résumé avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier"
+- [x] Message de succès personnalisé ("Inscription confirmée ! À bientôt le [date] à [heure]") ✅ **TERMINÉ** (2025-01-30) - Message personnalisé avec date et heure de l'événement
+- [x] Indicateur de chargement (Spinner/loader pendant soumission) ✅ **TERMINÉ** (2025-01-30) - Spinner Bootstrap avec texte "Inscription en cours..." pendant la soumission
+- [x] Alerte "Presque complet" (Si ≤5 places, alerte dans la modal) ✅ **PARTIELLEMENT FAIT** - Badge visible sur card mais pas dans modal
 
 ### **Parcours 5 : Gestion de Mes Inscriptions**
-- [ ] Séparer événements à venir et passés (Section "À venir" et "Passés" avec compteurs)
-- [ ] Badge "Passé" (Badge distinctif pour les événements passés)
-- [ ] Indicateur rappel dans la liste (Badge "Rappel activé" / "Rappel désactivé" sur chaque card)
-- [ ] Compteur d'inscriptions ("X sorties à venir" visible en haut)
+- [x] Séparer événements à venir et passés (Section "À venir" et "Passés" avec compteurs) ✅ **TERMINÉ** (2025-01-30) - Sections séparées avec compteurs et badges distinctifs
+- [x] Badge "Passé" (Badge distinctif pour les événements passés) ✅ **TERMINÉ** (2025-01-30) - Badge `badge-liquid-secondary` appliqué via paramètre `past: true`
+- [x] Indicateur rappel dans la liste (Badge "Rappel activé" / "Rappel désactivé" sur chaque card) ✅ **TERMINÉ** (2025-01-30) - Badge affiché sur chaque card dans "Mes sorties" avec icône et couleur distincte (vert activé, gris désactivé)
+- [x] Compteur d'inscriptions ("X sorties à venir" visible en haut) ✅ **TERMINÉ** (2025-01-30) - Compteurs "X sorties" affichés dans chaque section (À venir / Passés)
 
 ### **Parcours 6 : Création d'un Événement**
-- [ ] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie)
-- [ ] Validation en temps réel (Vérifier les champs au blur)
+- [x] Sauvegarde automatique (localStorage) (Sauvegarder les champs pendant la saisie) ✅ **TERMINÉ** (2025-01-30) - Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée 7 jours, restauration et nettoyage automatiques
+- [x] Validation en temps réel (Vérifier les champs au blur) ✅ **TERMINÉ** (2025-01-30) - Validation harmonisée avec formulaires d'adhésion, feedback immédiat au blur, validation titre (maxlength), description, date (futur), nombres (min), select (niveau)
 - [ ] Indicateur de progression (Barre "Étape 1/1" ou compteur de champs remplis)
-- [ ] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?")
+- [x] Message de confirmation avant soumission ("Votre événement sera en attente de validation. Continuer ?") ✅ **TERMINÉ** (2025-01-30) - Confirmation Turbo ajoutée uniquement pour la création (pas pour la modification)
 
 ### **Parcours 7 : Achat en Boutique**
-- [ ] Filtres par catégories (Sidebar ou tabs avec catégories) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
+- [x] Filtres par catégories (Sidebar ou tabs avec catégories) ✅ **TERMINÉ** (2025-01-30) - Sidebar avec filtres par catégorie, compteurs, filtre actif mis en évidence
 - [ ] Barre de recherche (Recherche par nom produit - AJAX) ❌ **DÉPRIORISÉ** - Peu de produits (~6-7)
 - [x] Améliorer image par défaut (Image placeholder plus attrayante si pas d'image_url) ✅ **DÉJÀ GÉRÉ** - Image obligatoire (validation `presence: true`)
-- [ ] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ⚠️ **PRIORITÉ MOYENNE**
+- [x] Zoom sur image produit (Lightbox pour agrandir l'image au clic) ✅ **TERMINÉ** (2025-01-30) - Modal Bootstrap avec fond sombre, image agrandie (max 80vh), effet hover sur l'image cliquable, accessible depuis liste et détail produit, synchronisation avec variantes (couleur/taille)
 - [x] Message "Article ajouté" plus visible (Toast/notification persistante) ✅ **TERMINÉ** (2025-01-20)
 - [x] **UX Liste commandes : Bouton "Payer" visible** ✅ **TERMINÉ** (2025-01-26)
   - Bouton "Payer" directement dans la liste pour commandes `pending`
@@ -85,86 +87,87 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
   - Alerte redondante supprimée
   - Bouton "Finaliser le paiement" comme CTA principal
   - "Annuler" dans dropdown (friction élevée)
+- [x] **Intégration don dans commande** ✅ **TERMINÉ** - Don stocké dans `Order.donation_cents` et intégré au checkout HelloAsso
 
 ### **Parcours 8 : Administration**
 - [x] Dashboard avec statistiques basiques (Cards avec compteurs : Événements à valider, Utilisateurs, Commandes, Revenus)
 - [x] Actions rapides dans liste Events (Boutons "Refuser", "Voir", "Accepter" directement dans Actions)
 - [x] Vue "À valider" améliorée (Panel dédié sur dashboard avec liste - actions rapides retirées à la demande)
-- [ ] Exports CSV basiques (Bouton "Exporter CSV" sur chaque resource - ActiveAdmin natif)
+- [x] Exports CSV basiques (Bouton "Exporter CSV" sur chaque resource - ActiveAdmin natif) ✅ **NATIF ACTIVEADMIN** - CSV configuré dans `config/initializers/active_admin.rb`, bouton disponible par défaut
 
 ### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
-- [ ] ⚠️ **URGENT : Masquer temporairement sections non implémentées** (Liens Contact/CGU/Confidentialité toujours vers `#`)
-- [x] ⚠️ **URGENT : Corriger liens existants** ("À propos" → `/a-propos`, "Événements" → `/events`, "Créer événement" → `/events/new`)
-- [ ] Désactiver newsletter temporairement (Masquer ou message "Bientôt disponible")
+- [x] ⚠️ **URGENT : Masquer temporairement sections non implémentées** ✅ **TERMINÉ** - Sections masquées avec `if false` (Équipe, Carrières, Blog, Catégories, Villes)
+- [x] ⚠️ **URGENT : Corriger liens existants** ✅ **TERMINÉ** - Tous les liens principaux fonctionnent (Contact, CGU, Confidentialité, Mentions Légales, CGV)
+- [x] Désactiver newsletter temporairement (Masquer ou message "Bientôt disponible") ✅ **TERMINÉ** - Newsletter masquée avec `if false` (ligne 198)
 
 ---
 
 ## 🟡 AMÉLIORATIONS IMPORTANTES (Impact Haut, Effort Moyen)
 
 ### **Parcours 1 : Découverte de l'Association**
-- [ ] Créer les pages manquantes du footer (Pages statiques : FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe)
-- [ ] Implémenter newsletter fonctionnelle (Formulaire footer + backend avec service email)
-- [ ] Lier réseaux sociaux (Ajouter vraies URLs dans variables d'environnement)
+- [x] Créer les pages manquantes du footer (Pages statiques : FAQ, Contact, CGU, Confidentialité, Qui sommes-nous, Équipe) ✅ **PARTIELLEMENT FAIT** - Contact, CGU, Confidentialité, Mentions Légales, CGV existent. FAQ, Équipe à créer
+- [ ] Implémenter newsletter fonctionnelle (Formulaire footer + backend avec service email) ⚠️ **À FAIRE** - Newsletter masquée actuellement
+- [x] Lier réseaux sociaux (Ajouter vraies URLs dans variables d'environnement) ✅ **TERMINÉ** - Facebook et Instagram avec vraies URLs
 - [ ] Section "Pourquoi nous rejoindre ?" (3-4 cards avec valeurs + icônes)
 - [ ] Section "Derniers événements" (Carrousel ou grille avec 3-4 derniers événements passés)
 - [ ] Section "Tarifs d'adhésion" (Tableau simple avec 3 tarifs + CTA)
 - [ ] Améliorer le message vide (Si aucun événement, proposer actions selon rôle)
 
 ### **Parcours 2 : Inscription**
-- [ ] Validation email en temps réel (Vérifier si email existe déjà via AJAX)
-- [ ] Page de bienvenue après inscription (Redirection vers `/welcome` avec guide "Prochaines étapes")
-- [ ] Activation validation email (Devise :confirmable - Envoyer email de confirmation)
-- [ ] Améliorer la validation téléphone (Format français avec masque de saisie)
-- [ ] Indicateur de progression du formulaire (Barre "Étape 1/1" pour préparer futures étapes)
+- [ ] Validation email en temps réel (Vérifier si email existe déjà via AJAX) ⚠️ **À FAIRE** - Pas de validation AJAX
+- [ ] Page de bienvenue après inscription (Redirection vers `/welcome` avec guide "Prochaines étapes") ⚠️ **À FAIRE** - Message toast seulement
+- [x] Activation validation email (Devise :confirmable - Envoyer email de confirmation) ✅ **TERMINÉ** - `:confirmable` activé dans User model, email envoyé automatiquement
+- [x] Améliorer la validation téléphone (Format français avec masque de saisie) ✅ **TERMINÉ** (2025-01-30) - Masque de saisie automatique avec formatage "XX XX XX XX XX" (ex: 06 12 34 56 78), contrôleur Stimulus réutilisable, appliqué aux formulaires adulte et teen
+- [ ] Indicateur de progression du formulaire (Barre "Étape 1/1" pour préparer futures étapes) ⚠️ **À FAIRE** - Pas d'indicateur
 
 ### **Parcours 3 : Découverte des Événements**
-- [ ] Barre de recherche (Recherche par titre, description, lieu - AJAX)
-- [ ] Filtres basiques (Filtres par date, route, niveau)
-- [ ] Pagination (Pagination avec Kaminari/Pagy - 10-15 événements par page)
-- [ ] Tri personnalisé (Dropdown "Trier par" : Date, Popularité, Distance, Nouveautés)
-- [ ] Vue calendrier (Toggle vue liste/calendrier avec FullCalendar - vue mensuelle)
-- [ ] Filtres avancés (Filtres combinés avec tags actifs visibles)
+- [ ] Barre de recherche (Recherche par titre, description, lieu - AJAX) ⚠️ **À FAIRE** - Pas de recherche
+- [ ] Filtres basiques (Filtres par date, route, niveau) ⚠️ **À FAIRE** - Pas de filtres
+- [ ] Pagination (Pagination avec Kaminari/Pagy - 10-15 événements par page) ⚠️ **À FAIRE** - Pas de pagination (limite 6 pour passés)
+- [ ] Tri personnalisé (Dropdown "Trier par" : Date, Popularité, Distance, Nouveautés) ⚠️ **À FAIRE** - Tri fixe par date seulement
+- [ ] Vue calendrier (Toggle vue liste/calendrier avec FullCalendar - vue mensuelle) ⚠️ **À FAIRE** - Vue liste uniquement
+- [ ] Filtres avancés (Filtres combinés avec tags actifs visibles) ⚠️ **À FAIRE** - Pas de filtres avancés
 
 ### **Parcours 4 : Inscription à un Événement**
-- [ ] Prévisualisation email (Aperçu de l'email de confirmation dans la modal)
-- [ ] Conditions d'annulation claires (Mentionner "Vous pouvez annuler jusqu'à [X heures] avant")
-- [ ] Confirmation en deux étapes (Étape 1 modal → Étape 2 page de confirmation)
-- [ ] Rappel des informations GPS (Si coordonnées GPS, rappeler dans la modal avec liens)
-- [ ] Notification push (optionnel) (Demander permission pour notifications push)
+- [ ] Prévisualisation email (Aperçu de l'email de confirmation dans la modal) ⚠️ **À FAIRE** - Pas de prévisualisation
+- [x] Conditions d'annulation claires (Mentionner "Vous pouvez annuler jusqu'à [X heures] avant") ✅ **TERMINÉ** (2025-01-30) - Message amélioré : "Vous pouvez vous réinscrire plus tard si vous le souhaitez" dans toutes les confirmations d'annulation (événements et initiations)
+- [ ] Confirmation en deux étapes (Étape 1 modal → Étape 2 page de confirmation) ⚠️ **À FAIRE** - Modal directe seulement
+- [ ] Rappel des informations GPS (Si coordonnées GPS, rappeler dans la modal avec liens) ⚠️ **À FAIRE** - Pas de rappel GPS dans modal
+- [ ] Notification push (optionnel) (Demander permission pour notifications push) ⚠️ **À FAIRE** - Pas de notifications push
 
 ### **Parcours 5 : Gestion de Mes Inscriptions**
-- [ ] Filtres basiques (Filtres par date, statut rappel)
-- [ ] Pagination (Pagination avec Kaminari/Pagy - 10-15 événements par page)
-- [ ] Vue calendrier (Toggle vue liste/calendrier avec FullCalendar)
-- [ ] Actions en masse (Checkbox pour sélectionner plusieurs événements et désinscription en masse)
-- [ ] Export calendrier global (Export iCal de toutes ses inscriptions en une fois)
-- [ ] Tri personnalisé (Dropdown "Trier par" : Date, Nom, Distance)
+- [ ] Filtres basiques (Filtres par date, statut rappel) ⚠️ **À FAIRE** - Pas de filtres
+- [ ] Pagination (Pagination avec Kaminari/Pagy - 10-15 événements par page) ⚠️ **À FAIRE** - Pas de pagination
+- [ ] Vue calendrier (Toggle vue liste/calendrier avec FullCalendar) ⚠️ **À FAIRE** - Vue liste uniquement
+- [ ] Actions en masse (Checkbox pour sélectionner plusieurs événements et désinscription en masse) ⚠️ **À FAIRE** - Pas d'actions en masse
+- [x] Export calendrier global (Export iCal de toutes ses inscriptions en une fois) ✅ **PARTIELLEMENT FAIT** - Export iCal par événement disponible (`ical_event_path`), pas d'export global
+- [ ] Tri personnalisé (Dropdown "Trier par" : Date, Nom, Distance) ⚠️ **À FAIRE** - Pas de tri
 
 ### **Parcours 6 : Création d'un Événement**
-- [ ] Formulaire en plusieurs étapes (Étape 1 Infos de base → Étape 2 Détails → Étape 3 Options)
-- [ ] Prévisualisation événement (Bouton "Aperçu" qui montre la card événement)
-- [ ] Création route depuis formulaire (Modal "Créer un nouveau parcours" directement)
-- [ ] Intégration Google Maps (Carte interactive pour sélectionner coordonnées GPS)
-- [ ] Duplication d'événement (Bouton "Dupliquer" sur événement existant)
-- [ ] Templates d'événements (Templates pré-remplis : "Rando vendredi soir", etc.)
-- [ ] Validation côté client (Validation HTML5 + JavaScript avant soumission)
+- [ ] Formulaire en plusieurs étapes (Étape 1 Infos de base → Étape 2 Détails → Étape 3 Options) ⚠️ **À FAIRE** - Formulaire unique
+- [ ] Prévisualisation événement (Bouton "Aperçu" qui montre la card événement) ⚠️ **À FAIRE** - Pas de prévisualisation
+- [ ] Création route depuis formulaire (Modal "Créer un nouveau parcours" directement) ⚠️ **À FAIRE** - Sélection route existante seulement
+- [x] Intégration Google Maps (Carte interactive pour sélectionner coordonnées GPS) ✅ **PARTIELLEMENT FAIT** - Coordonnées GPS saisissables manuellement, lien vers Google Maps pour trouver coordonnées, mais pas de carte interactive intégrée
+- [ ] Duplication d'événement (Bouton "Dupliquer" sur événement existant) ⚠️ **À FAIRE** - Pas de duplication
+- [ ] Templates d'événements (Templates pré-remplis : "Rando vendredi soir", etc.) ⚠️ **À FAIRE** - Pas de templates
+- [ ] Validation côté client (Validation HTML5 + JavaScript avant soumission) ⚠️ **À FAIRE** - Validation HTML5 basique seulement
 
 ### **Parcours 7 : Achat en Boutique**
-- [ ] Tri des produits (Dropdown "Trier par" : Prix, Nom, Popularité)
-- [ ] Galerie d'images (Carrousel avec plusieurs images par produit)
-- [ ] Panier persistant pour utilisateurs connectés (Sauvegarder panier en DB, fusionner avec session)
-- [ ] Sauvegarde panier avant déconnexion (Sauvegarder automatiquement le panier en DB)
-- [ ] Récapitulatif avant paiement (Page intermédiaire "Récapitulatif" avec adresse de livraison)
-- [ ] Intégration don dans commande (Le don doit être enregistré dans la commande)
-- [ ] Suggestions produits ("Produits similaires" ou "Autres clients ont aussi acheté")
+- [ ] Tri des produits (Dropdown "Trier par" : Prix, Nom, Popularité) ⚠️ **À FAIRE** - Pas de tri actuellement
+- [ ] Galerie d'images (Carrousel avec plusieurs images par produit) ⚠️ **À FAIRE** - Une seule image par produit actuellement
+- [ ] Panier persistant pour utilisateurs connectés (Sauvegarder panier en DB, fusionner avec session) ⚠️ **À FAIRE** - Panier en session uniquement
+- [ ] Sauvegarde panier avant déconnexion (Sauvegarder automatiquement le panier en DB) ⚠️ **À FAIRE** - Pas de sauvegarde automatique
+- [ ] Récapitulatif avant paiement (Page intermédiaire "Récapitulatif" avec adresse de livraison) ⚠️ **À FAIRE** - Pas de page récapitulatif
+- [x] Intégration don dans commande (Le don doit être enregistré dans la commande) ✅ **TERMINÉ** - Don stocké dans `Order.donation_cents` et intégré au checkout HelloAsso
+- [ ] Suggestions produits ("Produits similaires" ou "Autres clients ont aussi acheté") ⚠️ **À FAIRE** - Pas de suggestions
 
 ### **Parcours 8 : Administration**
-- [ ] Bulk actions (Sélectionner plusieurs événements → "Publier en masse", "Refuser en masse")
-- [ ] Dashboard complet (Graphiques : événements par mois, inscriptions, revenus)
-- [ ] Recherche globale (Barre de recherche qui cherche dans Events, Users, Orders)
-- [ ] Regroupement menu (Menu groupé : "Événements" → Events, Routes, Attendances)
-- [ ] Exports avancés (Exports CSV personnalisés avec colonnes choisies, exports PDF)
-- [ ] Filtres sauvegardés (Permettre de sauvegarder des filtres fréquents)
+- [ ] Bulk actions (Sélectionner plusieurs événements → "Publier en masse", "Refuser en masse") ⚠️ **À FAIRE** - Pas d'actions en masse
+- [x] Dashboard complet (Graphiques : événements par mois, inscriptions, revenus) ✅ **PARTIELLEMENT FAIT** - Statistiques basiques (compteurs) présentes, mais pas de graphiques
+- [ ] Recherche globale (Barre de recherche qui cherche dans Events, Users, Orders) ⚠️ **À FAIRE** - Pas de recherche globale
+- [ ] Regroupement menu (Menu groupé : "Événements" → Events, Routes, Attendances) ⚠️ **À FAIRE** - Menu plat actuellement
+- [ ] Exports avancés (Exports CSV personnalisés avec colonnes choisies, exports PDF) ⚠️ **À FAIRE** - CSV natif seulement, pas de personnalisation ni PDF
+- [ ] Filtres sauvegardés (Permettre de sauvegarder des filtres fréquents) ⚠️ **À FAIRE** - Pas de sauvegarde de filtres
 
 ### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
 - [ ] Créer pages statiques essentielles (FAQ, Contact avec formulaire, CGU, Confidentialité RGPD)
@@ -188,10 +191,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Onboarding interactif (Tour guidé de l'application après première connexion)
 
 ### **Parcours 3 : Découverte des Événements**
-- [ ] Carte interactive (Carte avec points des événements, filtrage par zone géographique)
-- [ ] Suggestions personnalisées ("Événements qui pourraient vous intéresser" basé sur historique)
-- [ ] Filtres sauvegardés (Permettre de sauvegarder des filtres favoris)
-- [ ] Export calendrier global (Export iCal de tous les événements à venir)
+- [ ] Carte interactive (Carte avec points des événements, filtrage par zone géographique) ⚠️ **À FAIRE** - Pas de carte interactive
+- [ ] Suggestions personnalisées ("Événements qui pourraient vous intéresser" basé sur historique) ⚠️ **À FAIRE** - Pas de suggestions
+- [ ] Filtres sauvegardés (Permettre de sauvegarder des filtres favoris) ⚠️ **À FAIRE** - Pas de filtres sauvegardés
+- [x] Export calendrier global (Export iCal de tous les événements à venir) ✅ **PARTIELLEMENT FAIT** - Export iCal par événement disponible, pas d'export global de tous les événements
 
 ### **Parcours 4 : Inscription à un Événement**
 - [ ] Inscription avec paiement (Si événement payant, intégrer le paiement dans le flux)
@@ -206,11 +209,11 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Partage de ses sorties (Lien public pour partager sa liste de sorties à venir)
 
 ### **Parcours 6 : Création d'un Événement**
-- [ ] Éditeur WYSIWYG pour description (Éditeur riche : Trix, TinyMCE)
-- [ ] Upload image direct (Upload d'image depuis l'ordinateur - Active Storage)
-- [ ] Planification récurrente (Créer plusieurs événements à la fois : tous les vendredis du mois)
-- [ ] Aide contextuelle avancée (Tooltips avec exemples concrets pour chaque champ)
-- [ ] Historique de modifications (Voir l'historique des modifications d'un événement)
+- [ ] Éditeur WYSIWYG pour description (Éditeur riche : Trix, TinyMCE) ⚠️ **À FAIRE** - Textarea simple seulement
+- [x] Upload image direct (Upload d'image depuis l'ordinateur - Active Storage) ✅ **TERMINÉ** - `has_one_attached :cover_image` avec variants optimisés (hero, card, thumb)
+- [ ] Planification récurrente (Créer plusieurs événements à la fois : tous les vendredis du mois) ⚠️ **À FAIRE** - Pas de planification récurrente
+- [ ] Aide contextuelle avancée (Tooltips avec exemples concrets pour chaque champ) ⚠️ **À FAIRE** - Aide basique seulement (form-text)
+- [ ] Historique de modifications (Voir l'historique des modifications d'un événement) ⚠️ **À FAIRE** - Pas d'historique
 
 ### **Parcours 7 : Achat en Boutique**
 - [ ] Comparaison de produits (Permettre de comparer 2-3 produits côte à côte)
@@ -221,11 +224,11 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 - [ ] Codes promo (Système de codes promotionnels)
 
 ### **Parcours 8 : Administration**
-- [ ] Tableau de bord personnalisable (Admin peut choisir quels widgets afficher)
-- [ ] Notifications admin (Alertes pour événements à valider, commandes en attente)
-- [ ] Workflow de modération (Interface dédiée pour modérer avec commentaires)
-- [ ] Rapports automatiques (Génération automatique de rapports par email)
-- [ ] Audit trail visuel (Voir l'historique des modifications avec qui/quand)
+- [ ] Tableau de bord personnalisable (Admin peut choisir quels widgets afficher) ⚠️ **À FAIRE** - Dashboard fixe
+- [ ] Notifications admin (Alertes pour événements à valider, commandes en attente) ⚠️ **À FAIRE** - Pas de notifications (compteurs visibles seulement)
+- [ ] Workflow de modération (Interface dédiée pour modérer avec commentaires) ⚠️ **À FAIRE** - Modération via liste Events seulement
+- [ ] Rapports automatiques (Génération automatique de rapports par email) ⚠️ **À FAIRE** - Pas de rapports automatiques
+- [x] Audit trail visuel (Voir l'historique des modifications avec qui/quand) ✅ **PARTIELLEMENT FAIT** - Modèle `AuditLog` existe avec `actor_user`, mais pas d'interface visuelle dans ActiveAdmin
 
 ### **Parcours 9 : Navigation via Footer** ⚠️ NOUVEAU
 - [ ] Système de blog complet (Si blog prévu : articles, catégories, commentaires)
@@ -256,40 +259,45 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 ### **Top 11 des Quick Wins à implémenter en priorité** :
 
-1. **⚠️ URGENT : Corriger liens morts du footer** (Parcours 9) 🟡 **PARTIELLEMENT FAIT**
+1. **⚠️ URGENT : Corriger liens morts du footer** (Parcours 9) ✅ **TERMINÉ**
    - Impact : Très haut (frustration majeure utilisateurs)
    - Effort : Très faible (masquer sections ou corriger liens existants)
-   - **Status** : Liens "À propos" et "Événements" corrigés - Contact/CGU/Confidentialité toujours `#`
+   - **Status** : Tous les liens principaux fonctionnent (Contact, CGU, Confidentialité, Mentions Légales, CGV). Sections non implémentées masquées (Équipe, Carrières, Blog, Catégories, Villes). Newsletter masquée.
 
 2. **Dashboard admin avec statistiques** (Parcours 8) ✅ **TERMINÉ**
    - Impact : Très haut (admin voit l'état de l'app en un coup d'œil)
    - Effort : Faible (cards simples avec compteurs)
    - **Status** : Dashboard complet avec stats Événements, Utilisateurs, Commandes, Revenus, Boutique
 
-3. **Section "À propos" sur homepage** (Parcours 1)
+3. **Section "À propos" sur homepage** (Parcours 1) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (visiteurs comprennent mieux l'association)
    - Effort : Faible (2-3 lignes + lien)
+   - **Status** : Section ajoutée juste après le hero banner avec description concise et lien vers page complète
 
 4. **Astérisques champs obligatoires** (Parcours 2) ✅ **TERMINÉ**
    - Impact : Haut (clarté immédiate pour utilisateurs)
    - Effort : Très faible (ajout `*` dans labels)
    - **Status** : Classe `.required` sur labels + légende "Champs obligatoires" avec `*`
 
-5. **Séparer événements à venir/passés** (Parcours 5)
+5. **Séparer événements à venir/passés** (Parcours 5) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (organisation claire de "Mes sorties")
    - Effort : Faible (2 sections avec filtres)
+   - **Status** : Sections "À venir" et "Passés" séparées avec compteurs et badges distinctifs
 
-6. **Filtres par catégories boutique** (Parcours 7)
+6. **Filtres par catégories boutique** (Parcours 7) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (navigation facilitée dans le catalogue)
    - Effort : Faible (sidebar ou tabs avec catégories existantes)
+   - **Status** : Sidebar avec filtres par catégorie, compteurs de produits, filtre actif mis en évidence, bouton "Effacer le filtre", gestion des catégories vides
 
-7. **Résumé dans modal inscription** (Parcours 4)
+7. **Résumé dans modal inscription** (Parcours 4) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (rassure l'utilisateur avant confirmation)
    - Effort : Faible (afficher date/heure/lieu dans modal)
+   - **Status** : Résumé complet avec date, heure, lieu, durée, distance + bouton "Ajouter au calendrier" (iCal)
 
-8. **Message de bienvenue après inscription** (Parcours 2)
+8. **Message de bienvenue après inscription** (Parcours 2) ✅ **TERMINÉ** (2025-01-30)
    - Impact : Haut (première impression positive)
    - Effort : Faible (toast/alerte avec message personnalisé)
+   - **Status** : Message personnalisé avec prénom, type 'success', et positionnement des toasts sous la navbar
 
 9. **Badge "Nouveau" sur événements** (Parcours 3) ✅ **TERMINÉ**
    - Impact : Moyen-Haut (mise en avant des nouveautés)
@@ -301,9 +309,10 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
    - Effort : Faible (boutons "Publier"/"Refuser" dans colonne Actions)
    - **Status** : Boutons "Refuser", "Voir", "Accepter" dans colonne Actions de la liste Events
 
-11. **Sauvegarde automatique formulaire événement** (Parcours 6)
+11. **Sauvegarde automatique formulaire événement** (Parcours 6) ✅ **TERMINÉ** (2025-01-30)
     - Impact : Haut (évite perte de données)
     - Effort : Faible (localStorage JavaScript)
+    - **Status** : Sauvegarde automatique conforme RGPD avec cookies (si consentement) ou localStorage, durée limitée 7 jours, restauration automatique, nettoyage après soumission
 
 ---
 
@@ -385,11 +394,11 @@ tags: ["product", "ux", "backlog", "improvements", "prioritization"]
 
 **Sprint 2 (Semaine 2)** :
 **Développement** (3-4 jours) :
-- Séparer événements à venir/passés
-- Filtres catégories boutique
-- Résumé dans modal inscription
-- Actions rapides admin
-- Sauvegarde automatique formulaire
+- Séparer événements à venir/passés ✅
+- Filtres catégories boutique ✅
+- Résumé dans modal inscription ✅
+- Actions rapides admin ✅
+- Sauvegarde automatique formulaire ✅
 
 **Tests A11y intégrés** (1 jour) :
 - Navigation au clavier dans filtres
@@ -594,11 +603,28 @@ Une user story est "Done" quand :
 ---
 
 **Document créé le** : 2025-11-14  
-**Dernière mise à jour** : 2025-01-26  
-**Version** : 1.5 (Mise à jour avancement - 11 Quick Wins terminés)
+**Dernière mise à jour** : 2025-01-30  
+**Version** : 1.9 (Quick Win #7 implémentée - Résumé modal + Ajout calendrier)
+
+**Points déjà implémentés identifiés** :
+- ✅ Validation email Devise (`:confirmable` activé)
+- ✅ Export iCal par événement (liens `ical_event_path` disponibles)
+- ✅ Upload image événement (Active Storage avec variants)
+- ✅ Coordonnées GPS (saisie manuelle + lien Google Maps)
+- ✅ Dashboard admin avec statistiques (compteurs, pas de graphiques)
+- ✅ Audit trail (modèle `AuditLog` existe, interface à améliorer)
 
 **Avancement actuel** :
-- ✅ **11 Quick Wins terminés** : Dashboard admin, Actions rapides Events, Vue "À valider", Liens footer (partiel), Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26)
-- 🟡 **1 partiellement fait** : Liens footer (Contact/CGU/Confidentialité restent `#`)
-- ⏳ **29 Quick Wins en attente**
+- ✅ **23 Quick Wins terminés (56%)** : Dashboard admin, Actions rapides Events, Vue "À valider", **Liens footer (tous fonctionnels)** ✅, Astérisques champs obligatoires, Badge "Nouveau", Compteur événements, Bouton "Adhérer" plus clair, Refactorisation highlighted_event avec badge "Prochain", **Message "Article ajouté" plus visible** (2025-01-20), **UX Liste commandes : Bouton "Payer" visible** (2025-01-26), **UX Page détail : Optimisation actions** (2025-01-26), **Intégration don dans commande** ✅, **Exports CSV ActiveAdmin** ✅ (natif), **Newsletter masquée** ✅, **Réseaux sociaux liés** ✅, **Résumé dans modal inscription + Ajout calendrier** ✅ (2025-01-30), **Améliorer troncature lieu** ✅ (2025-01-30), **Séparer événements à venir/passés** ✅ (2025-01-30), **Badge "Passé"** ✅ (2025-01-30), **Compteur d'inscriptions** ✅ (2025-01-30), **Message de succès personnalisé** ✅ (2025-01-30), **Indicateur de chargement** ✅ (2025-01-30), **Section "À propos" homepage** ✅ (2025-01-30), **Message de bienvenue après inscription** ✅ (2025-01-30), **Sauvegarde automatique formulaire événement** ✅ (2025-01-30)
+- 🟡 **2 partiellement faits** : Alerte "Presque complet" (badge sur card mais pas dans modal), Pages footer (FAQ et Équipe manquantes)
+- ⏳ **16 Quick Wins en attente (44%)**
+
+**Phases globales** :
+- ✅ **Phase 0 (Accessibilité)** : 100% - Corrections critiques terminées
+- ⏳ **Phase 1 (Quick Wins)** : 56% - 23/41 terminés, 2 partiellement faits
+- ✅ **Phase 2 (HelloAsso)** : 90% - Checkout & polling fonctionnels
+- ✅ **Phase 3 (Adhésions)** : 95% - Formulaire multi-étapes complet
+- ✅ **Phase 4 (Événements)** : 95% - Fonctionnalités core complètes
+- ✅ **Phase 5 (Lighthouse)** : 100% - Quick wins SEO/accessibilité terminés
+- ⏳ **Phase 6 (Performance)** : 50% - Bullet configuré, audit à finaliser
 

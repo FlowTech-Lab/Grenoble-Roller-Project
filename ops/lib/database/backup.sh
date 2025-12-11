@@ -28,12 +28,8 @@ backup_database() {
             log_success "✅ Clé de chiffrement récupérée depuis master.key (host)"
         # Sinon, depuis le conteneur
         elif container_is_running "${CONTAINER_NAME:-}"; then
-            local docker_cmd="${DOCKER_CMD:-docker}"
-            if ! command -v docker >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1 && sudo docker ps >/dev/null 2>&1; then
-                docker_cmd="sudo docker"
-            fi
             log_info "Récupération de la clé de chiffrement depuis master.key (conteneur)..."
-            encryption_key=$($docker_cmd exec "${CONTAINER_NAME}" cat /rails/config/master.key 2>/dev/null | tr -d '\n\r')
+            encryption_key=$($DOCKER_CMD exec "${CONTAINER_NAME}" cat /rails/config/master.key 2>/dev/null | tr -d '\n\r')
             
             if [ -z "$encryption_key" ]; then
                 log_warning "⚠️  master.key non trouvée dans le conteneur"
@@ -50,21 +46,15 @@ backup_database() {
         fi
     fi
     
-    # Détecter la commande docker (avec ou sans sudo)
-    local docker_cmd="${DOCKER_CMD:-docker}"
-    if ! command -v docker >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1 && sudo docker ps >/dev/null 2>&1; then
-        docker_cmd="sudo docker"
-    fi
-    
     # Vérifier que le conteneur DB est running
     if ! container_is_running "${DB_CONTAINER}"; then
         log_error "❌ Conteneur DB ${DB_CONTAINER} n'est pas en cours d'exécution"
-        log_error "   Démarrez-le avec: ${docker_cmd} compose -f ${COMPOSE_FILE} up -d db"
+        log_error "   Démarrez-le avec: ${DOCKER_CMD} compose -f ${COMPOSE_FILE} up -d db"
         return 1
     fi
     
     # Vérifier que la base de données existe
-    if ! $docker_cmd exec "${DB_CONTAINER}" psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${DB_NAME}"; then
+    if ! $DOCKER_CMD exec "${DB_CONTAINER}" psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${DB_NAME}"; then
         log_warning "⚠️  Base de données ${DB_NAME} n'existe pas encore"
         log_warning "   C'est normal pour une première installation"
         log_warning "   Le backup sera ignoré - la base sera créée lors des migrations"
@@ -73,7 +63,7 @@ backup_database() {
     
     # Dump de la base de données (afficher les erreurs pour debug)
     log_info "   Exécution de pg_dump sur ${DB_CONTAINER}..."
-    if ! $docker_cmd exec "${DB_CONTAINER}" pg_dump -U postgres "${DB_NAME}" > "$backup_file" 2>&1; then
+    if ! $DOCKER_CMD exec "${DB_CONTAINER}" pg_dump -U postgres "${DB_NAME}" > "$backup_file" 2>&1; then
         local error_output=$(cat "$backup_file" 2>/dev/null | head -5)
         log_error "❌ Échec du dump DB"
         log_error "   Conteneur: ${DB_CONTAINER}"

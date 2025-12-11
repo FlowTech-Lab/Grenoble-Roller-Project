@@ -8,7 +8,16 @@ class EventsController < ApplicationController
     scoped_events = policy_scope(Event.includes(:route, :creator_user))
     # Seuls les événements publiés sont visibles pour les utilisateurs normaux
     @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
-    @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
+    
+    # Compter le total d'événements passés
+    @past_events_total = scoped_events.visible.past.count
+    
+    # Afficher tous les événements passés si show_all_past=true, sinon limiter à 6
+    if params[:show_all_past] == 'true'
+      @past_events = scoped_events.visible.past.order(start_at: :desc)
+    else
+      @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
+    end
   end
 
   def show
@@ -49,6 +58,9 @@ class EventsController < ApplicationController
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
+    # Initialiser loops_count à 1 si non défini
+    event_params[:loops_count] ||= 1
+    
     if @event.update(event_params)
       redirect_to @event, notice: "Événement créé avec succès. Il est en attente de validation par un modérateur."
     else
@@ -77,6 +89,9 @@ class EventsController < ApplicationController
       event_params[:price_cents] = (params[:price_euros].to_f * 100).round
     end
 
+    # Initialiser loops_count à 1 si non défini
+    event_params[:loops_count] ||= 1
+    
     if @event.update(event_params)
       redirect_to @event, notice: "Événement mis à jour avec succès."
     else
@@ -104,7 +119,8 @@ class EventsController < ApplicationController
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       if attendance.save
         EventMailer.attendance_confirmed(attendance).deliver_later
-        redirect_to @event, notice: "Inscription confirmée."
+        event_date = l(@event.start_at, format: :event_long, locale: :fr)
+        redirect_to @event, notice: "Inscription confirmée ! À bientôt le #{event_date}."
       else
         redirect_to @event, alert: attendance.errors.full_messages.to_sentence
       end

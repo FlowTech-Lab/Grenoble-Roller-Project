@@ -44,7 +44,7 @@ wait_for_container_running() {
     
     log_error "Timeout : le conteneur ${container_name} n'est pas running après ${max_wait}s"
     # Afficher les logs si le conteneur existe mais n'est pas running
-    if docker ps -a --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null; then
+    if $DOCKER_CMD ps -a --format '{{.Names}}' | grep -q "^${container_name}$" 2>/dev/null; then
         if command -v show_container_logs > /dev/null 2>&1; then
             show_container_logs "$container_name" 50
         fi

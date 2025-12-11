@@ -1,5 +1,5 @@
 ActiveAdmin.register Product do
-  menu priority: 6, label: "Produits"
+  menu priority: 1, label: "Produits", parent: "Boutique"
 
   includes :category
 
@@ -80,7 +80,7 @@ ActiveAdmin.register Product do
 
     panel "Variantes du produit" do
       div style: "margin-bottom: 15px;" do
-        link_to "➕ Créer une nouvelle variante", new_admin_product_variant_path(product_variant: { product_id: product.id }),
+        link_to "➕ Créer une nouvelle variante", new_activeadmin_product_variant_path(product_variant: { product_id: product.id }),
                 class: "button",
                 style: "background: #337ab7; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none; display: inline-block;"
       end
@@ -112,9 +112,9 @@ ActiveAdmin.register Product do
           end
           column "Actions" do |variant|
             div do
-              link_to "Voir", admin_product_variant_path(variant), class: "button", style: "margin-right: 5px; display: inline-block;"
-              link_to "Modifier", edit_admin_product_variant_path(variant), class: "button", style: "margin-right: 5px; display: inline-block;"
-              link_to "Supprimer", admin_product_variant_path(variant), method: :delete,
+              link_to "Voir", activeadmin_product_variant_path(variant), class: "button", style: "margin-right: 5px; display: inline-block;"
+              link_to "Modifier", edit_activeadmin_product_variant_path(variant), class: "button", style: "margin-right: 5px; display: inline-block;"
+              link_to "Supprimer", activeadmin_product_variant_path(variant), method: :delete,
                       class: "button",
                       style: "background: #d9534f; color: white; display: inline-block;",
                       data: { confirm: "Êtes-vous sûr de vouloir supprimer cette variante ?" }
@@ -152,5 +152,16 @@ ActiveAdmin.register Product do
     end
 
     f.actions
+  end
+
+  controller do
+    def destroy
+      @product = resource
+      if @product.destroy
+        redirect_to collection_path, notice: "Le produit ##{@product.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@product), alert: "Impossible de supprimer le produit : #{@product.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

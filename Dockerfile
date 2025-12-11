@@ -17,9 +17,9 @@ LABEL build.id="${BUILD_ID}"
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages (including curl for healthchecks)
+# Install base packages (including curl for healthchecks and cron for whenever)
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client cron && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
