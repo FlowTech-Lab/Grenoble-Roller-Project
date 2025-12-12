@@ -253,31 +253,33 @@
             <!-- Formulaire pour s'inscrire en tant que bénévole -->
             <% if user_signed_in? && current_user.can_be_volunteer == true && (@user_volunteer_attendance.nil? || !@user_volunteer_attendance.persisted?) %>
               <div class="mt-4 pt-3 border-top">
-                <div class="card card-body bg-light">
-                  <h4 class="h6 mb-3">
-                    <i class="bi bi-heart-fill text-danger me-2" aria-hidden="true"></i>
-                    S'inscrire en tant que bénévole encadrant
-                  </h4>
-                  <%= form_with url: attend_initiation_path(@initiation), method: :post, local: true, data: { turbo: false } do |f| %>
-                    <%= hidden_field_tag :is_volunteer, "1" %>
-                    <div class="mb-3">
-                      <%= f.label :equipment_note, "Note (optionnel)", class: "form-label" %>
-                      <%= f.text_area :equipment_note, 
-                          class: "form-control", 
-                          rows: 2,
-                          placeholder: "Ex: Matériel supplémentaire à apporter" %>
-                    </div>
-                    <div class="mb-3 form-check">
-                      <%= f.check_box :wants_reminder, { checked: true, class: "form-check-input" }, "1", "0" %>
-                      <%= f.label :wants_reminder, class: "form-check-label" do %>
-                        <i class="bi bi-bell me-1" aria-hidden="true"></i>
-                        Recevoir un rappel la veille à 19h
-                      <% end %>
-                    </div>
-                    <%= f.submit "S'inscrire en tant que bénévole", 
-                        class: "btn btn-danger btn-sm",
-                        data: { disable_with: "Inscription en cours..." } %>
-                  <% end %>
+                <div class="card card-liquid">
+                  <div class="card-body p-4">
+                    <h4 class="h6 mb-3">
+                      <i class="bi bi-heart-fill text-danger me-2" aria-hidden="true"></i>
+                      S'inscrire en tant que bénévole encadrant
+                    </h4>
+                    <%= form_with url: attend_initiation_path(@initiation), method: :post, local: true, data: { turbo: false } do |f| %>
+                      <%= hidden_field_tag :is_volunteer, "1" %>
+                      <div class="mb-3">
+                        <%= f.label :equipment_note, "Note (optionnel)", class: "form-label" %>
+                        <%= f.text_area :equipment_note, 
+                            class: "form-control form-control-liquid", 
+                            rows: 2,
+                            placeholder: "Ex: Matériel supplémentaire à apporter" %>
+                      </div>
+                      <div class="mb-3 form-check">
+                        <%= f.check_box :wants_reminder, { checked: true, class: "form-check-input" }, "1", "0" %>
+                        <%= f.label :wants_reminder, class: "form-check-label" do %>
+                          <i class="bi bi-bell me-1" aria-hidden="true"></i>
+                          Recevoir un rappel la veille à 19h
+                        <% end %>
+                      </div>
+                      <%= f.submit "S'inscrire en tant que bénévole", 
+                          class: "btn btn-danger btn-sm",
+                          data: { disable_with: "Inscription en cours..." } %>
+                    <% end %>
+                  </div>
                 </div>
               </div>
             <% end %>

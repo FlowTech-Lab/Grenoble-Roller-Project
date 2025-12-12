@@ -74,8 +74,14 @@ Rails.application.routes.draw do
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
     collection do
-      # Page de sélection (adhésion seule ou avec T-shirt)
-      get :choose
+      # Redirection de l'ancienne page choose vers new
+      get :choose, to: redirect { |params, request|
+        if params[:child] == "true"
+          new_membership_path(type: 'child', renew_from: params[:renew_from])
+        else
+          new_membership_path(type: 'adult')
+        end
+      }
       # Paiement groupé pour plusieurs enfants en attente
       post :pay_multiple
     end
