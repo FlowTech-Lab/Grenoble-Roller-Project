@@ -18,15 +18,75 @@ class Event::Initiation < Event
 
   # Méthodes métier
   def full?
-    available_places <= 0
+    if allow_non_member_discovery?
+      # Si l'option est activée, vérifier les places séparément
+      available_member_places <= 0 && available_non_member_places <= 0
+    else
+      # Sinon, comportement classique : tout le monde peut s'inscrire
+      available_places <= 0
+    end
+  end
+
+  def full_for_members?
+    return false unless allow_non_member_discovery?
+    available_member_places <= 0
+  end
+
+  def full_for_non_members?
+    return false unless allow_non_member_discovery?
+    available_non_member_places <= 0
   end
 
   def available_places
-    max_participants - participants_count
+    if allow_non_member_discovery?
+      # Si l'option est activée, retourner le total des places disponibles
+      available_member_places + available_non_member_places
+    else
+      # Sinon, comportement classique
+      max_participants - participants_count
+    end
+  end
+
+  def available_member_places
+    return max_participants - participants_count unless allow_non_member_discovery?
+    # Places pour adhérents = max_participants - non_member_discovery_slots - non_member_count
+    member_slots = max_participants - (non_member_discovery_slots || 0)
+    member_slots - member_participants_count
+  end
+
+  def available_non_member_places
+    return 0 unless allow_non_member_discovery?
+    (non_member_discovery_slots || 0) - non_member_participants_count
   end
 
   def participants_count
     attendances.where(is_volunteer: false, status: [ "registered", "present" ]).count
+  end
+
+  def member_participants_count
+    # Compter les participants qui ont une adhésion active (parent ou enfant)
+    # On vérifie pour chaque attendance si l'utilisateur ou l'enfant a une adhésion active
+    count = 0
+    attendances.where(is_volunteer: false, status: [ "registered", "present" ]).each do |attendance|
+      is_member = false
+      
+      if attendance.child_membership_id.present?
+        # Pour un enfant : vérifier l'adhésion enfant
+        is_member = attendance.child_membership&.active?
+      else
+        # Pour le parent : vérifier adhésion parent ou enfant
+        is_member = attendance.user.memberships.active_now.exists? ||
+                    attendance.user.memberships.active_now.where(is_child_membership: true).exists?
+      end
+      
+      count += 1 if is_member
+    end
+    count
+  end
+
+  def non_member_participants_count
+    # Compter les participants qui n'ont PAS d'adhésion active
+    participants_count - member_participants_count
   end
 
   def volunteers_count

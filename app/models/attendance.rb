@@ -68,14 +68,33 @@ class Attendance < ApplicationRecord
     # Bénévoles ne comptent pas dans la limite
     return if is_volunteer
 
-    # Compter uniquement les inscriptions actives (non annulées) et non-bénévoles
-    active_attendances_count = event.attendances.active.where(is_volunteer: false).count
+    # Pour les initiations avec limitation des non-adhérents
+    if event.is_a?(Event::Initiation) && event.allow_non_member_discovery?
+      is_member = user.memberships.active_now.exists? || 
+                  (child_membership_id.present? && child_membership&.active?) ||
+                  (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
 
-    # Si on crée une nouvelle inscription, vérifier qu'il reste de la place
-    # (ne pas compter cette inscription si elle n'est pas encore sauvegardée)
-    if new_record?
-      if active_attendances_count >= event.max_participants
-        errors.add(:event, "L'événement est complet (#{event.max_participants} participants maximum)")
+      if is_member
+        # Vérifier places pour adhérents
+        if event.full_for_members?
+          errors.add(:event, "Les places pour adhérents sont complètes (#{event.max_participants - (event.non_member_discovery_slots || 0)} places maximum)")
+        end
+      else
+        # Vérifier places pour non-adhérents
+        if event.full_for_non_members?
+          errors.add(:event, "Les places pour non-adhérents sont complètes (#{event.non_member_discovery_slots || 0} places maximum)")
+        end
+      end
+    else
+      # Comportement classique : vérifier le total
+      active_attendances_count = event.attendances.active.where(is_volunteer: false).count
+
+      # Si on crée une nouvelle inscription, vérifier qu'il reste de la place
+      # (ne pas compter cette inscription si elle n'est pas encore sauvegardée)
+      if new_record?
+        if active_attendances_count >= event.max_participants
+          errors.add(:event, "L'événement est complet (#{event.max_participants} participants maximum)")
+        end
       end
     end
   end
@@ -94,10 +113,29 @@ class Attendance < ApplicationRecord
     return unless event.is_a?(Event::Initiation)
     return if is_volunteer # Bénévoles bypassent les validations
 
-    # Vérifier places disponibles (déjà fait dans event_has_available_spots mais on double-vérifie)
-    if event.full?
-      errors.add(:event, "Cette séance est complète")
-      return
+    # Vérifier places disponibles selon le type (adhérent/non-adhérent)
+    is_member = user.memberships.active_now.exists? || 
+                (child_membership_id.present? && child_membership&.active?) ||
+                (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
+
+    if event.allow_non_member_discovery?
+      if is_member
+        if event.full_for_members?
+          errors.add(:event, "Les places pour adhérents sont complètes")
+          return
+        end
+      else
+        if event.full_for_non_members?
+          errors.add(:event, "Les places pour non-adhérents sont complètes")
+          return
+        end
+      end
+    else
+      # Comportement classique
+      if event.full?
+        errors.add(:event, "Cette séance est complète")
+        return
+      end
     end
 
     # Vérifier adhésion ou essai gratuit
@@ -112,15 +150,17 @@ class Attendance < ApplicationRecord
         unless child_membership&.active?
           errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
         end
-      else
-        # Pas d'essai → vérifier adhésion active (parent OU enfant)
+      elsif !event.allow_non_member_discovery?
+        # Si l'option n'est pas activée, vérifier adhésion active (parent OU enfant) ou essai gratuit
         has_active_membership = user.memberships.active_now.exists?
         has_child_membership = user.memberships.active_now.where(is_child_membership: true).exists?
 
-        unless has_active_membership || has_child_membership
+        unless has_active_membership || has_child_membership || free_trial_used
           errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
         end
       end
+      # Si l'option est activée et que l'utilisateur n'est pas adhérent, 
+      # l'inscription est autorisée dans les places découverte (pas besoin d'essai gratuit)
     end
   end
 

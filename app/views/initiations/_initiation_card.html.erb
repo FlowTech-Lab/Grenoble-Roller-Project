@@ -55,21 +55,44 @@
             <%= pluralize(initiation.participants_count, "inscrit") %>
           </span>
           
-          <% if initiation.full? %>
-            <span class="badge bg-danger">
-              <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
-            </span>
-          <% elsif initiation.available_places <= 5 %>
-            <span class="badge bg-warning text-dark">
-              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
-              <%= pluralize(initiation.available_places, "place disponible") %>
-            </span>
-          <% else %>
-            <span class="badge bg-success">
-              <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-              <%= pluralize(initiation.available_places, "place disponible") %>
-            </span>
-          <% end %>
+            <% if initiation.allow_non_member_discovery? %>
+              <!-- Affichage séparé si l'option est activée -->
+              <% if initiation.full? %>
+                <span class="badge bg-danger">
+                  <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
+                </span>
+              <% else %>
+                <% if initiation.available_member_places > 0 %>
+                  <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                    <%= pluralize(initiation.available_member_places, "place adhérent") %>
+                  </span>
+                <% end %>
+                <% if initiation.available_non_member_places > 0 %>
+                  <span class="badge bg-info">
+                    <i class="bi bi-gift me-1" aria-hidden="true"></i>
+                    <%= pluralize(initiation.available_non_member_places, "place découverte") %>
+                  </span>
+                <% end %>
+              <% end %>
+            <% else %>
+              <!-- Affichage classique -->
+              <% if initiation.full? %>
+                <span class="badge bg-danger">
+                  <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
+                </span>
+              <% elsif initiation.available_places <= 5 %>
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+                  <%= pluralize(initiation.available_places, "place disponible") %>
+                </span>
+              <% else %>
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                  <%= pluralize(initiation.available_places, "place disponible") %>
+                </span>
+              <% end %>
+            <% end %>
           
           <% if user_signed_in? && current_user_has_attendance?(initiation) %>
             <span class="badge bg-success">
@@ -214,7 +237,13 @@
                 <div class="col-12 col-sm-6">
                   <p class="mb-0">
                     <i class="bi bi-people text-primary me-2" aria-hidden="true"></i>
-                    <strong>Places :</strong> <%= initiation.available_places %> / <%= initiation.max_participants %>
+                    <strong>Places :</strong> 
+                    <% if initiation.allow_non_member_discovery? %>
+                      <%= initiation.available_member_places %> adhérents / <%= initiation.available_non_member_places %> découverte
+                      (<%= initiation.participants_count %> / <%= initiation.max_participants %>)
+                    <% else %>
+                      <%= initiation.available_places %> / <%= initiation.max_participants %>
+                    <% end %>
                   </p>
                 </div>
               </div>

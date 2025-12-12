@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_11_231353) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_022355) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -113,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_231353) do
   end
 
   create_table "events", force: :cascade do |t|
+    t.boolean "allow_non_member_discovery", default: false, null: false
     t.integer "attendances_count", default: 0, null: false
     t.string "cover_image_url", limit: 255
     t.datetime "created_at", null: false
@@ -128,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_231353) do
     t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
+    t.integer "non_member_discovery_slots", default: 0, null: false
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"

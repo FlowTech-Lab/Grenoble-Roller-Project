@@ -129,28 +129,51 @@ class InitiationsController < ApplicationController
     attendance.equipment_note = params[:equipment_note] if params[:equipment_note].present?
     attendance.child_membership_id = child_membership_id
 
-    # Gestion essai gratuit (uniquement pour le parent, pas pour les enfants)
-    if params[:use_free_trial] == "1" && child_membership_id.nil?
-      if current_user.attendances.where(free_trial_used: true).exists?
-        redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
-        return
-      end
-      attendance.free_trial_used = true
-    elsif child_membership_id.nil?
-      # Pour le parent : vérifier adhésion ou essai gratuit
-      has_active_membership = current_user.memberships.active_now.exists?
-      has_child_membership = current_user.memberships.active_now.where(is_child_membership: true).exists?
-
-      unless has_active_membership || has_child_membership
-        redirect_to initiation_path(@initiation), alert: "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association."
-        return
-      end
-    else
-      # Pour un enfant : vérifier que l'adhésion enfant est active
+    # Vérifier si l'utilisateur est adhérent
+    is_member = if child_membership_id.present?
+      # Pour un enfant : vérifier l'adhésion enfant
       child_membership = current_user.memberships.find_by(id: child_membership_id)
       unless child_membership&.active?
         redirect_to initiation_path(@initiation), alert: "L'adhésion de cet enfant n'est pas active."
         return
+      end
+      true
+    else
+      # Pour le parent : vérifier adhésion parent ou enfant
+      current_user.memberships.active_now.exists? ||
+        current_user.memberships.active_now.where(is_child_membership: true).exists?
+    end
+
+    # Gestion essai gratuit et vérification adhésion
+    if child_membership_id.nil? && !is_member
+      # Non-adhérent parent : vérifier si l'option de découverte est activée
+      if @initiation.allow_non_member_discovery?
+        # Option activée : vérifier qu'il reste des places découverte
+        if @initiation.full_for_non_members?
+          redirect_to initiation_path(@initiation), alert: "Les places pour non-adhérents sont complètes. Adhérez à l'association pour continuer."
+          return
+        end
+        # Les non-adhérents peuvent s'inscrire dans les places découverte (pas besoin d'essai gratuit)
+        # L'essai gratuit n'est utilisé que si explicitement demandé
+        if params[:use_free_trial] == "1"
+          if current_user.attendances.where(free_trial_used: true).exists?
+            redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
+            return
+          end
+          attendance.free_trial_used = true
+        end
+      else
+        # Option non activée : comportement classique - adhésion ou essai gratuit requis
+        if params[:use_free_trial] == "1"
+          if current_user.attendances.where(free_trial_used: true).exists?
+            redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
+            return
+          end
+          attendance.free_trial_used = true
+        else
+          redirect_to initiation_path(@initiation), alert: "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association."
+          return
+        end
       end
     end
 
