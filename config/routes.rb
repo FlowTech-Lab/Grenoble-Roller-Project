@@ -104,6 +104,7 @@ Rails.application.routes.draw do
       post :attend
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
+      patch :toggle_reminder
     end
   end
 

@@ -1,5 +1,5 @@
 class InitiationsController < ApplicationController
-  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance ]
+  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder ]
   before_action :authenticate_user!, except: [ :index, :show ]
   before_action :load_supporting_data, only: [ :new, :create, :edit, :update ]
 
@@ -199,6 +199,32 @@ class InitiationsController < ApplicationController
       end
     else
       redirect_to initiation_path(@initiation), alert: "Inscription introuvable."
+    end
+  end
+
+  def toggle_reminder
+    authenticate_user!
+    authorize @initiation, :cancel_attendance? # Même permission que cancel_attendance
+
+    # Pour les initiations, le rappel est global (1 email par compte)
+    # On active/désactive le rappel pour toutes les inscriptions (parent + enfants)
+    user_attendances = @initiation.attendances.where(user: current_user)
+    
+    if user_attendances.any?
+      # Déterminer l'état actuel : si au moins une inscription a le rappel activé, on désactive tout
+      # Sinon, on active tout
+      any_reminder_active = user_attendances.any? { |a| a.wants_reminder? }
+      new_reminder_state = !any_reminder_active
+      
+      # Mettre à jour toutes les inscriptions
+      user_attendances.update_all(wants_reminder: new_reminder_state)
+      
+      message = new_reminder_state ? 
+        "Rappel activé. Vous recevrez un email la veille à 19h pour vous rappeler la séance." : 
+        "Rappel désactivé."
+      redirect_to initiation_path(@initiation), notice: message
+    else
+      redirect_to initiation_path(@initiation), alert: "Vous n'êtes pas inscrit(e) à cette séance."
     end
   end
 

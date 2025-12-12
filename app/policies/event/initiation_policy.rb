@@ -10,10 +10,20 @@ class Event::InitiationPolicy < ApplicationPolicy
   def attend?
     return false unless user
     return false if record.full?
-    return false if user.attendances.exists?(event: record)
+    
+    # Vérifier si l'utilisateur est déjà inscrit en tant que parent
+    parent_already_registered = user.attendances.exists?(event: record, child_membership_id: nil)
+    
+    # Si le parent est déjà inscrit, autoriser uniquement si l'utilisateur a des enfants avec des adhésions actives
+    # (pour permettre l'inscription d'enfants supplémentaires)
+    if parent_already_registered
+      # Autoriser si l'utilisateur a des enfants avec des adhésions actives
+      return user.memberships.active_now.where(is_child_membership: true).exists?
+    end
 
-    # Vérifier adhésion ou essai gratuit disponible
+    # Si le parent n'est pas encore inscrit, vérifier adhésion ou essai gratuit disponible
     user.memberships.active_now.exists? ||
+      user.memberships.active_now.where(is_child_membership: true).exists? ||
       !user.attendances.where(free_trial_used: true).exists?
   end
 

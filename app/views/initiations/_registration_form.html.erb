@@ -15,7 +15,10 @@
 
     <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
       <!-- Sélection enfant si applicable -->
-      <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
+      <% 
+        # Filtrer uniquement les enfants avec des adhésions actives (éligibles pour les initiations)
+        child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+      %>
       <% if child_memberships.any? %>
         <div class="mb-3">
           <%= f.label :child_membership_id, "S'inscrire pour un enfant (optionnel)", class: "form-label" %>
@@ -25,7 +28,10 @@
               ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
               { prompt: "S'inscrire pour moi-même" }, 
               { class: "form-select" } %>
-          <small class="text-muted">Laissez vide pour vous inscrire vous-même</small>
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
+          </small>
         </div>
       <% end %>
 

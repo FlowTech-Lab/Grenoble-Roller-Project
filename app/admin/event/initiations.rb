@@ -37,7 +37,12 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       "#{initiation.available_places} / #{initiation.max_participants}"
     end
     column "Participants" do |initiation|
-      initiation.participants_count
+      begin
+        count = initiation.participants_count
+        "#{count} / #{initiation.max_participants}"
+      rescue => e
+        "Erreur"
+      end
     end
     column "Bénévoles" do |initiation|
       initiation.volunteers_count
@@ -60,23 +65,51 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
 
   show do
     attributes_table do
+      row :id
       row :title
-      row :status
+      row :status do |initiation|
+        case initiation.status
+        when "draft"
+          status_tag("En attente", class: "warning")
+        when "published"
+          status_tag("Publié", class: "ok")
+        when "canceled"
+          status_tag("Annulé", class: "error")
+        when "rejected"
+          status_tag("Refusé", class: "error")
+        else
+          status_tag(initiation.status)
+        end
+      end
       row :start_at
       row :duration_min
       row :max_participants
       row "Places disponibles" do |initiation|
-        if initiation.full?
-          "Complet (0)"
-        else
-          "#{initiation.available_places} places restantes"
+        begin
+          if initiation.full?
+            "Complet (0)"
+          else
+            "#{initiation.available_places} places restantes"
+          end
+        rescue => e
+          "Erreur: #{e.message}"
         end
       end
       row "Participants" do |initiation|
-        initiation.participants_count
+        begin
+          count = initiation.participants_count
+          total_attendances = initiation.attendances.where(is_volunteer: false, status: ["registered", "present"]).count
+          "#{count} (#{total_attendances} total inscriptions)"
+        rescue => e
+          "Erreur: #{e.message}"
+        end
       end
       row "Bénévoles" do |initiation|
-        initiation.volunteers_count
+        begin
+          initiation.volunteers_count
+        rescue => e
+          "Erreur: #{e.message}"
+        end
       end
       row :creator_user do |initiation|
         initiation.creator_user&.email || "N/A"
@@ -90,9 +123,13 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     end
 
     panel "Inscriptions" do
-      table_for initiation.attendances.includes(:user).order(:created_at) do
-        column :user do |attendance|
-          attendance.user.email
+      table_for initiation.attendances.includes(:user, :child_membership).order(:created_at) do
+        column "Participant" do |attendance|
+          if attendance.child_membership_id.present?
+            "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+          else
+            attendance.user.email
+          end
         end
         column :status do |attendance|
           status_tag(attendance.status)

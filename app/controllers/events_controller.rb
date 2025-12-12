@@ -253,14 +253,27 @@ class EventsController < ApplicationController
   end
 
   # Active/désactive le rappel la veille à 19h pour l'utilisateur inscrit
+  # Le rappel est global (1 email par compte) pour toutes les inscriptions (parent + enfants)
   def toggle_reminder
     authenticate_user!
     authorize @event, :cancel_attendance? # Même permission que cancel_attendance
 
-    attendance = @event.attendances.find_by(user: current_user)
-    if attendance
-      attendance.update(wants_reminder: !attendance.wants_reminder)
-      message = attendance.wants_reminder? ? "Rappel activé. Vous recevrez un email la veille à 19h pour vous rappeler l'événement." : "Rappel désactivé."
+    # Pour les événements, le rappel est global (1 email par compte)
+    # On active/désactive le rappel pour toutes les inscriptions (parent + enfants)
+    user_attendances = @event.attendances.where(user: current_user)
+    
+    if user_attendances.any?
+      # Déterminer l'état actuel : si au moins une inscription a le rappel activé, on désactive tout
+      # Sinon, on active tout
+      any_reminder_active = user_attendances.any? { |a| a.wants_reminder? }
+      new_reminder_state = !any_reminder_active
+      
+      # Mettre à jour toutes les inscriptions
+      user_attendances.update_all(wants_reminder: new_reminder_state)
+      
+      message = new_reminder_state ? 
+        "Rappel activé. Vous recevrez un email la veille à 19h pour vous rappeler l'événement." : 
+        "Rappel désactivé."
       redirect_to @event, notice: message
     else
       redirect_to @event, alert: "Vous n'êtes pas inscrit(e) à cet événement."

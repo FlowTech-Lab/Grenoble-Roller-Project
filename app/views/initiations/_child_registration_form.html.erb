@@ -7,9 +7,12 @@
 
     <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
       <!-- Sélection enfant -->
-      <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
-      <% registered_child_ids = @child_attendances&.pluck(:child_membership_id).compact || [] %>
-      <% available_children = child_memberships.where.not(id: registered_child_ids) %>
+      <% 
+        # Filtrer uniquement les enfants avec des adhésions actives et non déjà inscrits
+        child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+        registered_child_ids = @child_attendances&.pluck(:child_membership_id).compact || []
+        available_children = child_memberships.where.not(id: registered_child_ids)
+      %>
       
       <% if available_children.any? %>
         <div class="mb-3">
@@ -20,6 +23,10 @@
               ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
               { prompt: "Choisir un enfant" }, 
               { class: "form-select", required: true } %>
+          <small class="text-muted">
+            <i class="bi bi-check-circle me-1 text-success" aria-hidden="true"></i>
+            Seuls les enfants avec une adhésion active et non déjà inscrits sont affichés.
+          </small>
         </div>
 
         <!-- Demande matériel -->

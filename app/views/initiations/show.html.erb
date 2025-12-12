@@ -230,22 +230,34 @@
           <% any_reminder_active = (@user_attendance&.wants_reminder? || @child_attendances&.any? { |a| a.wants_reminder? }) %>
           <% if any_reminder_active %>
             <div class="alert alert-info alert-reminder mb-4 border-start border-info border-4" role="alert">
-              <div class="d-flex align-items-start">
-                <i class="bi bi-bell-fill me-2 mt-1 text-info" aria-hidden="true"></i>
-                <div class="flex-grow-1">
-                  <strong class="d-block mb-1">Rappel activé</strong>
-                  <p class="mb-2 small text-muted">Vous recevrez un email la veille à 19h pour vous rappeler la séance.</p>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <i class="bi bi-bell-fill me-2 text-info" aria-hidden="true"></i>
+                  <strong>Rappel activé</strong>
+                  <p class="mb-0 small text-muted">Vous recevrez un email la veille à 19h pour vous rappeler la séance.</p>
                 </div>
+                <%= button_to toggle_reminder_initiation_path(@initiation), method: :patch, 
+                    class: "btn btn-outline-secondary btn-sm", 
+                    data: { turbo: false },
+                    aria: { label: 'Désactiver le rappel' } do %>
+                  <i class="bi bi-bell-slash me-1" aria-hidden="true"></i>Désactiver le rappel
+                <% end %>
               </div>
             </div>
           <% else %>
             <div class="alert alert-light border border-warning mb-4" role="alert">
-              <div class="d-flex align-items-start">
-                <i class="bi bi-bell me-2 mt-1 text-warning" aria-hidden="true"></i>
-                <div class="flex-grow-1">
-                  <strong class="d-block mb-1">Rappel désactivé</strong>
-                  <p class="mb-2 small text-muted">Le rappel peut être activé lors de l'inscription.</p>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <i class="bi bi-bell me-2 text-warning" aria-hidden="true"></i>
+                  <strong>Rappel désactivé</strong>
+                  <p class="mb-0 small text-muted">Activez le rappel pour recevoir un email la veille à 19h.</p>
                 </div>
+                <%= button_to toggle_reminder_initiation_path(@initiation), method: :patch, 
+                    class: "btn btn-outline-primary btn-sm", 
+                    data: { turbo: false },
+                    aria: { label: 'Activer le rappel' } do %>
+                  <i class="bi bi-bell-plus me-1" aria-hidden="true"></i>Activer le rappel
+                <% end %>
               </div>
             </div>
           <% end %>
