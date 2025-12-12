@@ -228,76 +228,13 @@
           </div>
           <%= form_with url: attend_event_path(event), method: :post, data: { turbo: false }, id: "attendForm#{event.id}", class: "attend-form" do |f| %>
             <div class="modal-body">
-              <!-- Alerte "Presque complet" si ≤5 places restantes -->
-              <% if !event.unlimited? && event.remaining_spots <= 5 && event.remaining_spots > 0 %>
-                <div class="alert alert-warning mb-3" role="alert">
-                  <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-                  <strong>Attention !</strong> Il ne reste que <%= pluralize(event.remaining_spots, "place disponible", "places disponibles") %> pour cet événement.
-                </div>
-              <% end %>
-              
-              <p class="lead mb-3">
-                Confirmez votre participation à <strong><%= event.title %></strong>
-              </p>
-              
-              <!-- Résumé de l'événement -->
-              <div class="event-summary mb-3 p-3 bg-light rounded">
-                <div class="row g-2">
-                  <div class="col-12">
-                    <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé de l'événement</p>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <p class="mb-1">
-                      <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
-                      <strong>Date :</strong> <%= l event.start_at, format: :event_long, locale: :fr %>
-                    </p>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <p class="mb-1">
-                      <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
-                      <strong>Lieu :</strong> <%= truncate(event.location_text, length: 50) %>
-                    </p>
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <p class="mb-1">
-                      <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
-                      <strong>Durée :</strong> <%= event.duration_min %> minutes
-                    </p>
-                  </div>
-                  <% if event.distance_km.present? && event.distance_km > 0 %>
-                    <div class="col-12 col-sm-6">
-                      <p class="mb-0">
-                        <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
-                        <strong>Distance :</strong>
-                        <% if event.loops_count && event.loops_count > 1 %>
-                          <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-                          <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
-                        <% else %>
-                          <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-                        <% end %>
-                      </p>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-              
-              <!-- Sélection enfant si applicable -->
-              <% if user_signed_in? %>
-                <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
-                <% if child_memberships.any? %>
-                  <div class="mb-3">
-                    <%= f.label :child_membership_id, "S'inscrire pour un enfant (optionnel)", class: "form-label" %>
-                    <%= f.collection_select :child_membership_id, 
-                        child_memberships, 
-                        :id, 
-                        ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
-                        { prompt: "S'inscrire pour moi-même" }, 
-                        { class: "form-select" } %>
-                    <small class="text-muted">Laissez vide pour vous inscrire vous-même</small>
-                  </div>
-                <% end %>
-              <% end %>
-              
+              <%= render 'shared/registration_form_fields', 
+                  form: f, 
+                  event: event, 
+                  prefix_id: "_modal_#{event.id}", 
+                  show_alert: true, 
+                  show_summary: true %>
+
               <!-- Bouton Ajouter au calendrier -->
               <% if user_signed_in? %>
                 <div class="mb-3 text-center">
@@ -309,14 +246,6 @@
                   <% end %>
                 </div>
               <% end %>
-              
-              <div class="form-check mb-3">
-                <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
-                <label class="form-check-label" for="wants_reminder">
-                  <i class="bi bi-bell me-1" aria-hidden="true"></i>
-                  Recevoir un rappel par email la veille à 19h
-                </label>
-              </div>
               
               <p class="mb-0 text-muted small">
                 <i class="bi bi-info-circle me-1" aria-hidden="true"></i>

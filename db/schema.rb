@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_034849) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_140131) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,7 +63,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_034849) do
     t.bigint "event_id", null: false
     t.boolean "free_trial_used", default: false, null: false
     t.boolean "is_volunteer", default: false, null: false
+    t.boolean "needs_equipment", default: false, null: false
     t.bigint "payment_id"
+    t.string "roller_size"
     t.string "status", limit: 20, default: "registered", null: false
     t.string "stripe_customer_id", limit: 255
     t.datetime "updated_at", null: false
@@ -324,6 +326,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_034849) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_roles_on_code", unique: true
+  end
+
+  create_table "roller_stocks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "is_active", default: true, null: false
+    t.integer "quantity", default: 0, null: false
+    t.string "size", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_roller_stocks_on_is_active"
+    t.index ["size"], name: "index_roller_stocks_on_size", unique: true
   end
 
   create_table "routes", force: :cascade do |t|

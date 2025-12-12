@@ -53,7 +53,7 @@ class Attendance < ApplicationRecord
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id user_id event_id status payment_id stripe_customer_id wants_reminder free_trial_used is_volunteer equipment_note created_at updated_at]
+    %w[id user_id event_id status payment_id stripe_customer_id wants_reminder free_trial_used is_volunteer equipment_note needs_equipment roller_size created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)

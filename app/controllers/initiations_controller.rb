@@ -147,7 +147,8 @@ class InitiationsController < ApplicationController
     attendance.status = "registered"
     # Lire les paramètres directement au niveau racine (comme EventsController)
     attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
-    attendance.equipment_note = params[:equipment_note] if params[:equipment_note].present?
+    attendance.needs_equipment = params[:needs_equipment] == "1"
+    attendance.roller_size = params[:roller_size].presence if attendance.needs_equipment?
     attendance.child_membership_id = child_membership_id
     
     # Gestion bénévole (uniquement pour le parent, pas pour les enfants)
