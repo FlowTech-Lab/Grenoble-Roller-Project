@@ -309,10 +309,10 @@
                 <i class="bi bi-arrow-right-circle text-liquid-success me-2" aria-hidden="true"></i>
                 <strong>Débutant ?</strong> Inscrivez-vous à une session d'initiation pour découvrir le roller en douceur !
               </p>
-              <button type="button" class="btn btn-sm btn-liquid-success" disabled>
-                <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>
-                Page Initiation (à venir)
-              </button>
+              <%= link_to initiations_path, class: "btn btn-sm btn-liquid-success" do %>
+                <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+                Voir les initiations
+              <% end %>
             </div>
           </div>
         </div>
