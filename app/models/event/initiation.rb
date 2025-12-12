@@ -12,7 +12,6 @@ class Event::Initiation < Event
 
   # Validations spécifiques
   validates :max_participants, presence: true, numericality: { greater_than: 0 }
-  validate :is_saturday, :is_correct_time, :is_correct_location
 
   # Callback pour forcer distance_km = 0 pour les initiations (avant validation)
   before_validation :set_distance_km_to_zero, on: [ :create, :update ]
@@ -43,20 +42,5 @@ class Event::Initiation < Event
 
   def set_distance_km_to_zero
     self.distance_km = 0
-  end
-
-  def is_saturday
-    return if start_at.blank?
-    errors.add(:start_at, "doit être un samedi") unless start_at.saturday?
-  end
-
-  def is_correct_time
-    return if start_at.blank?
-    errors.add(:start_at, "doit commencer à 10h15") unless start_at.hour == 10 && start_at.min == 15
-  end
-
-  def is_correct_location
-    return if location_text.blank?
-    errors.add(:location_text, "doit être le Gymnase Ampère") unless location_text.include?("Gymnase Ampère")
   end
 end
