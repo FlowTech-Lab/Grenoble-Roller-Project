@@ -102,23 +102,25 @@ Rails.application.routes.draw do
       post :join_waitlist
       delete :leave_waitlist
       post :convert_waitlist_to_attendance
+      post :refuse_waitlist
       get :loop_routes, defaults: { format: "json" }
       patch :reject
     end
   end
 
-  # Initiations
-  resources :initiations do
-    member do
-      post :attend
-      delete :cancel_attendance
-      get :ical, defaults: { format: "ics" }
-      patch :toggle_reminder
-      post :join_waitlist
-      delete :leave_waitlist
-      post :convert_waitlist_to_attendance
-    end
-  end
+      # Initiations
+      resources :initiations do
+        member do
+          post :attend
+          delete :cancel_attendance
+          get :ical, defaults: { format: "ics" }
+          patch :toggle_reminder
+          post :join_waitlist
+          delete :leave_waitlist
+          post :convert_waitlist_to_attendance
+          post :refuse_waitlist
+        end
+      end
 
   # Routes REST pour les parcours
   resources :routes, only: [:create] do

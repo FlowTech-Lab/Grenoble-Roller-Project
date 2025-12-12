@@ -39,14 +39,18 @@
       </div>
       
       <p style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-        <strong>⚠️ Important :</strong> Cette place est réservée pour vous pendant <strong>48 heures</strong>. 
+        <strong>⚠️ Important :</strong> Cette place est réservée pour vous pendant <strong>24 heures</strong>. 
         Passé ce délai, elle sera proposée à la personne suivante en liste d'attente.
       </p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="<%= polymorphic_url(@event) %>" 
-           style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+        <a href="<%= convert_waitlist_to_attendance_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
+           style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-right: 10px;">
           Confirmer ma place
+        </a>
+        <a href="<%= refuse_waitlist_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
+           style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+          Refuser
         </a>
       </div>
       

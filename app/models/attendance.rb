@@ -7,6 +7,7 @@ class Attendance < ApplicationRecord
   belongs_to :child_membership, class_name: "Membership", optional: true
 
   enum :status, {
+    pending: "pending",      # En attente de confirmation (liste d'attente)
     registered: "registered",
     paid: "paid",
     canceled: "canceled",
@@ -74,6 +75,9 @@ class Attendance < ApplicationRecord
     return if event.unlimited?
     # Ne pas vérifier la limite pour les inscriptions annulées (elles ne comptent pas)
     return if status == "canceled"
+    # Les inscriptions "pending" verrouillent une place mais ne sont pas comptées dans has_available_spots
+    # Elles sont créées lors de la notification de la liste d'attente
+    return if status == "pending"
     # Bénévoles ne comptent pas dans la limite
     return if is_volunteer
 
@@ -96,7 +100,8 @@ class Attendance < ApplicationRecord
       end
     else
       # Comportement classique : vérifier le total
-      active_attendances_count = event.attendances.active.where(is_volunteer: false).count
+      # Exclure "pending" du comptage car elles verrouillent une place mais ne sont pas encore confirmées
+      active_attendances_count = event.attendances.where.not(status: ["canceled", "pending"]).where(is_volunteer: false).count
 
       # Si on crée une nouvelle inscription, vérifier qu'il reste de la place
       # (ne pas compter cette inscription si elle n'est pas encore sauvegardée)

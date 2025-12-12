@@ -136,28 +136,33 @@ class Event < ApplicationRecord
     max_participants.zero?
   end
 
-  # Vérifie si l'événement est plein (compte uniquement les inscriptions actives)
+  # Vérifie si l'événement est plein (compte uniquement les inscriptions actives, excluant "pending")
+  # Les inscriptions "pending" verrouillent une place mais ne sont pas comptées dans has_available_spots
   def full?
     return false if unlimited?
 
-    active_attendances_count >= max_participants
+    # Compter seulement les inscriptions confirmées (registered, paid, present), pas "pending"
+    attendances.where.not(status: ["canceled", "pending"]).where(is_volunteer: false).count >= max_participants
   end
 
-  # Retourne le nombre de places restantes
+  # Retourne le nombre de places restantes (excluant "pending")
   def remaining_spots
     return nil if unlimited?
 
-    [ max_participants - active_attendances_count, 0 ].max
+    confirmed_count = attendances.where.not(status: ["canceled", "pending"]).where(is_volunteer: false).count
+    [ max_participants - confirmed_count, 0 ].max
   end
 
-  # Vérifie s'il reste des places disponibles
+  # Vérifie s'il reste des places disponibles (excluant "pending" qui verrouillent une place)
   def has_available_spots?
-    unlimited? || active_attendances_count < max_participants
+    return true if unlimited?
+    # Compter seulement les inscriptions confirmées (registered, paid, present), pas "pending"
+    attendances.where.not(status: ["canceled", "pending"]).where(is_volunteer: false).count < max_participants
   end
 
-  # Compte les inscriptions actives (non annulées)
+  # Compte les inscriptions actives (non annulées, incluant pending pour verrouiller les places)
   def active_attendances_count
-    attendances.active.count
+    attendances.where.not(status: "canceled").count
   end
 
   # Vérifie si l'événement est passé

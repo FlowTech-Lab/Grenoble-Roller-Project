@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_160719) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -404,11 +404,15 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_160719) do
     t.bigint "child_membership_id"
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
+    t.boolean "needs_equipment"
     t.datetime "notified_at"
     t.integer "position", default: 0, null: false
+    t.string "roller_size"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
+    t.boolean "use_free_trial", default: false
     t.bigint "user_id", null: false
+    t.boolean "wants_reminder"
     t.index ["child_membership_id"], name: "index_waitlist_entries_on_child_membership_id"
     t.index ["event_id", "status", "position"], name: "index_waitlist_entries_on_event_id_and_status_and_position"
     t.index ["event_id"], name: "index_waitlist_entries_on_event_id"

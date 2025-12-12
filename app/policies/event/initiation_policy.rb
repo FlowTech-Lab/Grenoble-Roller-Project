@@ -85,6 +85,35 @@ class Event::InitiationPolicy < ApplicationPolicy
     user.attendances.exists?(event: record)
   end
 
+  def can_attend?
+    attend?
+  end
+
+  def join_waitlist?
+    return false unless user
+    # Pour rejoindre la liste d'attente, l'événement doit être complet
+    # Mais on ne vérifie pas les conditions d'adhésion/essai gratuit ici,
+    # car elles seront vérifiées lors de l'inscription en liste d'attente
+    # et lors de la conversion en inscription
+    return false unless record.full?
+    true
+  end
+
+  def leave_waitlist?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: ["pending", "notified"])
+  end
+
+  def convert_waitlist_to_attendance?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: "notified")
+  end
+
+  def refuse_waitlist?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: "notified")
+  end
+
   def manage?
     user&.role&.level.to_i >= 30 # INSTRUCTOR+
   end

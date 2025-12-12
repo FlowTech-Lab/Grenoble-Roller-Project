@@ -80,6 +80,7 @@ class EventMailer < ApplicationMailer
     @user = waitlist_entry.user
     @is_initiation = @event.is_a?(Event::Initiation)
     @participant_name = waitlist_entry.participant_name
+    @expiration_time = waitlist_entry.notified_at + 24.hours # 24 heures pour confirmer
 
     subject = if @is_initiation
       "🎉 Place disponible - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"

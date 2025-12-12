@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance refuse_waitlist]
   before_action :authenticate_user!, except: %i[index show]
   before_action :ensure_email_confirmed, only: [ :attend ] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
@@ -240,14 +240,18 @@ class EventsController < ApplicationController
   end
 
   def join_waitlist
-    authorize @event, :attend? # Même permission que pour s'inscrire
+    authorize @event, :join_waitlist?
     
     child_membership_id = params[:child_membership_id].presence
+    wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
     
     waitlist_entry = WaitlistEntry.add_to_waitlist(
       current_user,
       @event,
-      child_membership_id: child_membership_id
+      child_membership_id: child_membership_id,
+      needs_equipment: false, # Pas de matériel pour les événements/randos
+      roller_size: nil,
+      wants_reminder: wants_reminder
     )
     
     if waitlist_entry
@@ -259,7 +263,7 @@ class EventsController < ApplicationController
   end
 
   def leave_waitlist
-    authorize @event
+    authorize @event, :leave_waitlist?
     
     child_membership_id = params[:child_membership_id].presence
     
@@ -279,32 +283,53 @@ class EventsController < ApplicationController
   end
 
   def convert_waitlist_to_attendance
-    authorize @event, :attend?
+    authorize @event, :convert_waitlist_to_attendance?
+
+    waitlist_entry_id = params[:waitlist_entry_id]
+    waitlist_entry = @event.waitlist_entries.find_by_hashid(waitlist_entry_id)
     
-    child_membership_id = params[:child_membership_id].presence
-    
-    waitlist_entry = @event.waitlist_entries.find_by(
-      user: current_user,
-      child_membership_id: child_membership_id,
-      status: ["notified", "pending"]
-    )
-    
-    unless waitlist_entry
-      redirect_to @event, alert: "Entrée de liste d'attente introuvable."
+    unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
+      redirect_to @event, alert: "Entrée de liste d'attente introuvable ou non notifiée."
       return
     end
     
-    # Vérifier qu'il y a encore une place disponible
-    unless @event.has_available_spots?
-      redirect_to @event, alert: "Désolé, la place n'est plus disponible. Vous restez en liste d'attente."
+    # Vérifier que l'inscription "pending" existe toujours
+    pending_attendance = @event.attendances.find_by(
+      user: current_user,
+      child_membership_id: waitlist_entry.child_membership_id,
+      status: "pending"
+    )
+    
+    unless pending_attendance
+      redirect_to @event, alert: "La place réservée n'est plus disponible. Vous restez en liste d'attente."
       return
     end
     
     if waitlist_entry.convert_to_attendance!
       participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      EventMailer.attendance_confirmed(pending_attendance.reload).deliver_later if current_user.wants_events_mail?
       redirect_to @event, notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
     else
       redirect_to @event, alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
+    end
+  end
+  
+  def refuse_waitlist
+    authorize @event, :refuse_waitlist?
+
+    waitlist_entry_id = params[:waitlist_entry_id]
+    waitlist_entry = @event.waitlist_entries.find_by_hashid(waitlist_entry_id)
+    
+    unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
+      redirect_to @event, alert: "Entrée de liste d'attente introuvable ou non notifiée."
+      return
+    end
+    
+    if waitlist_entry.refuse!
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to @event, notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
+    else
+      redirect_to @event, alert: "Impossible de refuser la place. Veuillez réessayer."
     end
   end
 
@@ -330,9 +355,11 @@ class EventsController < ApplicationController
 
     if attendance
       participant_name = attendance.for_child? ? attendance.participant_name : "vous"
+      wants_events_mail = current_user.wants_events_mail?
       if attendance.destroy
-        # Email d'annulation : uniquement pour le parent
-        if attendance.for_parent?
+        # Notifier la prochaine personne en liste d'attente si une place se libère
+        WaitlistEntry.notify_next_in_queue(@event) if @event.full?
+        if wants_events_mail && attendance.for_parent?
           EventMailer.attendance_cancelled(current_user, @event).deliver_later
         end
         redirect_to @event, notice: "Inscription de #{participant_name} annulée."

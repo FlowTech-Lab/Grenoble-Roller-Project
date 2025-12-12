@@ -1,5 +1,5 @@
 class InitiationsController < ApplicationController
-  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :ical, :join_waitlist, :leave_waitlist, :convert_waitlist_to_attendance ]
+  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :ical, :join_waitlist, :leave_waitlist, :convert_waitlist_to_attendance, :refuse_waitlist ]
   before_action :authenticate_user!, except: [ :index, :show ]
   before_action :load_supporting_data, only: [ :new, :create, :edit, :update ]
 
@@ -249,14 +249,39 @@ class InitiationsController < ApplicationController
   end
 
   def join_waitlist
-    authorize @initiation, :attend? # Même permission que pour s'inscrire
+    authorize @initiation, :join_waitlist? # Utiliser la policy spécifique pour la liste d'attente
     
     child_membership_id = params[:child_membership_id].presence
+    needs_equipment = params[:needs_equipment] == "1"
+    roller_size = params[:roller_size].presence
+    wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
+    use_free_trial = params[:use_free_trial] == "1"
+    
+    # Vérifier que l'utilisateur peut utiliser l'essai gratuit si demandé
+    if use_free_trial && current_user.attendances.where(free_trial_used: true).exists?
+      redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
+      return
+    end
+    
+    if needs_equipment && roller_size.blank?
+      redirect_to initiation_path(@initiation), alert: "Veuillez sélectionner une taille de rollers si vous avez besoin de matériel."
+      return
+    end
+    if needs_equipment && roller_size.present?
+      unless RollerStock::SIZES.include?(roller_size)
+        redirect_to initiation_path(@initiation), alert: "La taille de rollers sélectionnée n'est pas valide."
+        return
+      end
+    end
     
     waitlist_entry = WaitlistEntry.add_to_waitlist(
       current_user,
       @initiation,
-      child_membership_id: child_membership_id
+      child_membership_id: child_membership_id,
+      needs_equipment: needs_equipment,
+      roller_size: roller_size,
+      wants_reminder: wants_reminder,
+      use_free_trial: use_free_trial
     )
     
     if waitlist_entry
@@ -288,32 +313,53 @@ class InitiationsController < ApplicationController
   end
 
   def convert_waitlist_to_attendance
-    authorize @initiation, :attend?
+    authorize @initiation, :convert_waitlist_to_attendance?
+
+    waitlist_entry_id = params[:waitlist_entry_id]
+    waitlist_entry = @initiation.waitlist_entries.find_by_hashid(waitlist_entry_id)
     
-    child_membership_id = params[:child_membership_id].presence
-    
-    waitlist_entry = @initiation.waitlist_entries.find_by(
-      user: current_user,
-      child_membership_id: child_membership_id,
-      status: ["notified", "pending"] # Permettre même si pas encore notifié (au cas où)
-    )
-    
-    unless waitlist_entry
-      redirect_to initiation_path(@initiation), alert: "Entrée de liste d'attente introuvable."
+    unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
+      redirect_to initiation_path(@initiation), alert: "Entrée de liste d'attente introuvable ou non notifiée."
       return
     end
     
-    # Vérifier qu'il y a encore une place disponible
-    unless @initiation.has_available_spots?
-      redirect_to initiation_path(@initiation), alert: "Désolé, la place n'est plus disponible. Vous restez en liste d'attente."
+    # Vérifier que l'inscription "pending" existe toujours
+    pending_attendance = @initiation.attendances.find_by(
+      user: current_user,
+      child_membership_id: waitlist_entry.child_membership_id,
+      status: "pending"
+    )
+    
+    unless pending_attendance
+      redirect_to initiation_path(@initiation), alert: "La place réservée n'est plus disponible. Vous restez en liste d'attente."
       return
     end
     
     if waitlist_entry.convert_to_attendance!
       participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      EventMailer.attendance_confirmed(pending_attendance.reload).deliver_later if current_user.wants_initiation_mail?
       redirect_to initiation_path(@initiation), notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
     else
       redirect_to initiation_path(@initiation), alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
+    end
+  end
+  
+  def refuse_waitlist
+    authorize @initiation, :refuse_waitlist?
+
+    waitlist_entry_id = params[:waitlist_entry_id]
+    waitlist_entry = @initiation.waitlist_entries.find_by_hashid(waitlist_entry_id)
+    
+    unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
+      redirect_to initiation_path(@initiation), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+      return
+    end
+    
+    if waitlist_entry.refuse!
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to initiation_path(@initiation), notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
+    else
+      redirect_to initiation_path(@initiation), alert: "Impossible de refuser la place. Veuillez réessayer."
     end
   end
 

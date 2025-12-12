@@ -13,6 +13,7 @@
   prefix_id ||= ""
   show_alert = local_assigns.fetch(:show_alert, true)
   show_summary = local_assigns.fetch(:show_summary, false)
+  is_waitlist = local_assigns.fetch(:is_waitlist, false)
   is_initiation = event.is_a?(Event::Initiation)
   is_modal = prefix_id.present?
   
@@ -197,8 +198,8 @@
   </script>
 <% end %>
 
-<!-- Option bénévole si éligible (uniquement pour initiations et pour le parent) -->
-<% if is_initiation && current_user.can_be_volunteer == true %>
+<!-- Option bénévole si éligible (uniquement pour initiations et pour le parent, pas pour la liste d'attente) -->
+<% if is_initiation && current_user.can_be_volunteer == true && !is_waitlist %>
   <div class="mb-3 form-check form-switch" id="volunteer_toggle<%= prefix_id %>" <%= 'style="display: none;"' if child_memberships.any? %>>
     <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer#{prefix_id}" } %>
     <%= label_tag "is_volunteer#{prefix_id}", class: "form-check-label" do %>

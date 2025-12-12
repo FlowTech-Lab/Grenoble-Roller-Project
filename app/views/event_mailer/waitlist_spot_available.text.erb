@@ -11,11 +11,14 @@ Lieu : <%= @event.location_text %>
 Distance : <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
 <% end %>
 
-⚠️ IMPORTANT : Cette place est réservée pour vous pendant 48 heures. 
+⚠️ IMPORTANT : Cette place est réservée pour vous pendant 24 heures. 
 Passé ce délai, elle sera proposée à la personne suivante en liste d'attente.
 
 Pour confirmer votre place, cliquez sur le lien suivant :
-<%= polymorphic_url(@event) %>
+<%= convert_waitlist_to_attendance_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
+
+Pour refuser cette place, cliquez sur le lien suivant :
+<%= refuse_waitlist_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
 
 Si vous ne souhaitez plus participer à cet événement, vous pouvez ignorer cet email. 
 La place sera automatiquement proposée à la personne suivante.
