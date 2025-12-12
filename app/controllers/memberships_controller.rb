@@ -171,6 +171,12 @@ class MembershipsController < ApplicationController
   end
 
   def create
+    # Vérifier si c'est un paiement sans HelloAsso
+    if params[:payment_method] == "cash_check" || params[:payment_method] == "without_payment"
+      create_without_payment
+      return
+    end
+
     # Détecter le type depuis les paramètres
     membership_params = params[:membership] || params
 
@@ -181,6 +187,19 @@ class MembershipsController < ApplicationController
       create_teen_membership
     else
       create_adult_membership
+    end
+  end
+
+  # Créer une adhésion sans paiement HelloAsso (espèces/chèques)
+  def create_without_payment
+    membership_params = params[:membership] || params
+
+    if membership_params[:is_child_membership] == "true" || membership_params[:is_child_membership] == true
+      create_child_membership_without_payment
+    elsif membership_params[:type] == "teen"
+      create_teen_membership_without_payment
+    else
+      create_adult_membership_without_payment
     end
   end
 
@@ -1060,5 +1079,173 @@ class MembershipsController < ApplicationController
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
     membership&.destroy
     raise e
+  end
+
+  # Créer une adhésion adulte sans paiement HelloAsso (espèces/chèques)
+  def create_adult_membership_without_payment
+    membership_params = params[:membership] || params
+    category = membership_params[:category]
+
+    unless Membership.categories.key?(category)
+      redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
+      return
+    end
+
+    current_season = Membership.current_season_name
+
+    # Vérifier les adhésions existantes pour cette saison
+    existing_memberships = current_user.memberships.personal.where(season: current_season)
+
+    # Vérifier si une adhésion active existe
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    if active_membership
+      redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      return
+    end
+
+    # Vérifier si une adhésion pending existe
+    pending_membership = existing_memberships.find { |m| m.status == "pending" }
+    if pending_membership
+      redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement ou annuler cette adhésion avant d'en créer une nouvelle."
+      return
+    end
+
+    start_date, end_date = Membership.current_season_dates
+    amount_cents = Membership.price_for_category(category)
+
+    # Mettre à jour les informations User
+    user_update_params = {}
+    user_update_params[:first_name] = membership_params[:first_name] if membership_params[:first_name].present?
+    user_update_params[:last_name] = membership_params[:last_name] if membership_params[:last_name].present?
+    user_update_params[:phone] = membership_params[:phone] if membership_params[:phone].present?
+    user_update_params[:email] = membership_params[:email] if membership_params[:email].present?
+    user_update_params[:address] = membership_params[:address] if membership_params[:address].present?
+    user_update_params[:city] = membership_params[:city] if membership_params[:city].present?
+    user_update_params[:postal_code] = membership_params[:postal_code] if membership_params[:postal_code].present?
+
+    if membership_params[:date_of_birth].present?
+      user_update_params[:date_of_birth] = membership_params[:date_of_birth]
+    end
+
+    if params[:user]
+      user_update_params[:wants_initiation_mail] = params[:user][:wants_initiation_mail] == "1" if params[:user][:wants_initiation_mail].present?
+      user_update_params[:wants_events_mail] = params[:user][:wants_events_mail] == "1" if params[:user][:wants_events_mail].present?
+    end
+
+    if user_update_params.any?
+      current_user.update!(user_update_params)
+    end
+
+    if current_user.date_of_birth.blank?
+      redirect_to new_membership_path(type: "adult"), alert: "La date de naissance est obligatoire pour adhérer."
+      return
+    end
+
+    user_age = current_user.age
+    if user_age < 16
+      redirect_to new_membership_path(type: "adult"), alert: "L'adhésion adulte n'est pas possible pour les personnes de moins de 16 ans. Veuillez contacter un membre du bureau de l'association pour procéder à l'adhésion. #{helpers.link_to('Contactez-nous', contact_path, class: 'alert-link')} pour plus d'informations.".html_safe
+      return
+    end
+
+    # Vérifier les réponses au questionnaire de santé
+    has_health_issue = false
+    all_answered_no = true
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      if answer == "yes"
+        has_health_issue = true
+        all_answered_no = false
+      elsif answer != "no"
+        all_answered_no = false
+      end
+    end
+
+    is_ffrs = category == "with_ffrs"
+
+    if is_ffrs
+      if has_health_issue
+        membership_params[:health_questionnaire_status] = "medical_required"
+        if membership_params[:medical_certificate].blank?
+          redirect_to new_membership_path(type: "adult"), alert: "Pour la licence FFRS, un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
+          return
+        end
+      elsif all_answered_no
+        membership_params[:health_questionnaire_status] = "ok"
+        previous_ffrs = current_user.memberships.personal.where(category: "with_ffrs").exists?
+        if !previous_ffrs && membership_params[:medical_certificate].blank?
+          redirect_to new_membership_path(type: "adult"), alert: "Pour une nouvelle licence FFRS, un certificat médical est obligatoire."
+          return
+        end
+      else
+        redirect_to new_membership_path(type: "adult"), alert: "Le questionnaire de santé est obligatoire pour la licence FFRS. Veuillez répondre à toutes les questions."
+        return
+      end
+    else
+      membership_params[:health_questionnaire_status] = has_health_issue ? "medical_required" : "ok"
+    end
+
+    # Préparer les attributs du questionnaire de santé
+    health_attrs = {
+      health_questionnaire_status: membership_params[:health_questionnaire_status] || "ok"
+    }
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      health_attrs["health_q#{i}"] = answer if answer.present?
+    end
+
+    # Créer l'adhésion en pending SANS paiement HelloAsso
+    membership = Membership.create!(
+      user: current_user,
+      category: category,
+      status: :pending,
+      start_date: start_date,
+      end_date: end_date,
+      amount_cents: amount_cents,
+      currency: "EUR",
+      season: current_season,
+      is_child_membership: false,
+      is_minor: current_user.is_minor?,
+      tshirt_variant_id: nil,
+      tshirt_price_cents: nil,
+      with_tshirt: false,
+      tshirt_size: nil,
+      tshirt_qty: 0,
+      **health_attrs
+    )
+
+    # Attacher le certificat médical si fourni
+    if membership_params[:medical_certificate].present?
+      membership.medical_certificate.attach(membership_params[:medical_certificate])
+    end
+
+    # PAS de création de paiement HelloAsso - l'adhésion reste en pending
+    # Un bénévole/admin pourra la valider manuellement dans ActiveAdmin
+
+    redirect_to membership_path(membership), notice: "Votre adhésion a été créée avec le statut 'En attente'. Un bénévole validera votre paiement en espèces/chèque prochainement."
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion sans paiement : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+  end
+
+  def create_teen_membership_without_payment
+    # Similaire à create_adult_membership_without_payment mais pour les ados
+    # Pour simplifier, on peut réutiliser la même logique
+    create_adult_membership_without_payment
+  end
+
+  def create_child_membership_without_payment
+    membership_params = params[:membership] || params
+    membership = create_child_membership_from_params(membership_params, 0)
+
+    if membership.persisted?
+      redirect_to memberships_path, notice: "L'adhésion de #{membership.child_full_name} a été créée avec le statut 'En attente'. Un bénévole validera votre paiement en espèces/chèque prochainement."
+    else
+      redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
+    end
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant sans paiement : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.message}"
   end
 end

@@ -190,7 +190,18 @@ ActiveAdmin.register Membership do
     active_admin_comments
   end
 
-  # Action destroy personnalisée avec confirmation
+  # Actions personnalisées
+  member_action :activate, method: :put do
+    @membership = resource
+    
+    if @membership.status == "pending"
+      @membership.update!(status: :active)
+      redirect_to admin_membership_path(@membership), notice: "Adhésion validée avec succès. L'adhésion est maintenant active."
+    else
+      redirect_to admin_membership_path(@membership), alert: "Cette adhésion ne peut pas être validée (statut actuel : #{@membership.status})."
+    end
+  end
+
   controller do
     def destroy
       @membership = resource

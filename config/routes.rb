@@ -74,6 +74,9 @@ Rails.application.routes.draw do
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
     collection do
+      post :create_without_payment
+    end
+    collection do
       # Redirection de l'ancienne page choose vers new
       get :choose, to: redirect { |params, request|
         if params[:child] == "true"
