@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
-    resource :maintenance, only: [:update], controller: "admin/maintenance_toggle" do
+    resource :maintenance, only: [:update], controller: "/admin/maintenance_toggle" do
       member do
         patch :toggle
       end

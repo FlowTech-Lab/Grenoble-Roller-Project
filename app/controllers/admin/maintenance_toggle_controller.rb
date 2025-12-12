@@ -19,7 +19,7 @@ module Admin
       end
 
       unless user_is_admin
-        redirect_to admin_maintenance_path, alert: "Accès refusé : Seuls les administrateurs (ADMIN/SUPERADMIN) peuvent modifier le mode maintenance"
+        redirect_to activeadmin_maintenance_path, alert: "Accès refusé : Seuls les administrateurs (ADMIN/SUPERADMIN) peuvent modifier le mode maintenance"
         return
       end
 
@@ -37,7 +37,7 @@ module Admin
         status = :notice
       end
 
-      redirect_to admin_maintenance_path, status => message
+      redirect_to activeadmin_maintenance_path, status => message
     end
   end
 end
