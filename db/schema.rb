@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_150540) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_160719) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -366,7 +366,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_150540) do
     t.datetime "created_at", null: false
     t.date "date_of_birth"
     t.string "email", default: "", null: false
-    t.boolean "email_verified", default: false, null: false
     t.string "encrypted_password", default: "", null: false
     t.string "first_name"
     t.string "last_name"
@@ -401,6 +400,22 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_150540) do
     t.index ["variant_id"], name: "index_variant_option_values_on_variant_id"
   end
 
+  create_table "waitlist_entries", force: :cascade do |t|
+    t.bigint "child_membership_id"
+    t.datetime "created_at", null: false
+    t.bigint "event_id", null: false
+    t.datetime "notified_at"
+    t.integer "position", default: 0, null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["child_membership_id"], name: "index_waitlist_entries_on_child_membership_id"
+    t.index ["event_id", "status", "position"], name: "index_waitlist_entries_on_event_id_and_status_and_position"
+    t.index ["event_id"], name: "index_waitlist_entries_on_event_id"
+    t.index ["user_id", "event_id", "child_membership_id"], name: "index_waitlist_entries_on_user_event_child", unique: true
+    t.index ["user_id"], name: "index_waitlist_entries_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "attendances", "events"
@@ -427,4 +442,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_150540) do
   add_foreign_key "users", "roles"
   add_foreign_key "variant_option_values", "option_values"
   add_foreign_key "variant_option_values", "product_variants", column: "variant_id"
+  add_foreign_key "waitlist_entries", "events"
+  add_foreign_key "waitlist_entries", "memberships", column: "child_membership_id"
+  add_foreign_key "waitlist_entries", "users"
 end

@@ -1,22 +1,32 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance]
   before_action :authenticate_user!, except: %i[index show]
   before_action :ensure_email_confirmed, only: [ :attend ] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
 
   def index
     scoped_events = policy_scope(Event.includes(:route, :creator_user))
-    # Seuls les événements publiés sont visibles pour les utilisateurs normaux
-    @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
-    
-    # Compter le total d'événements passés
-    @past_events_total = scoped_events.visible.past.count
-    
-    # Afficher tous les événements passés si show_all_past=true, sinon limiter à 6
-    if params[:show_all_past] == 'true'
-      @past_events = scoped_events.visible.past.order(start_at: :desc)
+    # Les admins/moderateurs voient tous les événements via policy_scope
+    # Pour les autres, policy_scope filtre déjà pour ne montrer que les visibles
+    # On applique .visible seulement si l'utilisateur n'est pas admin/modo pour éviter de cacher les non publiés aux admins
+    if can_moderate?
+      # Admins/moderateurs voient tout (y compris les non publiés)
+      @upcoming_events = scoped_events.upcoming.order(:start_at)
+      @past_events_total = scoped_events.past.count
+      if params[:show_all_past] == 'true'
+        @past_events = scoped_events.past.order(start_at: :desc)
+      else
+        @past_events = scoped_events.past.order(start_at: :desc).limit(6)
+      end
     else
-      @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
+      # Utilisateurs normaux voient seulement les événements visibles (publiés/annulés)
+      @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
+      @past_events_total = scoped_events.visible.past.count
+      if params[:show_all_past] == 'true'
+        @past_events = scoped_events.visible.past.order(start_at: :desc)
+      else
+        @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
+      end
     end
   end
 
@@ -31,10 +41,18 @@ class EventsController < ApplicationController
       @user_attendances = @event.attendances.where(user: current_user).includes(:child_membership)
       @user_attendance = @user_attendances.find_by(child_membership_id: nil) # Inscription parent
       @child_attendances = @user_attendances.where.not(child_membership_id: nil) # Inscriptions enfants
+      
+      # Charger les entrées de liste d'attente de l'utilisateur
+      @user_waitlist_entries = @event.waitlist_entries.where(user: current_user).active.includes(:child_membership)
+      @user_waitlist_entry = @user_waitlist_entries.find_by(child_membership_id: nil) # Entrée parent
+      @child_waitlist_entries = @user_waitlist_entries.where.not(child_membership_id: nil) # Entrées enfants
     else
       @user_attendances = Attendance.none
       @user_attendance = nil
       @child_attendances = Attendance.none
+      @user_waitlist_entries = WaitlistEntry.none
+      @user_waitlist_entry = nil
+      @child_waitlist_entries = WaitlistEntry.none
     end
     @can_register_child = can_register_child?
   end
@@ -212,7 +230,81 @@ class EventsController < ApplicationController
       event_date = l(@event.start_at, format: :event_long, locale: :fr)
       redirect_to @event, notice: "Inscription confirmée pour #{participant_name} ! À bientôt le #{event_date}."
     else
-      redirect_to @event, alert: attendance.errors.full_messages.to_sentence
+      # Si l'événement est complet, proposer la liste d'attente
+      if @event.full? && attendance.errors[:event].any?
+        redirect_to @event, alert: "Cet événement est complet. #{attendance.errors.full_messages.to_sentence} Souhaitez-vous être ajouté(e) à la liste d'attente ?"
+      else
+        redirect_to @event, alert: attendance.errors.full_messages.to_sentence
+      end
+    end
+  end
+
+  def join_waitlist
+    authorize @event, :attend? # Même permission que pour s'inscrire
+    
+    child_membership_id = params[:child_membership_id].presence
+    
+    waitlist_entry = WaitlistEntry.add_to_waitlist(
+      current_user,
+      @event,
+      child_membership_id: child_membership_id
+    )
+    
+    if waitlist_entry
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to @event, notice: "#{participant_name} avez été ajouté(e) à la liste d'attente. Vous serez notifié(e) par email si une place se libère."
+    else
+      redirect_to @event, alert: "Impossible d'ajouter à la liste d'attente. Vérifiez que l'événement est complet et que vous n'êtes pas déjà inscrit(e) ou en liste d'attente."
+    end
+  end
+
+  def leave_waitlist
+    authorize @event
+    
+    child_membership_id = params[:child_membership_id].presence
+    
+    waitlist_entry = @event.waitlist_entries.find_by(
+      user: current_user,
+      child_membership_id: child_membership_id,
+      status: ["pending", "notified"]
+    )
+    
+    if waitlist_entry
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      waitlist_entry.cancel!
+      redirect_to @event, notice: "#{participant_name} avez été retiré(e) de la liste d'attente."
+    else
+      redirect_to @event, alert: "Vous n'êtes pas en liste d'attente pour cet événement."
+    end
+  end
+
+  def convert_waitlist_to_attendance
+    authorize @event, :attend?
+    
+    child_membership_id = params[:child_membership_id].presence
+    
+    waitlist_entry = @event.waitlist_entries.find_by(
+      user: current_user,
+      child_membership_id: child_membership_id,
+      status: ["notified", "pending"]
+    )
+    
+    unless waitlist_entry
+      redirect_to @event, alert: "Entrée de liste d'attente introuvable."
+      return
+    end
+    
+    # Vérifier qu'il y a encore une place disponible
+    unless @event.has_available_spots?
+      redirect_to @event, alert: "Désolé, la place n'est plus disponible. Vous restez en liste d'attente."
+      return
+    end
+    
+    if waitlist_entry.convert_to_attendance!
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to @event, notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
+    else
+      redirect_to @event, alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
     end
   end
 

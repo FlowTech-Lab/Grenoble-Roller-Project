@@ -7,6 +7,7 @@ class Event < ApplicationRecord
   has_many :loop_routes, through: :event_loop_routes, source: :route
   has_many :attendances, dependent: :destroy
   has_many :users, through: :attendances
+  has_many :waitlist_entries, dependent: :destroy
 
   # Active Storage attachments
   has_one_attached :cover_image

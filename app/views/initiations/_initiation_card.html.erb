@@ -43,6 +43,12 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Statut (pour admins/moderateurs) -->
+          <% if can_moderate? && !initiation.published? && !initiation.canceled? %>
+            <span class="badge bg-warning text-dark">
+              <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>En attente
+            </span>
+          <% end %>
           <!-- Badge Annulé (prioritaire) -->
           <% if initiation.canceled? %>
             <span class="badge bg-danger">

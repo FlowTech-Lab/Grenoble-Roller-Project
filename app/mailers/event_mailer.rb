@@ -72,4 +72,24 @@ class EventMailer < ApplicationMailer
       subject: subject
     )
   end
+
+  # Email de notification qu'une place est disponible en liste d'attente
+  def waitlist_spot_available(waitlist_entry)
+    @waitlist_entry = waitlist_entry
+    @event = waitlist_entry.event
+    @user = waitlist_entry.user
+    @is_initiation = @event.is_a?(Event::Initiation)
+    @participant_name = waitlist_entry.participant_name
+
+    subject = if @is_initiation
+      "🎉 Place disponible - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+    else
+      "🎉 Place disponible : #{@event.title}"
+    end
+
+    mail(
+      to: @user.email,
+      subject: subject
+    )
+  end
 end

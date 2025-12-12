@@ -99,6 +99,9 @@ Rails.application.routes.draw do
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
+      post :join_waitlist
+      delete :leave_waitlist
+      post :convert_waitlist_to_attendance
       get :loop_routes, defaults: { format: "json" }
       patch :reject
     end
@@ -111,6 +114,9 @@ Rails.application.routes.draw do
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
+      post :join_waitlist
+      delete :leave_waitlist
+      post :convert_waitlist_to_attendance
     end
   end
 

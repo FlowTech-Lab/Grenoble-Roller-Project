@@ -47,6 +47,10 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     column "Bénévoles" do |initiation|
       initiation.volunteers_count
     end
+    column "Liste d'attente" do |initiation|
+      waitlist_count = initiation.waitlist_entries.active.count
+      waitlist_count > 0 ? status_tag(waitlist_count, class: "warning") : "-"
+    end
     column :creator_user do |initiation|
       initiation.creator_user&.email || "N/A"
     end
@@ -185,6 +189,60 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       end
     end
 
+    # Panel Liste d'attente
+    waitlist_entries = initiation.waitlist_entries.includes(:user, :child_membership).active.ordered_by_position
+    if waitlist_entries.any?
+      panel "Liste d'attente (#{waitlist_entries.count})" do
+        table_for waitlist_entries do
+          column "Position" do |entry|
+            "##{entry.position + 1}"
+          end
+          column "Personne" do |entry|
+            if entry.child_membership_id.present?
+              "#{entry.participant_name} (enfant de #{entry.user.email})"
+            else
+              entry.user.email
+            end
+          end
+          column :status do |entry|
+            case entry.status
+            when "pending"
+              status_tag("En attente", class: "warning")
+            when "notified"
+              status_tag("Notifié", class: "ok")
+            else
+              status_tag(entry.status)
+            end
+          end
+          column "Notifié le" do |entry|
+            entry.notified_at ? l(entry.notified_at, format: :long) : "-"
+          end
+          column "Créé le" do |entry|
+            l(entry.created_at, format: :short)
+          end
+          column "Actions" do |entry|
+            if entry.notified?
+              link_to("Convertir en inscription", convert_waitlist_activeadmin_initiation_path(initiation, waitlist_entry_id: entry.id), 
+                      method: :post, 
+                      class: "button button-small",
+                      data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
+            elsif entry.pending? && initiation.has_available_spots?
+              link_to("Notifier maintenant", notify_waitlist_activeadmin_initiation_path(initiation, waitlist_entry_id: entry.id), 
+                      method: :post, 
+                      class: "button button-small",
+                      data: { confirm: "Notifier cette personne qu'une place est disponible ?" })
+            else
+              "-"
+            end
+          end
+        end
+      end
+    else
+      panel "Liste d'attente" do
+        para "Aucune personne en liste d'attente."
+      end
+    end
+
     panel "Actions" do
       div do
         link_to "Voir les présences", presences_activeadmin_initiation_path(initiation), class: "button"
@@ -222,6 +280,30 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     end
 
     f.actions
+  end
+
+  # Action personnalisée : Convertir une entrée de liste d'attente en inscription
+  member_action :convert_waitlist, method: :post do
+    @initiation = resource
+    waitlist_entry = @initiation.waitlist_entries.find_by(id: params[:waitlist_entry_id])
+    
+    if waitlist_entry && waitlist_entry.convert_to_attendance!
+      redirect_to resource_path(@initiation), notice: "L'entrée de liste d'attente a été convertie en inscription avec succès."
+    else
+      redirect_to resource_path(@initiation), alert: "Impossible de convertir l'entrée de liste d'attente. Vérifiez qu'il y a encore des places disponibles."
+    end
+  end
+
+  # Action personnalisée : Notifier manuellement une personne en liste d'attente
+  member_action :notify_waitlist, method: :post do
+    @initiation = resource
+    waitlist_entry = @initiation.waitlist_entries.find_by(id: params[:waitlist_entry_id])
+    
+    if waitlist_entry && waitlist_entry.notify!
+      redirect_to resource_path(@initiation), notice: "La personne a été notifiée avec succès."
+    else
+      redirect_to resource_path(@initiation), alert: "Impossible de notifier cette personne."
+    end
   end
 
   # Action personnalisée : Dashboard présences

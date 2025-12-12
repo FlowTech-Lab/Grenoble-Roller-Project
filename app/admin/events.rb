@@ -41,6 +41,10 @@ ActiveAdmin.register Event do
       event.unlimited? ? "Illimité" : event.max_participants
     end
     column :attendances_count
+    column "Liste d'attente" do |event|
+      waitlist_count = event.waitlist_entries.active.count
+      waitlist_count > 0 ? status_tag(waitlist_count, class: "warning") : "-"
+    end
     column :route
     column :creator_user do |event|
       event.creator_user&.email || "N/A"
@@ -105,14 +109,78 @@ ActiveAdmin.register Event do
       row :updated_at
     end
 
-    panel "Inscriptions" do
-      table_for event.attendances.includes(:user) do
-        column :user
-        column :status do |attendance|
-          status_tag(attendance.status)
+    panel "Inscriptions (#{event.attendances.count})" do
+      if event.attendances.any?
+        table_for event.attendances.includes(:user, :child_membership) do
+          column "Participant" do |attendance|
+            if attendance.child_membership_id.present?
+              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+            else
+              attendance.user.email
+            end
+          end
+          column :status do |attendance|
+            status_tag(attendance.status)
+          end
+          column :payment
+          column :created_at
         end
-        column :payment
-        column :created_at
+      else
+        para "Aucune inscription pour le moment."
+      end
+    end
+
+    # Panel Liste d'attente
+    waitlist_entries = event.waitlist_entries.includes(:user, :child_membership).active.ordered_by_position
+    if waitlist_entries.any?
+      panel "Liste d'attente (#{waitlist_entries.count})" do
+        table_for waitlist_entries do
+          column "Position" do |entry|
+            "##{entry.position + 1}"
+          end
+          column "Personne" do |entry|
+            if entry.child_membership_id.present?
+              "#{entry.participant_name} (enfant de #{entry.user.email})"
+            else
+              entry.user.email
+            end
+          end
+          column :status do |entry|
+            case entry.status
+            when "pending"
+              status_tag("En attente", class: "warning")
+            when "notified"
+              status_tag("Notifié", class: "ok")
+            else
+              status_tag(entry.status)
+            end
+          end
+          column "Notifié le" do |entry|
+            entry.notified_at ? l(entry.notified_at, format: :long) : "-"
+          end
+          column "Créé le" do |entry|
+            l(entry.created_at, format: :short)
+          end
+          column "Actions" do |entry|
+            if entry.notified?
+              link_to("Convertir en inscription", convert_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id), 
+                      method: :post, 
+                      class: "button button-small",
+                      data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
+            elsif entry.pending? && event.has_available_spots?
+              link_to("Notifier maintenant", notify_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id), 
+                      method: :post, 
+                      class: "button button-small",
+                      data: { confirm: "Notifier cette personne qu'une place est disponible ?" })
+            else
+              "-"
+            end
+          end
+        end
+      end
+    else
+      panel "Liste d'attente" do
+        para "Aucune personne en liste d'attente."
       end
     end
   end

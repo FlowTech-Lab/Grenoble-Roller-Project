@@ -1,5 +1,5 @@
 class InitiationsController < ApplicationController
-  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :ical ]
+  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :ical, :join_waitlist, :leave_waitlist, :convert_waitlist_to_attendance ]
   before_action :authenticate_user!, except: [ :index, :show ]
   before_action :load_supporting_data, only: [ :new, :create, :edit, :update ]
 
@@ -23,12 +23,22 @@ class InitiationsController < ApplicationController
       # Vérifier si l'utilisateur peut s'inscrire en tant que bénévole (pas encore inscrit en tant que bénévole)
       @user_volunteer_attendance = @user_attendances.find_by(child_membership_id: nil, is_volunteer: true)
       @can_register_as_volunteer = current_user.can_be_volunteer == true && @user_volunteer_attendance.nil?
+      
+      # Charger les entrées de liste d'attente de l'utilisateur
+      @user_waitlist_entries = @initiation.waitlist_entries.where(user: current_user).active.includes(:child_membership)
+      @user_waitlist_entry = @user_waitlist_entries.find_by(child_membership_id: nil) # Entrée parent
+      @child_waitlist_entries = @user_waitlist_entries.where.not(child_membership_id: nil) # Entrées enfants
     else
       @user_attendances = Attendance.none
       @user_attendance = nil
       @child_attendances = Attendance.none
       @user_volunteer_attendance = nil
       @can_register_as_volunteer = false
+      
+      # Charger les entrées de liste d'attente de l'utilisateur
+      @user_waitlist_entries = WaitlistEntry.none
+      @user_waitlist_entry = nil
+      @child_waitlist_entries = WaitlistEntry.none
     end
     @can_register = can_register?
     @can_register_child = can_register_child?
@@ -229,7 +239,81 @@ class InitiationsController < ApplicationController
       else
         attendance.errors.full_messages.to_sentence
       end
-      redirect_to initiation_path(@initiation), alert: error_message
+      # Si l'événement est complet, proposer la liste d'attente
+      if @initiation.full? && attendance.errors[:event].any?
+        redirect_to initiation_path(@initiation), alert: "Cet événement est complet. #{error_message} Souhaitez-vous être ajouté(e) à la liste d'attente ?"
+      else
+        redirect_to initiation_path(@initiation), alert: error_message
+      end
+    end
+  end
+
+  def join_waitlist
+    authorize @initiation, :attend? # Même permission que pour s'inscrire
+    
+    child_membership_id = params[:child_membership_id].presence
+    
+    waitlist_entry = WaitlistEntry.add_to_waitlist(
+      current_user,
+      @initiation,
+      child_membership_id: child_membership_id
+    )
+    
+    if waitlist_entry
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to initiation_path(@initiation), notice: "#{participant_name} avez été ajouté(e) à la liste d'attente. Vous serez notifié(e) par email si une place se libère."
+    else
+      redirect_to initiation_path(@initiation), alert: "Impossible d'ajouter à la liste d'attente. Vérifiez que l'événement est complet et que vous n'êtes pas déjà inscrit(e) ou en liste d'attente."
+    end
+  end
+
+  def leave_waitlist
+    authorize @initiation
+    
+    child_membership_id = params[:child_membership_id].presence
+    
+    waitlist_entry = @initiation.waitlist_entries.find_by(
+      user: current_user,
+      child_membership_id: child_membership_id,
+      status: ["pending", "notified"]
+    )
+    
+    if waitlist_entry
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      waitlist_entry.cancel!
+      redirect_to initiation_path(@initiation), notice: "#{participant_name} avez été retiré(e) de la liste d'attente."
+    else
+      redirect_to initiation_path(@initiation), alert: "Vous n'êtes pas en liste d'attente pour cet événement."
+    end
+  end
+
+  def convert_waitlist_to_attendance
+    authorize @initiation, :attend?
+    
+    child_membership_id = params[:child_membership_id].presence
+    
+    waitlist_entry = @initiation.waitlist_entries.find_by(
+      user: current_user,
+      child_membership_id: child_membership_id,
+      status: ["notified", "pending"] # Permettre même si pas encore notifié (au cas où)
+    )
+    
+    unless waitlist_entry
+      redirect_to initiation_path(@initiation), alert: "Entrée de liste d'attente introuvable."
+      return
+    end
+    
+    # Vérifier qu'il y a encore une place disponible
+    unless @initiation.has_available_spots?
+      redirect_to initiation_path(@initiation), alert: "Désolé, la place n'est plus disponible. Vous restez en liste d'attente."
+      return
+    end
+    
+    if waitlist_entry.convert_to_attendance!
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to initiation_path(@initiation), notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
+    else
+      redirect_to initiation_path(@initiation), alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
     end
   end
 

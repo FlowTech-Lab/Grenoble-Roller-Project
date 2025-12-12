@@ -52,6 +52,12 @@
         <p class="text-muted small mb-3"><%= truncate(event.description, length: 100, omission: '...') %></p>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Statut (pour admins/moderateurs) -->
+          <% if can_moderate? && !event.published? && !event.canceled? %>
+            <span class="badge bg-warning text-dark">
+              <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>En attente
+            </span>
+          <% end %>
           <!-- Badge Passé (si événement passé) -->
           <% if (defined?(past) && past) || event.past? %>
             <span class="badge badge-liquid-secondary">

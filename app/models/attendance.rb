@@ -207,4 +207,21 @@ class Attendance < ApplicationRecord
       end
     end
   end
+
+  # Callbacks pour la liste d'attente
+  def notify_waitlist_if_needed
+    # Quand une nouvelle inscription est créée, on ne notifie pas (l'événement est toujours complet)
+    # Cette méthode est là pour la cohérence, mais la vraie notification se fait lors des annulations
+  end
+
+  def notify_waitlist_on_cancellation
+    # Si l'inscription passe à "canceled", notifier la liste d'attente
+    if status == "canceled" && status_before_last_save != "canceled"
+      # Vérifier si l'événement a maintenant des places disponibles
+      if event.has_available_spots?
+        # Notifier la première personne en liste d'attente
+        WaitlistEntry.notify_next_in_queue(event, count: 1)
+      end
+    end
+  end
 end
