@@ -1,5 +1,30 @@
 # ✅ Améliorations Implémentées - Parcours d'Inscription aux Initiations
 
+## 🔧 Corrections Récentes (2025-01-20)
+
+### Correction : Message "Adhésion requise" affiché incorrectement
+**Problème** : Le message "Adhésion requise" s'affichait même si l'utilisateur était déjà adhérent.
+
+**Solution** : 
+- Condition explicite ajoutée dans `app/views/initiations/show.html.erb`
+- Le message ne s'affiche que si :
+  - L'utilisateur est connecté
+  - L'utilisateur n'a PAS d'adhésion active
+  - L'utilisateur a déjà utilisé son essai gratuit
+
+### Correction : Logique de l'essai gratuit améliorée
+**Problème** : La checkbox "Utiliser mon essai gratuit" s'affichait dans certains cas inappropriés.
+
+**Solution** :
+- Amélioration de la condition d'affichage dans `app/views/shared/_registration_form_fields.html.erb`
+- La checkbox ne s'affiche que si :
+  - C'est une initiation
+  - L'utilisateur n'est pas déjà inscrit (pour lui-même)
+  - Ce n'est pas pour un enfant
+  - L'utilisateur n'a pas d'adhésion active
+  - L'utilisateur n'a pas déjà utilisé son essai gratuit
+- Message contextuel adapté selon si `allow_non_member_discovery` est activé ou non
+
 ## 📋 Résumé
 
 Toutes les corrections et améliorations identifiées dans l'audit ont été implémentées.

@@ -236,17 +236,37 @@
   <% end %>
 <% end %>
 
-<!-- Essai gratuit si disponible (uniquement pour initiations, pas pour les bénévoles) -->
-<% if is_initiation && !current_user.memberships.active_now.exists? && 
-      !current_user.attendances.where(free_trial_used: true).exists? %>
+<!-- Essai gratuit si disponible (uniquement pour initiations, pas pour les bénévoles, pas pour les enfants) -->
+<% 
+  # Conditions pour afficher l'essai gratuit :
+  # 1. C'est une initiation
+  # 2. L'utilisateur n'est pas déjà inscrit (pour lui-même)
+  # 3. Ce n'est pas pour un enfant (child_membership_id sera nil)
+  # 4. L'utilisateur n'a pas d'adhésion active
+  # 5. L'utilisateur n'a pas déjà utilisé son essai gratuit
+  # 6. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
+  show_free_trial = is_initiation && 
+                     !user_already_registered && 
+                     !current_user.memberships.active_now.exists? && 
+                     !current_user.attendances.where(free_trial_used: true).exists?
+%>
+<% if show_free_trial %>
   <div class="mb-3 form-check">
-    <%= check_box_tag :use_free_trial, "1", false, { class: "form-check-input", id: "use_free_trial#{prefix_id}" } %>
+    <%= check_box_tag :use_free_trial, "1", false, { 
+        class: "form-check-input", 
+        id: "use_free_trial#{prefix_id}",
+        aria: { describedby: "free_trial_help#{prefix_id}" }
+    } %>
     <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
       Utiliser mon essai gratuit
     <% end %>
-    <small class="text-muted d-block mt-1">
-      Vous n'avez pas encore utilisé votre essai gratuit. Après cet essai, une adhésion sera requise pour continuer.
+    <small id="free_trial_help<%= prefix_id %>" class="text-muted d-block mt-1">
+      <% if is_initiation && event.allow_non_member_discovery? %>
+        Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
+      <% else %>
+        Vous n'avez pas encore utilisé votre essai gratuit. Après cet essai, une adhésion sera requise pour continuer.
+      <% end %>
     </small>
   </div>
 <% end %>
