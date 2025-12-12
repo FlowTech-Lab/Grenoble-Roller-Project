@@ -46,6 +46,7 @@
           <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "adult_membership_form", multipart: true do |f| %>
             <%= f.hidden_field :type, value: "adult" %>
             <%= f.hidden_field :with_tshirt, value: 'false', id: "with_tshirt_hidden" %>
+            <%= hidden_field_tag :payment_method, "helloasso", id: "payment_method_field" %>
             
             <!-- ÉTAPE 1 : CATÉGORIE -->
             <div class="form-section" id="step-category">
@@ -491,9 +492,16 @@
               <%= link_to memberships_path, class: "btn btn-outline-secondary btn-nav btn-back" do %>
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
-              <%= f.submit "Valider et payer", 
-                  class: "btn btn-liquid-primary btn-lg btn-nav",
-                  id: "submit_btn" %>
+              <div class="d-flex gap-2">
+                <%= f.submit "Valider et payer", 
+                    class: "btn btn-liquid-primary btn-lg btn-nav",
+                    id: "submit_btn",
+                    onclick: "document.getElementById('payment_method_field').value = 'helloasso';" %>
+                <%= f.submit "Déjà adhérent / Espèces / Chèques", 
+                    class: "btn btn-outline-primary btn-lg btn-nav",
+                    id: "submit_without_payment_btn",
+                    onclick: "if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
+              </div>
             </div>
           <% end %>
         </div>
