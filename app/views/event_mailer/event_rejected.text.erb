@@ -1,0 +1,27 @@
+❌ Votre événement a été refusé
+
+Bonjour <%= @creator.first_name %>,
+
+Nous vous informons que votre événement "<%= @event.title %>" a été refusé par l'équipe de modération.
+
+📅 Détails de l'événement refusé
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Titre : <%= @event.title %>
+📍 Lieu : <%= @event.location_text %>
+🕐 Date prévue : <%= l @event.start_at, format: :event_long, locale: :fr %>
+⏱️ Durée : <%= @event.duration_min %> minutes
+
+ℹ️ Que faire maintenant ?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Si vous souhaitez créer un nouvel événement, nous vous invitons à :
+- Vérifier que votre événement respecte les règles de l'association
+- Vous assurer que toutes les informations sont complètes et correctes
+- Contacter l'équipe de modération si vous avez des questions
+
+Créer un nouvel événement : <%= new_event_url %>
+
+Cordialement,
+L'équipe Grenoble Roller
+
+💡 Note : Si vous avez des questions concernant ce refus, n'hésitez pas à contacter l'équipe de modération.
+

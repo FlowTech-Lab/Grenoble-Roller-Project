@@ -22,5 +22,8 @@ class PagesController < ApplicationController
     @events_count = Event.published.count
     @upcoming_events_count = Event.published.upcoming.count
     @attendances_count = Attendance.count
+    
+    # Partenaires commerciaux actifs
+    @commercial_partners = Partner.active.order(:name)
   end
 end

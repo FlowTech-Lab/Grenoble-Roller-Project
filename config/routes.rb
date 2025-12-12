@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
-    resource :maintenance, only: [:update], controller: "admin/maintenance_toggle" do
+    resource :maintenance, only: [:update], controller: "/admin/maintenance_toggle" do
       member do
         patch :toggle
       end
@@ -94,6 +94,7 @@ Rails.application.routes.draw do
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
       get :loop_routes, defaults: { format: "json" }
+      patch :reject
     end
   end
 
@@ -102,6 +103,8 @@ Rails.application.routes.draw do
     member do
       post :attend
       delete :cancel_attendance
+      get :ical, defaults: { format: "ics" }
+      patch :toggle_reminder
     end
   end
 

@@ -10,11 +10,38 @@ class Event::InitiationPolicy < ApplicationPolicy
   def attend?
     return false unless user
     return false if record.full?
-    return false if user.attendances.exists?(event: record)
+    
+    # Vérifier si l'utilisateur est déjà inscrit en tant que parent
+    parent_already_registered = user.attendances.exists?(event: record, child_membership_id: nil)
+    
+    # Si le parent est déjà inscrit, autoriser uniquement si l'utilisateur a des enfants avec des adhésions actives
+    # (pour permettre l'inscription d'enfants supplémentaires)
+    if parent_already_registered
+      # Autoriser si l'utilisateur a des enfants avec des adhésions actives
+      return user.memberships.active_now.where(is_child_membership: true).exists?
+    end
 
+    # Vérifier si l'utilisateur est adhérent
+    is_member = user.memberships.active_now.exists? || 
+                user.memberships.active_now.where(is_child_membership: true).exists?
+
+    # Si l'option de limitation des non-adhérents est activée
+    if record.allow_non_member_discovery?
+      if is_member
+        # Adhérent : vérifier qu'il reste des places pour adhérents
+        return false if record.full_for_members?
+        return true
+      else
+        # Non-adhérent : vérifier qu'il reste des places pour non-adhérents
+        return false if record.full_for_non_members?
+        # Autoriser l'inscription dans les places découverte (pas besoin d'essai gratuit)
+        return true
+      end
+    end
+
+    # Si l'option n'est pas activée : comportement classique
     # Vérifier adhésion ou essai gratuit disponible
-    user.memberships.active_now.exists? ||
-      !user.attendances.where(free_trial_used: true).exists?
+    is_member || !user.attendances.where(free_trial_used: true).exists?
   end
 
   def cancel_attendance?
@@ -60,7 +87,9 @@ class Event::InitiationPolicy < ApplicationPolicy
       :max_participants,
       :level,
       :distance_km,
-      :cover_image
+      :cover_image,
+      :allow_non_member_discovery,
+      :non_member_discovery_slots
     ]
 
     # Seuls les modérateurs+ peuvent modifier le statut

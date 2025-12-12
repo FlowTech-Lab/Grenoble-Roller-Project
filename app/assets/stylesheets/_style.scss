@@ -3751,7 +3751,7 @@
   .section-cta .btn-outline-liquid-primary {
     background: transparent !important;
     border: 2px solid var(--gr-primary) !important;
-    color: white !important; 
+    color: var(--bs-body-color) !important; 
   }
   
   .section-cta .btn-outline-liquid-primary:hover {

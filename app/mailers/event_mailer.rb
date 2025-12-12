@@ -54,4 +54,22 @@ class EventMailer < ApplicationMailer
       subject: subject
     )
   end
+
+  # Email de notification de refus d'un événement au créateur
+  def event_rejected(event)
+    @event = event
+    @creator = event.creator_user
+    @is_initiation = @event.is_a?(Event::Initiation)
+
+    subject = if @is_initiation
+      "❌ Votre initiation a été refusée"
+    else
+      "❌ Votre événement \"#{@event.title}\" a été refusé"
+    end
+
+    mail(
+      to: @creator.email,
+      subject: subject
+    )
+  end
 end

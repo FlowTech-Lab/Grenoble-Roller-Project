@@ -47,20 +47,51 @@
               <%= pluralize(@initiation.participants_count, "inscrit") %>
             </span>
             
-            <% if @initiation.full? %>
-              <span class="badge bg-danger">
-                <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
-              </span>
-            <% elsif @initiation.available_places <= 5 %>
-              <span class="badge bg-warning text-dark">
-                <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
-                <%= pluralize(@initiation.available_places, "place disponible") %>
-              </span>
+            <% if @initiation.allow_non_member_discovery? %>
+              <!-- Affichage séparé des places si l'option est activée -->
+              <% if @initiation.full? %>
+                <span class="badge bg-danger">
+                  <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
+                </span>
+              <% else %>
+                <% if @initiation.available_member_places > 0 %>
+                  <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                    <%= pluralize(@initiation.available_member_places, "place adhérent") %>
+                  </span>
+                <% else %>
+                  <span class="badge bg-danger">
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet (adhérents)
+                  </span>
+                <% end %>
+                <% if @initiation.available_non_member_places > 0 %>
+                  <span class="badge bg-info">
+                    <i class="bi bi-gift me-1" aria-hidden="true"></i>
+                    <%= pluralize(@initiation.available_non_member_places, "place découverte") %>
+                  </span>
+                <% else %>
+                  <span class="badge bg-danger">
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet (découverte)
+                  </span>
+                <% end %>
+              <% end %>
             <% else %>
-              <span class="badge bg-success">
-                <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                <%= pluralize(@initiation.available_places, "place disponible") %>
-              </span>
+              <!-- Affichage classique si l'option n'est pas activée -->
+              <% if @initiation.full? %>
+                <span class="badge bg-danger">
+                  <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
+                </span>
+              <% elsif @initiation.available_places <= 5 %>
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+                  <%= pluralize(@initiation.available_places, "place disponible") %>
+                </span>
+              <% else %>
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                  <%= pluralize(@initiation.available_places, "place disponible") %>
+                </span>
+              <% end %>
             <% end %>
             
             <% if user_signed_in? && @user_attendance %>
@@ -145,7 +176,12 @@
           <div class="detail-content">
             <p class="detail-label">Places</p>
             <p class="detail-value">
-              <%= @initiation.available_places %> / <%= @initiation.max_participants %>
+              <% if @initiation.allow_non_member_discovery? %>
+                <%= @initiation.available_member_places %> adhérents / <%= @initiation.available_non_member_places %> découverte
+                (<%= @initiation.participants_count %> / <%= @initiation.max_participants %>)
+              <% else %>
+                <%= @initiation.available_places %> / <%= @initiation.max_participants %>
+              <% end %>
             </p>
             <% if @initiation.volunteers_count > 0 %>
               <small class="text-muted">
@@ -157,20 +193,102 @@
       </section>
 
       <!-- Zone inscription/annulation -->
-      <% if user_signed_in? && @user_attendance %>
-        <div class="alert alert-success mb-4" role="alert">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
-              <strong>Vous êtes inscrit(e) à cette séance</strong>
-              <p class="mb-0 small">Un rappel vous sera envoyé la veille à 19h.</p>
-            </div>
-            <%= button_to cancel_attendance_initiation_path(@initiation), 
-                method: :delete, 
-                class: "btn btn-outline-danger btn-sm", 
-                data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
-                aria: { label: 'Se désinscrire de cette initiation' } do %>
-              <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+      <% if user_signed_in? && (@user_attendance || @child_attendances&.any?) %>
+        <!-- Affichage des inscriptions existantes -->
+        <div class="card card-liquid shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 mb-3">
+              <i class="bi bi-check-circle text-success me-2" aria-hidden="true"></i>
+              Inscriptions confirmées
+            </h3>
+            
+            <!-- Inscription parent -->
+            <% if @user_attendance %>
+              <div class="alert alert-success mb-3" role="alert">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
+                    <strong>Vous êtes inscrit(e)</strong>
+                  </div>
+                  <%= button_to cancel_attendance_initiation_path(@initiation), 
+                      method: :delete, 
+                      class: "btn btn-outline-danger btn-sm", 
+                      data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
+                      aria: { label: 'Se désinscrire' } do %>
+                    <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Inscriptions enfants -->
+            <% if @child_attendances&.any? %>
+              <% @child_attendances.each do |child_attendance| %>
+                <div class="alert alert-info mb-3" role="alert">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                      <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
+                      <strong><%= child_attendance.participant_name %> est inscrit(e)</strong>
+                    </div>
+                    <%= button_to cancel_attendance_initiation_path(@initiation), 
+                        method: :delete, 
+                        params: { child_membership_id: child_attendance.child_membership_id },
+                        class: "btn btn-outline-danger btn-sm", 
+                        data: { turbo_confirm: "Annuler l'inscription de #{child_attendance.participant_name} ?" },
+                        aria: { label: "Désinscrire #{child_attendance.participant_name}" } do %>
+                      <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+
+            <!-- Formulaire pour inscrire un enfant supplémentaire -->
+            <% if @can_register_child %>
+              <div class="mt-4 pt-3 border-top">
+                <%= render 'initiations/child_registration_form', initiation: @initiation %>
+              </div>
+            <% end %>
+
+            <!-- Formulaire pour s'inscrire en tant que bénévole -->
+            <% if user_signed_in? && current_user.can_be_volunteer == true && (@user_volunteer_attendance.nil? || !@user_volunteer_attendance.persisted?) %>
+              <div class="mt-4 pt-3 border-top">
+                <div class="card card-body bg-light">
+                  <h4 class="h6 mb-3">
+                    <i class="bi bi-heart-fill text-danger me-2" aria-hidden="true"></i>
+                    S'inscrire en tant que bénévole encadrant
+                  </h4>
+                  <%= form_with url: attend_initiation_path(@initiation), method: :post, local: true, data: { turbo: false } do |f| %>
+                    <%= hidden_field_tag :is_volunteer, "1" %>
+                    <div class="mb-3">
+                      <%= f.label :equipment_note, "Note (optionnel)", class: "form-label" %>
+                      <%= f.text_area :equipment_note, 
+                          class: "form-control", 
+                          rows: 2,
+                          placeholder: "Ex: Matériel supplémentaire à apporter" %>
+                    </div>
+                    <div class="mb-3 form-check">
+                      <%= f.check_box :wants_reminder, { checked: true, class: "form-check-input" }, "1", "0" %>
+                      <%= f.label :wants_reminder, class: "form-check-label" do %>
+                        <i class="bi bi-bell me-1" aria-hidden="true"></i>
+                        Recevoir un rappel la veille à 19h
+                      <% end %>
+                    </div>
+                    <%= f.submit "S'inscrire en tant que bénévole", 
+                        class: "btn btn-danger btn-sm",
+                        data: { disable_with: "Inscription en cours..." } %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+            
+            <!-- Note importante pour les initiations enfants -->
+            <% if @child_attendances&.any? %>
+              <div class="alert alert-warning mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+                <strong>Important :</strong> Pour les initiations enfants, la présence d'un adulte sur place est obligatoire. 
+                L'adulte n'a pas besoin de s'inscrire s'il ne pratique pas.
+              </div>
             <% end %>
           </div>
         </div>
@@ -218,16 +336,14 @@
       </div>
 
       <!-- Zone actions -->
-      <div class="event-actions-sticky">
-        <div class="secondary-actions">
-          <%= link_to initiations_path, 
-              class: 'btn btn-outline-secondary btn-sm',
-              aria: { label: 'Voir toutes les initiations' } do %>
-            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Toutes les initiations
-          <% end %>
-        </div>
-      </div>
+      <%= render 'shared/event_actions', 
+          event: @initiation, 
+          user_attendance: @user_attendance, 
+          child_attendances: @child_attendances %>
     </div>
   </article>
 </section>
+
+<!-- Modal de confirmation de suppression -->
+<%= render 'shared/event_delete_modal', event: @initiation %>
 

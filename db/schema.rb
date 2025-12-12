@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_034849) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
   end
 
   create_table "attendances", force: :cascade do |t|
+    t.bigint "child_membership_id"
     t.datetime "created_at", null: false
     t.text "equipment_note"
     t.bigint "event_id", null: false
@@ -68,10 +69,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.boolean "wants_reminder", default: false, null: false
+    t.index ["child_membership_id"], name: "index_attendances_on_child_membership_id"
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
-    t.index ["user_id", "event_id"], name: "index_attendances_on_user_id_and_event_id", unique: true
+    t.index ["user_id", "event_id", "child_membership_id"], name: "index_attendances_on_user_event_child", unique: true
     t.index ["user_id", "free_trial_used"], name: "index_attendances_on_user_id_and_free_trial_used"
     t.index ["user_id"], name: "index_attendances_on_user_id"
     t.index ["wants_reminder"], name: "index_attendances_on_wants_reminder"
@@ -111,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
   end
 
   create_table "events", force: :cascade do |t|
+    t.boolean "allow_non_member_discovery", default: false, null: false
     t.integer "attendances_count", default: 0, null: false
     t.string "cover_image_url", limit: 255
     t.datetime "created_at", null: false
@@ -126,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
     t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
+    t.integer "non_member_discovery_slots", default: 0, null: false
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"
@@ -339,6 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
     t.string "address"
     t.string "avatar_url"
     t.text "bio"
+    t.boolean "can_be_volunteer", default: false, null: false
     t.string "city"
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"
@@ -387,6 +392,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_11_150329) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "attendances", "events"
+  add_foreign_key "attendances", "memberships", column: "child_membership_id"
   add_foreign_key "attendances", "payments"
   add_foreign_key "attendances", "users"
   add_foreign_key "audit_logs", "users", column: "actor_user_id"

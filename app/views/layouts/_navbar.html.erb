@@ -133,8 +133,10 @@
               <% end %>
               <li><hr class="dropdown-divider"></li>
               <li>
-                <%= button_to destroy_user_session_path, method: :delete, class: "dropdown-item text-danger" do %>
-                  <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Déconnexion
+                <%= form_tag destroy_user_session_path, method: :delete, local: true, class: "d-inline", data: { turbo: false } do %>
+                  <%= button_tag type: :submit, class: "dropdown-item text-danger border-0 bg-transparent w-100 text-start p-2" do %>
+                    <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Déconnexion
+                  <% end %>
                 <% end %>
               </li>
             </ul>

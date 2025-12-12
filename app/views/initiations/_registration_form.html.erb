@@ -1,8 +1,8 @@
 <div class="card card-liquid shadow-sm mb-4">
   <div class="card-body p-4">
     <h3 class="h5 mb-3">
-      <i class="bi bi-calendar-plus text-liquid-primary me-2" aria-hidden="true"></i>
-      S'inscrire à cette séance
+      <i class="bi bi-calendar-check text-liquid-primary me-2" aria-hidden="true"></i>
+      Confirmer votre inscription
     </h3>
 
     <!-- Alerte "Presque complet" si ≤5 places restantes -->
@@ -15,7 +15,10 @@
 
     <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
       <!-- Sélection enfant si applicable -->
-      <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
+      <% 
+        # Filtrer uniquement les enfants avec des adhésions actives (éligibles pour les initiations)
+        child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+      %>
       <% if child_memberships.any? %>
         <div class="mb-3">
           <%= f.label :child_membership_id, "S'inscrire pour un enfant (optionnel)", class: "form-label" %>
@@ -23,9 +26,12 @@
               child_memberships, 
               :id, 
               ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
-              { prompt: "S'inscrire pour moi-même", include_blank: true }, 
+              { prompt: "S'inscrire pour moi-même" }, 
               { class: "form-select" } %>
-          <small class="text-muted">Laissez vide pour vous inscrire vous-même</small>
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
+          </small>
         </div>
       <% end %>
 
@@ -38,11 +44,26 @@
             placeholder: "Ex: Demande rollers taille 40" %>
         <small class="text-muted">
           <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-          Votre demande sera transmise au staff via WhatsApp
+          Sous réserve de disponibilité du matériel.
         </small>
       </div>
 
-      <!-- Essai gratuit si disponible -->
+      <!-- Option bénévole si éligible (uniquement pour le parent, pas pour les enfants) -->
+      <% if current_user.can_be_volunteer == true %>
+        <div class="mb-3 form-check form-switch">
+          <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer" } %>
+          <%= label_tag :is_volunteer, class: "form-check-label" do %>
+            <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
+            <strong>S'inscrire en tant que bénévole encadrant</strong>
+          <% end %>
+          <small class="text-muted d-block mt-1">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
+          </small>
+        </div>
+      <% end %>
+
+      <!-- Essai gratuit si disponible (pas pour les bénévoles) -->
       <% if !current_user.memberships.active_now.exists? && 
             !current_user.attendances.where(free_trial_used: true).exists? %>
         <div class="mb-3 form-check">
