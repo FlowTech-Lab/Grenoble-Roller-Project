@@ -48,7 +48,22 @@
         </small>
       </div>
 
-      <!-- Essai gratuit si disponible -->
+      <!-- Option bénévole si éligible (uniquement pour le parent, pas pour les enfants) -->
+      <% if current_user.can_be_volunteer == true %>
+        <div class="mb-3 form-check form-switch">
+          <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer" } %>
+          <%= label_tag :is_volunteer, class: "form-check-label" do %>
+            <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
+            <strong>S'inscrire en tant que bénévole encadrant</strong>
+          <% end %>
+          <small class="text-muted d-block mt-1">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
+          </small>
+        </div>
+      <% end %>
+
+      <!-- Essai gratuit si disponible (pas pour les bénévoles) -->
       <% if !current_user.memberships.active_now.exists? && 
             !current_user.attendances.where(free_trial_used: true).exists? %>
         <div class="mb-3 form-check">

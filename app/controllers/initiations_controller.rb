@@ -1,5 +1,5 @@
 class InitiationsController < ApplicationController
-  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder ]
+  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :ical ]
   before_action :authenticate_user!, except: [ :index, :show ]
   before_action :load_supporting_data, only: [ :new, :create, :edit, :update ]
 
@@ -20,10 +20,15 @@ class InitiationsController < ApplicationController
       @user_attendances = @initiation.attendances.where(user: current_user).includes(:child_membership)
       @user_attendance = @user_attendances.find_by(child_membership_id: nil) # Inscription parent
       @child_attendances = @user_attendances.where.not(child_membership_id: nil) # Inscriptions enfants
+      # Vérifier si l'utilisateur peut s'inscrire en tant que bénévole (pas encore inscrit en tant que bénévole)
+      @user_volunteer_attendance = @user_attendances.find_by(child_membership_id: nil, is_volunteer: true)
+      @can_register_as_volunteer = current_user.can_be_volunteer == true && @user_volunteer_attendance.nil?
     else
       @user_attendances = Attendance.none
       @user_attendance = nil
       @child_attendances = Attendance.none
+      @user_volunteer_attendance = nil
+      @can_register_as_volunteer = false
     end
     @can_register = can_register?
     @can_register_child = can_register_child?
@@ -98,6 +103,7 @@ class InitiationsController < ApplicationController
     authorize @initiation, :attend?
 
     child_membership_id = params[:child_membership_id].presence
+    is_volunteer = params[:is_volunteer] == "1"
     
     # Si c'est pour un enfant, vérifier qu'il n'est pas déjà inscrit
     if child_membership_id.present?
@@ -111,14 +117,29 @@ class InitiationsController < ApplicationController
         return
       end
     else
-      # Si c'est pour le parent, vérifier qu'il n'est pas déjà inscrit
-      existing_attendance = @initiation.attendances.find_by(
-        user: current_user,
-        child_membership_id: nil
-      )
-      if existing_attendance
-        redirect_to initiation_path(@initiation), notice: "Vous êtes déjà inscrit(e) à cette séance."
-        return
+      # Si c'est pour le parent, vérifier qu'il n'est pas déjà inscrit avec le même statut (bénévole ou participant)
+      if is_volunteer
+        # Vérifier qu'il n'est pas déjà inscrit en tant que bénévole
+        existing_attendance = @initiation.attendances.find_by(
+          user: current_user,
+          child_membership_id: nil,
+          is_volunteer: true
+        )
+        if existing_attendance
+          redirect_to initiation_path(@initiation), notice: "Vous êtes déjà inscrit(e) en tant que bénévole pour cette séance."
+          return
+        end
+      else
+        # Vérifier qu'il n'est pas déjà inscrit en tant que participant (non-bénévole)
+        existing_attendance = @initiation.attendances.find_by(
+          user: current_user,
+          child_membership_id: nil,
+          is_volunteer: false
+        )
+        if existing_attendance
+          redirect_to initiation_path(@initiation), notice: "Vous êtes déjà inscrit(e) à cette séance."
+          return
+        end
       end
     end
 
@@ -128,6 +149,23 @@ class InitiationsController < ApplicationController
     attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
     attendance.equipment_note = params[:equipment_note] if params[:equipment_note].present?
     attendance.child_membership_id = child_membership_id
+    
+    # Gestion bénévole (uniquement pour le parent, pas pour les enfants)
+    if is_volunteer && child_membership_id.nil?
+      unless current_user.can_be_volunteer?
+        redirect_to initiation_path(@initiation), alert: "Vous n'êtes pas autorisé à vous inscrire en tant que bénévole."
+        return
+      end
+      attendance.is_volunteer = true
+      # Les bénévoles n'ont pas besoin d'adhésion, on skip les vérifications
+      if attendance.save
+        EventMailer.attendance_confirmed(attendance).deliver_later if current_user.wants_initiation_mail?
+        redirect_to initiation_path(@initiation), notice: "Inscription confirmée en tant que bénévole encadrant le #{l(@initiation.start_at, format: :long)}."
+      else
+        redirect_to initiation_path(@initiation), alert: attendance.errors.full_messages.to_sentence
+      end
+      return
+    end
 
     # Vérifier si l'utilisateur est adhérent
     is_member = if child_membership_id.present?
@@ -251,57 +289,6 @@ class InitiationsController < ApplicationController
     end
   end
 
-  private
-
-  def set_initiation
-    # Précharger associations pour éviter N+1 queries
-    @initiation = Event::Initiation.includes(:attendances, :users, :creator_user).find(params[:id])
-  end
-
-  def load_supporting_data
-    # Pas de routes pour les initiations, mais on garde la méthode pour cohérence
-  end
-
-  def next_saturday_at_10_15
-    next_saturday = Date.current.next_occurring(:saturday)
-    Time.zone.local(next_saturday.year, next_saturday.month, next_saturday.day, 10, 15, 0)
-  end
-
-  def can_register?
-    return false unless user_signed_in?
-    return false if @initiation.full?
-    # Permettre l'inscription si le parent n'est pas encore inscrit
-    return false if @user_attendance&.persisted?
-
-    # Vérifier adhésion ou essai gratuit disponible
-    # Utiliser exists? (optimisé) plutôt que count > 0
-    has_membership = current_user.memberships.active_now.exists?
-    has_used_trial = current_user.attendances.where(free_trial_used: true).exists?
-
-    has_membership || !has_used_trial
-  end
-  helper_method :can_register?
-
-  def can_register_child?
-    return false unless user_signed_in?
-    return false if @initiation.full?
-    # Vérifier qu'il y a des adhésions enfants actives disponibles
-    child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
-    return false if child_memberships.empty?
-    
-    # Vérifier qu'il reste des enfants non inscrits
-    registered_child_ids = @child_attendances.pluck(:child_membership_id).compact
-    available_children = child_memberships.where.not(id: registered_child_ids)
-    
-    available_children.exists?
-  end
-  helper_method :can_register_child?
-
-  def can_moderate?
-    current_user.present? && current_user.role&.level.to_i >= 50 # MODERATOR = 50
-  end
-  helper_method :can_moderate?
-
   # Export iCal pour une initiation (réservé aux utilisateurs connectés)
   def ical
     authenticate_user!
@@ -334,4 +321,58 @@ class InitiationsController < ApplicationController
 
     render plain: calendar.to_ical, content_type: "text/calendar"
   end
+
+  private
+
+  def set_initiation
+    # Précharger associations pour éviter N+1 queries
+    @initiation = Event::Initiation.includes(:attendances, :users, :creator_user).find(params[:id])
+  end
+
+  def load_supporting_data
+    # Pas de routes pour les initiations, mais on garde la méthode pour cohérence
+  end
+
+  def next_saturday_at_10_15
+    next_saturday = Date.current.next_occurring(:saturday)
+    Time.zone.local(next_saturday.year, next_saturday.month, next_saturday.day, 10, 15, 0)
+  end
+
+  def can_register?
+    return false unless user_signed_in?
+    return false if @initiation.full?
+    # Permettre l'inscription si le parent n'est pas encore inscrit
+    return false if @user_attendance&.persisted?
+
+    # Les bénévoles peuvent toujours s'inscrire (même sans adhésion)
+    return true if current_user.can_be_volunteer?
+
+    # Vérifier adhésion ou essai gratuit disponible
+    # Utiliser exists? (optimisé) plutôt que count > 0
+    has_membership = current_user.memberships.active_now.exists?
+    has_used_trial = current_user.attendances.where(free_trial_used: true).exists?
+
+    has_membership || !has_used_trial
+  end
+  helper_method :can_register?
+
+  def can_register_child?
+    return false unless user_signed_in?
+    return false if @initiation.full?
+    # Vérifier qu'il y a des adhésions enfants actives disponibles
+    child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+    return false if child_memberships.empty?
+    
+    # Vérifier qu'il reste des enfants non inscrits
+    registered_child_ids = @child_attendances.pluck(:child_membership_id).compact
+    available_children = child_memberships.where.not(id: registered_child_ids)
+    
+    available_children.exists?
+  end
+  helper_method :can_register_child?
+
+  def can_moderate?
+    current_user.present? && current_user.role&.level.to_i >= 50 # MODERATOR = 50
+  end
+  helper_method :can_moderate?
 end

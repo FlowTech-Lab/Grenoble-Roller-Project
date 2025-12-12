@@ -11,92 +11,159 @@
 </div>
 
 <div class="admin-content">
-  <div class="card mb-4">
-    <div class="card-header">
-      <h3 class="h5 mb-0">
-        <i class="bi bi-people me-2" aria-hidden="true"></i>
-        Participants inscrits (<%= @attendances.count %>)
-      </h3>
-    </div>
-    <div class="card-body">
-      <%= form_with url: update_presences_admin_initiation_path(@initiation), method: :patch, local: true do |f| %>
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Téléphone</th>
-                <th>Matériel</th>
-                <th>Présence</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @attendances.each do |attendance| %>
-                <% user = attendance.user %>
-                <tr>
-                  <td>
-                    <strong><%= user.first_name %> <%= user.last_name %></strong>
-                    <% if attendance.is_volunteer? %>
-                      <span class="badge bg-success ms-2">Bénévole</span>
-                    <% end %>
-                  </td>
-                  <td><%= user.phone || "-" %></td>
-                  <td>
-                    <% if attendance.equipment_note.present? %>
-                      <span class="badge bg-info">
-                        <i class="bi bi-box-seam me-1" aria-hidden="true"></i>
-                        <%= truncate(attendance.equipment_note, length: 25) %>
-                      </span>
-                    <% else %>
-                      <span class="text-muted">-</span>
-                    <% end %>
-                  </td>
-                  <td>
-                    <%= hidden_field_tag "attendance_ids[]", attendance.id %>
-                    <div class="btn-group" role="group">
-                      <%= radio_button_tag "presences[#{attendance.id}]", "present", 
-                          attendance.status == "present", 
-                          class: "btn-check", 
-                          id: "presence_present_#{attendance.id}" %>
-                      <%= label_tag "presence_present_#{attendance.id}", 
-                          "Présent", 
-                          class: "btn btn-outline-success btn-sm" %>
-                      
-                      <%= radio_button_tag "presences[#{attendance.id}]", "no_show", 
-                          attendance.status == "no_show", 
-                          class: "btn-check", 
-                          id: "presence_no_show_#{attendance.id}" %>
-                      <%= label_tag "presence_no_show_#{attendance.id}", 
-                          "Absent", 
-                          class: "btn btn-outline-danger btn-sm" %>
-                      
-                      <%= radio_button_tag "presences[#{attendance.id}]", "registered", 
-                          attendance.status == "registered", 
-                          class: "btn-check", 
-                          id: "presence_registered_#{attendance.id}" %>
-                      <%= label_tag "presence_registered_#{attendance.id}", 
-                          "Non pointé", 
-                          class: "btn btn-outline-secondary btn-sm" %>
-                    </div>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+  <%= form_with url: update_presences_admin_initiation_path(@initiation), method: :patch, local: true do |f| %>
+    <!-- Section Bénévoles encadrants -->
+    <% if @volunteers.any? %>
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+          <h3 class="h5 mb-0">
+            <i class="bi bi-heart-fill me-2" aria-hidden="true"></i>
+            Bénévoles encadrants (<%= @volunteers.count %>)
+          </h3>
         </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Téléphone</th>
+                  <th>Bénévole</th>
+                  <th>Présence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @volunteers.each do |attendance| %>
+                  <% user = attendance.user %>
+                  <tr>
+                    <td>
+                      <strong><%= user.first_name %> <%= user.last_name %></strong>
+                      <% if attendance.child_membership_id.present? %>
+                        <small class="text-muted d-block">(Enfant)</small>
+                      <% end %>
+                    </td>
+                    <td><%= user.phone || "-" %></td>
+                    <td>
+                      <%= hidden_field_tag "attendance_ids[]", attendance.id %>
+                      <div class="form-check form-switch">
+                        <%= check_box_tag "is_volunteer[#{attendance.id}]", "1", attendance.is_volunteer?, 
+                            { class: "form-check-input", id: "volunteer_#{attendance.id}" } %>
+                        <label class="form-check-label" for="volunteer_<%= attendance.id %>">
+                          Bénévole
+                        </label>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <%= radio_button_tag "presences[#{attendance.id}]", "present", 
+                            attendance.status == "present", 
+                            class: "btn-check", 
+                            id: "presence_present_#{attendance.id}" %>
+                        <%= label_tag "presence_present_#{attendance.id}", 
+                            "Présent", 
+                            class: "btn btn-outline-success btn-sm" %>
+                        
+                        <%= radio_button_tag "presences[#{attendance.id}]", "no_show", 
+                            attendance.status == "no_show", 
+                            class: "btn-check", 
+                            id: "presence_no_show_#{attendance.id}" %>
+                        <%= label_tag "presence_no_show_#{attendance.id}", 
+                            "Absent", 
+                            class: "btn btn-outline-danger btn-sm" %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
 
-        <% if @attendances.any? %>
-          <div class="mt-4 d-flex justify-content-between align-items-center">
-            <div>
-              <p class="text-muted small mb-0">
-                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-                Sélectionnez la présence de chaque participant et cliquez sur "Sauvegarder"
-              </p>
-            </div>
-            <div>
-              <%= link_to "Retour", admin_initiation_path(@initiation), class: "btn btn-outline-secondary me-2" %>
-              <%= f.submit "Sauvegarder les présences", class: "btn btn-primary" %>
-            </div>
+    <!-- Section Participants -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="h5 mb-0">
+          <i class="bi bi-people me-2" aria-hidden="true"></i>
+          Participants (<%= @participants.count %>)
+        </h3>
+      </div>
+      <div class="card-body">
+        <% if @participants.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Téléphone</th>
+                  <th>Matériel</th>
+                  <th>Bénévole</th>
+                  <th>Présence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @participants.each do |attendance| %>
+                  <% user = attendance.user %>
+                  <tr>
+                    <td>
+                      <strong><%= user.first_name %> <%= user.last_name %></strong>
+                      <% if attendance.child_membership_id.present? %>
+                        <small class="text-muted d-block">(Enfant)</small>
+                      <% end %>
+                    </td>
+                    <td><%= user.phone || "-" %></td>
+                    <td>
+                      <% if attendance.equipment_note.present? %>
+                        <span class="badge bg-info">
+                          <i class="bi bi-box-seam me-1" aria-hidden="true"></i>
+                          <%= truncate(attendance.equipment_note, length: 25) %>
+                        </span>
+                      <% else %>
+                        <span class="text-muted">-</span>
+                      <% end %>
+                    </td>
+                    <td>
+                      <%= hidden_field_tag "attendance_ids[]", attendance.id %>
+                      <div class="form-check form-switch">
+                        <%= check_box_tag "is_volunteer[#{attendance.id}]", "1", attendance.is_volunteer?, 
+                            { class: "form-check-input", id: "volunteer_#{attendance.id}" } %>
+                        <label class="form-check-label" for="volunteer_<%= attendance.id %>">
+                          Bénévole
+                        </label>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <%= radio_button_tag "presences[#{attendance.id}]", "present", 
+                            attendance.status == "present", 
+                            class: "btn-check", 
+                            id: "presence_present_#{attendance.id}" %>
+                        <%= label_tag "presence_present_#{attendance.id}", 
+                            "Présent", 
+                            class: "btn btn-outline-success btn-sm" %>
+                        
+                        <%= radio_button_tag "presences[#{attendance.id}]", "no_show", 
+                            attendance.status == "no_show", 
+                            class: "btn-check", 
+                            id: "presence_no_show_#{attendance.id}" %>
+                        <%= label_tag "presence_no_show_#{attendance.id}", 
+                            "Absent", 
+                            class: "btn btn-outline-danger btn-sm" %>
+                        
+                        <%= radio_button_tag "presences[#{attendance.id}]", "registered", 
+                            attendance.status == "registered", 
+                            class: "btn-check", 
+                            id: "presence_registered_#{attendance.id}" %>
+                        <%= label_tag "presence_registered_#{attendance.id}", 
+                            "Non pointé", 
+                            class: "btn btn-outline-secondary btn-sm" %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
           </div>
         <% else %>
           <div class="alert alert-info">
@@ -104,9 +171,29 @@
             Aucun participant inscrit pour cette séance.
           </div>
         <% end %>
-      <% end %>
+      </div>
     </div>
-  </div>
+
+    <!-- Boutons d'action -->
+    <% if (@volunteers.any? || @participants.any?) %>
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-muted small mb-0">
+                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                Sélectionnez la présence de chaque personne et modifiez le statut bénévole si nécessaire.
+              </p>
+            </div>
+            <div>
+              <%= link_to "Retour", admin_initiation_path(@initiation), class: "btn btn-outline-secondary me-2" %>
+              <%= f.submit "Sauvegarder les présences", class: "btn btn-primary" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 
   <div class="card">
     <div class="card-header">
@@ -137,7 +224,7 @@
         </div>
         <div class="col-md-3">
           <div class="stat-box">
-            <div class="stat-value"><%= @attendances.count { |a| a.status == "present" } %></div>
+            <div class="stat-value"><%= (@volunteers + @participants).count { |a| a.status == "present" } %></div>
             <div class="stat-label">Présents pointés</div>
           </div>
         </div>

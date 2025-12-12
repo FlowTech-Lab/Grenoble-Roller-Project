@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_022355) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_034849) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -343,6 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_022355) do
     t.string "address"
     t.string "avatar_url"
     t.text "bio"
+    t.boolean "can_be_volunteer", default: false, null: false
     t.string "city"
     t.datetime "confirmation_sent_at"
     t.string "confirmation_token"

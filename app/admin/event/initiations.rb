@@ -122,28 +122,66 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       row :updated_at
     end
 
-    panel "Inscriptions" do
-      table_for initiation.attendances.includes(:user, :child_membership).order(:created_at) do
-        column "Participant" do |attendance|
-          if attendance.child_membership_id.present?
-            "#{attendance.participant_name} (enfant de #{attendance.user.email})"
-          else
-            attendance.user.email
+    # Panel Bénévoles
+    volunteers = initiation.attendances.includes(:user, :child_membership).where(is_volunteer: true).order(:created_at)
+    if volunteers.any?
+      panel "Bénévoles encadrants (#{volunteers.count})" do
+        table_for volunteers do
+          column "Bénévole" do |attendance|
+            if attendance.child_membership_id.present?
+              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+            else
+              attendance.user.email
+            end
           end
+          column :status do |attendance|
+            status_tag(attendance.status)
+          end
+          column "Actions" do |attendance|
+            link_to("Retirer bénévole", toggle_volunteer_activeadmin_initiation_path(initiation, attendance_id: attendance.id), 
+                    method: :patch, 
+                    class: "button button-small",
+                    data: { confirm: "Retirer le statut bénévole pour #{attendance.user.email} ?" })
+          end
+          column "Matériel demandé" do |attendance|
+            attendance.equipment_note.presence || "-"
+          end
+          column :created_at
         end
-        column :status do |attendance|
-          status_tag(attendance.status)
+      end
+    end
+
+    # Panel Participants
+    participants = initiation.attendances.includes(:user, :child_membership).where(is_volunteer: false).order(:created_at)
+    panel "Participants (#{participants.count})" do
+      if participants.any?
+        table_for participants do
+          column "Participant" do |attendance|
+            if attendance.child_membership_id.present?
+              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+            else
+              attendance.user.email
+            end
+          end
+          column :status do |attendance|
+            status_tag(attendance.status)
+          end
+          column "Essai gratuit" do |attendance|
+            attendance.free_trial_used? ? status_tag("Oui", class: "ok") : status_tag("Non", class: "no")
+          end
+          column "Actions" do |attendance|
+            link_to("Ajouter bénévole", toggle_volunteer_activeadmin_initiation_path(initiation, attendance_id: attendance.id), 
+                    method: :patch, 
+                    class: "button button-small",
+                    data: { confirm: "Ajouter le statut bénévole pour #{attendance.user.email} ?" })
+          end
+          column "Matériel demandé" do |attendance|
+            attendance.equipment_note.presence || "-"
+          end
+          column :created_at
         end
-        column "Essai gratuit" do |attendance|
-          attendance.free_trial_used? ? status_tag("Oui", class: "ok") : status_tag("Non", class: "no")
-        end
-        column "Bénévole" do |attendance|
-          attendance.is_volunteer? ? status_tag("Oui", class: "ok") : status_tag("Non", class: "no")
-        end
-        column "Matériel demandé" do |attendance|
-          attendance.equipment_note.presence || "-"
-        end
-        column :created_at
+      else
+        para "Aucun participant inscrit pour le moment."
       end
     end
 
@@ -189,10 +227,14 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   # Action personnalisée : Dashboard présences
   member_action :presences, method: :get do
     @initiation = resource
-    @attendances = @initiation.attendances
-      .includes(:user)
-      .where(status: [ "registered", "present" ])
+    all_attendances = @initiation.attendances
+      .includes(:user, :child_membership)
+      .where(status: [ "registered", "present", "no_show" ])
       .order(:created_at)
+    
+    # Séparer bénévoles et participants
+    @volunteers = all_attendances.where(is_volunteer: true)
+    @participants = all_attendances.where(is_volunteer: false)
   end
 
   # Action personnalisée : Mise à jour présences (bulk)
@@ -200,18 +242,39 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     @initiation = resource
     attendance_ids = params[:attendance_ids] || []
     presences = params[:presences] || {}
+    is_volunteer_changes = params[:is_volunteer] || {}
 
     attendance_ids.each do |attendance_id|
       attendance = @initiation.attendances.find_by(id: attendance_id)
       next unless attendance
 
+      # Mettre à jour le statut de présence
       presence_status = presences[attendance_id.to_s]
       if presence_status.present?
         attendance.update(status: presence_status)
       end
+      
+      # Mettre à jour is_volunteer si modifié
+      if is_volunteer_changes[attendance_id.to_s].present?
+        attendance.update(is_volunteer: is_volunteer_changes[attendance_id.to_s] == "1")
+      end
     end
 
     redirect_to presences_activeadmin_initiation_path(@initiation), notice: "Présences mises à jour avec succès."
+  end
+
+  # Action pour basculer le statut bénévole d'une attendance
+  member_action :toggle_volunteer, method: :patch do
+    @initiation = resource
+    attendance = @initiation.attendances.find_by(id: params[:attendance_id])
+    
+    if attendance
+      attendance.update(is_volunteer: !attendance.is_volunteer)
+      status = attendance.is_volunteer? ? "ajouté" : "retiré"
+      redirect_to admin_initiation_path(@initiation), notice: "Statut bénévole #{status} pour #{attendance.user.email}."
+    else
+      redirect_to admin_initiation_path(@initiation), alert: "Inscription introuvable."
+    end
   end
 
   controller do

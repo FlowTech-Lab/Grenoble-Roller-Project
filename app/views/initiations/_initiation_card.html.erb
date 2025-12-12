@@ -283,12 +283,39 @@
               </small>
             </div>
 
+            <!-- Option bénévole si éligible (uniquement pour le parent) -->
+            <% if current_user.can_be_volunteer == true && child_memberships.any? %>
+              <div class="mb-3 form-check form-switch" id="volunteer_toggle_<%= initiation.id %>" style="display: none;">
+                <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer_modal_#{initiation.id}" } %>
+                <%= label_tag "is_volunteer_modal_#{initiation.id}", class: "form-check-label" do %>
+                  <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
+                  <strong>S'inscrire en tant que bénévole encadrant</strong>
+                <% end %>
+                <small class="text-muted d-block mt-1">
+                  <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                  En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
+                </small>
+              </div>
+            <% elsif current_user.can_be_volunteer == true %>
+              <div class="mb-3 form-check form-switch">
+                <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer_modal_#{initiation.id}" } %>
+                <%= label_tag "is_volunteer_modal_#{initiation.id}", class: "form-check-label" do %>
+                  <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
+                  <strong>S'inscrire en tant que bénévole encadrant</strong>
+                <% end %>
+                <small class="text-muted d-block mt-1">
+                  <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+                  En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
+                </small>
+              </div>
+            <% end %>
+
             <!-- Essai gratuit si disponible -->
             <% if !current_user.memberships.active_now.exists? && 
                   !current_user.attendances.where(free_trial_used: true).exists? %>
               <div class="mb-3 form-check">
-                <%= check_box_tag :use_free_trial, "1", false, { class: "form-check-input" } %>
-                <%= label_tag :use_free_trial, class: "form-check-label" do %>
+                <%= check_box_tag :use_free_trial, "1", false, { class: "form-check-input", id: "use_free_trial_modal_#{initiation.id}" } %>
+                <%= label_tag "use_free_trial_modal_#{initiation.id}", class: "form-check-label" do %>
                   <i class="bi bi-gift me-1" aria-hidden="true"></i>
                   Utiliser mon essai gratuit
                 <% end %>
@@ -332,6 +359,25 @@
               var form = document.getElementById('attendFormInitiation' + initiationId);
               var submitBtn = document.getElementById('submitBtnInitiation' + initiationId);
               var cancelBtn = document.getElementById('cancelBtnInitiation' + initiationId);
+              var childSelect = form ? form.querySelector('select[name="child_membership_id"]') : null;
+              var volunteerToggle = document.getElementById('volunteer_toggle_' + initiationId);
+              
+              // Afficher/masquer le toggle bénévole selon la sélection d'enfant
+              if (childSelect && volunteerToggle) {
+                function toggleVolunteerVisibility() {
+                  if (childSelect.value === '' || childSelect.value === null) {
+                    volunteerToggle.style.display = 'block';
+                  } else {
+                    volunteerToggle.style.display = 'none';
+                    // Décocher le toggle bénévole si un enfant est sélectionné
+                    var volunteerCheckbox = document.getElementById('is_volunteer_modal_' + initiationId);
+                    if (volunteerCheckbox) volunteerCheckbox.checked = false;
+                  }
+                }
+                
+                childSelect.addEventListener('change', toggleVolunteerVisibility);
+                toggleVolunteerVisibility(); // Initialiser au chargement
+              }
               
               if (form && submitBtn) {
                 form.addEventListener('submit', function() {
