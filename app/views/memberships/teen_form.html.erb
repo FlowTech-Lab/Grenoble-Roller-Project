@@ -17,8 +17,9 @@
             </div>
           </div>
 
-          <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false } do |f| %>
+          <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "teen_membership_form" do |f| %>
             <%= f.hidden_field :type, value: "teen" %>
+            <%= hidden_field_tag :payment_method, "helloasso", id: "payment_method_field" %>
             <!-- Étape 1 : Choix de la catégorie -->
             <div class="mb-4">
               <h3 class="h5 mb-3">1. Choisissez votre adhésion</h3>
@@ -47,10 +48,7 @@
               </div>
             </div>
 
-            <!-- Étape 2 : Sélection T-shirt (TEMPORAIREMENT DÉSACTIVÉ) -->
-            <%#= render partial: 'tshirt_selection' %>
-
-            <!-- Étape 3 : Informations personnelles -->
+            <!-- Étape 2 : Informations personnelles -->
             <div class="mb-4">
               <h3 class="h5 mb-3">2. Vos informations</h3>
               <div class="row g-3">
@@ -246,7 +244,14 @@
               <%= link_to memberships_path, class: "btn btn-outline-secondary" do %>
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
-              <%= f.submit "Valider et payer", class: "btn btn-liquid-success btn-lg" %>
+              <div class="d-flex gap-2">
+                <%= f.submit "Valider et payer", 
+                    class: "btn btn-liquid-success btn-lg",
+                    onclick: "document.getElementById('payment_method_field').value = 'helloasso';" %>
+                <%= f.submit "Déjà adhérent / Espèces / Chèques", 
+                    class: "btn btn-outline-primary btn-lg",
+                    onclick: "if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
+              </div>
             </div>
           <% end %>
         </div>

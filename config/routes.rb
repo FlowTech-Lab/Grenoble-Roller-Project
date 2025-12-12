@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
-    resource :maintenance, only: [:update], controller: "admin/maintenance_toggle" do
+    resource :maintenance, only: [:update], controller: "/admin/maintenance_toggle" do
       member do
         patch :toggle
       end
@@ -74,8 +74,17 @@ Rails.application.routes.draw do
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
     collection do
-      # Page de sélection (adhésion seule ou avec T-shirt)
-      get :choose
+      post :create_without_payment
+    end
+    collection do
+      # Redirection de l'ancienne page choose vers new
+      get :choose, to: redirect { |params, request|
+        if params[:child] == "true"
+          new_membership_path(type: 'child', renew_from: params[:renew_from])
+        else
+          new_membership_path(type: 'adult')
+        end
+      }
       # Paiement groupé pour plusieurs enfants en attente
       post :pay_multiple
     end
@@ -93,17 +102,32 @@ Rails.application.routes.draw do
       delete :cancel_attendance
       get :ical, defaults: { format: "ics" }
       patch :toggle_reminder
+      post :join_waitlist
+      delete :leave_waitlist
+      post :convert_waitlist_to_attendance
+      post :refuse_waitlist
       get :loop_routes, defaults: { format: "json" }
+      patch :reject
     end
   end
 
-  # Initiations
-  resources :initiations do
-    member do
-      post :attend
-      delete :cancel_attendance
-    end
-  end
+      # Initiations
+      resources :initiations do
+        member do
+          post :attend
+          delete :cancel_attendance
+          get :ical, defaults: { format: "ics" }
+          patch :toggle_reminder
+          post :join_waitlist
+          delete :leave_waitlist
+          # Routes POST pour les formulaires
+          post :convert_waitlist_to_attendance
+          post :refuse_waitlist
+          # Routes GET pour les emails (redirigent vers la page de l'initiation avec confirmation)
+          get :confirm_waitlist, path: "waitlist/confirm"
+          get :decline_waitlist, path: "waitlist/decline"
+        end
+      end
 
   # Routes REST pour les parcours
   resources :routes, only: [:create] do

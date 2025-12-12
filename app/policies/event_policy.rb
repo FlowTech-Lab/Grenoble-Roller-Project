@@ -29,6 +29,11 @@ class EventPolicy < ApplicationPolicy
     admin? || owner?
   end
 
+  def reject?
+    # Seuls les modérateurs et admins peuvent refuser un événement
+    admin? || moderator?
+  end
+
   def attend?
     return false unless user.present?
     return false if record.full?
@@ -50,6 +55,27 @@ class EventPolicy < ApplicationPolicy
     return false unless user.present?
 
     record.attendances.exists?(user_id: user.id)
+  end
+
+  def join_waitlist?
+    return false unless user
+    return false unless record.full? # Ne peut rejoindre la liste d'attente que si l'événement est complet
+    true
+  end
+
+  def leave_waitlist?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: ["pending", "notified"])
+  end
+
+  def convert_waitlist_to_attendance?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: "notified")
+  end
+
+  def refuse_waitlist?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: "notified")
   end
 
   def permitted_attributes

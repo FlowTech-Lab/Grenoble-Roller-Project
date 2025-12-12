@@ -5,7 +5,8 @@ ActiveAdmin.register User do
                 :first_name, :last_name, :bio, :phone, :avatar_url,
                 :role_id, :date_of_birth,
                 :address, :city, :postal_code, :skill_level,
-                :wants_email_info, :wants_events_mail, :wants_initiation_mail, :wants_whatsapp
+                :wants_email_info, :wants_events_mail, :wants_initiation_mail, :wants_whatsapp,
+                :can_be_volunteer
 
   includes :role
 
@@ -16,6 +17,9 @@ ActiveAdmin.register User do
     column :first_name
     column :last_name
     column :role
+    column "Bénévole" do |user|
+      status_tag(user.can_be_volunteer == true ? "Oui" : "Non", class: user.can_be_volunteer == true ? "ok" : "no")
+    end
     column :confirmed? do |user|
       status_tag(user.confirmed? ? "Confirmé" : "Non confirmé", class: user.confirmed? ? "ok" : "error")
     end
@@ -28,6 +32,7 @@ ActiveAdmin.register User do
   filter :first_name
   filter :last_name
   filter :role
+  filter :can_be_volunteer, as: :boolean
   filter :confirmed_at
   filter :date_of_birth
   filter :city
@@ -100,6 +105,9 @@ ActiveAdmin.register User do
 
     attributes_table "Autres informations" do
       row :role
+      row :can_be_volunteer do |user|
+        status_tag(user.can_be_volunteer == true ? "Oui" : "Non", class: user.can_be_volunteer == true ? "ok" : "no")
+      end
       row :wants_email_info
       row :wants_events_mail
       row :wants_initiation_mail
@@ -153,6 +161,13 @@ ActiveAdmin.register User do
       f.input :wants_whatsapp
     end
 
+    f.inputs "Bénévole" do
+      f.input :can_be_volunteer, 
+              as: :boolean,
+              label: "Peut être bénévole encadrant",
+              hint: "Si coché, cet utilisateur pourra s'inscrire en tant que bénévole sur les initiations"
+    end
+
     f.inputs "Avatar" do
       f.input :avatar, as: :file, hint: "Upload un avatar (recommandé)"
       f.input :avatar_url, hint: "Ou utilisez une URL (déprécié, pour transition)"
@@ -163,9 +178,18 @@ ActiveAdmin.register User do
 
   controller do
     def update
-      if params[:user].present? && params[:user][:password].blank? && params[:user][:password_confirmation].blank?
-        params[:user].delete(:password)
-        params[:user].delete(:password_confirmation)
+      if params[:user].present?
+        # Gérer les champs password
+        if params[:user][:password].blank? && params[:user][:password_confirmation].blank?
+          params[:user].delete(:password)
+          params[:user].delete(:password_confirmation)
+        end
+        
+        # Gérer le boolean can_be_volunteer (si non présent dans les params, c'est false)
+        # ActiveAdmin n'envoie pas les checkboxes non cochées
+        unless params[:user].key?(:can_be_volunteer)
+          params[:user][:can_be_volunteer] = false
+        end
       end
       super
     end

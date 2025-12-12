@@ -45,10 +45,6 @@
                   }, 
                   {}, 
                   class: "form-select form-select-liquid" %>
-              <div class="form-text">
-                <i class="bi bi-info-circle me-1"></i>
-                Seuls les modérateurs peuvent changer le statut.
-              </div>
             </div>
           <% else %>
             <%= f.hidden_field :status, value: 'draft' %>
@@ -63,19 +59,11 @@
           <div class="col-12 col-md-6">
             <%= f.label :start_at, "Date et heure de début", class: "form-label" %>
             <%= f.datetime_field :start_at, class: "form-control form-control-liquid", required: true %>
-            <div class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              <strong>Doit être un samedi à 10h15</strong>
-            </div>
           </div>
 
           <div class="col-12 col-md-6">
             <%= f.label :duration_min, "Durée (minutes)", class: "form-label" %>
             <%= f.number_field :duration_min, class: "form-control form-control-liquid", min: 60, step: 5, required: true, value: initiation.duration_min || 105 %>
-            <div class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              Durée standard : 105 minutes (1h45)
-            </div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -83,7 +71,7 @@
             <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 1, step: 1, required: true, value: initiation.max_participants || 30 %>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
-              Capacité standard : 30 participants
+              Nombre total de places disponibles (adhérents + non-adhérents si option activée)
             </div>
           </div>
 
@@ -100,6 +88,43 @@
                 class: "form-select form-select-liquid" %>
           </div>
 
+          <!-- Option pour limiter les places non-adhérents -->
+          <div class="col-12">
+            <div class="card card-body bg-body-secondary border-0 p-3 gps-coordinates-card">
+              <div class="form-check form-switch mb-3">
+                <%= f.check_box :allow_non_member_discovery, 
+                    { class: "form-check-input", id: "allow_non_member_discovery", 
+                      data: { bs_toggle: "collapse", bs_target: "#nonMemberDiscoveryOptions" } }, 
+                    true, false %>
+                <%= f.label :allow_non_member_discovery, 
+                    "Limiter les places pour les non-adhérents (initiation découverte)", 
+                    class: "form-check-label fw-semibold", 
+                    for: "allow_non_member_discovery" %>
+              </div>
+              <div class="collapse<%= ' show' if initiation.allow_non_member_discovery? %>" id="nonMemberDiscoveryOptions">
+                <div class="mb-2">
+                  <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+                    <%= f.label :non_member_discovery_slots, 
+                        "Nombre de places réservées aux non-adhérents", 
+                        class: "form-label small mb-0" %>
+                    <%= f.number_field :non_member_discovery_slots, 
+                        class: "form-control form-control-sm form-control-liquid", 
+                        style: "max-width: 100px;",
+                        min: 0, 
+                        step: 1, 
+                        value: initiation.non_member_discovery_slots || 0,
+                        placeholder: "Ex: 5" %>
+                  </div>
+                  <div class="form-text small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Si activé : les adhérents utilisent les places restantes (<strong>max_participants - places non-adhérents</strong>). 
+                    Si désactivé : tout le monde peut s'inscrire librement dans les <strong>max_participants</strong> places.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="col-12">
             <%= f.label :location_text, "Lieu / Point de rendez-vous", class: "form-label" do %>
               Lieu / Point de rendez-vous <span class="text-danger">*</span>
@@ -111,10 +136,6 @@
                 value: initiation.location_text || "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
                 placeholder: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
                 aria: { describedby: 'locationHelp' } %>
-            <div id="locationHelp" class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              <strong>Lieu fixe :</strong> Gymnase Ampère
-            </div>
           </div>
 
           <!-- Coordonnées GPS optionnelles (collapsed par défaut) -->
@@ -131,11 +152,7 @@
             </button>
             
             <div class="collapse<%= ' show' if initiation.has_gps_coordinates? %> mt-2" id="gpsCoordinates">
-              <div class="card card-body bg-light gps-coordinates-card">
-                <p class="small text-muted mb-3">
-                  <i class="bi bi-lightbulb me-1"></i>
-                  <strong>Bonus:</strong> Les coordonnées GPS permettent d'afficher une carte interactive et un lien Google Maps.
-                </p>
+              <div class="card card-body bg-body-secondary gps-coordinates-card">
                 
                 <div class="row g-2">
                   <div class="col-md-6">
@@ -182,7 +199,7 @@
             <%= f.file_field :cover_image, accept: "image/*", class: "form-control form-control-liquid" %>
             <div class="form-text">
               <i class="bi bi-info-circle me-1"></i>
-              Upload une image paysage (1200x800 recommandé) ou laissez vide pour le visuel par défaut.
+              Upload une image paysage (1200x800 recommandé)
             </div>
           </div>
 

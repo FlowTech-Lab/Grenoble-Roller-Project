@@ -1,38 +1,34 @@
 module EventsHelper
-  FALLBACK_EVENT_IMAGE = "img/roller.png"
-
-  # Helper pour obtenir l'URL de l'image de fallback (image par défaut)
-  # Utilisé uniquement quand aucune image Active Storage n'est attachée
-  def event_cover_image_url(event)
-    fallback_image_path
+  # Helper pour obtenir les routes de manière polymorphique selon le type d'événement
+  def event_path_for(event)
+    event.is_a?(Event::Initiation) ? initiation_path(event) : event_path(event)
   end
 
-  # Helper pour obtenir l'image (Active Storage ou fallback)
-  def event_cover_image(event)
-    if event&.cover_image&.attached?
-      event.cover_image
-    else
-      event_cover_image_url(event)
-    end
+  def edit_event_path_for(event)
+    event.is_a?(Event::Initiation) ? edit_initiation_path(event) : edit_event_path(event)
   end
 
-  private
-
-  def fallback_image_path
-    asset_path(FALLBACK_EVENT_IMAGE)
+  def ical_event_path_for(event)
+    event.is_a?(Event::Initiation) ? ical_initiation_path(event, format: :ics) : ical_event_path(event, format: :ics)
   end
 
-  def asset_exists?(logical_path)
-    return false if logical_path.blank?
+  def toggle_reminder_event_path_for(event)
+    event.is_a?(Event::Initiation) ? toggle_reminder_initiation_path(event) : toggle_reminder_event_path(event)
+  end
 
-    load_path = Rails.application.assets
-    manifest = Rails.application.assets_manifest
+  def attend_event_path_for(event)
+    event.is_a?(Event::Initiation) ? attend_initiation_path(event) : attend_event_path(event)
+  end
 
-    from_load_path = load_path&.respond_to?(:load_path) && load_path.load_path.find(logical_path).present?
-    from_manifest = manifest&.respond_to?(:assets) && manifest.assets[logical_path].present?
+  def cancel_attendance_event_path_for(event)
+    event.is_a?(Event::Initiation) ? cancel_attendance_initiation_path(event) : cancel_attendance_event_path(event)
+  end
 
-    from_load_path || from_manifest
-  rescue StandardError
-    false
+  def events_index_path_for(event)
+    event.is_a?(Event::Initiation) ? initiations_path : events_path
+  end
+
+  def events_index_label_for(event)
+    event.is_a?(Event::Initiation) ? "Toutes les initiations" : "Tous les événements"
   end
 end

@@ -47,10 +47,6 @@
                   }, 
                   {}, 
                   class: "form-select form-select-liquid" %>
-              <div class="form-text">
-                <i class="bi bi-info-circle me-1"></i>
-                Seuls les modérateurs peuvent changer le statut.
-              </div>
             </div>
           <% else %>
             <%= f.hidden_field :status, value: 'draft' %>
@@ -81,10 +77,6 @@
                   event_form_target: "routeSelect",
                   action: "change->event-form#routeChanged" 
                 } %>
-            <div class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              Si vous sélectionnez un parcours, le niveau et la distance seront pré-remplis automatiquement.
-            </div>
           </div>
           
           <!-- Nombre de boucles -->
@@ -100,10 +92,6 @@
                   event_form_target: "loopsCountInput",
                   action: "change->event-form#loopsCountChanged input->event-form#loopsCountChanged"
                 } %>
-            <div class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              Nombre de boucles. La première boucle utilise le parcours principal ci-dessus. Vous pourrez choisir un parcours différent pour les boucles supplémentaires.
-            </div>
           </div>
 
           <!-- Parcours par boucle supplémentaire (affiché dynamiquement si loops_count > 1) -->
@@ -160,10 +148,6 @@
                 required: true,
                 onblur: "validateField(this)" %>
             <div class="invalid-feedback"></div>
-            <div class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              Distance d'une boucle en kilomètres.
-            </div>
             <div id="total-distance-display" class="alert alert-info mt-2" style="display: none;">
               <i class="bi bi-calculator me-2"></i>
               <strong>Distance totale :</strong> <span id="total-distance-value">0</span> km
@@ -220,10 +204,6 @@
                 aria: { describedby: 'locationHelp' },
                 onblur: "validateField(this)" %>
             <div class="invalid-feedback"></div>
-            <div id="locationHelp" class="form-text">
-              <i class="bi bi-info-circle me-1"></i>
-              Indiquez où se retrouver (parc, place, adresse...)
-            </div>
           </div>
 
           <!-- Coordonnées GPS optionnelles (collapsed par défaut) -->

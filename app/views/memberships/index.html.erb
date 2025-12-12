@@ -72,7 +72,7 @@
                   <div class="d-flex align-items-center mb-2">
                     <i class="bi bi-person-badge fs-3 text-liquid-primary me-3"></i>
                     <div class="flex-grow-1">
-                      <h4 class="h6 mb-0 fw-bold">Je m'adhère</h4>
+                      <h4 class="h6 mb-0 fw-bold">J'adhère</h4>
                       <small class="text-muted">
                         <% if @pending_membership %>
                           Adhésion en attente
@@ -87,7 +87,7 @@
             <% end %>
             
             <!-- Ajouter un enfant -->
-            <%= link_to choose_memberships_path(child: true), class: "text-decoration-none" do %>
+            <%= link_to new_membership_path(type: 'child'), class: "text-decoration-none" do %>
               <div class="quick-action-card orange">
                 <div class="d-flex align-items-center mb-2">
                   <i class="bi bi-person-plus fs-3 text-liquid-warning me-3"></i>
@@ -228,7 +228,7 @@
                   Adhésions enfants
                   <span class="badge bg-liquid-warning text-dark ms-2"><%= children_memberships.count %></span>
                 </h3>
-                    <%= link_to choose_memberships_path(child: true), class: "btn btn-sm btn-liquid-warning" do %>
+                    <%= link_to new_membership_path(type: 'child'), class: "btn btn-sm btn-liquid-warning" do %>
                       <i class="bi bi-person-plus me-1"></i>Ajouter
                     <% end %>
               </div>
@@ -332,7 +332,7 @@
                     </small>
                   </div>
                   <% if membership.is_child_membership? %>
-                    <%= link_to choose_memberships_path(child: true, renew_from: membership.id), class: "btn btn-sm btn-success" do %>
+                    <%= link_to new_membership_path(type: 'child', renew_from: membership.id), class: "btn btn-sm btn-success" do %>
                       <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
                     <% end %>
                   <% else %>

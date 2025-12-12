@@ -288,11 +288,11 @@
               </div>
             <% elsif @membership.status == 'expired' %>
               <% if @membership.is_child_membership? %>
-                <%= link_to choose_memberships_path(child: true, renew_from: @membership.id), class: "btn btn-primary" do %>
+                <%= link_to new_membership_path(type: 'child', renew_from: @membership.id), class: "btn btn-primary" do %>
                   <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
                 <% end %>
               <% else %>
-                <%= link_to choose_memberships_path, class: "btn btn-primary" do %>
+                <%= link_to new_membership_path(type: 'adult'), class: "btn btn-primary" do %>
                   <i class="bi bi-arrow-repeat me-2"></i>Renouveler mon adhésion
                 <% end %>
               <% end %>

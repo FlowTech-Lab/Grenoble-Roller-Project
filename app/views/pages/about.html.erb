@@ -104,9 +104,9 @@
           </div>
           <div class="col-lg-6">
             <p class="lead text-body-secondary mb-4">
-              Nous travaillons en collaboration avec la <strong>Fédération Française de Roller 
-              Skating (FFRS)</strong>, ainsi qu'avec le soutien des différentes administrations 
-              publiques locales, régionales ou nationales.
+              Née en 2005, notre association est affiliée à la <strong>Fédération Française de Roller 
+              et Skateboard (FFRS)</strong>, et travaille avec le soutien des différentes administrations 
+              publiques locales, régionales ou nationales pour proposer ses emblématiques randonnées roller.
             </p>
             <p class="text-muted mb-0">
               Aujourd'hui, nous sommes une communauté active qui partage régulièrement des 
@@ -150,7 +150,7 @@
               <li class="mb-3">
                 <i class="bi bi-check-circle text-liquid-success me-2" aria-hidden="true"></i>
                 <strong>Promouvoir la pratique du roller</strong> sous toutes ses formes 
-                (urbain, randonnée, freestyle)
+                (randonnée, freestyle, vitesse, etc...)
               </li>
               <li class="mb-3">
                 <i class="bi bi-check-circle text-liquid-success me-2" aria-hidden="true"></i>
@@ -309,10 +309,10 @@
                 <i class="bi bi-arrow-right-circle text-liquid-success me-2" aria-hidden="true"></i>
                 <strong>Débutant ?</strong> Inscrivez-vous à une session d'initiation pour découvrir le roller en douceur !
               </p>
-              <button type="button" class="btn btn-sm btn-liquid-success" disabled>
-                <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>
-                Page Initiation (à venir)
-              </button>
+              <%= link_to initiations_path, class: "btn btn-sm btn-liquid-success" do %>
+                <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+                Voir les initiations
+              <% end %>
             </div>
           </div>
         </div>
@@ -344,7 +344,7 @@
               </li>
               <li>
                 <i class="bi bi-check-circle text-liquid-success me-2" aria-hidden="true"></i>
-                Encadrement par des staffeurs formés
+                Randonnées encadrées par des staffeurs formés
               </li>
               <li>
                 <i class="bi bi-check-circle text-liquid-success me-2" aria-hidden="true"></i>
@@ -362,7 +362,7 @@
                     Rejoignez notre équipe de sécurité et encadrez nos randonnées.
                   </p>
                 </div>
-                <a href="mailto:staffeur@grenobleroller.fr" class="btn btn-liquid-primary">
+                <a href="mailto:contact@grenoble-roller.org" class="btn btn-liquid-primary">
                   <i class="bi bi-envelope me-2" aria-hidden="true"></i>
                   Nous contacter
                 </a>
@@ -684,7 +684,7 @@
         <div class="d-flex align-items-center">
           <i class="bi bi-person-circle text-liquid-primary me-3 fs-4" aria-hidden="true"></i>
           <div>
-            <strong>Christophe L.</strong><br>
+            <strong>Julien P.</strong><br>
             <small class="text-muted">Vice secrétaire</small>
           </div>
         </div>
@@ -702,7 +702,7 @@
         <div class="d-flex align-items-center">
           <i class="bi bi-person-circle text-liquid-primary me-3 fs-4" aria-hidden="true"></i>
           <div>
-            <strong>David B.</strong><br>
+            <strong>Benjamin L.</strong><br>
             <small class="text-muted">Vice président</small>
           </div>
         </div>
@@ -711,7 +711,7 @@
         <div class="d-flex align-items-center">
           <i class="bi bi-shield-check text-liquid-success me-3 fs-4" aria-hidden="true"></i>
           <div>
-            <strong>Jonathan C.</strong><br>
+            <strong>Clara V.</strong><br>
             <small class="text-muted">Staffeur</small>
           </div>
         </div>
@@ -720,7 +720,7 @@
         <div class="d-flex align-items-center">
           <i class="bi bi-shield-check text-liquid-success me-3 fs-4" aria-hidden="true"></i>
           <div>
-            <strong>Béatrice V.</strong><br>
+            <strong>Pascal F.</strong><br>
             <small class="text-muted">Staffeur</small>
           </div>
         </div>
@@ -729,7 +729,7 @@
         <div class="d-flex align-items-center">
           <i class="bi bi-shield-check text-liquid-success me-3 fs-4" aria-hidden="true"></i>
           <div>
-            <strong>Thomas B.</strong><br>
+            <strong>Renald B.</strong><br>
             <small class="text-muted">Staffeur</small>
           </div>
         </div>
@@ -739,6 +739,25 @@
           <i class="bi bi-shield-check text-liquid-success me-3 fs-4" aria-hidden="true"></i>
           <div>
             <strong>Fabien D.</strong><br>
+            <small class="text-muted">Staffeur</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-liquid-success me-3 fs-4" aria-hidden="true"></i>
+          <div>
+            <strong>Christopher L.</strong><br>
+            <small class="text-muted">Staffeur</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4 mb-3">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check text-liquid-success me-3 fs-4" aria-hidden="true"></i>
+          <div>
+            <strong>David B.</strong><br>
             <small class="text-muted">Staffeur</small>
           </div>
         </div>
@@ -755,7 +774,7 @@
         Nous cherchons toujours des bénévoles motivés pour aider à l'organisation, 
         la communication ou l'encadrement. Tous les profils nous intéressent !
       </p>
-      <a href="mailto:benevolat@grenobleroller.fr" class="btn btn-liquid-success">
+      <a href="mailto:contact@grenoble-roller.org" class="btn btn-liquid-success">
         <i class="bi bi-envelope me-2" aria-hidden="true"></i>
         Devenir bénévole
       </a>
@@ -816,20 +835,31 @@
               <i class="bi bi-shop text-liquid-success me-2" aria-hidden="true"></i>
               Partenaires commerciaux
             </h3>
-            <ul class="list-unstyled mb-0">
-              <li class="mb-3">
-                <strong>Adrenaline Sports</strong><br>
-                <small class="text-muted">
-                  -20% sur locations, entretien et achat de matériel roller
-                </small>
-              </li>
-              <li>
-                <strong>Serge Pizza</strong><br>
-                <small class="text-muted">
-                  -10% sur toutes vos commandes (sur place ou à emporter)
-                </small>
-              </li>
-            </ul>
+            <% if @commercial_partners.any? %>
+              <ul class="list-unstyled mb-0">
+                <% @commercial_partners.each do |partner| %>
+                  <li class="mb-3">
+                    <% if partner.url.present? %>
+                      <%= link_to partner.url, target: "_blank", rel: "noopener noreferrer", class: "text-decoration-none" do %>
+                        <strong><%= partner.name %></strong>
+                      <% end %>
+                    <% else %>
+                      <strong><%= partner.name %></strong>
+                    <% end %>
+                    <% if partner.description.present? %>
+                      <br>
+                      <small class="text-muted">
+                        <%= partner.description %>
+                      </small>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+            <% else %>
+              <p class="text-muted mb-0">
+                <em>Aucun partenaire commercial actif pour le moment.</em>
+              </p>
+            <% end %>
           </div>
         </div>
       </div>
@@ -967,7 +997,7 @@
               <li class="mb-3">
                 <i class="bi bi-envelope me-2 text-liquid-primary" aria-hidden="true"></i>
                 <strong>Email :</strong><br>
-                <a href="mailto:contact@grenobleroller.fr">contact@grenobleroller.fr</a>
+                <a href="mailto:contact@grenoble-roller.org">contact@grenoble-roller.org</a>
               </li>
               <li class="mb-3">
                 <i class="bi bi-geo-alt me-2 text-liquid-primary" aria-hidden="true"></i>
@@ -994,7 +1024,7 @@
               Vous souhaitez participer à l'organisation des événements ou 
               devenir bénévole ? Nous avons toujours besoin de bonnes volontés !
             </p>
-            <a href="mailto:benevolat@grenobleroller.fr" class="btn btn-liquid-success">
+            <a href="mailto:contact@grenoble-roller.org" class="btn btn-liquid-success">
               <i class="bi bi-person-check me-2" aria-hidden="true"></i>
               Devenir bénévole
             </a>
@@ -1028,7 +1058,7 @@
             <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
             Voir les événements
           <% end %>
-          <a href="mailto:contact@grenobleroller.fr" class="btn btn-outline-liquid-primary btn-lg">
+          <a href="mailto:contact@grenoble-roller.org" class="btn btn-outline-liquid-primary btn-lg">
             <i class="bi bi-envelope me-2" aria-hidden="true"></i>
             Nous contacter
           </a>
@@ -1036,8 +1066,8 @@
         <p class="mt-4 mb-0 text-light">
           <small>
             Questions ? Contactez-nous à 
-            <a href="mailto:contact@grenobleroller.fr" class="text-decoration-underline">
-              contact@grenobleroller.fr
+            <a href="mailto:contact@grenoble-roller.org" class="text-decoration-underline">
+              contact@grenoble-roller.org
             </a>
           </small>
         </p>

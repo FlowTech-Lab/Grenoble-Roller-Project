@@ -1,8 +1,8 @@
   <% 
   # Définir l'étape courante (pour le stepper)
-  # Catégorie en premier (étape 1), puis T-shirt si avec_tshirt (étape 2)
+  # Catégorie en premier (étape 1)
   current_step = 1 # Commence toujours par la catégorie
-  total_steps = @with_tshirt ? 6 : 5
+  total_steps = 5
 %>
 
 <div class="container py-4">
@@ -11,7 +11,6 @@
       <!-- HERO SECTION -->
       <div class="hero-form">
         <div class="text-center">
-          <div class="hero-icon">👤</div>
           <h1 class="hero-title">MON ADHÉSION</h1>
           <p class="hero-subtitle">Rejoignez Grenoble Roller et profitez de tous les avantages</p>
           
@@ -39,14 +38,15 @@
       </div>
 
       <!-- STEPPER -->
-      <%= render partial: 'form_stepper', locals: { form_type: 'adult', current_step: current_step, with_tshirt: @with_tshirt } %>
+      <%= render partial: 'form_stepper', locals: { form_type: 'adult', current_step: current_step, with_tshirt: false } %>
 
       <!-- MAIN FORM -->
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
           <%= form_with model: Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "adult_membership_form", multipart: true do |f| %>
             <%= f.hidden_field :type, value: "adult" %>
-            <%= f.hidden_field :with_tshirt, value: @with_tshirt ? 'true' : 'false', id: "with_tshirt_hidden" %>
+            <%= f.hidden_field :with_tshirt, value: 'false', id: "with_tshirt_hidden" %>
+            <%= hidden_field_tag :payment_method, "helloasso", id: "payment_method_field" %>
             
             <!-- ÉTAPE 1 : CATÉGORIE -->
             <div class="form-section" id="step-category">
@@ -60,9 +60,6 @@
                 <% @categories.each do |key, cat| %>
                   <div class="col-md-6">
                     <label for="category_<%= key %>" class="category-card <%= 'selected' if key == :standard %>" onclick="selectCategory('<%= key %>')">
-                      <div class="category-icon">
-                        <%= key == :standard ? '👤' : '🎓' %>
-                      </div>
                       <div class="category-title"><%= cat[:name] %></div>
                       <div class="category-description"><%= cat[:description] %></div>
                       <div class="category-footer d-flex justify-content-between align-items-center mt-auto">
@@ -88,13 +85,10 @@
               </div>
             </div>
             
-            <!-- ÉTAPE 2 : SÉLECTION T-SHIRT (si avec_tshirt) -->
-            <%= render partial: 'tshirt_selection', locals: { f: f } %>
-
-            <!-- ÉTAPE <%= @with_tshirt ? 3 : 2 %> : INFORMATIONS -->
+            <!-- ÉTAPE 2 : INFORMATIONS -->
             <div class="form-section" id="step-info">
               <h3 class="section-title">
-                <span class="section-number"><%= @with_tshirt ? 3 : 2 %></span>
+                <span class="section-number">2</span>
                 Vos informations
               </h3>
               <p class="section-intro">Vos données aident l'association à mieux vous connaître</p>
@@ -498,9 +492,16 @@
               <%= link_to memberships_path, class: "btn btn-outline-secondary btn-nav btn-back" do %>
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
-              <%= f.submit "Valider et payer", 
-                  class: "btn btn-liquid-primary btn-lg btn-nav",
-                  id: "submit_btn" %>
+              <div class="d-flex gap-2">
+                <%= f.submit "Valider et payer", 
+                    class: "btn btn-liquid-primary btn-lg btn-nav",
+                    id: "submit_btn",
+                    onclick: "document.getElementById('payment_method_field').value = 'helloasso';" %>
+                <%= f.submit "Déjà adhérent / Espèces / Chèques", 
+                    class: "btn btn-outline-primary btn-lg btn-nav",
+                    id: "submit_without_payment_btn",
+                    onclick: "if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
+              </div>
             </div>
           <% end %>
         </div>

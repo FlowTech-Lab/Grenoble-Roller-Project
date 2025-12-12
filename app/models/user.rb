@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  include Hashid::Rails
+  
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -73,7 +75,7 @@ class User < ApplicationRecord
   before_validation :normalize_phone, if: :phone_changed?
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[id email unconfirmed_email first_name last_name phone email_verified role_id created_at updated_at confirmed_at date_of_birth city address postal_code]
+    %w[id email unconfirmed_email first_name last_name phone role_id created_at updated_at confirmed_at date_of_birth city address postal_code can_be_volunteer]
   end
 
   def self.ransackable_associations(_auth_object = nil)
@@ -103,6 +105,11 @@ class User < ApplicationRecord
   # Obtenir toutes les adhésions (personnelle + enfants)
   def all_active_memberships
     memberships.active_now.order(is_child_membership: :asc, created_at: :desc)
+  end
+
+  # Vérifier si l'utilisateur peut être bénévole
+  def can_be_volunteer?
+    can_be_volunteer == true
   end
 
   # Calculer l'âge de l'utilisateur

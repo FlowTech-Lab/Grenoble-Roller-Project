@@ -1,0 +1,37 @@
+🎉 Une place s'est libérée !
+
+Bonjour <%= @participant_name %>,
+
+Une place s'est libérée pour l'événement suivant :
+
+<%= @event.title %>
+Date : <%= l(@event.start_at, format: :event_long, locale: :fr) %>
+Lieu : <%= @event.location_text %>
+<% if !@is_initiation && @event.distance_km.present? && @event.distance_km > 0 %>
+Distance : <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+<% end %>
+
+⚠️ IMPORTANT : Cette place est réservée pour vous pendant 24 heures. 
+Passé ce délai, elle sera proposée à la personne suivante en liste d'attente.
+
+Pour confirmer votre place, cliquez sur le lien suivant :
+<% if @is_initiation %>
+<%= confirm_waitlist_initiation_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
+<% else %>
+<%= confirm_waitlist_event_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
+<% end %>
+
+Pour refuser cette place, cliquez sur le lien suivant :
+<% if @is_initiation %>
+<%= decline_waitlist_initiation_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
+<% else %>
+<%= decline_waitlist_event_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
+<% end %>
+
+Si vous ne souhaitez plus participer à cet événement, vous pouvez ignorer cet email. 
+La place sera automatiquement proposée à la personne suivante.
+
+--
+Cet email a été envoyé automatiquement par Grenoble Roller.
+Pour toute question, contactez-nous à <%= ENV.fetch('CONTACT_EMAIL', 'contact@grenoble-roller.fr') %>
+

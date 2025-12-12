@@ -48,6 +48,20 @@ end
 
 # === PROTECTION GLOBALE ===
 # 300 requêtes par IP par minute (protection DDoS basique)
+# Rate limiting pour les inscriptions aux initiations/événements
+Rack::Attack.throttle("initiations/attend/ip", limit: 10, period: 1.minute) do |req|
+  if req.path.match?(%r{/initiations/\d+/attend}) && req.post?
+    req.ip
+  end
+end
+
+Rack::Attack.throttle("events/attend/ip", limit: 10, period: 1.minute) do |req|
+  if req.path.match?(%r{/events/\d+/attend}) && req.post?
+    req.ip
+  end
+end
+
+# Rate limiting général par IP
 Rack::Attack.throttle("req/ip", limit: 300, period: 1.minute) do |req|
   req.ip
 end

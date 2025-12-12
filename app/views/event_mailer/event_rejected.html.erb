@@ -1,0 +1,54 @@
+<h1 style="color: #dc3545; margin-top: 0;">❌ Votre événement a été refusé</h1>
+
+<p>Bonjour <%= @creator.first_name %>,</p>
+
+<p>Nous vous informons que votre événement <strong>"<%= @event.title %>"</strong> a été refusé par l'équipe de modération.</p>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #dc3545;">
+  <h3 style="margin-top: 0; color: #333; font-size: 18px;">📅 Détails de l'événement refusé</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #666; width: 120px;">📝 Titre :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.title %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">📍 Lieu :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.location_text %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">🕐 Date prévue :</td>
+      <td style="padding: 8px 0;"><strong><%= l @event.start_at, format: :event_long, locale: :fr %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">⏱️ Durée :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.duration_min %> minutes</strong></td>
+    </tr>
+  </table>
+</div>
+
+<div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107;">
+  <h3 style="margin-top: 0; color: #856404; font-size: 18px;">ℹ️ Que faire maintenant ?</h3>
+  <p style="color: #856404; margin: 10px 0;">
+    Si vous souhaitez créer un nouvel événement, nous vous invitons à :
+  </p>
+  <ul style="color: #856404; margin: 10px 0; padding-left: 20px;">
+    <li>Vérifier que votre événement respecte les règles de l'association</li>
+    <li>Vous assurer que toutes les informations sont complètes et correctes</li>
+    <li>Contacter l'équipe de modération si vous avez des questions</li>
+  </ul>
+</div>
+
+<div style="margin: 30px 0; text-align: center;">
+  <%= link_to 'Créer un nouvel événement', new_event_url, 
+      style: 'display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+  Cordialement,<br>
+  L'équipe Grenoble Roller
+</p>
+
+<p style="color: #6c757d; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+  <strong>💡 Note :</strong> Si vous avez des questions concernant ce refus, n'hésitez pas à contacter l'équipe de modération.
+</p>
+

@@ -17,23 +17,6 @@ class MembershipsController < ApplicationController
     @active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
   end
 
-  def choose
-    # Page de sélection : adhésion seule ou adhésion + T-shirt
-    # Cette page s'affiche avant le formulaire pour simplifier le choix
-    @is_child = params[:child] == "true"
-    @renew_from = params[:renew_from]
-
-    # Si renouvellement, récupérer l'ancienne adhésion pour afficher les infos
-    if @renew_from.present?
-      @old_membership = current_user.memberships.find_by(id: @renew_from)
-      if @old_membership && @old_membership.is_child_membership? && @old_membership.expired?
-        @is_renewal = true
-      end
-    end
-
-    render :choose
-  end
-
   def new
     # Si paramètre check_age, calculer l'âge et rediriger
     if params[:check_age] == "true" || params[:check_age] == true
@@ -41,8 +24,8 @@ class MembershipsController < ApplicationController
       return
     end
 
-    # Gérer le paramètre with_tshirt (depuis la page choose)
-    @with_tshirt = params[:with_tshirt] == "true"
+    # Adhésion simple uniquement (plus d'option T-shirt)
+    @with_tshirt = false
 
     type = params[:type] # "adult", "teen", "children", ou nil (choix initial)
     children_count = params[:count]&.to_i
@@ -66,9 +49,9 @@ class MembershipsController < ApplicationController
           child_last_name: old_membership.child_last_name,
           child_date_of_birth: old_membership.child_date_of_birth,
           category: old_membership.category,
-          with_tshirt: @with_tshirt, # Utiliser le paramètre from choose page
-          tshirt_size: nil, # Ne pas pré-remplir la taille pour permettre un nouveau choix
-          tshirt_qty: @with_tshirt ? 1 : 0
+          with_tshirt: false,
+          tshirt_size: nil,
+          tshirt_qty: 0
         )
       end
     end
@@ -97,8 +80,6 @@ class MembershipsController < ApplicationController
     @season = Membership.current_season_name
     @start_date, @end_date = Membership.current_season_dates
     @categories = get_categories
-    @tshirt_product = Product.find_by(slug: "tshirt-grenoble-roller")
-    @tshirt_variants = @tshirt_product&.product_variants&.where(is_active: true)&.includes(option_values: :option_type)&.order(:id) || []
     @user = current_user
 
     if type == "teen"
@@ -116,8 +97,8 @@ class MembershipsController < ApplicationController
     when "teen"
       render :teen_form
     when "child"
-      # Gérer le paramètre with_tshirt (depuis la page choose ou lien direct)
-      @with_tshirt = params[:with_tshirt] == "true"
+      # Adhésion simple uniquement (plus d'option T-shirt)
+      @with_tshirt = false
 
       # Formulaire pour un seul enfant (simplifié)
       @season = Membership.current_season_name
@@ -125,7 +106,7 @@ class MembershipsController < ApplicationController
       @categories = {
         standard: {
           name: "Cotisation Adhérent Grenoble Roller",
-          description: "Je souhaite être membre bienfaiteur ou actif de l'association.",
+          description: "Je souhaite être membre bienfaiteur ou actif de l'association. Accès aux initiations pour la saison inclus.",
           price_cents: 1000
         },
         with_ffrs: {
@@ -139,9 +120,6 @@ class MembershipsController < ApplicationController
   end
 
   def check_age_and_redirect
-    # Préserver le paramètre with_tshirt pour éviter les boucles de redirection
-    with_tshirt_param = params[:with_tshirt]
-
     # Vérifier d'abord si l'utilisateur a déjà une adhésion personnelle active ou pending
     current_season = Membership.current_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
@@ -168,11 +146,8 @@ class MembershipsController < ApplicationController
 
     # Si pas de date de naissance, permettre de continuer (sera renseignée dans le formulaire)
     if current_user.date_of_birth.blank?
-      # Rediriger vers la page de choix (le formulaire permettra de renseigner la date de naissance)
-      # Préserver le paramètre with_tshirt pour éviter les boucles
-      redirect_params = {}
-      redirect_params[:with_tshirt] = with_tshirt_param if with_tshirt_param.present?
-      redirect_to choose_memberships_path(redirect_params)
+      # Rediriger directement vers le formulaire adulte
+      redirect_to new_membership_path(type: "adult")
       return
     end
 
@@ -189,16 +164,19 @@ class MembershipsController < ApplicationController
       redirect_to new_membership_path(type: "teen")
       nil
     else
-      # Rediriger vers la page de choix (adhésion seule ou avec T-shirt)
-      # Préserver le paramètre with_tshirt pour éviter les boucles
-      redirect_params = {}
-      redirect_params[:with_tshirt] = with_tshirt_param if with_tshirt_param.present?
-      redirect_to choose_memberships_path(redirect_params)
+      # Rediriger directement vers le formulaire adulte
+      redirect_to new_membership_path(type: "adult")
       nil
     end
   end
 
   def create
+    # Vérifier si c'est un paiement sans HelloAsso
+    if params[:payment_method] == "cash_check" || params[:payment_method] == "without_payment"
+      create_without_payment
+      return
+    end
+
     # Détecter le type depuis les paramètres
     membership_params = params[:membership] || params
 
@@ -209,6 +187,19 @@ class MembershipsController < ApplicationController
       create_teen_membership
     else
       create_adult_membership
+    end
+  end
+
+  # Créer une adhésion sans paiement HelloAsso (espèces/chèques)
+  def create_without_payment
+    membership_params = params[:membership] || params
+
+    if membership_params[:is_child_membership] == "true" || membership_params[:is_child_membership] == true
+      create_child_membership_without_payment
+    elsif membership_params[:type] == "teen"
+      create_teen_membership_without_payment
+    else
+      create_adult_membership_without_payment
     end
   end
 
@@ -548,7 +539,7 @@ class MembershipsController < ApplicationController
       standard: {
         name: "Cotisation Adhérent Grenoble Roller",
         price_cents: 1000,
-        description: "Je souhaite être membre bienfaiteur ou actif de l'association."
+        description: "Je souhaite être membre bienfaiteur ou actif de l'association. Accès aux initiations pour la saison inclus."
       },
       with_ffrs: {
         name: "Cotisation Adhérent Grenoble Roller + Licence FFRS",
@@ -562,7 +553,6 @@ class MembershipsController < ApplicationController
   def create_adult_membership
     membership_params = params[:membership] || params
     category = membership_params[:category]
-    tshirt_variant_id = membership_params[:tshirt_variant_id].presence
 
     unless Membership.categories.key?(category)
       redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
@@ -681,10 +671,10 @@ class MembershipsController < ApplicationController
       # Pas de validation stricte pour Standard
     end
 
-    # Gérer le T-shirt (nouveau système simplifié)
-    with_tshirt = membership_params[:with_tshirt] == "true" || membership_params[:with_tshirt] == true
-    tshirt_size = membership_params[:tshirt_size] if with_tshirt
-    tshirt_qty = (membership_params[:tshirt_qty] || 1).to_i if with_tshirt
+    # Adhésion simple uniquement (plus d'option T-shirt)
+    with_tshirt = false
+    tshirt_size = nil
+    tshirt_qty = 0
 
     # Préparer les attributs du questionnaire de santé
     health_attrs = {
@@ -707,12 +697,12 @@ class MembershipsController < ApplicationController
       season: current_season,
       is_child_membership: false,
       is_minor: current_user.is_minor?,
-      tshirt_variant_id: tshirt_variant_id,
-      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      # Nouveaux champs T-shirt simplifié
-      with_tshirt: with_tshirt,
-      tshirt_size: tshirt_size,
-      tshirt_qty: with_tshirt ? tshirt_qty : 0,
+      tshirt_variant_id: nil,
+      tshirt_price_cents: nil,
+      # Adhésion simple uniquement (plus d'option T-shirt)
+      with_tshirt: false,
+      tshirt_size: nil,
+      tshirt_qty: 0,
       # Questionnaire de santé
       **health_attrs
     )
@@ -771,7 +761,6 @@ class MembershipsController < ApplicationController
   def create_teen_membership
     membership_params = params[:membership] || params
     category = membership_params[:category]
-    tshirt_variant_id = membership_params[:tshirt_variant_id].presence
 
     unless Membership.categories.key?(category)
       redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
@@ -859,8 +848,11 @@ class MembershipsController < ApplicationController
       season: current_season,
       is_child_membership: false,
       is_minor: true, # Les ados sont mineurs
-      tshirt_variant_id: tshirt_variant_id,
-      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
+      tshirt_variant_id: nil,
+      tshirt_price_cents: nil,
+      with_tshirt: false,
+      tshirt_size: nil,
+      tshirt_qty: 0,
       parent_email: membership_params[:parent_email],
       parent_name: membership_params[:parent_name] || "#{current_user.first_name} #{current_user.last_name}",
       parent_phone: membership_params[:parent_phone] || current_user.phone
@@ -933,7 +925,7 @@ class MembershipsController < ApplicationController
     child_params = child_params.symbolize_keys if child_params.is_a?(Hash) && child_params.keys.first.is_a?(String)
 
     category = child_params[:category]
-    tshirt_variant_id = child_params[:tshirt_variant_id].presence
+    # Adhésion simple uniquement (plus d'option T-shirt)
 
     unless Membership.categories.key?(category)
       return Membership.new.tap { |m| m.errors.add(:category, "invalide") }
@@ -985,10 +977,10 @@ class MembershipsController < ApplicationController
       )
     end
 
-    # Gérer le T-shirt (nouveau système simplifié)
-    with_tshirt = child_params[:with_tshirt] == "true" || child_params[:with_tshirt] == true
-    tshirt_size = child_params[:tshirt_size] if with_tshirt
-    tshirt_qty = (child_params[:tshirt_qty] || 1).to_i if with_tshirt
+    # Adhésion simple uniquement (plus d'option T-shirt)
+    with_tshirt = false
+    tshirt_size = nil
+    tshirt_qty = 0
 
     # Vérifier les réponses au questionnaire de santé (9 questions) AVANT création
     has_health_issue = false
@@ -1059,12 +1051,12 @@ class MembershipsController < ApplicationController
       parent_name: "#{current_user.first_name} #{current_user.last_name}",
       parent_email: current_user.email,
       parent_phone: current_user.phone,
-      tshirt_variant_id: tshirt_variant_id,
-      tshirt_price_cents: tshirt_variant_id.present? ? 1400 : nil,
-      # Nouveaux champs T-shirt simplifié
-      with_tshirt: with_tshirt,
-      tshirt_size: tshirt_size,
-      tshirt_qty: with_tshirt ? tshirt_qty : 0,
+      tshirt_variant_id: nil,
+      tshirt_price_cents: nil,
+      # Adhésion simple uniquement (plus d'option T-shirt)
+      with_tshirt: false,
+      tshirt_size: nil,
+      tshirt_qty: 0,
       rgpd_consent: child_params[:rgpd_consent] == "1",
       legal_notices_accepted: child_params[:legal_notices_accepted] == "1",
       ffrs_data_sharing_consent: child_params[:ffrs_data_sharing_consent] == "1",
@@ -1087,5 +1079,173 @@ class MembershipsController < ApplicationController
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
     membership&.destroy
     raise e
+  end
+
+  # Créer une adhésion adulte sans paiement HelloAsso (espèces/chèques)
+  def create_adult_membership_without_payment
+    membership_params = params[:membership] || params
+    category = membership_params[:category]
+
+    unless Membership.categories.key?(category)
+      redirect_to new_membership_path, alert: "Catégorie d'adhésion invalide."
+      return
+    end
+
+    current_season = Membership.current_season_name
+
+    # Vérifier les adhésions existantes pour cette saison
+    existing_memberships = current_user.memberships.personal.where(season: current_season)
+
+    # Vérifier si une adhésion active existe
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    if active_membership
+      redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
+      return
+    end
+
+    # Vérifier si une adhésion pending existe
+    pending_membership = existing_memberships.find { |m| m.status == "pending" }
+    if pending_membership
+      redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement ou annuler cette adhésion avant d'en créer une nouvelle."
+      return
+    end
+
+    start_date, end_date = Membership.current_season_dates
+    amount_cents = Membership.price_for_category(category)
+
+    # Mettre à jour les informations User
+    user_update_params = {}
+    user_update_params[:first_name] = membership_params[:first_name] if membership_params[:first_name].present?
+    user_update_params[:last_name] = membership_params[:last_name] if membership_params[:last_name].present?
+    user_update_params[:phone] = membership_params[:phone] if membership_params[:phone].present?
+    user_update_params[:email] = membership_params[:email] if membership_params[:email].present?
+    user_update_params[:address] = membership_params[:address] if membership_params[:address].present?
+    user_update_params[:city] = membership_params[:city] if membership_params[:city].present?
+    user_update_params[:postal_code] = membership_params[:postal_code] if membership_params[:postal_code].present?
+
+    if membership_params[:date_of_birth].present?
+      user_update_params[:date_of_birth] = membership_params[:date_of_birth]
+    end
+
+    if params[:user]
+      user_update_params[:wants_initiation_mail] = params[:user][:wants_initiation_mail] == "1" if params[:user][:wants_initiation_mail].present?
+      user_update_params[:wants_events_mail] = params[:user][:wants_events_mail] == "1" if params[:user][:wants_events_mail].present?
+    end
+
+    if user_update_params.any?
+      current_user.update!(user_update_params)
+    end
+
+    if current_user.date_of_birth.blank?
+      redirect_to new_membership_path(type: "adult"), alert: "La date de naissance est obligatoire pour adhérer."
+      return
+    end
+
+    user_age = current_user.age
+    if user_age < 16
+      redirect_to new_membership_path(type: "adult"), alert: "L'adhésion adulte n'est pas possible pour les personnes de moins de 16 ans. Veuillez contacter un membre du bureau de l'association pour procéder à l'adhésion. #{helpers.link_to('Contactez-nous', contact_path, class: 'alert-link')} pour plus d'informations.".html_safe
+      return
+    end
+
+    # Vérifier les réponses au questionnaire de santé
+    has_health_issue = false
+    all_answered_no = true
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      if answer == "yes"
+        has_health_issue = true
+        all_answered_no = false
+      elsif answer != "no"
+        all_answered_no = false
+      end
+    end
+
+    is_ffrs = category == "with_ffrs"
+
+    if is_ffrs
+      if has_health_issue
+        membership_params[:health_questionnaire_status] = "medical_required"
+        if membership_params[:medical_certificate].blank?
+          redirect_to new_membership_path(type: "adult"), alert: "Pour la licence FFRS, un certificat médical est obligatoire si vous avez répondu 'Oui' à au moins une question de santé."
+          return
+        end
+      elsif all_answered_no
+        membership_params[:health_questionnaire_status] = "ok"
+        previous_ffrs = current_user.memberships.personal.where(category: "with_ffrs").exists?
+        if !previous_ffrs && membership_params[:medical_certificate].blank?
+          redirect_to new_membership_path(type: "adult"), alert: "Pour une nouvelle licence FFRS, un certificat médical est obligatoire."
+          return
+        end
+      else
+        redirect_to new_membership_path(type: "adult"), alert: "Le questionnaire de santé est obligatoire pour la licence FFRS. Veuillez répondre à toutes les questions."
+        return
+      end
+    else
+      membership_params[:health_questionnaire_status] = has_health_issue ? "medical_required" : "ok"
+    end
+
+    # Préparer les attributs du questionnaire de santé
+    health_attrs = {
+      health_questionnaire_status: membership_params[:health_questionnaire_status] || "ok"
+    }
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      health_attrs["health_q#{i}"] = answer if answer.present?
+    end
+
+    # Créer l'adhésion en pending SANS paiement HelloAsso
+    membership = Membership.create!(
+      user: current_user,
+      category: category,
+      status: :pending,
+      start_date: start_date,
+      end_date: end_date,
+      amount_cents: amount_cents,
+      currency: "EUR",
+      season: current_season,
+      is_child_membership: false,
+      is_minor: current_user.is_minor?,
+      tshirt_variant_id: nil,
+      tshirt_price_cents: nil,
+      with_tshirt: false,
+      tshirt_size: nil,
+      tshirt_qty: 0,
+      **health_attrs
+    )
+
+    # Attacher le certificat médical si fourni
+    if membership_params[:medical_certificate].present?
+      membership.medical_certificate.attach(membership_params[:medical_certificate])
+    end
+
+    # PAS de création de paiement HelloAsso - l'adhésion reste en pending
+    # Un bénévole/admin pourra la valider manuellement dans ActiveAdmin
+
+    redirect_to membership_path(membership), notice: "Votre adhésion a été créée avec le statut 'En attente'. Un bénévole validera votre paiement en espèces/chèque prochainement."
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion sans paiement : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+  end
+
+  def create_teen_membership_without_payment
+    # Similaire à create_adult_membership_without_payment mais pour les ados
+    # Pour simplifier, on peut réutiliser la même logique
+    create_adult_membership_without_payment
+  end
+
+  def create_child_membership_without_payment
+    membership_params = params[:membership] || params
+    membership = create_child_membership_from_params(membership_params, 0)
+
+    if membership.persisted?
+      redirect_to memberships_path, notice: "L'adhésion de #{membership.child_full_name} a été créée avec le statut 'En attente'. Un bénévole validera votre paiement en espèces/chèque prochainement."
+    else
+      redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
+    end
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant sans paiement : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.message}"
   end
 end

@@ -80,7 +80,7 @@
               </span>
             <% end %>
             
-            <% if user_signed_in? && current_user_has_attendance?(@event) %>
+            <% if user_signed_in? && (@user_attendance || @child_attendances&.any?) %>
               <span class="badge bg-success">
                 <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Vous êtes inscrit(e)
               </span>
@@ -312,118 +312,125 @@
       <% end %>
 
 
+      <!-- Zone inscription/annulation -->
+      <% if user_signed_in? && (@user_attendance || @child_attendances&.any?) %>
+        <!-- Affichage des inscriptions existantes -->
+        <div class="card card-liquid shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 mb-3">
+              <i class="bi bi-check-circle text-success me-2" aria-hidden="true"></i>
+              Inscriptions confirmées
+            </h3>
+            
+            <!-- Inscription parent -->
+            <% if @user_attendance %>
+              <div class="alert alert-success mb-3" role="alert">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
+                    <strong>Vous êtes inscrit(e)</strong>
+                  </div>
+                  <%= button_to cancel_attendance_event_path(@event), 
+                      method: :delete, 
+                      class: "btn btn-outline-danger btn-sm", 
+                      data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
+                      aria: { label: 'Se désinscrire' } do %>
+                    <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Inscriptions enfants -->
+            <% if @child_attendances&.any? %>
+              <% @child_attendances.each do |child_attendance| %>
+                <div class="alert alert-info mb-3" role="alert">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                      <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
+                      <strong><%= child_attendance.participant_name %> est inscrit(e)</strong>
+                    </div>
+                    <%= button_to cancel_attendance_event_path(@event), 
+                        method: :delete, 
+                        params: { child_membership_id: child_attendance.child_membership_id },
+                        class: "btn btn-outline-danger btn-sm", 
+                        data: { turbo_confirm: "Annuler l'inscription de #{child_attendance.participant_name} ?" },
+                        aria: { label: "Désinscrire #{child_attendance.participant_name}" } do %>
+                      <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Annuler
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+
+            <!-- Formulaire pour inscrire un enfant supplémentaire -->
+            <% if @can_register_child %>
+              <div class="mt-4 pt-3 border-top">
+                <%= render 'events/child_registration_form', event: @event %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% elsif user_signed_in? && @can_register_child && !@event.full? %>
+        <!-- Permettre d'inscrire un enfant même si le parent n'est pas encore inscrit -->
+        <div class="card card-liquid shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 mb-3">
+              <i class="bi bi-person-plus text-liquid-primary me-2" aria-hidden="true"></i>
+              Inscrire un enfant
+            </h3>
+            <%= render 'events/child_registration_form', event: @event %>
+          </div>
+        </div>
+      <% end %>
+
       <!-- Zone 5 - Actions principales -->
-      <div class="event-actions-sticky">
-        <!-- Notification rappel (uniquement si inscrit) - Placée en haut de la zone d'actions pour visibilité contextuelle -->
-        <% if current_user_has_attendance?(@event) && @user_attendance %>
-          <% if @user_attendance.wants_reminder? %>
-            <div class="alert alert-info alert-reminder mb-3 border-start border-info border-4" role="alert">
-              <div class="d-flex align-items-start">
-                <i class="bi bi-bell-fill me-2 mt-1 text-info" aria-hidden="true"></i>
-                <div class="flex-grow-1">
-                  <strong class="d-block mb-1">Rappel activé</strong>
-                  <p class="mb-2 small text-muted">Vous recevrez un email la veille à 19h pour vous rappeler l'événement.</p>
-                  <%= button_to toggle_reminder_event_path(@event), method: :patch, 
-                      class: "btn btn-sm btn-outline-secondary", 
-                      data: { turbo: false },
-                      aria: { label: 'Désactiver le rappel' } do %>
-                    <i class="bi bi-bell-slash me-1" aria-hidden="true"></i>Désactiver le rappel
-                  <% end %>
-                </div>
+      <%= render 'shared/event_actions', 
+          event: @event, 
+          user_attendance: @user_attendance, 
+          child_attendances: @child_attendances %>
+
+      <!-- Bouton primaire (grande, couleur) -->
+      <div class="primary-action">
+        <% if policy(@event).can_attend? && !@event.full? %>
+          <button type="button" 
+                  class="btn btn-liquid-primary btn-lg w-100" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#confirmAttendModalShow"
+                  aria-label="S'inscrire à cet événement">
+            <i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>Inscription
+          </button>
+        <% elsif @event.full? %>
+          <div class="alert alert-warning mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+            <strong>Cet événement est complet</strong>
+            <p class="mb-0">Toutes les places sont prises. Rejoignez la liste d'attente pour être notifié(e) si une place se libère.</p>
+            <% if user_signed_in? %>
+              <div class="mt-3 d-flex flex-wrap gap-2">
+                <%# Bouton pour rejoindre la liste d'attente (adulte) si pas déjà en liste d'attente %>
+                <% if @user_waitlist_entry.nil? && !@user_attendance&.persisted? %>
+                  <button type="button" 
+                          class="btn btn-liquid-primary" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#joinWaitlistModalShowEvent"
+                          aria-label="Rejoindre la liste d'attente">
+                    <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Rejoindre la liste d'attente
+                  </button>
+                <% end %>
+                
+                <%# Bouton pour inscrire un enfant si disponible %>
+                <% if @can_register_child && current_user.memberships.active_now.where(is_child_membership: true).where.not(id: @child_attendances.map(&:child_membership_id).compact).exists? %>
+                  <button type="button" 
+                          class="btn btn-outline-primary" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#confirmAttendModalShow"
+                          aria-label="Inscrire un enfant">
+                    <i class="bi bi-person-heart me-2" aria-hidden="true"></i>Inscrire un enfant
+                  </button>
+                <% end %>
               </div>
-            </div>
-          <% else %>
-            <div class="alert alert-light border border-warning mb-3" role="alert">
-              <div class="d-flex align-items-start">
-                <i class="bi bi-bell me-2 mt-1 text-warning" aria-hidden="true"></i>
-                <div class="flex-grow-1">
-                  <strong class="d-block mb-1">Rappel désactivé</strong>
-                  <p class="mb-2 small text-muted">Activez le rappel pour recevoir un email la veille à 19h.</p>
-                  <%= button_to toggle_reminder_event_path(@event), method: :patch, 
-                      class: "btn btn-sm btn-outline-primary", 
-                      data: { turbo: false },
-                      aria: { label: 'Activer le rappel' } do %>
-                    <i class="bi bi-bell-plus me-1" aria-hidden="true"></i>Activer le rappel
-                  <% end %>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-
-        <!-- Boutons secondaires (Calendrier en premier) -->
-        <div class="secondary-actions mb-3">
-          <% if user_signed_in? %>
-            <%= link_to ical_event_path(@event, format: :ics), 
-                class: 'btn btn-outline-primary btn-sm', 
-                title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
-                aria: { label: 'Ajouter au calendrier' } do %>
-              <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
             <% end %>
-          <% else %>
-            <%= link_to new_user_session_path, 
-                class: 'btn btn-outline-primary btn-sm',
-                aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-              <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Connexion
-            <% end %>
-          <% end %>
-        </div>
-
-        <!-- Bouton primaire (grande, couleur) -->
-        <div class="primary-action">
-          <% if current_user_has_attendance?(@event) %>
-            <%= button_to cancel_attendance_event_path(@event), method: :delete, 
-                class: 'btn btn-outline-secondary btn-lg w-100', 
-                data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
-                aria: { label: 'Se désinscrire de cet événement' } do %>
-              <i class="bi bi-calendar-x me-2" aria-hidden="true"></i>Se désinscrire
-            <% end %>
-          <% elsif policy(@event).can_attend? && !@event.full? %>
-            <button type="button" 
-                    class="btn btn-liquid-primary btn-lg w-100" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#confirmAttendModalShow"
-                    aria-label="S'inscrire à cet événement">
-              <i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>S'inscrire
-            </button>
-          <% elsif @event.full? %>
-            <button type="button" class="btn btn-outline-secondary btn-lg w-100" disabled aria-label="Événement complet">
-              <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Cet événement est complet
-            </button>
-          <% end %>
-        </div>
-
-        <!-- Autres boutons secondaires -->
-        <div class="secondary-actions">
-
-          <%= link_to events_path, 
-              class: 'btn btn-outline-secondary btn-sm',
-              aria: { label: 'Voir tous les événements' } do %>
-            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Tous les événements
-          <% end %>
-        </div>
-
-        <!-- Boutons tertiaires (link) -->
-        <% if policy(@event).edit? || policy(@event).destroy? %>
-          <div class="tertiary-actions">
-          <% if policy(@event).edit? %>
-            <%= link_to edit_event_path(@event), 
-                class: 'btn btn-link text-decoration-none btn-sm',
-                aria: { label: 'Modifier cet événement' } do %>
-              <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Modifier
-            <% end %>
-          <% end %>
-
-          <% if policy(@event).destroy? %>
-            <button type="button" 
-                    class="btn btn-link text-danger text-decoration-none btn-sm" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#confirmDeleteModalShow"
-                    aria-label="Supprimer cet événement">
-              <i class="bi bi-trash me-1" aria-hidden="true"></i>Supprimer
-            </button>
-          <% end %>
-        </div>
+          </div>
         <% end %>
       </div>
     </div>
@@ -431,7 +438,7 @@
 </section>
 
 <!-- Modal de confirmation d'inscription simplifiée -->
-<% if policy(@event).can_attend? && !@event.full? %>
+<% if (policy(@event).can_attend? && !@event.full?) || (@event.full? && user_signed_in? && @can_register_child && current_user.memberships.active_now.where(is_child_membership: true).where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?) %>
   <div class="modal fade" id="confirmAttendModalShow" tabindex="-1" aria-labelledby="confirmAttendModalShowLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -443,59 +450,15 @@
         </div>
         <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false }, id: "attendFormShow", class: "attend-form" do |f| %>
           <div class="modal-body">
-            <!-- Alerte "Presque complet" si ≤5 places restantes -->
-            <% if !@event.unlimited? && @event.remaining_spots <= 5 && @event.remaining_spots > 0 %>
-              <div class="alert alert-warning mb-3" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-                <strong>Attention !</strong> Il ne reste que <%= pluralize(@event.remaining_spots, "place disponible", "places disponibles") %> pour cet événement.
-              </div>
-            <% end %>
-            
-            <p class="lead mb-3">
-              Confirmez votre participation à <strong><%= @event.title %></strong>
-            </p>
-            
-            <!-- Résumé de l'événement -->
-            <div class="event-summary mb-3 p-3 bg-light rounded">
-              <div class="row g-2">
-                <div class="col-12">
-                  <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé de l'événement</p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-1">
-                    <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
-                    <strong>Date :</strong> <%= l @event.start_at, format: :event_long, locale: :fr %>
-                  </p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-1">
-                    <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
-                    <strong>Lieu :</strong> <%= truncate(@event.location_text, length: 50) %>
-                  </p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-1">
-                    <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
-                    <strong>Durée :</strong> <%= @event.duration_min %> minutes
-                  </p>
-                </div>
-                <% if @event.distance_km.present? && @event.distance_km > 0 %>
-                  <div class="col-12 col-sm-6">
-                    <p class="mb-0">
-                      <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
-                      <strong>Distance :</strong>
-                      <% if @event.loops_count && @event.loops_count > 1 %>
-                        <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-                        <span class="badge bg-info ms-2"><%= @event.loops_count %> boucles</span>
-                      <% else %>
-                        <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-                      <% end %>
-                    </p>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-            
+            <%= render 'shared/registration_form_fields', 
+                form: f, 
+                event: @event, 
+                prefix_id: "_show", 
+                show_alert: true, 
+                show_summary: true,
+                user_attendance: @user_attendance,
+                child_attendances: @child_attendances %>
+
             <!-- Bouton Ajouter au calendrier -->
             <% if user_signed_in? %>
               <div class="mb-3 text-center">
@@ -507,14 +470,6 @@
                 <% end %>
               </div>
             <% end %>
-            
-            <div class="form-check mb-3">
-              <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
-              <label class="form-check-label" for="wants_reminder">
-                <i class="bi bi-bell me-1" aria-hidden="true"></i>
-                Recevoir un rappel par email la veille à 19h
-              </label>
-            </div>
             
             <p class="text-muted small mb-0">
               <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
@@ -546,31 +501,50 @@
   </div>
 <% end %>
 
-<!-- Modal de confirmation de suppression -->
-<% if policy(@event).destroy? %>
-  <div class="modal fade" id="confirmDeleteModalShow" tabindex="-1" aria-labelledby="confirmDeleteModalShowLabel" aria-hidden="true">
+<!-- Modal pour rejoindre la liste d'attente -->
+<% if user_signed_in? && @event.full? %>
+  <div class="modal fade" id="joinWaitlistModalShowEvent" tabindex="-1" aria-labelledby="joinWaitlistModalShowEventLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="modal-title h5" id="confirmDeleteModalShowLabel">Supprimer l'événement</h2>
+          <h2 class="modal-title h5" id="joinWaitlistModalShowEventLabel">
+            <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>Rejoindre la liste d'attente
+          </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <div class="modal-body">
-          <p class="mb-0">
-            Cette action est définitive. Souhaitez-vous supprimer
-            <strong><%= @event.title %></strong> ?
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-          <%= button_to event_path(@event), method: :delete, form: { data: { turbo: true } }, class: "btn btn-danger" do %>
-            <i class="bi bi-trash me-2" aria-hidden="true"></i>Oui, supprimer
-          <% end %>
-        </div>
+        <%= form_with url: join_waitlist_event_path(@event), method: :post, local: true, data: { turbo: false }, id: "joinWaitlistFormShowEvent" do |f| %>
+          <div class="modal-body">
+            <p class="mb-3">
+              Cet événement est complet. Rejoignez la liste d'attente pour être notifié(e) si une place se libère.
+            </p>
+            
+            <%= render 'shared/registration_form_fields', 
+                form: f, 
+                event: @event, 
+                prefix_id: "_waitlist_show_event", 
+                show_alert: false, 
+                show_summary: false,
+                user_attendance: @user_attendance,
+                child_attendances: @child_attendances,
+                is_waitlist: true %>
+            
+            <div class="alert alert-info mb-0" role="alert">
+              <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+              <small>Vous recevrez un email si une place se libère. Vous aurez 24 heures pour confirmer votre inscription.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= f.submit "Rejoindre la liste d'attente", class: "btn btn-liquid-primary" %>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
 <% end %>
+
+<!-- Modal de confirmation de suppression -->
+<%= render 'shared/event_delete_modal', event: @event %>
 
 <!-- Modals pour agrandir les images de parcours -->
 <% if @event.loops_count && @event.loops_count > 1 && @event.loops_with_routes.any? %>
