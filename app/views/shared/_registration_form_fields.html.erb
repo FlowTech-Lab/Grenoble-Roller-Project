@@ -255,7 +255,8 @@
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
-        aria: { describedby: "free_trial_help#{prefix_id}" }
+        aria: { describedby: "free_trial_help#{prefix_id}" },
+        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}()"
     } %>
     <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
@@ -265,7 +266,7 @@
       <% if is_initiation && event.allow_non_member_discovery? %>
         Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
       <% else %>
-        Vous n'avez pas encore utilisé votre essai gratuit. Après cet essai, une adhésion sera requise pour continuer.
+        Vous n'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.
       <% end %>
     </small>
   </div>
@@ -281,6 +282,37 @@
 </div>
 
 <script>
+  // Fonction pour activer/désactiver le bouton de soumission selon l'essai gratuit (accessible globalement)
+  <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+    // Définir la fonction globalement pour qu'elle soit accessible depuis l'attribut onchange
+    window.toggleSubmitButton<%= prefix_id %> = function() {
+      // Si l'essai gratuit est requis (pas de places découverte), désactiver le bouton si non coché
+      const form = document.querySelector('form[id*="attendForm"]');
+      if (!form) return;
+      const btn = form.querySelector('input[type="submit"], button[type="submit"]');
+      if (!btn) return;
+      const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+      if (freeTrialCheckbox) {
+        if (freeTrialCheckbox.checked) {
+          btn.disabled = false;
+          btn.classList.remove('disabled', 'opacity-50');
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        } else {
+          btn.disabled = true;
+          btn.classList.add('disabled', 'opacity-50');
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+        }
+      }
+    };
+  <% else %>
+    // Fonction vide si l'essai gratuit n'est pas requis (pour éviter les erreurs)
+    window.toggleSubmitButton<%= prefix_id %> = function() {
+      // Ne rien faire si l'essai gratuit n'est pas requis
+    };
+  <% end %>
+  
   // Validation JavaScript avant soumission (spécifique à ce formulaire)
   (function() {
     // Trouver le formulaire parent qui contient ce partial
@@ -323,6 +355,17 @@
         }
       <% end %>
       
+      // Vérifier que l'essai gratuit est coché si requis (pas de places découverte)
+      <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+        const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+        if (freeTrialCheckbox && !freeTrialCheckbox.checked) {
+          e.preventDefault();
+          alert('Veuillez cocher la case "Utiliser mon essai gratuit" pour confirmer votre inscription.');
+          freeTrialCheckbox.focus();
+          return false;
+        }
+      <% end %>
+      
       // Marquer comme en cours de soumission
       isSubmitting = true;
       
@@ -334,6 +377,22 @@
         submitButton.textContent = 'Inscription en cours...';
       }
     });
+    
+    // Initialiser l'état du bouton au chargement si l'essai gratuit est requis
+    <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+      // Désactiver le bouton par défaut
+      submitButton.disabled = true;
+      submitButton.classList.add('disabled', 'opacity-50');
+      submitButton.style.opacity = '0.6';
+      submitButton.style.cursor = 'not-allowed';
+      
+      // Initialiser l'état au chargement
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.toggleSubmitButton<%= prefix_id %>);
+      } else {
+        window.toggleSubmitButton<%= prefix_id %>();
+      }
+    <% end %>
   })();
 </script>
 
