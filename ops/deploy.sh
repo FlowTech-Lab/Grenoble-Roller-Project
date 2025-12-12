@@ -122,6 +122,7 @@ FORCE_REDEPLOY=false
 if [ -t 0 ] && [ "$#" -gt 0 ] && [ "$1" = "--force" ]; then
     FORCE_REDEPLOY=true
 fi
+export FORCE_REDEPLOY  # Exporter pour les modules (migrations.sh)
 
 # Initialiser variables pour métriques
 REMOTE=""
