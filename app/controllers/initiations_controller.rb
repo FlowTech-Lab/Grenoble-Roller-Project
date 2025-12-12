@@ -100,55 +100,43 @@ class InitiationsController < ApplicationController
   end
 
   def attend
+    # Stocker les paramètres dans des variables d'instance pour la policy
+    @child_membership_id_for_policy = params[:child_membership_id].presence
+    @is_volunteer_for_policy = params[:is_volunteer] == "1"
+    
+    # Autorisation via Pundit (la policy récupérera les valeurs depuis le contrôleur)
     authorize @initiation, :attend?
 
     child_membership_id = params[:child_membership_id].presence
     is_volunteer = params[:is_volunteer] == "1"
     
-    # Si c'est pour un enfant, vérifier qu'il n'est pas déjà inscrit
-    if child_membership_id.present?
-      existing_attendance = @initiation.attendances.find_by(
-        user: current_user,
-        child_membership_id: child_membership_id
-      )
-      if existing_attendance
-        child_name = Membership.find_by(id: child_membership_id)&.child_full_name || "cet enfant"
-        redirect_to initiation_path(@initiation), notice: "#{child_name} est déjà inscrit(e) à cette séance."
+    # Validation des paramètres
+    needs_equipment = params[:needs_equipment] == "1"
+    roller_size = params[:roller_size].presence
+    
+    # Valider roller_size si needs_equipment est true
+    if needs_equipment && roller_size.blank?
+      redirect_to initiation_path(@initiation), alert: "Veuillez sélectionner une taille de rollers si vous avez besoin de matériel."
+      return
+    end
+    
+    # Valider que roller_size est dans la liste des tailles disponibles
+    if needs_equipment && roller_size.present?
+      unless RollerStock::SIZES.include?(roller_size)
+        redirect_to initiation_path(@initiation), alert: "La taille de rollers sélectionnée n'est pas valide."
         return
       end
-    else
-      # Si c'est pour le parent, vérifier qu'il n'est pas déjà inscrit avec le même statut (bénévole ou participant)
-      if is_volunteer
-        # Vérifier qu'il n'est pas déjà inscrit en tant que bénévole
-        existing_attendance = @initiation.attendances.find_by(
-          user: current_user,
-          child_membership_id: nil,
-          is_volunteer: true
-        )
-        if existing_attendance
-          redirect_to initiation_path(@initiation), notice: "Vous êtes déjà inscrit(e) en tant que bénévole pour cette séance."
-          return
-        end
-      else
-        # Vérifier qu'il n'est pas déjà inscrit en tant que participant (non-bénévole)
-        existing_attendance = @initiation.attendances.find_by(
-          user: current_user,
-          child_membership_id: nil,
-          is_volunteer: false
-        )
-        if existing_attendance
-          redirect_to initiation_path(@initiation), notice: "Vous êtes déjà inscrit(e) à cette séance."
-          return
-        end
-      end
     end
+    
+    # Log de la tentative d'inscription
+    Rails.logger.info("Tentative d'inscription - User: #{current_user.id}, Initiation: #{@initiation.id}, Child: #{child_membership_id}, Volunteer: #{is_volunteer}")
 
     attendance = @initiation.attendances.build(user: current_user)
     attendance.status = "registered"
     # Lire les paramètres directement au niveau racine (comme EventsController)
     attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
-    attendance.needs_equipment = params[:needs_equipment] == "1"
-    attendance.roller_size = params[:roller_size].presence if attendance.needs_equipment?
+    attendance.needs_equipment = needs_equipment
+    attendance.roller_size = roller_size if needs_equipment
     attendance.child_membership_id = child_membership_id
     
     # Gestion bénévole (uniquement pour le parent, pas pour les enfants)
@@ -160,9 +148,11 @@ class InitiationsController < ApplicationController
       attendance.is_volunteer = true
       # Les bénévoles n'ont pas besoin d'adhésion, on skip les vérifications
       if attendance.save
+        Rails.logger.info("Inscription bénévole réussie - Attendance: #{attendance.id}, User: #{current_user.id}, Initiation: #{@initiation.id}")
         EventMailer.attendance_confirmed(attendance).deliver_later if current_user.wants_initiation_mail?
         redirect_to initiation_path(@initiation), notice: "Inscription confirmée en tant que bénévole encadrant le #{l(@initiation.start_at, format: :long)}."
       else
+        Rails.logger.warn("Échec inscription bénévole - User: #{current_user.id}, Initiation: #{@initiation.id}, Errors: #{attendance.errors.full_messages.join(', ')}")
         redirect_to initiation_path(@initiation), alert: attendance.errors.full_messages.to_sentence
       end
       return
@@ -217,14 +207,29 @@ class InitiationsController < ApplicationController
     end
 
     if attendance.save
+      Rails.logger.info("Inscription réussie - Attendance: #{attendance.id}, User: #{current_user.id}, Initiation: #{@initiation.id}, Type: #{attendance.for_child? ? 'Enfant' : (attendance.is_volunteer ? 'Bénévole' : 'Participant')}")
       # Email de confirmation : vérifier wants_initiation_mail pour les initiations
       if current_user.wants_initiation_mail?
         EventMailer.attendance_confirmed(attendance).deliver_later
       end
       participant_name = attendance.for_child? ? attendance.participant_name : "Vous"
-      redirect_to initiation_path(@initiation), notice: "Inscription confirmée pour #{participant_name} le #{l(@initiation.start_at, format: :long)}."
+      type_message = attendance.is_volunteer ? "en tant que bénévole encadrant" : ""
+      redirect_to initiation_path(@initiation), notice: "Inscription confirmée #{type_message} pour #{participant_name} le #{l(@initiation.start_at, format: :long)}."
     else
-      redirect_to initiation_path(@initiation), alert: attendance.errors.full_messages.to_sentence
+      Rails.logger.warn("Échec inscription - User: #{current_user.id}, Initiation: #{@initiation.id}, Errors: #{attendance.errors.full_messages.join(', ')}")
+      # Améliorer les messages d'erreur
+      error_message = if attendance.errors[:base].any?
+        attendance.errors[:base].first
+      elsif attendance.errors[:event].any?
+        attendance.errors[:event].first
+      elsif attendance.errors[:child_membership_id].any?
+        attendance.errors[:child_membership_id].first
+      elsif attendance.errors[:free_trial_used].any?
+        attendance.errors[:free_trial_used].first
+      else
+        attendance.errors.full_messages.to_sentence
+      end
+      redirect_to initiation_path(@initiation), alert: error_message
     end
   end
 

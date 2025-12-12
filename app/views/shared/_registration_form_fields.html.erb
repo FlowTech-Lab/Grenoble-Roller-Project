@@ -165,12 +165,12 @@
         <strong>Besoin de matériel</strong>
       <% end %>
     </div>
-    <div id="roller_size_container<%= prefix_id %>" style="display: none;" class="ms-4">
-      <%= label_tag "roller_size#{prefix_id}", "Taille de rollers", class: "form-label" %>
+      <div id="roller_size_container<%= prefix_id %>" style="display: none;" class="ms-4">
+      <%= label_tag "roller_size_select#{prefix_id}", "Taille de rollers", class: "form-label" %>
       <%= select_tag :roller_size, 
           options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
-          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}" } %>
-      <small class="text-muted">
+          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}", required: true } } %>
+      <small id="roller_size_help<%= prefix_id %>" class="text-muted">
         <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
         Sous réserve de disponibilité du matériel.
       </small>
@@ -253,10 +253,67 @@
 
 <!-- Rappel email -->
 <div class="mb-4 form-check">
-  <%= form.check_box :wants_reminder, { checked: true, class: "form-check-input" }, "1", "0" %>
-  <%= form.label :wants_reminder, class: "form-check-label" do %>
+  <%= form.check_box :wants_reminder, { checked: true, class: "form-check-input", id: "wants_reminder#{prefix_id}" }, "1", "0" %>
+  <%= form.label "wants_reminder#{prefix_id}", class: "form-check-label" do %>
     <i class="bi bi-bell me-1" aria-hidden="true"></i>
     Recevoir un rappel la veille à 19h
   <% end %>
 </div>
+
+<script>
+  // Validation JavaScript avant soumission (spécifique à ce formulaire)
+  (function() {
+    // Trouver le formulaire parent qui contient ce partial
+    const form = document.querySelector('form[id*="attendForm"]');
+    if (!form) return;
+    
+    const submitButton = form.querySelector('input[type="submit"], button[type="submit"]');
+    if (!submitButton) return;
+    
+    // Utiliser un flag pour éviter les doubles soumissions
+    let isSubmitting = false;
+    
+    form.addEventListener('submit', function(e) {
+      // Empêcher la soumission si déjà en cours
+      if (isSubmitting) {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Vérifier si l'utilisateur est déjà inscrit (via data attributes)
+      <% if user_attendance.present? %>
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+        if (!childSelect || !childSelect.value || childSelect.value === '') {
+          e.preventDefault();
+          alert('Vous êtes déjà inscrit(e) à cette séance. Veuillez sélectionner un enfant si vous souhaitez en inscrire un.');
+          return false;
+        }
+      <% end %>
+      
+      // Vérifier que roller_size est sélectionné si needs_equipment est coché
+      <% if is_initiation %>
+        const needsEquipment = document.getElementById('needs_equipment<%= prefix_id %>');
+        const rollerSize = document.getElementById('roller_size_select<%= prefix_id %>');
+        
+        if (needsEquipment && needsEquipment.checked && rollerSize && (!rollerSize.value || rollerSize.value === '')) {
+          e.preventDefault();
+          alert('Veuillez sélectionner une taille de rollers si vous avez besoin de matériel.');
+          rollerSize.focus();
+          return false;
+        }
+      <% end %>
+      
+      // Marquer comme en cours de soumission
+      isSubmitting = true;
+      
+      // Désactiver le bouton pour éviter les doubles soumissions
+      submitButton.disabled = true;
+      if (submitButton.tagName === 'INPUT') {
+        submitButton.value = submitButton.value || 'Inscription en cours...';
+      } else {
+        submitButton.textContent = 'Inscription en cours...';
+      }
+    });
+  })();
+</script>
 

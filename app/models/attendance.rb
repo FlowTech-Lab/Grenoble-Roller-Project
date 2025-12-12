@@ -15,16 +15,23 @@ class Attendance < ApplicationRecord
   }, validate: true
 
   validates :status, presence: true
-  # Permettre plusieurs attendances pour le même user_id et event_id si child_membership_id est différent
+  # Permettre plusieurs attendances pour le même user_id et event_id si :
+  # - child_membership_id est différent (parent + enfants)
+  # - OU is_volunteer est différent (bénévole + participant)
+  # Note: Un utilisateur peut être inscrit comme bénévole ET participant (deux inscriptions distinctes)
   validates :user_id, uniqueness: { 
-    scope: [:event_id, :child_membership_id], 
-    message: "a déjà une inscription pour cet événement" 
+    scope: [:event_id, :child_membership_id, :is_volunteer], 
+    message: "a déjà une inscription pour cet événement avec ce statut",
+    conditions: -> { where.not(status: "canceled") } # Ne pas compter les inscriptions annulées
   }
   validates :free_trial_used, inclusion: { in: [ true, false ] }
+  validates :roller_size, presence: true, if: :needs_equipment?
+  validates :roller_size, inclusion: { in: RollerStock::SIZES }, if: :needs_equipment?
   validate :event_has_available_spots, on: :create
   validate :can_use_free_trial, on: :create
   validate :can_register_to_initiation, on: :create
   validate :child_membership_belongs_to_user
+  validate :no_duplicate_registration, on: :create
 
   scope :active, -> { where.not(status: "canceled") }
   scope :canceled, -> { where(status: "canceled") }
@@ -172,6 +179,32 @@ class Attendance < ApplicationRecord
 
     unless user.memberships.exists?(id: child_membership_id)
       errors.add(:child_membership_id, "Cette adhésion enfant ne vous appartient pas")
+    end
+  end
+
+  # Validation pour éviter les inscriptions en double (race condition)
+  def no_duplicate_registration
+    return unless user && event
+
+    # Vérifier s'il existe déjà une inscription identique
+    existing = event.attendances.where(
+      user: user,
+      child_membership_id: child_membership_id,
+      is_volunteer: is_volunteer || false
+    ).where.not(status: "canceled")
+
+    # Exclure cette instance si elle existe déjà en base
+    existing = existing.where.not(id: id) if persisted?
+
+    if existing.exists?
+      if for_child?
+        child_name = child_membership&.child_full_name || "cet enfant"
+        errors.add(:base, "#{child_name} est déjà inscrit(e) à cette séance.")
+      elsif is_volunteer
+        errors.add(:base, "Vous êtes déjà inscrit(e) en tant que bénévole pour cette séance.")
+      else
+        errors.add(:base, "Vous êtes déjà inscrit(e) à cette séance.")
+      end
     end
   end
 end

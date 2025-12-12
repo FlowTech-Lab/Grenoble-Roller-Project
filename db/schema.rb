@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_140131) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_12_150540) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -75,7 +75,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_140131) do
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
-    t.index ["user_id", "event_id", "child_membership_id"], name: "index_attendances_on_user_event_child", unique: true
+    t.index ["user_id", "event_id", "child_membership_id", "is_volunteer"], name: "index_attendances_on_user_event_child_volunteer", unique: true
     t.index ["user_id", "free_trial_used"], name: "index_attendances_on_user_id_and_free_trial_used"
     t.index ["user_id"], name: "index_attendances_on_user_id"
     t.index ["wants_reminder"], name: "index_attendances_on_wants_reminder"

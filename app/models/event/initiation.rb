@@ -59,15 +59,29 @@ class Event::Initiation < Event
     (non_member_discovery_slots || 0) - non_member_participants_count
   end
 
+  # Comptage des participants (exclut les bénévoles)
   def participants_count
     attendances.where(is_volunteer: false, status: [ "registered", "present" ]).count
   end
 
+  # Comptage des participants adultes (parent, pas d'enfant)
+  def adult_participants_count
+    attendances.where(is_volunteer: false, child_membership_id: nil, status: [ "registered", "present" ]).count
+  end
+
+  # Comptage des participants enfants
+  def child_participants_count
+    attendances.where(is_volunteer: false).where.not(child_membership_id: nil).where(status: [ "registered", "present" ]).count
+  end
+
+  # Comptage des participants adhérents (optimisé pour éviter N+1)
   def member_participants_count
-    # Compter les participants qui ont une adhésion active (parent ou enfant)
-    # On vérifie pour chaque attendance si l'utilisateur ou l'enfant a une adhésion active
+    # Utiliser includes pour éviter les requêtes N+1
+    participant_attendances = attendances.includes(:user, :child_membership)
+                                         .where(is_volunteer: false, status: [ "registered", "present" ])
+    
     count = 0
-    attendances.where(is_volunteer: false, status: [ "registered", "present" ]).each do |attendance|
+    participant_attendances.each do |attendance|
       is_member = false
       
       if attendance.child_membership_id.present?
@@ -75,6 +89,7 @@ class Event::Initiation < Event
         is_member = attendance.child_membership&.active?
       else
         # Pour le parent : vérifier adhésion parent ou enfant
+        # Utiliser exists? avec includes pour éviter N+1
         is_member = attendance.user.memberships.active_now.exists? ||
                     attendance.user.memberships.active_now.where(is_child_membership: true).exists?
       end
@@ -84,13 +99,19 @@ class Event::Initiation < Event
     count
   end
 
+  # Comptage des participants non-adhérents
   def non_member_participants_count
-    # Compter les participants qui n'ont PAS d'adhésion active
     participants_count - member_participants_count
   end
 
+  # Comptage des bénévoles (exclut les participants)
   def volunteers_count
-    attendances.where(is_volunteer: true).count
+    attendances.where(is_volunteer: true, status: [ "registered", "present" ]).count
+  end
+
+  # Comptage total (participants + bénévoles)
+  def total_attendances_count
+    participants_count + volunteers_count
   end
 
   # Override pour initiations : max_participants doit être > 0 (pas illimité)
