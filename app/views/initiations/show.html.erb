@@ -306,16 +306,14 @@
       </div>
 
       <!-- Zone actions -->
-      <div class="event-actions-sticky">
-        <div class="secondary-actions">
-          <%= link_to initiations_path, 
-              class: 'btn btn-outline-secondary btn-sm',
-              aria: { label: 'Voir toutes les initiations' } do %>
-            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Toutes les initiations
-          <% end %>
-        </div>
-      </div>
+      <%= render 'shared/event_actions', 
+          event: @initiation, 
+          user_attendance: @user_attendance, 
+          child_attendances: @child_attendances %>
     </div>
   </article>
 </section>
+
+<!-- Modal de confirmation de suppression -->
+<%= render 'shared/event_delete_modal', event: @initiation %>
 

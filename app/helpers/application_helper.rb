@@ -30,4 +30,10 @@ module ApplicationHelper
       "#{formatted} euros"
     end
   end
+
+  # Retourne une URL d'image par défaut pour un événement sans image attachée
+  def event_cover_image_url(event)
+    # Image par défaut depuis Unsplash pour les événements roller
+    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1200&h=500&fit=crop"
+  end
 end
