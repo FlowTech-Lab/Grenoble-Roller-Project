@@ -1,7 +1,7 @@
 ActiveAdmin.register Payment do
   menu priority: 2, label: "Paiements", parent: "Commandes"
 
-  permit_params :provider, :status, :amount_cents, :external_id, :metadata
+  permit_params :provider, :status, :amount_cents, :external_id
 
   index do
     selectable_column
@@ -65,9 +65,8 @@ ActiveAdmin.register Payment do
         number_to_currency(payment.amount_cents / 100.0)
       end
       row :external_id
-      row :metadata do |payment|
-        pre JSON.pretty_generate(payment.metadata) if payment.metadata.present?
-      end
+      row :provider_payment_id
+      row :currency
       row :created_at
       row :updated_at
     end
@@ -119,7 +118,8 @@ ActiveAdmin.register Payment do
       f.input :status, as: :select, collection: %w[pending completed failed cancelled]
       f.input :amount_cents
       f.input :external_id
-      f.input :metadata, as: :text, input_html: { rows: 5 }
+      f.input :provider_payment_id
+      f.input :currency
     end
     f.actions
   end
