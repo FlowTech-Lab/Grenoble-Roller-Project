@@ -816,20 +816,31 @@
               <i class="bi bi-shop text-liquid-success me-2" aria-hidden="true"></i>
               Partenaires commerciaux
             </h3>
-            <ul class="list-unstyled mb-0">
-              <li class="mb-3">
-                <strong>Adrenaline Sports</strong><br>
-                <small class="text-muted">
-                  -20% sur locations, entretien et achat de matériel roller
-                </small>
-              </li>
-              <li>
-                <strong>Serge Pizza</strong><br>
-                <small class="text-muted">
-                  -10% sur toutes vos commandes (sur place ou à emporter)
-                </small>
-              </li>
-            </ul>
+            <% if @commercial_partners.any? %>
+              <ul class="list-unstyled mb-0">
+                <% @commercial_partners.each do |partner| %>
+                  <li class="mb-3">
+                    <% if partner.url.present? %>
+                      <%= link_to partner.url, target: "_blank", rel: "noopener noreferrer", class: "text-decoration-none" do %>
+                        <strong><%= partner.name %></strong>
+                      <% end %>
+                    <% else %>
+                      <strong><%= partner.name %></strong>
+                    <% end %>
+                    <% if partner.description.present? %>
+                      <br>
+                      <small class="text-muted">
+                        <%= partner.description %>
+                      </small>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+            <% else %>
+              <p class="text-muted mb-0">
+                <em>Aucun partenaire commercial actif pour le moment.</em>
+              </p>
+            <% end %>
           </div>
         </div>
       </div>
