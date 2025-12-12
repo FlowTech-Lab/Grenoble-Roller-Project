@@ -100,10 +100,55 @@ analyze_destructive_migrations() {
         done
         
         if [ "${ENV:-}" = "production" ]; then
+            # Vérifier si --force est activé
+            if [ "${FORCE_REDEPLOY:-false}" = "true" ]; then
+                log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                log_warning "⚠️  Mode --force activé, exécution des migrations destructives"
+                log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                return 0  # Autoriser l'exécution
+            fi
+            
             log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             log_error "🔴 PRODUCTION : Approbation manuelle requise"
             log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            return 1
+            log_warning ""
+            log_warning "Voulez-vous continuer malgré les migrations destructives ?"
+            log_warning ""
+            log_warning "⚠️  ATTENTION : Ces migrations peuvent modifier ou supprimer des données !"
+            log_warning ""
+            log_warning "💡 Astuce : Utilisez --force pour forcer l'exécution"
+            log_warning ""
+            
+            # Vérifier si on est en mode interactif
+            if [ ! -t 0 ]; then
+                log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                log_error "❌ Mode non-interactif détecté"
+                log_error "Utilisez --force pour forcer l'exécution"
+                log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                return 1
+            fi
+            
+            # Demander confirmation interactive
+            while true; do
+                read -p "Continuer quand même ? (oui/non) : " response
+                case "$response" in
+                    [Oo]ui|[Oo]|yes|[Yy])
+                        log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                        log_warning "⚠️  Exécution des migrations destructives approuvée manuellement"
+                        log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                        return 0  # Autoriser l'exécution
+                        ;;
+                    [Nn]on|[Nn]|no|[Nn])
+                        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                        log_error "❌ Exécution annulée par l'utilisateur"
+                        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                        return 1  # Refuser l'exécution
+                        ;;
+                    *)
+                        log_warning "Réponse invalide. Veuillez répondre 'oui' ou 'non'."
+                        ;;
+                esac
+            done
         else
             log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             log_warning "⚠️  STAGING : Migration destructive détectée"
