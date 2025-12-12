@@ -117,8 +117,12 @@ Rails.application.routes.draw do
           patch :toggle_reminder
           post :join_waitlist
           delete :leave_waitlist
+          # Routes POST pour les formulaires
           post :convert_waitlist_to_attendance
           post :refuse_waitlist
+          # Routes GET pour les emails (redirigent vers la page de l'initiation avec confirmation)
+          get :confirm_waitlist, path: "waitlist/confirm"
+          get :decline_waitlist, path: "waitlist/decline"
         end
       end
 

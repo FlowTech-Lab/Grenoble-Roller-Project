@@ -222,15 +222,19 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
           end
           column "Actions" do |entry|
             if entry.notified?
-              link_to("Convertir en inscription", convert_waitlist_activeadmin_initiation_path(initiation, waitlist_entry_id: entry.id), 
-                      method: :post, 
-                      class: "button button-small",
-                      data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
+              button_to("Convertir en inscription", 
+                        convert_waitlist_activeadmin_initiation_path(initiation), 
+                        method: :post,
+                        params: { waitlist_entry_id: entry.hashid },
+                        class: "button button-small",
+                        data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
             elsif entry.pending? && initiation.has_available_spots?
-              link_to("Notifier maintenant", notify_waitlist_activeadmin_initiation_path(initiation, waitlist_entry_id: entry.id), 
-                      method: :post, 
-                      class: "button button-small",
-                      data: { confirm: "Notifier cette personne qu'une place est disponible ?" })
+              button_to("Notifier maintenant", 
+                        notify_waitlist_activeadmin_initiation_path(initiation), 
+                        method: :post,
+                        params: { waitlist_entry_id: entry.hashid },
+                        class: "button button-small",
+                        data: { confirm: "Notifier cette personne qu'une place est disponible ?" })
             else
               "-"
             end
@@ -285,21 +289,72 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   # Action personnalisée : Convertir une entrée de liste d'attente en inscription
   member_action :convert_waitlist, method: :post do
     @initiation = resource
-    waitlist_entry = @initiation.waitlist_entries.find_by(id: params[:waitlist_entry_id])
+    waitlist_entry_id = params[:waitlist_entry_id]
     
-    if waitlist_entry && waitlist_entry.convert_to_attendance!
+    unless waitlist_entry_id.present?
+      redirect_to resource_path(@initiation), alert: "Paramètre waitlist_entry_id manquant."
+      return
+    end
+    
+    waitlist_entry = @initiation.waitlist_entries.find_by_hashid(waitlist_entry_id)
+    
+    unless waitlist_entry
+      redirect_to resource_path(@initiation), alert: "Entrée de liste d'attente introuvable."
+      return
+    end
+    
+    unless waitlist_entry.notified?
+      redirect_to resource_path(@initiation), alert: "Cette entrée de liste d'attente n'est pas en statut 'notifié'."
+      return
+    end
+    
+    # Trouver l'inscription "pending" créée lors de la notification
+    pending_attendance = @initiation.attendances.find_by(
+      user: waitlist_entry.user,
+      child_membership_id: waitlist_entry.child_membership_id,
+      status: "pending"
+    )
+    
+    unless pending_attendance
+      redirect_to resource_path(@initiation), alert: "L'inscription 'pending' associée n'a pas été trouvée."
+      return
+    end
+    
+    # Passer de "pending" à "registered" sans validation
+    # Utiliser update_column pour bypasser les validations
+    if pending_attendance.update_column(:status, "registered")
+      waitlist_entry.update!(status: "converted")
+      # Notifier les autres personnes en liste d'attente si une place se libère
+      WaitlistEntry.notify_next_in_queue(@initiation) if @initiation.has_available_spots?
       redirect_to resource_path(@initiation), notice: "L'entrée de liste d'attente a été convertie en inscription avec succès."
     else
-      redirect_to resource_path(@initiation), alert: "Impossible de convertir l'entrée de liste d'attente. Vérifiez qu'il y a encore des places disponibles."
+      redirect_to resource_path(@initiation), alert: "Impossible de convertir l'entrée de liste d'attente."
     end
   end
 
   # Action personnalisée : Notifier manuellement une personne en liste d'attente
   member_action :notify_waitlist, method: :post do
     @initiation = resource
-    waitlist_entry = @initiation.waitlist_entries.find_by(id: params[:waitlist_entry_id])
+    waitlist_entry_id = params[:waitlist_entry_id]
     
-    if waitlist_entry && waitlist_entry.notify!
+    unless waitlist_entry_id.present?
+      redirect_to resource_path(@initiation), alert: "Paramètre waitlist_entry_id manquant."
+      return
+    end
+    
+    waitlist_entry = @initiation.waitlist_entries.find_by_hashid(waitlist_entry_id)
+    
+    unless waitlist_entry
+      redirect_to resource_path(@initiation), alert: "Entrée de liste d'attente introuvable."
+      return
+    end
+    
+    unless waitlist_entry.pending?
+      redirect_to resource_path(@initiation), alert: "Cette entrée de liste d'attente n'est pas en statut 'pending'."
+      return
+    end
+    
+    if waitlist_entry.notify!
       redirect_to resource_path(@initiation), notice: "La personne a été notifiée avec succès."
     else
       redirect_to resource_path(@initiation), alert: "Impossible de notifier cette personne."
@@ -367,6 +422,14 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       else
         redirect_to resource_path(@initiation), alert: "Impossible de supprimer l'initiation : #{@initiation.errors.full_messages.join(', ')}"
       end
+    end
+
+    def active_admin_access_denied(exception)
+      Rails.logger.error("ActiveAdmin access denied: #{exception.message}")
+      Rails.logger.error("Current user: #{current_user&.email}, Role: #{current_user&.role&.code}")
+      Rails.logger.error("Policy class: #{exception.policy.class.name rescue 'N/A'}")
+      Rails.logger.error("Query: #{exception.query rescue 'N/A'}")
+      redirect_to activeadmin_root_path, alert: "Vous n'êtes pas autorisé à exécuter cette action."
     end
   end
 end

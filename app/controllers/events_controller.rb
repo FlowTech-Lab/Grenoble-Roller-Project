@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance refuse_waitlist]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance refuse_waitlist confirm_waitlist decline_waitlist]
   before_action :authenticate_user!, except: %i[index show]
   before_action :ensure_email_confirmed, only: [ :attend ] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
@@ -330,6 +330,49 @@ class EventsController < ApplicationController
       redirect_to @event, notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
     else
       redirect_to @event, alert: "Impossible de refuser la place. Veuillez réessayer."
+    end
+  end
+
+  # Route GET pour confirmer depuis un email (redirige vers convert_waitlist_to_attendance en POST)
+  def confirm_waitlist
+    authenticate_user!
+    authorize @event, :convert_waitlist_to_attendance?
+
+    waitlist_entry_id = params[:waitlist_entry_id]
+    waitlist_entry = @event.waitlist_entries.find_by_hashid(waitlist_entry_id)
+    
+    unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
+      redirect_to event_path(@event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+      return
+    end
+    
+    # Appeler la méthode POST via convert_to_attendance!
+    if waitlist_entry.convert_to_attendance!
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to event_path(@event), notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
+    else
+      redirect_to event_path(@event), alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
+    end
+  end
+
+  # Route GET pour refuser depuis un email (redirige vers refuse_waitlist en POST)
+  def decline_waitlist
+    authenticate_user!
+    authorize @event, :refuse_waitlist?
+
+    waitlist_entry_id = params[:waitlist_entry_id]
+    waitlist_entry = @event.waitlist_entries.find_by_hashid(waitlist_entry_id)
+    
+    unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
+      redirect_to event_path(@event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+      return
+    end
+    
+    if waitlist_entry.refuse!
+      participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
+      redirect_to event_path(@event), notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de la liste d'attente."
+    else
+      redirect_to event_path(@event), alert: "Impossible de refuser la place. Veuillez réessayer."
     end
   end
 
