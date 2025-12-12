@@ -33,13 +33,13 @@
           <% end %>
         </li>
         <li class="nav-item">
-          <%= link_to shop_path, class: "nav-link" do %>
-            <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
+          <%= link_to about_path, class: "nav-link" do %>
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>L'association
           <% end %>
         </li>
         <li class="nav-item">
-          <%= link_to about_path, class: "nav-link" do %>
-            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>L'association
+          <%= link_to shop_path, class: "nav-link" do %>
+            <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
           <% end %>
         </li>
         <% if user_signed_in? && policy(Event.new).create? %>

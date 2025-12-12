@@ -48,6 +48,7 @@ fr:
     formats:
       day_month: "%d %B"
       event_long: "%A %d %B %Y à %Hh%M"
+      time: "%Hh%M"
   
   activerecord:
     models:

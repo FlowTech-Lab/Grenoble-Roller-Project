@@ -43,6 +43,12 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
+          <!-- Badge Statut (pour admins/moderateurs) -->
+          <% if can_moderate? && !initiation.published? && !initiation.canceled? %>
+            <span class="badge bg-warning text-dark">
+              <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>En attente
+            </span>
+          <% end %>
           <!-- Badge Annulé (prioritaire) -->
           <% if initiation.canceled? %>
             <span class="badge bg-danger">
@@ -198,132 +204,12 @@
         </div>
         <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false }, id: "attendFormInitiation#{initiation.id}", class: "attend-form" do |f| %>
           <div class="modal-body">
-            <!-- Alerte "Presque complet" si ≤5 places restantes -->
-            <% if initiation.available_places <= 5 && initiation.available_places > 0 %>
-              <div class="alert alert-warning mb-3" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-                <strong>Attention !</strong> Il ne reste que <%= pluralize(initiation.available_places, "place disponible", "places disponibles") %> pour cette séance.
-              </div>
-            <% end %>
-            
-            <p class="lead mb-3">
-              Confirmez votre participation à <strong><%= initiation.title %></strong>
-            </p>
-            
-            <!-- Résumé de l'initiation -->
-            <div class="event-summary mb-3 p-3 bg-light rounded">
-              <div class="row g-2">
-                <div class="col-12">
-                  <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé de la séance</p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-1">
-                    <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
-                    <strong>Date :</strong> <%= l initiation.start_at, format: :event_long, locale: :fr %>
-                  </p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-1">
-                    <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
-                    <strong>Lieu :</strong> Gymnase Ampère
-                  </p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-1">
-                    <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
-                    <strong>Horaires :</strong> 10h15 - 12h00 (1h45)
-                  </p>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <p class="mb-0">
-                    <i class="bi bi-people text-primary me-2" aria-hidden="true"></i>
-                    <strong>Places :</strong> 
-                    <% if initiation.allow_non_member_discovery? %>
-                      <%= initiation.available_member_places %> adhérents / <%= initiation.available_non_member_places %> découverte
-                      (<%= initiation.participants_count %> / <%= initiation.max_participants %>)
-                    <% else %>
-                      <%= initiation.available_places %> / <%= initiation.max_participants %>
-                    <% end %>
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Sélection enfant si applicable -->
-            <% 
-              # Filtrer uniquement les enfants avec des adhésions actives (éligibles pour les initiations)
-              child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
-            %>
-            <% if child_memberships.any? %>
-              <div class="mb-3">
-                <%= f.label :child_membership_id, "S'inscrire pour un enfant (optionnel)", class: "form-label" %>
-                <%= f.collection_select :child_membership_id, 
-                    child_memberships, 
-                    :id, 
-                    ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
-                    { prompt: "S'inscrire pour moi-même" }, 
-                    { class: "form-select" } %>
-                <small class="text-muted">
-                  <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-                  Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
-                </small>
-              </div>
-            <% end %>
-
-            <!-- Demande matériel -->
-            <div class="mb-3">
-              <%= f.label :equipment_note, "Demande de matériel (optionnel)", class: "form-label" %>
-              <%= f.text_area :equipment_note, 
-                  class: "form-control", 
-                  rows: 2,
-                  placeholder: "Ex: Demande rollers taille 40" %>
-              <small class="text-muted">
-                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-                Sous réserve de disponibilité du matériel.
-              </small>
-            </div>
-
-            <!-- Option bénévole si éligible (uniquement pour le parent) -->
-            <% if current_user.can_be_volunteer == true && child_memberships.any? %>
-              <div class="mb-3 form-check form-switch" id="volunteer_toggle_<%= initiation.id %>" style="display: none;">
-                <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer_modal_#{initiation.id}" } %>
-                <%= label_tag "is_volunteer_modal_#{initiation.id}", class: "form-check-label" do %>
-                  <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
-                  <strong>S'inscrire en tant que bénévole encadrant</strong>
-                <% end %>
-                <small class="text-muted d-block mt-1">
-                  <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-                  En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
-                </small>
-              </div>
-            <% elsif current_user.can_be_volunteer == true %>
-              <div class="mb-3 form-check form-switch">
-                <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer_modal_#{initiation.id}" } %>
-                <%= label_tag "is_volunteer_modal_#{initiation.id}", class: "form-check-label" do %>
-                  <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
-                  <strong>S'inscrire en tant que bénévole encadrant</strong>
-                <% end %>
-                <small class="text-muted d-block mt-1">
-                  <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-                  En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
-                </small>
-              </div>
-            <% end %>
-
-            <!-- Essai gratuit si disponible -->
-            <% if !current_user.memberships.active_now.exists? && 
-                  !current_user.attendances.where(free_trial_used: true).exists? %>
-              <div class="mb-3 form-check">
-                <%= check_box_tag :use_free_trial, "1", false, { class: "form-check-input", id: "use_free_trial_modal_#{initiation.id}" } %>
-                <%= label_tag "use_free_trial_modal_#{initiation.id}", class: "form-check-label" do %>
-                  <i class="bi bi-gift me-1" aria-hidden="true"></i>
-                  Utiliser mon essai gratuit
-                <% end %>
-                <small class="text-muted d-block mt-1">
-                  Vous n'avez pas encore utilisé votre essai gratuit. Après cet essai, une adhésion sera requise pour continuer.
-                </small>
-              </div>
-            <% end %>
+            <%= render 'shared/registration_form_fields', 
+                form: f, 
+                event: initiation, 
+                prefix_id: "_modal_#{initiation.id}", 
+                show_alert: true, 
+                show_summary: true %>
 
             <!-- Bouton Ajouter au calendrier -->
             <div class="mb-3 text-center">
@@ -333,15 +219,6 @@
                   aria: { label: 'Ajouter au calendrier' } do %>
                 <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>Ajouter à mon calendrier
               <% end %>
-            </div>
-            
-            <!-- Rappel email -->
-            <div class="form-check mb-3">
-              <%= f.check_box :wants_reminder, { checked: true, class: 'form-check-input' }, '1', '0' %>
-              <label class="form-check-label" for="wants_reminder">
-                <i class="bi bi-bell me-1" aria-hidden="true"></i>
-                Recevoir un rappel email la veille à 19h
-              </label>
             </div>
             
             <p class="mb-0 text-muted small">

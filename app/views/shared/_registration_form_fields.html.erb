@@ -1,0 +1,399 @@
+<%# 
+  Partial réutilisable pour les champs d'inscription aux initiations/événements
+  Variables locales attendues:
+  - form: l'objet form (form_with)
+  - event: l'événement ou initiation
+  - prefix_id: préfixe pour les IDs (pour éviter les conflits dans les modals)
+  - show_alert: afficher l'alerte "presque complet" (défaut: true)
+  - show_summary: afficher le résumé de l'événement (défaut: false, pour modals)
+  - user_attendance: l'inscription de l'utilisateur (parent) si déjà inscrit (optionnel)
+  - child_attendances: les inscriptions des enfants si déjà inscrits (optionnel)
+%>
+<% 
+  prefix_id ||= ""
+  show_alert = local_assigns.fetch(:show_alert, true)
+  show_summary = local_assigns.fetch(:show_summary, false)
+  is_waitlist = local_assigns.fetch(:is_waitlist, false)
+  is_initiation = event.is_a?(Event::Initiation)
+  is_modal = prefix_id.present?
+  
+  # Calculer les attendances si non fournies (pour les modals dans les cartes)
+  if local_assigns[:user_attendance].nil? && user_signed_in?
+    user_attendances = event.attendances.where(user: current_user).includes(:child_membership)
+    user_attendance = user_attendances.find_by(child_membership_id: nil)
+    child_attendances = user_attendances.where.not(child_membership_id: nil).to_a
+  else
+    user_attendance = local_assigns[:user_attendance]
+    child_attendances = local_assigns[:child_attendances] || []
+  end
+  
+  # Filtrer uniquement les enfants avec des adhésions actives et non déjà inscrits
+  child_memberships = current_user.memberships.active_now.where(is_child_membership: true) if user_signed_in?
+  child_memberships ||= []
+  if child_attendances.any?
+    registered_child_ids = child_attendances.map(&:child_membership_id).compact
+    child_memberships = child_memberships.where.not(id: registered_child_ids)
+  end
+  
+  # Déterminer si on doit afficher le dropdown et quel prompt utiliser
+  user_already_registered = user_attendance.present?
+  # Afficher le dropdown seulement si :
+  # - L'utilisateur n'est pas encore inscrit (peut s'inscrire lui-même ou un enfant)
+  # - OU il y a des enfants disponibles à inscrire (même si l'utilisateur est déjà inscrit)
+  show_child_dropdown = !user_already_registered || child_memberships.any?
+  dropdown_prompt = user_already_registered ? "Sélectionner un enfant" : "S'inscrire pour moi-même"
+%>
+
+<% if show_alert %>
+  <!-- Alerte "Presque complet" si ≤5 places restantes -->
+  <% if is_initiation %>
+    <% if event.available_places <= 5 && event.available_places > 0 %>
+      <div class="alert alert-warning mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <strong>Attention !</strong> Il ne reste que <%= pluralize(event.available_places, "place disponible", "places disponibles") %> pour cette séance.
+      </div>
+    <% end %>
+  <% else %>
+    <% if !event.unlimited? && event.remaining_spots <= 5 && event.remaining_spots > 0 %>
+      <div class="alert alert-warning mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <strong>Attention !</strong> Il ne reste que <%= pluralize(event.remaining_spots, "place disponible", "places disponibles") %> pour cet événement.
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if show_summary && is_modal %>
+  <!-- Résumé de l'événement (pour modals) -->
+  <p class="lead mb-3">
+    Confirmez votre participation à <strong><%= event.title %></strong>
+  </p>
+  
+  <div class="event-summary mb-3 p-3 bg-light rounded">
+    <div class="row g-2">
+      <div class="col-12">
+        <p class="mb-2 small text-muted fw-semibold text-uppercase">Résumé</p>
+      </div>
+      <div class="col-12 col-sm-6">
+        <p class="mb-1">
+          <i class="bi bi-calendar-event text-primary me-2" aria-hidden="true"></i>
+          <strong>Date :</strong> <%= l event.start_at, format: :event_long, locale: :fr %>
+        </p>
+      </div>
+      <div class="col-12 col-sm-6">
+        <p class="mb-1">
+          <i class="bi bi-geo-alt text-primary me-2" aria-hidden="true"></i>
+          <strong>Lieu :</strong> <%= truncate(event.location_text, length: 50) %>
+        </p>
+      </div>
+      <% if is_initiation %>
+        <div class="col-12 col-sm-6">
+          <p class="mb-1">
+            <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
+            <strong>Horaires :</strong> <%= l(event.start_at, format: :time) %> - <%= l(event.start_at + event.duration_min.minutes, format: :time) %> (<%= event.duration_min %> min)
+          </p>
+        </div>
+        <div class="col-12 col-sm-6">
+          <p class="mb-0">
+            <i class="bi bi-people text-primary me-2" aria-hidden="true"></i>
+            <strong>Places :</strong> 
+            <% if event.allow_non_member_discovery? %>
+              <%= event.available_member_places %> adhérents / <%= event.available_non_member_places %> découverte
+              (<%= event.participants_count %> / <%= event.max_participants %>)
+            <% else %>
+              <%= event.available_places %> / <%= event.max_participants %>
+            <% end %>
+          </p>
+        </div>
+      <% else %>
+        <div class="col-12 col-sm-6">
+          <p class="mb-1">
+            <i class="bi bi-clock text-primary me-2" aria-hidden="true"></i>
+            <strong>Durée :</strong> <%= event.duration_min %> minutes
+          </p>
+        </div>
+        <% if event.distance_km.present? && event.distance_km > 0 %>
+          <div class="col-12 col-sm-6">
+            <p class="mb-0">
+              <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
+              <strong>Distance :</strong>
+              <% if event.loops_count && event.loops_count > 1 %>
+                <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+              <% else %>
+                <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+              <% end %>
+            </p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- Sélection enfant si applicable -->
+<% if show_child_dropdown %>
+  <div class="mb-3">
+    <%= form.label :child_membership_id, "S'inscrire pour un enfant (optionnel)", class: "form-label" %>
+    <%= form.collection_select :child_membership_id, 
+        child_memberships, 
+        :id, 
+        ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
+        { prompt: dropdown_prompt }, 
+        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: is_modal ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
+    <small class="text-muted">
+      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+      <% if user_already_registered %>
+        Seuls les enfants avec une adhésion active et non déjà inscrits sont affichés.
+      <% else %>
+        Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
+      <% end %>
+    </small>
+  </div>
+<% end %>
+
+<!-- Demande matériel (uniquement pour initiations) -->
+<% if is_initiation %>
+  <div class="mb-3">
+    <div class="form-check mb-2">
+      <%= check_box_tag :needs_equipment, "1", false, { 
+          class: "form-check-input", 
+          id: "needs_equipment#{prefix_id}", 
+          onchange: "toggleRollerSize#{prefix_id}()" 
+      } %>
+      <%= label_tag "needs_equipment#{prefix_id}", class: "form-check-label" do %>
+        <i class="bi bi-roller-skate me-1" aria-hidden="true"></i>
+        <strong>Besoin de matériel</strong>
+      <% end %>
+    </div>
+      <div id="roller_size_container<%= prefix_id %>" style="display: none;" class="ms-4">
+      <%= label_tag "roller_size_select#{prefix_id}", "Taille de rollers", class: "form-label" %>
+      <%= select_tag :roller_size, 
+          options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
+          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}", required: true } } %>
+      <small id="roller_size_help<%= prefix_id %>" class="text-muted">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        Sous réserve de disponibilité du matériel.
+      </small>
+    </div>
+  </div>
+  
+  <script>
+    function toggleRollerSize<%= prefix_id %>() {
+      const checkbox = document.getElementById('needs_equipment<%= prefix_id %>');
+      const container = document.getElementById('roller_size_container<%= prefix_id %>');
+      const select = document.getElementById('roller_size_select<%= prefix_id %>');
+      
+      if (checkbox && container && select) {
+        if (checkbox.checked) {
+          container.style.display = 'block';
+          select.required = true;
+        } else {
+          container.style.display = 'none';
+          select.required = false;
+          select.value = '';
+        }
+      }
+    }
+  </script>
+<% end %>
+
+<!-- Option bénévole si éligible (uniquement pour initiations et pour le parent, pas pour la liste d'attente) -->
+<% if is_initiation && current_user.can_be_volunteer == true && !is_waitlist %>
+  <div class="mb-3 form-check form-switch" id="volunteer_toggle<%= prefix_id %>" <%= 'style="display: none;"' if child_memberships.any? %>>
+    <%= check_box_tag :is_volunteer, "1", false, { class: "form-check-input", id: "is_volunteer#{prefix_id}" } %>
+    <%= label_tag "is_volunteer#{prefix_id}", class: "form-check-label" do %>
+      <i class="bi bi-heart-fill text-danger me-1" aria-hidden="true"></i>
+      <strong>S'inscrire en tant que bénévole encadrant</strong>
+    <% end %>
+    <small class="text-muted d-block mt-1">
+      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+      En tant que bénévole, vous encadrerez les participants. Votre présence sera enregistrée séparément.
+    </small>
+  </div>
+  
+  <% if child_memberships.any? && is_modal %>
+    <script>
+      function toggleVolunteerVisibility<%= prefix_id %>() {
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+        const volunteerToggle = document.getElementById('volunteer_toggle<%= prefix_id %>');
+        const volunteerCheckbox = document.getElementById('is_volunteer<%= prefix_id %>');
+        
+        if (childSelect && volunteerToggle) {
+          if (childSelect.value === '' || childSelect.value === null) {
+            volunteerToggle.style.display = 'block';
+          } else {
+            volunteerToggle.style.display = 'none';
+            if (volunteerCheckbox) volunteerCheckbox.checked = false;
+          }
+        }
+      }
+      
+      // Initialiser au chargement
+      document.addEventListener('DOMContentLoaded', function() {
+        toggleVolunteerVisibility<%= prefix_id %>();
+      });
+    </script>
+  <% end %>
+<% end %>
+
+<!-- Essai gratuit si disponible (uniquement pour initiations, pas pour les bénévoles, pas pour les enfants) -->
+<% 
+  # Conditions pour afficher l'essai gratuit :
+  # 1. C'est une initiation
+  # 2. L'utilisateur n'est pas déjà inscrit (pour lui-même)
+  # 3. Ce n'est pas pour un enfant (child_membership_id sera nil)
+  # 4. L'utilisateur n'a pas d'adhésion active
+  # 5. L'utilisateur n'a pas déjà utilisé son essai gratuit
+  # 6. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
+  show_free_trial = is_initiation && 
+                     !user_already_registered && 
+                     !current_user.memberships.active_now.exists? && 
+                     !current_user.attendances.where(free_trial_used: true).exists?
+%>
+<% if show_free_trial %>
+  <div class="mb-3 form-check">
+    <%= check_box_tag :use_free_trial, "1", false, { 
+        class: "form-check-input", 
+        id: "use_free_trial#{prefix_id}",
+        aria: { describedby: "free_trial_help#{prefix_id}" },
+        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}()"
+    } %>
+    <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label" do %>
+      <i class="bi bi-gift me-1" aria-hidden="true"></i>
+      Utiliser mon essai gratuit
+    <% end %>
+    <small id="free_trial_help<%= prefix_id %>" class="text-muted d-block mt-1">
+      <% if is_initiation && event.allow_non_member_discovery? %>
+        Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
+      <% else %>
+        Vous n'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.
+      <% end %>
+    </small>
+  </div>
+<% end %>
+
+<!-- Rappel email -->
+<div class="mb-4 form-check">
+  <%= form.check_box :wants_reminder, { checked: true, class: "form-check-input", id: "wants_reminder#{prefix_id}" }, "1", "0" %>
+  <%= form.label "wants_reminder#{prefix_id}", class: "form-check-label" do %>
+    <i class="bi bi-bell me-1" aria-hidden="true"></i>
+    Recevoir un rappel la veille à 19h
+  <% end %>
+</div>
+
+<script>
+  // Fonction pour activer/désactiver le bouton de soumission selon l'essai gratuit (accessible globalement)
+  <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+    // Définir la fonction globalement pour qu'elle soit accessible depuis l'attribut onchange
+    window.toggleSubmitButton<%= prefix_id %> = function() {
+      // Si l'essai gratuit est requis (pas de places découverte), désactiver le bouton si non coché
+      const form = document.querySelector('form[id*="attendForm"]');
+      if (!form) return;
+      const btn = form.querySelector('input[type="submit"], button[type="submit"]');
+      if (!btn) return;
+      const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+      if (freeTrialCheckbox) {
+        if (freeTrialCheckbox.checked) {
+          btn.disabled = false;
+          btn.classList.remove('disabled', 'opacity-50');
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        } else {
+          btn.disabled = true;
+          btn.classList.add('disabled', 'opacity-50');
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+        }
+      }
+    };
+  <% else %>
+    // Fonction vide si l'essai gratuit n'est pas requis (pour éviter les erreurs)
+    window.toggleSubmitButton<%= prefix_id %> = function() {
+      // Ne rien faire si l'essai gratuit n'est pas requis
+    };
+  <% end %>
+  
+  // Validation JavaScript avant soumission (spécifique à ce formulaire)
+  (function() {
+    // Trouver le formulaire parent qui contient ce partial
+    const form = document.querySelector('form[id*="attendForm"]');
+    if (!form) return;
+    
+    const submitButton = form.querySelector('input[type="submit"], button[type="submit"]');
+    if (!submitButton) return;
+    
+    // Utiliser un flag pour éviter les doubles soumissions
+    let isSubmitting = false;
+    
+    form.addEventListener('submit', function(e) {
+      // Empêcher la soumission si déjà en cours
+      if (isSubmitting) {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Vérifier si l'utilisateur est déjà inscrit (via data attributes)
+      <% if user_attendance.present? %>
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+        if (!childSelect || !childSelect.value || childSelect.value === '') {
+          e.preventDefault();
+          alert('Vous êtes déjà inscrit(e) à cette séance. Veuillez sélectionner un enfant si vous souhaitez en inscrire un.');
+          return false;
+        }
+      <% end %>
+      
+      // Vérifier que roller_size est sélectionné si needs_equipment est coché
+      <% if is_initiation %>
+        const needsEquipment = document.getElementById('needs_equipment<%= prefix_id %>');
+        const rollerSize = document.getElementById('roller_size_select<%= prefix_id %>');
+        
+        if (needsEquipment && needsEquipment.checked && rollerSize && (!rollerSize.value || rollerSize.value === '')) {
+          e.preventDefault();
+          alert('Veuillez sélectionner une taille de rollers si vous avez besoin de matériel.');
+          rollerSize.focus();
+          return false;
+        }
+      <% end %>
+      
+      // Vérifier que l'essai gratuit est coché si requis (pas de places découverte)
+      <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+        const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+        if (freeTrialCheckbox && !freeTrialCheckbox.checked) {
+          e.preventDefault();
+          alert('Veuillez cocher la case "Utiliser mon essai gratuit" pour confirmer votre inscription.');
+          freeTrialCheckbox.focus();
+          return false;
+        }
+      <% end %>
+      
+      // Marquer comme en cours de soumission
+      isSubmitting = true;
+      
+      // Désactiver le bouton pour éviter les doubles soumissions
+      submitButton.disabled = true;
+      if (submitButton.tagName === 'INPUT') {
+        submitButton.value = submitButton.value || 'Inscription en cours...';
+      } else {
+        submitButton.textContent = 'Inscription en cours...';
+      }
+    });
+    
+    // Initialiser l'état du bouton au chargement si l'essai gratuit est requis
+    <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+      // Désactiver le bouton par défaut
+      submitButton.disabled = true;
+      submitButton.classList.add('disabled', 'opacity-50');
+      submitButton.style.opacity = '0.6';
+      submitButton.style.cursor = 'not-allowed';
+      
+      // Initialiser l'état au chargement
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.toggleSubmitButton<%= prefix_id %>);
+      } else {
+        window.toggleSubmitButton<%= prefix_id %>();
+      }
+    <% end %>
+  })();
+</script>
+

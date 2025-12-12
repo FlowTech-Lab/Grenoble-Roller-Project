@@ -11,19 +11,55 @@ class Event::InitiationPolicy < ApplicationPolicy
     return false unless user
     return false if record.full?
     
-    # Vérifier si l'utilisateur est déjà inscrit en tant que parent
-    parent_already_registered = user.attendances.exists?(event: record, child_membership_id: nil)
+    # Récupérer les paramètres depuis le contrôleur via Pundit
+    # Pundit stocke le contrôleur dans @controller (accessible dans la policy)
+    child_membership_id = @controller&.instance_variable_get(:@child_membership_id_for_policy)
+    is_volunteer = @controller&.instance_variable_get(:@is_volunteer_for_policy) || false
     
-    # Si le parent est déjà inscrit, autoriser uniquement si l'utilisateur a des enfants avec des adhésions actives
-    # (pour permettre l'inscription d'enfants supplémentaires)
-    if parent_already_registered
-      # Autoriser si l'utilisateur a des enfants avec des adhésions actives
-      return user.memberships.active_now.where(is_child_membership: true).exists?
+    # Vérifier que child_membership_id appartient bien à l'utilisateur si fourni
+    if child_membership_id.present?
+      unless user.memberships.exists?(id: child_membership_id, is_child_membership: true)
+        return false
+      end
+      # Vérifier que l'adhésion enfant est active
+      child_membership = user.memberships.find_by(id: child_membership_id)
+      return false unless child_membership&.active?
+    end
+    
+    # Vérifier si l'utilisateur est déjà inscrit avec le même statut
+    existing_attendance = user.attendances.where(
+      event: record,
+      child_membership_id: child_membership_id,
+      is_volunteer: is_volunteer || false
+    ).where.not(status: "canceled")
+    
+    if existing_attendance.exists?
+      # Si c'est pour un enfant, autoriser si d'autres enfants peuvent être inscrits
+      if child_membership_id.present?
+        registered_child_ids = user.attendances.where(event: record).where.not(child_membership_id: nil, status: "canceled").pluck(:child_membership_id).compact
+        available_children = user.memberships.active_now.where(is_child_membership: true).where.not(id: registered_child_ids)
+        return available_children.exists?
+      end
+      # Si c'est pour le parent, ne pas autoriser si déjà inscrit avec le même statut
+      return false
+    end
+    
+    # Pour les bénévoles, vérifier l'autorisation
+    if is_volunteer && child_membership_id.nil?
+      return false unless user.can_be_volunteer?
+      # Les bénévoles peuvent toujours s'inscrire (pas besoin d'adhésion)
+      return true
     end
 
     # Vérifier si l'utilisateur est adhérent
-    is_member = user.memberships.active_now.exists? || 
-                user.memberships.active_now.where(is_child_membership: true).exists?
+    is_member = if child_membership_id.present?
+      # Pour un enfant : vérifier l'adhésion enfant (déjà vérifiée plus haut)
+      true
+    else
+      # Pour le parent : vérifier adhésion parent ou enfant
+      user.memberships.active_now.exists? || 
+      user.memberships.active_now.where(is_child_membership: true).exists?
+    end
 
     # Si l'option de limitation des non-adhérents est activée
     if record.allow_non_member_discovery?
@@ -47,6 +83,35 @@ class Event::InitiationPolicy < ApplicationPolicy
   def cancel_attendance?
     return false unless user
     user.attendances.exists?(event: record)
+  end
+
+  def can_attend?
+    attend?
+  end
+
+  def join_waitlist?
+    return false unless user
+    # Pour rejoindre la liste d'attente, l'événement doit être complet
+    # Mais on ne vérifie pas les conditions d'adhésion/essai gratuit ici,
+    # car elles seront vérifiées lors de l'inscription en liste d'attente
+    # et lors de la conversion en inscription
+    return false unless record.full?
+    true
+  end
+
+  def leave_waitlist?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: ["pending", "notified"])
+  end
+
+  def convert_waitlist_to_attendance?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: "notified")
+  end
+
+  def refuse_waitlist?
+    return false unless user
+    record.waitlist_entries.exists?(user: user, status: "notified")
   end
 
   def manage?

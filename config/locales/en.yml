@@ -32,3 +32,4 @@ en:
   time:
     formats:
       day_month: "%d %b"
+      time: "%H:%M"

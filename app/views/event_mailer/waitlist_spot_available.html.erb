@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="color: #4CAF50; margin-bottom: 20px;">
+        🎉 Une place s'est libérée !
+      </h1>
+      
+      <p>Bonjour <%= @participant_name %>,</p>
+      
+      <p>
+        Une place s'est libérée pour l'événement suivant :
+      </p>
+      
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <h2 style="margin-top: 0; color: #2196F3;">
+          <%= @event.title %>
+        </h2>
+        <p style="margin: 5px 0;">
+          <strong>Date :</strong> <%= l(@event.start_at, format: :event_long, locale: :fr) %>
+        </p>
+        <% if @is_initiation %>
+          <p style="margin: 5px 0;">
+            <strong>Lieu :</strong> <%= @event.location_text %>
+          </p>
+        <% else %>
+          <p style="margin: 5px 0;">
+            <strong>Lieu :</strong> <%= @event.location_text %>
+          </p>
+          <% if @event.distance_km.present? && @event.distance_km > 0 %>
+            <p style="margin: 5px 0;">
+              <strong>Distance :</strong> <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+            </p>
+          <% end %>
+        <% end %>
+      </div>
+      
+      <p style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+        <strong>⚠️ Important :</strong> Cette place est réservée pour vous pendant <strong>24 heures</strong>. 
+        Passé ce délai, elle sera proposée à la personne suivante en liste d'attente.
+      </p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="<%= convert_waitlist_to_attendance_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
+           style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-right: 10px;">
+          Confirmer ma place
+        </a>
+        <a href="<%= refuse_waitlist_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
+           style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+          Refuser
+        </a>
+      </div>
+      
+      <p style="color: #666; font-size: 14px; margin-top: 30px;">
+        Si vous ne souhaitez plus participer à cet événement, vous pouvez ignorer cet email. 
+        La place sera automatiquement proposée à la personne suivante.
+      </p>
+      
+      <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+      
+      <p style="color: #999; font-size: 12px; text-align: center;">
+        Cet email a été envoyé automatiquement par Grenoble Roller.<br>
+        Pour toute question, contactez-nous à <%= ENV.fetch('CONTACT_EMAIL', 'contact@grenoble-roller.fr') %>
+      </p>
+    </div>
+  </body>
+</html>
+
