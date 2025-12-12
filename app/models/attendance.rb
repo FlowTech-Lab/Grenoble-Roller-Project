@@ -1,4 +1,6 @@
 class Attendance < ApplicationRecord
+  include Hashid::Rails
+  
   belongs_to :user
   belongs_to :event, counter_cache: true
   belongs_to :payment, optional: true

@@ -1,4 +1,6 @@
 class Event < ApplicationRecord
+  include Hashid::Rails
+  
   belongs_to :creator_user, class_name: "User"
   belongs_to :route, optional: true # Parcours principal (rétrocompatibilité)
   has_many :event_loop_routes, dependent: :destroy

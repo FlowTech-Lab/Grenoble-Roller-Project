@@ -182,6 +182,10 @@ GEM
     has_scope (0.9.0)
       actionpack (>= 7.0)
       activesupport (>= 7.0)
+    hashid-rails (1.4.1)
+      activerecord (>= 4.0)
+      hashids (~> 1.0)
+    hashids (1.0.6)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     icalendar (2.12.1)
@@ -531,6 +535,7 @@ DEPENDENCIES
   debug
   devise
   factory_bot_rails
+  hashid-rails
   icalendar
   image_processing (~> 1.2)
   importmap-rails
