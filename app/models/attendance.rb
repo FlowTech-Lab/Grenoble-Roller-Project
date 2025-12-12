@@ -34,6 +34,9 @@ class Attendance < ApplicationRecord
   validate :child_membership_belongs_to_user
   validate :no_duplicate_registration, on: :create
 
+  after_destroy :notify_waitlist_if_needed # Notifier la liste d'attente si une place se libère
+  after_update :notify_waitlist_on_cancellation, if: :saved_change_to_status? # Notifier si le statut passe à "canceled"
+
   scope :active, -> { where.not(status: "canceled") }
   scope :canceled, -> { where(status: "canceled") }
   scope :volunteers, -> { where(is_volunteer: true) }
@@ -56,7 +59,13 @@ class Attendance < ApplicationRecord
     if for_child?
       child_membership&.child_full_name || "Enfant"
     else
-      user&.full_name || "Parent"
+      # Construire le nom complet à partir de first_name et last_name
+      if user
+        name_parts = [user.first_name, user.last_name].compact.reject(&:blank?)
+        name_parts.any? ? name_parts.join(" ") : user.email
+      else
+        "Parent"
+      end
     end
   end
 
@@ -215,8 +224,23 @@ class Attendance < ApplicationRecord
 
   # Callbacks pour la liste d'attente
   def notify_waitlist_if_needed
-    # Quand une nouvelle inscription est créée, on ne notifie pas (l'événement est toujours complet)
-    # Cette méthode est là pour la cohérence, mais la vraie notification se fait lors des annulations
+    # Quand une inscription est supprimée, vérifier si on doit notifier la liste d'attente
+    # Ne pas notifier si c'est une inscription "pending" (c'est une place verrouillée par la liste d'attente)
+    # Note: dans after_destroy, l'objet existe encore en mémoire avec ses attributs
+    return if status == "pending"
+    
+    # Ne pas notifier si c'est un bénévole (ils ne comptent pas dans les places)
+    return if is_volunteer
+    
+    # Recharger l'événement pour avoir le bon comptage après la destruction
+    event.reload
+    
+    # Vérifier si l'événement a maintenant des places disponibles
+    if event.has_available_spots?
+      # Notifier la première personne en liste d'attente
+      WaitlistEntry.notify_next_in_queue(event, count: 1)
+      Rails.logger.info("Attendance destroyed, notifying waitlist for event #{event.id}")
+    end
   end
 
   def notify_waitlist_on_cancellation

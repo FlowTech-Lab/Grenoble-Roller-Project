@@ -39,7 +39,9 @@ class WaitlistEntry < ApplicationRecord
     if child_membership_id.present?
       "#{child_membership.child_first_name} #{child_membership.child_last_name}"
     else
-      user.full_name.presence || user.email
+      # Construire le nom complet à partir de first_name et last_name
+      name_parts = [user.first_name, user.last_name].compact.reject(&:blank?)
+      name_parts.any? ? name_parts.join(" ") : user.email
     end
   end
 
@@ -74,7 +76,8 @@ class WaitlistEntry < ApplicationRecord
         notified_at: Time.current
       )
       
-      EventMailer.waitlist_spot_available(self).deliver_later
+      # Envoyer l'email immédiatement (pas en queue) pour s'assurer qu'il est envoyé
+      EventMailer.waitlist_spot_available(self).deliver_now
       Rails.logger.info("WaitlistEntry #{id} notified and pending attendance #{attendance.id} created for event #{event.id}")
       true
     else
@@ -106,7 +109,8 @@ class WaitlistEntry < ApplicationRecord
       attendance.define_singleton_method(:can_register_to_initiation) { true }
     end
     
-    if attendance.update(status: "registered", validate: false) # Sauvegarder sans validation pour éviter les erreurs d'autorisation
+    # Utiliser update_column pour bypasser les validations
+    if attendance.update_column(:status, "registered")
       update!(status: "converted")
       # Notifier les autres personnes en liste d'attente si une place se libère
       event.notify_next_waitlist_entry
@@ -175,8 +179,9 @@ class WaitlistEntry < ApplicationRecord
 
   def self.notify_next_in_queue(event, count: 1)
     # Notifier les N premières personnes en liste d'attente
-    # Ne notifier que si l'événement est complet (en excluant les "pending" du comptage)
-    return unless event.full?
+    # Notifier si l'événement a des places disponibles (une place vient de se libérer)
+    # Ne pas notifier si l'événement est encore complet (pas de place disponible)
+    return if event.full?
     
     entries = for_event(event)
               .pending_notification

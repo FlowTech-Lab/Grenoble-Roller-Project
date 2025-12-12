@@ -42,6 +42,10 @@ class ApplicationController < ActionController::Base
     ])
   end
 
+  def active_admin_access_denied(exception)
+    user_not_authorized(exception)
+  end
+
   private
 
   def user_not_authorized(_exception)
@@ -53,10 +57,6 @@ class ApplicationController < ActionController::Base
     else
       redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
     end
-  end
-
-  def active_admin_access_denied(exception)
-    user_not_authorized(exception)
   end
 
   helper_method :current_user_has_attendance?

@@ -60,25 +60,29 @@ class Event::Initiation < Event
   end
 
   # Comptage des participants (exclut les bénévoles)
+  # Inclut les "pending" pour l'affichage visuel (places verrouillées)
   def participants_count
-    attendances.where(is_volunteer: false, status: [ "registered", "present" ]).count
+    attendances.where(is_volunteer: false, status: [ "registered", "present", "pending" ]).count
   end
 
   # Comptage des participants adultes (parent, pas d'enfant)
+  # Inclut les "pending" pour l'affichage visuel
   def adult_participants_count
-    attendances.where(is_volunteer: false, child_membership_id: nil, status: [ "registered", "present" ]).count
+    attendances.where(is_volunteer: false, child_membership_id: nil, status: [ "registered", "present", "pending" ]).count
   end
 
   # Comptage des participants enfants
+  # Inclut les "pending" pour l'affichage visuel
   def child_participants_count
-    attendances.where(is_volunteer: false).where.not(child_membership_id: nil).where(status: [ "registered", "present" ]).count
+    attendances.where(is_volunteer: false).where.not(child_membership_id: nil).where(status: [ "registered", "present", "pending" ]).count
   end
 
   # Comptage des participants adhérents (optimisé pour éviter N+1)
+  # Inclut les "pending" pour l'affichage visuel
   def member_participants_count
     # Utiliser includes pour éviter les requêtes N+1
     participant_attendances = attendances.includes(:user, :child_membership)
-                                         .where(is_volunteer: false, status: [ "registered", "present" ])
+                                         .where(is_volunteer: false, status: [ "registered", "present", "pending" ])
     
     count = 0
     participant_attendances.each do |attendance|
@@ -105,8 +109,9 @@ class Event::Initiation < Event
   end
 
   # Comptage des bénévoles (exclut les participants)
+  # Inclut les "pending" pour l'affichage visuel
   def volunteers_count
-    attendances.where(is_volunteer: true, status: [ "registered", "present" ]).count
+    attendances.where(is_volunteer: true, status: [ "registered", "present", "pending" ]).count
   end
 
   # Comptage total (participants + bénévoles)
