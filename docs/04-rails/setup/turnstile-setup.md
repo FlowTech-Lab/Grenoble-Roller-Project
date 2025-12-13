@@ -273,7 +273,7 @@ Si cette div est présente avec une `site_key` valide, le widget est bien charg�
 
 > ⚠️ **Important** : En mode invisible, **rien n'est visible** pour l'utilisateur ! Turnstile fonctionne complètement en arrière-plan.
 
-**Voir le guide complet de vérification** : [`turnstile-test-verification.md`](turnstile-test-verification.md)
+**Voir le guide complet de vérification et dépannage** : [`turnstile-troubleshooting-consolidated.md`](turnstile-troubleshooting-consolidated.md)
 
 ### Méthodes rapides
 

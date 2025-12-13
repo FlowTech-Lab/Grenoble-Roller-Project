@@ -74,6 +74,7 @@ class Event < ApplicationRecord
   validates :currency, presence: true, length: { is: 3 }
   validates :location_text, presence: true, length: { minimum: 3, maximum: 255 }
   validates :max_participants, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validate :cover_image_must_be_present
 
   # GPS optionnel, mais si meeting_lat présente, meeting_lng obligatoire et vice-versa
   validates :meeting_lat, presence: true, if: :meeting_lng?
@@ -252,5 +253,9 @@ class Event < ApplicationRecord
     return if duration_min.blank?
 
     errors.add(:duration_min, "must be a multiple of 5") unless (duration_min % 5).zero?
+  end
+
+  def cover_image_must_be_present
+    errors.add(:cover_image, "doit être présente") unless cover_image.attached?
   end
 end

@@ -6,6 +6,14 @@
 
 ## 📖 Documents Disponibles
 
+### Systèmes Avancés (Nouvelle Documentation)
+- **[Système de Liste d'Attente (Waitlist)](waitlist-system.md)** ⭐ NOUVEAU - Documentation complète du système de liste d'attente
+- **[Gestion Stock Rollers (RollerStock)](roller-stock.md)** ⭐ NOUVEAU - Système de gestion d'inventaire des rollers
+- **[Boucles Multiples (EventLoopRoute)](event-loop-routes.md)** ⭐ NOUVEAU - Événements avec plusieurs boucles
+- **[Job de Rappel Événements (EventReminderJob)](event-reminder-job.md)** ⭐ NOUVEAU - Rappels automatiques la veille à 19h
+
+### Documentation Existant
+
 ### 1. [Parcours Utilisateurs](user-journeys-events.md)
 **Description** : Documentation complète des parcours utilisateurs implémentés pour la gestion des événements.
 

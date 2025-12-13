@@ -7,11 +7,9 @@
   <% end %>
   <article class="card card-event card-liquid rounded-liquid shadow-liquid h-100">
     <div class="card-event-image">
-      <!-- Image par défaut pour initiations (peut être customisée plus tard) -->
-      <%= image_tag("https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop", 
-                    alt: initiation.title, 
-                    loading: 'lazy', 
-                    class: 'w-100 h-100 object-fit-cover') %>
+      <% if initiation.cover_image.attached? %>
+        <%= image_tag(rails_representation_path(initiation.cover_image_card), alt: initiation.title, loading: 'lazy', class: 'w-100 h-100 object-fit-cover') %>
+      <% end %>
       <span class="card-event-date badge badge-liquid-primary">
         <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
         <%= l initiation.start_at, format: :day_month, locale: :fr %>

@@ -51,6 +51,52 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
   - `index`/`show` publics (seuls les événements publiés hors organisateurs)
   - Création/édition réservées aux rôles `ORGANIZER+` (Pundit)
 
+#### Actions membres sur événements
+- `POST   /events/:id/attend` → `events#attend` (inscription)
+- `DELETE /events/:id/cancel_attendance` → `events#cancel_attendance` (désinscription)
+- `GET    /events/:id/ical` → `events#ical` (export iCal, format `.ics`)
+- `PATCH  /events/:id/toggle_reminder` → `events#toggle_reminder` (activer/désactiver rappel)
+- `PATCH  /events/:id/reject` → `events#reject` (rejeter événement, admin/organisateur)
+- `GET    /events/:id/loop_routes` → `events#loop_routes` (API JSON, boucles multiples)
+
+#### Routes liste d'attente (waitlist)
+- `POST   /events/:id/join_waitlist` → `events#join_waitlist` (rejoindre liste d'attente)
+- `DELETE /events/:id/leave_waitlist` → `events#leave_waitlist` (quitter liste d'attente)
+- `POST   /events/:id/convert_waitlist_to_attendance` → `events#convert_waitlist_to_attendance` (confirmer place disponible)
+- `POST   /events/:id/refuse_waitlist` → `events#refuse_waitlist` (refuser place disponible)
+  - Routes protégées par authentification (`authenticate_user!`)
+  - Autorisation via Pundit (`join_waitlist?`, `convert_waitlist_to_attendance?`, etc.)
+  - Voir [`docs/06-events/waitlist-system.md`](../06-events/waitlist-system.md) pour la documentation complète
+
+### Initiations
+- `GET    /initiations` → `initiations#index`
+- `GET    /initiations/new` → `initiations#new`
+- `POST   /initiations` → `initiations#create`
+- `GET    /initiations/:id` → `initiations#show`
+- `GET    /initiations/:id/edit` → `initiations#edit`
+- `PATCH  /initiations/:id` → `initiations#update`
+- `PUT    /initiations/:id` → `initiations#update`
+- `DELETE /initiations/:id` → `initiations#destroy`
+  - Similaires aux événements généraux mais avec spécificités (sessions samedi, essai gratuit, etc.)
+
+#### Actions membres sur initiations
+- `POST   /initiations/:id/attend` → `initiations#attend` (inscription)
+- `DELETE /initiations/:id/cancel_attendance` → `initiations#cancel_attendance` (désinscription)
+- `GET    /initiations/:id/ical` → `initiations#ical` (export iCal, format `.ics`)
+- `PATCH  /initiations/:id/toggle_reminder` → `initiations#toggle_reminder` (activer/désactiver rappel)
+
+#### Routes liste d'attente initiations (waitlist)
+- `POST   /initiations/:id/join_waitlist` → `initiations#join_waitlist` (rejoindre liste d'attente)
+- `DELETE /initiations/:id/leave_waitlist` → `initiations#leave_waitlist` (quitter liste d'attente)
+- `POST   /initiations/:id/convert_waitlist_to_attendance` → `initiations#convert_waitlist_to_attendance` (confirmer place disponible)
+- `POST   /initiations/:id/refuse_waitlist` → `initiations#refuse_waitlist` (refuser place disponible)
+- `GET    /initiations/:id/waitlist/confirm` → `initiations#confirm_waitlist` (lien email confirmation, redirige vers POST)
+- `GET    /initiations/:id/waitlist/decline` → `initiations#decline_waitlist` (lien email refus, redirige vers POST)
+  - Routes protégées par authentification
+  - Support enfants (child_membership_id)
+  - Support essai gratuit (use_free_trial)
+  - Voir [`docs/06-events/waitlist-system.md`](../06-events/waitlist-system.md) pour la documentation complète
+
 ### Authentification (Devise)
 - `devise_for :users, controllers: { registrations: 'registrations', sessions: 'sessions', passwords: 'passwords' }`
   - routes standard: `/users/sign_in`, `/users/sign_out`, `/users/password`, etc.
@@ -95,8 +141,20 @@ Ce document liste les routes disponibles et les flux principaux. Basé sur `conf
 - Authentification
   - `GET /users/sign_in` → login via Devise
 
+### Santé (Health Checks)
+- `GET /up` → `rails/health#show` (health check simple, 200/500)
+- `GET /health` → `health#check` (health check avancé avec DB + migrations, JSON)
+
+### Mode maintenance
+- `GET    /maintenance` → Page maintenance statique (pour tests)
+- `PATCH  /activeadmin/maintenance/toggle` → `admin/maintenance_toggle#toggle` (activer/désactiver mode maintenance)
+  - Protégé par authentification admin
+  - Voir [`docs/07-ops/maintenance-mode.md`](../07-ops/maintenance-mode.md) pour la documentation complète
+
 ## Notes
-- Administration back-office: `ActiveAdmin.routes(self)` expose `/admin/*` (accès restreint via Devise + Pundit).
-- Les contrôleurs utilisent `includes` pour éviter les N+1 (ex: produits/variantes/options).
-- Pages légales : Toutes publiques, conformes aux obligations légales françaises (RGPD, Code de la consommation).
-- Gestion des cookies : Système conforme RGPD 2025 avec banner automatique et préférences détaillées.
+- **Administration** : `ActiveAdmin.routes(self)` expose `/admin/*` (accès restreint via Devise + Pundit).
+- **Performance** : Les contrôleurs utilisent `includes` pour éviter les N+1 (ex: produits/variantes/options, événements/attendances).
+- **Pages légales** : Toutes publiques, conformes aux obligations légales françaises (RGPD, Code de la consommation).
+- **Gestion des cookies** : Système conforme RGPD 2025 avec banner automatique et préférences détaillées.
+- **Liste d'attente** : Système complet de waitlist pour événements complets. Voir [`docs/06-events/waitlist-system.md`](../06-events/waitlist-system.md).
+- **Boucles multiples** : Support événements avec plusieurs boucles via `GET /events/:id/loop_routes`. Voir [`docs/06-events/event-loop-routes.md`](../06-events/event-loop-routes.md).

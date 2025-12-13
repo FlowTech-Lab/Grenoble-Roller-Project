@@ -3,8 +3,8 @@
 Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. Elle suit Shape Up et les bonnes pratiques d’un projet collaboratif (4 devs).
 
 ## Sommaire
-- 00-overview: vision, périmètre, glossaire, parties prenantes
-- 01-ways-of-working: règles d’équipe (branches, PRs, revues, commits, rituels)
+- 00-overview: vision, périmètre, glossaire, parties prenantes - **Voir [`00-overview/README.md`](00-overview/README.md)**
+- 01-ways-of-working: règles d'équipe (branches, PRs, revues, commits, rituels) - **Voir [`01-ways-of-working/README.md`](01-ways-of-working/README.md)**
 - 02-shape-up: cycles Shape Up (shaping, betting, building, cooldown) - **Voir [`02-shape-up/README.md`](02-shape-up/README.md)**
 - 03-architecture: vues C4, domaine, NFRs, ADRs
 - 04-rails: conventions, structure app, setup, sécurité, perf, API
@@ -125,6 +125,13 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ **Gestion des cookies** : Système conforme RGPD 2025 avec Stimulus (2025-11-21)
 - ✅ **Quick Wins Devise** : Formulaire inscription simplifié, confirmation email, profil complet avec changement mot de passe intégré (2025-11-24)
 - ✅ **Confirmation Email Complète** : Sécurité renforcée, QR code mobile, audit trail, rate limiting (2025-12-07)
+
+### Overview & Vision
+- ✅ `00-overview/README.md` - Overview complet du projet (vision, architecture, statut)
+- ✅ `00-overview/features-status.md` - État des fonctionnalités (implémentées, partiels, non implémentées)
+
+### Ways of Working
+- ✅ `01-ways-of-working/README.md` - Workflow Git, PR, conventions équipe
 
 ### À compléter
 - `10-decisions-and-changelog/` - ADRs à créer pour décisions structurantes
