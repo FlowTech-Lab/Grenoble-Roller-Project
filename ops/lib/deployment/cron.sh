@@ -11,7 +11,8 @@
 ###############################################################################
 
 # Installe ou met à jour le crontab depuis schedule.rb
-# Utilise whenever pour générer et installer le crontab
+# Utilise whenever pour générer le crontab et l'écrit dans /rails/config/crontab
+# Supercronic lit directement ce fichier (pas besoin de la commande crontab)
 # IMPORTANT : S'exécute depuis le conteneur (bundle/whenever disponibles uniquement dans le conteneur)
 install_crontab() {
     local container=${CONTAINER_NAME:-}
@@ -36,78 +37,48 @@ install_crontab() {
         return 1
     fi
     
-    # Générer et installer le crontab depuis le conteneur
-    local whenever_output
-    whenever_output=$($DOCKER_CMD exec "$container" bundle exec whenever --update-crontab --set "environment=${env}" 2>&1)
+    # Générer le contenu du crontab avec whenever (sans utiliser --update-crontab qui nécessite crontab)
+    log_info "   Génération du crontab depuis config/schedule.rb..."
+    local crontab_content
+    crontab_content=$($DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>&1)
     local whenever_exit_code=$?
     
-    # Vérifier si whenever a réellement installé le crontab
-    # Le message "your crontab file was not updated" indique un échec silencieux
-    if echo "$whenever_output" | grep -q "your crontab file was not updated"; then
-        log_error "❌ Échec de l'installation du crontab (whenever n'a pas pu mettre à jour le crontab)"
-        log_error "   Message: your crontab file was not updated"
-        log_info "   Cela peut être dû à des permissions insuffisantes ou à un accès crontab limité"
-        log_info "   Tentative alternative : installation manuelle via crontab -"
-        
-        # Tentative alternative : générer le crontab et l'installer manuellement
-        local crontab_content
-        crontab_content=$($DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>/dev/null)
-        
-        if [ -n "$crontab_content" ]; then
-            log_info "   Installation via crontab - (pipe)..."
-            # Installer le crontab via stdin
-            if echo "$crontab_content" | $DOCKER_CMD exec -i "$container" crontab - 2>/dev/null; then
-                log_success "✅ Crontab installé via méthode alternative"
-                
-                # Vérifier que le crontab est bien installé
-                local installed_count
-                installed_count=$($DOCKER_CMD exec "$container" crontab -l 2>/dev/null | grep -c "rails runner" || echo "0")
-                if [ "$installed_count" -gt 0 ]; then
-                    log_success "✅ Vérification : $installed_count entrée(s) cron installée(s)"
-                    
-                    # Afficher les entrées installées
-                    log_info "📋 Entrées cron installées:"
-                    $DOCKER_CMD exec "$container" crontab -l 2>/dev/null | while IFS= read -r line; do
-                        log_info "   $line"
-                    done
-                    
-                    return 0
-                else
-                    log_error "❌ Le crontab n'a pas été installé (vérification échouée)"
-                    return 1
-                fi
-            else
-                log_error "❌ Échec de l'installation alternative du crontab"
-                return 1
-            fi
-        else
-            log_error "❌ Impossible de générer le contenu du crontab"
-            return 1
-        fi
-    elif [ $whenever_exit_code -eq 0 ]; then
-        log_success "✅ Crontab installé/mis à jour avec succès"
-        
-        # Vérifier que le crontab est bien installé
-        local installed_count
-        installed_count=$($DOCKER_CMD exec "$container" crontab -l 2>/dev/null | grep -c "rails runner" || echo "0")
-        if [ "$installed_count" -gt 0 ]; then
-            log_success "✅ Vérification : $installed_count entrée(s) cron installée(s)"
-        else
-            log_warning "⚠️  Le crontab semble installé mais aucune entrée trouvée (peut être normal si vide)"
-        fi
-        
-        # Afficher les entrées installées (pour vérification)
-        log_info "📋 Entrées cron installées:"
-        $DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>/dev/null | while IFS= read -r line; do
-            log_info "   $line"
-        done || log_warning "⚠️  Impossible d'afficher les entrées cron"
-        
-        return 0
-    else
-        log_error "❌ Échec de l'installation du crontab (exit code: $whenever_exit_code)"
-        echo "$whenever_output" | while IFS= read -r line; do
+    if [ $whenever_exit_code -ne 0 ] || [ -z "$crontab_content" ]; then
+        log_error "❌ Échec de la génération du crontab (exit code: $whenever_exit_code)"
+        echo "$crontab_content" | while IFS= read -r line; do
             log_error "   $line"
         done
+        return 1
+    fi
+    
+    # Écrire le crontab dans /rails/config/crontab (Supercronic lit ce fichier)
+    log_info "   Écriture du crontab dans /rails/config/crontab..."
+    if echo "$crontab_content" | $DOCKER_CMD exec -i "$container" sh -c 'cat > /rails/config/crontab' 2>/dev/null; then
+        log_success "✅ Crontab généré et écrit dans /rails/config/crontab"
+        
+        # Vérifier que le fichier existe et contient des entrées
+        local installed_count
+        installed_count=$($DOCKER_CMD exec "$container" grep -c "rails runner" /rails/config/crontab 2>/dev/null || echo "0")
+        
+        if [ "$installed_count" -gt 0 ]; then
+            log_success "✅ Vérification : $installed_count entrée(s) cron dans le fichier"
+            
+            # Afficher les entrées installées (pour vérification)
+            log_info "📋 Entrées cron générées:"
+            echo "$crontab_content" | while IFS= read -r line; do
+                # Ignorer les lignes vides et les commentaires
+                if [ -n "$line" ] && ! echo "$line" | grep -q "^#"; then
+                    log_info "   $line"
+                fi
+            done
+            
+            return 0
+        else
+            log_warning "⚠️  Le fichier crontab existe mais aucune entrée trouvée"
+            return 1
+        fi
+    else
+        log_error "❌ Échec de l'écriture du crontab dans /rails/config/crontab"
         return 1
     fi
 }
@@ -121,15 +92,16 @@ is_crontab_installed() {
         return 1
     fi
     
-    # Vérifier si whenever peut détecter des entrées existantes depuis le conteneur
-    if $DOCKER_CMD exec "$container" bundle exec whenever 2>/dev/null | grep -q "EventReminderJob\|helloasso\|memberships"; then
+    # Vérifier si le fichier /rails/config/crontab existe et contient des entrées
+    if $DOCKER_CMD exec "$container" test -f /rails/config/crontab 2>/dev/null && \
+       $DOCKER_CMD exec "$container" grep -q "rails runner" /rails/config/crontab 2>/dev/null; then
         return 0
     else
         return 1
     fi
 }
 
-# Affiche le crontab actuel (généré par whenever)
+# Affiche le crontab actuel (depuis le fichier ou généré par whenever)
 show_crontab() {
     local container=${CONTAINER_NAME:-}
     local env=${ENV:-production}
@@ -139,13 +111,21 @@ show_crontab() {
         return 1
     fi
     
-    log "📋 Crontab actuel (généré depuis config/schedule.rb):"
-    $DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>/dev/null | while IFS= read -r line; do
-        echo "   $line"
-    done
+    # Afficher le contenu du fichier crontab s'il existe
+    if $DOCKER_CMD exec "$container" test -f /rails/config/crontab 2>/dev/null; then
+        log "📋 Crontab actuel (depuis /rails/config/crontab):"
+        $DOCKER_CMD exec "$container" cat /rails/config/crontab 2>/dev/null | while IFS= read -r line; do
+            echo "   $line"
+        done
+    else
+        log "📋 Crontab actuel (généré depuis config/schedule.rb):"
+        $DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>/dev/null | while IFS= read -r line; do
+            echo "   $line"
+        done
+    fi
 }
 
-# Supprime toutes les entrées cron générées par whenever
+# Supprime le fichier crontab utilisé par Supercronic
 clear_crontab() {
     local container=${CONTAINER_NAME:-}
     
@@ -156,7 +136,9 @@ clear_crontab() {
         return 1
     fi
     
-    if $DOCKER_CMD exec "$container" bundle exec whenever --clear-crontab; then
+    # Supprimer ou vider le fichier /rails/config/crontab
+    if $DOCKER_CMD exec "$container" rm -f /rails/config/crontab 2>/dev/null || \
+       $DOCKER_CMD exec "$container" sh -c 'echo "" > /rails/config/crontab' 2>/dev/null; then
         log_success "✅ Crontab supprimé"
         return 0
     else

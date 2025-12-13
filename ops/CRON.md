@@ -59,10 +59,14 @@ Les logs de Supercronic lui-même sont dans les logs du conteneur (stdout/stderr
 
 ## Modification des tâches
 
-1. Modifier `config/schedule.rb` si vous utilisez Whenever
-2. Mettre à jour `config/crontab` manuellement avec le format crontab
-3. Rebuilder l'image Docker
-4. Redémarrer le conteneur
+Le fichier `config/crontab` est généré automatiquement lors du déploiement par le script `ops/lib/deployment/cron.sh` :
+
+1. Modifier `config/schedule.rb` pour ajouter/modifier les tâches
+2. Le script de déploiement génère automatiquement `config/crontab` depuis `schedule.rb` avec `whenever --set`
+3. Le fichier est écrit dans `/rails/config/crontab` dans le conteneur
+4. Supercronic lit automatiquement ce fichier au démarrage
+
+**Note** : Le script n'utilise pas `whenever --update-crontab` car cela nécessiterait la commande `crontab` qui n'est pas disponible dans les conteneurs Docker. À la place, le contenu généré est écrit directement dans le fichier `/rails/config/crontab` que Supercronic lit.
 
 ## Notes
 
