@@ -53,7 +53,42 @@ install_crontab() {
     
     # Écrire le crontab dans /rails/config/crontab (Supercronic lit ce fichier)
     log_info "   Écriture du crontab dans /rails/config/crontab..."
-    if echo "$crontab_content" | $DOCKER_CMD exec -i "$container" sh -c 'cat > /rails/config/crontab' 2>/dev/null; then
+    
+    # S'assurer que le répertoire config existe
+    $DOCKER_CMD exec "$container" mkdir -p /rails/config 2>/dev/null || true
+    
+    # Essayer plusieurs méthodes pour écrire le fichier
+    local write_error=""
+    local write_success=false
+    
+    # Méthode 1 : Utiliser base64 pour encoder le contenu (évite les problèmes d'échappement)
+    # Vérifier d'abord si base64 est disponible dans le conteneur
+    if $DOCKER_CMD exec "$container" which base64 >/dev/null 2>&1; then
+        local crontab_encoded
+        # base64 -w 0 (GNU) ou base64 sans -w (BSD/macOS), on supprime les retours à la ligne manuellement
+        crontab_encoded=$(echo "$crontab_content" | base64 2>/dev/null | tr -d '\n' || echo "$crontab_content" | base64 -w 0 2>/dev/null || echo "")
+        
+        if [ -n "$crontab_encoded" ]; then
+            # Décoder et écrire dans le conteneur
+            if $DOCKER_CMD exec "$container" sh -c "echo '$crontab_encoded' | base64 -d > /rails/config/crontab" 2>&1; then
+                write_success=true
+            else
+                write_error=$($DOCKER_CMD exec "$container" sh -c "echo '$crontab_encoded' | base64 -d > /rails/config/crontab" 2>&1 || true)
+            fi
+        fi
+    fi
+    
+    # Méthode 2 : Si base64 a échoué, utiliser tee comme fallback
+    if [ "$write_success" != true ]; then
+        log_info "   Tentative avec méthode alternative (tee)..."
+        if echo "$crontab_content" | $DOCKER_CMD exec -i "$container" tee /rails/config/crontab >/dev/null 2>&1; then
+            write_success=true
+        else
+            write_error=$(echo "$crontab_content" | $DOCKER_CMD exec -i "$container" tee /rails/config/crontab 2>&1 || true)
+        fi
+    fi
+    
+    if [ "$write_success" = true ]; then
         log_success "✅ Crontab généré et écrit dans /rails/config/crontab"
         
         # Vérifier que le fichier existe et contient des entrées
@@ -79,6 +114,15 @@ install_crontab() {
         fi
     else
         log_error "❌ Échec de l'écriture du crontab dans /rails/config/crontab"
+        if [ -n "$write_error" ]; then
+            echo "$write_error" | while IFS= read -r line; do
+                log_error "   $line"
+            done
+        fi
+        log_info "   Vérification des permissions sur /rails/config..."
+        $DOCKER_CMD exec "$container" ls -la /rails/config 2>&1 | while IFS= read -r line; do
+            log_info "   $line"
+        done || true
         return 1
     fi
 }
