@@ -2176,3 +2176,1128 @@
   "deployment_id": "deploy-20251213-142359-11173",
   "deploy_duration_seconds": 17
 }
+{
+  "timestamp": "2025-12-13T14:24:43Z",
+  "level": "INFO",
+  "message": "🔐 Master key chargée depuis config/master.key (dev)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-13T14:24:43Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:24:43Z",
+  "level": "INFO",
+  "message": "🚀 DEPLOYMENT START - staging - 2025-12-13 14:24:43",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "🧹 Nettoyage préventif Docker...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "✅ Aucun conteneur orphelin détecté (ancienne config propre)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "Images sans tag nettoyées",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "Cache build nettoyé",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "🔒 Activation du mode maintenance (évite downtime)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:44Z",
+  "level": "INFO",
+  "message": "🔒 Activation du mode maintenance...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:24:47Z",
+  "level": "SUCCESS",
+  "message": "✅ Mode maintenance activé",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:24:47Z",
+  "level": "INFO",
+  "message": "📥 Vérification des mises à jour (branche: staging)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:24:48Z",
+  "level": "INFO",
+  "message": "✅ Déjà à jour (commit: 96482e6)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 5
+}
+{
+  "timestamp": "2025-12-13T14:24:48Z",
+  "level": "WARNING",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 5
+}
+{
+  "timestamp": "2025-12-13T14:24:48Z",
+  "level": "WARNING",
+  "message": "⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 5
+}
+{
+  "timestamp": "2025-12-13T14:24:48Z",
+  "level": "WARNING",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 5
+}
+{
+  "timestamp": "2025-12-13T14:24:49Z",
+  "level": "INFO",
+  "message": "💾 Commit actuel sauvegardé: 96482e6",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 6
+}
+{
+  "timestamp": "2025-12-13T14:24:49Z",
+  "level": "INFO",
+  "message": "📦 Backup base de données (chiffrement: true)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 6
+}
+{
+  "timestamp": "2025-12-13T14:24:49Z",
+  "level": "SUCCESS",
+  "message": "✅ Clé de chiffrement récupérée depuis master.key (host)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 6
+}
+{
+  "timestamp": "2025-12-13T14:24:49Z",
+  "level": "INFO",
+  "message": "   Exécution de pg_dump sur grenoble-roller-db-staging...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 6
+}
+{
+  "timestamp": "2025-12-13T14:24:50Z",
+  "level": "SUCCESS",
+  "message": "✅ Backup chiffré créé: db_20251213_142449.sql.enc (108K)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 7
+}
+{
+  "timestamp": "2025-12-13T14:24:50Z",
+  "level": "INFO",
+  "message": "📥 Mise à jour du code...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 7
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "💾 Vérification de l'espace disque...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "✅ Espace disque OK : 6GB disponible",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "🔍 Vérification des fichiers de migration avant build...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "✅ 61 fichier(s) de migration trouvé(s) localement",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "🔍 Vérification finale de la branche Git avant build...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "🔨 Build et redémarrage (cache activé)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:24:51Z",
+  "level": "INFO",
+  "message": "🔨 Build et redémarrage (cache activé)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-13T14:25:09Z",
+  "level": "SUCCESS",
+  "message": "✅ Image créée: bc00651b0f8f...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 26
+}
+{
+  "timestamp": "2025-12-13T14:25:10Z",
+  "level": "INFO",
+  "message": "🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 27
+}
+{
+  "timestamp": "2025-12-13T14:25:10Z",
+  "level": "INFO",
+  "message": "Attente que le conteneur grenoble-roller-staging soit running...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 27
+}
+{
+  "timestamp": "2025-12-13T14:25:10Z",
+  "level": "INFO",
+  "message": "Conteneur running, vérification stabilité... (2s/5s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 27
+}
+{
+  "timestamp": "2025-12-13T14:25:12Z",
+  "level": "INFO",
+  "message": "Attente... (2s/60s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 29
+}
+{
+  "timestamp": "2025-12-13T14:25:12Z",
+  "level": "INFO",
+  "message": "Conteneur running, vérification stabilité... (4s/5s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 29
+}
+{
+  "timestamp": "2025-12-13T14:25:14Z",
+  "level": "INFO",
+  "message": "Attente... (4s/60s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 31
+}
+{
+  "timestamp": "2025-12-13T14:25:14Z",
+  "level": "SUCCESS",
+  "message": "Conteneur grenoble-roller-staging est running et stable (6s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 31
+}
+{
+  "timestamp": "2025-12-13T14:25:17Z",
+  "level": "SUCCESS",
+  "message": "✅ Migrations synchronisées (61 fichiers)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 34
+}
+{
+  "timestamp": "2025-12-13T14:25:17Z",
+  "level": "INFO",
+  "message": "Pas de healthcheck configuré, attente supplémentaire...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 34
+}
+{
+  "timestamp": "2025-12-13T14:25:32Z",
+  "level": "INFO",
+  "message": "🕐 Timeout migration adaptatif : 90s pour 1 migration(s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 49
+}
+{
+  "timestamp": "2025-12-13T14:25:32Z",
+  "level": "INFO",
+  "message": "🗄️ Exécution des migrations (timeout: 90s)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 49
+}
+{
+  "timestamp": "2025-12-13T14:25:35Z",
+  "level": "SUCCESS",
+  "message": "✅ Migrations exécutées avec succès (durée: 3s)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 52
+}
+{
+  "timestamp": "2025-12-13T14:25:37Z",
+  "level": "SUCCESS",
+  "message": "✅ Toutes les migrations ont été appliquées correctement",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 54
+}
+{
+  "timestamp": "2025-12-13T14:25:37Z",
+  "level": "INFO",
+  "message": "⏰ Installation/mise à jour du crontab...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 54
+}
+{
+  "timestamp": "2025-12-13T14:25:37Z",
+  "level": "INFO",
+  "message": "🔄 Installation/mise à jour du crontab pour staging...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 54
+}
+{
+  "timestamp": "2025-12-13T14:25:37Z",
+  "level": "INFO",
+  "message": "   Génération du crontab depuis config/schedule.rb...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 54
+}
+{
+  "timestamp": "2025-12-13T14:25:38Z",
+  "level": "INFO",
+  "message": "   Écriture du crontab dans /rails/config/crontab...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 55
+}
+{
+  "timestamp": "2025-12-13T14:25:38Z",
+  "level": "INFO",
+  "message": "   Tentative avec méthode alternative (tee)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 55
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "❌ Échec de l'écriture du crontab dans /rails/config/crontab",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   tee: /rails/config/crontab: Permission denied",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rake::Task[\"helloasso:sync_payments\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   0 19 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''EventReminderJob.perform_now'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   0 0 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rake::Task[\"memberships:update_expired\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   0 9 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rake::Task[\"memberships:send_renewal_reminders\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   0 10 1,8,15,22 * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rake::Task[\"memberships:check_minor_authorizations\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   30 10 1,8,15,22 * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rake::Task[\"memberships:check_medical_certificates\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ## [message] Above is your schedule file converted to cron syntax; your crontab file was not updated.",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "ERROR",
+  "message": "   ## [message] Run `whenever --help' for more options.",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   Vérification des permissions sur /rails/config...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   total 92",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   drwxrwxr-x 5 root root 4096 Dec 13 13:58 .",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   drwxr-xr-x 1 root root 4096 Dec 13 14:16 ..",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 1221 Dec 10 21:46 application.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  207 Nov  6 23:40 boot.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  549 Nov  6 23:40 cable.yml",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  300 Nov  6 23:40 cache.yml",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  802 Dec 10 21:46 ci.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 1160 Dec 10 21:46 credentials.yml.enc",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 1704 Dec 13 13:58 crontab",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 3653 Dec 10 21:46 database.yml",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  128 Nov  6 23:40 environment.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   drwxrwxr-x 2 root root 4096 Dec 10 21:46 environments",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  376 Dec 10 21:46 importmap.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   drwxrwxr-x 2 root root 4096 Dec 12 17:55 initializers",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   drwxrwxr-x 2 root root 4096 Dec 12 17:55 locales",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:39Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 2052 Dec 10 21:46 puma.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 56
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root  290 Nov  6 23:40 queue.yml",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 1048 Dec 10 21:46 recurring.yml",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 5113 Dec 13 13:22 routes.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 1102 Dec 10 21:46 schedule.rb",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "   -rw-rw-r-- 1 root root 1565 Dec 10 21:46 storage.yml",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "WARNING",
+  "message": "⚠️  Échec de l'installation du crontab - Continuation du déploiement",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "   Le crontab peut être installé manuellement avec: bundle exec whenever --update-crontab",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "🔓 Désactivation du mode maintenance...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:40Z",
+  "level": "INFO",
+  "message": "✅ Désactivation du mode maintenance...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 57
+}
+{
+  "timestamp": "2025-12-13T14:25:43Z",
+  "level": "SUCCESS",
+  "message": "✅ Mode maintenance désactivé",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 60
+}
+{
+  "timestamp": "2025-12-13T14:25:43Z",
+  "level": "INFO",
+  "message": "🏥 Health check complet avec retry...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 60
+}
+{
+  "timestamp": "2025-12-13T14:25:53Z",
+  "level": "INFO",
+  "message": "🏥 Health check complet (DB, Redis, Migrations, HTTP)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 70
+}
+{
+  "timestamp": "2025-12-13T14:25:53Z",
+  "level": "INFO",
+  "message": "  → Vérification DB...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 70
+}
+{
+  "timestamp": "2025-12-13T14:25:56Z",
+  "level": "SUCCESS",
+  "message": "  ✅ DB accessible",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 73
+}
+{
+  "timestamp": "2025-12-13T14:25:56Z",
+  "level": "INFO",
+  "message": "  → Vérification Redis...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 73
+}
+{
+  "timestamp": "2025-12-13T14:26:02Z",
+  "level": "WARNING",
+  "message": "  ⚠️  Redis non configuré (non bloquant)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 79
+}
+{
+  "timestamp": "2025-12-13T14:26:02Z",
+  "level": "INFO",
+  "message": "  → Vérification migrations...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 79
+}
+{
+  "timestamp": "2025-12-13T14:26:04Z",
+  "level": "SUCCESS",
+  "message": "  ✅ Toutes les migrations appliquées",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 81
+}
+{
+  "timestamp": "2025-12-13T14:26:04Z",
+  "level": "INFO",
+  "message": "  → Vérification HTTP (port externe: 3001, port interne: 3000)...",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 81
+}
+{
+  "timestamp": "2025-12-13T14:26:05Z",
+  "level": "SUCCESS",
+  "message": "  ✅ HTTP endpoint OK (200)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 82
+}
+{
+  "timestamp": "2025-12-13T14:26:05Z",
+  "level": "SUCCESS",
+  "message": "✅ Déploiement staging terminé avec succès (commit: 96482e6)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 82
+}
+{
+  "timestamp": "2025-12-13T14:26:05Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 82
+}
+{
+  "timestamp": "2025-12-13T14:26:05Z",
+  "level": "INFO",
+  "message": "✅ DEPLOYMENT SUCCESS",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 82
+}
+{
+  "timestamp": "2025-12-13T14:26:05Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 82
+}
+{
+  "timestamp": "2025-12-13T14:26:05Z",
+  "level": "INFO",
+  "message": "📊 Métriques exportées: /home/flowtech/Grenoble-Roller-Project/metrics/deploy-staging.prom",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-142443-22613",
+  "deploy_duration_seconds": 82
+}
+{
+  "timestamp": "2025-12-13T14:31:16Z",
+  "level": "INFO",
+  "message": "🔐 Master key chargée depuis config/master.key (dev)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "🚀 DEPLOYMENT START - staging - 2025-12-13 14:31:17",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "🧹 Nettoyage préventif Docker...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "✅ Aucun conteneur orphelin détecté (ancienne config propre)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:17Z",
+  "level": "INFO",
+  "message": "Images sans tag nettoyées",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-13T14:31:18Z",
+  "level": "INFO",
+  "message": "Cache build nettoyé",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:31:18Z",
+  "level": "INFO",
+  "message": "🔒 Activation du mode maintenance (évite downtime)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:31:18Z",
+  "level": "INFO",
+  "message": "🔒 Activation du mode maintenance...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-13T14:31:21Z",
+  "level": "SUCCESS",
+  "message": "✅ Mode maintenance activé",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:31:21Z",
+  "level": "INFO",
+  "message": "📥 Vérification des mises à jour (branche: staging)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:31:21Z",
+  "level": "INFO",
+  "message": "✅ Déjà à jour (commit: 96482e6)",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:31:21Z",
+  "level": "WARNING",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:31:21Z",
+  "level": "WARNING",
+  "message": "⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-13T14:31:21Z",
+  "level": "WARNING",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "96482e6807a65e0965ef8b25a07b5433be8c24f0",
+  "deployment_id": "deploy-20251213-143116-8968",
+  "deploy_duration_seconds": 4
+}

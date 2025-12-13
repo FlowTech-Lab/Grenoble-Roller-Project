@@ -4740,3 +4740,165 @@
 [0;32m[2025-12-13 14:24:16] SUCCESS: ✅ Base de données restaurée depuis backup chiffré[0m
 [2025-12-13 14:24:16] INFO: 📝 Restauration du code vers d7d58f5...
 [2025-12-13 14:24:16] INFO: 🔨 Rebuild et démarrage avec l'ancienne version...
+[2025-12-13 14:24:43] INFO: 🔐 Master key chargée depuis config/master.key (dev)
+[2025-12-13 14:24:43] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-13 14:24:43] 🚀 DEPLOYMENT START - staging - 2025-12-13 14:24:43
+[2025-12-13 14:24:44] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-13 14:24:44] 🧹 Nettoyage préventif Docker...
+[2025-12-13 14:24:44] INFO: Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...
+[2025-12-13 14:24:44] INFO: ✅ Aucun conteneur orphelin détecté (ancienne config propre)
+[2025-12-13 14:24:44] INFO: Images sans tag nettoyées
+[2025-12-13 14:24:44] INFO: Cache build nettoyé
+[2025-12-13 14:24:44] 🔒 Activation du mode maintenance (évite downtime)...
+[2025-12-13 14:24:44] INFO: 🔒 Activation du mode maintenance...
+[0;32m[2025-12-13 14:24:47] SUCCESS: ✅ Mode maintenance activé[0m
+[2025-12-13 14:24:47] 📥 Vérification des mises à jour (branche: staging)...
+[2025-12-13 14:24:48] ✅ Déjà à jour (commit: 96482e6)
+[1;33m[2025-12-13 14:24:48] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-13 14:24:48] WARNING: ⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?[0m
+[1;33m[2025-12-13 14:24:48] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[2025-12-13 14:24:49] 💾 Commit actuel sauvegardé: 96482e6
+[2025-12-13 14:24:49] 📦 Backup base de données (chiffrement: true)...
+[0;32m[2025-12-13 14:24:49] SUCCESS: ✅ Clé de chiffrement récupérée depuis master.key (host)[0m
+[2025-12-13 14:24:49] INFO:    Exécution de pg_dump sur grenoble-roller-db-staging...
+[0;32m[2025-12-13 14:24:50] SUCCESS: ✅ Backup chiffré créé: db_20251213_142449.sql.enc (108K)[0m
+[2025-12-13 14:24:50] 📥 Mise à jour du code...
+[2025-12-13 14:24:51] 💾 Vérification de l'espace disque...
+[2025-12-13 14:24:51] INFO: ✅ Espace disque OK : 6GB disponible
+[2025-12-13 14:24:51] 🔍 Vérification des fichiers de migration avant build...
+[2025-12-13 14:24:51] INFO: ✅ 61 fichier(s) de migration trouvé(s) localement
+[2025-12-13 14:24:51] 🔍 Vérification finale de la branche Git avant build...
+[2025-12-13 14:24:51] 🔨 Build et redémarrage (cache activé)...
+[2025-12-13 14:24:51] 🔨 Build et redémarrage (cache activé)...
+[0;32m[2025-12-13 14:25:09] SUCCESS: ✅ Image créée: bc00651b0f8f...[0m
+#1 [internal] load local bake definitions
+#1 reading from stdin 571B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 3.94kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 6.4s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:b6afd42430b15f2d2a4c5a02b919e98a525b785b1aaff16747d2f623364e39b6
+#4 CACHED
+
+#5 [internal] load metadata for docker.io/library/ruby:3.4.2-slim
+#5 ERROR: failed to do request: Head "https://registry-1.docker.io/v2/library/ruby/manifests/3.4.2-slim": net/http: TLS handshake timeout
+------
+ > [internal] load metadata for docker.io/library/ruby:3.4.2-slim:
+------
+Dockerfile:11
+
+--------------------
+
+   9 |     # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
+
+  10 |     ARG RUBY_VERSION=3.4.2
+
+  11 | >>> FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
+
+  12 |     
+
+  13 |     # Build ID pour forcer un nouveau build (évite cache Docker trompeur)
+
+--------------------
+
+failed to solve: failed to do request: Head "https://registry-1.docker.io/v2/library/ruby/manifests/3.4.2-slim": net/http: TLS handshake timeout
+[2025-12-13 14:25:09] 🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?
+[2025-12-13 14:25:10] INFO: Attente que le conteneur grenoble-roller-staging soit running...
+[2025-12-13 14:25:10] INFO: Conteneur running, vérification stabilité... (2s/5s)
+[2025-12-13 14:25:12] INFO: Attente... (2s/60s)
+[2025-12-13 14:25:12] INFO: Conteneur running, vérification stabilité... (4s/5s)
+[2025-12-13 14:25:14] INFO: Attente... (4s/60s)
+[0;32m[2025-12-13 14:25:14] SUCCESS: Conteneur grenoble-roller-staging est running et stable (6s)[0m
+[0;32m[2025-12-13 14:25:17] SUCCESS: ✅ Migrations synchronisées (61 fichiers)[0m
+[2025-12-13 14:25:17] INFO: Pas de healthcheck configuré, attente supplémentaire...
+[2025-12-13 14:25:32] 🕐 Timeout migration adaptatif : 90s pour 1 migration(s)
+[2025-12-13 14:25:32] 🗄️ Exécution des migrations (timeout: 90s)...
+
+[0;32m[2025-12-13 14:25:35] SUCCESS: ✅ Migrations exécutées avec succès (durée: 3s)[0m
+[0;32m[2025-12-13 14:25:37] SUCCESS: ✅ Toutes les migrations ont été appliquées correctement[0m
+[2025-12-13 14:25:37] ⏰ Installation/mise à jour du crontab...
+[2025-12-13 14:25:37] 🔄 Installation/mise à jour du crontab pour staging...
+[2025-12-13 14:25:37] INFO:    Génération du crontab depuis config/schedule.rb...
+[2025-12-13 14:25:38] INFO:    Écriture du crontab dans /rails/config/crontab...
+[2025-12-13 14:25:38] INFO:    Tentative avec méthode alternative (tee)...
+[0;31m[2025-12-13 14:25:39] ERROR: ❌ Échec de l'écriture du crontab dans /rails/config/crontab[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    tee: /rails/config/crontab: Permission denied[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rake::Task["helloasso:sync_payments"].invoke'\'' >> log/cron.log 2>&1'[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    [0m
+[0;31m[2025-12-13 14:25:39] ERROR:    0 19 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''EventReminderJob.perform_now'\'' >> log/cron.log 2>&1'[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    [0m
+[0;31m[2025-12-13 14:25:39] ERROR:    0 0 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rake::Task["memberships:update_expired"].invoke'\'' >> log/cron.log 2>&1'[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    [0m
+[0;31m[2025-12-13 14:25:39] ERROR:    0 9 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rake::Task["memberships:send_renewal_reminders"].invoke'\'' >> log/cron.log 2>&1'[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    [0m
+[0;31m[2025-12-13 14:25:39] ERROR:    0 10 1,8,15,22 * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rake::Task["memberships:check_minor_authorizations"].invoke'\'' >> log/cron.log 2>&1'[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    [0m
+[0;31m[2025-12-13 14:25:39] ERROR:    30 10 1,8,15,22 * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rake::Task["memberships:check_medical_certificates"].invoke'\'' >> log/cron.log 2>&1'[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    [0m
+[0;31m[2025-12-13 14:25:39] ERROR:    ## [message] Above is your schedule file converted to cron syntax; your crontab file was not updated.[0m
+[0;31m[2025-12-13 14:25:39] ERROR:    ## [message] Run `whenever --help' for more options.[0m
+[2025-12-13 14:25:39] INFO:    Vérification des permissions sur /rails/config...
+[2025-12-13 14:25:39] INFO:    total 92
+[2025-12-13 14:25:39] INFO:    drwxrwxr-x 5 root root 4096 Dec 13 13:58 .
+[2025-12-13 14:25:39] INFO:    drwxr-xr-x 1 root root 4096 Dec 13 14:16 ..
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root 1221 Dec 10 21:46 application.rb
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  207 Nov  6 23:40 boot.rb
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  549 Nov  6 23:40 cable.yml
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  300 Nov  6 23:40 cache.yml
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  802 Dec 10 21:46 ci.rb
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root 1160 Dec 10 21:46 credentials.yml.enc
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root 1704 Dec 13 13:58 crontab
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root 3653 Dec 10 21:46 database.yml
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  128 Nov  6 23:40 environment.rb
+[2025-12-13 14:25:39] INFO:    drwxrwxr-x 2 root root 4096 Dec 10 21:46 environments
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  376 Dec 10 21:46 importmap.rb
+[2025-12-13 14:25:39] INFO:    drwxrwxr-x 2 root root 4096 Dec 12 17:55 initializers
+[2025-12-13 14:25:39] INFO:    drwxrwxr-x 2 root root 4096 Dec 12 17:55 locales
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root 2052 Dec 10 21:46 puma.rb
+[2025-12-13 14:25:39] INFO:    -rw-rw-r-- 1 root root  290 Nov  6 23:40 queue.yml
+[2025-12-13 14:25:40] INFO:    -rw-rw-r-- 1 root root 1048 Dec 10 21:46 recurring.yml
+[2025-12-13 14:25:40] INFO:    -rw-rw-r-- 1 root root 5113 Dec 13 13:22 routes.rb
+[2025-12-13 14:25:40] INFO:    -rw-rw-r-- 1 root root 1102 Dec 10 21:46 schedule.rb
+[2025-12-13 14:25:40] INFO:    -rw-rw-r-- 1 root root 1565 Dec 10 21:46 storage.yml
+[1;33m[2025-12-13 14:25:40] WARNING: ⚠️  Échec de l'installation du crontab - Continuation du déploiement[0m
+[2025-12-13 14:25:40] INFO:    Le crontab peut être installé manuellement avec: bundle exec whenever --update-crontab
+[2025-12-13 14:25:40] 🔓 Désactivation du mode maintenance...
+[2025-12-13 14:25:40] INFO: ✅ Désactivation du mode maintenance...
+[0;32m[2025-12-13 14:25:43] SUCCESS: ✅ Mode maintenance désactivé[0m
+[2025-12-13 14:25:43] 🏥 Health check complet avec retry...
+[2025-12-13 14:25:53] 🏥 Health check complet (DB, Redis, Migrations, HTTP)...
+[2025-12-13 14:25:53] INFO:   → Vérification DB...
+[0;32m[2025-12-13 14:25:56] SUCCESS:   ✅ DB accessible[0m
+[2025-12-13 14:25:56] INFO:   → Vérification Redis...
+[1;33m[2025-12-13 14:26:02] WARNING:   ⚠️  Redis non configuré (non bloquant)[0m
+[2025-12-13 14:26:02] INFO:   → Vérification migrations...
+[0;32m[2025-12-13 14:26:04] SUCCESS:   ✅ Toutes les migrations appliquées[0m
+[2025-12-13 14:26:04] INFO:   → Vérification HTTP (port externe: 3001, port interne: 3000)...
+[0;32m[2025-12-13 14:26:05] SUCCESS:   ✅ HTTP endpoint OK (200)[0m
+[0;32m[2025-12-13 14:26:05] SUCCESS: ✅ Déploiement staging terminé avec succès (commit: 96482e6)[0m
+[2025-12-13 14:26:05] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-13 14:26:05] ✅ DEPLOYMENT SUCCESS
+[2025-12-13 14:26:05] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-13 14:26:05] INFO: 📊 Métriques exportées: /home/flowtech/Grenoble-Roller-Project/metrics/deploy-staging.prom
+[2025-12-13 14:31:16] INFO: 🔐 Master key chargée depuis config/master.key (dev)
+[2025-12-13 14:31:17] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-13 14:31:17] 🚀 DEPLOYMENT START - staging - 2025-12-13 14:31:17
+[2025-12-13 14:31:17] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-13 14:31:17] 🧹 Nettoyage préventif Docker...
+[2025-12-13 14:31:17] INFO: Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...
+[2025-12-13 14:31:17] INFO: ✅ Aucun conteneur orphelin détecté (ancienne config propre)
+[2025-12-13 14:31:17] INFO: Images sans tag nettoyées
+[2025-12-13 14:31:18] INFO: Cache build nettoyé
+[2025-12-13 14:31:18] 🔒 Activation du mode maintenance (évite downtime)...
+[2025-12-13 14:31:18] INFO: 🔒 Activation du mode maintenance...
+[0;32m[2025-12-13 14:31:21] SUCCESS: ✅ Mode maintenance activé[0m
+[2025-12-13 14:31:21] 📥 Vérification des mises à jour (branche: staging)...
+[2025-12-13 14:31:21] ✅ Déjà à jour (commit: 96482e6)
+[1;33m[2025-12-13 14:31:21] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-13 14:31:21] WARNING: ⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?[0m
+[1;33m[2025-12-13 14:31:21] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m

@@ -54,10 +54,10 @@ install_crontab() {
     # Écrire le crontab dans /rails/config/crontab (Supercronic lit ce fichier)
     log_info "   Écriture du crontab dans /rails/config/crontab..."
     
-    # S'assurer que le répertoire config existe
-    $DOCKER_CMD exec "$container" mkdir -p /rails/config 2>/dev/null || true
+    # S'assurer que le répertoire config existe (en tant que root pour avoir les permissions)
+    $DOCKER_CMD exec -u root "$container" mkdir -p /rails/config 2>/dev/null || true
     
-    # Essayer plusieurs méthodes pour écrire le fichier
+    # Essayer plusieurs méthodes pour écrire le fichier (en tant que root pour avoir les permissions)
     local write_error=""
     local write_success=false
     
@@ -69,26 +69,29 @@ install_crontab() {
         crontab_encoded=$(echo "$crontab_content" | base64 2>/dev/null | tr -d '\n' || echo "$crontab_content" | base64 -w 0 2>/dev/null || echo "")
         
         if [ -n "$crontab_encoded" ]; then
-            # Décoder et écrire dans le conteneur
-            if $DOCKER_CMD exec "$container" sh -c "echo '$crontab_encoded' | base64 -d > /rails/config/crontab" 2>&1; then
+            # Décoder et écrire dans le conteneur (en tant que root)
+            if $DOCKER_CMD exec -u root "$container" sh -c "echo '$crontab_encoded' | base64 -d > /rails/config/crontab" 2>&1; then
                 write_success=true
             else
-                write_error=$($DOCKER_CMD exec "$container" sh -c "echo '$crontab_encoded' | base64 -d > /rails/config/crontab" 2>&1 || true)
+                write_error=$($DOCKER_CMD exec -u root "$container" sh -c "echo '$crontab_encoded' | base64 -d > /rails/config/crontab" 2>&1 || true)
             fi
         fi
     fi
     
-    # Méthode 2 : Si base64 a échoué, utiliser tee comme fallback
+    # Méthode 2 : Si base64 a échoué, utiliser tee comme fallback (en tant que root)
     if [ "$write_success" != true ]; then
         log_info "   Tentative avec méthode alternative (tee)..."
-        if echo "$crontab_content" | $DOCKER_CMD exec -i "$container" tee /rails/config/crontab >/dev/null 2>&1; then
+        if echo "$crontab_content" | $DOCKER_CMD exec -u root -i "$container" tee /rails/config/crontab >/dev/null 2>&1; then
             write_success=true
         else
-            write_error=$(echo "$crontab_content" | $DOCKER_CMD exec -i "$container" tee /rails/config/crontab 2>&1 || true)
+            write_error=$(echo "$crontab_content" | $DOCKER_CMD exec -u root -i "$container" tee /rails/config/crontab 2>&1 || true)
         fi
     fi
     
     if [ "$write_success" = true ]; then
+        # S'assurer que le fichier a les bonnes permissions (lisible par tous)
+        $DOCKER_CMD exec -u root "$container" chmod 644 /rails/config/crontab 2>/dev/null || true
+        
         log_success "✅ Crontab généré et écrit dans /rails/config/crontab"
         
         # Vérifier que le fichier existe et contient des entrées
@@ -180,9 +183,9 @@ clear_crontab() {
         return 1
     fi
     
-    # Supprimer ou vider le fichier /rails/config/crontab
-    if $DOCKER_CMD exec "$container" rm -f /rails/config/crontab 2>/dev/null || \
-       $DOCKER_CMD exec "$container" sh -c 'echo "" > /rails/config/crontab' 2>/dev/null; then
+    # Supprimer ou vider le fichier /rails/config/crontab (en tant que root pour avoir les permissions)
+    if $DOCKER_CMD exec -u root "$container" rm -f /rails/config/crontab 2>/dev/null || \
+       $DOCKER_CMD exec -u root "$container" sh -c 'echo "" > /rails/config/crontab' 2>/dev/null; then
         log_success "✅ Crontab supprimé"
         return 0
     else
