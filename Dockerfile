@@ -17,9 +17,18 @@ LABEL build.id="${BUILD_ID}"
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages (including curl for healthchecks and cron for whenever)
+# Install base packages (including curl for healthchecks and Supercronic for cron jobs)
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client cron && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    # Install Supercronic (better than cron for Docker containers)
+    ARCH=$(uname -m) && \
+    case "$ARCH" in \
+        x86_64) ARCH_SUFFIX="amd64" ;; \
+        aarch64|arm64) ARCH_SUFFIX="arm64" ;; \
+        *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
+    esac && \
+    curl -fsSL "https://github.com/aptible/supercronic/releases/download/v0.2.32/supercronic-linux-${ARCH_SUFFIX}" -o /usr/local/bin/supercronic && \
+    chmod +x /usr/local/bin/supercronic && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment

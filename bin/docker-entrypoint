@@ -64,4 +64,21 @@ if [ "${RAILS_ENV}" == "development" ] && [ -f "package.json" ]; then
   fi
 fi
 
+# Lancer Supercronic en arrière-plan pour les tâches cron en production/staging
+if [ "${RAILS_ENV}" == "production" ] || [ "${APP_ENV}" == "staging" ] || [ "${DEPLOY_ENV}" == "staging" ] || [ "${DEPLOY_ENV}" == "production" ]; then
+  if [ -f "/rails/config/crontab" ]; then
+    echo "Starting Supercronic for cron jobs..."
+    # Créer le répertoire log s'il n'existe pas et s'assurer des permissions
+    mkdir -p /rails/log
+    touch /rails/log/cron.log 2>/dev/null || true
+    # Lancer Supercronic en arrière-plan avec le fichier crontab
+    # Les logs de Supercronic vont vers stdout/stderr, les logs des tâches vers log/cron.log
+    supercronic /rails/config/crontab &
+    SUPERICRONIC_PID=$!
+    echo "Supercronic started in background (PID: $SUPERICRONIC_PID)"
+  else
+    echo "Warning: /rails/config/crontab not found, skipping cron jobs"
+  fi
+fi
+
 exec "${@}"
