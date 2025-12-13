@@ -5,7 +5,8 @@ class EventsController < ApplicationController
   before_action :load_supporting_data, only: %i[new create edit update]
 
   def index
-    scoped_events = policy_scope(Event.includes(:route, :creator_user))
+    # Exclure les initiations (qui ont leur propre contrôleur)
+    scoped_events = policy_scope(Event.not_initiations.includes(:route, :creator_user))
     # Les admins/moderateurs voient tous les événements via policy_scope
     # Pour les autres, policy_scope filtre déjà pour ne montrer que les visibles
     # On applique .visible seulement si l'utilisateur n'est pas admin/modo pour éviter de cacher les non publiés aux admins

@@ -98,6 +98,9 @@ class Event < ApplicationRecord
   # Événements visibles pour les utilisateurs (publiés + annulés pour information)
   scope :visible, -> { where(status: [ "published", "canceled" ]) }
 
+  # Exclure les initiations (pour n'afficher que les événements/randos)
+  scope :not_initiations, -> { where(type: [nil, "Event"]) }
+
   # Événements en attente de validation (pour les modérateurs)
   scope :pending_validation, -> { where(status: "draft") }
 
