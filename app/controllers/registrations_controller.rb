@@ -79,7 +79,8 @@ class RegistrationsController < Devise::RegistrationsController
     edit_user_registration_path
   end
 
-  # Override update_resource pour gérer le changement de mot de passe optionnel
+  # Override update_resource pour gérer le changement de mot de passe
+  # BONNE PRATIQUE DEVISE : Toujours exiger current_password pour toute modification
   def update_resource(resource, params)
     # Gérer les paramètres de date de naissance (3 menus déroulants)
     if params[:date_of_birth].blank? && params[:date_of_birth_day].present? && params[:date_of_birth_month].present? && params[:date_of_birth_year].present?
@@ -101,19 +102,26 @@ class RegistrationsController < Devise::RegistrationsController
     params.delete(:date_of_birth_month)
     params.delete(:date_of_birth_year)
     
+    # VALIDATION : current_password est TOUJOURS requis (bonne pratique sécurité)
+    if params[:current_password].blank?
+      resource.errors.add(:current_password, "est requis pour toute modification")
+      return false
+    end
+    
+    # Vérifier que current_password est correct
+    unless resource.valid_password?(params[:current_password])
+      resource.errors.add(:current_password, "est incorrect")
+      return false
+    end
+    
     # Si password et password_confirmation sont vides, mise à jour sans changer le mot de passe
     if params[:password].blank? && params[:password_confirmation].blank?
-      # Vérifier quand même current_password pour la sécurité
-      unless resource.valid_password?(params[:current_password])
-        resource.errors.add(:current_password, "est incorrect")
-        return false
-      end
-
       # Supprimer current_password de params (update_without_password ne l'accepte pas)
       params.delete(:current_password)
       resource.update_without_password(params.except(:password, :password_confirmation))
     else
-      # Si l'utilisateur veut changer le mot de passe, vérifier current_password via update_with_password
+      # Si l'utilisateur veut changer le mot de passe, utiliser update_with_password
+      # Cette méthode exige current_password (bonne pratique Devise)
       resource.update_with_password(params)
     end
   end
