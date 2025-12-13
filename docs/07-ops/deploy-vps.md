@@ -442,7 +442,7 @@ En cas de problème :
 
 1. Consulter les logs : `logs/deploy-*.log`
 2. Vérifier les logs Docker : `docker logs <container-name>`
-3. Consulter la documentation : `docs/DEPLOYMENT.md`
+3. Consulter la documentation : [`docs/07-ops/deployment.md`](deployment.md)
 
 ---
 

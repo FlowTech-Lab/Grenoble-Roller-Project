@@ -76,7 +76,7 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo", "legal", "rg
 
 ### Tests & Rapports
 
-8. **[A11Y Testing Guide](A11Y_TESTING.md)**
+8. **[A11Y Testing Guide](a11y-testing.md)**
    - Guide d'utilisation des outils de test
    - Pa11y, Lighthouse, WAVE, Axe
 

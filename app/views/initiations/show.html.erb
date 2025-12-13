@@ -6,10 +6,9 @@
     <!-- Hero section -->
     <div class="hero-event-wrapper">
       <div class="hero-image-container">
-        <%= image_tag("https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1200&h=500&fit=crop", 
-                      alt: @initiation.title, 
-                      class: "hero-image", 
-                      loading: "eager") %>
+        <% if @initiation.cover_image.attached? %>
+          <%= image_tag(rails_representation_path(@initiation.cover_image_hero), alt: @initiation.title, class: "hero-image", loading: "eager") %>
+        <% end %>
         <div class="hero-overlay"></div>
         
         <!-- Badge de date -->
