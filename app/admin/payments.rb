@@ -1,7 +1,7 @@
 ActiveAdmin.register Payment do
   menu priority: 2, label: "Paiements", parent: "Commandes"
 
-  permit_params :provider, :status, :amount_cents, :external_id
+  permit_params :provider, :status, :amount_cents, :provider_payment_id
 
   index do
     selectable_column
@@ -24,7 +24,7 @@ ActiveAdmin.register Payment do
     column :amount_cents do |payment|
       number_to_currency(payment.amount_cents / 100.0)
     end
-    column :external_id
+    column :provider_payment_id
     column :orders_count do |payment|
       payment.orders.count
     end
@@ -40,7 +40,7 @@ ActiveAdmin.register Payment do
 
   filter :provider
   filter :status
-  filter :external_id
+  filter :provider_payment_id
   filter :created_at
 
   show do
@@ -64,7 +64,7 @@ ActiveAdmin.register Payment do
       row :amount_cents do |payment|
         number_to_currency(payment.amount_cents / 100.0)
       end
-      row :external_id
+      row :provider_payment_id
       row :provider_payment_id
       row :currency
       row :created_at
@@ -117,7 +117,7 @@ ActiveAdmin.register Payment do
       f.input :provider
       f.input :status, as: :select, collection: %w[pending completed failed cancelled]
       f.input :amount_cents
-      f.input :external_id
+      f.input :provider_payment_id
       f.input :provider_payment_id
       f.input :currency
     end
