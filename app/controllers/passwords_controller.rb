@@ -15,31 +15,31 @@ class PasswordsController < Devise::PasswordsController
 
   # ÉTAPE 2: Override edit pour gérer les deux cas
   def edit
-    if user_signed_in?
-      # Utilisateur connecté : formulaire avec current_password
-      self.resource = current_user
-      @minimum_password_length = Devise.password_length.min
-      render :edit
-    else
-      # Utilisateur NON connecté : réinitialisation via email (comportement par défaut)
+    # Si un token de réinitialisation est présent, c'est une réinitialisation (même si connecté)
+    if params[:reset_password_token].present?
+      # Réinitialisation via email (comportement par défaut de Devise)
       super
+    elsif user_signed_in?
+      # Utilisateur connecté SANS token : rediriger vers le profil (le formulaire est déjà là)
+      redirect_to edit_user_registration_path, notice: "Vous pouvez modifier votre mot de passe dans votre profil."
+    else
+      # Utilisateur NON connecté SANS token : rediriger vers la demande de réinitialisation
+      redirect_to new_user_password_path, alert: "Lien de réinitialisation invalide. Veuillez demander un nouveau lien."
     end
   end
 
   # ÉTAPE 3: Override update pour gérer les deux cas
   def update
-    if user_signed_in?
-      # Utilisateur connecté : changer le mot de passe avec current_password
-      if current_user.update_with_password(password_params)
-        bypass_sign_in(current_user)
-        redirect_to edit_user_registration_path, notice: "Votre mot de passe a été modifié avec succès."
-      else
-        self.resource = current_user
-        @minimum_password_length = Devise.password_length.min
-        render :edit, status: :unprocessable_entity
-      end
+    # Si un token de réinitialisation est présent, c'est une réinitialisation
+    if params[:user][:reset_password_token].present?
+      # Réinitialisation via email (comportement par défaut de Devise)
+      super
+    elsif user_signed_in?
+      # Utilisateur connecté SANS token : ne devrait pas arriver (redirection dans edit)
+      # Mais au cas où, rediriger vers le profil
+      redirect_to edit_user_registration_path, notice: "Veuillez modifier votre mot de passe depuis votre profil."
     else
-      # Utilisateur NON connecté : réinitialisation via email (comportement par défaut)
+      # Utilisateur NON connecté SANS token : réinitialisation via email (comportement par défaut)
       super
     end
   end

@@ -5,173 +5,12 @@
         <div class="card-body p-4">
           <div class="text-center mb-4">
             <i class="bi bi-shield-lock fs-1 text-liquid-primary"></i>
-            <h3 class="mt-2">Changer le mot de passe</h3>
-            <p class="text-muted small">Sécurisez votre compte</p>
+            <h3 class="mt-2">Réinitialiser le mot de passe</h3>
+            <p class="text-muted small">Définissez un nouveau mot de passe</p>
           </div>
           
-          <% if user_signed_in? %>
-            <!-- Formulaire pour utilisateur connecté (avec current_password) -->
-            <%= form_for(current_user, as: :user, url: password_path(:user), html: { method: :put }, data: { turbo: false }) do |f| %>
-              <%= render "devise/shared/error_messages", resource: current_user %>
-              
-              <!-- Current Password -->
-              <div class="mb-3" data-controller="password-toggle">
-                <%= f.label :current_password, class: "form-label fw-semibold required", for: "current_password" do %>
-                  <i class="bi bi-key me-1"></i> Mot de passe actuel
-                <% end %>
-                <% has_error = current_user.errors[:current_password].any? %>
-                <div class="input-group">
-                  <%= f.password_field :current_password, 
-                      id: "current_password",
-                      autofocus: true, 
-                      autocomplete: "current-password", 
-                      class: "form-control form-control-liquid form-control-lg #{'is-invalid' if has_error}", 
-                      placeholder: "••••••••", 
-                      required: true,
-                      style: "font-size: 16px; min-height: 44px;",
-                      data: { password_toggle_target: "input" },
-                      aria: has_error ? { 
-                        required: true,
-                        describedby: "error_current_password",
-                        invalid: true
-                      } : { required: true } %>
-                  <button type="button" 
-                          class="btn btn-outline-secondary password-toggle-btn" 
-                          data-action="click->password-toggle#toggle"
-                          data-password-toggle-target="toggle"
-                          aria-label="Afficher le mot de passe"
-                          aria-pressed="false"
-                          title="Afficher le mot de passe"
-                          style="min-height: 44px; min-width: 44px;">
-                    <i class="bi bi-eye" data-password-toggle-target="icon"></i>
-                    <span class="visually-hidden" data-password-toggle-target="label">Afficher</span>
-                  </button>
-                </div>
-                <% if has_error %>
-                  <div class="invalid-feedback d-block" id="error_current_password">
-                    <%= current_user.errors[:current_password].first %>
-                  </div>
-                <% end %>
-              </div>
-              
-              <!-- New Password (12 caractères, UX optimisé conforme 2025) -->
-              <div class="mb-3" data-controller="password-toggle password-strength">
-                <%= f.label :password, class: "form-label fw-semibold required", for: "new_password" do %>
-                  <i class="bi bi-shield-lock me-1"></i> Nouveau mot de passe
-                <% end %>
-                <% has_error = current_user.errors[:password].any? %>
-                <% describedby_ids = ["new_password_help", "password_strength_feedback"] %>
-                <% describedby_ids << "error_new_password" if has_error %>
-                
-                <div class="input-group">
-                  <%= f.password_field :password, 
-                      id: "new_password",
-                      autocomplete: "new-password", 
-                      class: "form-control form-control-liquid form-control-lg #{'is-invalid' if has_error}", 
-                      placeholder: "12 caractères minimum",
-                      minlength: "12",
-                      required: true,
-                      title: "Le mot de passe doit contenir au moins 12 caractères",
-                      style: "font-size: 16px; min-height: 44px;",
-                      data: { 
-                        password_toggle_target: "input",
-                        password_strength_target: "input"
-                      },
-                      aria: { 
-                        required: true,
-                        describedby: describedby_ids.join(" "),
-                        invalid: has_error
-                      } %>
-                  
-                  <button type="button" 
-                          class="btn btn-outline-secondary password-toggle-btn" 
-                          data-action="click->password-toggle#toggle"
-                          data-password-toggle-target="toggle"
-                          aria-label="Afficher le mot de passe"
-                          aria-pressed="false"
-                          title="Afficher le mot de passe"
-                          style="min-height: 44px; min-width: 44px;">
-                    <i class="bi bi-eye" data-password-toggle-target="icon"></i>
-                    <span class="visually-hidden" data-password-toggle-target="label">Afficher</span>
-                  </button>
-                </div>
-                
-                <!-- Indicateur de force du mot de passe -->
-                <div class="password-strength-container d-none mt-2" id="password_strength_feedback">
-                  <div class="password-strength-bar">
-                    <div class="password-strength-meter" 
-                         data-password-strength-target="meter"></div>
-                  </div>
-                  <div class="password-strength-feedback mt-1 small" 
-                       data-password-strength-target="feedback"
-                       role="status"
-                       aria-live="polite">
-                    <span data-password-strength-target="strengthText"></span>
-                  </div>
-                </div>
-                
-                <!-- Help Text Positif & Concis -->
-                <div class="form-text mt-2" id="new_password_help">
-                  <i class="bi bi-lightbulb text-warning me-1"></i>
-                  <strong>Astuce :</strong> Utilisez une phrase facile à retenir
-                  <br>
-                  <span class="text-muted small">Exemple : café-roller-grenoble</span>
-                </div>
-                
-                <% if has_error %>
-                  <div class="invalid-feedback d-block" id="error_new_password">
-                    <%= current_user.errors[:password].first %>
-                  </div>
-                <% end %>
-              </div>
-              
-              <!-- Confirm New Password -->
-              <div class="mb-3" data-controller="password-toggle">
-                <%= f.label :password_confirmation, class: "form-label fw-semibold required", for: "password_confirmation" do %>
-                  <i class="bi bi-shield-check me-1"></i> Confirmer le nouveau mot de passe
-                <% end %>
-                <% has_error = current_user.errors[:password_confirmation].any? %>
-                <div class="input-group">
-                  <%= f.password_field :password_confirmation, 
-                      id: "password_confirmation",
-                      autocomplete: "new-password", 
-                      class: "form-control form-control-liquid form-control-lg #{'is-invalid' if has_error}", 
-                      placeholder: "Resaisissez le nouveau mot de passe",
-                      required: true,
-                      style: "font-size: 16px; min-height: 44px;",
-                      data: { password_toggle_target: "input" },
-                      aria: has_error ? { 
-                        required: true,
-                        describedby: "error_password_confirmation",
-                        invalid: true
-                      } : { required: true } %>
-                  <button type="button" 
-                          class="btn btn-outline-secondary password-toggle-btn" 
-                          data-action="click->password-toggle#toggle"
-                          data-password-toggle-target="toggle"
-                          aria-label="Afficher le mot de passe"
-                          aria-pressed="false"
-                          title="Afficher le mot de passe"
-                          style="min-height: 44px; min-width: 44px;">
-                    <i class="bi bi-eye" data-password-toggle-target="icon"></i>
-                    <span class="visually-hidden" data-password-toggle-target="label">Afficher</span>
-                  </button>
-                </div>
-                <% if has_error %>
-                  <div class="invalid-feedback d-block" id="error_password_confirmation">
-                    <%= current_user.errors[:password_confirmation].first %>
-                  </div>
-                <% end %>
-              </div>
-              
-              <!-- Submit -->
-              <button type="submit" class="btn btn-liquid-primary w-100 mb-3">
-                <i class="bi bi-check-circle me-2"></i>
-                Modifier le mot de passe
-              </button>
-            <% end %>
-          <% else %>
-            <!-- Formulaire pour réinitialisation via email (avec token) -->
+          <!-- Formulaire pour réinitialisation via email (avec token) - SANS current_password -->
+          <% if params[:reset_password_token].present? %>
             <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }, data: { turbo: false }) do |f| %>
               <%= render "devise/shared/error_messages", resource: resource %>
               <%= f.hidden_field :reset_password_token %>
@@ -182,7 +21,7 @@
                   <i class="bi bi-shield-lock me-1"></i> Nouveau mot de passe
                 <% end %>
                 <% has_error = resource.errors[:password].any? %>
-                <% describedby_ids = ["reset_password_help", "password_strength_feedback"] %>
+                <% describedby_ids = ["reset_password_help", "password_strength_feedback_reset"] %>
                 <% describedby_ids << "error_reset_password" if has_error %>
                 
                 <div class="input-group">
@@ -220,7 +59,7 @@
                 </div>
                 
                 <!-- Indicateur de force du mot de passe -->
-                <div class="password-strength-container d-none mt-2" id="password_strength_feedback">
+                <div class="password-strength-container d-none mt-2" id="password_strength_feedback_reset">
                   <div class="password-strength-bar">
                     <div class="password-strength-meter" 
                          data-password-strength-target="meter"></div>
@@ -293,20 +132,25 @@
                 Modifier le mot de passe
               </button>
             <% end %>
+          <% else %>
+            <!-- Pas de token : ne devrait pas arriver ici (redirection dans le contrôleur) -->
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Lien de réinitialisation invalide.
+            </div>
+            <div class="text-center">
+              <%= link_to new_user_password_path, class: "btn btn-outline-primary" do %>
+                <i class="bi bi-arrow-left me-1"></i>
+                Demander un nouveau lien
+              <% end %>
+            </div>
           <% end %>
           
           <!-- Link -->
-          <div class="text-center">
-            <% if user_signed_in? %>
-              <%= link_to edit_user_registration_path, class: "small text-decoration-none" do %>
-                <i class="bi bi-arrow-left me-1"></i>
-                Retour au profil
-              <% end %>
-            <% else %>
-              <%= link_to new_session_path(resource_name), class: "small text-decoration-none" do %>
-                <i class="bi bi-arrow-left me-1"></i>
-                Retour à la connexion
-              <% end %>
+          <div class="text-center mt-3">
+            <%= link_to new_session_path(resource_name), class: "small text-decoration-none" do %>
+              <i class="bi bi-arrow-left me-1"></i>
+              Retour à la connexion
             <% end %>
           </div>
         </div>
