@@ -215,6 +215,12 @@ class MembershipsController < ApplicationController
       return
     end
 
+    # Vérifier que le questionnaire de santé est complété
+    unless @membership.health_questionnaire_complete?
+      redirect_to edit_membership_path(@membership), alert: "Le questionnaire de santé doit être complété avant de procéder au paiement."
+      return
+    end
+
     # Vérifier le statut réel via HelloAsso
     if @membership.payment
       HelloassoService.fetch_and_update_payment(@membership.payment)
@@ -985,9 +991,13 @@ class MembershipsController < ApplicationController
     # Vérifier les réponses au questionnaire de santé (9 questions) AVANT création
     has_health_issue = false
     all_answered_no = true
+    all_answered = true
     (1..9).each do |i|
       answer = child_params["health_question_#{i}"]
-      if answer == "yes"
+      if answer.blank?
+        all_answered = false
+        all_answered_no = false
+      elsif answer == "yes"
         has_health_issue = true
         all_answered_no = false
       elsif answer == "no"
@@ -995,6 +1005,11 @@ class MembershipsController < ApplicationController
       else
         all_answered_no = false # Pas encore répondu
       end
+    end
+
+    # Vérifier que toutes les questions sont répondues
+    unless all_answered
+      return Membership.new.tap { |m| m.errors.add(:base, "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions avant de continuer.") }
     end
 
     # Déterminer le statut du questionnaire selon la catégorie
@@ -1150,14 +1165,24 @@ class MembershipsController < ApplicationController
     # Vérifier les réponses au questionnaire de santé
     has_health_issue = false
     all_answered_no = true
+    all_answered = true
     (1..9).each do |i|
       answer = membership_params["health_question_#{i}"]
-      if answer == "yes"
+      if answer.blank?
+        all_answered = false
+        all_answered_no = false
+      elsif answer == "yes"
         has_health_issue = true
         all_answered_no = false
       elsif answer != "no"
         all_answered_no = false
       end
+    end
+
+    # Vérifier que toutes les questions sont répondues
+    unless all_answered
+      redirect_to new_membership_path(type: "adult"), alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions avant de continuer."
+      return
     end
 
     is_ffrs = category == "with_ffrs"

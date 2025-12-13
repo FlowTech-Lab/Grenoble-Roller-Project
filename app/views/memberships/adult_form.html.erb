@@ -664,8 +664,8 @@
       return;
     }
     
-    // Si >= 16 ans mais < 18 ans, afficher un message informatif
-    if (age >= 16 && age < 18) {
+    // Si >= 16 ans : valide (vert)
+    if (age >= 16) {
       // Masquer le message d'erreur < 16 ans s'il existe
       const errorDiv = document.getElementById('date_of_birth_error');
       if (errorDiv) {
@@ -673,26 +673,42 @@
         errorDiv.textContent = '';
       }
       
+      // Afficher en vert (valide)
+      [daySelect, monthSelect, yearSelect].forEach(select => {
+        if (select) {
+          select.classList.add('is-valid');
+          select.classList.remove('is-invalid');
+        }
+      });
+      
       if (ageValue) {
         ageValue.textContent = age;
-        ageValue.style.color = 'var(--bs-info)';
+        ageValue.style.color = 'var(--bs-success)';
       }
       if (ageDisplay) {
         ageDisplay.style.display = 'block';
         ageDisplay.style.color = 'inherit';
       }
       
-      // Afficher message informatif (pas d'erreur, juste information)
-      let infoDiv = document.getElementById('date_of_birth_warning');
-      if (!infoDiv) {
-        infoDiv = document.createElement('div');
-        infoDiv.id = 'date_of_birth_warning';
-        infoDiv.className = 'alert alert-info mt-2';
-        const dateContainer = daySelect?.closest('.col-md-12');
-        if (dateContainer) {
-          dateContainer.appendChild(infoDiv);
-        }
+      // Masquer les messages d'avertissement
+      const warningDiv = document.getElementById('date_of_birth_warning');
+      if (warningDiv) {
+        warningDiv.style.display = 'none';
+        warningDiv.innerHTML = '';
       }
+      
+      // Si >= 16 ans mais < 18 ans, afficher un message informatif
+      if (age < 18) {
+        let infoDiv = document.getElementById('date_of_birth_warning');
+        if (!infoDiv) {
+          infoDiv = document.createElement('div');
+          infoDiv.id = 'date_of_birth_warning';
+          infoDiv.className = 'alert alert-info mt-2';
+          const dateContainer = daySelect?.closest('.col-md-12');
+          if (dateContainer) {
+            dateContainer.appendChild(infoDiv);
+          }
+        }
       infoDiv.innerHTML = '<i class="bi bi-info-circle me-2"></i><strong>Information :</strong> Vos parents peuvent être prévenus de votre adhésion.';
       infoDiv.style.display = 'block';
       
@@ -846,6 +862,21 @@
         isValid = false;
       }
     });
+    
+    // Vérifier que le questionnaire de santé est complété
+    let allHealthAnswered = true;
+    for (let i = 1; i <= 9; i++) {
+      const yesRadio = document.getElementById(`health_q${i}_yes`);
+      const noRadio = document.getElementById(`health_q${i}_no`);
+      if (!yesRadio?.checked && !noRadio?.checked) {
+        allHealthAnswered = false;
+        break;
+      }
+    }
+    
+    if (!allHealthAnswered) {
+      isValid = false;
+    }
     
     // Activer/désactiver bouton submit
     const submitBtn = document.getElementById('submit_btn');
