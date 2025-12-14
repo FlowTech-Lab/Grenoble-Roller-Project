@@ -100,10 +100,13 @@ Rails.application.routes.draw do
 
   # Events (Phase 2)
   resources :events do
+    resources :attendances, only: [:create], shallow: true, controller: 'events/attendances' do
+      collection do
+        delete :destroy
+        patch :toggle_reminder
+      end
+    end
     member do
-      post :attend
-      delete :cancel_attendance
-      patch :toggle_reminder
       post :join_waitlist
       delete :leave_waitlist
       post :convert_waitlist_to_attendance
@@ -115,10 +118,13 @@ Rails.application.routes.draw do
 
       # Initiations
       resources :initiations do
+        resources :attendances, only: [:create], shallow: true, controller: 'initiations/attendances' do
+          collection do
+            delete :destroy
+            patch :toggle_reminder
+          end
+        end
         member do
-          post :attend
-          delete :cancel_attendance
-          patch :toggle_reminder
           post :join_waitlist
           delete :leave_waitlist
           # Routes POST pour les formulaires

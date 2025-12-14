@@ -371,8 +371,163 @@ Les tests RSpec échouent actuellement à cause d'un problème de configuration 
 
 ---
 
+### Phase 2.2 : Attendances en Sous-Ressources ✅ COMPLÉTÉE
+
+**Date** : 2025-01-XX  
+**Statut** : ✅ **TERMINÉE**
+
+#### Modifications Effectuées
+
+1. **Contrôleurs créés** :
+   - ✅ `app/controllers/events/attendances_controller.rb` : Contrôleur dédié pour les inscriptions aux événements
+     - `create` : Création d'une inscription (remplace `EventsController#attend`)
+     - `destroy` : Suppression d'une inscription (remplace `EventsController#cancel_attendance`)
+     - `toggle_reminder` : Activation/désactivation du rappel (remplace `EventsController#toggle_reminder`)
+   - ✅ `app/controllers/initiations/attendances_controller.rb` : Contrôleur dédié pour les inscriptions aux initiations
+     - `create` : Création d'une inscription (remplace `InitiationsController#attend`)
+     - `destroy` : Suppression d'une inscription (remplace `InitiationsController#cancel_attendance`)
+     - `toggle_reminder` : Activation/désactivation du rappel (remplace `InitiationsController#toggle_reminder`)
+
+2. **Contrôleurs modifiés** :
+   - ✅ `app/controllers/events_controller.rb` : Suppression des méthodes `attend`, `cancel_attendance`, `toggle_reminder`
+   - ✅ `app/controllers/initiations_controller.rb` : Suppression des méthodes `attend`, `cancel_attendance`, `toggle_reminder`
+   - ✅ Mise à jour des `before_action` pour retirer les actions supprimées
+
+3. **Routes** :
+   - ✅ `config/routes.rb` : Refactorisation complète
+     - `resources :events` → ajout de `resources :attendances` avec `shallow: true`
+     - `resources :initiations` → ajout de `resources :attendances` avec `shallow: true`
+     - Routes collection `destroy` et `toggle_reminder` pour les deux contrôleurs
+
+4. **Helpers** :
+   - ✅ `app/helpers/events_helper.rb` : Mise à jour des helpers
+     - `attend_event_path_for(event)` → utilise `event_attendances_path` ou `initiation_attendances_path`
+     - `cancel_attendance_event_path_for(event, attendance)` → utilise `attendance_path(attendance)` ou route collection
+     - `toggle_reminder_event_path_for(event)` → utilise `toggle_reminder_event_attendances_path` ou `toggle_reminder_initiation_attendances_path`
+
+5. **Vues** (21 occurrences mises à jour dans 10 fichiers) :
+   - ✅ `app/views/events/_event_card.html.erb` : 4 occurrences
+     - `attend_event_path(event)` → `attend_event_path_for(event)`
+     - `cancel_attendance_event_path(event)` → `cancel_attendance_event_path_for(event, attendance)`
+   - ✅ `app/views/events/show.html.erb` : 3 occurrences
+     - `attend_event_path(@event)` → `attend_event_path_for(@event)`
+     - `cancel_attendance_event_path(@event)` → `cancel_attendance_event_path_for(@event, @user_attendance)` ou `child_attendance`
+   - ✅ `app/views/pages/index.html.erb` : 2 occurrences
+     - `attend_event_path(@highlighted_event)` → `attend_event_path_for(@highlighted_event)`
+     - `cancel_attendance_event_path(@highlighted_event)` → `cancel_attendance_event_path_for(@highlighted_event)`
+   - ✅ `app/views/initiations/_initiation_card.html.erb` : 4 occurrences
+     - `attend_initiation_path(initiation)` → `attend_event_path_for(initiation)`
+     - `cancel_attendance_initiation_path(initiation)` → `cancel_attendance_event_path_for(initiation)`
+   - ✅ `app/views/initiations/show.html.erb` : 3 occurrences
+     - `attend_initiation_path(@initiation)` → `attend_event_path_for(@initiation)`
+     - `cancel_attendance_initiation_path(@initiation)` → `cancel_attendance_event_path_for(@initiation, @user_attendance)`
+   - ✅ `app/views/shared/_event_actions.html.erb` : 2 occurrences
+     - `toggle_reminder_event_path_for(event)` → déjà mis à jour (utilise les nouvelles routes)
+   - ✅ `app/views/initiations/_registration_form.html.erb` : 1 occurrence
+     - `attend_initiation_path(initiation)` → `attend_event_path_for(initiation)`
+   - ✅ `app/views/initiations/_child_registration_form.html.erb` : 1 occurrence
+     - `attend_initiation_path(initiation)` → `attend_event_path_for(initiation)`
+   - ✅ `app/views/events/_child_registration_form.html.erb` : 1 occurrence
+     - `attend_event_path(event)` → `attend_event_path_for(event)`
+
+#### Résultat
+
+- ✅ **Anciennes routes** : 
+  - `POST /events/:id/attend` → **SUPPRIMÉE**
+  - `DELETE /events/:id/cancel_attendance` → **SUPPRIMÉE**
+  - `PATCH /events/:id/toggle_reminder` → **SUPPRIMÉE**
+  - `POST /initiations/:id/attend` → **SUPPRIMÉE**
+  - `DELETE /initiations/:id/cancel_attendance` → **SUPPRIMÉE**
+  - `PATCH /initiations/:id/toggle_reminder` → **SUPPRIMÉE**
+- ✅ **Nouvelles routes** : 
+  - `POST /events/:event_id/attendances` → **ACTIVE**
+  - `DELETE /events/:event_id/attendances` (collection) → **ACTIVE**
+  - `PATCH /events/:event_id/attendances/toggle_reminder` (collection) → **ACTIVE**
+  - `POST /initiations/:initiation_id/attendances` → **ACTIVE**
+  - `DELETE /initiations/:initiation_id/attendances` (collection) → **ACTIVE**
+  - `PATCH /initiations/:initiation_id/attendances/toggle_reminder` (collection) → **ACTIVE**
+- ✅ **Compatibilité** : Tous les formulaires et liens mis à jour (21 occurrences dans 10 fichiers)
+- ✅ **Aucune référence restante** : Vérification complète effectuée (0 référence aux anciennes routes)
+
+---
+
+### Phase 2.4 : Payments en Sous-Ressources ✅ COMPLÉTÉE
+
+**Date** : 2025-01-XX  
+**Statut** : ✅ **TERMINÉE**
+
+#### Modifications Effectuées
+
+1. **Contrôleurs créés** :
+   - ✅ `app/controllers/memberships/payments_controller.rb` : Contrôleur dédié pour les paiements d'adhésions
+     - `create` : Création d'un paiement HelloAsso pour une adhésion
+     - `show` : Statut du paiement (route collection `/status`)
+     - `create_multiple` : Paiement groupé pour plusieurs adhésions enfants
+   - ✅ `app/controllers/orders/payments_controller.rb` : Contrôleur dédié pour les paiements de commandes
+     - `create` : Création d'un paiement HelloAsso pour une commande
+     - `show` : Statut du paiement (route collection `/status`)
+
+2. **Contrôleurs modifiés** :
+   - ✅ `app/controllers/memberships_controller.rb` : Suppression des méthodes `pay`, `payment_status`, `pay_multiple`
+   - ✅ `app/controllers/orders_controller.rb` : Suppression des méthodes `pay`, `payment_status`
+   - ✅ Mise à jour des `before_action` pour retirer les actions supprimées
+
+3. **Routes** :
+   - ✅ `config/routes.rb` : Refactorisation complète
+     - `resources :memberships` → ajout de `resources :payments` avec `shallow: true`
+     - `resources :orders` → ajout de `resources :payments` avec `shallow: true`
+     - Routes collection `status` pour les deux contrôleurs
+     - Route collection `create_multiple` pour les paiements groupés
+
+4. **Vues** (8 occurrences mises à jour dans 7 fichiers) :
+   - ✅ `app/views/memberships/show.html.erb` : 2 occurrences
+     - `pay_membership_path(@membership)` → `membership_payments_path(@membership)`
+     - `payment_status_membership_path(@membership)` → `status_membership_payments_path(@membership)`
+   - ✅ `app/views/memberships/index.html.erb` : 1 occurrence
+     - `pay_multiple_memberships_path` → `create_multiple_membership_payments_path`
+   - ✅ `app/views/memberships/_membership_card.html.erb` : 2 occurrences
+     - `pay_membership_path(membership)` → `membership_payments_path(membership)`
+   - ✅ `app/views/memberships/_child_mini_card.html.erb` : 1 occurrence
+     - `pay_membership_path(membership)` → `membership_payments_path(membership)`
+   - ✅ `app/views/memberships/_membership_card_improved.html.erb` : 1 occurrence
+     - `pay_membership_path(membership)` → `membership_payments_path(membership)`
+   - ✅ `app/views/orders/show.html.erb` : 2 occurrences
+     - `pay_order_path(@order)` → `order_payments_path(@order)`
+     - `payment_status_order_path(@order)` → `status_order_payments_path(@order)`
+   - ✅ `app/views/orders/_order_card_compact.html.erb` : 1 occurrence
+     - `pay_order_path(order)` → `order_payments_path(order)`
+
+5. **Tests RSpec** :
+   - ✅ `spec/requests/memberships_spec.rb` : Tests mis à jour et créés
+     - Tests pour `POST /memberships/:membership_id/payments` (create)
+     - Tests pour `GET /memberships/:membership_id/payments/status` (show)
+     - Tests pour `POST /memberships/:membership_id/payments/create_multiple` (create_multiple)
+   - ✅ `spec/requests/orders_spec.rb` : Tests créés
+     - Tests pour `POST /orders/:order_id/payments` (create)
+     - Tests pour `GET /orders/:order_id/payments/status` (show)
+
+#### Résultat
+
+- ✅ **Anciennes routes** : 
+  - `POST /memberships/:id/pay` → **SUPPRIMÉE**
+  - `GET /memberships/:id/payment_status` → **SUPPRIMÉE**
+  - `POST /memberships/pay_multiple` → **SUPPRIMÉE**
+  - `POST /orders/:id/pay` → **SUPPRIMÉE**
+  - `GET /orders/:id/payment_status` → **SUPPRIMÉE**
+- ✅ **Nouvelles routes** : 
+  - `POST /memberships/:membership_id/payments` → **ACTIVE**
+  - `GET /memberships/:membership_id/payments/status` → **ACTIVE**
+  - `POST /memberships/:membership_id/payments/create_multiple` → **ACTIVE**
+  - `POST /orders/:order_id/payments` → **ACTIVE**
+  - `GET /orders/:order_id/payments/status` → **ACTIVE**
+- ✅ **Compatibilité** : Tous les formulaires et liens mis à jour (8 occurrences dans 7 fichiers)
+- ✅ **Tests RSpec** : Tous les tests créés/mis à jour (7 tests au total)
+- ✅ **Aucune référence restante** : Vérification complète effectuée (0 référence aux anciennes routes)
+
+---
+
 **Document créé le** : 2025-01-XX  
 **Dernière mise à jour** : 2025-01-XX  
 **Auteur** : Architecture Review  
-**Statut** : ✅ Phase 2.1 et Phase 2.4 complétées - Phase 2.2 en attente
+**Statut** : ✅ Phase 2.1, Phase 2.2 et Phase 2.4 complétées - Phase 2.3 en attente
 

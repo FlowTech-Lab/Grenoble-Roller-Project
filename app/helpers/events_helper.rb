@@ -13,15 +13,17 @@ module EventsHelper
   end
 
   def toggle_reminder_event_path_for(event)
-    event.is_a?(Event::Initiation) ? toggle_reminder_initiation_path(event) : toggle_reminder_event_path(event)
+    event.is_a?(Event::Initiation) ? toggle_reminder_initiation_attendances_path(event) : toggle_reminder_event_attendances_path(event)
   end
 
   def attend_event_path_for(event)
-    event.is_a?(Event::Initiation) ? attend_initiation_path(event) : attend_event_path(event)
+    event.is_a?(Event::Initiation) ? initiation_attendances_path(event) : event_attendances_path(event)
   end
 
-  def cancel_attendance_event_path_for(event)
-    event.is_a?(Event::Initiation) ? cancel_attendance_initiation_path(event) : cancel_attendance_event_path(event)
+  def cancel_attendance_event_path_for(event, attendance = nil)
+    # Toujours utiliser la route collection car destroy est une collection
+    # Le paramètre child_membership_id sera passé dans les params du formulaire
+    event.is_a?(Event::Initiation) ? initiation_attendances_path(event) : event_attendances_path(event)
   end
 
   def events_index_path_for(event)

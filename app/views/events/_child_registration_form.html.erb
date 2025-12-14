@@ -5,7 +5,7 @@
       Inscrire un enfant supplémentaire
     </h4>
 
-    <%= form_with url: attend_event_path(event), method: :post, local: true, data: { turbo: false } do |f| %>
+    <%= form_with url: attend_event_path_for(event), method: :post, local: true, data: { turbo: false } do |f| %>
       <!-- Sélection enfant -->
       <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
       <% registered_child_ids = (@child_attendances&.any? ? @child_attendances.pluck(:child_membership_id).compact : []) %>

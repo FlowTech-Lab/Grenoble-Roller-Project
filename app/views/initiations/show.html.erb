@@ -209,7 +209,7 @@
                     <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
                     <strong>Vous êtes inscrit(e)</strong>
                   </div>
-                  <%= button_to cancel_attendance_initiation_path(@initiation), 
+                  <%= button_to cancel_attendance_event_path_for(@initiation, @user_attendance), 
                       method: :delete, 
                       class: "btn btn-outline-danger btn-sm", 
                       data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
@@ -229,7 +229,7 @@
                       <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
                       <strong><%= child_attendance.participant_name %> est inscrit(e)</strong>
                     </div>
-                    <%= button_to cancel_attendance_initiation_path(@initiation), 
+                    <%= button_to cancel_attendance_event_path_for(@initiation, child_attendance), 
                         method: :delete, 
                         params: { child_membership_id: child_attendance.child_membership_id },
                         class: "btn btn-outline-danger btn-sm", 
@@ -358,7 +358,7 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: attend_initiation_path(@initiation), method: :post, local: true, data: { turbo: false }, id: "attendFormShowInitiation", class: "attend-form" do |f| %>
+        <%= form_with url: attend_event_path_for(@initiation), method: :post, local: true, data: { turbo: false }, id: "attendFormShowInitiation", class: "attend-form" do |f| %>
           <div class="modal-body">
             <%= render 'shared/registration_form_fields', 
                 form: f, 

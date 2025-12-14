@@ -247,7 +247,7 @@
                 <% if user_signed_in? %>
                   <% if current_user_has_attendance?(@highlighted_event) %>
                     <div class="d-grid mb-3">
-                      <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, 
+                      <%= button_to cancel_attendance_event_path_for(@highlighted_event), method: :delete, 
                           class: 'btn btn-outline-secondary btn-lg', 
                           data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
                           aria: { label: 'Se désinscrire de cet événement' } do %>
@@ -330,7 +330,7 @@
                 </h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
               </div>
-              <%= form_with url: attend_event_path(@highlighted_event), method: :post, data: { turbo: false } do |f| %>
+              <%= form_with url: attend_event_path_for(@highlighted_event), method: :post, data: { turbo: false } do |f| %>
                 <div class="modal-body">
                   <p class="lead mb-3">
                     Confirmez votre participation à <strong><%= @highlighted_event.title %></strong>
