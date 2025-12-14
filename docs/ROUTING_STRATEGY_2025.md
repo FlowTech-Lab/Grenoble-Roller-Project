@@ -1,0 +1,305 @@
+# Stratégie Routing Rails - Plan d'Action Production 2025
+
+## 📊 État Actuel de l'Application
+
+### Analyse Quantitative
+- **Total routes** : ~150+ (incluant ActiveAdmin, Devise, Rails internes)
+- **Routes applicatives** : ~45
+- **Contrôleurs** : 18 contrôleurs principaux
+- **Actions personnalisées** : 19 actions métier dans EventsController, MembershipsController, OrdersController, InitiationsController
+
+### Actions Personnalisées Identifiées
+
+#### EventsController (9 actions)
+- `attend` → Créer `Events::AttendancesController#create`
+- `cancel_attendance` → Créer `Events::AttendancesController#destroy`
+- `join_waitlist` → Créer `Events::WaitlistEntriesController#create`
+- `leave_waitlist` → Créer `Events::WaitlistEntriesController#destroy`
+- `convert_waitlist_to_attendance` → Créer `Events::WaitlistEntriesController#convert`
+- `refuse_waitlist` → Créer `Events::WaitlistEntriesController#refuse`
+- `toggle_reminder` → Créer `Events::AttendancesController#update` (champ wants_reminder)
+- `ical` → Utiliser `respond_to :ics` dans `EventsController#show`
+- `loop_routes` → Créer `Events::RoutesController#index` ou utiliser format JSON
+
+#### InitiationsController (9 actions)
+- Même structure que EventsController → Même refactorisation
+
+#### MembershipsController (3 actions)
+- `pay` → Créer `Memberships::PaymentsController#create`
+- `payment_status` → Créer `Memberships::PaymentsController#show`
+- `pay_multiple` → Créer `Memberships::PaymentsController#create_multiple` (collection)
+
+#### OrdersController (2 actions)
+- `pay` → Créer `Orders::PaymentsController#create`
+- `payment_status` → Créer `Orders::PaymentsController#show`
+
+---
+
+## 🎯 Plan d'Action Priorisé
+
+### ✅ Niveau 1 : Optimisations Minimales (Effort : 1 jour | Gain : 70%)
+
+**Statut** : ✅ **DÉJÀ CONFORME**
+
+#### Routes Statiques
+- ✅ Pages légales (`/mentions-legales`, `/cgv`, etc.) → **OK, conserver**
+- ✅ Health checks (`/health`, `/up`) → **OK, conserver**
+- ✅ Pages statiques (`/a-propos`, `/shop`) → **OK, conserver**
+
+#### Singleton Resources
+- ✅ `resource :cart` → **OK, structure correcte**
+- ✅ `resource :cookie_consent` → **OK, structure correcte**
+
+**Action requise** : Aucune, architecture déjà conforme.
+
+---
+
+### 🔄 Niveau 2 : Refactorisation Légère (Effort : 2-3 semaines | Gain : 95%)
+
+#### Phase 2.1 : Exports via Formats Rails (Effort : 2 jours)
+
+**Objectif** : Remplacer `GET /events/:id/ical` par `GET /events/:id.ics`
+
+**Actions** :
+1. Modifier `EventsController#show` et `InitiationsController#show` :
+   ```ruby
+   def show
+     # ... code existant ...
+     respond_to do |format|
+       format.html
+       format.ics { render :ical, layout: false }
+     end
+   end
+   ```
+
+2. Supprimer les routes `get :ical` dans `config/routes.rb`
+
+3. Mettre à jour les liens dans les vues :
+   ```erb
+   <!-- Avant -->
+   <%= link_to "Télécharger iCal", ical_event_path(@event) %>
+   
+   <!-- Après -->
+   <%= link_to "Télécharger iCal", event_path(@event, format: :ics) %>
+   ```
+
+**Bénéfices** :
+- ✅ Conforme aux standards Rails
+- ✅ Moins de routes à maintenir
+- ✅ Format explicite dans l'URL
+
+---
+
+#### Phase 2.2 : Attendances en Sous-Ressources (Effort : 1 semaine)
+
+**Objectif** : Transformer `POST /events/:id/attend` → `POST /events/:event_id/attendances`
+
+**Structure cible** :
+```ruby
+# config/routes.rb
+resources :events do
+  resources :attendances, only: [:create, :destroy, :update], shallow: true do
+    member do
+      patch :toggle_reminder  # Devient PATCH /attendances/:id/toggle_reminder
+    end
+  end
+end
+```
+
+**Nouveau contrôleur** : `app/controllers/events/attendances_controller.rb`
+```ruby
+module Events
+  class AttendancesController < ApplicationController
+    before_action :set_event
+    before_action :set_attendance, only: [:destroy, :update, :toggle_reminder]
+    
+    def create
+      # Logique actuelle de EventsController#attend
+    end
+    
+    def destroy
+      # Logique actuelle de EventsController#cancel_attendance
+    end
+    
+    def update
+      # Logique actuelle de EventsController#toggle_reminder
+    end
+  end
+end
+```
+
+**Migration** :
+1. Créer le nouveau contrôleur avec la logique extraite
+2. Ajouter les nouvelles routes en parallèle (coexistence)
+3. Mettre à jour les formulaires progressivement
+4. Déprécier les anciennes routes après 3 mois
+5. Supprimer les anciennes routes après 6 mois
+
+**Même processus pour** :
+- `InitiationsController` → `Initiations::AttendancesController`
+
+---
+
+#### Phase 2.3 : Waitlist Entries en Sous-Ressources (Effort : 1 semaine)
+
+**Objectif** : Transformer les actions waitlist en ressources
+
+**Structure cible** :
+```ruby
+resources :events do
+  resources :waitlist_entries, only: [:create, :destroy], shallow: true do
+    member do
+      post :convert_to_attendance
+      post :refuse
+      get :confirm, path: "confirm"
+      get :decline, path: "decline"
+    end
+  end
+end
+```
+
+**Nouveau contrôleur** : `app/controllers/events/waitlist_entries_controller.rb`
+
+**Actions à migrer** :
+- `join_waitlist` → `create`
+- `leave_waitlist` → `destroy`
+- `convert_waitlist_to_attendance` → `convert_to_attendance`
+- `refuse_waitlist` → `refuse`
+- `confirm_waitlist` → `confirm` (GET pour emails)
+- `decline_waitlist` → `decline` (GET pour emails)
+
+---
+
+#### Phase 2.4 : Payments en Sous-Ressources (Effort : 3 jours)
+
+**Objectif** : Extraire la logique de paiement
+
+**Structure cible** :
+```ruby
+resources :memberships do
+  resources :payments, only: [:create, :show], shallow: true do
+    collection do
+      post :create_multiple  # pay_multiple
+    end
+  end
+end
+
+resources :orders do
+  resources :payments, only: [:create, :show], shallow: true
+end
+```
+
+**Nouveaux contrôleurs** :
+- `app/controllers/memberships/payments_controller.rb`
+- `app/controllers/orders/payments_controller.rb`
+
+**Actions à migrer** :
+- `MembershipsController#pay` → `Memberships::PaymentsController#create`
+- `MembershipsController#payment_status` → `Memberships::PaymentsController#show`
+- `MembershipsController#pay_multiple` → `Memberships::PaymentsController#create_multiple`
+- `OrdersController#pay` → `Orders::PaymentsController#create`
+- `OrdersController#payment_status` → `Orders::PaymentsController#show`
+
+---
+
+### 🚀 Niveau 3 : Architecture Avancée (Effort : 1-2 mois | Gain : 100%)
+
+**Recommandation** : À considérer uniquement si :
+- ✅ Application expose des APIs externes
+- ✅ Équipe > 5 développeurs
+- ✅ Besoin de versioning API
+- ✅ Architecture microservices envisagée
+
+#### Phase 3.1 : Namespacing Fonctionnel
+```ruby
+namespace :events do
+  resources :attendances
+  resources :waitlist_entries
+end
+
+namespace :memberships do
+  resources :payments
+end
+```
+
+#### Phase 3.2 : Versioning API (si nécessaire)
+```ruby
+namespace :api do
+  namespace :v1 do
+    resources :events
+  end
+  namespace :v2 do
+    resources :events
+  end
+end
+```
+
+#### Phase 3.3 : Documentation OpenAPI/Swagger
+- Intégrer `rswag` ou `apipie-rails`
+- Documenter tous les endpoints
+- Générer la documentation automatiquement
+
+---
+
+## 📋 Checklist de Migration
+
+### Avant de Commencer
+- [ ] Backup de la base de données
+- [ ] Tests de régression complets
+- [ ] Documentation des routes actuelles
+- [ ] Communication avec l'équipe
+
+### Pendant la Migration
+- [ ] Coexistence des anciennes et nouvelles routes
+- [ ] Monitoring des usages (logs, analytics)
+- [ ] Tests unitaires et d'intégration
+- [ ] Documentation à jour
+
+### Après la Migration
+- [ ] Dépréciation des anciennes routes (6-12 mois)
+- [ ] Monitoring des erreurs 404/410
+- [ ] Retrait définitif après validation
+- [ ] Documentation finale
+
+---
+
+## 🎯 Recommandation Finale
+
+### Pour votre contexte actuel :
+
+**✅ APPROCHE RECOMMANDÉE : Niveau 2 (Refactorisation Légère)**
+
+**Justification** :
+1. Application en production avec utilisateurs actifs
+2. Architecture actuelle fonctionnelle et maintenable
+3. Gain significatif (95%) avec effort raisonnable (2-3 semaines)
+4. Amélioration de la séparation des responsabilités
+5. Facilité de test et maintenance future
+
+**Priorités** :
+1. **Phase 2.1** (Exports iCal) → **Impact immédiat, effort minimal**
+2. **Phase 2.4** (Payments) → **Critique pour la sécurité et la maintenabilité**
+3. **Phase 2.2** (Attendances) → **Améliore la clarté métier**
+4. **Phase 2.3** (Waitlist) → **Complète la refactorisation**
+
+**Timeline suggérée** :
+- **Semaine 1-2** : Phase 2.1 + Phase 2.4
+- **Semaine 3-4** : Phase 2.2
+- **Semaine 5-6** : Phase 2.3 + Tests + Documentation
+
+---
+
+## 📚 Références
+
+- [Rails Routing Guide](https://guides.rubyonrails.org/routing.html)
+- [DHH on Controller Design](https://world.hey.com/dhh/controller-concerns-are-not-a-pattern-8b5e0c8e)
+- [RESTful API Design Best Practices](https://restfulapi.net/)
+- [Rails API Versioning](https://guides.rubyonrails.org/api_app.html)
+
+---
+
+**Document créé le** : 2025-01-XX  
+**Dernière mise à jour** : 2025-01-XX  
+**Auteur** : Architecture Review  
+**Statut** : ✅ Approuvé pour implémentation
+

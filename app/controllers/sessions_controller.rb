@@ -6,9 +6,9 @@ class SessionsController < Devise::SessionsController
   # GET /resource/sign_in
   # Permettre l'accès à la page de connexion même si déjà connecté (pour tester)
   def new
-    # En développement, permettre de voir la page même si connecté
-    if Rails.env.development? && user_signed_in?
-      flash.now[:info] = "Vous êtes déjà connecté·e. Déconnectez-vous pour tester la connexion."
+    # Si l'utilisateur est déjà connecté, afficher un message mais permettre l'accès
+    if user_signed_in?
+      flash.now[:info] = "Vous êtes déjà connecté·e. Déconnectez-vous pour vous reconnecter avec un autre compte."
     end
     super
   end
@@ -41,6 +41,9 @@ class SessionsController < Devise::SessionsController
       Rails.logger.error("   Ne PAS appeler super - Blocage complet")
       Rails.logger.error("=" * 80)
 
+      # IMPORTANT: Ne pas créer de session si Turnstile échoue
+      # Si l'utilisateur était déjà connecté, sa session reste active (comportement normal)
+      # Mais on ne crée PAS de nouvelle session
       self.resource = resource_class.new(sign_in_params)
       resource.errors.add(:base, "Vérification de sécurité échouée. Veuillez réessayer.")
       flash.now[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
