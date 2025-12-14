@@ -86,11 +86,11 @@ RSpec.describe 'Initiations', type: :request do
     end
   end
 
-  describe 'POST /initiations/:id/attend' do
+  describe 'POST /initiations/:initiation_id/attendances' do
     let(:initiation) { create(:event_initiation, :published) }
 
     it 'requires authentication' do
-      post attend_initiation_path(initiation)
+      post initiation_attendances_path(initiation)
 
       expect(response).to redirect_to(new_user_session_path)
     end
@@ -100,7 +100,7 @@ RSpec.describe 'Initiations', type: :request do
       login_user(user)
 
       expect do
-        post attend_initiation_path(initiation)
+        post initiation_attendances_path(initiation)
       end.to change { Attendance.count }.by(1)
 
       expect(response).to redirect_to(initiation_path(initiation))

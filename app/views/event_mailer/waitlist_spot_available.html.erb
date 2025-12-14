@@ -44,25 +44,14 @@
       </p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <% if @is_initiation %>
-          <a href="<%= confirm_waitlist_initiation_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
-             style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-right: 10px;">
-            Confirmer ma place
-          </a>
-          <a href="<%= decline_waitlist_initiation_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
-             style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-            Refuser
-          </a>
-        <% else %>
-          <a href="<%= confirm_waitlist_event_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
-             style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-right: 10px;">
-            Confirmer ma place
-          </a>
-          <a href="<%= decline_waitlist_event_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>" 
-             style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-            Refuser
-          </a>
-        <% end %>
+        <a href="<%= confirm_waitlist_event_path_for(@event, @waitlist_entry) %>" 
+           style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-right: 10px;">
+          Confirmer ma place
+        </a>
+        <a href="<%= decline_waitlist_event_path_for(@event, @waitlist_entry) %>" 
+           style="background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+          Refuser
+        </a>
       </div>
       
       <p style="color: #666; font-size: 14px; margin-top: 30px;">

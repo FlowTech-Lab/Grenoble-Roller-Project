@@ -1,27 +1,65 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe 'Attendances', type: :request do
-  describe 'GET /attendances' do
-    context 'when user is authenticated' do
-      it 'lists events the user is registered to' do
-        user = create(:user)
-        event = create(:event, :published, title: 'Sortie du vendredi')
-        create(:attendance, user: user, event: event)
-        login_user(user)
+  include RequestAuthenticationHelper
 
-        get attendances_path
+  let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+  let(:user) { create(:user, role: role) }
+  let(:event) { create(:event, :published, :upcoming) }
+  let(:initiation) { create(:event_initiation, :published, :upcoming) }
 
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include('Sortie du vendredi')
-      end
+  describe 'PATCH /events/:event_id/attendances/toggle_reminder' do
+    let(:attendance) { create(:attendance, user: user, event: event, wants_reminder: false) }
+
+    it 'requires authentication' do
+      patch toggle_reminder_event_attendances_path(event)
+
+      expect(response).to redirect_to(new_user_session_path)
     end
 
-    context 'when user is a guest' do
-      it 'redirects to the login page' do
-        get attendances_path
+    it 'toggles reminder preference for authenticated user' do
+      login_user(user)
 
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      expect {
+        patch toggle_reminder_event_attendances_path(event)
+      }.to change { attendance.reload.wants_reminder }.from(false).to(true)
+
+      expect(response).to redirect_to(event_path(event))
+      expect(flash[:notice]).to be_present
+    end
+
+    it 'toggles reminder from true to false' do
+      attendance.update!(wants_reminder: true)
+      login_user(user)
+
+      expect {
+        patch toggle_reminder_event_attendances_path(event)
+      }.to change { attendance.reload.wants_reminder }.from(true).to(false)
+
+      expect(response).to redirect_to(event_path(event))
+    end
+  end
+
+  describe 'PATCH /initiations/:initiation_id/attendances/toggle_reminder' do
+    let(:attendance) { create(:attendance, user: user, event: initiation, wants_reminder: false) }
+
+    it 'requires authentication' do
+      patch toggle_reminder_initiation_attendances_path(initiation)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it 'toggles reminder preference for authenticated user' do
+      login_user(user)
+
+      expect {
+        patch toggle_reminder_initiation_attendances_path(initiation)
+      }.to change { attendance.reload.wants_reminder }.from(false).to(true)
+
+      expect(response).to redirect_to(initiation_path(initiation))
+      expect(flash[:notice]).to be_present
     end
   end
 end

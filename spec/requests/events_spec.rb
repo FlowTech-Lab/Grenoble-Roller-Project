@@ -85,7 +85,7 @@ RSpec.describe 'Events', type: :request do
 
       perform_enqueued_jobs do
         expect do
-          post attend_event_path(event)
+          post event_attendances_path(event)
         end.to change { Attendance.count }.by(1)
       end
 
@@ -99,7 +99,7 @@ RSpec.describe 'Events', type: :request do
       login_user(user)
 
       expect do
-        post attend_event_path(event)
+        post event_attendances_path(event)
       end.not_to change { Attendance.count }
 
       expect(response).to redirect_to(root_path)
@@ -112,7 +112,7 @@ RSpec.describe 'Events', type: :request do
       login_user(user)
 
       expect do
-        post attend_event_path(event)
+        post event_attendances_path(event)
       end.not_to change { Attendance.count }
 
       expect(response).to redirect_to(event_path(event))
@@ -120,11 +120,11 @@ RSpec.describe 'Events', type: :request do
     end
   end
 
-  describe 'DELETE /events/:id/cancel_attendance' do
+  describe 'DELETE /events/:event_id/attendances' do
     let(:event) { create(:event, :published) }
 
     it 'requires authentication' do
-      delete cancel_attendance_event_path(event)
+      delete event_attendances_path(event)
 
       expect(response).to redirect_to(new_user_session_path)
     end
@@ -136,7 +136,7 @@ RSpec.describe 'Events', type: :request do
 
       perform_enqueued_jobs do
         expect do
-          delete cancel_attendance_event_path(event)
+          delete event_attendances_path(event)
         end.to change { Attendance.exists?(attendance.id) }.from(true).to(false)
       end
 

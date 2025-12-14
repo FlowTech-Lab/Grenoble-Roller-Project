@@ -106,11 +106,15 @@ Rails.application.routes.draw do
         patch :toggle_reminder
       end
     end
+    resources :waitlist_entries, only: [:create, :destroy], shallow: true, controller: 'events/waitlist_entries' do
+      member do
+        post :convert_to_attendance
+        post :refuse
+        get :confirm, path: "confirm"
+        get :decline, path: "decline"
+      end
+    end
     member do
-      post :join_waitlist
-      delete :leave_waitlist
-      post :convert_waitlist_to_attendance
-      post :refuse_waitlist
       get :loop_routes, defaults: { format: "json" }
       patch :reject
     end
@@ -124,15 +128,13 @@ Rails.application.routes.draw do
             patch :toggle_reminder
           end
         end
-        member do
-          post :join_waitlist
-          delete :leave_waitlist
-          # Routes POST pour les formulaires
-          post :convert_waitlist_to_attendance
-          post :refuse_waitlist
-          # Routes GET pour les emails (redirigent vers la page de l'initiation avec confirmation)
-          get :confirm_waitlist, path: "waitlist/confirm"
-          get :decline_waitlist, path: "waitlist/decline"
+        resources :waitlist_entries, only: [:create, :destroy], shallow: true, controller: 'initiations/waitlist_entries' do
+          member do
+            post :convert_to_attendance
+            post :refuse
+            get :confirm, path: "confirm"
+            get :decline, path: "decline"
+          end
         end
       end
 

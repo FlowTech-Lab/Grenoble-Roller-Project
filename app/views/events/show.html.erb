@@ -510,7 +510,7 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: join_waitlist_event_path(@event), method: :post, local: true, data: { turbo: false }, id: "joinWaitlistFormShowEvent" do |f| %>
+        <%= form_with url: join_waitlist_event_path_for(@event), method: :post, local: true, data: { turbo: false }, id: "joinWaitlistFormShowEvent" do |f| %>
           <div class="modal-body">
             <p class="mb-3">
               Cet événement est complet. Rejoignez la liste d'attente pour être notifié(e) si une place se libère.
