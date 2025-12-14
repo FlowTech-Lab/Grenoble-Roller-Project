@@ -8,7 +8,26 @@ RSpec.describe 'Waitlist Entries', type: :request do
 
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) { create(:user, role: role, confirmed_at: Time.current) }
-  let(:event) { create(:event, :published, :upcoming, max_participants: 2) }
+  let(:event) do
+    creator = create(:user, role: role, confirmed_at: Time.current)
+    event = build(:event, :published, :upcoming, max_participants: 2, creator_user: creator)
+    # S'assurer que l'image est attachée avant la validation
+    unless event.cover_image.attached?
+      test_image_path = Rails.root.join('spec', 'fixtures', 'files', 'test-image.jpg')
+      FileUtils.mkdir_p(test_image_path.dirname)
+      unless test_image_path.exist?
+        jpeg_data = "\xFF\xD8\xFF\xE0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xFF\xDB\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\f\x14\r\f\x0B\x0B\f\x19\x12\x13\x0F\x14\x1D\x1A\x1F\x1E\x1D\x1A\x1C\x1C $.' \",#\x1C\x1C(7),01444\x1F'9=82<.342\xFF\xC0\x00\x0B\x08\x00\x01\x00\x01\x01\x01\x11\x00\xFF\xC4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xFF\xC4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xDA\x00\x08\x01\x01\x00\x00?\x00\xAA\xFF\xD9"
+        File.binwrite(test_image_path, jpeg_data)
+      end
+      event.cover_image.attach(
+        io: File.open(test_image_path),
+        filename: 'test-image.jpg',
+        content_type: 'image/jpeg'
+      )
+    end
+    event.save!
+    event
+  end
   let(:initiation) { create(:event_initiation, :published, :upcoming, max_participants: 2) }
   
   # Stubber l'envoi d'emails pour éviter les erreurs SMTP
@@ -32,14 +51,6 @@ RSpec.describe 'Waitlist Entries', type: :request do
       it 'creates a waitlist entry' do
         login_user(user)
 
-        # Debug
-        puts "\n=== DEBUG ==="
-        puts "Event full?: #{event.full?}"
-        puts "Event attendances count: #{event.attendances.count}"
-        puts "Event max_participants: #{event.max_participants}"
-        puts "Event attendances (not canceled, not pending): #{event.attendances.where.not(status: ['canceled', 'pending']).where(is_volunteer: false).count}"
-        puts "===============\n"
-
         expect {
           post event_waitlist_entries_path(event), params: { waitlist_entry: { wants_reminder: false } }
         }.to change { WaitlistEntry.count }.by(1)
@@ -57,6 +68,8 @@ RSpec.describe 'Waitlist Entries', type: :request do
       fill_event_to_capacity(event, 2)
       @waitlist_entry = build(:waitlist_entry, user: user, event: event)
       @waitlist_entry.save(validate: false)
+      # Recharger pour avoir l'ID et le hashid
+      @waitlist_entry.reload
       event.waitlist_entries.reload  # ← Critique pour les politiques Pundit!
     end
 

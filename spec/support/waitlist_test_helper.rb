@@ -3,8 +3,10 @@
 module WaitlistTestHelper
   # Remplir l'événement jusqu'à sa capacité
   def fill_event_to_capacity(event, count = 2)
+    role = Role.find_or_create_by!(code: 'USER', name: 'Utilisateur', level: 10)
     count.times do
-      attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
+      user = create(:user, role: role, confirmed_at: Time.current)
+      attendance = build(:attendance, event: event, user: user, status: 'registered', is_volunteer: false)
       attendance.save(validate: false)
     end
     event.attendances.reload

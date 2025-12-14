@@ -3,7 +3,7 @@
 module Events
   class WaitlistEntriesController < ApplicationController
     before_action :authenticate_user!
-    before_action :set_event, only: [:create, :destroy] # set_event seulement pour les routes collection
+    before_action :set_event, only: [:create] # set_event seulement pour les routes collection (create)
 
     # POST /events/:event_id/waitlist_entries
     def create
@@ -64,16 +64,21 @@ module Events
       
       unless waitlist_entry && waitlist_entry.user == current_user
         event = waitlist_entry&.event || @event
-        redirect_to event_path(event), alert: "Vous n'êtes pas en liste d'attente pour cet événement."
+        if event
+          redirect_to event_path(event), alert: "Vous n'êtes pas en liste d'attente pour cet événement."
+        else
+          redirect_to events_path, alert: "Événement introuvable."
+        end
         return
       end
       
       # Autoriser l'action sur l'événement
-      authorize waitlist_entry.event, :leave_waitlist?
+      event = waitlist_entry.event
+      authorize event, :leave_waitlist?
       
       participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
       waitlist_entry.cancel!
-      redirect_to event_path(waitlist_entry.event), notice: "#{participant_name} avez été retiré(e) de la liste d'attente."
+      redirect_to event_path(event), notice: "#{participant_name} avez été retiré(e) de la liste d'attente."
     end
 
     # POST /waitlist_entries/:id/convert_to_attendance (shallow route)
