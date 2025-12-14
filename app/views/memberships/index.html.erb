@@ -262,7 +262,7 @@
                     </strong>
                   </div>
                   
-                  <%= form_with url: pay_multiple_memberships_path, method: :post, local: true, data: { turbo: false }, class: "mb-2" do |f| %>
+                  <%= form_with url: create_multiple_membership_payments_path, method: :post, local: true, data: { turbo: false }, class: "mb-2" do |f| %>
                     <% children_pending.each do |membership| %>
                       <%= f.hidden_field "membership_ids[]", value: membership.id %>
                     <% end %>

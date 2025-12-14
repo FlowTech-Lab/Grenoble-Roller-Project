@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Orders', type: :request do
+  include RequestAuthenticationHelper
+  
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) { create(:user, role: role) }
   let(:category) { create(:product_category) }
@@ -77,6 +79,48 @@ RSpec.describe 'Orders', type: :request do
 
       expect(response).to redirect_to(root_path)
       expect(flash[:alert]).to include('confirmer votre adresse email')
+    end
+  end
+
+  describe 'POST /orders/:order_id/payments' do
+    let(:order) { create(:order, user: user, status: 'pending') }
+
+    it 'requires authentication' do
+      post order_payments_path(order)
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it 'redirects to HelloAsso for pending order' do
+      login_user(user)
+      # Mock HelloAssoService pour éviter les appels réels
+      allow(HelloassoService).to receive(:create_checkout_intent).and_return({
+        success: true,
+        body: {
+          "id" => "checkout_123",
+          "redirectUrl" => "https://helloasso.com/checkout"
+        }
+      })
+
+      post order_payments_path(order)
+      expect(response).to have_http_status(:redirect)
+    end
+  end
+
+  describe 'GET /orders/:order_id/payments/status' do
+    let(:order) { create(:order, user: user) }
+
+    it 'requires authentication' do
+      get status_order_payments_path(order)
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it 'returns payment status as JSON' do
+      login_user(user)
+      get status_order_payments_path(order)
+      expect(response).to have_http_status(:success)
+      expect(response.content_type).to include('application/json')
+      json = JSON.parse(response.body)
+      expect(json).to have_key('status')
     end
   end
 end

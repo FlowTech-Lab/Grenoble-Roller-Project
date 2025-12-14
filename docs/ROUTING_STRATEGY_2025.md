@@ -374,5 +374,5 @@ Les tests RSpec échouent actuellement à cause d'un problème de configuration 
 **Document créé le** : 2025-01-XX  
 **Dernière mise à jour** : 2025-01-XX  
 **Auteur** : Architecture Review  
-**Statut** : ✅ Phase 2.1 complétée - Phase 2.2 en attente
+**Statut** : ✅ Phase 2.1 et Phase 2.4 complétées - Phase 2.2 en attente
 

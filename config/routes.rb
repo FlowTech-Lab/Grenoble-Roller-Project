@@ -63,20 +63,30 @@ Rails.application.routes.draw do
 
   # Orders (Checkout)
   resources :orders, only: [ :index, :new, :create, :show ] do
+    resources :payments, only: [:create], shallow: true, controller: 'orders/payments' do
+      collection do
+        # Statut du paiement (peut être appelé même sans payment créé)
+        get :status, action: :show
+      end
+    end
     member do
       patch :cancel
-      post :pay
       post :check_payment
-      get :payment_status
     end
   end
 
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
-    collection do
-      post :create_without_payment
+    resources :payments, only: [:create], shallow: true, controller: 'memberships/payments' do
+      collection do
+        # Paiement groupé pour plusieurs enfants en attente
+        post :create_multiple
+        # Statut du paiement (peut être appelé même sans payment créé)
+        get :status, action: :show
+      end
     end
     collection do
+      post :create_without_payment
       # Redirection de l'ancienne page choose vers new
       get :choose, to: redirect { |params, request|
         if params[:child] == "true"
@@ -85,13 +95,6 @@ Rails.application.routes.draw do
           new_membership_path(type: 'adult')
         end
       }
-      # Paiement groupé pour plusieurs enfants en attente
-      post :pay_multiple
-    end
-    member do
-      # Actions personnalisées (non-CRUD)
-      post :pay
-      get :payment_status
     end
   end
 
