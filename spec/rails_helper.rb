@@ -75,6 +75,11 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :system
   config.include TestDataHelper if defined?(TestDataHelper)
 
+  # Bypass CSRF protection in request specs
+  config.before(:each, type: :request) do
+    allow_any_instance_of(ActionController::Base).to receive(:protect_against_forgery?).and_return(false)
+  end
+
   # Capybara configuration for system/feature tests
   # Use rack_test for non-JS tests (faster, no browser needed)
   config.before(:each, type: :system) do

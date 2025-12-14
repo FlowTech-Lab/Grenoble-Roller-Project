@@ -8,7 +8,13 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :check_email_confirmation_status, if: :user_signed_in?
 
-  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  rescue_from Pundit::NotAuthorizedError do |exception|
+    if user_signed_in?
+      user_not_authorized(exception)
+    else
+      redirect_to new_user_session_path, alert: "Vous devez être connecté pour accéder à cette page."
+    end
+  end
 
   protected
 
