@@ -34,6 +34,21 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+# Configurer les traductions par défaut pour les tests
+I18n.default_locale = :fr
+I18n.locale = :fr
+
+# Ajouter les traductions manquantes
+I18n.backend.store_translations(:fr, {
+  activerecord: {
+    errors: {
+      messages: {
+        record_invalid: "L'enregistrement est invalide"
+      }
+    }
+  }
+})
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [

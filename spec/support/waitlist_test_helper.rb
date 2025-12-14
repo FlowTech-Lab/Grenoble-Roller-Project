@@ -1,11 +1,21 @@
 # frozen_string_literal: true
 
 module WaitlistTestHelper
+  # Remplir l'événement jusqu'à sa capacité
+  def fill_event_to_capacity(event, count = 2)
+    count.times do
+      attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
+      attendance.save(validate: false)
+    end
+    event.attendances.reload
+    event.update_column(:attendances_count, event.attendances.count)
+    event.reload
+  end
+
   # Créer une waitlist entry notifiée avec son attendance pending associée
   # Retourne [pending_attendance, waitlist_entry]
-  # Pattern qui fonctionne : créer dans before block avec event.attendances.build + save(validate: false)
   def create_notified_waitlist_with_pending_attendance(user, event)
-    # Créer l'attendance pending directement via l'association pour éviter le cache
+    # Créer l'attendance PENDING (la place réservée)
     pending_attendance = event.attendances.build(
       user: user,
       child_membership_id: nil,
@@ -17,12 +27,15 @@ module WaitlistTestHelper
     )
     pending_attendance.save(validate: false)
     
-    # Créer la waitlist entry
-    waitlist_entry = build(:waitlist_entry, user: user, event: event, status: 'pending', child_membership_id: nil, wants_reminder: false)
+    # Créer la waitlist_entry
+    waitlist_entry = build(:waitlist_entry, user: user, event: event, child_membership_id: nil, wants_reminder: false)
     waitlist_entry.save(validate: false)
-    waitlist_entry.update!(status: 'notified', notified_at: 1.hour.ago)
     
-    [pending_attendance, waitlist_entry]
+    # Mettre à jour le statut
+    waitlist_entry.update_column(:status, 'notified')
+    waitlist_entry.update_column(:notified_at, 1.hour.ago)
+    
+    [pending_attendance.reload, waitlist_entry.reload]
   end
 end
 

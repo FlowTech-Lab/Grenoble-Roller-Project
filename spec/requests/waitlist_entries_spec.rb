@@ -20,34 +20,25 @@ RSpec.describe 'Waitlist Entries', type: :request do
   describe 'POST /events/:event_id/waitlist_entries' do
     context 'when event is full' do
       before do
-        # Remplir l'événement avec des attendances registered (bypass validations)
-        2.times do
-          attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
-          attendance.save(validate: false)
-        end
-        event.attendances.reload  # ← Critique!
-        event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+        fill_event_to_capacity(event, 2)
       end
 
       it 'requires authentication' do
         post event_waitlist_entries_path(event)
-        
-        # Extraire l'exception du body
-        if response.body.include?('Exception')
-          # Chercher le message d'erreur dans le HTML
-          match = response.body.match(/<h1[^>]*>([^<]+)<\/h1>/)
-          puts "\n🔴 Exception: #{match[1]}" if match
-          
-          # Chercher la trace
-          match2 = response.body.match(/<pre[^>]*>(.*?)<\/pre>/m)
-          puts "Trace: #{match2[1][0..500]}" if match2
-        end
-        
+
         expect(response).to redirect_to(new_user_session_path)
       end
 
       it 'creates a waitlist entry' do
         login_user(user)
+
+        # Debug
+        puts "\n=== DEBUG ==="
+        puts "Event full?: #{event.full?}"
+        puts "Event attendances count: #{event.attendances.count}"
+        puts "Event max_participants: #{event.max_participants}"
+        puts "Event attendances (not canceled, not pending): #{event.attendances.where.not(status: ['canceled', 'pending']).where(is_volunteer: false).count}"
+        puts "===============\n"
 
         expect {
           post event_waitlist_entries_path(event), params: { waitlist_entry: { wants_reminder: false } }
@@ -63,12 +54,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
     # Créer dans before block pour éviter le cache d'association RSpec
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
-      2.times do
-        attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
-        attendance.save(validate: false)
-      end
-      event.attendances.reload  # ← Critique!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      fill_event_to_capacity(event, 2)
       @waitlist_entry = build(:waitlist_entry, user: user, event: event)
       @waitlist_entry.save(validate: false)
       event.waitlist_entries.reload  # ← Critique pour les politiques Pundit!
@@ -96,16 +82,14 @@ RSpec.describe 'Waitlist Entries', type: :request do
     # Créer dans before block pour éviter le cache d'association RSpec
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
-      2.times do
-        attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
-        attendance.save(validate: false)
-      end
-      event.attendances.reload  # ← Critique!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      fill_event_to_capacity(event, 2)
       
-      @waitlist_entry = build(:waitlist_entry, user: user, event: event, status: 'notified')
+      @waitlist_entry = build(:waitlist_entry, user: user, event: event)
       @waitlist_entry.save(validate: false)
-      # Créer l'attendance pending associée (bypass validations)
+      @waitlist_entry.update_column(:status, 'notified')
+      @waitlist_entry.update_column(:notified_at, 1.hour.ago)
+      
+      # Créer l'attendance pending associée
       pending_attendance = event.attendances.build(
         user: user,
         child_membership_id: nil,
@@ -118,7 +102,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
       pending_attendance.save(validate: false)
       event.attendances.reload  # ← Critique!
       event.waitlist_entries.reload  # ← Critique pour les politiques Pundit!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      event.reload
     end
 
     it 'requires authentication' do
@@ -143,16 +127,14 @@ RSpec.describe 'Waitlist Entries', type: :request do
     # Créer dans before block pour éviter le cache d'association RSpec
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
-      2.times do
-        attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
-        attendance.save(validate: false)
-      end
-      event.attendances.reload  # ← Critique!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      fill_event_to_capacity(event, 2)
       
-      @waitlist_entry = build(:waitlist_entry, user: user, event: event, status: 'notified')
+      @waitlist_entry = build(:waitlist_entry, user: user, event: event)
       @waitlist_entry.save(validate: false)
-      # Créer l'attendance pending associée (bypass validations)
+      @waitlist_entry.update_column(:status, 'notified')
+      @waitlist_entry.update_column(:notified_at, 1.hour.ago)
+      
+      # Créer l'attendance pending associée
       pending_attendance = event.attendances.build(
         user: user,
         child_membership_id: nil,
@@ -165,7 +147,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
       pending_attendance.save(validate: false)
       event.attendances.reload  # ← Critique!
       event.waitlist_entries.reload  # ← Critique pour les politiques Pundit!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      event.reload
     end
 
     it 'requires authentication' do
@@ -190,12 +172,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
     # Créer dans before block pour éviter le cache d'association RSpec
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
-      2.times do
-        attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
-        attendance.save(validate: false)
-      end
-      event.attendances.reload  # ← Critique!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      fill_event_to_capacity(event, 2)
       
       @pending_attendance, @waitlist_entry = create_notified_waitlist_with_pending_attendance(user, event)
       event.attendances.reload  # ← Critique!
@@ -227,12 +204,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
     # Créer dans before block pour éviter le cache d'association RSpec
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
-      2.times do
-        attendance = build(:attendance, event: event, status: 'registered', is_volunteer: false)
-        attendance.save(validate: false)
-      end
-      event.attendances.reload  # ← Critique!
-      event.reload  # Recharger l'événement pour mettre à jour le counter_cache
+      fill_event_to_capacity(event, 2)
       
       @pending_attendance, @waitlist_entry = create_notified_waitlist_with_pending_attendance(user, event)
       event.attendances.reload  # ← Critique!

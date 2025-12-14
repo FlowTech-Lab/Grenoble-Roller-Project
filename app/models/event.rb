@@ -169,6 +169,11 @@ class Event < ApplicationRecord
     attendances.where.not(status: "canceled").count
   end
 
+  # Notifier la prochaine personne en liste d'attente
+  def notify_next_waitlist_entry
+    WaitlistEntry.notify_next_in_queue(self, count: 1)
+  end
+
   # Vérifie si l'événement est passé
   def past?
     start_at <= Time.current
