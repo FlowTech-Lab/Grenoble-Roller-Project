@@ -4,7 +4,7 @@ RSpec.describe 'Orders', type: :request do
   include RequestAuthenticationHelper
   
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
-  let(:user) { create(:user, role: role) }
+  let(:user) { create(:user, role: role, confirmed_at: Time.current) }
   let(:category) { create(:product_category) }
   let(:product) { create(:product, category: category) }
   let(:variant) { create(:product_variant, product: product, stock_qty: 10) }
@@ -121,6 +121,45 @@ RSpec.describe 'Orders', type: :request do
       expect(response.content_type).to include('application/json')
       json = JSON.parse(response.body)
       expect(json).to have_key('status')
+    end
+  end
+
+  describe 'GET /orders/:id' do
+    let(:order) { create(:order, user: user) }
+
+    it 'requires authentication' do
+      get order_path(order)
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it 'allows user to view their own order' do
+      login_user(user)
+      get order_path(order)
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(order.id.to_s)
+    end
+
+    it 'prevents user from viewing another user\'s order' do
+      other_user = create(:user, role: role, confirmed_at: Time.current)
+      other_order = create(:order, user: other_user)
+      login_user(user)
+
+      expect {
+        get order_path(other_order)
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'loads order with payment and order_items' do
+      variant = create(:product_variant, product: product, stock_qty: 10)
+      order = create(:order, user: user)
+      create(:order_item, order: order, variant: variant, quantity: 2)
+      login_user(user)
+
+      get order_path(order)
+      expect(response).to have_http_status(:success)
+      # Vérifier que les associations sont chargées (pas de N+1)
+      expect(assigns(:order).association(:payment).loaded?).to be true
+      expect(assigns(:order).association(:order_items).loaded?).to be true
     end
   end
 end
