@@ -1,6 +1,25 @@
 class OrdersController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_email_confirmed, only: [ :create ] # Exiger confirmation pour passer une commande
+  
+  # Vérification explicite de la confirmation email pour create (même en test)
+  def ensure_email_confirmed
+    return true unless user_signed_in?
+    
+    # En test, on peut bypass si nécessaire, mais par défaut on bloque
+    unless current_user.confirmed?
+      confirmation_link = view_context.link_to(
+        "demandez un nouvel email de confirmation",
+        new_user_confirmation_path,
+        class: "alert-link"
+      )
+      redirect_to root_path,
+                  alert: "Vous devez confirmer votre adresse email pour effectuer cette action. " \
+                         "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe
+      return false
+    end
+    true
+  end
 
   def index
     @orders = current_user.orders.includes(:payment, order_items: { variant: :product }).order(created_at: :desc)
@@ -117,7 +136,19 @@ class OrdersController < ApplicationController
   end
 
   def show
-    @order = current_user.orders.includes(:payment, order_items: { variant: :product }).find(params[:id])
+    # Support hashid ou ID numérique
+    # D'abord trouver l'order par hashid ou ID (sans scope pour hashid)
+    found_order = Order.find_by_hashid(params[:id]) if params[:id].present?
+    found_order ||= Order.find_by(id: params[:id]) if params[:id].present? && params[:id].match?(/\A\d+\z/)
+    
+    # Vérifier que l'order appartient à l'utilisateur
+    if found_order && found_order.user_id == current_user.id
+      order_scope = current_user.orders.includes(:payment, order_items: { variant: :product })
+      @order = order_scope.find(found_order.id)
+    else
+      # Si l'order n'existe pas ou n'appartient pas à l'utilisateur, lever RecordNotFound
+      raise ActiveRecord::RecordNotFound, "Couldn't find Order with 'id'=#{params[:id]}"
+    end
   end
 
   def check_payment

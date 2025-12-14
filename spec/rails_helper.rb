@@ -95,6 +95,16 @@ RSpec.configure do |config|
     allow_any_instance_of(ActionController::Base).to receive(:protect_against_forgery?).and_return(false)
   end
 
+  # Désactiver l'envoi réel d'emails en test
+  config.before(:each) do
+    ActionMailer::Base.delivery_method = :test
+    ActionMailer::Base.perform_deliveries = false
+  end
+
+  config.after(:each) do
+    ActionMailer::Base.deliveries.clear
+  end
+
   # Capybara configuration for system/feature tests
   # Use rack_test for non-JS tests (faster, no browser needed)
   config.before(:each, type: :system) do

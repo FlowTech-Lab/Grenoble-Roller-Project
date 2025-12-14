@@ -17,14 +17,21 @@
   <!-- Card unique : image à gauche, infos à droite -->
   <div class="card card-liquid rounded-liquid product-show-card"
        data-controller="product-show"
-       data-product-show-variants-value='<%= @variants.map { |v| {
-         id: v.id,
-         sizeId: (v.option_values.find { |ov| ov.option_type.name == 'size' }&.id || nil),
-         colorId: (v.option_values.find { |ov| ov.option_type.name == 'color' }&.id || nil),
-         stock: v.stock_qty,
-         price: v.price_cents,
-         imageUrl: variant_image_url(v).present? ? (v.image.attached? ? url_for(v.image) : asset_path(v.image_url.presence || @product.image_url)) : ""
-       } }.to_json.html_safe %>'
+       data-product-show-variants-value='<%= @variants.map { |v| 
+         begin
+           option_vals = v.option_values.to_a
+         rescue
+           option_vals = []
+         end
+         {
+           id: v.id,
+           sizeId: option_vals.find { |ov| ov.option_type&.name == 'size' }&.id,
+           colorId: option_vals.find { |ov| ov.option_type&.name == 'color' }&.id,
+           stock: v.stock_qty,
+           price: v.price_cents,
+           imageUrl: variant_image_url(v).present? ? (v.image.attached? ? url_for(v.image) : asset_path(v.image_url.presence || @product.image_url)) : ""
+         }
+       }.to_json.html_safe %>'
        data-product-show-default-image-url-value="<%= (@product.image.attached? ? url_for(@product.image) : asset_path(@product.image_url)).to_json.html_safe %>">
     <div class="row g-4 align-items-stretch flex-column flex-lg-row">
       <!-- Image principale -->

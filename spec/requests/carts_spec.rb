@@ -47,7 +47,7 @@ RSpec.describe 'Carts', type: :request do
       get cart_path
       
       expect(response).to have_http_status(:success)
-      cart_item = assigns(:cart_items).find { |ci| ci[:variant_id] == variant.id }
+      cart_item = assigns(:cart_items).find { |ci| ci[:variant].id == variant.id }
       expect(cart_item[:quantity]).to eq(3)
       expect(cart_item[:subtotal_cents]).to eq(6000) # 2000 * 3
     end
