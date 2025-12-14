@@ -9,7 +9,7 @@ module EventsHelper
   end
 
   def ical_event_path_for(event)
-    event.is_a?(Event::Initiation) ? ical_initiation_path(event, format: :ics) : ical_event_path(event, format: :ics)
+    event.is_a?(Event::Initiation) ? initiation_path(event, format: :ics) : event_path(event, format: :ics)
   end
 
   def toggle_reminder_event_path_for(event)

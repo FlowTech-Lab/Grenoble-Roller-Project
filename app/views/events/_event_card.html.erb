@@ -128,7 +128,7 @@
               <% if current_user_has_attendance?(event) %>
                 <!-- Calendrier en premier (action positive) -->
                 <% if user_signed_in? %>
-                  <%= link_to ical_event_path(event, format: :ics), 
+                  <%= link_to event_path(event, format: :ics), 
                       class: "btn btn-outline-primary btn-sm", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>
@@ -172,7 +172,7 @@
                 </button>
                 <!-- Calendrier après S'inscrire -->
                 <% if user_signed_in? %>
-                  <%= link_to ical_event_path(event, format: :ics), 
+                  <%= link_to event_path(event, format: :ics), 
                       class: "btn btn-outline-primary btn-sm", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>
@@ -185,7 +185,7 @@
                 </button>
                 <!-- Calendrier même si complet -->
                 <% if user_signed_in? %>
-                  <%= link_to ical_event_path(event, format: :ics), 
+                  <%= link_to event_path(event, format: :ics), 
                       class: "btn btn-outline-primary btn-sm", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>
@@ -196,7 +196,7 @@
             <% else %>
               <!-- Si pas de bouton d'inscription, afficher Calendrier/Connexion -->
               <% if user_signed_in? %>
-                <%= link_to ical_event_path(event, format: :ics), 
+                <%= link_to event_path(event, format: :ics), 
                     class: "btn btn-outline-primary btn-sm", 
                     title: 'Ajouter au calendrier',
                     aria: { label: 'Ajouter au calendrier' } do %>
@@ -242,7 +242,7 @@
               <!-- Bouton Ajouter au calendrier -->
               <% if user_signed_in? %>
                 <div class="mb-3 text-center">
-                  <%= link_to ical_event_path(event, format: :ics), 
+                  <%= link_to event_path(event, format: :ics), 
                       class: "btn btn-outline-primary btn-sm w-100", 
                       title: 'Ajouter au calendrier',
                       aria: { label: 'Ajouter au calendrier' } do %>

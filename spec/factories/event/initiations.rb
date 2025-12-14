@@ -58,5 +58,17 @@ FactoryBot.define do
         create_list(:attendance, 3, event: initiation, is_volunteer: true, status: 'registered')
       end
     end
+
+    trait :published do
+      status { 'published' }
+    end
+
+    trait :upcoming do
+      start_at { 1.week.from_now }
+    end
+
+    trait :draft do
+      status { 'draft' }
+    end
   end
 end

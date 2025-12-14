@@ -145,12 +145,12 @@ RSpec.describe 'Events', type: :request do
     end
   end
 
-  describe 'GET /events/:id/ical' do
+  describe 'GET /events/:id.ics' do
     let(:user) { create(:user) }
     let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller') }
 
     it 'requires authentication' do
-      get ical_event_path(event, format: :ics)
+      get event_path(event, format: :ics)
 
       # Pour les requêtes .ics, Devise retourne 401 Unauthorized
       expect(response).to have_http_status(:unauthorized)
@@ -160,7 +160,7 @@ RSpec.describe 'Events', type: :request do
     it 'exports event as iCal file for published event when authenticated' do
       login_user(user)
 
-      get ical_event_path(event, format: :ics)
+      get event_path(event, format: :ics)
 
       expect(response).to have_http_status(:success)
       expect(response.content_type).to include('text/calendar')
@@ -177,7 +177,7 @@ RSpec.describe 'Events', type: :request do
       login_user(user)
       draft_event = create(:event, :draft, :upcoming)
 
-      get ical_event_path(draft_event, format: :ics)
+      get event_path(draft_event, format: :ics)
 
       expect(response).to redirect_to(root_path)
       expect(flash[:alert]).to be_present
@@ -188,7 +188,7 @@ RSpec.describe 'Events', type: :request do
       draft_event = create(:event, :draft, :upcoming, creator_user: organizer)
       login_user(organizer)
 
-      get ical_event_path(draft_event, format: :ics)
+      get event_path(draft_event, format: :ics)
 
       expect(response).to have_http_status(:success)
       expect(response.content_type).to include('text/calendar')

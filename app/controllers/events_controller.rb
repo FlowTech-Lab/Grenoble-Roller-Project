@@ -1,5 +1,5 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance ical toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance refuse_waitlist confirm_waitlist decline_waitlist]
+  before_action :set_event, only: %i[show edit update destroy attend cancel_attendance toggle_reminder loop_routes reject join_waitlist leave_waitlist convert_waitlist_to_attendance refuse_waitlist confirm_waitlist decline_waitlist]
   before_action :authenticate_user!, except: %i[index show]
   before_action :ensure_email_confirmed, only: [ :attend ] # Exiger confirmation pour s'inscrire à un événement
   before_action :load_supporting_data, only: %i[new create edit update]
@@ -56,6 +56,48 @@ class EventsController < ApplicationController
       @child_waitlist_entries = WaitlistEntry.none
     end
     @can_register_child = can_register_child?
+
+    respond_to do |format|
+      format.html
+      format.ics do
+        authenticate_user!
+        authorize @event, :show?
+
+        calendar = Icalendar::Calendar.new
+        calendar.prodid = "-//Grenoble Roller//Events//FR"
+
+        event_ical = Icalendar::Event.new
+        event_ical.dtstart = Icalendar::Values::DateTime.new(@event.start_at)
+        event_ical.dtend = Icalendar::Values::DateTime.new(@event.start_at + @event.duration_min.minutes)
+        event_ical.summary = @event.title
+        event_ical.description = @event.description.presence || "Événement organisé par #{@event.creator_user.first_name}"
+        
+        # Location avec adresse et coordonnées GPS si disponibles
+        if @event.has_gps_coordinates?
+          # Format iCal : adresse avec coordonnées GPS dans le champ location
+          event_ical.location = "#{@event.location_text} (#{@event.meeting_lat},#{@event.meeting_lng})"
+          # Ajout du champ GEO pour les coordonnées GPS (standard iCal RFC 5545)
+          # Format: [latitude, longitude]
+          event_ical.geo = [@event.meeting_lat, @event.meeting_lng]
+        else
+          event_ical.location = @event.location_text
+        end
+        
+        event_ical.url = event_url(@event)
+        event_ical.uid = "event-#{@event.id}@grenobleroller.fr"
+        event_ical.last_modified = @event.updated_at
+        event_ical.created = @event.created_at
+        event_ical.organizer = Icalendar::Values::CalAddress.new("mailto:noreply@grenobleroller.fr", cn: "Grenoble Roller")
+
+        calendar.add_event(event_ical)
+        calendar.publish
+
+        send_data calendar.to_ical,
+                  filename: "#{@event.title.parameterize}.ics",
+                  type: "text/calendar; charset=utf-8",
+                  disposition: "attachment"
+      end
+    end
   end
 
   def can_moderate?
@@ -443,45 +485,6 @@ class EventsController < ApplicationController
     end
   end
 
-  # Export iCal pour un événement (réservé aux utilisateurs connectés)
-  def ical
-    authenticate_user!
-    authorize @event, :show?
-
-    calendar = Icalendar::Calendar.new
-    calendar.prodid = "-//Grenoble Roller//Events//FR"
-
-    event_ical = Icalendar::Event.new
-    event_ical.dtstart = Icalendar::Values::DateTime.new(@event.start_at)
-    event_ical.dtend = Icalendar::Values::DateTime.new(@event.start_at + @event.duration_min.minutes)
-    event_ical.summary = @event.title
-    event_ical.description = @event.description.presence || "Événement organisé par #{@event.creator_user.first_name}"
-    
-    # Location avec adresse et coordonnées GPS si disponibles
-    if @event.has_gps_coordinates?
-      # Format iCal : adresse avec coordonnées GPS dans le champ location
-      event_ical.location = "#{@event.location_text} (#{@event.meeting_lat},#{@event.meeting_lng})"
-      # Ajout du champ GEO pour les coordonnées GPS (standard iCal RFC 5545)
-      # Format: [latitude, longitude]
-      event_ical.geo = [@event.meeting_lat, @event.meeting_lng]
-    else
-      event_ical.location = @event.location_text
-    end
-    
-    event_ical.url = event_url(@event)
-    event_ical.uid = "event-#{@event.id}@grenobleroller.fr"
-    event_ical.last_modified = @event.updated_at
-    event_ical.created = @event.created_at
-    event_ical.organizer = Icalendar::Values::CalAddress.new("mailto:noreply@grenobleroller.fr", cn: "Grenoble Roller")
-
-    calendar.add_event(event_ical)
-    calendar.publish
-
-    send_data calendar.to_ical,
-              filename: "#{@event.title.parameterize}.ics",
-              type: "text/calendar; charset=utf-8",
-              disposition: "attachment"
-  end
 
   # Retourner les parcours par boucle en JSON (pour le formulaire)
   def loop_routes

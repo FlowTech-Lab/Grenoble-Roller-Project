@@ -1,5 +1,5 @@
 class InitiationsController < ApplicationController
-  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :ical, :join_waitlist, :leave_waitlist, :convert_waitlist_to_attendance, :refuse_waitlist, :confirm_waitlist, :decline_waitlist ]
+  before_action :set_initiation, only: [ :show, :edit, :update, :destroy, :attend, :cancel_attendance, :toggle_reminder, :join_waitlist, :leave_waitlist, :convert_waitlist_to_attendance, :refuse_waitlist, :confirm_waitlist, :decline_waitlist ]
   before_action :authenticate_user!, except: [ :index, :show ]
   before_action :load_supporting_data, only: [ :new, :create, :edit, :update ]
 
@@ -468,38 +468,6 @@ class InitiationsController < ApplicationController
     end
   end
 
-  # Export iCal pour une initiation (réservé aux utilisateurs connectés)
-  def ical
-    authenticate_user!
-    authorize @initiation, :show?
-
-    calendar = Icalendar::Calendar.new
-    calendar.prodid = "-//Grenoble Roller//Initiations//FR"
-
-    event_ical = Icalendar::Event.new
-    event_ical.dtstart = Icalendar::Values::DateTime.new(@initiation.start_at)
-    event_ical.dtend = Icalendar::Values::DateTime.new(@initiation.start_at + @initiation.duration_min.minutes)
-    event_ical.summary = @initiation.title
-    event_ical.description = @initiation.description.presence || "Cours d'initiation au roller organisé par Grenoble Roller"
-    
-    # Location avec adresse et coordonnées GPS si disponibles
-    if @initiation.has_gps_coordinates?
-      event_ical.location = "#{@initiation.location_text} (#{@initiation.meeting_lat},#{@initiation.meeting_lng})"
-      event_ical.geo = [@initiation.meeting_lat, @initiation.meeting_lng]
-    else
-      event_ical.location = @initiation.location_text
-    end
-    
-    event_ical.url = initiation_url(@initiation)
-    event_ical.uid = "initiation-#{@initiation.id}@grenobleroller.fr"
-    event_ical.last_modified = @initiation.updated_at
-    event_ical.created = @initiation.created_at
-    event_ical.organizer = Icalendar::Values::CalAddress.new("mailto:noreply@grenobleroller.fr", cn: "Grenoble Roller")
-
-    calendar.add_event(event_ical)
-
-    render plain: calendar.to_ical, content_type: "text/calendar"
-  end
 
   private
 

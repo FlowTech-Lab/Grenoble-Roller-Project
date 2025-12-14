@@ -111,7 +111,7 @@
           <% if user_signed_in? %>
             <% if current_user_has_attendance?(initiation) %>
               <!-- Calendrier en premier (action positive) -->
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -153,7 +153,7 @@
                 <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>S'inscrire
               </button>
               <!-- Calendrier après S'inscrire -->
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -164,7 +164,7 @@
                 <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
               </button>
               <!-- Calendrier même si complet -->
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -211,7 +211,7 @@
 
             <!-- Bouton Ajouter au calendrier -->
             <div class="mb-3 text-center">
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm w-100", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>

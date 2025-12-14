@@ -284,7 +284,7 @@
                 <!-- Boutons secondaires groupés -->
                 <div class="d-flex flex-wrap gap-2">
                   <% if user_signed_in? %>
-                    <%= link_to ical_event_path(@highlighted_event, format: :ics), 
+                    <%= link_to event_path(@highlighted_event, format: :ics), 
                         class: 'btn btn-outline-primary', 
                         title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
                         data: { bs_toggle: 'tooltip', bs_placement: 'top' },
