@@ -63,4 +63,13 @@ module EventsHelper
     # Routes shallow : /waitlist_entries/:id/decline
     decline_waitlist_entry_path(waitlist_entry)
   end
+
+  # Variantes _url pour les emails (URLs absolues)
+  def confirm_waitlist_event_url_for(event, waitlist_entry)
+    confirm_waitlist_entry_url(waitlist_entry)
+  end
+
+  def decline_waitlist_event_url_for(event, waitlist_entry)
+    decline_waitlist_entry_url(waitlist_entry)
+  end
 end

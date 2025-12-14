@@ -87,7 +87,8 @@ module Events
       waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
       
       unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
-        redirect_to event_path(waitlist_entry.event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+        event = waitlist_entry&.event || @event
+        redirect_to event_path(event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
         return
       end
       
@@ -126,7 +127,8 @@ module Events
       waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
       
       unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
-        redirect_to event_path(waitlist_entry.event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+        event = waitlist_entry&.event || @event
+        redirect_to event_path(event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
         return
       end
       
@@ -149,7 +151,8 @@ module Events
       waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
       
       unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
-        redirect_to event_path(waitlist_entry.event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+        event = waitlist_entry&.event || @event
+        redirect_to event_path(event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
         return
       end
       
@@ -173,7 +176,8 @@ module Events
       waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
       
       unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
-        redirect_to event_path(waitlist_entry.event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+        event = waitlist_entry&.event || @event
+        redirect_to event_path(event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
         return
       end
       

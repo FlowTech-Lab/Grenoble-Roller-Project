@@ -263,7 +263,7 @@ class WaitlistEntry < ApplicationRecord
       child_membership_id: child_membership_id
     )
 
-    if existing_attendance&.status != "canceled"
+    if existing_attendance && existing_attendance.status != "canceled"
       errors.add(:user, "Vous êtes déjà inscrit(e) à cet événement")
     end
   end
