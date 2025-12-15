@@ -166,8 +166,8 @@ Chaque erreur a son propre fichier détaillé dans le dossier `errors/`.
 Voir les fichiers détaillés pour chaque modèle :
 - [084-models-attendance.md](errors/084-models-attendance.md) - ✅ **RÉSOLU** (23 tests)
 - [105-models-audit-log.md](errors/105-models-audit-log.md) - ✅ **RÉSOLU** (6 tests)
-- [111-models-contact-message.md](errors/111-models-contact-message.md) - 3 erreurs (lignes 15, 24, 35)
-- [114-models-event-initiation.md](errors/114-models-event-initiation.md) - 18 erreurs (lignes 16, 21, 27, 33, 39, 46, 54, 60, 66, 75, 81, 90, 97, 107, 116, 124, 133)
+- [111-models-contact-message.md](errors/111-models-contact-message.md) - ✅ **RÉSOLU** (3 tests)
+- [114-models-event-initiation.md](errors/114-models-event-initiation.md) - ✅ **RÉSOLU** (13 tests)
 - [132-models-event.md](errors/132-models-event.md) - 15 erreurs (lignes 13, 29, 35, 41, 47, 55, 62, 69, 78, 83, 90, 95, 101, 109, 125, 130, 137, 145, 155, 160, 167)
 - [153-models-option-value.md](errors/153-models-option-value.md) - 1 erreur (ligne 17)
 - [154-models-order-item.md](errors/154-models-order-item.md) - 1 erreur (ligne 11)
@@ -241,9 +241,9 @@ Voir les fichiers détaillés pour chaque modèle :
 - **Erreurs listées individuellement** : 118  
 - **Erreurs regroupées (modèles)** : 101 (dans 17 fichiers)  
 - **Fichiers d'erreur créés** : 50  
-- **Erreurs analysées** : 6 (dont `Attendance` et `AuditLog` – modèles clés)  
-- **Erreurs avec solution** : 3+ (en progression)  
-- **Erreurs à analyser** : 213
+- **Erreurs analysées** : 8 (dont `Attendance`, `AuditLog`, `ContactMessage`, `Event::Initiation`)  
+- **Erreurs avec solution** : 4+ (en progression)  
+- **Erreurs à analyser** : 211
 
 ---
 
