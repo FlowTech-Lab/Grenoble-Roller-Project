@@ -66,11 +66,18 @@ class ApplicationController < ActionController::Base
   end
 
   helper_method :current_user_has_attendance?
+  helper_method :can_moderate?
 
   def current_user_has_attendance?(event)
     return false unless current_user
 
     event.attendances.exists?(user_id: current_user.id)
+  end
+
+  def can_moderate?
+    return false unless current_user
+
+    current_user.role&.level.to_i >= 50 # Modérateur (50) ou Admin (60) ou SuperAdmin (70)
   end
 
   # Vérifier le statut de confirmation de l'email (gestion générale)

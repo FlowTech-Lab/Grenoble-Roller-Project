@@ -108,10 +108,11 @@ RSpec.configure do |config|
     allow_any_instance_of(ActionController::Base).to receive(:protect_against_forgery?).and_return(false)
   end
 
-  # Désactiver l'envoi réel d'emails en test
+  # Configuration des emails en test
   config.before(:each) do
     ActionMailer::Base.delivery_method = :test
-    ActionMailer::Base.perform_deliveries = false
+    # Activer les deliveries pour les tests de jobs (ils utilisent perform_enqueued_jobs)
+    ActionMailer::Base.perform_deliveries = true
   end
 
   config.after(:each) do

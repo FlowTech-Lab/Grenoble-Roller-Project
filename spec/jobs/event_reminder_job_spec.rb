@@ -5,19 +5,22 @@ RSpec.describe EventReminderJob, type: :job do
   include ActiveJob::TestHelper
 
   describe '#perform' do
-    let!(:user) { create(:user, email: 'test@example.com') }
+    let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+    let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
+    let!(:user) { create(:user, email: 'test@example.com', role: user_role) }
+    let!(:organizer) { create(:user, role: organizer_role) }
     # Événement demain matin (10h)
-    let!(:event_tomorrow_morning) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Event Tomorrow Morning') }
+    let!(:event_tomorrow_morning) { create(:event, :published, creator_user: organizer, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Event Tomorrow Morning') }
     # Événement demain après-midi (15h)
-    let!(:event_tomorrow_afternoon) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 1.day + 15.hours, title: 'Event Tomorrow Afternoon') }
+    let!(:event_tomorrow_afternoon) { create(:event, :published, creator_user: organizer, start_at: Time.zone.now.beginning_of_day + 1.day + 15.hours, title: 'Event Tomorrow Afternoon') }
     # Événement demain soir (20h)
-    let!(:event_tomorrow_evening) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 1.day + 20.hours, title: 'Event Tomorrow Evening') }
+    let!(:event_tomorrow_evening) { create(:event, :published, creator_user: organizer, start_at: Time.zone.now.beginning_of_day + 1.day + 20.hours, title: 'Event Tomorrow Evening') }
     # Événement aujourd'hui
-    let!(:event_today) { create(:event, :published, start_at: 2.hours.from_now, title: 'Event Today') }
+    let!(:event_today) { create(:event, :published, creator_user: organizer, start_at: 2.hours.from_now, title: 'Event Today') }
     # Événement après-demain
-    let!(:event_day_after_tomorrow) { create(:event, :published, start_at: Time.zone.now.beginning_of_day + 2.days + 10.hours, title: 'Event Day After Tomorrow') }
+    let!(:event_day_after_tomorrow) { create(:event, :published, creator_user: organizer, start_at: Time.zone.now.beginning_of_day + 2.days + 10.hours, title: 'Event Day After Tomorrow') }
     # Événement brouillon demain
-    let!(:draft_event) { create(:event, :draft, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Draft Event') }
+    let!(:draft_event) { create(:event, :draft, creator_user: organizer, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Draft Event') }
 
     context 'when event is tomorrow' do
       let!(:attendance) { create(:attendance, user: user, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
@@ -101,8 +104,8 @@ RSpec.describe EventReminderJob, type: :job do
     end
 
     context 'with multiple attendees' do
-      let!(:user2) { create(:user, email: 'test2@example.com') }
-      let!(:user3) { create(:user, email: 'test3@example.com') }
+      let!(:user2) { create(:user, email: 'test2@example.com', role: user_role) }
+      let!(:user3) { create(:user, email: 'test3@example.com', role: user_role) }
       let!(:attendance1) { create(:attendance, user: user, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
       let!(:attendance2) { create(:attendance, user: user2, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
       let!(:attendance3) { create(:attendance, user: user3, event: event_tomorrow_morning, status: 'registered', wants_reminder: false) }

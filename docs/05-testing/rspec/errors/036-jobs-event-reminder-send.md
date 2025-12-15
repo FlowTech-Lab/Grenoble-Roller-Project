@@ -20,7 +20,16 @@
 
 ## 🔴 Erreur
 
-⏳ **À ANALYSER** - Exécuter le test pour voir l'erreur exacte
+**Erreur** : `expected ActionMailer::Base.deliveries.count to have changed by 1, but was changed by 0`
+
+**Cause** : Le job `EventReminderJob` ne trouve pas les événements créés dans les tests ou les emails ne sont pas envoyés.
+
+**Problèmes identifiés** :
+1. Factory `:user` sans rôle (corrigé)
+2. Factory `:event` sans `creator_user` (corrigé)
+3. Configuration `ActionMailer::Base.perform_deliveries = false` (corrigé → `true`)
+4. Configuration `ActiveJob.queue_adapter` (corrigé → `:test`)
+5. **PROBLÈME RESTANT** : Les événements créés dans les tests ne sont pas trouvés par le job (requête ou timing)
 
 ---
 
@@ -52,7 +61,17 @@ Solutions possibles :
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+⏳ **EN COURS** - Corrections partielles appliquées, problème de requête restant
+
+### Corrections appliquées
+1. ✅ Factory `:user` avec rôle explicite
+2. ✅ Factory `:event` avec `creator_user` explicite
+3. ✅ Configuration `ActionMailer::Base.perform_deliveries = true`
+4. ✅ Configuration `ActiveJob.queue_adapter = :test`
+
+### Problème restant
+- Les événements créés dans les tests ne sont pas trouvés par le job
+- Possible problème de timing ou de requête SQL
 
 ---
 
