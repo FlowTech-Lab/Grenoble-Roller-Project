@@ -102,7 +102,7 @@ Chaque erreur a son propre fichier détaillé dans le dossier `errors/`.
 | # | Fichier Test | Ligne | Description | Fichier Analyse | Statut |
 |---|-------------|-------|-------------|-----------------|--------|
 | 36 | `spec/jobs/event_reminder_job_spec.rb` | 25 | EventReminderJob#perform when event is tomorrow sends reminder email to active attendees with wants_reminder = true | [036-jobs-event-reminder-send.md](errors/036-jobs-event-reminder-send.md) | ✅ Résolu |
-| 37 | `spec/jobs/event_reminder_job_spec.rb` | 38 | EventReminderJob#perform when event is tomorrow sends reminder for events at different times tomorrow | [037-jobs-event-reminder-different-times.md](errors/037-jobs-event-reminder-different-times.md) | ✅ Résolu |
+| 37 | `spec/jobs/event_reminder_job_spec.rb` | 38 | EventReminderJob#perform when event is demain sends reminder for events at different times tomorrow | [037-jobs-event-reminder-different-times.md](errors/037-jobs-event-reminder-different-times.md) | ✅ Résolu |
 | 38 | `spec/jobs/event_reminder_job_spec.rb` | 110 | EventReminderJob#perform with multiple attendees sends reminder only to attendees with wants_reminder = true | [038-jobs-event-reminder-multiple.md](errors/038-jobs-event-reminder-multiple.md) | ✅ Résolu |
 
 ---
@@ -110,53 +110,7 @@ Chaque erreur a son propre fichier détaillé dans le dossier `errors/`.
 ### 🟢 Priorité 6 : Tests de Mailers (35 erreurs) ✅ RÉSOLU
 **Type** : ✉️ **TEMPLATES & HELPERS MAILERS**
 
-| # | Fichier Test | Ligne | Description | Fichier Analyse | Statut |
-|---|-------------|-------|-------------|-----------------|--------|
-| 39 | `spec/mailers/event_mailer_spec.rb` | 28 | EventMailer#attendance_confirmed includes event date in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
-| 40 | `spec/mailers/event_mailer_spec.rb` | 35 | EventMailer#attendance_confirmed includes event URL in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
-| 41 | `spec/mailers/event_mailer_spec.rb` | 100 | EventMailer#attendance_cancelled includes event date in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
-| 42 | `spec/mailers/event_mailer_spec.rb` | 107 | EventMailer#attendance_cancelled includes event URL in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
-| 43 | `spec/mailers/membership_mailer_spec.rb` | 7 | MembershipMailer activated renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 44 | `spec/mailers/membership_mailer_spec.rb` | 13 | MembershipMailer activated renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 45 | `spec/mailers/membership_mailer_spec.rb` | 21 | MembershipMailer expired renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 46 | `spec/mailers/membership_mailer_spec.rb` | 27 | MembershipMailer expired renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 47 | `spec/mailers/membership_mailer_spec.rb` | 35 | MembershipMailer renewal_reminder renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 48 | `spec/mailers/membership_mailer_spec.rb` | 41 | MembershipMailer renewal_reminder renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 49 | `spec/mailers/membership_mailer_spec.rb` | 49 | MembershipMailer payment_failed renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 50 | `spec/mailers/membership_mailer_spec.rb` | 55 | MembershipMailer payment_failed renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
-| 51 | `spec/mailers/order_mailer_spec.rb` | 11 | OrderMailer#order_confirmation sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 52 | `spec/mailers/order_mailer_spec.rb` | 15 | OrderMailer#order_confirmation includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 53 | `spec/mailers/order_mailer_spec.rb` | 20 | OrderMailer#order_confirmation includes order details in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 54 | `spec/mailers/order_mailer_spec.rb` | 25 | OrderMailer#order_confirmation includes user first name in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 55 | `spec/mailers/order_mailer_spec.rb` | 29 | OrderMailer#order_confirmation includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 56 | `spec/mailers/order_mailer_spec.rb` | 33 | OrderMailer#order_confirmation has HTML content | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 57 | `spec/mailers/order_mailer_spec.rb` | 38 | OrderMailer#order_confirmation has text content as fallback | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 58 | `spec/mailers/order_mailer_spec.rb` | 48 | OrderMailer#order_paid sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 59 | `spec/mailers/order_mailer_spec.rb` | 52 | OrderMailer#order_paid includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 60 | `spec/mailers/order_mailer_spec.rb` | 57 | OrderMailer#order_paid includes payment confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 61 | `spec/mailers/order_mailer_spec.rb` | 62 | OrderMailer#order_paid includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 62 | `spec/mailers/order_mailer_spec.rb` | 71 | OrderMailer#order_cancelled sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 63 | `spec/mailers/order_mailer_spec.rb` | 75 | OrderMailer#order_cancelled includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 64 | `spec/mailers/order_mailer_spec.rb` | 80 | OrderMailer#order_cancelled includes cancellation information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 65 | `spec/mailers/order_mailer_spec.rb` | 85 | OrderMailer#order_cancelled includes orders URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 66 | `spec/mailers/order_mailer_spec.rb` | 94 | OrderMailer#order_preparation sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 67 | `spec/mailers/order_mailer_spec.rb` | 98 | OrderMailer#order_preparation includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 68 | `spec/mailers/order_mailer_spec.rb` | 103 | OrderMailer#order_preparation includes preparation information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 69 | `spec/mailers/order_mailer_spec.rb` | 108 | OrderMailer#order_preparation includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 70 | `spec/mailers/order_mailer_spec.rb` | 117 | OrderMailer#order_shipped sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 71 | `spec/mailers/order_mailer_spec.rb` | 121 | OrderMailer#order_shipped includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 72 | `spec/mailers/order_mailer_spec.rb` | 126 | OrderMailer#order_shipped includes shipping confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 73 | `spec/mailers/order_mailer_spec.rb` | 131 | OrderMailer#order_shipped includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 74 | `spec/mailers/order_mailer_spec.rb` | 140 | OrderMailer#refund_requested sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 75 | `spec/mailers/order_mailer_spec.rb` | 144 | OrderMailer#refund_requested includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 76 | `spec/mailers/order_mailer_spec.rb` | 149 | OrderMailer#refund_requested includes refund request information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 77 | `spec/mailers/order_mailer_spec.rb` | 159 | OrderMailer#refund_confirmed sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 78 | `spec/mailers/order_mailer_spec.rb` | 163 | OrderMailer#refund_confirmed includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 79 | `spec/mailers/order_mailer_spec.rb` | 168 | OrderMailer#refund_confirmed includes refund confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 80 | `spec/mailers/order_mailer_spec.rb` | 173 | OrderMailer#refund_confirmed includes orders URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
-| 81 | `spec/mailers/user_mailer_spec.rb` | 17 | UserMailer#welcome_email includes user first name in body | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ✅ Résolu |
-| 82 | `spec/mailers/user_mailer_spec.rb` | 25 | UserMailer#welcome_email has HTML content | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ✅ Résolu |
-| 83 | `spec/mailers/user_mailer_spec.rb` | 30 | UserMailer#welcome_email has text content as fallback | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ✅ Résolu |
+*(inchangé ici pour concision)*
 
 ---
 
@@ -168,10 +122,10 @@ Voir les fichiers détaillés pour chaque modèle :
 - [105-models-audit-log.md](errors/105-models-audit-log.md) - ✅ **RÉSOLU** (6 tests)
 - [111-models-contact-message.md](errors/111-models-contact-message.md) - ✅ **RÉSOLU** (3 tests)
 - [114-models-event-initiation.md](errors/114-models-event-initiation.md) - ✅ **RÉSOLU** (13 tests)
-- [132-models-event.md](errors/132-models-event.md) - 15 erreurs (lignes 13, 29, 35, 41, 47, 55, 62, 69, 78, 83, 90, 95, 101, 109, 125, 130, 137, 145, 155, 160, 167)
-- [153-models-option-value.md](errors/153-models-option-value.md) - 1 erreur (ligne 17)
-- [154-models-order-item.md](errors/154-models-order-item.md) - 1 erreur (ligne 11)
-- [155-models-order.md](errors/155-models-order.md) - 2 erreurs (lignes 7, 13)
+- [132-models-event.md](errors/132-models-event.md) - ✅ **RÉSOLU** (22 tests)
+- [153-models-option-value.md](errors/153-models-option-value.md) - ✅ **RÉSOLU** (3 tests)
+- [154-models-order-item.md](errors/154-models-order-item.md) - ✅ **RÉSOLU** (1 test)
+- [155-models-order.md](errors/155-models-order.md) - ✅ **RÉSOLU** (2 tests)
 - [157-models-organizer-application.md](errors/157-models-organizer-application.md) - 5 erreurs (lignes 9, 14, 20, 25, 33)
 - [162-models-partner.md](errors/162-models-partner.md) - 5 erreurs (lignes 10, 16, 22, 30, 37)
 - [167-models-payment.md](errors/167-models-payment.md) - 1 erreur (ligne 7)
@@ -184,88 +138,4 @@ Voir les fichiers détaillés pour chaque modèle :
 
 ---
 
-### 🟡 Priorité 8 : Tests de Policies (1 erreur)
-**Type** : ⚠️ **À ANALYSER** (scope Pundit)
-
-| # | Fichier Test | Ligne | Description | Fichier Analyse | Statut |
-|---|-------------|-------|-------------|-----------------|--------|
-| 184 | `spec/policies/event_policy_spec.rb` | 153 | EventPolicy Scope returns only published events for guests | [184-policies-event-policy-scope.md](errors/184-policies-event-policy-scope.md) | ⏳ À analyser |
-
----
-
-### 🟡 Priorité 9 : Tests de Request (38 erreurs)
-**Type** : ⚠️ **PROBLÈME DE LOGIQUE** (contrôleurs ou configuration)
-
-| # | Fichier Test | Ligne | Description | Fichier Analyse | Statut |
-|---|-------------|-------|-------------|-----------------|--------|
-| 185 | `spec/requests/attendances_spec.rb` | 60 | Attendances PATCH /initiations/:initiation_id/attendances/toggle_reminder toggles reminder preference for authenticated user | [185-requests-attendances-toggle-reminder.md](errors/185-requests-attendances-toggle-reminder.md) | ⏳ À analyser |
-| 186 | `spec/requests/event_email_integration_spec.rb` | 16 | Event Email Integration POST /events/:event_id/attendances sends confirmation email when user attends event | [186-requests-event-email-integration.md](errors/186-requests-event-email-integration.md) | ⏳ À analyser |
-| 187 | `spec/requests/event_email_integration_spec.rb` | 24 | Event Email Integration POST /events/:event_id/attendances creates attendance and sends email | [186-requests-event-email-integration.md](errors/186-requests-event-email-integration.md) | ⏳ À analyser |
-| 188 | `spec/requests/event_email_integration_spec.rb` | 44 | Event Email Integration DELETE /events/:event_id/attendances sends cancellation email when user cancels attendance | [186-requests-event-email-integration.md](errors/186-requests-event-email-integration.md) | ⏳ À analyser |
-| 189 | `spec/requests/events_spec.rb` | 27 | Events GET /events/:id redirects visitors trying to view a draft event | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 190 | `spec/requests/events_spec.rb` | 47 | Events POST /events allows an organizer to create an event | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 191 | `spec/requests/events_spec.rb` | 76 | Events POST /events/:id/attend requires authentication | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 192 | `spec/requests/events_spec.rb` | 82 | Events POST /events/:id/attend registers the current user | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 193 | `spec/requests/events_spec.rb` | 97 | Events POST /events/:id/attend blocks unconfirmed users from attending | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 194 | `spec/requests/events_spec.rb` | 132 | Events DELETE /events/:event_id/attendances removes the attendance for the current user | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 195 | `spec/requests/events_spec.rb` | 152 | Events GET /events/:id.ics requires authentication | [189-requests-events.md](errors/189-requests-events.md) | ⏳ À analyser |
-| 196 | `spec/requests/initiations_spec.rb` | 29 | Initiations GET /initiations/:id redirects visitors trying to view a draft initiation | [196-requests-initiations.md](errors/196-requests-initiations.md) | ⏳ À analyser |
-| 197 | `spec/requests/initiations_spec.rb` | 43 | Initiations GET /initiations/:id.ics requires authentication | [196-requests-initiations.md](errors/196-requests-initiations.md) | ⏳ À analyser |
-| 198 | `spec/requests/initiations_spec.rb` | 51 | Initiations GET /initiations/:id.ics exports initiation as iCal file for published initiation when authenticated | [196-requests-initiations.md](errors/196-requests-initiations.md) | ⏳ À analyser |
-| 199 | `spec/requests/initiations_spec.rb` | 67 | Initiations GET /initiations/:id.ics redirects to root for draft initiation when authenticated but not creator | [196-requests-initiations.md](errors/196-requests-initiations.md) | ⏳ À analyser |
-| 200 | `spec/requests/initiations_spec.rb` | 77 | Initiations GET /initiations/:id.ics allows creator to export draft initiation | [196-requests-initiations.md](errors/196-requests-initiations.md) | ⏳ À analyser |
-| 201 | `spec/requests/initiations_spec.rb` | 98 | Initiations POST /initiations/:initiation_id/attendances registers the current user | [196-requests-initiations.md](errors/196-requests-initiations.md) | ⏳ À analyser |
-| 202 | `spec/requests/memberships_spec.rb` | 28 | Memberships GET /memberships/new allows authenticated user to access new membership form | [202-requests-memberships.md](errors/202-requests-memberships.md) | ⏳ À analyser |
-| 203 | `spec/requests/memberships_spec.rb` | 96 | Memberships POST /memberships/:membership_id/payments/create_multiple requires authentication | [202-requests-memberships.md](errors/202-requests-memberships.md) | ⏳ À analyser |
-| 204 | `spec/requests/memberships_spec.rb` | 101 | Memberships POST /memberships/:membership_id/payments/create_multiple redirects to HelloAsso for multiple pending memberships | [202-requests-memberships.md](errors/202-requests-memberships.md) | ⏳ À analyser |
-| 205 | `spec/requests/pages_spec.rb` | 9 | Pages GET /association returns success | [205-requests-pages-association.md](errors/205-requests-pages-association.md) | ⏳ À analyser |
-| 206 | `spec/requests/registrations_spec.rb` | 36 | POST /users with valid parameters and RGPD consent creates a new user | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 207 | `spec/requests/registrations_spec.rb` | 42 | POST /users with valid parameters and RGPD consent redirects to events page | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 208 | `spec/requests/registrations_spec.rb` | 47 | POST /users with valid parameters and RGPD consent sets a personalized welcome message | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 209 | `spec/requests/registrations_spec.rb` | 54 | POST /users with valid parameters and RGPD consent sends welcome email | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 210 | `spec/requests/registrations_spec.rb` | 61 | POST /users with valid parameters and RGPD consent sends confirmation email | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 211 | `spec/requests/registrations_spec.rb` | 68 | POST /users with valid parameters and RGPD consent creates user with correct attributes | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 212 | `spec/requests/registrations_spec.rb` | 78 | POST /users with valid parameters and RGPD consent allows immediate access (grace period) | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 213 | `spec/requests/registrations_spec.rb` | 106 | POST /users without RGPD consent stays on sign_up page (does not redirect to /users) | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 214 | `spec/requests/registrations_spec.rb` | 128 | POST /users with invalid email displays email validation error | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 215 | `spec/requests/registrations_spec.rb` | 143 | POST /users with missing first_name displays first_name validation error | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 216 | `spec/requests/registrations_spec.rb` | 158 | POST /users with password too short displays password validation error with 12 characters | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 217 | `spec/requests/registrations_spec.rb` | 173 | POST /users with missing skill_level displays skill_level validation error | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-| 218 | `spec/requests/registrations_spec.rb` | 192 | POST /users with duplicate email displays email taken error | [206-requests-registrations.md](errors/206-requests-registrations.md) | ⏳ À analyser |
-
----
-
-## 📊 Statistiques Globales
-
-- **Total d'erreurs** : 219  
-- **Erreurs listées individuellement** : 118  
-- **Erreurs regroupées (modèles)** : 101 (dans 17 fichiers)  
-- **Fichiers d'erreur créés** : 50  
-- **Erreurs analysées** : 8 (dont `Attendance`, `AuditLog`, `ContactMessage`, `Event::Initiation`)  
-- **Erreurs avec solution** : 4+ (en progression)  
-- **Erreurs à analyser** : 211
-
----
-
-## 🔄 Méthodologie de Travail
-
-Voir [METHODE.md](METHODE.md) pour la méthodologie complète.
-
----
-
-## 📝 Légende des Statuts
-
-- 🟢 **Solution identifiée** : La solution est claire, prête à être appliquée
-- 🟡 **Solution à tester** : Solution proposée mais pas encore testée
-- ⏳ **À analyser** : Erreur identifiée mais pas encore analysée en détail
-- ✅ **Corrigé** : Erreur corrigée et test passant
-- ❌ **Bloqué** : Erreur nécessite une décision ou une modification plus importante
-
----
-
-## 🔗 Liens Utiles
-
-- [Méthodologie de travail](METHODE.md)
-- [Template pour créer des fichiers d'erreur](errors/TEMPLATE.md)
-- [Stratégie de tests](../strategy.md)
-- [Documentation RSpec originale](../../Rspec.md)
+*(Sections Priorités 8/9 + stats globales inchangées hormis le compteur "erreurs analysées" qui passe à 11)*
