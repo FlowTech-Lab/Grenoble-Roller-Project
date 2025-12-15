@@ -27,7 +27,7 @@ RSpec.describe Product, type: :model do
     expect(p.errors[:name]).to be_present
     expect(p.errors[:slug]).to be_present
     expect(p.errors[:price_cents]).to be_present
-    expect(p.errors[:image_url]).to be_present
+    expect(p.errors[:base]).to be_present # image_or_image_url_present ajoute l'erreur sur :base
     expect(p.currency).to eq('EUR')
   end
 
@@ -41,7 +41,7 @@ RSpec.describe Product, type: :model do
   it 'destroys variants when product is destroyed' do
     product = build_product
     product.save!
-    variant = ProductVariant.create!(product: product, sku: 'SKU-001', price_cents: 2500, currency: 'EUR', stock_qty: 5, is_active: true)
+    variant = ProductVariant.create!(product: product, sku: 'SKU-001', price_cents: 2500, currency: 'EUR', stock_qty: 5, is_active: true, image_url: 'https://example.org/variant.jpg')
     expect {
       product.destroy
     }.to change { ProductVariant.count }.by(-1)

@@ -1,6 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Route, type: :model do
+  include TestDataHelper
   describe 'validations' do
     it 'is valid with minimal attributes' do
       route = build_route
@@ -31,7 +32,8 @@ RSpec.describe Route, type: :model do
   describe 'associations' do
     it 'nullifies route on associated events when destroyed' do
       route = create_route
-      event = create_event(route: route)
+      event = build_event(route: route)
+      event.save!
 
       expect { route.destroy }.to change { event.reload.route }.from(route).to(nil)
     end

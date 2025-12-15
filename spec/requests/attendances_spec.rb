@@ -4,11 +4,25 @@ require 'rails_helper'
 
 RSpec.describe 'Attendances', type: :request do
   include RequestAuthenticationHelper
+  include TestDataHelper
 
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
-  let(:user) { create(:user, role: role, confirmed_at: Time.current) }
-  let(:event) { create(:event, :published, :upcoming) }
-  let(:initiation) { create(:event_initiation, :published, :upcoming) }
+  let(:user) do
+    u = create_user(role: role, confirmed_at: Time.current)
+    # Créer une adhésion active pour l'utilisateur
+    create(:membership, user: u, status: :active, season: '2025-2026', start_date: Date.today.beginning_of_year, end_date: Date.today.end_of_year)
+    u
+  end
+  let(:event) do
+    e = build_event(status: 'published', start_at: 1.week.from_now)
+    e.save!
+    e
+  end
+  let(:initiation) do
+    e = build_event(type: 'Event::Initiation', status: 'published', start_at: 1.week.from_now, max_participants: 30, allow_non_member_discovery: false)
+    e.save!
+    e
+  end
   
   # Stubber l'envoi d'emails pour éviter les erreurs SMTP
   before do
@@ -17,7 +31,7 @@ RSpec.describe 'Attendances', type: :request do
   end
 
   describe 'PATCH /events/:event_id/attendances/toggle_reminder' do
-    let(:attendance) { create(:attendance, user: user, event: event, wants_reminder: false) }
+    let(:attendance) { create_attendance(user: user, event: event, wants_reminder: false) }
 
     it 'requires authentication' do
       patch toggle_reminder_event_attendances_path(event)
@@ -49,7 +63,7 @@ RSpec.describe 'Attendances', type: :request do
   end
 
   describe 'PATCH /initiations/:initiation_id/attendances/toggle_reminder' do
-    let(:attendance) { create(:attendance, user: user, event: initiation, wants_reminder: false) }
+    let(:attendance) { create_attendance(user: user, event: initiation, wants_reminder: false) }
 
     it 'requires authentication' do
       patch toggle_reminder_initiation_attendances_path(initiation)
