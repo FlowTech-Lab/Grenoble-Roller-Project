@@ -21,8 +21,28 @@
 ## 🔴 Erreur
 
 ```
+Failure/Error: super
+
 AbstractController::ActionNotFound:
   Could not find devise mapping for path "/users/password".
+  This may happen for two reasons:
+
+  1) You forgot to wrap your route inside the scope block. For example:
+
+     devise_scope :user do
+       get "/some/route" => "some_devise_controller"
+     end
+
+  2) You are testing a Devise controller bypassing the router.
+     If so, you can explicitly tell Devise which mapping to use:
+
+     @request.env["devise.mapping"] = Devise.mappings[:user]
+     
+# ./app/controllers/passwords_controller.rb:16:in 'PasswordsController#require_no_authentication'
+# ./spec/controllers/passwords_controller_spec.rb:162:in 'block (4 levels) in <top (required)>'
+
+Finished in 1.31 seconds (files took 1.59 seconds to load)
+1 example, 1 failure
 ```
 
 ---

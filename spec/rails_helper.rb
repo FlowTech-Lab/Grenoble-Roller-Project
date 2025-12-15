@@ -89,6 +89,19 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::IntegrationHelpers, type: :system
   config.include TestDataHelper if defined?(TestDataHelper)
+  
+  # Configurer le mapping Devise pour TOUS les tests de contrôleurs
+  # Cela doit être fait AVANT que les contrôleurs Devise ne soient initialisés
+  # Le mapping doit être dans request.env AVANT que prepend_before_action ne soit appelé
+  config.before(:each, type: :controller) do
+    @request.env["devise.mapping"] = Devise.mappings[:user]
+    request.env["devise.mapping"] = Devise.mappings[:user]
+    # Surcharger devise_mapping pour tous les contrôleurs Devise
+    # Cela doit être fait AVANT que assert_is_devise_resource! ne soit appelé
+    if described_class && described_class < Devise::DeviseController
+      allow_any_instance_of(described_class).to receive(:devise_mapping).and_return(Devise.mappings[:user])
+    end
+  end
 
   # Bypass CSRF protection in request specs
   config.before(:each, type: :request) do

@@ -123,9 +123,9 @@ Le test est mal configuré, pas un problème de logique applicative.
 
 ## 📊 Statut
 
-🟢 **SOLUTION IDENTIFIÉE**
+✅ **RÉSOLU**
 
-**Solution recommandée** : Solution 1 (nettoyer les emails dans le `before` block)
+**Solution appliquée** : Stub du callback `send_welcome_email_and_confirmation` dans le `let(:user)` pour éviter qu'il envoie un email lors de la création du user.
 
 ---
 

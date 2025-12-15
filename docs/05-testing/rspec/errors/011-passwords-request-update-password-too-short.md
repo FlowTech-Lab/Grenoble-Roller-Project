@@ -46,7 +46,9 @@
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU**
+
+**Solution appliquée** : Le test vérifie maintenant que le mot de passe n'a pas été changé et que la réponse indique une erreur de validation, au lieu de chercher un message spécifique dans le body HTML.
 
 ---
 

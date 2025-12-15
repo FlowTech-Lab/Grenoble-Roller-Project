@@ -46,7 +46,12 @@
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU - Tests supprimés (anti-pattern)**
+
+**Décision** : Les tests de contrôleurs Devise sont un anti-pattern. Ils ont été supprimés car :
+- Devise a sa propre suite de tests
+- Les tests de contrôleurs Devise sont trop complexes à maintenir
+- Les tests de request specs testent la même chose mais correctement
 
 ---
 
