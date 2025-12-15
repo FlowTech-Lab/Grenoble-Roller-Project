@@ -31,35 +31,48 @@ class EventsController < ApplicationController
   end
 
   def show
-    authorize @event
-    # Rediriger si l'événement n'est pas visible (publié ou annulé) et que l'utilisateur n'est pas modo+ ou créateur
-    unless @event.published? || @event.canceled? || can_moderate? || @event.creator_user_id == current_user&.id
-      redirect_to events_path, alert: "Cet événement n'est pas encore publié."
-    end
-    # Récupérer toutes les attendances de l'utilisateur (parent + enfants)
-    if user_signed_in?
-      @user_attendances = @event.attendances.where(user: current_user).includes(:child_membership)
-      @user_attendance = @user_attendances.find_by(child_membership_id: nil) # Inscription parent
-      @child_attendances = @user_attendances.where.not(child_membership_id: nil) # Inscriptions enfants
-      
-      # Charger les entrées de liste d'attente de l'utilisateur
-      @user_waitlist_entries = @event.waitlist_entries.where(user: current_user).active.includes(:child_membership)
-      @user_waitlist_entry = @user_waitlist_entries.find_by(child_membership_id: nil) # Entrée parent
-      @child_waitlist_entries = @user_waitlist_entries.where.not(child_membership_id: nil) # Entrées enfants
-    else
-      @user_attendances = Attendance.none
-      @user_attendance = nil
-      @child_attendances = Attendance.none
-      @user_waitlist_entries = WaitlistEntry.none
-      @user_waitlist_entry = nil
-      @child_waitlist_entries = WaitlistEntry.none
-    end
-    @can_register_child = can_register_child?
-
     respond_to do |format|
-      format.html
+      format.html do
+        # Vérifier les permissions avant de continuer
+        unless policy(@event).show?
+          redirect_to root_path, alert: "Cet événement n'est pas accessible."
+          return
+        end
+        authorize @event
+        
+        # Rediriger si l'événement n'est pas visible (publié ou annulé) et que l'utilisateur n'est pas modo+ ou créateur
+        unless @event.published? || @event.canceled? || can_moderate? || @event.creator_user_id == current_user&.id
+          redirect_to events_path, alert: "Cet événement n'est pas encore publié."
+          return
+        end
+        # Récupérer toutes les attendances de l'utilisateur (parent + enfants)
+        if user_signed_in?
+          @user_attendances = @event.attendances.where(user: current_user).includes(:child_membership)
+          @user_attendance = @user_attendances.find_by(child_membership_id: nil) # Inscription parent
+          @child_attendances = @user_attendances.where.not(child_membership_id: nil) # Inscriptions enfants
+          
+          # Charger les entrées de liste d'attente de l'utilisateur
+          @user_waitlist_entries = @event.waitlist_entries.where(user: current_user).active.includes(:child_membership)
+          @user_waitlist_entry = @user_waitlist_entries.find_by(child_membership_id: nil) # Entrée parent
+          @child_waitlist_entries = @user_waitlist_entries.where.not(child_membership_id: nil) # Entrées enfants
+        else
+          @user_attendances = Attendance.none
+          @user_attendance = nil
+          @child_attendances = Attendance.none
+          @user_waitlist_entries = WaitlistEntry.none
+          @user_waitlist_entry = nil
+          @child_waitlist_entries = WaitlistEntry.none
+        end
+        @can_register_child = can_register_child?
+      end
+      
       format.ics do
         authenticate_user!
+        # Pour les événements en draft, vérifier explicitement les permissions avant authorize
+        unless @event.published? || @event.canceled? || (user_signed_in? && (can_moderate? || @event.creator_user_id == current_user.id))
+          redirect_to root_path, alert: "Cet événement n'est pas accessible."
+          return
+        end
         authorize @event, :show?
 
         calendar = Icalendar::Calendar.new

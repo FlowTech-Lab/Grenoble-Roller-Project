@@ -82,9 +82,26 @@ Voir les fichiers détaillés pour chaque modèle :
 
 ---
 
-### 🟡 Priorité 9 : Tests de Request (38 erreurs)
+### 🟡 Priorité 9 : Tests de Request (38 erreurs) ✅ RÉSOLU
 
-*(inchangée)*
+**Fichiers corrigés et documentés** :
+- [184-requests-attendances.md](errors/184-requests-attendances.md) - ✅ **RÉSOLU** (5 tests)
+- [185-requests-events.md](errors/185-requests-events.md) - ✅ **RÉSOLU** (15 tests)
+- [186-requests-initiations.md](errors/186-requests-initiations.md) - ✅ **RÉSOLU** (9 tests)
+- [187-requests-registrations.md](errors/187-requests-registrations.md) - ✅ **RÉSOLU** (23 tests)
+- [188-requests-event-email-integration.md](errors/188-requests-event-email-integration.md) - ✅ **RÉSOLU** (3 tests)
+- [189-requests-memberships.md](errors/189-requests-memberships.md) - ✅ **RÉSOLU** (12 tests)
+- [190-requests-pages.md](errors/190-requests-pages.md) - ✅ **RÉSOLU** (2 tests)
+
+**Fichiers sans erreurs** (passent déjà) :
+- `spec/requests/products_spec.rb` - ✅ **PASSE** (tests déjà OK)
+- `spec/requests/carts_spec.rb` - ✅ **PASSE** (tests déjà OK)
+- `spec/requests/orders_spec.rb` - ✅ **PASSE** (tests déjà OK)
+- `spec/requests/rack_attack_spec.rb` - ✅ **PASSE** (tests déjà OK)
+- `spec/requests/waitlist_entries_spec.rb` - ✅ **PASSE** (tests déjà OK)
+- `spec/requests/passwords_spec.rb` - ✅ **PASSE** (tests déjà OK)
+
+**Total** : 125 tests de request passent maintenant (69 corrigés + 56 déjà OK)
 
 ---
 
