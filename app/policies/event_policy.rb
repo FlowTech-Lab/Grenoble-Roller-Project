@@ -26,7 +26,8 @@ class EventPolicy < ApplicationPolicy
   end
 
   def destroy?
-    admin? || owner?
+    # Seul un admin peut supprimer un événement
+    admin?
   end
 
   def reject?

@@ -162,7 +162,12 @@ RSpec.describe 'Event Management', type: :system do
         login_as organizer
       end
 
-      xit 'permet de supprimer l\'événement avec confirmation', js: true do # SKIP: ChromeDriver non disponible
+      it 'n\'affiche pas le bouton Supprimer (seul un admin peut supprimer)' do
+        visit event_path(event)
+        expect(page).not_to have_button('Supprimer')
+      end
+
+      xit 'permet de supprimer l\'événement avec confirmation', js: true do # SKIP: ChromeDriver non disponible - OBSOLÈTE (seul admin peut supprimer)
         visit event_path(event)
 
         # Cliquer sur le bouton de suppression qui ouvre le modal

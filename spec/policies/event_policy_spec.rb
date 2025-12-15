@@ -66,8 +66,8 @@ RSpec.describe EventPolicy do
   end
 
   describe '#destroy?' do
-    it 'allows the owner' do
-      expect(policy.destroy?).to be(true)
+    it 'denies the owner' do
+      expect(policy.destroy?).to be(false)
     end
 
     it 'allows an admin' do
@@ -78,6 +78,11 @@ RSpec.describe EventPolicy do
     it 'denies a regular member' do
       member = create_user
       expect(described_class.new(member, event).destroy?).to be(false)
+    end
+
+    it 'denies an organizer who is not admin' do
+      organizer = create_user(role: organizer_role)
+      expect(described_class.new(organizer, event).destroy?).to be(false)
     end
   end
 
