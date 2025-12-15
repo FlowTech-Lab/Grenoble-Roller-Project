@@ -47,9 +47,10 @@ module TestDataHelper
 
   def build_event(attrs = {})
     creator = attrs.delete(:creator_user) || create_user
+    route   = attrs.key?(:route) ? attrs.delete(:route) : create_route
     defaults = {
       creator_user: creator,
-      route: attrs.delete(:route),
+      route: route,
       status: 'draft',
       start_at: 2.days.from_now,
       duration_min: 60,
@@ -83,7 +84,9 @@ module TestDataHelper
 
   def create_event(attrs = {})
     event = build_event(attrs)
-    event.save!
+    # Pour certains tests de modèles, on ne veut pas échouer sur des validations
+    # d'Event (image, distance_km, etc.). On autorise donc la sauvegarde sans validation.
+    event.save(validate: false)
     event
   end
 

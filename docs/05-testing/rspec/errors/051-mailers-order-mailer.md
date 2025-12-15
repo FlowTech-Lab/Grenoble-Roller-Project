@@ -1,7 +1,7 @@
 # Erreur #051-080 : Mailers OrderMailer (30 erreurs)
 
 **Date d'analyse** : 2025-01-13  
-**Priorité** : 🟡 Priorité 6  
+**Priorité** : 🟢 Priorité 6  
 **Catégorie** : Tests de Mailers
 
 ---
@@ -19,36 +19,41 @@
 
 ---
 
-## 🔴 Erreur
+## 🔴 Erreur (initiale)
 
-⏳ **À ANALYSER** - Exécuter les tests pour voir les erreurs exactes
+- Specs générées/testées sur un squelette simple ne correspondaient plus au mailer réel (`OrderMailer`) qui envoie plusieurs types d’emails (confirmation, payé, annulé, préparation, expédié, remboursement, etc.) avec HTML + texte et URLs hashid.
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ⏳ Erreurs non encore analysées
-- 🔍 Problème probable avec les templates de mailers
-- ⚠️ Probablement problème avec les helpers `_path` vs `_url` dans les templates
+- ✅ `OrderMailer` utilise des templates riches (HTML + texte) et des URLs (`order_url`, `orders_url`) avec hashid.
+- ✅ Les vues affichent ID de commande, montants, statuts, liens vers `/orders` ou la commande.
+- ❌ Les anciens tests vérifiaient des chaînes trop simples / pas décodées.
 
 ---
 
-## 💡 Solutions Proposées
+## 💡 Solutions appliquées
 
-⏳ **À DÉTERMINER** après analyse
+1. Création d’`order` valides via les factories (user avec rôle, `total_cents`, `currency`).
+2. Décodage systématique du body (multipart) dans les specs pour tester le contenu.
+3. Vérification :
+   - du destinataire (`user.email`),
+   - du sujet (contient `"##{order.id}"` + texte FR approprié),
+   - de la présence d’informations clés (montant, statut, hashid / URL `/orders`).
 
 ---
 
 ## 🎯 Type de Problème
 
-⚠️ **À ANALYSER** (probablement ⚠️ **PROBLÈME DE LOGIQUE** - templates ou helpers)
+⚠️ **PROBLÈME DE LOGIQUE / TEST** (spécifications non alignées avec les templates réels) – corrigé.
 
 ---
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU** – Tous les tests `order_mailer_spec` passent.
 
 ---
 

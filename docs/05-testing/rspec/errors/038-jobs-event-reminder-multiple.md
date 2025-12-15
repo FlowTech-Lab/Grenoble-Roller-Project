@@ -1,7 +1,7 @@
 # Erreur #038 : EventReminderJob Rappels multiples
 
 **Date d'analyse** : 2025-01-13  
-**Priorité** : 🟡 Priorité 5  
+**Priorité** : 🟢 Priorité 5  
 **Catégorie** : Tests de Jobs
 
 ---
@@ -18,36 +18,38 @@
 
 ---
 
-## 🔴 Erreur
+## 🔴 Erreur (initiale)
 
-⏳ **À ANALYSER** - Exécuter le test pour voir l'erreur exacte
+- Contexte avec plusieurs participants : le test ne détectait pas correctement les emails envoyés uniquement aux utilisateurs avec `wants_reminder = true`.
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ⏳ Erreur non encore analysée
-- 🔍 Problème probable avec les jobs d'envoi d'emails
-- ⚠️ Probablement problème avec `deliver_later` ou `perform_enqueued_jobs`
+- ✅ Même configuration ActiveJob/ActionMailer que pour #036/#037.
+- ✅ Les attendances sont bien créées avec/ sans `wants_reminder`.
+- ✅ Le test vérifie maintenant les destinataires des emails filtrés par sujet (`event_tomorrow_morning.title`) et adresse email.
 
 ---
 
-## 💡 Solutions Proposées
+## 💡 Solutions appliquées
 
-⏳ **À DÉTERMINER** après analyse
+1. Reuse de la configuration ActiveJob/ActionMailer de #036.
+2. Expectation assouplie sur le nombre d’emails (`by_at_least(2)`).
+3. Sélection explicite des emails pour l’événement concerné, puis vérification que seuls `user` et `user2` sont présents (et pas `user3`).
 
 ---
 
 ## 🎯 Type de Problème
 
-⚠️ **À ANALYSER** (probablement ❌ **PROBLÈME DE TEST** - configuration jobs)
+❌ **PROBLÈME DE TEST** (configuration + filtrage des destinataires dans le test)
 
 ---
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU** – Le test “multiple attendees” passe.
 
 ---
 

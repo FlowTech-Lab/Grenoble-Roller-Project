@@ -1,7 +1,7 @@
 # Erreur #043-050 : Mailers MembershipMailer (8 erreurs)
 
 **Date d'analyse** : 2025-01-13  
-**Priorité** : 🟡 Priorité 6  
+**Priorité** : 🟢 Priorité 6  
 **Catégorie** : Tests de Mailers
 
 ---
@@ -27,36 +27,40 @@
 
 ---
 
-## 🔴 Erreur
+## 🔴 Erreur (initiale)
 
-⏳ **À ANALYSER** - Exécuter les tests pour voir les erreurs exactes
+- Specs générées par rails g mailer (`subject == "Activated"`, body `"Hi"`, destinataires `to@example.org`) ne correspondaient plus au mailer réel, qui envoie des emails d’adhésion avec sujet/contextes en français.
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ⏳ Erreurs non encore analysées
-- 🔍 Problème probable avec les templates de mailers
-- ⚠️ Probablement problème avec les helpers `_path` vs `_url` dans les templates
+- ✅ `MembershipMailer` attend un objet `membership` et construit le sujet à partir de la saison (`"✅ Adhésion Saison 2025-2026 - Bienvenue !"`, etc.).
+- ✅ Les vues HTML/texte affichent saison, montant, dates, etc.
+- ❌ Les specs d’origine testaient le squelette généré par Rails, plus du tout aligné.
 
 ---
 
-## 💡 Solutions Proposées
+## 💡 Solutions appliquées
 
-⏳ **À DÉTERMINER** après analyse
+1. Création d’un `membership` valide via la factory (`create(:membership, user: user, season: '2025-2026')`).
+2. Mise à jour des tests pour vérifier :
+   - le sujet contient `"Adhésion Saison #{membership.season}"` + mots-clés (`Bienvenue`, `Expirée`, `Renouvellement`, `Paiement`…),
+   - le destinataire est `user.email`,
+   - le body décodé contient saison / informations d’adhésion.
 
 ---
 
 ## 🎯 Type de Problème
 
-⚠️ **À ANALYSER** (probablement ⚠️ **PROBLÈME DE LOGIQUE** - templates ou helpers)
+⚠️ **PROBLÈME DE LOGIQUE / TEST** (specs non alignés avec l’implémentation réelle) – corrigé.
 
 ---
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU** – Tous les tests `membership_mailer_spec` passent.
 
 ---
 

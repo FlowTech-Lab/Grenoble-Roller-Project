@@ -180,7 +180,8 @@ RSpec.describe Attendance, type: :model do
     describe 'can_register_to_initiation' do
       # Par défaut, on ne permet PAS la découverte non-adhérents,
       # pour tester le comportement "adhésion requise"
-      let(:initiation) { create(:event_initiation, max_participants: 30, allow_non_member_discovery: false) }
+      # On utilise build pour ne pas dépendre de la persistance en base de l'événement
+      let(:initiation) { build(:event_initiation, max_participants: 30, allow_non_member_discovery: false) }
       let(:user) { create_user }
 
       context 'when user has active membership' do
@@ -196,7 +197,8 @@ RSpec.describe Attendance, type: :model do
 
       context 'when user has child membership' do
         before do
-          create(:membership, user: user, status: :active, season: '2025-2026', is_child_membership: true)
+          # Utiliser le trait :child pour respecter toutes les validations des adhésions enfants
+          create(:membership, :child, user: user, status: :active, season: '2025-2026')
         end
 
         it 'allows registration with child membership' do

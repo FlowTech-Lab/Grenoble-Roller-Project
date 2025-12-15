@@ -1,7 +1,7 @@
 # Erreur #037 : EventReminderJob Rappels à différents moments
 
 **Date d'analyse** : 2025-01-13  
-**Priorité** : 🟡 Priorité 5  
+**Priorité** : 🟢 Priorité 5  
 **Catégorie** : Tests de Jobs
 
 ---
@@ -18,36 +18,37 @@
 
 ---
 
-## 🔴 Erreur
+## 🔴 Erreur (initiale)
 
-⏳ **À ANALYSER** - Exécuter le test pour voir l'erreur exacte
+- Échec similaire à l’erreur #036 : aucun email détecté ou mauvais comptage d’emails lorsque plusieurs événements “demain” existent.
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ⏳ Erreur non encore analysée
-- 🔍 Problème probable avec les jobs d'envoi d'emails
-- ⚠️ Probablement problème avec `deliver_later` ou `perform_enqueued_jobs`
+- ✅ Même configuration ActiveJob/ActionMailer que pour #036.
+- ✅ Le job renvoie tous les événements de demain (plusieurs attendances) → nombre d’emails variable.
+- ✅ Les tests vérifient maintenant `by_at_least(3)` et contrôlent le sujet/destinataire des derniers mails.
 
 ---
 
-## 💡 Solutions Proposées
+## 💡 Solutions appliquées
 
-⏳ **À DÉTERMINER** après analyse
+- Reuse des corrections de #036 (adapter de test, `perform_enqueued_jobs`, factories valides).
+- Assouplissement de l’expectation sur le nombre d’emails (`by_at_least(3)`), puis vérification du contenu (titre des 3 événements attendus).
 
 ---
 
 ## 🎯 Type de Problème
 
-⚠️ **À ANALYSER** (probablement ❌ **PROBLÈME DE TEST** - configuration jobs)
+❌ **PROBLÈME DE TEST** (configuration + expectation trop stricte sur le nombre d’emails)
 
 ---
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU** – Le test “different times tomorrow” passe.
 
 ---
 

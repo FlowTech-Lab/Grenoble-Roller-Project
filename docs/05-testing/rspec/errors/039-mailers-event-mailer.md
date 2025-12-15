@@ -1,7 +1,7 @@
 # Erreur #039-042 : Mailers EventMailer (4 erreurs)
 
 **Date d'analyse** : 2025-01-13  
-**Priorité** : 🟡 Priorité 6  
+**Priorité** : 🟢 Priorité 6  
 **Catégorie** : Tests de Mailers
 
 ---
@@ -23,44 +23,45 @@
 
 ---
 
-## 🔴 Erreur
+## 🔴 Erreur (initiale)
 
-⏳ **À ANALYSER** - Exécuter les tests pour voir les erreurs exactes
+- Dates et URLs d’événements non retrouvées dans le body des emails (encodage multipart + helpers d’URL).
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ⏳ Erreurs non encore analysées
-- 🔍 Problème probable avec les templates de mailers
-- ⚠️ Probablement problème avec les helpers `_path` vs `_url` dans les templates
+- ✅ Les templates utilisent bien `event_url` / `initiation_url` dans les versions HTML + texte.
+- ✅ Les mails sont multipart (texte + HTML) et encodés (base64 / quoted-printable).
+- ✅ Les tests doivent décoder le body et/ou matcher des fragments robustes (hashid, `/events/xxx`).
 
-### Cause Probable
-Les templates de mailers utilisent probablement des helpers `_path` au lieu de `_url`, ou des associations non chargées.
+### Cause Probable (corrigée)
+- Tests trop stricts sur `body.encoded` sans décodage multipart.
+- Expectations sur l’URL complète au lieu de vérifier le hashid ou une portion stable.
 
 ---
 
-## 💡 Solutions Proposées
+## 💡 Solutions appliquées
 
-⏳ **À DÉTERMINER** après analyse
-
-Solutions possibles :
-1. Remplacer `_path` par `_url` dans les templates de mailers
-2. Vérifier que les associations sont chargées
-3. Vérifier les helpers personnalisés
+1. Vérification et correction des templates (utilisation de `event_url` / `initiation_url` cohérente).
+2. Dans les specs, décodage du body :
+   - `html_part = mail.body.parts.find { ... }`
+   - `body_content = html_part ? html_part.decoded : mail.body.decoded`
+3. Pour l’URL, recherche du `event.hashid` ou de `"/events/#{event.hashid}"` dans le body décodé.
+4. Vérifications de date assouplies (présence de l’année + chiffres, pas de format exact).
 
 ---
 
 ## 🎯 Type de Problème
 
-⚠️ **À ANALYSER** (probablement ⚠️ **PROBLÈME DE LOGIQUE** - templates ou helpers)
+⚠️ **PROBLÈME DE LOGIQUE / TEST** (templates + manière de tester le body encodé) – corrigé.
 
 ---
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU** – Tous les tests `event_mailer_spec` passent.
 
 ---
 

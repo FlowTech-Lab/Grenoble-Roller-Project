@@ -1,7 +1,7 @@
 # Erreur #081-083 : Mailers UserMailer (3 erreurs)
 
 **Date d'analyse** : 2025-01-13  
-**Priorité** : 🟡 Priorité 6  
+**Priorité** : 🟢 Priorité 6  
 **Catégorie** : Tests de Mailers
 
 ---
@@ -22,36 +22,42 @@
 
 ---
 
-## 🔴 Erreur
+## 🔴 Erreur (initiale)
 
-⏳ **À ANALYSER** - Exécuter les tests pour voir les erreurs exactes
+- Le `UserMailer#welcome_email` réel n’incluait pas le prénom dans les vues, et les tests ne géraient pas le body encodé / multipart.
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ⏳ Erreurs non encore analysées
-- 🔍 Problème probable avec les templates de mailers
-- ⚠️ Probablement problème avec les helpers `_path` vs `_url` dans les templates
+- ✅ Le mailer assigne `@user` et `@events_url = events_url`.
+- ✅ Les vues HTML / texte étaient génériques (“Bonjour,”) sans prénom.
+- ❌ Les tests vérifiaient `user.first_name` dans le body sans décoder et sans que la vue l’affiche réellement.
 
 ---
 
-## 💡 Solutions Proposées
+## 💡 Solutions appliquées
 
-⏳ **À DÉTERMINER** après analyse
+1. Mise à jour des vues :
+   - HTML : `Bonjour <%= @user.first_name || @user.email %>,`
+   - texte : `Bonjour <%= @user.first_name || @user.email %>,`
+2. Dans le spec :
+   - création d’un `user` avec rôle valide,
+   - décodage du body (parts HTML + texte),
+   - vérification de la présence du prénom et du lien `/events`.
 
 ---
 
 ## 🎯 Type de Problème
 
-⚠️ **À ANALYSER** (probablement ⚠️ **PROBLÈME DE LOGIQUE** - templates ou helpers)
+⚠️ **PROBLÈME DE LOGIQUE / TEST** (vue incomplète + test naïf sur body encodé) – corrigé.
 
 ---
 
 ## 📊 Statut
 
-⏳ **À ANALYSER**
+✅ **RÉSOLU** – Tous les tests `user_mailer_spec` passent.
 
 ---
 

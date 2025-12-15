@@ -96,67 +96,67 @@ Chaque erreur a son propre fichier détaillé dans le dossier `errors/`.
 
 ---
 
-### 🟡 Priorité 5 : Tests de Jobs (3 erreurs)
-**Type** : ⚠️ **À ANALYSER** (jobs d'envoi d'emails)
+### 🟢 Priorité 5 : Tests de Jobs (3 erreurs) ✅ RÉSOLU
+**Type** : ⚙️ **JOBS D'ENVOI D'EMAILS**
 
 | # | Fichier Test | Ligne | Description | Fichier Analyse | Statut |
 |---|-------------|-------|-------------|-----------------|--------|
-| 36 | `spec/jobs/event_reminder_job_spec.rb` | 25 | EventReminderJob#perform when event is tomorrow sends reminder email to active attendees with wants_reminder = true | [036-jobs-event-reminder-send.md](errors/036-jobs-event-reminder-send.md) | ⏳ À analyser |
-| 37 | `spec/jobs/event_reminder_job_spec.rb` | 38 | EventReminderJob#perform when event is tomorrow sends reminder for events at different times tomorrow | [037-jobs-event-reminder-different-times.md](errors/037-jobs-event-reminder-different-times.md) | ⏳ À analyser |
-| 38 | `spec/jobs/event_reminder_job_spec.rb` | 110 | EventReminderJob#perform with multiple attendees sends reminder only to attendees with wants_reminder = true | [038-jobs-event-reminder-multiple.md](errors/038-jobs-event-reminder-multiple.md) | ⏳ À analyser |
+| 36 | `spec/jobs/event_reminder_job_spec.rb` | 25 | EventReminderJob#perform when event is tomorrow sends reminder email to active attendees with wants_reminder = true | [036-jobs-event-reminder-send.md](errors/036-jobs-event-reminder-send.md) | ✅ Résolu |
+| 37 | `spec/jobs/event_reminder_job_spec.rb` | 38 | EventReminderJob#perform when event is tomorrow sends reminder for events at different times tomorrow | [037-jobs-event-reminder-different-times.md](errors/037-jobs-event-reminder-different-times.md) | ✅ Résolu |
+| 38 | `spec/jobs/event_reminder_job_spec.rb` | 110 | EventReminderJob#perform with multiple attendees sends reminder only to attendees with wants_reminder = true | [038-jobs-event-reminder-multiple.md](errors/038-jobs-event-reminder-multiple.md) | ✅ Résolu |
 
 ---
 
-### 🟡 Priorité 6 : Tests de Mailers (35 erreurs)
-**Type** : ⚠️ **PROBLÈME DE LOGIQUE** (templates ou helpers)
+### 🟢 Priorité 6 : Tests de Mailers (35 erreurs) ✅ RÉSOLU
+**Type** : ✉️ **TEMPLATES & HELPERS MAILERS**
 
 | # | Fichier Test | Ligne | Description | Fichier Analyse | Statut |
 |---|-------------|-------|-------------|-----------------|--------|
-| 39 | `spec/mailers/event_mailer_spec.rb` | 28 | EventMailer#attendance_confirmed includes event date in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ⏳ À analyser |
-| 40 | `spec/mailers/event_mailer_spec.rb` | 35 | EventMailer#attendance_confirmed includes event URL in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ⏳ À analyser |
-| 41 | `spec/mailers/event_mailer_spec.rb` | 100 | EventMailer#attendance_cancelled includes event date in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ⏳ À analyser |
-| 42 | `spec/mailers/event_mailer_spec.rb` | 107 | EventMailer#attendance_cancelled includes event URL in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ⏳ À analyser |
-| 43 | `spec/mailers/membership_mailer_spec.rb` | 7 | MembershipMailer activated renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 44 | `spec/mailers/membership_mailer_spec.rb` | 13 | MembershipMailer activated renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 45 | `spec/mailers/membership_mailer_spec.rb` | 21 | MembershipMailer expired renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 46 | `spec/mailers/membership_mailer_spec.rb` | 27 | MembershipMailer expired renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 47 | `spec/mailers/membership_mailer_spec.rb` | 35 | MembershipMailer renewal_reminder renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 48 | `spec/mailers/membership_mailer_spec.rb` | 41 | MembershipMailer renewal_reminder renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 49 | `spec/mailers/membership_mailer_spec.rb` | 49 | MembershipMailer payment_failed renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 50 | `spec/mailers/membership_mailer_spec.rb` | 55 | MembershipMailer payment_failed renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ⏳ À analyser |
-| 51 | `spec/mailers/order_mailer_spec.rb` | 11 | OrderMailer#order_confirmation sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 52 | `spec/mailers/order_mailer_spec.rb` | 15 | OrderMailer#order_confirmation includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 53 | `spec/mailers/order_mailer_spec.rb` | 20 | OrderMailer#order_confirmation includes order details in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 54 | `spec/mailers/order_mailer_spec.rb` | 25 | OrderMailer#order_confirmation includes user first name in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 55 | `spec/mailers/order_mailer_spec.rb` | 29 | OrderMailer#order_confirmation includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 56 | `spec/mailers/order_mailer_spec.rb` | 33 | OrderMailer#order_confirmation has HTML content | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 57 | `spec/mailers/order_mailer_spec.rb` | 38 | OrderMailer#order_confirmation has text content as fallback | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 58 | `spec/mailers/order_mailer_spec.rb` | 48 | OrderMailer#order_paid sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 59 | `spec/mailers/order_mailer_spec.rb` | 52 | OrderMailer#order_paid includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 60 | `spec/mailers/order_mailer_spec.rb` | 57 | OrderMailer#order_paid includes payment confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 61 | `spec/mailers/order_mailer_spec.rb` | 62 | OrderMailer#order_paid includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 62 | `spec/mailers/order_mailer_spec.rb` | 71 | OrderMailer#order_cancelled sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 63 | `spec/mailers/order_mailer_spec.rb` | 75 | OrderMailer#order_cancelled includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 64 | `spec/mailers/order_mailer_spec.rb` | 80 | OrderMailer#order_cancelled includes cancellation information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 65 | `spec/mailers/order_mailer_spec.rb` | 85 | OrderMailer#order_cancelled includes orders URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 66 | `spec/mailers/order_mailer_spec.rb` | 94 | OrderMailer#order_preparation sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 67 | `spec/mailers/order_mailer_spec.rb` | 98 | OrderMailer#order_preparation includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 68 | `spec/mailers/order_mailer_spec.rb` | 103 | OrderMailer#order_preparation includes preparation information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 69 | `spec/mailers/order_mailer_spec.rb` | 108 | OrderMailer#order_preparation includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 70 | `spec/mailers/order_mailer_spec.rb` | 117 | OrderMailer#order_shipped sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 71 | `spec/mailers/order_mailer_spec.rb` | 121 | OrderMailer#order_shipped includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 72 | `spec/mailers/order_mailer_spec.rb` | 126 | OrderMailer#order_shipped includes shipping confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 73 | `spec/mailers/order_mailer_spec.rb` | 131 | OrderMailer#order_shipped includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 74 | `spec/mailers/order_mailer_spec.rb` | 140 | OrderMailer#refund_requested sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 75 | `spec/mailers/order_mailer_spec.rb` | 144 | OrderMailer#refund_requested includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 76 | `spec/mailers/order_mailer_spec.rb` | 149 | OrderMailer#refund_requested includes refund request information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 77 | `spec/mailers/order_mailer_spec.rb` | 159 | OrderMailer#refund_confirmed sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 78 | `spec/mailers/order_mailer_spec.rb` | 163 | OrderMailer#refund_confirmed includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 79 | `spec/mailers/order_mailer_spec.rb` | 168 | OrderMailer#refund_confirmed includes refund confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 80 | `spec/mailers/order_mailer_spec.rb` | 173 | OrderMailer#refund_confirmed includes orders URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ⏳ À analyser |
-| 81 | `spec/mailers/user_mailer_spec.rb` | 17 | UserMailer#welcome_email includes user first name in body | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ⏳ À analyser |
-| 82 | `spec/mailers/user_mailer_spec.rb` | 25 | UserMailer#welcome_email has HTML content | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ⏳ À analyser |
-| 83 | `spec/mailers/user_mailer_spec.rb` | 30 | UserMailer#welcome_email has text content as fallback | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ⏳ À analyser |
+| 39 | `spec/mailers/event_mailer_spec.rb` | 28 | EventMailer#attendance_confirmed includes event date in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
+| 40 | `spec/mailers/event_mailer_spec.rb` | 35 | EventMailer#attendance_confirmed includes event URL in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
+| 41 | `spec/mailers/event_mailer_spec.rb` | 100 | EventMailer#attendance_cancelled includes event date in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
+| 42 | `spec/mailers/event_mailer_spec.rb` | 107 | EventMailer#attendance_cancelled includes event URL in body | [039-mailers-event-mailer.md](errors/039-mailers-event-mailer.md) | ✅ Résolu |
+| 43 | `spec/mailers/membership_mailer_spec.rb` | 7 | MembershipMailer activated renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 44 | `spec/mailers/membership_mailer_spec.rb` | 13 | MembershipMailer activated renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 45 | `spec/mailers/membership_mailer_spec.rb` | 21 | MembershipMailer expired renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 46 | `spec/mailers/membership_mailer_spec.rb` | 27 | MembershipMailer expired renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 47 | `spec/mailers/membership_mailer_spec.rb` | 35 | MembershipMailer renewal_reminder renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 48 | `spec/mailers/membership_mailer_spec.rb` | 41 | MembershipMailer renewal_reminder renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 49 | `spec/mailers/membership_mailer_spec.rb` | 49 | MembershipMailer payment_failed renders the headers | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 50 | `spec/mailers/membership_mailer_spec.rb` | 55 | MembershipMailer payment_failed renders the body | [043-mailers-membership-mailer.md](errors/043-mailers-membership-mailer.md) | ✅ Résolu |
+| 51 | `spec/mailers/order_mailer_spec.rb` | 11 | OrderMailer#order_confirmation sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 52 | `spec/mailers/order_mailer_spec.rb` | 15 | OrderMailer#order_confirmation includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 53 | `spec/mailers/order_mailer_spec.rb` | 20 | OrderMailer#order_confirmation includes order details in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 54 | `spec/mailers/order_mailer_spec.rb` | 25 | OrderMailer#order_confirmation includes user first name in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 55 | `spec/mailers/order_mailer_spec.rb` | 29 | OrderMailer#order_confirmation includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 56 | `spec/mailers/order_mailer_spec.rb` | 33 | OrderMailer#order_confirmation has HTML content | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 57 | `spec/mailers/order_mailer_spec.rb` | 38 | OrderMailer#order_confirmation has text content as fallback | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 58 | `spec/mailers/order_mailer_spec.rb` | 48 | OrderMailer#order_paid sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 59 | `spec/mailers/order_mailer_spec.rb` | 52 | OrderMailer#order_paid includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 60 | `spec/mailers/order_mailer_spec.rb` | 57 | OrderMailer#order_paid includes payment confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 61 | `spec/mailers/order_mailer_spec.rb` | 62 | OrderMailer#order_paid includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 62 | `spec/mailers/order_mailer_spec.rb` | 71 | OrderMailer#order_cancelled sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 63 | `spec/mailers/order_mailer_spec.rb` | 75 | OrderMailer#order_cancelled includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 64 | `spec/mailers/order_mailer_spec.rb` | 80 | OrderMailer#order_cancelled includes cancellation information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 65 | `spec/mailers/order_mailer_spec.rb` | 85 | OrderMailer#order_cancelled includes orders URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 66 | `spec/mailers/order_mailer_spec.rb` | 94 | OrderMailer#order_preparation sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 67 | `spec/mailers/order_mailer_spec.rb` | 98 | OrderMailer#order_preparation includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 68 | `spec/mailers/order_mailer_spec.rb` | 103 | OrderMailer#order_preparation includes preparation information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 69 | `spec/mailers/order_mailer_spec.rb` | 108 | OrderMailer#order_preparation includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 70 | `spec/mailers/order_mailer_spec.rb` | 117 | OrderMailer#order_shipped sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 71 | `spec/mailers/order_mailer_spec.rb` | 121 | OrderMailer#order_shipped includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 72 | `spec/mailers/order_mailer_spec.rb` | 126 | OrderMailer#order_shipped includes shipping confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 73 | `spec/mailers/order_mailer_spec.rb` | 131 | OrderMailer#order_shipped includes order URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 74 | `spec/mailers/order_mailer_spec.rb` | 140 | OrderMailer#refund_requested sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 75 | `spec/mailers/order_mailer_spec.rb` | 144 | OrderMailer#refund_requested includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 76 | `spec/mailers/order_mailer_spec.rb` | 149 | OrderMailer#refund_requested includes refund request information in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 77 | `spec/mailers/order_mailer_spec.rb` | 159 | OrderMailer#refund_confirmed sends to user email | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 78 | `spec/mailers/order_mailer_spec.rb` | 163 | OrderMailer#refund_confirmed includes order id in subject | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 79 | `spec/mailers/order_mailer_spec.rb` | 168 | OrderMailer#refund_confirmed includes refund confirmation in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 80 | `spec/mailers/order_mailer_spec.rb` | 173 | OrderMailer#refund_confirmed includes orders URL in body | [051-mailers-order-mailer.md](errors/051-mailers-order-mailer.md) | ✅ Résolu |
+| 81 | `spec/mailers/user_mailer_spec.rb` | 17 | UserMailer#welcome_email includes user first name in body | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ✅ Résolu |
+| 82 | `spec/mailers/user_mailer_spec.rb` | 25 | UserMailer#welcome_email has HTML content | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ✅ Résolu |
+| 83 | `spec/mailers/user_mailer_spec.rb` | 30 | UserMailer#welcome_email has text content as fallback | [081-mailers-user-mailer.md](errors/081-mailers-user-mailer.md) | ✅ Résolu |
 
 ---
 
