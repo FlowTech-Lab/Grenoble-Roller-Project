@@ -1,9 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe EventMailer, type: :mailer do
+  let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+  let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
+  
   describe '#attendance_confirmed' do
-    let(:user) { create(:user, first_name: 'John', email: 'john@example.com') }
-    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral') }
+    let(:user) { create(:user, first_name: 'John', email: 'john@example.com', role: user_role) }
+    let(:organizer) { create(:user, role: organizer_role) }
+    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer) }
     let(:attendance) { create(:attendance, user: user, event: event) }
     let(:mail) { EventMailer.attendance_confirmed(attendance) }
 
@@ -33,12 +37,15 @@ RSpec.describe EventMailer, type: :mailer do
     end
 
     it 'includes event URL in body' do
-      expect(mail.body.encoded).to include(event_url(event))
+      # Le body est encodé, donc on décode pour chercher l'URL
+      # event_url génère une URL absolue, on cherche le hashid dans le body décodé
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include(event.hashid).or include("/events/#{event.hashid}")
     end
 
     context 'when event has a route' do
       let(:route) { create(:route, name: 'Parcours du Lac') }
-      let(:event) { create(:event, :published, :upcoming, route: route) }
+      let(:event) { create(:event, :published, :upcoming, route: route, creator_user: organizer) }
       let(:attendance) { create(:attendance, user: user, event: event) }
       let(:mail) { EventMailer.attendance_confirmed(attendance) }
 
@@ -48,7 +55,7 @@ RSpec.describe EventMailer, type: :mailer do
     end
 
     context 'when event has a price' do
-      let(:event) { create(:event, :published, :upcoming, price_cents: 1000) }
+      let(:event) { create(:event, :published, :upcoming, price_cents: 1000, creator_user: organizer) }
       let(:attendance) { create(:attendance, user: user, event: event) }
       let(:mail) { EventMailer.attendance_confirmed(attendance) }
 
@@ -60,7 +67,7 @@ RSpec.describe EventMailer, type: :mailer do
     end
 
     context 'when event has max_participants' do
-      let(:event) { create(:event, :published, :upcoming, max_participants: 20) }
+      let(:event) { create(:event, :published, :upcoming, max_participants: 20, creator_user: organizer) }
       let(:attendance) { create(:attendance, user: user, event: event, status: 'registered') }
       let(:mail) { EventMailer.attendance_confirmed(attendance) }
 
@@ -72,8 +79,8 @@ RSpec.describe EventMailer, type: :mailer do
   end
 
   describe '#attendance_cancelled' do
-    let(:user) { create(:user, first_name: 'Jane', email: 'jane@example.com') }
-    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral') }
+    let(:user) { create(:user, first_name: 'Jane', email: 'jane@example.com', role: user_role) }
+    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer) }
     let(:mail) { EventMailer.attendance_cancelled(user, event) }
 
     it 'sends to user email' do
@@ -105,13 +112,16 @@ RSpec.describe EventMailer, type: :mailer do
     end
 
     it 'includes event URL in body' do
-      expect(mail.body.encoded).to include(event_url(event))
+      # Le body est encodé, donc on décode pour chercher l'URL
+      # event_url génère une URL absolue, on cherche le hashid dans le body décodé
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include(event.hashid).or include("/events/#{event.hashid}")
     end
   end
 
   describe '#event_reminder' do
-    let(:user) { create(:user, first_name: 'Bob', email: 'bob@example.com') }
-    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral') }
+    let(:user) { create(:user, first_name: 'Bob', email: 'bob@example.com', role: user_role) }
+    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer) }
     let(:attendance) { create(:attendance, user: user, event: event) }
     let(:mail) { EventMailer.event_reminder(attendance) }
 

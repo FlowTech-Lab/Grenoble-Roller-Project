@@ -205,6 +205,8 @@ RSpec.describe Attendance, type: :model do
 
       context 'when user has no membership and no free trial' do
         it 'prevents registration' do
+          # S'assurer que l'utilisateur n'a pas d'adhésion active
+          user.memberships.destroy_all
           attendance = build_attendance(user: user, event: initiation, free_trial_used: false)
           expect(attendance).to be_invalid
           expect(attendance.errors[:base]).to include(match(/Adhésion requise/))
@@ -213,6 +215,9 @@ RSpec.describe Attendance, type: :model do
 
       context 'when user uses free trial' do
         it 'allows registration with free trial' do
+          # S'assurer que l'utilisateur n'a pas d'adhésion active et n'a pas utilisé l'essai gratuit
+          user.memberships.destroy_all
+          user.attendances.where(free_trial_used: true).destroy_all
           attendance = build_attendance(user: user, event: initiation, free_trial_used: true)
           expect(attendance).to be_valid
         end

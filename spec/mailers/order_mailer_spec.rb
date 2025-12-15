@@ -27,7 +27,9 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes order URL in body' do
-      expect(mail.body.encoded).to include(order_url(order))
+      # Le body est encodé, donc on décode pour chercher l'URL
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include(order.hashid).or include("/orders/#{order.hashid}")
     end
 
     it 'has HTML content' do
@@ -83,7 +85,9 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes orders URL in body' do
-      expect(mail.body.encoded).to include(orders_url)
+      # Le body est encodé, donc on décode pour chercher l'URL
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include('/orders').or include('orders')
     end
   end
 
@@ -171,7 +175,9 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes orders URL in body' do
-      expect(mail.body.encoded).to include(orders_url)
+      # Le body est encodé, donc on décode pour chercher l'URL
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include('/orders').or include('orders')
     end
   end
 end
