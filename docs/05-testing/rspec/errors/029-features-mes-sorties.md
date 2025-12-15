@@ -96,7 +96,7 @@
 
 ## 📊 Statut
 
-✅ **RÉSOLU** (9/10 tests passent, 1 test SKIP)
+⏳ **À ANALYSER** - Vérifier l'état réel des tests (peut être résolu ou avoir des erreurs restantes)
 
 ### Progrès
 - ✅ Test 17 (ligne 17) : **RÉSOLU** - Factory organizer corrigée

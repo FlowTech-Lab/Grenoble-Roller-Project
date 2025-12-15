@@ -68,8 +68,10 @@ module TestDataHelper
   end
 
   def create_event(attrs = {})
-    # Utiliser la factory :event qui gère déjà l'image de couverture
-    FactoryBot.create(:event, attrs)
+    # Utiliser build_event qui gère correctement les attributs par défaut
+    event = build_event(attrs)
+    event.save!
+    event
   end
 
   def build_attendance(attrs = {})

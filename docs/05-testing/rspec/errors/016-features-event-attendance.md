@@ -103,7 +103,7 @@ Les statuts valides sont : `pending`, `registered`, `paid`, `canceled`, `present
 
 ## 📊 Statut
 
-✅ **RÉSOLU** (10/13 tests passent, 3 tests SKIP)
+⏳ **À ANALYSER** - Vérifier l'état réel des tests (peut être résolu ou avoir des erreurs restantes)
 
 ### Progrès
 - ✅ Test 15 (ligne 16) : **RÉSOLU** - Factory organizer corrigée

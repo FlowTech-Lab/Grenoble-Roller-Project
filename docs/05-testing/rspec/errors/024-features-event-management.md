@@ -1,6 +1,6 @@
-# Erreur #024-028 : Features Event Management (5 erreurs)
+# Erreur #024 : Features Event Management - Redirection membre simple
 
-**Date d'analyse** : 2025-01-13  
+**Date d'analyse** : 2025-12-15  
 **Priorité** : 🟡 Priorité 4  
 **Catégorie** : Tests Feature Capybara
 
@@ -9,131 +9,223 @@
 ## 📋 Informations Générales
 
 - **Fichier test** : `spec/features/event_management_spec.rb`
-- **Lignes** : 20, 42, 152, 171, 235
-- **Tests** :
-  1. Ligne 20 : `permet de créer un événement via le formulaire`
-  2. Ligne 42 : `permet de créer un événement avec max_participants = 0 (illimité)`
-  3. Ligne 152 : `permet de supprimer l'événement avec confirmation`
-  4. Ligne 171 : `annule la suppression si l'utilisateur clique sur Annuler dans le modal`
-  5. Ligne 235 : `affiche le prochain événement en vedette`
-
+- **Ligne** : 97
+- **Test** : `redirige vers la page d'accueil si accès direct à new_event_path`
 - **Commande pour reproduire** :
   ```bash
-  docker exec grenoble-roller-dev bundle exec rspec ./spec/features/event_management_spec.rb
+  docker exec grenoble-roller-dev bundle exec rspec ./spec/features/event_management_spec.rb:97
   ```
 
 ---
 
 ## 🔴 Erreur
 
-✅ **RÉSOLU** - 15/17 tests passent, 2 tests SKIP (ChromeDriver)
-
-### Erreurs initiales
-1. `ActiveRecord::RecordInvalid` lors de la création d'organizer/admin (factory incorrecte)
-2. `ActiveRecord::RecordInvalid` lors de la création d'utilisateur sans rôle
-3. `Capybara::ElementNotFound` - Champ "Statut" non trouvé (non modifiable par organisateurs)
-4. `Capybara::ElementNotFound` - Champ "Prix (€)" non trouvé (utiliser ID `price_euros`)
-5. `Capybara::ElementNotFound` - Champ "Lieu" non trouvé (nom exact du label)
-6. Erreurs de validation - Champs requis manquants (Niveau, Distance, Image)
-7. `Selenium::WebDriver::Error::WebDriverError` - ChromeDriver non disponible (2 tests JavaScript)
+```
+Failure/Error: expect(page).to have_current_path(root_path)
+  expected "/events/new" to equal "/"
+```
 
 ---
 
 ## 🔍 Analyse
 
 ### Constats
-- ✅ Erreurs analysées et corrigées
-- ✅ 15 tests passent maintenant
-- ⏭️ 2 tests JavaScript SKIP (ChromeDriver non disponible dans Docker)
+- ❌ Le test attend une redirection vers `root_path` (`/`) mais reste sur `/events/new`
+- ✅ Le test est dans le contexte d'un membre simple (pas organisateur)
+- ✅ `EventPolicy#new?` appelle `create?` qui retourne `organizer?` (niveau >= 40)
+- ✅ Un membre simple (niveau 10) ne devrait pas pouvoir créer d'événement
+- ⚠️ Le `rescue_from Pundit::NotAuthorizedError` dans `ApplicationController` devrait rediriger vers `root_path`
 
-### Causes identifiées
-1. **Factory `:organizer` et `:admin` incorrectes** : Syntaxe invalide pour les associations
-2. **Factory `:user` sans rôle** : Les tests créaient des utilisateurs sans rôle explicite
-3. **Champ "Statut"** : Non visible pour les organisateurs (seulement modérateurs+)
-4. **Champs requis manquants** : Niveau, Distance, Image de couverture
-5. **Recherche de champs** : Utilisation des IDs au lieu des labels pour certains champs
-6. **ChromeDriver** : Non disponible dans Docker pour les tests JavaScript (`js: true`)
+### Cause Probable
+
+Le contrôleur `EventsController#new` appelle `authorize @event` qui lève `Pundit::NotAuthorizedError` pour un membre simple, mais la redirection ne se fait pas correctement. Il faut vérifier :
+1. Si `authorize` est bien appelé dans `new`
+2. Si le `rescue_from` dans `ApplicationController` gère correctement cette erreur
+3. Si la politique `EventPolicy#new?` retourne bien `false` pour un membre simple
+
+### Code Actuel
+
+```ruby
+# spec/features/event_management_spec.rb ligne 97-99
+it 'redirige vers la page d\'accueil si accès direct à new_event_path' do
+  visit new_event_path
+  expect(page).to have_current_path(root_path)
+end
+
+# app/controllers/events_controller.rb
+def new
+  @event = Event.new(creator_user: current_user)
+  authorize @event
+  # ...
+end
+
+# app/policies/event_policy.rb
+def new?
+  create?
+end
+
+def create?
+  organizer?
+end
+
+def organizer?
+  user.present? && user.role&.level.to_i >= 40
+end
+
+# app/controllers/application_controller.rb
+rescue_from Pundit::NotAuthorizedError do |exception|
+  if user_signed_in?
+    user_not_authorized(exception)
+  else
+    if request.path.include?('/initiations/') || request.path.include?('/events/')
+      redirect_to root_path, alert: "Cette ressource n'est pas accessible."
+    else
+      redirect_to new_user_session_path, alert: "Vous devez être connecté pour accéder à cette page."
+    end
+  end
+end
+```
 
 ---
 
-## 💡 Solutions Appliquées
+## 💡 Solutions Proposées
 
-✅ **SOLUTIONS APPLIQUÉES**
+### Solution 1 : Corriger `user_not_authorized` pour rediriger vers `root_path` pour les événements
 
-1. **Factory `:organizer` et `:admin` corrigées** :
-   ```ruby
-   let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
-   let!(:organizer) { create(:user, role: organizer_role) }
-   ```
+**Problème** : `user_not_authorized` redirige vers `request.referer || root_path`, donc si `request.referer` est présent, il redirige vers le referer au lieu de `root_path`.
 
-2. **Formulaire événement - Champs requis ajoutés** :
-   ```ruby
-   select 'Tous niveaux', from: 'Niveau'
-   fill_in 'Distance par boucle (km)', with: '10'
-   attach_file 'Image de couverture', Rails.root.join('spec', 'fixtures', 'files', 'test-image.jpg')
-   ```
+**Solution** : Modifier `user_not_authorized` pour rediriger vers `root_path` pour les routes d'événements.
 
-3. **Champ "Prix" - Utilisation de l'ID** :
-   ```ruby
-   fill_in 'price_euros', with: '0'  # Au lieu de fill_in 'Prix (€)', with: '0'
-   ```
+```ruby
+# app/controllers/application_controller.rb
+def user_not_authorized(_exception)
+  if api_request?
+    render json: {
+      error: "Non autorisé",
+      message: "Vous n'êtes pas autorisé·e à effectuer cette action."
+    }, status: :forbidden
+  else
+    # Pour les routes d'événements, toujours rediriger vers root_path
+    if request.path.include?('/events/') || request.path.include?('/initiations/')
+      redirect_to root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action."
+    else
+      redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+    end
+  end
+end
+```
 
-4. **Champ "Statut" - Non modifiable par organisateurs** :
-   ```ruby
-   # Le statut n'est pas modifiable par l'organisateur (automatiquement 'draft')
-   # Pas besoin de select 'Published', from: 'Statut'
-   ```
+### Solution 2 : Ajouter une vérification explicite dans `EventsController#new`
 
-5. **Tests JavaScript SKIP** :
-   ```ruby
-   xit 'permet de supprimer l\'événement avec confirmation', js: true do # SKIP: ChromeDriver non disponible
-   ```
+**Problème** : La redirection peut ne pas se faire correctement via `rescue_from`.
+
+**Solution** : Ajouter une vérification explicite avant `authorize`.
+
+```ruby
+# app/controllers/events_controller.rb
+def new
+  @event = Event.new(creator_user: current_user)
+  
+  unless policy(@event).new?
+    redirect_to root_path, alert: "Vous n'êtes pas autorisé à créer un événement."
+    return
+  end
+  
+  authorize @event
+  # ...
+end
+```
+
+### Solution 3 : Vérifier que le test utilise le bon utilisateur
+
+**Problème** : Le test peut ne pas utiliser un membre simple.
+
+**Solution** : Vérifier que le test crée bien un membre simple (niveau 10) et non un organisateur.
+
+```ruby
+context 'quand l\'utilisateur est un simple membre' do
+  let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+  let!(:member) { create(:user, role: user_role) }
+  
+  before do
+    login_as member
+  end
+  
+  it 'redirige vers la page d\'accueil si accès direct à new_event_path' do
+    visit new_event_path
+    expect(page).to have_current_path(root_path)
+  end
+end
+```
 
 ---
 
 ## 🎯 Type de Problème
 
-✅ **RÉSOLU** - ❌ **PROBLÈME DE TEST** (factories, champs requis, recherche de champs)
+⚠️ **PROBLÈME DE LOGIQUE** :
+- La redirection dans `ApplicationController` ne fonctionne pas correctement pour les utilisateurs connectés
+- La méthode `user_not_authorized` peut ne pas rediriger vers `root_path`
 
 ---
 
 ## 📊 Statut
 
-✅ **RÉSOLU** (15/17 tests passent, 2 tests SKIP)
-
-### Progrès
-- ✅ Test 15 (ligne 20) : **RÉSOLU** - Factory organizer corrigée
-- ✅ Test 20 (ligne 23) : **RÉSOLU** - Formulaire corrigé (champs requis ajoutés)
-- ✅ Test 42 (ligne 47) : **RÉSOLU** - Formulaire corrigé (champs requis ajoutés)
-- ⏭️ Test 152 (ligne 152) : **SKIP** - ChromeDriver non disponible (test JavaScript)
-- ⏭️ Test 171 (ligne 171) : **SKIP** - ChromeDriver non disponible (test JavaScript)
-- ✅ Test 235 (ligne 240) : **RÉSOLU** - Texte de recherche corrigé
-
-### Corrections appliquées
-1. **Factory `:organizer` et `:admin`** : Utilisation de `ensure_role` au lieu de `association :role`
-2. **Factory `:user`** : Ajout de rôle explicite dans tous les tests
-3. **Formulaire événement** : Ajout des champs requis (Niveau, Distance, Image de couverture)
-4. **Champ "Statut"** : Non modifiable par les organisateurs (automatiquement 'draft')
-5. **Champ "Prix"** : Utilisation de l'ID `price_euros` au lieu du label
-6. **Tests JavaScript** : SKIP avec `xit` car ChromeDriver non disponible dans Docker
-7. **Texte "Prochain rendez-vous"** : Corrigé pour chercher "À venir" et "Les prochains rendez-vous roller"
+✅ **RÉSOLU** - Solution appliquée : vérification explicite dans `EventsController#new` avant `authorize`
 
 ---
 
 ## 🔗 Erreurs Similaires
 
-Cette erreur est similaire à :
-- [016-features-event-attendance.md](016-features-event-attendance.md)
-- [029-features-mes-sorties.md](029-features-mes-sorties.md)
+Cette erreur est similaire aux erreurs suivantes :
+- [016-features-event-attendance.md](016-features-event-attendance.md) - Problèmes similaires avec les redirections Pundit
+
+---
+
+## 📝 Notes
+
+- Le test est dans le contexte d'un membre simple (pas organisateur)
+- La politique `EventPolicy#new?` devrait retourner `false` pour un membre simple
+- Le `rescue_from` devrait gérer cette erreur et rediriger vers `root_path`
 
 ---
 
 ## ✅ Actions à Effectuer
 
-1. [ ] Exécuter les tests pour voir les erreurs exactes
-2. [ ] Vérifier la configuration Capybara
-3. [ ] Analyser chaque erreur et documenter
-4. [ ] Identifier le type de problème (test ou logique)
-5. [ ] Proposer des solutions
-6. [ ] Mettre à jour le statut dans [README.md](../README.md)
+1. [x] Vérifier la méthode `user_not_authorized` dans `ApplicationController`
+2. [x] Modifier `user_not_authorized` pour rediriger vers `root_path` pour les routes d'événements
+3. [x] Ajouter une vérification explicite dans `EventsController#new` avant `authorize`
+4. [x] Exécuter le test pour vérifier qu'il passe
+5. [x] Mettre à jour le statut dans [README.md](../README.md)
 
+## ✅ Solution Appliquée
+
+**Modification dans `app/controllers/events_controller.rb`** :
+```ruby
+def new
+  @event = current_user.created_events.build(...)
+  
+  # Vérifier explicitement les permissions avant authorize pour rediriger correctement
+  unless policy(@event).new?
+    redirect_to root_path, alert: "Vous n'êtes pas autorisé à créer un événement."
+    return
+  end
+  
+  authorize @event
+end
+```
+
+**Modification dans `app/controllers/application_controller.rb`** :
+```ruby
+def user_not_authorized(_exception)
+  if api_request?
+    # ... code API ...
+  else
+    # Pour les routes d'événements, toujours rediriger vers root_path
+    if request.path.include?('/events/') || request.path.include?('/initiations/')
+      redirect_to root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action."
+    else
+      redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+    end
+  end
+end
+```

@@ -79,8 +79,9 @@ RSpec.describe EventMailer, type: :mailer do
   end
 
   describe '#attendance_cancelled' do
-    let(:user) { create(:user, first_name: 'Jane', email: 'jane@example.com', role: user_role) }
-    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer) }
+    let(:organizer) { create_user(role: organizer_role) }
+    let(:user) { create_user(first_name: 'Jane', email: 'jane@example.com', role: user_role) }
+    let(:event) { create_event(status: 'published', title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer, start_at: 3.days.from_now) }
     let(:mail) { EventMailer.attendance_cancelled(user, event) }
 
     it 'sends to user email' do
@@ -120,9 +121,10 @@ RSpec.describe EventMailer, type: :mailer do
   end
 
   describe '#event_reminder' do
-    let(:user) { create(:user, first_name: 'Bob', email: 'bob@example.com', role: user_role) }
-    let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer) }
-    let(:attendance) { create(:attendance, user: user, event: event) }
+    let(:organizer) { create_user(role: organizer_role) }
+    let(:user) { create_user(first_name: 'Bob', email: 'bob@example.com', role: user_role) }
+    let(:event) { create_event(status: 'published', title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer, start_at: 3.days.from_now) }
+    let(:attendance) { create_attendance(user: user, event: event) }
     let(:mail) { EventMailer.event_reminder(attendance) }
 
     it 'sends to user email' do

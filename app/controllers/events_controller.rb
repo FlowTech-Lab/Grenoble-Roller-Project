@@ -145,6 +145,13 @@ class EventsController < ApplicationController
       max_participants: 0, # 0 = illimité par défaut
       currency: "EUR" # Toujours EUR
     )
+    
+    # Vérifier explicitement les permissions avant authorize pour rediriger correctement
+    unless policy(@event).new?
+      redirect_to root_path, alert: "Vous n'êtes pas autorisé à créer un événement."
+      return
+    end
+    
     authorize @event
   end
 

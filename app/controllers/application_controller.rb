@@ -75,7 +75,12 @@ class ApplicationController < ActionController::Base
         message: "Vous n'êtes pas autorisé·e à effectuer cette action."
       }, status: :forbidden
     else
-      redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+      # Pour les routes d'événements, toujours rediriger vers root_path
+      if request.path.include?('/events/') || request.path.include?('/initiations/')
+        redirect_to root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action."
+      else
+        redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+      end
     end
   end
 
