@@ -178,7 +178,9 @@ RSpec.describe Attendance, type: :model do
     end
 
     describe 'can_register_to_initiation' do
-      let(:initiation) { create(:event_initiation, max_participants: 30) }
+      # Par défaut, on ne permet PAS la découverte non-adhérents,
+      # pour tester le comportement "adhésion requise"
+      let(:initiation) { create(:event_initiation, max_participants: 30, allow_non_member_discovery: false) }
       let(:user) { create_user }
 
       context 'when user has active membership' do

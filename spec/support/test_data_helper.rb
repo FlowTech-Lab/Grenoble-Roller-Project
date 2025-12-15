@@ -14,7 +14,8 @@ module TestDataHelper
       first_name: 'Alex',
       last_name: 'Rider',
       email: "user#{SecureRandom.hex(4)}@example.com",
-      password: 'password123',
+      # Doit respecter la validation de longueur minimale (12 caractères)
+      password: 'password12345',
       skill_level: 'intermediate',
       role: role
     }
