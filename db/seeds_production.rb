@@ -74,4 +74,3 @@ puts ""
 puts "✅ Seed production terminé avec succès !"
 puts "   - Rôles : #{Role.count}"
 puts "   - Utilisateurs : #{User.count}"
-

@@ -1,7 +1,7 @@
 class MembershipsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_email_confirmed, only: [ :create ]
-  before_action :set_membership, only: [ :show, :edit, :update, :destroy, :pay, :payment_status ]
+  before_action :set_membership, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @memberships = current_user.memberships.includes(:payment, :tshirt_variant).order(created_at: :desc)
@@ -208,158 +208,6 @@ class MembershipsController < ApplicationController
     @membership = @membership || current_user.memberships.find(params[:id])
   end
 
-  def pay
-    # Vérifier que l'adhésion est bien pending
-    if @membership.status != "pending"
-      redirect_to membership_path(@membership), notice: "Cette adhésion n'est plus en attente de paiement."
-      return
-    end
-
-    # Vérifier le statut réel via HelloAsso
-    if @membership.payment
-      HelloassoService.fetch_and_update_payment(@membership.payment)
-      @membership.reload
-
-      if @membership.status != "pending"
-        redirect_to membership_path(@membership), notice: "Le statut de votre adhésion a été mis à jour."
-        return
-      end
-    end
-
-    # Créer un nouveau checkout-intent (les anciens peuvent expirer)
-    result = HelloassoService.create_membership_checkout_intent(
-      @membership,
-      back_url: membership_url(@membership),
-      error_url: membership_url(@membership),
-      return_url: membership_url(@membership)
-    )
-
-    unless result[:success] && result[:body]["id"]
-      Rails.logger.error("[MembershipsController] Échec création checkout-intent : #{result.inspect}")
-      redirect_to membership_path(@membership), alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
-      return
-    end
-
-    checkout_id = result[:body]["id"].to_s
-    redirect_url = result[:body]["redirectUrl"]
-
-    unless redirect_url
-      Rails.logger.error("[MembershipsController] Pas de redirectUrl dans la réponse : #{result.inspect}")
-      redirect_to membership_path(@membership), alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
-      return
-    end
-
-    # Créer ou mettre à jour le Payment
-    if @membership.payment
-      @membership.payment.update!(
-        provider_payment_id: checkout_id,
-        status: "pending",
-        amount_cents: @membership.total_amount_cents
-      )
-    else
-      payment = Payment.create!(
-        provider: "helloasso",
-        provider_payment_id: checkout_id,
-        status: "pending",
-        amount_cents: @membership.total_amount_cents,
-        currency: @membership.currency || "EUR"
-      )
-      @membership.update!(payment: payment)
-    end
-
-    @membership.update!(provider_order_id: checkout_id)
-
-    redirect_to redirect_url, allow_other_host: true
-  rescue => e
-    Rails.logger.error("[MembershipsController] Erreur lors du paiement : #{e.message}")
-    Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to membership_path(@membership), alert: "Erreur lors de l'initialisation du paiement : #{e.message}"
-  end
-
-  def payment_status
-    if @membership.payment
-      # Vérifier le statut réel via HelloAsso
-      HelloassoService.fetch_and_update_payment(@membership.payment)
-      @membership.reload
-    end
-
-    status = @membership.status
-    status = "pending" if status == "pending" && @membership.payment.nil?
-
-    render json: { status: status }
-  rescue => e
-    Rails.logger.error("[MembershipsController] Erreur lors de la vérification du statut : #{e.message}")
-    render json: { status: "unknown" }, status: 500
-  end
-
-  # Paiement groupé pour plusieurs enfants
-  def pay_multiple
-    # Rails envoie membership_ids[] comme un array
-    membership_ids = params[:membership_ids] || params["membership_ids"] || []
-    # Normaliser en array si c'est une string
-    membership_ids = [ membership_ids ] unless membership_ids.is_a?(Array)
-    membership_ids = membership_ids.reject(&:blank?)
-
-    if membership_ids.empty?
-      redirect_to memberships_path, alert: "Aucune adhésion sélectionnée."
-      return
-    end
-
-    # Récupérer les adhésions enfants pending de l'utilisateur
-    memberships = current_user.memberships.where(
-      id: membership_ids,
-      is_child_membership: true,
-      status: "pending"
-    )
-
-    if memberships.empty?
-      redirect_to memberships_path, alert: "Aucune adhésion enfant en attente de paiement trouvée."
-      return
-    end
-
-      # Créer un paiement groupé HelloAsso
-      begin
-        result = HelloassoService.create_multiple_memberships_checkout_intent(
-          memberships.to_a,
-          back_url: memberships_url(host: request.host_with_port, protocol: request.protocol),
-          error_url: memberships_url(host: request.host_with_port, protocol: request.protocol),
-          return_url: memberships_url(host: request.host_with_port, protocol: request.protocol)
-        )
-
-      unless result[:success] && result[:body]["redirectUrl"]
-        Rails.logger.error("[MembershipsController] Échec création checkout-intent groupé : #{result.inspect}")
-        redirect_to memberships_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez réessayer."
-        return
-      end
-
-      checkout_id = result[:body]["id"].to_s
-      redirect_url = result[:body]["redirectUrl"]
-
-      # Créer un Payment unique pour toutes les adhésions
-      total_amount = memberships.sum(&:total_amount_cents)
-      payment = Payment.create!(
-        provider: "helloasso",
-        provider_payment_id: checkout_id,
-        status: "pending",
-        amount_cents: total_amount,
-        currency: "EUR"
-      )
-
-      # Lier le paiement à toutes les adhésions
-      memberships.each do |membership|
-        membership.update!(
-          payment: payment,
-          provider_order_id: checkout_id
-        )
-      end
-
-      redirect_to redirect_url, allow_other_host: true
-    rescue => e
-      Rails.logger.error("[MembershipsController] Erreur lors du paiement groupé : #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-      redirect_to memberships_path, alert: "Erreur lors de l'initialisation du paiement : #{e.message}"
-    end
-  end
 
   # Modifier une adhésion enfant (pending uniquement)
   def edit
@@ -409,6 +257,11 @@ class MembershipsController < ApplicationController
     end
 
     child_age = ((Date.today - child_date_of_birth) / 365.25).floor
+
+    if child_age < 6
+      redirect_to edit_membership_path(@membership), alert: "L'adhésion n'est pas possible pour les enfants de moins de 6 ans."
+      return
+    end
 
     if child_age >= 18
       redirect_to edit_membership_path(@membership), alert: "L'enfant a 18 ans ou plus, il doit adhérer seul."
@@ -666,9 +519,9 @@ class MembershipsController < ApplicationController
         return
       end
     else
-      # STANDARD : Questionnaire optionnel, pas de certificat obligatoire
+      # STANDARD : Questionnaire obligatoire pour créer l'adhésion, mais pas de certificat médical requis
+      # Note: Le questionnaire est vérifié avant paiement et avant "déjà adhérent"
       membership_params[:health_questionnaire_status] = has_health_issue ? "medical_required" : "ok"
-      # Pas de validation stricte pour Standard
     end
 
     # Adhésion simple uniquement (plus d'option T-shirt)
@@ -961,6 +814,10 @@ class MembershipsController < ApplicationController
     # Calculer l'âge de l'enfant
     child_age = ((Date.today - child_date_of_birth) / 365.25).floor
 
+    if child_age < 6
+      return Membership.new.tap { |m| m.errors.add(:child_date_of_birth, "L'adhésion n'est pas possible pour les enfants de moins de 6 ans") }
+    end
+
     if child_age >= 18
       return Membership.new.tap { |m| m.errors.add(:base, "L'enfant a 18 ans ou plus, il doit adhérer seul") }
     end
@@ -985,9 +842,13 @@ class MembershipsController < ApplicationController
     # Vérifier les réponses au questionnaire de santé (9 questions) AVANT création
     has_health_issue = false
     all_answered_no = true
+    all_answered = true
     (1..9).each do |i|
       answer = child_params["health_question_#{i}"]
-      if answer == "yes"
+      if answer.blank?
+        all_answered = false
+        all_answered_no = false
+      elsif answer == "yes"
         has_health_issue = true
         all_answered_no = false
       elsif answer == "no"
@@ -995,6 +856,11 @@ class MembershipsController < ApplicationController
       else
         all_answered_no = false # Pas encore répondu
       end
+    end
+
+    # Vérifier que toutes les questions sont répondues
+    unless all_answered
+      return Membership.new.tap { |m| m.errors.add(:base, "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions avant de continuer.") }
     end
 
     # Déterminer le statut du questionnaire selon la catégorie
@@ -1150,14 +1016,24 @@ class MembershipsController < ApplicationController
     # Vérifier les réponses au questionnaire de santé
     has_health_issue = false
     all_answered_no = true
+    all_answered = true
     (1..9).each do |i|
       answer = membership_params["health_question_#{i}"]
-      if answer == "yes"
+      if answer.blank?
+        all_answered = false
+        all_answered_no = false
+      elsif answer == "yes"
         has_health_issue = true
         all_answered_no = false
       elsif answer != "no"
         all_answered_no = false
       end
+    end
+
+    # Vérifier que toutes les questions sont répondues
+    unless all_answered
+      redirect_to new_membership_path(type: "adult"), alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions avant de continuer."
+      return
     end
 
     is_ffrs = category == "with_ffrs"

@@ -59,4 +59,3 @@ ActiveAdmin.register OptionValue do
     end
   end
 end
-

@@ -34,6 +34,21 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+# Configurer les traductions par défaut pour les tests
+I18n.default_locale = :fr
+I18n.locale = :fr
+
+# Ajouter les traductions manquantes
+I18n.backend.store_translations(:fr, {
+  activerecord: {
+    errors: {
+      messages: {
+        record_invalid: "L'enregistrement est invalide"
+      }
+    }
+  }
+})
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -74,6 +89,35 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::IntegrationHelpers, type: :system
   config.include TestDataHelper if defined?(TestDataHelper)
+
+  # Configurer le mapping Devise pour TOUS les tests de contrôleurs
+  # Cela doit être fait AVANT que les contrôleurs Devise ne soient initialisés
+  # Le mapping doit être dans request.env AVANT que prepend_before_action ne soit appelé
+  config.before(:each, type: :controller) do
+    @request.env["devise.mapping"] = Devise.mappings[:user]
+    request.env["devise.mapping"] = Devise.mappings[:user]
+    # Surcharger devise_mapping pour tous les contrôleurs Devise
+    # Cela doit être fait AVANT que assert_is_devise_resource! ne soit appelé
+    if described_class && described_class < Devise::DeviseController
+      allow_any_instance_of(described_class).to receive(:devise_mapping).and_return(Devise.mappings[:user])
+    end
+  end
+
+  # Bypass CSRF protection in request specs
+  config.before(:each, type: :request) do
+    allow_any_instance_of(ActionController::Base).to receive(:protect_against_forgery?).and_return(false)
+  end
+
+  # Configuration des emails en test
+  config.before(:each) do
+    ActionMailer::Base.delivery_method = :test
+    # Activer les deliveries pour les tests de jobs (ils utilisent perform_enqueued_jobs)
+    ActionMailer::Base.perform_deliveries = true
+  end
+
+  config.after(:each) do
+    ActionMailer::Base.deliveries.clear
+  end
 
   # Capybara configuration for system/feature tests
   # Use rack_test for non-JS tests (faster, no browser needed)

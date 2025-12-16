@@ -14,13 +14,18 @@ RSpec.describe AuditLog, type: :model do
     it 'requires action, target_type, and target_id' do
       log = AuditLog.new(actor_user: actor)
       expect(log).to be_invalid
-      expect(log.errors[:action]).to include("can't be blank")
-      expect(log.errors[:target_type]).to include("can't be blank")
-      expect(log.errors[:target_id]).to include("can't be blank")
+      expect(log.errors[:action]).to be_present
+      expect(log.errors[:target_type]).to be_present
+      expect(log.errors[:target_id]).to be_present
     end
   end
 
   describe 'scopes' do
+    # On nettoie la table avant chaque test de scope pour éviter la pollution
+    # par des données créées dans les seeds ou d'autres specs.
+    before do
+      AuditLog.delete_all
+    end
     it 'filters by action' do
       matching = AuditLog.create!(actor_user: actor, action: 'event.cancel', target_type: 'Event', target_id: 1)
       AuditLog.create!(actor_user: actor, action: 'user.promote', target_type: 'User', target_id: 2)

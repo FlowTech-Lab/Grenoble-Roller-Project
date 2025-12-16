@@ -77,4 +77,7 @@ fr:
     attributes:
       role:
         required: "doit être renseigné"
+  
+  active_admin:
+    logout: "Retour à l'accueil"
 

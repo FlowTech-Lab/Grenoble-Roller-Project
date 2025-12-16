@@ -59,7 +59,7 @@
               form: { style: "display: inline-block;" } do %>
             <i class="bi bi-trash"></i>
           <% end %>
-          <%= button_to pay_membership_path(membership),
+          <%= button_to membership_payments_path(membership),
               method: :post,
               class: "btn btn-sm btn-primary",
               title: "Payer",

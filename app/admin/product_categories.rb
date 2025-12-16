@@ -63,4 +63,3 @@ ActiveAdmin.register ProductCategory do
     end
   end
 end
-

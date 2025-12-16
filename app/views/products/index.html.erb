@@ -10,6 +10,25 @@
     </div>
   </div>
 
+  <!-- Bannière temporaire vers l'ancienne boutique HelloAsso -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+          <span>Boutique en cours de migration. En attendant, accédez à notre <strong>ancienne boutique HelloAsso</strong>.</span>
+        </div>
+        <%= link_to "https://www.helloasso.com/associations/grenoble-roller/boutiques/boutique", 
+            target: "_blank", 
+            rel: "noopener noreferrer",
+            class: "btn btn-sm btn-outline-primary flex-shrink-0" do %>
+          <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
+          Accéder à la boutique HelloAsso
+        <% end %>
+      </div>
+    </div>
+  </div>
+
   <section class="mb-5" aria-label="Catalogue produits">
     <div class="row">
       <!-- Sidebar filtres catégories -->

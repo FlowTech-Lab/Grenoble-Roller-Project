@@ -1,6 +1,6 @@
 class Membership < ApplicationRecord
   include Hashid::Rails
-  
+
   belongs_to :user
   belongs_to :payment, optional: true
   belongs_to :tshirt_variant, class_name: "ProductVariant", optional: true
@@ -81,6 +81,11 @@ class Membership < ApplicationRecord
     end
 
     base
+  end
+
+  # Vérifie si le questionnaire de santé est complètement rempli (toutes les 9 questions)
+  def health_questionnaire_complete?
+    (1..9).all? { |i| send("health_q#{i}").present? }
   end
 
   # Calcul automatique des dates de saison (1er sept - 31 août)

@@ -1,6 +1,6 @@
 class User < ApplicationRecord
   include Hashid::Rails
-  
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -51,6 +51,20 @@ class User < ApplicationRecord
     "#{first_name} #{last_name.first.upcase}."
   end
 
+  # Méthode utilisée par Active Admin pour afficher l'utilisateur
+  # Affiche "Prénom Nom" pour faciliter l'identification (prêts de rollers, etc.)
+  def to_s
+    if first_name.present? && last_name.present?
+      "#{first_name} #{last_name}"
+    elsif first_name.present?
+      first_name
+    elsif last_name.present?
+      last_name
+    else
+      email # Fallback sur email si pas de nom/prénom
+    end
+  end
+
   # Vérifier si le token de confirmation est expiré
   def confirmation_token_expired?
     return false if confirmed_at.present?
@@ -70,7 +84,7 @@ class User < ApplicationRecord
   validates :first_name, presence: true, length: { maximum: 50 }
   # Validation téléphone : uniquement 10 chiffres (format français)
   validates :phone, format: { with: /\A[0-9]{10}\z/, message: "doit contenir exactement 10 chiffres (ex: 0612345678)" }, allow_blank: true
-  
+
   # Normaliser le téléphone avant validation (enlever espaces, tirets, etc.)
   before_validation :normalize_phone, if: :phone_changed?
 
@@ -140,7 +154,7 @@ class User < ApplicationRecord
   def normalize_phone
     return if phone.blank?
     # Enlever tous les caractères non numériques
-    self.phone = phone.gsub(/[^0-9]/, '')
+    self.phone = phone.gsub(/[^0-9]/, "")
     # Si le numéro commence par +33, remplacer par 0
     self.phone = "0#{phone[2..-1]}" if phone.start_with?("33") && phone.length == 11
     # Si le numéro commence par 0033, remplacer par 0
@@ -150,18 +164,9 @@ class User < ApplicationRecord
   end
 
   def send_welcome_email_and_confirmation
-    # Envoyer email de bienvenue ET email de confirmation
+    # Envoyer uniquement l'email de bienvenue
+    # Devise envoie automatiquement l'email de confirmation via :confirmable
+    # Il ne faut donc PAS appeler send_confirmation_instructions ici
     UserMailer.welcome_email(self).deliver_later
-
-    # Envoyer confirmation seulement si le contexte Devise est disponible
-    # (évite erreur dans les tests sans contexte HTTP)
-    begin
-      send_confirmation_instructions
-      Rails.logger.info("Confirmation email sent to #{email} at #{Time.current}")
-    rescue RuntimeError => e
-      # Ignorer erreur de mapping Devise en test
-      raise e unless Rails.env.test? || e.message.include?("mapping")
-    end
   end
-
 end

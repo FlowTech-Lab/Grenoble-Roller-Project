@@ -78,7 +78,7 @@
               form: { style: "display: inline-block;" } do %>
             <i class="bi bi-trash me-1"></i>Supprimer
           <% end %>
-          <%= button_to pay_membership_path(membership),
+          <%= button_to membership_payments_path(membership),
               method: :post,
               class: "btn btn-sm btn-primary",
               data: { turbo: false },
@@ -87,7 +87,7 @@
           <% end %>
         <% else %>
           <!-- Paiement individuel pour adhésions personnelles pending -->
-          <%= button_to pay_membership_path(membership),
+          <%= button_to membership_payments_path(membership),
               method: :post,
               class: "btn btn-sm btn-primary",
               data: { turbo: false },

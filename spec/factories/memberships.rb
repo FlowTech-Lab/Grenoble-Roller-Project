@@ -32,5 +32,14 @@ FactoryBot.define do
     trait :expired do
       status { :expired }
     end
+
+    trait :with_health_questionnaire do
+      after(:build) do |membership|
+        (1..9).each do |i|
+          membership.send("health_q#{i}=", "no")
+        end
+        membership.health_questionnaire_status = "ok"
+      end
+    end
   end
 end

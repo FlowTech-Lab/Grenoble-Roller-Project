@@ -1,11 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe VariantOptionValue, type: :model do
-  let!(:category) { ProductCategory.create!(name: 'Cat-vov', slug: 'cat-vov') }
-  let!(:product) { Product.create!(category: category, name: 'Prod-vov', slug: 'prod-vov', price_cents: 1000, currency: 'EUR', stock_qty: 10, is_active: true, image_url: 'https://example.org/img.jpg') }
-  let!(:variant) { ProductVariant.create!(product: product, sku: 'SKU-VOV', price_cents: 1000, currency: 'EUR', stock_qty: 5, is_active: true) }
-  let!(:ot) { OptionType.create!(name: 'Couleur-vov', presentation: 'Couleur') }
-  let!(:ov) { OptionValue.create!(option_type: ot, value: 'Rouge', presentation: 'Rouge') }
+  let!(:category) { create(:product_category, name: 'Cat-vov', slug: 'cat-vov') }
+  let!(:product) { create(:product, category: category, name: 'Prod-vov', slug: 'prod-vov') }
+  let!(:variant) { create(:product_variant, product: product, sku: 'SKU-VOV') }
+  let!(:ot) { create(:option_type, name: 'Couleur-vov', presentation: 'Couleur') }
+  let!(:ov) { create(:option_value, option_type: ot, value: 'Rouge', presentation: 'Rouge') }
 
   it 'is valid with unique [variant, option_value] pair' do
     vov = VariantOptionValue.new(variant: variant, option_value: ov)

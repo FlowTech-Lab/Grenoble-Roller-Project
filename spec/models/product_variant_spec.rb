@@ -11,7 +11,8 @@ RSpec.describe ProductVariant, type: :model do
       price_cents: 1900,
       currency: 'EUR',
       stock_qty: 5,
-      is_active: true
+      is_active: true,
+      image_url: 'https://example.org/variant.jpg'
     }
     ProductVariant.new(defaults.merge(attrs))
   end

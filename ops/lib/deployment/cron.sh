@@ -40,13 +40,24 @@ install_crontab() {
     # Générer le contenu du crontab avec whenever (sans utiliser --update-crontab qui nécessite crontab)
     log_info "   Génération du crontab depuis config/schedule.rb..."
     local crontab_content
-    crontab_content=$($DOCKER_CMD exec "$container" bundle exec whenever --set "environment=${env}" 2>&1)
-    local whenever_exit_code=$?
+    local whenever_output
     
-    if [ $whenever_exit_code -ne 0 ] || [ -z "$crontab_content" ]; then
-        log_error "❌ Échec de la génération du crontab (exit code: $whenever_exit_code)"
-        echo "$crontab_content" | while IFS= read -r line; do
-            log_error "   $line"
+    # Utiliser --set pour générer le contenu sans installer
+    # Rediriger stderr vers /dev/null pour ignorer les erreurs liées à crontab
+    # qui ne sont pas pertinentes car on n'utilise pas --update-crontab
+    whenever_output=$($DOCKER_CMD exec "$container" sh -c "cd /rails && bundle exec whenever --set 'environment=${env}' 2>/dev/null" || echo "")
+    
+    # Filtrer les lignes de cron valides (commençant par des chiffres ou des astérisques)
+    # et ignorer les messages d'information (commençant par ##)
+    crontab_content=$(echo "$whenever_output" | grep -E "^[0-9*]" || echo "")
+    
+    # Vérifier si on a du contenu valide
+    if [ -z "$crontab_content" ] || ! echo "$crontab_content" | grep -qE "^[0-9*]"; then
+        log_error "❌ Échec de la génération du crontab"
+        log_error "   whenever n'a pas pu générer le contenu du crontab"
+        log_info "   Sortie de whenever (pour diagnostic):"
+        echo "$whenever_output" | while IFS= read -r line; do
+            log_info "   $line"
         done
         return 1
     fi

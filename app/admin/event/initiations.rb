@@ -64,7 +64,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     "Annulé" => "canceled"
   }
   filter :start_at
-  filter :creator_user, collection: -> { User.order(:email) }
+  filter :creator_user, collection: -> { User.order(:last_name, :first_name) }
   filter :created_at
 
   show do
@@ -102,7 +102,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       row "Participants" do |initiation|
         begin
           count = initiation.participants_count
-          total_attendances = initiation.attendances.where(is_volunteer: false, status: ["registered", "present"]).count
+          total_attendances = initiation.attendances.where(is_volunteer: false, status: [ "registered", "present" ]).count
           "#{count} (#{total_attendances} total inscriptions)"
         rescue => e
           "Erreur: #{e.message}"
@@ -142,8 +142,8 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
             status_tag(attendance.status)
           end
           column "Actions" do |attendance|
-            link_to("Retirer bénévole", toggle_volunteer_activeadmin_initiation_path(initiation, attendance_id: attendance.id), 
-                    method: :patch, 
+            link_to("Retirer bénévole", toggle_volunteer_activeadmin_initiation_path(initiation, attendance_id: attendance.id),
+                    method: :patch,
                     class: "button button-small",
                     data: { confirm: "Retirer le statut bénévole pour #{attendance.user.email} ?" })
           end
@@ -174,8 +174,8 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
             attendance.free_trial_used? ? status_tag("Oui", class: "ok") : status_tag("Non", class: "no")
           end
           column "Actions" do |attendance|
-            link_to("Ajouter bénévole", toggle_volunteer_activeadmin_initiation_path(initiation, attendance_id: attendance.id), 
-                    method: :patch, 
+            link_to("Ajouter bénévole", toggle_volunteer_activeadmin_initiation_path(initiation, attendance_id: attendance.id),
+                    method: :patch,
                     class: "button button-small",
                     data: { confirm: "Ajouter le statut bénévole pour #{attendance.user.email} ?" })
           end
@@ -222,15 +222,15 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
           end
           column "Actions" do |entry|
             if entry.notified?
-              button_to("Convertir en inscription", 
-                        convert_waitlist_activeadmin_initiation_path(initiation), 
+              button_to("Convertir en inscription",
+                        convert_waitlist_activeadmin_initiation_path(initiation),
                         method: :post,
                         params: { waitlist_entry_id: entry.hashid },
                         class: "button button-small",
                         data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
             elsif entry.pending? && initiation.has_available_spots?
-              button_to("Notifier maintenant", 
-                        notify_waitlist_activeadmin_initiation_path(initiation), 
+              button_to("Notifier maintenant",
+                        notify_waitlist_activeadmin_initiation_path(initiation),
                         method: :post,
                         params: { waitlist_entry_id: entry.hashid },
                         class: "button button-small",
@@ -268,8 +268,8 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         },
         prompt: "Sélectionnez un statut"
       f.input :creator_user,
-        collection: User.order(:email).map { |u| [ u.email, u.id ] },
-        label_method: :email,
+        collection: User.order(:last_name, :first_name).map { |u| [ u.to_s, u.id ] },
+        label_method: :to_s,
         value_method: :id
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
       f.input :duration_min, input_html: { value: f.object.duration_min || 105 }, hint: "Durée en minutes (105 = 1h45)"
@@ -290,36 +290,36 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   member_action :convert_waitlist, method: :post do
     @initiation = resource
     waitlist_entry_id = params[:waitlist_entry_id]
-    
+
     unless waitlist_entry_id.present?
       redirect_to resource_path(@initiation), alert: "Paramètre waitlist_entry_id manquant."
       return
     end
-    
+
     waitlist_entry = @initiation.waitlist_entries.find_by_hashid(waitlist_entry_id)
-    
+
     unless waitlist_entry
       redirect_to resource_path(@initiation), alert: "Entrée de liste d'attente introuvable."
       return
     end
-    
+
     unless waitlist_entry.notified?
       redirect_to resource_path(@initiation), alert: "Cette entrée de liste d'attente n'est pas en statut 'notifié'."
       return
     end
-    
+
     # Trouver l'inscription "pending" créée lors de la notification
     pending_attendance = @initiation.attendances.find_by(
       user: waitlist_entry.user,
       child_membership_id: waitlist_entry.child_membership_id,
       status: "pending"
     )
-    
+
     unless pending_attendance
       redirect_to resource_path(@initiation), alert: "L'inscription 'pending' associée n'a pas été trouvée."
       return
     end
-    
+
     # Passer de "pending" à "registered" sans validation
     # Utiliser update_column pour bypasser les validations
     if pending_attendance.update_column(:status, "registered")
@@ -336,24 +336,24 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   member_action :notify_waitlist, method: :post do
     @initiation = resource
     waitlist_entry_id = params[:waitlist_entry_id]
-    
+
     unless waitlist_entry_id.present?
       redirect_to resource_path(@initiation), alert: "Paramètre waitlist_entry_id manquant."
       return
     end
-    
+
     waitlist_entry = @initiation.waitlist_entries.find_by_hashid(waitlist_entry_id)
-    
+
     unless waitlist_entry
       redirect_to resource_path(@initiation), alert: "Entrée de liste d'attente introuvable."
       return
     end
-    
+
     unless waitlist_entry.pending?
       redirect_to resource_path(@initiation), alert: "Cette entrée de liste d'attente n'est pas en statut 'pending'."
       return
     end
-    
+
     if waitlist_entry.notify!
       redirect_to resource_path(@initiation), notice: "La personne a été notifiée avec succès."
     else
@@ -368,7 +368,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       .includes(:user, :child_membership)
       .where(status: [ "registered", "present", "no_show" ])
       .order(:created_at)
-    
+
     # Séparer bénévoles et participants
     @volunteers = all_attendances.where(is_volunteer: true)
     @participants = all_attendances.where(is_volunteer: false)
@@ -390,7 +390,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
       if presence_status.present?
         attendance.update(status: presence_status)
       end
-      
+
       # Mettre à jour is_volunteer si modifié
       if is_volunteer_changes[attendance_id.to_s].present?
         attendance.update(is_volunteer: is_volunteer_changes[attendance_id.to_s] == "1")
@@ -404,7 +404,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   member_action :toggle_volunteer, method: :patch do
     @initiation = resource
     attendance = @initiation.attendances.find_by(id: params[:attendance_id])
-    
+
     if attendance
       attendance.update(is_volunteer: !attendance.is_volunteer)
       status = attendance.is_volunteer? ? "ajouté" : "retiré"

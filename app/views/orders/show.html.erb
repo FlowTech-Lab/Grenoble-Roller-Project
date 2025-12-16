@@ -43,7 +43,7 @@
                   if (!isPolling) return;
                   
                   try {
-                    const response = await fetch('<%= payment_status_order_path(@order) %>', {
+                    const response = await fetch('<%= status_order_payments_path(@order) %>', {
                       method: 'GET',
                       headers: {
                         'Accept': 'application/json',
@@ -287,7 +287,7 @@
             <div class="mb-3">
               <% if is_pending_payment %>
                 <!-- Payer (si paiement pending) -->
-                <%= button_to pay_order_path(@order),
+                <%= button_to order_payments_path(@order),
                     method: :post,
                     class: "btn btn-warning w-100 w-md-auto",
                     data: { turbo: false },

@@ -95,7 +95,7 @@
                   if (!isPolling) return;
                   
                   try {
-                    const response = await fetch('<%= payment_status_membership_path(@membership) %>', {
+                    const response = await fetch('<%= membership_status_payment_path(@membership) %>', {
                       method: 'GET',
                       headers: {
                         'Accept': 'application/json',
@@ -268,7 +268,7 @@
           <!-- Actions -->
           <div class="d-flex gap-2 justify-content-center">
             <% if @membership.status == 'pending' %>
-              <%= button_to pay_membership_path(@membership),
+              <%= button_to membership_payments_path(@membership),
                   method: :post,
                   class: "btn btn-primary",
                   data: { turbo: false } do %>

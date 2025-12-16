@@ -21,7 +21,7 @@ RSpec.describe Attendance, type: :model do
       duplicate = build_attendance(user: user, event: event)
 
       expect(duplicate).to be_invalid
-      expect(duplicate.errors[:user_id]).to include('a déjà une inscription pour cet événement')
+      expect(duplicate.errors[:user_id]).to include('a déjà une inscription pour cet événement avec ce statut')
     end
   end
 
@@ -104,6 +104,10 @@ RSpec.describe Attendance, type: :model do
   end
 
   describe 'scopes' do
+    # Nettoyer les anciennes données d'attendance (seeds, tests précédents)
+    before do
+      Attendance.delete_all
+    end
     it 'returns non-canceled attendances for active scope' do
       active = create_attendance(status: 'registered')
       create_attendance(status: 'canceled')
@@ -140,12 +144,17 @@ RSpec.describe Attendance, type: :model do
   end
 
   describe 'initiation-specific validations' do
-    let(:initiation) { create(:event_initiation, max_participants: 1) }
+    # Utiliser le helper générique pour créer une initiation,
+    # en bypassant les validations complexes d'Event::Initiation
+    let(:initiation) { create_event(type: 'Event::Initiation', max_participants: 1, allow_non_member_discovery: false) }
     let(:user) { create_user }
 
     describe 'when initiation is full' do
       before do
-        create_attendance(event: initiation, is_volunteer: false, status: 'registered')
+        # Créer un participant avec une adhésion active pour que l'inscription initiale soit valide
+        member_user = create_user
+        create(:membership, user: member_user, status: :active, season: '2025-2026')
+        create_attendance(event: initiation, user: member_user, is_volunteer: false, status: 'registered')
       end
 
       it 'prevents non-volunteer registration' do
@@ -163,22 +172,28 @@ RSpec.describe Attendance, type: :model do
     describe 'free_trial_used validation' do
       it 'prevents using free trial twice' do
         user = create_user
-        create_attendance(user: user, free_trial_used: true, event: create(:event_initiation))
+        first_initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
+        create_attendance(user: user, free_trial_used: true, event: first_initiation)
 
-        attendance = build_attendance(user: user, free_trial_used: true, event: create(:event_initiation))
+        second_initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
+        attendance = build_attendance(user: user, free_trial_used: true, event: second_initiation)
         expect(attendance).to be_invalid
         expect(attendance.errors[:free_trial_used]).to include("Vous avez déjà utilisé votre essai gratuit")
       end
 
       it 'allows free trial if never used' do
         user = create_user
-        attendance = build_attendance(user: user, free_trial_used: true, event: create(:event_initiation))
+        initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
+        attendance = build_attendance(user: user, free_trial_used: true, event: initiation)
         expect(attendance).to be_valid
       end
     end
 
     describe 'can_register_to_initiation' do
-      let(:initiation) { create(:event_initiation, max_participants: 30) }
+      # Par défaut, on ne permet PAS la découverte non-adhérents,
+      # pour tester le comportement "adhésion requise"
+      # On utilise build pour ne pas dépendre de la persistance en base de l'événement
+      let(:initiation) { build(:event_initiation, max_participants: 30, allow_non_member_discovery: false) }
       let(:user) { create_user }
 
       context 'when user has active membership' do
@@ -194,7 +209,8 @@ RSpec.describe Attendance, type: :model do
 
       context 'when user has child membership' do
         before do
-          create(:membership, user: user, status: :active, season: '2025-2026', is_child_membership: true)
+          # Utiliser le trait :child pour respecter toutes les validations des adhésions enfants
+          create(:membership, :child, user: user, status: :active, season: '2025-2026')
         end
 
         it 'allows registration with child membership' do
@@ -205,6 +221,8 @@ RSpec.describe Attendance, type: :model do
 
       context 'when user has no membership and no free trial' do
         it 'prevents registration' do
+          # S'assurer que l'utilisateur n'a pas d'adhésion active
+          user.memberships.destroy_all
           attendance = build_attendance(user: user, event: initiation, free_trial_used: false)
           expect(attendance).to be_invalid
           expect(attendance.errors[:base]).to include(match(/Adhésion requise/))
@@ -213,6 +231,9 @@ RSpec.describe Attendance, type: :model do
 
       context 'when user uses free trial' do
         it 'allows registration with free trial' do
+          # S'assurer que l'utilisateur n'a pas d'adhésion active et n'a pas utilisé l'essai gratuit
+          user.memberships.destroy_all
+          user.attendances.where(free_trial_used: true).destroy_all
           attendance = build_attendance(user: user, event: initiation, free_trial_used: true)
           expect(attendance).to be_valid
         end

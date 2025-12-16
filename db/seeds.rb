@@ -9,6 +9,54 @@ ActionMailer::Base.delivery_method = :test
 # Désactiver temporairement le callback d'envoi d'email pour tout le seed
 User.skip_callback(:create, :after, :send_welcome_email_and_confirmation)
 
+# Helper pour remplir le questionnaire de santé (toutes les réponses = "no" par défaut)
+def fill_health_questionnaire(has_issue: false)
+  health_attrs = {
+    health_questionnaire_status: has_issue ? "medical_required" : "ok"
+  }
+  (1..9).each do |i|
+    health_attrs["health_q#{i}"] = has_issue ? "yes" : "no"
+  end
+  health_attrs
+end
+
+# Helper pour créer une image de test pour les événements
+def attach_test_image_to_event(event)
+  # Créer un fichier PNG minimal valide (1x1 pixel)
+  require 'stringio'
+
+  # PNG minimal valide (1x1 pixel transparent)
+  # Format PNG standard avec signature, IHDR, IDAT minimal, IEND
+  png_bytes = [
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, # PNG signature
+    0x00, 0x00, 0x00, 0x0D, # IHDR chunk length (13 bytes)
+    0x49, 0x48, 0x44, 0x52, # "IHDR"
+    0x00, 0x00, 0x00, 0x01, # width = 1
+    0x00, 0x00, 0x00, 0x01, # height = 1
+    0x08, 0x06, 0x00, 0x00, 0x00, # bit depth=8, color type=6 (RGBA), compression=0, filter=0, interlace=0
+    0x1F, 0x15, 0xC4, 0x89, # CRC for IHDR
+    0x00, 0x00, 0x00, 0x0A, # IDAT chunk length (10 bytes)
+    0x49, 0x44, 0x41, 0x54, # "IDAT"
+    0x78, 0x9C, 0x63, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, # zlib compressed data (minimal)
+    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 # IEND
+  ].pack('C*')
+
+  begin
+    # Utiliser StringIO pour éviter les problèmes d'encodage
+    io = StringIO.new(png_bytes)
+    io.set_encoding(Encoding::BINARY)
+    # Utiliser un nom de fichier temporaire si l'événement n'a pas encore d'ID
+    filename = event.persisted? ? "event_#{event.id}_cover.png" : "event_cover.png"
+    event.cover_image.attach(
+      io: io,
+      filename: filename,
+      content_type: 'image/png'
+    )
+  rescue => e
+    Rails.logger.warn("Impossible d'attacher une image de test à l'événement : #{e.message}")
+  end
+end
+
 # 🧹 Nettoyage (dans l'ordre pour éviter les erreurs FK)
 # Phase 2 - Events
 Attendance.destroy_all
@@ -65,6 +113,7 @@ admin = User.new(
   phone: "0698765432",
   role: admin_role,
   skill_level: "advanced",
+  date_of_birth: Date.new(1980, 5, 15), # 44 ans
   confirmed_at: Time.now  # Confirmation automatique pour admin
 )
 admin.skip_confirmation_notification!
@@ -82,6 +131,7 @@ florian = User.new(
   phone: "0652556832",
   role: superadmin_role,
   skill_level: "advanced",
+  date_of_birth: Date.new(1990, 3, 20), # 34 ans
   confirmed_at: Time.now  # Confirmation automatique pour superadmin
 )
 florian.skip_confirmation_notification!
@@ -96,6 +146,12 @@ puts "   🆔 ID: #{florian.id}"
 skill_levels = [ "beginner", "intermediate", "advanced" ]
 20.times do |i|
   confirmed = rand > 0.2  # 80% des utilisateurs confirmés
+  # Générer une date de naissance (entre 18 et 65 ans)
+  age = rand(18..65)
+  birth_year = Date.today.year - age
+  birth_month = rand(1..12)
+  birth_day = rand(1..28)
+
   user = User.new(
     email: "client#{i + 1}@example.com",
     password: "password12345678",  # Minimum 12 caractères requis
@@ -106,6 +162,7 @@ skill_levels = [ "beginner", "intermediate", "advanced" ]
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
     skill_level: skill_levels.sample,
+    date_of_birth: Date.new(birth_year, birth_month, birth_day),
     confirmed_at: confirmed ? (Time.now - rand(0..7).days) : nil,  # Confirmation à des dates variées
     created_at: Time.now - rand(1..30).days,
     updated_at: Time.now
@@ -553,8 +610,9 @@ puts "✅ #{Route.count} routes créées !"
 organizer_role = Role.find_by(code: "ORGANIZER")
 admin_role = Role.find_by(code: "ADMIN")
 users = User.all
-florian = User.find_by(email: "T3rorX@hotmail.fr")
-admin_user = User.find_by(email: "admin@roller.com")
+# Recharger florian et admin depuis la base (ils ont été créés plus haut)
+florian = User.find_by(email: "T3rorX@hotmail.fr") || users.find { |u| u.email == "T3rorX@hotmail.fr" }
+admin_user = User.find_by(email: "admin@roller.com") || users.find { |u| u.email == "admin@roller.com" }
 
 # 🎪 Events (événements)
 puts "🎪 Création des événements..."
@@ -703,7 +761,19 @@ events_data = [
   }
 ]
 
-events = events_data.map { |attrs| Event.create!(attrs) }
+events = events_data.map do |attrs|
+  # Retirer cover_image_url qui n'est plus utilisé
+  cover_image_url = attrs.delete(:cover_image_url)
+  status = attrs[:status]
+  # Créer l'événement avec build pour pouvoir attacher l'image avant save
+  event = Event.new(attrs)
+  # Attacher une image de test si l'événement est publié ou annulé (avant save pour validation)
+  if status == "published" || status == "canceled"
+    attach_test_image_to_event(event)
+  end
+  event.save!
+  event
+end
 puts "✅ #{Event.count} événements créés !"
 
 # 📝 Attendances (inscriptions aux événements)
@@ -756,6 +826,86 @@ if published_events.any? && regular_users.any?
 end
 
 puts "✅ #{Attendance.count} inscriptions créées !"
+
+# 🎓 Initiations (cours d'initiation)
+puts "🎓 Création des initiations..."
+if florian || admin_user
+  creator = florian || admin_user
+  # Calculer le prochain samedi à 10h15
+  next_saturday = Date.today.next_occurring(:saturday)
+  next_saturday_time = Time.zone.local(next_saturday.year, next_saturday.month, next_saturday.day, 10, 15, 0)
+
+  initiations_data = [
+    {
+      creator_user: creator,
+      status: "published",
+      start_at: next_saturday_time,
+      duration_min: 105, # 1h45
+      title: "Initiation Roller - Samedi matin",
+      description: "Cours d'initiation au roller pour débutants. Apprenez les bases du roller en toute sécurité avec nos moniteurs expérimentés. Matériel disponible sur place.",
+      price_cents: 0,
+      currency: "EUR",
+      location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+      meeting_lat: 45.17323364952216,
+      meeting_lng: 5.705659385672371,
+      level: "beginner",
+      distance_km: 0,
+      max_participants: 30,
+      allow_non_member_discovery: true,
+      non_member_discovery_slots: 5
+    },
+    {
+      creator_user: creator,
+      status: "published",
+      start_at: next_saturday_time + 1.week,
+      duration_min: 105,
+      title: "Initiation Roller - Samedi suivant",
+      description: "Deuxième session d'initiation. Parfait pour ceux qui ont manqué la première ou qui souhaitent approfondir leurs bases.",
+      price_cents: 0,
+      currency: "EUR",
+      location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+      meeting_lat: 45.17323364952216,
+      meeting_lng: 5.705659385672371,
+      level: "beginner",
+      distance_km: 0,
+      max_participants: 25,
+      allow_non_member_discovery: false,
+      non_member_discovery_slots: 0
+    },
+    {
+      creator_user: creator,
+      status: "draft",
+      start_at: next_saturday_time + 2.weeks,
+      duration_min: 105,
+      title: "Initiation Roller - À venir",
+      description: "Initiation en préparation. Détails à venir.",
+      price_cents: 0,
+      currency: "EUR",
+      location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
+      meeting_lat: 45.17323364952216,
+      meeting_lng: 5.705659385672371,
+      level: "beginner",
+      distance_km: 0,
+      max_participants: 30,
+      allow_non_member_discovery: true,
+      non_member_discovery_slots: 5
+    }
+  ]
+
+  initiations = initiations_data.map do |attrs|
+    status = attrs[:status]
+    # Créer l'initiation avec build pour pouvoir attacher l'image avant save
+    initiation = Event::Initiation.new(attrs)
+    # Attacher une image de test si l'initiation est publiée (avant save pour validation)
+    if status == "published"
+      attach_test_image_to_event(initiation)
+    end
+    initiation.save!
+    initiation
+  end
+
+  puts "✅ #{Event::Initiation.count} initiations créées !"
+end
 
 # 📋 OrganizerApplications (candidatures organisateur)
 puts "📋 Création des candidatures organisateur..."
@@ -987,7 +1137,7 @@ if regular_users.any?
       rgpd_consent: true,
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: category == :with_ffrs,
-      health_questionnaire_status: :ok,
+      **fill_health_questionnaire(has_issue: false),
       created_at: current_season_start + rand(0..30).days
     )
   end
@@ -1015,7 +1165,7 @@ if regular_users.any?
       rgpd_consent: true,
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: category == :with_ffrs,
-      health_questionnaire_status: :ok,
+      **fill_health_questionnaire(has_issue: false),
       created_at: previous_season_start + rand(0..30).days
     )
   end
@@ -1054,7 +1204,7 @@ if regular_users.any?
       rgpd_consent: true,
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: false,
-      health_questionnaire_status: :ok,
+      **fill_health_questionnaire(has_issue: false),
       created_at: current_season_start + rand(0..30).days
     )
   end
@@ -1093,7 +1243,7 @@ if regular_users.any?
       rgpd_consent: true,
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: false,
-      health_questionnaire_status: :ok,
+      **fill_health_questionnaire(has_issue: false),
       created_at: previous_season_start + rand(0..30).days
     )
   end
@@ -1118,7 +1268,7 @@ if regular_users.any?
       rgpd_consent: true,
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: false,
-      health_questionnaire_status: :ok,
+      **fill_health_questionnaire(has_issue: false),
       created_at: Time.now - 2.days
     )
     puts "    ✅ 1 adhésion personnelle en attente créée"
@@ -1373,7 +1523,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: current_season_start + 5.days
   )
@@ -1417,7 +1567,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: current_season_start + 10.days
   )
@@ -1461,7 +1611,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: true,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: current_season_start + 15.days
   )
@@ -1505,7 +1655,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: previous_season_start + 20.days
   )
@@ -1549,7 +1699,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: true,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: previous_season_start + 25.days
   )
@@ -1584,7 +1734,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: Time.now - 1.day
   )
@@ -1619,7 +1769,7 @@ if florian
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: true,
-    health_questionnaire_status: :ok,
+    **fill_health_questionnaire(has_issue: false),
     medical_certificate_provided: true,
     created_at: Time.now - 3.days
   )

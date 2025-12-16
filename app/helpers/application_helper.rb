@@ -17,9 +17,9 @@ module ApplicationHelper
   # - Format : "15 euros" ou "15,50 euros" (pas de "EUR" avant)
   def format_event_price(price_cents)
     return "Gratuit" if price_cents.nil? || price_cents == 0
-    
+
     amount = price_cents / 100.0
-    
+
     # Formater sans décimales si c'est un nombre entier
     if amount == amount.to_i
       "#{amount.to_i} euros"

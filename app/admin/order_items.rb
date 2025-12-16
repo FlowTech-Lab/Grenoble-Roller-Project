@@ -76,4 +76,3 @@ ActiveAdmin.register OrderItem do
     end
   end
 end
-

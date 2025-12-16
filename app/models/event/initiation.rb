@@ -1,6 +1,7 @@
 class Event::Initiation < Event
   # Scopes spécifiques
   scope :upcoming_initiations, -> { where("start_at > ?", Time.current).order(:start_at) }
+  scope :by_season, ->(season) { where(season: season) }
 
   # Validations spécifiques aux initiations
   # distance_km : doit être 0 (pas de parcours) - la validation du parent est désactivée avec unless: :initiation?
@@ -83,11 +84,11 @@ class Event::Initiation < Event
     # Utiliser includes pour éviter les requêtes N+1
     participant_attendances = attendances.includes(:user, :child_membership)
                                          .where(is_volunteer: false, status: [ "registered", "present", "pending" ])
-    
+
     count = 0
     participant_attendances.each do |attendance|
       is_member = false
-      
+
       if attendance.child_membership_id.present?
         # Pour un enfant : vérifier l'adhésion enfant
         is_member = attendance.child_membership&.active?
@@ -97,7 +98,7 @@ class Event::Initiation < Event
         is_member = attendance.user.memberships.active_now.exists? ||
                     attendance.user.memberships.active_now.where(is_child_membership: true).exists?
       end
-      
+
       count += 1 if is_member
     end
     count
