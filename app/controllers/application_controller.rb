@@ -10,19 +10,19 @@ class ApplicationController < ActionController::Base
 
   rescue_from Pundit::NotAuthorizedError do |exception|
     # Pour les initiations et événements en draft, rediriger vers root même pour les utilisateurs non connectés
-    if request.path.include?('/initiations/') || request.path.include?('/events/')
+    if request.path.include?("/initiations/") || request.path.include?("/events/")
       record = exception.record rescue nil
       if record.is_a?(Event) && !record.published? && !record.canceled?
         redirect_to root_path, alert: "Cette ressource n'est pas accessible."
         return
       end
     end
-    
+
     if user_signed_in?
       user_not_authorized(exception)
     else
       # Pour les initiations/événements, rediriger vers root au lieu de la page de connexion
-      if request.path.include?('/initiations/') || request.path.include?('/events/')
+      if request.path.include?("/initiations/") || request.path.include?("/events/")
         redirect_to root_path, alert: "Cette ressource n'est pas accessible."
       else
         redirect_to new_user_session_path, alert: "Vous devez être connecté pour accéder à cette page."
@@ -76,7 +76,7 @@ class ApplicationController < ActionController::Base
       }, status: :forbidden
     else
       # Pour les routes d'événements, toujours rediriger vers root_path
-      if request.path.include?('/events/') || request.path.include?('/initiations/')
+      if request.path.include?("/events/") || request.path.include?("/initiations/")
         redirect_to root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action."
       else
         redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")

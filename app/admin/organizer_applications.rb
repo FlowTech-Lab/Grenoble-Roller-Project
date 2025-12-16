@@ -49,9 +49,9 @@ ActiveAdmin.register OrganizerApplication do
     actions
   end
 
-  filter :user, collection: -> { User.order(:email) }
+  filter :user, collection: -> { User.order(:last_name, :first_name) }
   filter :status, as: :select, collection: OrganizerApplication.statuses.keys
-  filter :reviewed_by, collection: -> { User.order(:email) }
+  filter :reviewed_by, collection: -> { User.order(:last_name, :first_name) }
   filter :created_at
 
   show do
@@ -70,10 +70,10 @@ ActiveAdmin.register OrganizerApplication do
     f.semantic_errors
 
     f.inputs "Candidature" do
-      f.input :user, collection: User.order(:email)
+      f.input :user, collection: User.order(:last_name, :first_name)
       f.input :status, as: :select, collection: OrganizerApplication.statuses.keys
       f.input :motivation
-      f.input :reviewed_by, collection: User.order(:email)
+      f.input :reviewed_by, collection: User.order(:last_name, :first_name)
       f.input :reviewed_at, as: :datetime_select
     end
 

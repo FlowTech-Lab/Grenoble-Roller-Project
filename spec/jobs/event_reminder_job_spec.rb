@@ -19,7 +19,7 @@ RSpec.describe EventReminderJob, type: :job do
       Event.delete_all
       ActionMailer::Base.deliveries.clear
     end
-    
+
     let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
     let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
     let!(:user) { create_user(email: 'test@example.com', role: user_role) }
@@ -46,22 +46,22 @@ RSpec.describe EventReminderJob, type: :job do
         expect(event_tomorrow_morning.status).to eq('published')
         expect(event_tomorrow_morning.start_at).to be > Time.zone.now.beginning_of_day + 1.day
         expect(event_tomorrow_morning.start_at).to be < (Time.zone.now.beginning_of_day + 1.day).end_of_day
-        
+
         # Vérifier que l'attendance est bien créée
         expect(attendance).to be_persisted
         expect(attendance.status).to eq('registered')
         expect(attendance.wants_reminder).to be true
-        
+
         # Vérifier que le job trouve l'événement
         tomorrow_start = Time.zone.now.beginning_of_day + 1.day
         tomorrow_end = tomorrow_start.end_of_day
         events_found = Event.published.upcoming.where(start_at: tomorrow_start..tomorrow_end)
         expect(events_found).to include(event_tomorrow_morning)
-        
+
         # Vérifier que le scope active trouve l'attendance
         active_attendances = event_tomorrow_morning.attendances.active.where(wants_reminder: true)
         expect(active_attendances).to include(attendance)
-        
+
         # Le job trouve tous les événements de demain, donc on vérifie seulement que l'email est envoyé
         initial_count = ActionMailer::Base.deliveries.count
         expect do
@@ -80,7 +80,7 @@ RSpec.describe EventReminderJob, type: :job do
       it 'sends reminder for events at different times tomorrow' do
         attendance_afternoon = create_attendance(user: user, event: event_tomorrow_afternoon, status: 'registered', wants_reminder: true)
         attendance_evening = create_attendance(user: user, event: event_tomorrow_evening, status: 'registered', wants_reminder: true)
-        
+
         # Vérifier que les attendances sont créées
         expect(attendance_afternoon).to be_persisted
         expect(attendance_evening).to be_persisted
@@ -92,7 +92,7 @@ RSpec.describe EventReminderJob, type: :job do
             EventReminderJob.perform_now
           end
         end.to change { ActionMailer::Base.deliveries.count }.by_at_least(3)
-        
+
         # Vérifier que les 3 emails pour cet utilisateur sont présents
         emails = ActionMailer::Base.deliveries.select { |m| m.to.include?(user.email) && m.subject.include?('Rappel') }
         expect(emails.count).to be >= 3
@@ -128,7 +128,7 @@ RSpec.describe EventReminderJob, type: :job do
         tomorrow_start = Time.zone.now.beginning_of_day + 1.day
         tomorrow_end = tomorrow_start.end_of_day
         expect(event_today.start_at).to be < tomorrow_start
-        
+
         expect do
           perform_enqueued_jobs do
             EventReminderJob.perform_now
@@ -141,7 +141,7 @@ RSpec.describe EventReminderJob, type: :job do
         tomorrow_start = Time.zone.now.beginning_of_day + 1.day
         tomorrow_end = tomorrow_start.end_of_day
         expect(event_day_after_tomorrow.start_at).to be > tomorrow_end
-        
+
         expect do
           perform_enqueued_jobs do
             EventReminderJob.perform_now

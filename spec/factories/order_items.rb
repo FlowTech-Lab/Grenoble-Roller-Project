@@ -8,4 +8,3 @@ FactoryBot.define do
     unit_price_cents { 5000 } # Par défaut, utiliser le prix du variant
   end
 end
-

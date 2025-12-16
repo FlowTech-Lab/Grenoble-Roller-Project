@@ -6,4 +6,3 @@ FactoryBot.define do
     slug { "rollers-#{SecureRandom.hex(4)}" }
   end
 end
-

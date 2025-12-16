@@ -40,13 +40,13 @@ class RegistrationsController < Devise::RegistrationsController
                         "Votre compte a été créé avec succès. " \
                         "Un email de confirmation vous a été envoyé. " \
                         "Veuillez confirmer votre adresse email pour accéder à toutes les fonctionnalités."
-        flash[:type] = 'success'
+        flash[:type] = "success"
       else
         flash[:notice] = "Bienvenue ! 🎉 " \
                         "Votre compte a été créé avec succès. " \
                         "Un email de confirmation vous a été envoyé. " \
                         "Veuillez confirmer votre adresse email pour accéder à toutes les fonctionnalités."
-        flash[:type] = 'success'
+        flash[:type] = "success"
       end
 
       # Ne PAS connecter l'utilisateur automatiquement - il DOIT confirmer son email
@@ -87,7 +87,7 @@ class RegistrationsController < Devise::RegistrationsController
       day = params[:date_of_birth_day].to_i
       month = params[:date_of_birth_month].to_i
       year = params[:date_of_birth_year].to_i
-      
+
       begin
         date_of_birth = Date.new(year, month, day)
         params[:date_of_birth] = date_of_birth.to_s
@@ -96,24 +96,24 @@ class RegistrationsController < Devise::RegistrationsController
         return false
       end
     end
-    
+
     # Supprimer les paramètres temporaires
     params.delete(:date_of_birth_day)
     params.delete(:date_of_birth_month)
     params.delete(:date_of_birth_year)
-    
+
     # VALIDATION : current_password est TOUJOURS requis (bonne pratique sécurité)
     if params[:current_password].blank?
       resource.errors.add(:current_password, "est requis pour toute modification")
       return false
     end
-    
+
     # Vérifier que current_password est correct
     unless resource.valid_password?(params[:current_password])
       resource.errors.add(:current_password, "est incorrect")
       return false
     end
-    
+
     # Si password et password_confirmation sont vides, mise à jour sans changer le mot de passe
     if params[:password].blank? && params[:password_confirmation].blank?
       # Supprimer current_password de params (update_without_password ne l'accepte pas)

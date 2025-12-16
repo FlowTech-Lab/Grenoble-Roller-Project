@@ -7,7 +7,7 @@ class CreateRollerStocks < ActiveRecord::Migration[8.1]
 
       t.timestamps
     end
-    
+
     add_index :roller_stocks, :size, unique: true
     add_index :roller_stocks, :is_active
   end

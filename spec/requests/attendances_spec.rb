@@ -23,7 +23,7 @@ RSpec.describe 'Attendances', type: :request do
     e.save!
     e
   end
-  
+
   # Stubber l'envoi d'emails pour éviter les erreurs SMTP
   before do
     allow_any_instance_of(User).to receive(:send_confirmation_instructions).and_return(true)

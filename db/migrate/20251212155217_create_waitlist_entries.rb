@@ -12,7 +12,7 @@ class CreateWaitlistEntries < ActiveRecord::Migration[8.1]
     end
 
     # Index pour optimiser les requêtes
-    add_index :waitlist_entries, [:event_id, :status, :position]
-    add_index :waitlist_entries, [:user_id, :event_id, :child_membership_id], unique: true, name: "index_waitlist_entries_on_user_event_child"
+    add_index :waitlist_entries, [ :event_id, :status, :position ]
+    add_index :waitlist_entries, [ :user_id, :event_id, :child_membership_id ], unique: true, name: "index_waitlist_entries_on_user_event_child"
   end
 end

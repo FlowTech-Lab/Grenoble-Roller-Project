@@ -15,4 +15,3 @@ class EventLoopRoute < ApplicationRecord
     %w[event route]
   end
 end
-

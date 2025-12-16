@@ -193,7 +193,7 @@ ActiveAdmin.register Membership do
   # Actions personnalisées
   member_action :activate, method: :put do
     @membership = resource
-    
+
     if @membership.status == "pending"
       @membership.update!(status: :active)
       redirect_to admin_membership_path(@membership), notice: "Adhésion validée avec succès. L'adhésion est maintenant active."
@@ -205,7 +205,7 @@ ActiveAdmin.register Membership do
   controller do
     def destroy
       @membership = resource
-      
+
       if @membership.destroy
         redirect_to collection_path, notice: "L'adhésion ##{@membership.id} a été supprimée avec succès."
       else
@@ -218,7 +218,7 @@ ActiveAdmin.register Membership do
     f.semantic_errors
 
     f.inputs "Adhésion" do
-      f.input :user, collection: User.order(:email).map { |u| [ u.email, u.id ] }
+      f.input :user, collection: User.order(:last_name, :first_name).map { |u| [ u.to_s, u.id ] }
       f.input :category, as: :select, collection: {
         "Standard (10€)" => "standard",
         "FFRS (56.55€)" => "with_ffrs"

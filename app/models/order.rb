@@ -1,6 +1,6 @@
 class Order < ApplicationRecord
   include Hashid::Rails
-  
+
   belongs_to :user
   belongs_to :payment, optional: true  # Optionnel pour l'instant, sera requis avec HelloAsso
   has_many :order_items, dependent: :destroy

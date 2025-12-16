@@ -1,7 +1,7 @@
 class PasswordsController < Devise::PasswordsController
   # Inclure TurnstileVerifiable pour la vérification anti-bot
   include TurnstileVerifiable
-  
+
   # Ce controller gère :
   # 1. "Mot de passe oublié" (reset via email) pour utilisateurs NON connectés
   # 2. "Changer le mot de passe" pour utilisateurs connectés (via formulaire séparé)
@@ -44,7 +44,7 @@ class PasswordsController < Devise::PasswordsController
       render :new, status: :unprocessable_entity
       return
     end
-    
+
     Rails.logger.info("PasswordsController#create - Turnstile verification PASSED, proceeding with password reset request")
     super
   end
@@ -64,7 +64,7 @@ class PasswordsController < Devise::PasswordsController
         render :edit, status: :unprocessable_entity
         return
       end
-      
+
       Rails.logger.info("PasswordsController#update - Turnstile verification PASSED, proceeding with password reset")
       # Réinitialisation via email (comportement par défaut de Devise)
       super

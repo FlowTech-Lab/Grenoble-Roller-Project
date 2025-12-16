@@ -66,7 +66,7 @@ class EventPolicy < ApplicationPolicy
 
   def leave_waitlist?
     return false unless user
-    record.waitlist_entries.exists?(user: user, status: ["pending", "notified"])
+    record.waitlist_entries.exists?(user: user, status: [ "pending", "notified" ])
   end
 
   def convert_waitlist_to_attendance?

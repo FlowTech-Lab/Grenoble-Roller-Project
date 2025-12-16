@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe EventMailer, type: :mailer do
   let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
-  
+
   describe '#attendance_confirmed' do
     let(:user) { create(:user, first_name: 'John', email: 'john@example.com', role: user_role) }
     let(:organizer) { create(:user, role: organizer_role) }

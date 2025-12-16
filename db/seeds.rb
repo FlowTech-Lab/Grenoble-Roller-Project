@@ -24,7 +24,7 @@ end
 def attach_test_image_to_event(event)
   # Créer un fichier PNG minimal valide (1x1 pixel)
   require 'stringio'
-  
+
   # PNG minimal valide (1x1 pixel transparent)
   # Format PNG standard avec signature, IHDR, IDAT minimal, IEND
   png_bytes = [
@@ -40,7 +40,7 @@ def attach_test_image_to_event(event)
     0x78, 0x9C, 0x63, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, # zlib compressed data (minimal)
     0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 # IEND
   ].pack('C*')
-  
+
   begin
     # Utiliser StringIO pour éviter les problèmes d'encodage
     io = StringIO.new(png_bytes)
@@ -151,7 +151,7 @@ skill_levels = [ "beginner", "intermediate", "advanced" ]
   birth_year = Date.today.year - age
   birth_month = rand(1..12)
   birth_day = rand(1..28)
-  
+
   user = User.new(
     email: "client#{i + 1}@example.com",
     password: "password12345678",  # Minimum 12 caractères requis
@@ -834,7 +834,7 @@ if florian || admin_user
   # Calculer le prochain samedi à 10h15
   next_saturday = Date.today.next_occurring(:saturday)
   next_saturday_time = Time.zone.local(next_saturday.year, next_saturday.month, next_saturday.day, 10, 15, 0)
-  
+
   initiations_data = [
     {
       creator_user: creator,
@@ -891,7 +891,7 @@ if florian || admin_user
       non_member_discovery_slots: 5
     }
   ]
-  
+
   initiations = initiations_data.map do |attrs|
     status = attrs[:status]
     # Créer l'initiation avec build pour pouvoir attacher l'image avant save
@@ -903,7 +903,7 @@ if florian || admin_user
     initiation.save!
     initiation
   end
-  
+
   puts "✅ #{Event::Initiation.count} initiations créées !"
 end
 

@@ -7,28 +7,27 @@ FactoryBot.define do
   end
 
   trait :small_size do
-    association :option_type, factory: [:option_type, :size]
+    association :option_type, factory: [ :option_type, :size ]
     value { 'Small' }
   end
 
   trait :medium_size do
-    association :option_type, factory: [:option_type, :size]
+    association :option_type, factory: [ :option_type, :size ]
     value { 'Medium' }
   end
 
   trait :large_size do
-    association :option_type, factory: [:option_type, :size]
+    association :option_type, factory: [ :option_type, :size ]
     value { 'Large' }
   end
 
   trait :red_color do
-    association :option_type, factory: [:option_type, :color]
+    association :option_type, factory: [ :option_type, :color ]
     value { 'Red' }
   end
 
   trait :blue_color do
-    association :option_type, factory: [:option_type, :color]
+    association :option_type, factory: [ :option_type, :color ]
     value { 'Blue' }
   end
 end
-

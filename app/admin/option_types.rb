@@ -52,4 +52,3 @@ ActiveAdmin.register OptionType do
     end
   end
 end
-

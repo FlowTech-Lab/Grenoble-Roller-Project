@@ -1,6 +1,6 @@
 class Attendance < ApplicationRecord
   include Hashid::Rails
-  
+
   belongs_to :user
   belongs_to :event, counter_cache: true
   belongs_to :payment, optional: true
@@ -20,8 +20,8 @@ class Attendance < ApplicationRecord
   # - child_membership_id est différent (parent + enfants)
   # - OU is_volunteer est différent (bénévole + participant)
   # Note: Un utilisateur peut être inscrit comme bénévole ET participant (deux inscriptions distinctes)
-  validates :user_id, uniqueness: { 
-    scope: [:event_id, :child_membership_id, :is_volunteer], 
+  validates :user_id, uniqueness: {
+    scope: [ :event_id, :child_membership_id, :is_volunteer ],
     message: "a déjà une inscription pour cet événement avec ce statut",
     conditions: -> { where.not(status: "canceled") } # Ne pas compter les inscriptions annulées
   }
@@ -61,7 +61,7 @@ class Attendance < ApplicationRecord
     else
       # Construire le nom complet à partir de first_name et last_name
       if user
-        name_parts = [user.first_name, user.last_name].compact.reject(&:blank?)
+        name_parts = [ user.first_name, user.last_name ].compact.reject(&:blank?)
         name_parts.any? ? name_parts.join(" ") : user.email
       else
         "Parent"
@@ -92,7 +92,7 @@ class Attendance < ApplicationRecord
 
     # Pour les initiations avec limitation des non-adhérents
     if event.is_a?(Event::Initiation) && event.allow_non_member_discovery?
-      is_member = user.memberships.active_now.exists? || 
+      is_member = user.memberships.active_now.exists? ||
                   (child_membership_id.present? && child_membership&.active?) ||
                   (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
 
@@ -110,7 +110,7 @@ class Attendance < ApplicationRecord
     else
       # Comportement classique : vérifier le total
       # Exclure "pending" du comptage car elles verrouillent une place mais ne sont pas encore confirmées
-      active_attendances_count = event.attendances.where.not(status: ["canceled", "pending"]).where(is_volunteer: false).count
+      active_attendances_count = event.attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count
 
       # Si on crée une nouvelle inscription, vérifier qu'il reste de la place
       # (ne pas compter cette inscription si elle n'est pas encore sauvegardée)
@@ -137,7 +137,7 @@ class Attendance < ApplicationRecord
     return if is_volunteer # Bénévoles bypassent les validations
 
     # Vérifier places disponibles selon le type (adhérent/non-adhérent)
-    is_member = user.memberships.active_now.exists? || 
+    is_member = user.memberships.active_now.exists? ||
                 (child_membership_id.present? && child_membership&.active?) ||
                 (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
 
@@ -182,7 +182,7 @@ class Attendance < ApplicationRecord
           errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
         end
       end
-      # Si l'option est activée et que l'utilisateur n'est pas adhérent, 
+      # Si l'option est activée et que l'utilisateur n'est pas adhérent,
       # l'inscription est autorisée dans les places découverte (pas besoin d'essai gratuit)
     end
   end
@@ -228,13 +228,13 @@ class Attendance < ApplicationRecord
     # Ne pas notifier si c'est une inscription "pending" (c'est une place verrouillée par la liste d'attente)
     # Note: dans after_destroy, l'objet existe encore en mémoire avec ses attributs
     return if status == "pending"
-    
+
     # Ne pas notifier si c'est un bénévole (ils ne comptent pas dans les places)
     return if is_volunteer
-    
+
     # Recharger l'événement pour avoir le bon comptage après la destruction
     event.reload
-    
+
     # Vérifier si l'événement a maintenant des places disponibles
     if event.has_available_spots?
       # Notifier la première personne en liste d'attente

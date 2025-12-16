@@ -65,4 +65,3 @@ ActiveAdmin.register VariantOptionValue do
     end
   end
 end
-

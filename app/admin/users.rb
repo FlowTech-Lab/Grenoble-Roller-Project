@@ -13,9 +13,10 @@ ActiveAdmin.register User do
   index do
     selectable_column
     id_column
+    column "Nom complet", :first_name do |user|
+      user.to_s # Affiche "Prénom Nom"
+    end
     column :email
-    column :first_name
-    column :last_name
     column :role
     column "Bénévole" do |user|
       status_tag(user.can_be_volunteer == true ? "Oui" : "Non", class: user.can_be_volunteer == true ? "ok" : "no")
@@ -162,7 +163,7 @@ ActiveAdmin.register User do
     end
 
     f.inputs "Bénévole" do
-      f.input :can_be_volunteer, 
+      f.input :can_be_volunteer,
               as: :boolean,
               label: "Peut être bénévole encadrant",
               hint: "Si coché, cet utilisateur pourra s'inscrire en tant que bénévole sur les initiations"
@@ -184,7 +185,7 @@ ActiveAdmin.register User do
           params[:user].delete(:password)
           params[:user].delete(:password_confirmation)
         end
-        
+
         # Gérer le boolean can_be_volunteer (si non présent dans les params, c'est false)
         # ActiveAdmin n'envoie pas les checkboxes non cochées
         unless params[:user].key?(:can_be_volunteer)

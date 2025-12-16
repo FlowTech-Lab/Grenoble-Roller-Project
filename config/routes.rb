@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
-    resource :maintenance, only: [:update], controller: "/admin/maintenance_toggle" do
+    resource :maintenance, only: [ :update ], controller: "/admin/maintenance_toggle" do
       member do
         patch :toggle
       end
@@ -63,7 +63,7 @@ Rails.application.routes.draw do
 
   # Orders (Checkout)
   resources :orders, only: [ :index, :new, :create, :show ] do
-    resources :payments, only: [:create], shallow: true, controller: 'orders/payments' do
+    resources :payments, only: [ :create ], shallow: true, controller: "orders/payments" do
       collection do
         # Statut du paiement (peut être appelé même sans payment créé)
         get :status, action: :show
@@ -77,7 +77,7 @@ Rails.application.routes.draw do
 
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
-    resources :payments, only: [:create], shallow: true, controller: 'memberships/payments' do
+    resources :payments, only: [ :create ], shallow: true, controller: "memberships/payments" do
       collection do
         # Paiement groupé pour plusieurs enfants en attente
         post :create_multiple
@@ -90,9 +90,9 @@ Rails.application.routes.draw do
       # Redirection de l'ancienne page choose vers new
       get :choose, to: redirect { |params, request|
         if params[:child] == "true"
-          new_membership_path(type: 'child', renew_from: params[:renew_from])
+          new_membership_path(type: "child", renew_from: params[:renew_from])
         else
-          new_membership_path(type: 'adult')
+          new_membership_path(type: "adult")
         end
       }
     end
@@ -100,13 +100,13 @@ Rails.application.routes.draw do
 
   # Events (Phase 2)
   resources :events do
-    resources :attendances, only: [:create], shallow: true, controller: 'events/attendances' do
+    resources :attendances, only: [ :create ], shallow: true, controller: "events/attendances" do
       collection do
         delete :destroy
         patch :toggle_reminder
       end
     end
-    resources :waitlist_entries, only: [:create, :destroy], shallow: true, controller: 'events/waitlist_entries' do
+    resources :waitlist_entries, only: [ :create, :destroy ], shallow: true, controller: "events/waitlist_entries" do
       member do
         post :convert_to_attendance
         post :refuse
@@ -122,13 +122,13 @@ Rails.application.routes.draw do
 
       # Initiations
       resources :initiations do
-        resources :attendances, only: [:create], shallow: true, controller: 'initiations/attendances' do
+        resources :attendances, only: [ :create ], shallow: true, controller: "initiations/attendances" do
           collection do
             delete :destroy
             patch :toggle_reminder
           end
         end
-        resources :waitlist_entries, only: [:create, :destroy], shallow: true, controller: 'initiations/waitlist_entries' do
+        resources :waitlist_entries, only: [ :create, :destroy ], shallow: true, controller: "initiations/waitlist_entries" do
           member do
             post :convert_to_attendance
             post :refuse
@@ -139,7 +139,7 @@ Rails.application.routes.draw do
       end
 
   # Routes REST pour les parcours
-  resources :routes, only: [:create] do
+  resources :routes, only: [ :create ] do
     member do
       get :info, defaults: { format: "json" }
     end

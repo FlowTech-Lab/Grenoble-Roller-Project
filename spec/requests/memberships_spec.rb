@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Memberships", type: :request do
   include RequestAuthenticationHelper
   include TestDataHelper
-  
+
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) { create_user(role: role) }
 
@@ -97,7 +97,7 @@ RSpec.describe "Memberships", type: :request do
     let(:child_membership2) { create(:membership, :child, :pending, user: user) }
 
     it "requires authentication" do
-      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [child_membership1.id, child_membership2.id] }
+      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [ child_membership1.id, child_membership2.id ] }
       expect(response).to redirect_to(new_user_session_path)
     end
 
@@ -112,7 +112,7 @@ RSpec.describe "Memberships", type: :request do
         }
       })
 
-      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [child_membership1.id, child_membership2.id] }
+      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [ child_membership1.id, child_membership2.id ] }
       expect(response).to have_http_status(:redirect)
     end
   end

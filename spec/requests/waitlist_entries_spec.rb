@@ -29,7 +29,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
     event
   end
   let(:initiation) { create(:event_initiation, :published, :upcoming, max_participants: 2) }
-  
+
   # Stubber l'envoi d'emails pour éviter les erreurs SMTP
   before do
     allow_any_instance_of(User).to receive(:send_confirmation_instructions).and_return(true)
@@ -96,12 +96,12 @@ RSpec.describe 'Waitlist Entries', type: :request do
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
       fill_event_to_capacity(event, 2)
-      
+
       @waitlist_entry = build(:waitlist_entry, user: user, event: event)
       @waitlist_entry.save(validate: false)
       @waitlist_entry.update_column(:status, 'notified')
       @waitlist_entry.update_column(:notified_at, 1.hour.ago)
-      
+
       # Créer l'attendance pending associée
       pending_attendance = event.attendances.build(
         user: user,
@@ -141,12 +141,12 @@ RSpec.describe 'Waitlist Entries', type: :request do
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
       fill_event_to_capacity(event, 2)
-      
+
       @waitlist_entry = build(:waitlist_entry, user: user, event: event)
       @waitlist_entry.save(validate: false)
       @waitlist_entry.update_column(:status, 'notified')
       @waitlist_entry.update_column(:notified_at, 1.hour.ago)
-      
+
       # Créer l'attendance pending associée
       pending_attendance = event.attendances.build(
         user: user,
@@ -186,7 +186,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
       fill_event_to_capacity(event, 2)
-      
+
       @pending_attendance, @waitlist_entry = create_notified_waitlist_with_pending_attendance(user, event)
       event.attendances.reload  # ← Critique!
       event.waitlist_entries.reload  # ← Critique pour les politiques Pundit!
@@ -218,7 +218,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
     before do
       # Remplir l'événement d'abord (requis pour créer une waitlist_entry)
       fill_event_to_capacity(event, 2)
-      
+
       @pending_attendance, @waitlist_entry = create_notified_waitlist_with_pending_attendance(user, event)
       event.attendances.reload  # ← Critique!
       event.waitlist_entries.reload  # ← Critique pour les politiques Pundit!
@@ -233,7 +233,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
 
     it 'declines waitlist entry via GET (from email link)' do
       initial_count = event.attendances.where(user: user, status: 'pending').count
-      
+
       login_user(user)
 
       expect {

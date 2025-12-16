@@ -12,4 +12,3 @@ FactoryBot.define do
     is_active { true }
   end
 end
-

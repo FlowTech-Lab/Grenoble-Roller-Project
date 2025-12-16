@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'Orders', type: :request do
   include RequestAuthenticationHelper
-  
+
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) do
     user = build(:user, role: role)
@@ -87,7 +87,7 @@ RSpec.describe 'Orders', type: :request do
       expect {
         post orders_path
       }.not_to change(Order, :count)
-      
+
       # Vérifier que l'utilisateur est redirigé avec un message d'erreur
       expect(response).to redirect_to(root_path)
       expect(flash[:alert]).to include('confirmer votre adresse email')
@@ -159,7 +159,7 @@ RSpec.describe 'Orders', type: :request do
       # Le contrôleur doit retourner 404 si la commande n'appartient pas à l'utilisateur
       # Utiliser hashid pour accéder à la commande
       get order_path(other_order.hashid)
-      
+
       # Rails intercepte RecordNotFound et retourne 404
       expect(response).to have_http_status(:not_found)
     end

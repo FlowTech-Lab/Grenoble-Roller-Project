@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe 'Products', type: :request do
   let(:category) { create(:product_category) }
   let(:product) { create(:product, category: category, slug: 'roller-quad') }
-  
+
   # Créer un variant pour tous les tests pour éviter les erreurs dans la vue
   before do
     create(:product_variant, product: product, is_active: true) unless product.product_variants.any?
@@ -41,7 +41,7 @@ RSpec.describe 'Products', type: :request do
     it 'loads active variants' do
       active_variant = create(:product_variant, product: product, is_active: true)
       inactive_variant = create(:product_variant, product: product, is_active: false)
-      
+
       get product_path(product.slug)
       expect(response).to have_http_status(:success)
       expect(assigns(:variants)).to include(active_variant)
@@ -60,4 +60,3 @@ RSpec.describe 'Products', type: :request do
     end
   end
 end
-

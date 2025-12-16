@@ -63,7 +63,7 @@ ActiveAdmin.register Event do
     "Annulé" => "canceled"
   }
   filter :route
-  filter :creator_user, collection: -> { User.order(:email) }
+  filter :creator_user, collection: -> { User.order(:last_name, :first_name) }
   filter :start_at
   filter :created_at
 
@@ -163,13 +163,13 @@ ActiveAdmin.register Event do
           end
           column "Actions" do |entry|
             if entry.notified?
-              link_to("Convertir en inscription", convert_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id), 
-                      method: :post, 
+              link_to("Convertir en inscription", convert_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id),
+                      method: :post,
                       class: "button button-small",
                       data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
             elsif entry.pending? && event.has_available_spots?
-              link_to("Notifier maintenant", notify_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id), 
-                      method: :post, 
+              link_to("Notifier maintenant", notify_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id),
+                      method: :post,
                       class: "button button-small",
                       data: { confirm: "Notifier cette personne qu'une place est disponible ?" })
             else
@@ -202,8 +202,8 @@ ActiveAdmin.register Event do
         hint: "Changer le statut pour valider, publier, refuser ou annuler l'événement"
       f.input :route
       f.input :creator_user,
-        collection: User.order(:email).map { |u| [ u.email, u.id ] },
-        label_method: :email,
+        collection: User.order(:last_name, :first_name).map { |u| [ u.to_s, u.id ] },
+        label_method: :to_s,
         value_method: :id
       f.input :start_at, as: :datetime_select
       f.input :duration_min

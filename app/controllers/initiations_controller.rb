@@ -22,10 +22,10 @@ class InitiationsController < ApplicationController
       end
       return
     end
-    
+
     # Autoriser l'accès (lève une exception si non autorisé)
     authorize @initiation
-    
+
     respond_to do |format|
       format.html do
         # @initiation déjà chargé avec includes dans set_initiation
@@ -37,7 +37,7 @@ class InitiationsController < ApplicationController
           # Vérifier si l'utilisateur peut s'inscrire en tant que bénévole (pas encore inscrit en tant que bénévole)
           @user_volunteer_attendance = @user_attendances.find_by(child_membership_id: nil, is_volunteer: true)
           @can_register_as_volunteer = current_user.can_be_volunteer == true && @user_volunteer_attendance.nil?
-          
+
           # Charger les entrées de liste d'attente de l'utilisateur
           @user_waitlist_entries = @initiation.waitlist_entries.where(user: current_user).active.includes(:child_membership)
           @user_waitlist_entry = @user_waitlist_entries.find_by(child_membership_id: nil) # Entrée parent
@@ -48,7 +48,7 @@ class InitiationsController < ApplicationController
           @child_attendances = Attendance.none
           @user_volunteer_attendance = nil
           @can_register_as_volunteer = false
-          
+
           # Charger les entrées de liste d'attente de l'utilisateur
           @user_waitlist_entries = WaitlistEntry.none
           @user_waitlist_entry = nil
@@ -57,7 +57,7 @@ class InitiationsController < ApplicationController
         @can_register = can_register?
         @can_register_child = can_register_child?
       end
-      
+
       format.ics do
         authenticate_user!
         authorize @initiation, :show?
@@ -70,20 +70,20 @@ class InitiationsController < ApplicationController
         event_ical.dtend = Icalendar::Values::DateTime.new(@initiation.start_at + @initiation.duration_min.minutes)
         event_ical.summary = @initiation.title
         event_ical.description = @initiation.description.presence || "Initiation organisée par #{@initiation.creator_user.first_name}"
-        
+
         # Location avec adresse et coordonnées GPS si disponibles
         if @initiation.location_text.present?
-          location_parts = [@initiation.location_text]
+          location_parts = [ @initiation.location_text ]
           if @initiation.meeting_lat.present? && @initiation.meeting_lng.present?
             location_parts << "#{@initiation.meeting_lat},#{@initiation.meeting_lng}"
           end
           event_ical.location = location_parts.join(" ")
         end
-        
+
         event_ical.url = initiation_url(@initiation)
         calendar.add_event(event_ical)
 
-        send_data calendar.to_ical, type: 'text/calendar', disposition: 'attachment', filename: "#{@initiation.title.parameterize}.ics"
+        send_data calendar.to_ical, type: "text/calendar", disposition: "attachment", filename: "#{@initiation.title.parameterize}.ics"
       end
     end
   end
@@ -197,11 +197,11 @@ class InitiationsController < ApplicationController
     # Vérifier qu'il y a des adhésions enfants actives disponibles
     child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
     return false if child_memberships.empty?
-    
+
     # Vérifier qu'il reste des enfants non inscrits
     registered_child_ids = @child_attendances.pluck(:child_membership_id).compact
     available_children = child_memberships.where.not(id: registered_child_ids)
-    
+
     available_children.exists?
   end
   helper_method :can_register_child?

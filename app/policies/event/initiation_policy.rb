@@ -1,4 +1,14 @@
 class Event::InitiationPolicy < ApplicationPolicy
+  attr_reader :child_membership_id_for_policy, :is_volunteer_for_policy
+
+  def initialize(user, record, *args)
+    super(user, record)
+    # Pundit.policy peut recevoir un 3e argument (options hash)
+    options = args.first.is_a?(Hash) ? args.first : {}
+    @child_membership_id_for_policy = options[:child_membership_id]
+    @is_volunteer_for_policy = options[:is_volunteer] || false
+  end
+
   def index?
     true # Tous peuvent voir la liste
   end
@@ -9,13 +19,22 @@ class Event::InitiationPolicy < ApplicationPolicy
 
   def attend?
     return false unless user
+
+    # Utiliser les paramètres passés via l'initializer
+    child_membership_id = child_membership_id_for_policy
+    is_volunteer = is_volunteer_for_policy
+
+    # Pour les bénévoles, vérifier l'autorisation AVANT de vérifier si l'initiation est pleine
+    # Les bénévoles peuvent toujours s'inscrire même si l'initiation est pleine
+    if is_volunteer && child_membership_id.nil?
+      return false unless user.can_be_volunteer?
+      # Les bénévoles peuvent toujours s'inscrire (pas besoin d'adhésion ni de vérifier la capacité)
+      return true
+    end
+
+    # Pour les participants normaux, vérifier si l'initiation est pleine
     return false if record.full?
-    
-    # Récupérer les paramètres depuis le contrôleur via Pundit
-    # Pundit stocke le contrôleur dans @controller (accessible dans la policy)
-    child_membership_id = @controller&.instance_variable_get(:@child_membership_id_for_policy)
-    is_volunteer = @controller&.instance_variable_get(:@is_volunteer_for_policy) || false
-    
+
     # Vérifier que child_membership_id appartient bien à l'utilisateur si fourni
     if child_membership_id.present?
       unless user.memberships.exists?(id: child_membership_id, is_child_membership: true)
@@ -25,14 +44,14 @@ class Event::InitiationPolicy < ApplicationPolicy
       child_membership = user.memberships.find_by(id: child_membership_id)
       return false unless child_membership&.active?
     end
-    
+
     # Vérifier si l'utilisateur est déjà inscrit avec le même statut
     existing_attendance = user.attendances.where(
       event: record,
       child_membership_id: child_membership_id,
       is_volunteer: is_volunteer || false
     ).where.not(status: "canceled")
-    
+
     if existing_attendance.exists?
       # Si c'est pour un enfant, autoriser si d'autres enfants peuvent être inscrits
       if child_membership_id.present?
@@ -43,13 +62,6 @@ class Event::InitiationPolicy < ApplicationPolicy
       # Si c'est pour le parent, ne pas autoriser si déjà inscrit avec le même statut
       return false
     end
-    
-    # Pour les bénévoles, vérifier l'autorisation
-    if is_volunteer && child_membership_id.nil?
-      return false unless user.can_be_volunteer?
-      # Les bénévoles peuvent toujours s'inscrire (pas besoin d'adhésion)
-      return true
-    end
 
     # Vérifier si l'utilisateur est adhérent
     is_member = if child_membership_id.present?
@@ -57,7 +69,7 @@ class Event::InitiationPolicy < ApplicationPolicy
       true
     else
       # Pour le parent : vérifier adhésion parent ou enfant
-      user.memberships.active_now.exists? || 
+      user.memberships.active_now.exists? ||
       user.memberships.active_now.where(is_child_membership: true).exists?
     end
 
@@ -101,7 +113,7 @@ class Event::InitiationPolicy < ApplicationPolicy
 
   def leave_waitlist?
     return false unless user
-    record.waitlist_entries.exists?(user: user, status: ["pending", "notified"])
+    record.waitlist_entries.exists?(user: user, status: [ "pending", "notified" ])
   end
 
   def convert_waitlist_to_attendance?

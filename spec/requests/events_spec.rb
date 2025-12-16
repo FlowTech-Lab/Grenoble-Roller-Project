@@ -36,7 +36,7 @@ RSpec.describe 'Events', type: :request do
       get event_path(event)
 
       # Les visiteurs non authentifiés sont redirigés vers root ou la connexion selon la logique métier
-      expect([:redirect].include?(response.status / 100) || response.status == 302).to be true
+      expect([ :redirect ].include?(response.status / 100) || response.status == 302).to be true
     end
   end
 

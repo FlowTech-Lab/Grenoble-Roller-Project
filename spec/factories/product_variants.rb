@@ -14,19 +14,19 @@ FactoryBot.define do
     after(:create) do |variant|
       # Créer un OptionType "size" s'il n'existe pas
       size_option_type = OptionType.find_or_create_by!(name: 'size')
-      
+
       # Créer une OptionValue "Medium" s'il n'existe pas
       size_value = OptionValue.find_or_create_by!(
         option_type: size_option_type,
         value: 'Medium'
       )
-      
+
       # Créer l'association variant_option_value (après création pour avoir l'ID)
       VariantOptionValue.find_or_create_by!(
         variant: variant,
         option_value: size_value
       )
-      
+
       # Reload pour que l'association option_values soit accessible
       variant.reload
     end
