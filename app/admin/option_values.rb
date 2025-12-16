@@ -51,7 +51,6 @@ ActiveAdmin.register OptionValue do
   controller do
     def destroy
       @option_value = resource
-      authorize @option_value, :destroy?
       if @option_value.destroy
         redirect_to collection_path, notice: "La valeur d'option ##{@option_value.id} a été supprimée avec succès."
       else

@@ -157,7 +157,6 @@ ActiveAdmin.register Product do
   controller do
     def destroy
       @product = resource
-      authorize @product, :destroy?
       if @product.destroy
         redirect_to collection_path, notice: "Le produit ##{@product.id} a été supprimé avec succès."
       else

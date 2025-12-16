@@ -104,7 +104,6 @@ ActiveAdmin.register RollerStock do
 
     def destroy
       @roller_stock = resource
-      authorize @roller_stock, :destroy?
       if @roller_stock.destroy
         redirect_to collection_path, notice: "Le stock ##{@roller_stock.id} a été supprimé avec succès."
       else

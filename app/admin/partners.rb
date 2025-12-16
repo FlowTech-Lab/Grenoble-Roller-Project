@@ -71,7 +71,6 @@ ActiveAdmin.register Partner do
   controller do
     def destroy
       @partner = resource
-      authorize @partner, :destroy?
       if @partner.destroy
         redirect_to collection_path, notice: "Le partenaire ##{@partner.id} a été supprimé avec succès."
       else

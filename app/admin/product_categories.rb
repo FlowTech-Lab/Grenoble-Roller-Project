@@ -55,7 +55,6 @@ ActiveAdmin.register ProductCategory do
   controller do
     def destroy
       @category = resource
-      authorize @category, :destroy?
       if @category.destroy
         redirect_to collection_path, notice: "La catégorie ##{@category.id} a été supprimée avec succès."
       else

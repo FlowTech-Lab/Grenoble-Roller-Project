@@ -134,7 +134,6 @@ ActiveAdmin.register ProductVariant do
   controller do
     def destroy
       @variant = resource
-      authorize @variant, :destroy?
       if @variant.destroy
         redirect_to collection_path, notice: "La variante ##{@variant.id} a été supprimée avec succès."
       else

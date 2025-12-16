@@ -83,7 +83,6 @@ ActiveAdmin.register OrganizerApplication do
   controller do
     def destroy
       @application = resource
-      authorize @application, :destroy?
       if @application.destroy
         redirect_to collection_path, notice: "La candidature ##{@application.id} a été supprimée avec succès."
       else

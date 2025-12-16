@@ -238,7 +238,6 @@ ActiveAdmin.register Event do
   controller do
     def destroy
       @event = resource
-      authorize @event, :destroy?
       if @event.destroy
         redirect_to collection_path, notice: "L'événement ##{@event.id} a été supprimé avec succès."
       else
