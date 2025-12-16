@@ -178,6 +178,16 @@ ActiveAdmin.register User do
   end
 
   controller do
+    def destroy
+      @user = resource
+      authorize @user, :destroy?
+      if @user.destroy
+        redirect_to collection_path, notice: "L'utilisateur ##{@user.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@user), alert: "Impossible de supprimer l'utilisateur : #{@user.errors.full_messages.join(', ')}"
+      end
+    end
+
     def update
       if params[:user].present?
         # Gérer les champs password

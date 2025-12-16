@@ -60,6 +60,7 @@ ActiveAdmin.register Role do
   controller do
     def destroy
       @role = resource
+      authorize @role, :destroy?
       if @role.destroy
         redirect_to collection_path, notice: "Le rôle ##{@role.id} a été supprimé avec succès."
       else

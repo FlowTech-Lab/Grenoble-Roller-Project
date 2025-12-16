@@ -37,4 +37,16 @@ ActiveAdmin.register ContactMessage do
       row :updated_at
     end
   end
+
+  controller do
+    def destroy
+      @contact_message = resource
+      authorize @contact_message, :destroy?
+      if @contact_message.destroy
+        redirect_to collection_path, notice: "Le message ##{@contact_message.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@contact_message), alert: "Impossible de supprimer le message : #{@contact_message.errors.full_messages.join(', ')}"
+      end
+    end
+  end
 end

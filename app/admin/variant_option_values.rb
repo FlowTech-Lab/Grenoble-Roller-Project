@@ -57,6 +57,7 @@ ActiveAdmin.register VariantOptionValue do
   controller do
     def destroy
       @vov = resource
+      authorize @vov, :destroy?
       if @vov.destroy
         redirect_to collection_path, notice: "L'association ##{@vov.id} a été supprimée avec succès."
       else

@@ -44,6 +44,7 @@ ActiveAdmin.register OptionType do
   controller do
     def destroy
       @option_type = resource
+      authorize @option_type, :destroy?
       if @option_type.destroy
         redirect_to collection_path, notice: "Le type d'option ##{@option_type.id} a été supprimé avec succès."
       else
