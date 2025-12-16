@@ -1,6 +1,6 @@
 class OrganizerApplication < ApplicationRecord
   include Hashid::Rails
-  
+
   belongs_to :user
   belongs_to :reviewed_by, class_name: "User", optional: true
 

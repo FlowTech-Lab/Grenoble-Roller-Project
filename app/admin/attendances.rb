@@ -81,9 +81,9 @@ ActiveAdmin.register Attendance do
       f.input :free_trial_used, label: "Essai gratuit utilisé"
       f.input :wants_reminder, label: "Souhaite un rappel"
       f.input :needs_equipment, label: "Besoin de matériel"
-      f.input :roller_size, 
-              as: :select, 
-              collection: RollerStock.available.ordered_by_size.map { |s| [s.size_with_stock, s.size] },
+      f.input :roller_size,
+              as: :select,
+              collection: RollerStock.available.ordered_by_size.map { |s| [ s.size_with_stock, s.size ] },
               include_blank: "Aucune taille",
               hint: "Taille de rollers demandée"
       f.input :equipment_note, as: :text, input_html: { rows: 3 }, hint: "Note sur l'équipement (ancien système)"

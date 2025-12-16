@@ -89,7 +89,7 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::IntegrationHelpers, type: :system
   config.include TestDataHelper if defined?(TestDataHelper)
-  
+
   # Configurer le mapping Devise pour TOUS les tests de contrôleurs
   # Cela doit être fait AVANT que les contrôleurs Devise ne soient initialisés
   # Le mapping doit être dans request.env AVANT que prepend_before_action ne soit appelé

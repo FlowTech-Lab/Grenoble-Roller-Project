@@ -1,8 +1,8 @@
 ActiveAdmin.register RollerStock do
   menu priority: 15, label: "Stock Rollers", parent: "Matériel"
-  
+
   permit_params :size, :quantity, :is_active
-  
+
   index do
     selectable_column
     id_column
@@ -23,13 +23,13 @@ ActiveAdmin.register RollerStock do
     column :updated_at
     actions
   end
-  
+
   filter :size
   filter :quantity
   filter :is_active, as: :boolean
   filter :created_at
   filter :updated_at
-  
+
   show do
     attributes_table do
       row :id
@@ -49,9 +49,9 @@ ActiveAdmin.register RollerStock do
       row :created_at
       row :updated_at
     end
-    
+
     panel "Demandes en attente" do
-      pending_requests = Attendance.where(needs_equipment: true, roller_size: resource.size, status: ["registered", "paid"])
+      pending_requests = Attendance.where(needs_equipment: true, roller_size: resource.size, status: [ "registered", "paid" ])
       if pending_requests.any?
         table_for pending_requests.limit(10) do
           column "Participant" do |attendance|
@@ -73,13 +73,13 @@ ActiveAdmin.register RollerStock do
       end
     end
   end
-  
+
   form do |f|
     f.semantic_errors
     f.inputs "Stock de rollers" do
-      f.input :size, 
-              as: :select, 
-              collection: RollerStock::SIZES.map { |s| [s, s] },
+      f.input :size,
+              as: :select,
+              collection: RollerStock::SIZES.map { |s| [ s, s ] },
               prompt: "Choisir une taille",
               hint: "Taille en pointure européenne (EU)"
       f.input :quantity,
@@ -90,11 +90,11 @@ ActiveAdmin.register RollerStock do
     end
     f.actions
   end
-  
+
   controller do
     def create
       @roller_stock = RollerStock.new(permitted_params[:roller_stock])
-      
+
       if @roller_stock.save
         redirect_to resource_path(@roller_stock), notice: "Stock créé avec succès."
       else
@@ -103,4 +103,3 @@ ActiveAdmin.register RollerStock do
     end
   end
 end
-

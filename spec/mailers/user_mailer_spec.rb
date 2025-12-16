@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe UserMailer, type: :mailer do
   let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
-  
+
   describe '#welcome_email' do
     let(:user) { create(:user, first_name: 'Jean', email: 'jean@example.com', skill_level: 'intermediate', role: user_role) }
     let(:mail) { UserMailer.welcome_email(user) }

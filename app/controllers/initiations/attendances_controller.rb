@@ -10,7 +10,7 @@ module Initiations
       # Stocker les paramètres dans des variables d'instance pour la policy
       @child_membership_id_for_policy = params[:child_membership_id].presence
       @is_volunteer_for_policy = params[:is_volunteer] == "1"
-      
+
       # Autorisation via Pundit avec les paramètres passés à la policy
       # Créer la policy directement avec les paramètres car Pundit.policy ne les passe pas
       policy = Event::InitiationPolicy.new(current_user, @initiation,
@@ -23,17 +23,17 @@ module Initiations
 
       child_membership_id = params[:child_membership_id].presence
       is_volunteer = params[:is_volunteer] == "1"
-      
+
       # Validation des paramètres
       needs_equipment = params[:needs_equipment] == "1"
       roller_size = params[:roller_size].presence
-      
+
       # Valider roller_size si needs_equipment est true
       if needs_equipment && roller_size.blank?
         redirect_to initiation_path(@initiation), alert: "Veuillez sélectionner une taille de rollers si vous avez besoin de matériel."
         return
       end
-      
+
       # Valider que roller_size est dans la liste des tailles disponibles
       if needs_equipment && roller_size.present?
         unless RollerStock::SIZES.include?(roller_size)
@@ -41,7 +41,7 @@ module Initiations
           return
         end
       end
-      
+
       # Log de la tentative d'inscription
       Rails.logger.info("Tentative d'inscription - User: #{current_user.id}, Initiation: #{@initiation.id}, Child: #{child_membership_id}, Volunteer: #{is_volunteer}")
 
@@ -52,7 +52,7 @@ module Initiations
       attendance.needs_equipment = needs_equipment
       attendance.roller_size = roller_size if needs_equipment
       attendance.child_membership_id = child_membership_id
-      
+
       # Gestion bénévole (uniquement pour le parent, pas pour les enfants)
       if is_volunteer && child_membership_id.nil?
         unless current_user.can_be_volunteer?
@@ -158,7 +158,7 @@ module Initiations
 
       # Permettre de désinscrire soi-même ou un enfant spécifique
       child_membership_id = params[:child_membership_id].presence
-      
+
       attendance = if child_membership_id.present?
         # Désinscrire un enfant spécifique
         @initiation.attendances.find_by(
@@ -197,16 +197,16 @@ module Initiations
       # Pour les initiations, le rappel est global (1 email par compte)
       # On active/désactive le rappel pour toutes les inscriptions (parent + enfants)
       user_attendances = @initiation.attendances.where(user: current_user)
-      
+
       if user_attendances.any?
         # Déterminer l'état actuel : si au moins une inscription a le rappel activé, on désactive tout
         # Sinon, on active tout
         any_reminder_active = user_attendances.any? { |a| a.wants_reminder? }
         new_reminder_state = !any_reminder_active
-        
+
         # Mettre à jour toutes les inscriptions
         user_attendances.update_all(wants_reminder: new_reminder_state)
-        
+
         message = new_reminder_state ? "Rappel activé pour cette initiation." : "Rappel désactivé pour cette initiation."
         redirect_to initiation_path(@initiation), notice: message
       else
@@ -223,4 +223,3 @@ module Initiations
     end
   end
 end
-

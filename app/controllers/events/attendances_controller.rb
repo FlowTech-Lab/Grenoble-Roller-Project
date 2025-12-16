@@ -4,14 +4,14 @@ module Events
   class AttendancesController < ApplicationController
     before_action :authenticate_user!
     before_action :set_event
-    before_action :ensure_email_confirmed, only: [:create] # Exiger confirmation pour s'inscrire à un événement
+    before_action :ensure_email_confirmed, only: [ :create ] # Exiger confirmation pour s'inscrire à un événement
 
     # POST /events/:event_id/attendances
     def create
       authorize @event, :attend?
 
       child_membership_id = params[:child_membership_id].presence
-      
+
       # Si c'est pour un enfant, vérifier qu'il n'est pas déjà inscrit
       if child_membership_id.present?
         existing_attendance = @event.attendances.find_by(
@@ -73,7 +73,7 @@ module Events
 
       # Permettre de désinscrire soi-même ou un enfant spécifique
       child_membership_id = params[:child_membership_id].presence
-      
+
       attendance = if child_membership_id.present?
         # Désinscrire un enfant spécifique
         @event.attendances.find_by(
@@ -113,16 +113,16 @@ module Events
       # Pour les événements, le rappel est global (1 email par compte)
       # On active/désactive le rappel pour toutes les inscriptions (parent + enfants)
       user_attendances = @event.attendances.where(user: current_user)
-      
+
       if user_attendances.any?
         # Déterminer l'état actuel : si au moins une inscription a le rappel activé, on désactive tout
         # Sinon, on active tout
         any_reminder_active = user_attendances.any? { |a| a.wants_reminder? }
         new_reminder_state = !any_reminder_active
-        
+
         # Mettre à jour toutes les inscriptions
         user_attendances.update_all(wants_reminder: new_reminder_state)
-        
+
         message = new_reminder_state ? "Rappel activé pour cet événement." : "Rappel désactivé pour cet événement."
         redirect_to @event, notice: message
       else
@@ -139,4 +139,3 @@ module Events
     end
   end
 end
-

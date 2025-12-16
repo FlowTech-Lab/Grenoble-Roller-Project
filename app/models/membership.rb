@@ -1,6 +1,6 @@
 class Membership < ApplicationRecord
   include Hashid::Rails
-  
+
   belongs_to :user
   belongs_to :payment, optional: true
   belongs_to :tshirt_variant, class_name: "ProductVariant", optional: true

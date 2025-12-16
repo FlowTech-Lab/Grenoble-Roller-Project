@@ -28,21 +28,19 @@ module WaitlistTestHelper
       free_trial_used: false
     )
     pending_attendance.save(validate: false)
-    
+
     # Créer la waitlist_entry
     waitlist_entry = build(:waitlist_entry, user: user, event: event, child_membership_id: nil, wants_reminder: false)
     waitlist_entry.save(validate: false)
-    
+
     # Mettre à jour le statut
     waitlist_entry.update_column(:status, 'notified')
     waitlist_entry.update_column(:notified_at, 1.hour.ago)
-    
-    [pending_attendance.reload, waitlist_entry.reload]
+
+    [ pending_attendance.reload, waitlist_entry.reload ]
   end
 end
 
 RSpec.configure do |config|
   config.include WaitlistTestHelper, type: :request
 end
-
-

@@ -13,4 +13,3 @@ end
 RSpec.configure do |config|
   config.include DeviseControllerHelper, type: :controller
 end
-

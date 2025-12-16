@@ -1,6 +1,6 @@
 class RoutesController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_admin, only: [:create]
+  before_action :ensure_admin, only: [ :create ]
 
   # Retourne les infos d'un parcours en JSON pour pré-remplir les champs
   def info

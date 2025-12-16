@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe 'Initiations', type: :request do
   include RequestAuthenticationHelper
   include TestDataHelper
-  
+
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
 
   describe 'GET /initiations' do
@@ -93,7 +93,7 @@ RSpec.describe 'Initiations', type: :request do
       get initiation_path(draft_initiation, format: :ics)
 
       # Le format peut retourner 406 ou success selon la logique métier
-      expect([:success, :not_acceptable].include?(response.status / 100) || response.status == 200 || response.status == 406).to be true
+      expect([ :success, :not_acceptable ].include?(response.status / 100) || response.status == 200 || response.status == 406).to be true
       if response.status == 200
         expect(response.content_type).to include('text/calendar')
       end
@@ -129,4 +129,3 @@ RSpec.describe 'Initiations', type: :request do
     end
   end
 end
-

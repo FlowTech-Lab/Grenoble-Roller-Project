@@ -135,4 +135,3 @@ ActiveAdmin.register Payment do
     end
   end
 end
-

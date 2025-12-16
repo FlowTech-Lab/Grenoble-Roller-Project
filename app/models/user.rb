@@ -1,6 +1,6 @@
 class User < ApplicationRecord
   include Hashid::Rails
-  
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
@@ -84,7 +84,7 @@ class User < ApplicationRecord
   validates :first_name, presence: true, length: { maximum: 50 }
   # Validation téléphone : uniquement 10 chiffres (format français)
   validates :phone, format: { with: /\A[0-9]{10}\z/, message: "doit contenir exactement 10 chiffres (ex: 0612345678)" }, allow_blank: true
-  
+
   # Normaliser le téléphone avant validation (enlever espaces, tirets, etc.)
   before_validation :normalize_phone, if: :phone_changed?
 
@@ -154,7 +154,7 @@ class User < ApplicationRecord
   def normalize_phone
     return if phone.blank?
     # Enlever tous les caractères non numériques
-    self.phone = phone.gsub(/[^0-9]/, '')
+    self.phone = phone.gsub(/[^0-9]/, "")
     # Si le numéro commence par +33, remplacer par 0
     self.phone = "0#{phone[2..-1]}" if phone.start_with?("33") && phone.length == 11
     # Si le numéro commence par 0033, remplacer par 0
@@ -177,5 +177,4 @@ class User < ApplicationRecord
       raise e unless Rails.env.test? || e.message.include?("mapping")
     end
   end
-
 end

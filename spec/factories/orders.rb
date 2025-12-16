@@ -22,14 +22,13 @@ FactoryBot.define do
         category = ProductCategory.first || create(:product_category)
         product = create(:product, category: category)
         variant = create(:product_variant, product: product)
-        
+
         # Créer un order_item
         create(:order_item, order: order, variant: variant, quantity: 1)
-        
+
         # Mettre à jour le total
         order.update_column(:total_cents, order.order_items.sum { |item| item.unit_price_cents * item.quantity })
       end
     end
   end
 end
-

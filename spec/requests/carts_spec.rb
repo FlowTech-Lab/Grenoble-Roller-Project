@@ -24,7 +24,7 @@ RSpec.describe 'Carts', type: :request do
     it 'displays cart items when cart has items' do
       post add_item_cart_path, params: { variant_id: variant.id, quantity: 2 }
       get cart_path
-      
+
       expect(response).to have_http_status(:success)
       expect(response.body).to include(product.name)
       expect(assigns(:cart_items)).to be_present
@@ -34,9 +34,9 @@ RSpec.describe 'Carts', type: :request do
       variant2 = create(:product_variant, product: product, stock_qty: 10, price_cents: 3000)
       post add_item_cart_path, params: { variant_id: variant.id, quantity: 2 }
       post add_item_cart_path, params: { variant_id: variant2.id, quantity: 1 }
-      
+
       get cart_path
-      
+
       expect(response).to have_http_status(:success)
       # Total attendu : (2000 * 2) + (3000 * 1) = 7000 cents = 70.00 EUR
       expect(assigns(:total_cents)).to eq(7000)
@@ -45,7 +45,7 @@ RSpec.describe 'Carts', type: :request do
     it 'displays cart items with correct quantities' do
       post add_item_cart_path, params: { variant_id: variant.id, quantity: 3 }
       get cart_path
-      
+
       expect(response).to have_http_status(:success)
       cart_item = assigns(:cart_items).find { |ci| ci[:variant].id == variant.id }
       expect(cart_item[:quantity]).to eq(3)
@@ -53,4 +53,3 @@ RSpec.describe 'Carts', type: :request do
     end
   end
 end
-

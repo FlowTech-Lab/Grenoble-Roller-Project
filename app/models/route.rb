@@ -1,6 +1,6 @@
 class Route < ApplicationRecord
   include Hashid::Rails
-  
+
   has_many :events, dependent: :nullify
 
   # Active Storage attachments

@@ -159,7 +159,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
       it 'respects reserved slots for non-members when allow_non_member_discovery is enabled' do
         member = create_user(role: user_role)
         create(:membership, user: member, status: :active, season: '2025-2026')
-        
+
         non_member = create_user(role: user_role)
         # Pas d'adhésion active
 
@@ -297,9 +297,9 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
       it 'allows parent to register child using child membership' do
         parent = create_user(role: user_role)
         create(:membership, user: parent, status: :active, season: '2025-2026')
-        child_membership = create(:membership, 
-          user: parent, 
-          status: :active, 
+        child_membership = create(:membership,
+          user: parent,
+          status: :active,
           season: '2025-2026',
           is_child_membership: true,
           child_first_name: 'Enfant',
@@ -401,7 +401,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         body = response.body
         earlier_index = body.index('Initiation Plus Tôt')
         later_index = body.index('Initiation Plus Tard')
-        
+
         expect(earlier_index).to be_present
         expect(later_index).to be_present
         expect(earlier_index).to be < later_index

@@ -19,11 +19,11 @@ class Event::InitiationPolicy < ApplicationPolicy
 
   def attend?
     return false unless user
-    
+
     # Utiliser les paramètres passés via l'initializer
     child_membership_id = child_membership_id_for_policy
     is_volunteer = is_volunteer_for_policy
-    
+
     # Pour les bénévoles, vérifier l'autorisation AVANT de vérifier si l'initiation est pleine
     # Les bénévoles peuvent toujours s'inscrire même si l'initiation est pleine
     if is_volunteer && child_membership_id.nil?
@@ -31,10 +31,10 @@ class Event::InitiationPolicy < ApplicationPolicy
       # Les bénévoles peuvent toujours s'inscrire (pas besoin d'adhésion ni de vérifier la capacité)
       return true
     end
-    
+
     # Pour les participants normaux, vérifier si l'initiation est pleine
     return false if record.full?
-    
+
     # Vérifier que child_membership_id appartient bien à l'utilisateur si fourni
     if child_membership_id.present?
       unless user.memberships.exists?(id: child_membership_id, is_child_membership: true)
@@ -44,14 +44,14 @@ class Event::InitiationPolicy < ApplicationPolicy
       child_membership = user.memberships.find_by(id: child_membership_id)
       return false unless child_membership&.active?
     end
-    
+
     # Vérifier si l'utilisateur est déjà inscrit avec le même statut
     existing_attendance = user.attendances.where(
       event: record,
       child_membership_id: child_membership_id,
       is_volunteer: is_volunteer || false
     ).where.not(status: "canceled")
-    
+
     if existing_attendance.exists?
       # Si c'est pour un enfant, autoriser si d'autres enfants peuvent être inscrits
       if child_membership_id.present?
@@ -69,7 +69,7 @@ class Event::InitiationPolicy < ApplicationPolicy
       true
     else
       # Pour le parent : vérifier adhésion parent ou enfant
-      user.memberships.active_now.exists? || 
+      user.memberships.active_now.exists? ||
       user.memberships.active_now.where(is_child_membership: true).exists?
     end
 
@@ -113,7 +113,7 @@ class Event::InitiationPolicy < ApplicationPolicy
 
   def leave_waitlist?
     return false unless user
-    record.waitlist_entries.exists?(user: user, status: ["pending", "notified"])
+    record.waitlist_entries.exists?(user: user, status: [ "pending", "notified" ])
   end
 
   def convert_waitlist_to_attendance?

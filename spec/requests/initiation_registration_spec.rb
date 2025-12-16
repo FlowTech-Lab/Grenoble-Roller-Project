@@ -138,7 +138,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         # Nettoyer les données pour éviter la pollution
         Attendance.delete_all
         Event.delete_all
-        
+
         volunteer = create_user(role: user_role)
         # L'utilisateur doit pouvoir être bénévole
         volunteer.update(can_be_volunteer: true)
@@ -163,7 +163,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         end.to change { Attendance.count }.by(1)
 
         expect(response).to redirect_to(initiation_path(initiation))
-        
+
         attendance = Attendance.last
         expect(attendance.user).to eq(volunteer)
         expect(attendance.is_volunteer).to be(true)
@@ -175,7 +175,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
       it 'respects reserved slots for non-members when allow_non_member_discovery is enabled' do
         member = create_user(role: user_role)
         create(:membership, user: member, status: :active, season: '2025-2026')
-        
+
         non_member = create_user(role: user_role)
         # Pas d'adhésion active
 
@@ -313,8 +313,8 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         parent = create_user(role: user_role)
         create(:membership, user: parent, status: :active, season: '2025-2026')
         child_membership = create(:membership, :child,
-          user: parent, 
-          status: :active, 
+          user: parent,
+          status: :active,
           season: '2025-2026'
         )
         initiation = create_event(
@@ -534,7 +534,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
 
           # Créer l'adhésion enfant après l'inscription adulte
           child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
-          
+
           # Inscription enfant (qui a une adhésion)
           expect do
             post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
@@ -735,7 +735,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
 
           # Inscription 3 enfants
           3.times do |i|
-            child_membership = [child1_membership, child2_membership, child3_membership][i]
+            child_membership = [ child1_membership, child2_membership, child3_membership ][i]
             expect do
               post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
             end.to change { Attendance.count }.by(1)
@@ -855,7 +855,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
           )
 
           # Inscription de 3 volontaires
-          [volunteer1, volunteer2, volunteer3].each do |volunteer|
+          [ volunteer1, volunteer2, volunteer3 ].each do |volunteer|
             login_user(volunteer)
             expect do
               post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
@@ -958,7 +958,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
           end.to change { Attendance.count }.by(1)
 
           # Inscription 2 enfants (adhérents)
-          [child1_membership, child2_membership].each do |child_membership|
+          [ child1_membership, child2_membership ].each do |child_membership|
             expect do
               post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
             end.to change { Attendance.count }.by(1)
@@ -1025,7 +1025,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
           end.to change { Attendance.count }.by(1)
 
           # Inscription 2 enfants
-          [child1_membership, child2_membership].each do |child_membership|
+          [ child1_membership, child2_membership ].each do |child_membership|
             expect do
               post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
             end.to change { Attendance.count }.by(1)
@@ -1147,7 +1147,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         body = response.body
         earlier_index = body.index('Initiation Plus Tôt')
         later_index = body.index('Initiation Plus Tard')
-        
+
         expect(earlier_index).to be_present
         expect(later_index).to be_present
         expect(earlier_index).to be < later_index

@@ -163,13 +163,13 @@ ActiveAdmin.register Event do
           end
           column "Actions" do |entry|
             if entry.notified?
-              link_to("Convertir en inscription", convert_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id), 
-                      method: :post, 
+              link_to("Convertir en inscription", convert_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id),
+                      method: :post,
                       class: "button button-small",
                       data: { confirm: "Convertir cette entrée de liste d'attente en inscription ?" })
             elsif entry.pending? && event.has_available_spots?
-              link_to("Notifier maintenant", notify_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id), 
-                      method: :post, 
+              link_to("Notifier maintenant", notify_waitlist_activeadmin_event_path(event, waitlist_entry_id: entry.id),
+                      method: :post,
                       class: "button button-small",
                       data: { confirm: "Notifier cette personne qu'une place est disponible ?" })
             else

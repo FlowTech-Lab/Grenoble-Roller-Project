@@ -2,7 +2,7 @@
 
 class WaitlistEntry < ApplicationRecord
   include Hashid::Rails
-  
+
   belongs_to :user
   belongs_to :event
   belongs_to :child_membership, class_name: "Membership", optional: true
@@ -15,8 +15,8 @@ class WaitlistEntry < ApplicationRecord
   }, validate: true
 
   validates :position, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :user_id, uniqueness: { 
-    scope: [:event_id, :child_membership_id], 
+  validates :user_id, uniqueness: {
+    scope: [ :event_id, :child_membership_id ],
     message: "est déjà en liste d'attente pour cet événement",
     conditions: -> { where.not(status: "cancelled") }
   }
@@ -27,7 +27,7 @@ class WaitlistEntry < ApplicationRecord
   validates :roller_size, inclusion: { in: RollerStock::SIZES }, if: :needs_equipment?
 
   # Scopes
-  scope :active, -> { where(status: ["pending", "notified"]) }
+  scope :active, -> { where(status: [ "pending", "notified" ]) }
   scope :for_event, ->(event) { where(event: event) }
   scope :ordered_by_position, -> { order(:position, :created_at) }
   scope :pending_notification, -> { where(status: "pending", notified_at: nil) }
@@ -43,7 +43,7 @@ class WaitlistEntry < ApplicationRecord
       "#{child_membership.child_first_name} #{child_membership.child_last_name}"
     else
       # Construire le nom complet à partir de first_name et last_name
-      name_parts = [user.first_name, user.last_name].compact.reject(&:blank?)
+      name_parts = [ user.first_name, user.last_name ].compact.reject(&:blank?)
       name_parts.any? ? name_parts.join(" ") : user.email
     end
   end
@@ -54,18 +54,18 @@ class WaitlistEntry < ApplicationRecord
 
   def notify!
     return false unless pending?
-    
+
     # Créer une inscription "pending" pour verrouiller la place
     attendance = build_pending_attendance
     bypass_validations_if_initiation(attendance)
-    
+
     if attendance.save(validate: false) # Sauvegarder sans validation pour éviter les erreurs d'autorisation
       update!(
         status: "notified",
         notified_at: Time.current,
         pending_attendance_id: attendance.id  # Stocker l'ID pour éviter les problèmes de recherche
       )
-      
+
       # Envoyer l'email immédiatement (pas en queue) pour s'assurer qu'il est envoyé
       send_notification_email
       Rails.logger.info("WaitlistEntry #{id} notified and pending attendance #{attendance.id} created for event #{event.id} (user: #{user_id})")
@@ -78,19 +78,19 @@ class WaitlistEntry < ApplicationRecord
 
   def convert_to_attendance!
     return false unless notified?
-    
+
     # Trouver l'inscription "pending" créée lors de la notification
     attendance = find_pending_attendance
-    
+
     unless attendance
       Rails.logger.error("Pending attendance not found for WaitlistEntry #{id} (user: #{user_id}, event: #{event_id}, child_membership_id: #{child_membership_id.inspect})")
       return false
     end
-    
+
     # Passer de "pending" à "registered"
     # Ne pas re-vérifier les validations d'adhésion/essai gratuit car elles ont déjà été vérifiées lors de l'inscription en liste d'attente
     bypass_validations_if_initiation(attendance)
-    
+
     # Utiliser update_column pour bypasser les validations
     if attendance.update_column(:status, "registered")
       update!(status: "converted")
@@ -103,18 +103,18 @@ class WaitlistEntry < ApplicationRecord
       false
     end
   end
-  
+
   def refuse!
     return false unless notified?
-    
+
     # Trouver et supprimer l'inscription "pending"
     attendance = find_pending_attendance
-    
+
     unless attendance
       Rails.logger.error("Pending attendance not found for WaitlistEntry #{id} (user: #{user_id}, event: #{event_id}, child_membership_id: #{child_membership_id.inspect})")
       return false
     end
-    
+
     if attendance.destroy
       # Remettre l'entrée en "pending" pour qu'elle puisse être notifiée à nouveau plus tard
       update!(status: "pending", notified_at: nil)
@@ -138,13 +138,13 @@ class WaitlistEntry < ApplicationRecord
 
   def self.add_to_waitlist(user, event, child_membership_id: nil, needs_equipment: false, roller_size: nil, wants_reminder: false, use_free_trial: false)
     return nil if event.has_available_spots?
-    
+
     # Vérifier si déjà en liste d'attente
     existing = find_by(
       user: user,
       event: event,
       child_membership_id: child_membership_id,
-      status: ["pending", "notified"]
+      status: [ "pending", "notified" ]
     )
     return existing if existing
 
@@ -165,12 +165,12 @@ class WaitlistEntry < ApplicationRecord
     # Notifier si l'événement a des places disponibles (une place vient de se libérer)
     # Ne pas notifier si l'événement est encore complet (pas de place disponible)
     return if event.full?
-    
+
     entries = for_event(event)
               .pending_notification
               .ordered_by_position
               .limit(count)
-    
+
     entries.each(&:notify!)
   end
 
@@ -209,7 +209,7 @@ class WaitlistEntry < ApplicationRecord
       user_id: user_id,
       status: "pending"
     )
-    
+
     if child_membership_id.nil?
       base_query.where("child_membership_id IS NULL").first
     else
@@ -220,7 +220,7 @@ class WaitlistEntry < ApplicationRecord
   # Bypasser les validations pour les initiations si nécessaire
   def bypass_validations_if_initiation(attendance)
     return unless event.is_a?(Event::Initiation)
-    
+
     # Bypasser les validations can_use_free_trial et can_register_to_initiation
     attendance.define_singleton_method(:can_use_free_trial) { true }
     attendance.define_singleton_method(:can_register_to_initiation) { true }
@@ -236,7 +236,7 @@ class WaitlistEntry < ApplicationRecord
 
   # Gérer les erreurs de sauvegarde d'attendance
   def handle_attendance_save_error(attendance, action)
-    error_msg = attendance.errors.full_messages.join(', ')
+    error_msg = attendance.errors.full_messages.join(", ")
     Rails.logger.error("Failed in #{action} for WaitlistEntry #{id}: #{error_msg} (user: #{user_id}, event: #{event_id})")
   end
 
@@ -270,7 +270,7 @@ class WaitlistEntry < ApplicationRecord
 
   def child_membership_belongs_to_user
     return if child_membership_id.nil?
-    
+
     unless user.memberships.exists?(id: child_membership_id, is_child_membership: true)
       errors.add(:child_membership_id, "Cette adhésion enfant ne vous appartient pas")
     end

@@ -4,7 +4,7 @@ RSpec.describe MembershipMailer, type: :mailer do
   let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let!(:user) { create(:user, role: user_role, email: 'member@example.com') }
   let!(:membership) { create(:membership, user: user, season: '2025-2026') }
-  
+
   describe "activated" do
     let(:mail) { MembershipMailer.activated(membership) }
 

@@ -84,11 +84,11 @@ RSpec.describe 'Registrations', type: :request do
       it 'creates user with correct attributes' do
         email = "newuser#{SecureRandom.hex(4)}@example.com"
         params = valid_params.deep_merge(user: { email: email })
-        
+
         expect {
           post user_registration_path, params: params
         }.to change(User, :count).by(1)
-        
+
         user = User.find_by(email: email)
         expect(user).to be_present
         expect(user.first_name).to eq('Jean')
@@ -99,11 +99,11 @@ RSpec.describe 'Registrations', type: :request do
       it 'allows immediate access (grace period)' do
         email = "newuser#{SecureRandom.hex(4)}@example.com"
         params = valid_params.deep_merge(user: { email: email })
-        
+
         expect {
           post user_registration_path, params: params
         }.to change(User, :count).by(1)
-        
+
         user = User.find_by(email: email)
         expect(user).to be_present
         expect(user.active_for_authentication?).to be true

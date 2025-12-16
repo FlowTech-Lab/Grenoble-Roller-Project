@@ -49,7 +49,7 @@ module TestDataHelper
     creator = attrs.delete(:creator_user) || create_user
     route   = attrs.key?(:route) ? attrs.delete(:route) : create_route
     type = attrs.delete(:type) || 'Event'
-    
+
     defaults = {
       creator_user: creator,
       route: route,

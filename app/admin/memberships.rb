@@ -193,7 +193,7 @@ ActiveAdmin.register Membership do
   # Actions personnalisées
   member_action :activate, method: :put do
     @membership = resource
-    
+
     if @membership.status == "pending"
       @membership.update!(status: :active)
       redirect_to admin_membership_path(@membership), notice: "Adhésion validée avec succès. L'adhésion est maintenant active."
@@ -205,7 +205,7 @@ ActiveAdmin.register Membership do
   controller do
     def destroy
       @membership = resource
-      
+
       if @membership.destroy
         redirect_to collection_path, notice: "L'adhésion ##{@membership.id} a été supprimée avec succès."
       else

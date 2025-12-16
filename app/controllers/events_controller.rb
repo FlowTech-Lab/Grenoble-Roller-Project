@@ -13,7 +13,7 @@ class EventsController < ApplicationController
       # Admins/moderateurs voient tout (y compris les non publiés)
       @upcoming_events = scoped_events.upcoming.order(:start_at)
       @past_events_total = scoped_events.past.count
-      if params[:show_all_past] == 'true'
+      if params[:show_all_past] == "true"
         @past_events = scoped_events.past.order(start_at: :desc)
       else
         @past_events = scoped_events.past.order(start_at: :desc).limit(6)
@@ -22,7 +22,7 @@ class EventsController < ApplicationController
       # Utilisateurs normaux voient seulement les événements visibles (publiés/annulés)
       @upcoming_events = scoped_events.visible.upcoming.order(:start_at)
       @past_events_total = scoped_events.visible.past.count
-      if params[:show_all_past] == 'true'
+      if params[:show_all_past] == "true"
         @past_events = scoped_events.visible.past.order(start_at: :desc)
       else
         @past_events = scoped_events.visible.past.order(start_at: :desc).limit(6)
@@ -39,7 +39,7 @@ class EventsController < ApplicationController
           return
         end
         authorize @event
-        
+
         # Rediriger si l'événement n'est pas visible (publié ou annulé) et que l'utilisateur n'est pas modo+ ou créateur
         unless @event.published? || @event.canceled? || can_moderate? || @event.creator_user_id == current_user&.id
           redirect_to events_path, alert: "Cet événement n'est pas encore publié."
@@ -50,7 +50,7 @@ class EventsController < ApplicationController
           @user_attendances = @event.attendances.where(user: current_user).includes(:child_membership)
           @user_attendance = @user_attendances.find_by(child_membership_id: nil) # Inscription parent
           @child_attendances = @user_attendances.where.not(child_membership_id: nil) # Inscriptions enfants
-          
+
           # Charger les entrées de liste d'attente de l'utilisateur
           @user_waitlist_entries = @event.waitlist_entries.where(user: current_user).active.includes(:child_membership)
           @user_waitlist_entry = @user_waitlist_entries.find_by(child_membership_id: nil) # Entrée parent
@@ -65,7 +65,7 @@ class EventsController < ApplicationController
         end
         @can_register_child = can_register_child?
       end
-      
+
       format.ics do
         authenticate_user!
         # Pour les événements en draft, vérifier explicitement les permissions avant authorize
@@ -83,18 +83,18 @@ class EventsController < ApplicationController
         event_ical.dtend = Icalendar::Values::DateTime.new(@event.start_at + @event.duration_min.minutes)
         event_ical.summary = @event.title
         event_ical.description = @event.description.presence || "Événement organisé par #{@event.creator_user.first_name}"
-        
+
         # Location avec adresse et coordonnées GPS si disponibles
         if @event.has_gps_coordinates?
           # Format iCal : adresse avec coordonnées GPS dans le champ location
           event_ical.location = "#{@event.location_text} (#{@event.meeting_lat},#{@event.meeting_lng})"
           # Ajout du champ GEO pour les coordonnées GPS (standard iCal RFC 5545)
           # Format: [latitude, longitude]
-          event_ical.geo = [@event.meeting_lat, @event.meeting_lng]
+          event_ical.geo = [ @event.meeting_lat, @event.meeting_lng ]
         else
           event_ical.location = @event.location_text
         end
-        
+
         event_ical.url = event_url(@event)
         event_ical.uid = "event-#{@event.id}@grenobleroller.fr"
         event_ical.last_modified = @event.updated_at
@@ -123,16 +123,16 @@ class EventsController < ApplicationController
     # Vérifier qu'il y a des adhésions enfants actives disponibles
     child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
     return false if child_memberships.empty?
-    
+
     # Vérifier qu'il reste des enfants non inscrits
     # Si @child_attendances n'est pas défini (pas encore d'inscription), on peut inscrire n'importe quel enfant
     if @child_attendances.nil? || @child_attendances.empty?
       return child_memberships.exists?
     end
-    
+
     registered_child_ids = @child_attendances.pluck(:child_membership_id).compact
     available_children = child_memberships.where.not(id: registered_child_ids)
-    
+
     available_children.exists?
   end
   helper_method :can_register_child?
@@ -145,13 +145,13 @@ class EventsController < ApplicationController
       max_participants: 0, # 0 = illimité par défaut
       currency: "EUR" # Toujours EUR
     )
-    
+
     # Vérifier explicitement les permissions avant authorize pour rediriger correctement
     unless policy(@event).new?
       redirect_to root_path, alert: "Vous n'êtes pas autorisé à créer un événement."
       return
     end
-    
+
     authorize @event
   end
 
@@ -171,14 +171,14 @@ class EventsController < ApplicationController
 
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
-    
+
     # Gérer les parcours par boucle
     loop_routes_params = params[:event_loop_routes] || {}
-    
+
     if @event.update(event_params)
       # Sauvegarder les parcours par boucle
       save_loop_routes(@event, loop_routes_params)
-      
+
       redirect_to @event, notice: "Événement créé avec succès. Il est en attente de validation par un modérateur."
     else
       render :new, status: :unprocessable_entity
@@ -208,14 +208,14 @@ class EventsController < ApplicationController
 
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
-    
+
     # Gérer les parcours par boucle
     loop_routes_params = params[:event_loop_routes] || {}
-    
+
     if @event.update(event_params)
       # Sauvegarder les parcours par boucle
       save_loop_routes(@event, loop_routes_params)
-      
+
       redirect_to @event, notice: "Événement mis à jour avec succès."
     else
       render :edit, status: :unprocessable_entity
@@ -231,7 +231,7 @@ class EventsController < ApplicationController
 
   def reject
     authorize @event, :reject?
-    
+
     if @event.update(status: :rejected)
       # Envoyer un email au créateur pour le notifier du refus
       EventMailer.event_rejected(@event).deliver_later
@@ -248,15 +248,15 @@ class EventsController < ApplicationController
   # Retourner les parcours par boucle en JSON (pour le formulaire)
   def loop_routes
     authorize @event, :show?
-    
-    loop_routes_data = @event.event_loop_routes.where('loop_number > 1').order(:loop_number).map do |elr|
+
+    loop_routes_data = @event.event_loop_routes.where("loop_number > 1").order(:loop_number).map do |elr|
       {
         loop_number: elr.loop_number,
         route_id: elr.route_id,
         distance_km: elr.distance_km
       }
     end
-    
+
     render json: loop_routes_data
   end
 
@@ -276,7 +276,7 @@ class EventsController < ApplicationController
   def save_loop_routes(event, loop_routes_params)
     # Supprimer les anciens parcours par boucle
     event.event_loop_routes.destroy_all
-    
+
     # Si plusieurs boucles, sauvegarder le parcours principal pour la boucle 1
     if event.loops_count && event.loops_count > 1 && event.route_id.present? && event.distance_km.present?
       event.event_loop_routes.create!(
@@ -285,18 +285,18 @@ class EventsController < ApplicationController
         distance_km: event.distance_km
       )
     end
-    
+
     # Créer les parcours pour les boucles supplémentaires (2, 3, etc.)
     loop_routes_params.each do |loop_number_str, route_data|
       next unless route_data[:route_id].present? && route_data[:distance_km].present?
-      
+
       loop_number = loop_number_str.to_i
       route_id = route_data[:route_id].to_i
       distance_km = route_data[:distance_km].to_f
-      
+
       # Ignorer la boucle 1 (déjà gérée avec le parcours principal)
       next if loop_number < 2 || route_id < 1 || distance_km < 0.1
-      
+
       event.event_loop_routes.create!(
         loop_number: loop_number,
         route_id: route_id,

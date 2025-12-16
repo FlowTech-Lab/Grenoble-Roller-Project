@@ -176,4 +176,3 @@ module Memberships
     end
   end
 end
-
