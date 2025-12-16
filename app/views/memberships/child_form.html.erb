@@ -677,9 +677,11 @@
           if (categoryInference) categoryInference.style.display = 'none';
           if (authSection) authSection.style.display = 'none';
 
-          // Désactiver le bouton de soumission
+          // Désactiver les boutons de soumission
           const submitBtn = document.getElementById('submit_btn');
+          const submitWithoutPaymentBtn = document.getElementById('submit_without_payment_btn');
           if (submitBtn) submitBtn.disabled = true;
+          if (submitWithoutPaymentBtn) submitWithoutPaymentBtn.disabled = true;
 
           return;
         }
@@ -751,6 +753,11 @@
             authSection.style.display = 'none';
             document.getElementById('parent_authorization')?.removeAttribute('required');
           }
+        }
+
+        // Réactiver les boutons si l'âge est valide (>= 6 ans)
+        if (age >= 6) {
+          validateForm();
         }
       }
 
@@ -1000,6 +1007,33 @@
         if (year && year.hasAttribute('required') && !year.value) {
           year.classList.add('is-invalid');
           isValid = false;
+        }
+
+        // Vérifier l'âge minimum (6 ans)
+        if (day?.value && month?.value && year?.value) {
+          const birthDate = new Date(year.value, month.value - 1, day.value);
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+
+          if (age < 6) {
+            isValid = false;
+            // S'assurer que les champs sont marqués comme invalides
+            [day, month, year].forEach(select => {
+              if (select) {
+                select.classList.add('is-invalid');
+                select.classList.remove('is-valid');
+              }
+            });
+            // S'assurer que le message d'erreur est visible
+            const errorDiv = document.getElementById('child_date_of_birth_error');
+            if (errorDiv) {
+              errorDiv.style.display = 'block';
+            }
+          }
         }
 
         // Vérifier autorisation parentale si nécessaire

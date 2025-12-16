@@ -258,6 +258,11 @@ class MembershipsController < ApplicationController
 
     child_age = ((Date.today - child_date_of_birth) / 365.25).floor
 
+    if child_age < 6
+      redirect_to edit_membership_path(@membership), alert: "L'adhésion n'est pas possible pour les enfants de moins de 6 ans."
+      return
+    end
+
     if child_age >= 18
       redirect_to edit_membership_path(@membership), alert: "L'enfant a 18 ans ou plus, il doit adhérer seul."
       return
@@ -808,6 +813,10 @@ class MembershipsController < ApplicationController
 
     # Calculer l'âge de l'enfant
     child_age = ((Date.today - child_date_of_birth) / 365.25).floor
+
+    if child_age < 6
+      return Membership.new.tap { |m| m.errors.add(:child_date_of_birth, "L'adhésion n'est pas possible pour les enfants de moins de 6 ans") }
+    end
 
     if child_age >= 18
       return Membership.new.tap { |m| m.errors.add(:base, "L'enfant a 18 ans ou plus, il doit adhérer seul") }
