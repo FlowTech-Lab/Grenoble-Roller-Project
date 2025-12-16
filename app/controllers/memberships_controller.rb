@@ -514,9 +514,9 @@ class MembershipsController < ApplicationController
         return
       end
     else
-      # STANDARD : Questionnaire optionnel, pas de certificat obligatoire
+      # STANDARD : Questionnaire obligatoire pour créer l'adhésion, mais pas de certificat médical requis
+      # Note: Le questionnaire est vérifié avant paiement et avant "déjà adhérent"
       membership_params[:health_questionnaire_status] = has_health_issue ? "medical_required" : "ok"
-      # Pas de validation stricte pour Standard
     end
 
     # Adhésion simple uniquement (plus d'option T-shirt)

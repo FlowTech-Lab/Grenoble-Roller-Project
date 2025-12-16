@@ -519,11 +519,11 @@
                 <%= f.submit "Ajouter l'enfant", 
                     class: "btn btn-liquid-warning btn-lg btn-nav",
                     id: "submit_btn",
-                    onclick: "document.getElementById('payment_method_field').value = 'helloasso';" %>
+                    onclick: "const form = document.getElementById('child_membership_form'); if (!validateForm()) { alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.'); const firstInvalid = form?.querySelector('.is-invalid'); if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return false; } document.getElementById('payment_method_field').value = 'helloasso'; return true;" %>
                 <%= f.submit "Déjà adhérent / Espèces / Chèques", 
                     class: "btn btn-outline-primary btn-lg btn-nav",
                     id: "submit_without_payment_btn",
-                    onclick: "if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
+                    onclick: "const form = document.getElementById('child_membership_form'); if (!validateForm()) { alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.'); const firstInvalid = form?.querySelector('.is-invalid'); if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return false; } if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
               </div>
             </div>
           <% end %>
@@ -1014,17 +1014,48 @@
         
         // Vérifier que le questionnaire de santé est complété
         let allHealthAnswered = true;
+        const unansweredQuestions = [];
         for (let i = 1; i <= 9; i++) {
           const yesRadio = document.getElementById(`health_q${i}_yes`);
           const noRadio = document.getElementById(`health_q${i}_no`);
+          const questionItem = yesRadio?.closest('.health-question-item');
+          
           if (!yesRadio?.checked && !noRadio?.checked) {
             allHealthAnswered = false;
-            break;
+            unansweredQuestions.push(i);
+            // Marquer visuellement la question non répondue
+            if (questionItem) {
+              questionItem.classList.add('is-invalid');
+              questionItem.style.borderColor = 'var(--bs-danger)';
+              questionItem.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+            }
+          } else {
+            // Retirer le marquage d'erreur si la question est répondue
+            if (questionItem) {
+              questionItem.classList.remove('is-invalid');
+              questionItem.style.borderColor = '';
+              questionItem.style.backgroundColor = '';
+            }
           }
         }
         
         if (!allHealthAnswered) {
           isValid = false;
+          // Afficher un message d'erreur si ce n'est pas déjà fait
+          const healthSection = document.querySelector('[id*="health"]')?.closest('.step-content');
+          if (healthSection && !document.getElementById('health_questionnaire_error')) {
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'health_questionnaire_error';
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.innerHTML = '<strong>Questionnaire incomplet :</strong> Veuillez répondre à toutes les questions de santé avant de continuer.';
+            healthSection.appendChild(errorDiv);
+          }
+        } else {
+          // Retirer le message d'erreur si le questionnaire est complet
+          const errorDiv = document.getElementById('health_questionnaire_error');
+          if (errorDiv) {
+            errorDiv.remove();
+          }
         }
         
         // Vérifier certificat médical si requis
@@ -1037,10 +1068,14 @@
           }
         }
     
-    // Activer/désactiver bouton submit
+    // Activer/désactiver boutons submit
     const submitBtn = document.getElementById('submit_btn');
+    const submitWithoutPaymentBtn = document.getElementById('submit_without_payment_btn');
     if (submitBtn) {
       submitBtn.disabled = !isValid;
+    }
+    if (submitWithoutPaymentBtn) {
+      submitWithoutPaymentBtn.disabled = !isValid;
     }
     
     return isValid;
