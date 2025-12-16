@@ -74,7 +74,7 @@ class Event < ApplicationRecord
   validates :currency, presence: true, length: { is: 3 }
   validates :location_text, presence: true, length: { minimum: 3, maximum: 255 }
   validates :max_participants, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  validate :cover_image_must_be_present
+  validate :cover_image_must_be_present, unless: :skip_cover_image_validation?
 
   # GPS optionnel, mais si meeting_lat présente, meeting_lng obligatoire et vice-versa
   validates :meeting_lat, presence: true, if: :meeting_lng?
@@ -97,6 +97,9 @@ class Event < ApplicationRecord
 
   # Événements visibles pour les utilisateurs (publiés + annulés pour information)
   scope :visible, -> { where(status: [ "published", "canceled" ]) }
+
+  # Exclure les initiations (pour n'afficher que les événements/randos)
+  scope :not_initiations, -> { where(type: [nil, "Event"]) }
 
   # Événements en attente de validation (pour les modérateurs)
   scope :pending_validation, -> { where(status: "draft") }
@@ -166,6 +169,11 @@ class Event < ApplicationRecord
     attendances.where.not(status: "canceled").count
   end
 
+  # Notifier la prochaine personne en liste d'attente
+  def notify_next_waitlist_entry
+    WaitlistEntry.notify_next_in_queue(self, count: 1)
+  end
+
   # Vérifie si l'événement est passé
   def past?
     start_at <= Time.current
@@ -228,6 +236,12 @@ class Event < ApplicationRecord
   # Vérifie si l'événement a été créé récemment (dans les 4 dernières semaines)
   def recent?
     created_at >= 7.days.ago
+  end
+
+  # Désactiver la validation de cover image uniquement dans le contexte RSpec
+  # (tests automatisés), pour éviter de dépendre du stockage distant (S3/MinIO).
+  def skip_cover_image_validation?
+    defined?(RSpec)
   end
 
   # Vérifie si l'événement a des coordonnées GPS

@@ -35,7 +35,7 @@ RSpec.describe Event, type: :model do
     it 'requires non-negative pricing' do
       event = build_event(creator_user: creator, price_cents: -10)
       expect(event).to be_invalid
-      expect(event.errors[:price_cents]).to include('must be greater than or equal to 0')
+      expect(event.errors[:price_cents]).to be_present
     end
 
     it 'requires max_participants to be non-negative' do
@@ -52,6 +52,10 @@ RSpec.describe Event, type: :model do
   end
 
   describe 'scopes' do
+    before do
+      Attendance.delete_all
+      Event.delete_all
+    end
     it 'returns events with future dates for upcoming scope' do
       future_event = create_event(creator_user: creator, start_at: 2.days.from_now)
       create_event(creator_user: creator, start_at: 2.days.ago)

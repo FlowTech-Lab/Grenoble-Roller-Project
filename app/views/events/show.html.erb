@@ -328,7 +328,7 @@
                     <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
                     <strong>Vous êtes inscrit(e)</strong>
                   </div>
-                  <%= button_to cancel_attendance_event_path(@event), 
+                  <%= button_to cancel_attendance_event_path_for(@event, @user_attendance), 
                       method: :delete, 
                       class: "btn btn-outline-danger btn-sm", 
                       data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
@@ -348,7 +348,7 @@
                       <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
                       <strong><%= child_attendance.participant_name %> est inscrit(e)</strong>
                     </div>
-                    <%= button_to cancel_attendance_event_path(@event), 
+                    <%= button_to cancel_attendance_event_path_for(@event, child_attendance), 
                         method: :delete, 
                         params: { child_membership_id: child_attendance.child_membership_id },
                         class: "btn btn-outline-danger btn-sm", 
@@ -446,7 +446,7 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: attend_event_path(@event), method: :post, data: { turbo: false }, id: "attendFormShow", class: "attend-form" do |f| %>
+        <%= form_with url: attend_event_path_for(@event), method: :post, data: { turbo: false }, id: "attendFormShow", class: "attend-form" do |f| %>
           <div class="modal-body">
             <%= render 'shared/registration_form_fields', 
                 form: f, 
@@ -460,7 +460,7 @@
             <!-- Bouton Ajouter au calendrier -->
             <% if user_signed_in? %>
               <div class="mb-3 text-center">
-                <%= link_to ical_event_path(@event, format: :ics), 
+                <%= link_to event_path(@event, format: :ics), 
                     class: "btn btn-outline-primary btn-sm w-100", 
                     title: 'Ajouter au calendrier',
                     aria: { label: 'Ajouter au calendrier' } do %>
@@ -510,7 +510,7 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: join_waitlist_event_path(@event), method: :post, local: true, data: { turbo: false }, id: "joinWaitlistFormShowEvent" do |f| %>
+        <%= form_with url: join_waitlist_event_path_for(@event), method: :post, local: true, data: { turbo: false }, id: "joinWaitlistFormShowEvent" do |f| %>
           <div class="modal-body">
             <p class="mb-3">
               Cet événement est complet. Rejoignez la liste d'attente pour être notifié(e) si une place se libère.

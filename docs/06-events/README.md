@@ -58,8 +58,11 @@
 - Tests complets
 
 ### ✅ Tests RSpec (100%)
-- 166 exemples, 0 échec
-- Models, Requests, Policies
+- **Models** : 17 modèles résolus (112 tests) ✅
+  - Attendance (23), Event (22), User (16), Event::Initiation (13), Role (5), Route (5), ProductVariant (5), Partner (6), Product (4), VariantOptionValue (2), Order (2), OrderItem (1), Payment (1), AuditLog (6), ContactMessage (3), OptionValue (3), OrganizerApplication (5)
+- **Requests** : 125 tests passent (69 corrigés + 56 déjà OK) ✅
+  - Events (15), Registrations (23), Initiations (9), Memberships (12), Attendances (5), EventEmailIntegration (3), Pages (2), Products, Carts, Orders, RackAttack, WaitlistEntries, Passwords
+- **Policies** : 25 tests EventPolicy ✅
 - FactoryBot factories
 - Coverage >70%
 
@@ -119,9 +122,10 @@
 ## 📈 Métriques
 
 ### Tests
-- **RSpec Models** : 135 exemples, 0 échec ✅
-- **RSpec Requests** : 19 exemples, 0 échec ✅
-- **RSpec Policies** : 12 exemples, 0 échec ✅
+- **RSpec Models** : 112 exemples, 0 échec ✅ (17 modèles résolus)
+- **RSpec Requests** : 125 exemples, 0 échec ✅ (69 corrigés + 56 déjà OK)
+- **RSpec Policies** : 25 exemples, 0 échec ✅ (EventPolicy résolu)
+- **Total RSpec** : 262 exemples, 0 échec ✅
 - **Tests Capybara** : 30/40 tests passent (75%) ⏳
 - **Coverage** : >70% ✅
 
@@ -158,6 +162,6 @@
 ---
 
 **Document créé le** : Novembre 2025  
-**Dernière mise à jour** : Janvier 2025  
-**Version** : 2.0
+**Dernière mise à jour** : Décembre 2025  
+**Version** : 2.1
 

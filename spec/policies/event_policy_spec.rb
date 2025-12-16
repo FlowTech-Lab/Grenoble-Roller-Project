@@ -1,10 +1,14 @@
 require 'rails_helper'
 
 RSpec.describe EventPolicy do
+  include TestDataHelper
+
   subject(:policy) { described_class.new(user, event) }
 
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:owner) { create_user(role: organizer_role) }
   let(:event) { create(:event, creator_user: owner) }
-  let(:owner) { create(:user, :organizer) }
   let(:user) { owner }
 
   describe '#show?' do
@@ -31,14 +35,14 @@ RSpec.describe EventPolicy do
 
   describe '#create?' do
     it 'allows an organizer' do
-      organizer = create(:user, :organizer)
+      organizer = create_user(role: organizer_role)
       new_event = build(:event, creator_user: organizer)
 
       expect(described_class.new(organizer, new_event).create?).to be(true)
     end
 
     it 'denies a regular member' do
-      member = create(:user)
+      member = create_user
       new_event = build(:event, creator_user: member)
 
       expect(described_class.new(member, new_event).create?).to be(false)
@@ -51,51 +55,59 @@ RSpec.describe EventPolicy do
     end
 
     it 'denies an organizer who is not the owner' do
-      other = create(:user, :organizer)
+      other = create_user(role: organizer_role)
       expect(described_class.new(other, event).update?).to be(false)
     end
 
     it 'allows an admin' do
-      admin = create(:user, :admin)
+      admin = create_user(role: admin_role)
       expect(described_class.new(admin, event).update?).to be(true)
     end
   end
 
   describe '#destroy?' do
-    it 'allows the owner' do
-      expect(policy.destroy?).to be(true)
+    it 'denies the owner' do
+      expect(policy.destroy?).to be(false)
     end
 
     it 'allows an admin' do
-      admin = create(:user, :admin)
+      admin = create_user(role: admin_role)
       expect(described_class.new(admin, event).destroy?).to be(true)
     end
 
     it 'denies a regular member' do
-      member = create(:user)
+      member = create_user
       expect(described_class.new(member, event).destroy?).to be(false)
+    end
+
+    it 'denies an organizer who is not admin' do
+      organizer = create_user(role: organizer_role)
+      expect(described_class.new(organizer, event).destroy?).to be(false)
     end
   end
 
   describe '#attend?' do
     it 'allows any signed-in user when event has available spots' do
-      member = create(:user)
-      event = create(:event, :published, max_participants: 10)
+      member = create_user
+      event = build_event(status: 'published', max_participants: 10)
+      event.save!
       expect(described_class.new(member, event).attend?).to be(true)
     end
 
     it 'allows any signed-in user when event is unlimited' do
-      member = create(:user)
-      event = create(:event, :published, max_participants: 0)
+      member = create_user
+      event = build_event(status: 'published', max_participants: 0)
+      event.save!
       expect(described_class.new(member, event).attend?).to be(true)
     end
 
     it 'denies when event is full' do
-      member = create(:user)
-      event = create(:event, :published, max_participants: 2)
+      member = create_user
+      event = build_event(status: 'published', max_participants: 2)
+      event.save!
       # Fill the event
-      create(:attendance, event: event, user: create(:user), status: 'registered')
-      create(:attendance, event: event, user: create(:user), status: 'registered')
+      create(:attendance, event: event, user: create_user, status: 'registered')
+      create(:attendance, event: event, user: create_user, status: 'registered')
       event.reload
       expect(described_class.new(member, event).attend?).to be(false)
     end
@@ -106,8 +118,12 @@ RSpec.describe EventPolicy do
   end
 
   describe '#can_attend?' do
-    let(:member) { create(:user) }
-    let(:event) { create(:event, :published, max_participants: 10) }
+    let(:member) { create_user }
+    let(:event) do
+      e = build_event(status: 'published', max_participants: 10)
+      e.save!
+      e
+    end
 
     it 'returns true when user can attend and is not already registered' do
       expect(described_class.new(member, event).can_attend?).to be(true)
@@ -120,16 +136,21 @@ RSpec.describe EventPolicy do
     end
 
     it 'returns false when event is full' do
-      event = create(:event, :published, max_participants: 1)
-      create(:attendance, event: event, user: create(:user), status: 'registered')
-      event.reload
-      expect(described_class.new(member, event).can_attend?).to be(false)
+      full_event = build_event(status: 'published', max_participants: 1)
+      full_event.save!
+      create(:attendance, event: full_event, user: create_user, status: 'registered')
+      full_event.reload
+      expect(described_class.new(member, full_event).can_attend?).to be(false)
     end
   end
 
   describe '#user_has_attendance?' do
-    let(:member) { create(:user) }
-    let(:event) { create(:event, :published) }
+    let(:member) { create_user }
+    let(:event) do
+      e = build_event(status: 'published')
+      e.save!
+      e
+    end
 
     it 'returns true when user has an attendance' do
       create(:attendance, event: event, user: member, status: 'registered')
@@ -147,8 +168,21 @@ RSpec.describe EventPolicy do
   end
 
   describe 'Scope' do
-    let!(:published_event) { create(:event, :published) }
-    let!(:draft_event) { create(:event, status: 'draft', creator_user: owner) }
+    before do
+      Attendance.delete_all
+      Event.delete_all
+    end
+
+    let!(:published_event) do
+      e = build_event(status: 'published')
+      e.save!
+      e
+    end
+    let!(:draft_event) do
+      e = build_event(status: 'draft', creator_user: owner)
+      e.save!
+      e
+    end
 
     it 'returns only published events for guests' do
       scope = described_class::Scope.new(nil, Event.all).resolve
@@ -157,7 +191,7 @@ RSpec.describe EventPolicy do
     end
 
     it 'returns published + own events for a member' do
-      member = create(:user)
+      member = create_user
       scope = described_class::Scope.new(member, Event.all).resolve
 
       expect(scope).to include(published_event)
@@ -172,7 +206,7 @@ RSpec.describe EventPolicy do
     end
 
     it 'returns all events for admin' do
-      admin = create(:user, :admin)
+      admin = create_user(role: admin_role)
       scope = described_class::Scope.new(admin, Event.all).resolve
 
       expect(scope).to include(published_event, draft_event)

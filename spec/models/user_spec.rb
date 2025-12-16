@@ -79,11 +79,18 @@ RSpec.describe User, type: :model do
 
   it 'sends welcome email and confirmation after creation' do
     user = build_user(role: role, email: 'welcome@example.com')
+
+    # Adapter de test requis pour les matchers ActiveJob
+    previous_adapter = ActiveJob::Base.queue_adapter
+    ActiveJob::Base.queue_adapter = :test
+
     expect {
       allow(user).to receive(:send_confirmation_instructions).and_return(true)
       user.save!
     }.to have_enqueued_job(ActionMailer::MailDeliveryJob)
       .at_least(:once) # Au moins un email (bienvenue)
+  ensure
+    ActiveJob::Base.queue_adapter = previous_adapter
   end
 
   describe '#inactive_message' do

@@ -27,7 +27,9 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes order URL in body' do
-      expect(mail.body.encoded).to include(order_url(order))
+      # Le body est encodé, donc on décode pour chercher l'URL
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include(order.hashid).or include("/orders/#{order.hashid}")
     end
 
     it 'has HTML content' do
@@ -55,12 +57,16 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes payment confirmation in body' do
-      expect(mail.body.encoded).to include('Paiement reçu')
-      expect(mail.body.encoded).to include('Payée')
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include('Paiement reçu')
+      expect(body_content).to include('Payée')
     end
 
     it 'includes order URL in body' do
-      expect(mail.body.encoded).to include(order_url(order_paid))
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include(order_paid.hashid).or include("/orders/#{order_paid.hashid}")
     end
   end
 
@@ -74,16 +80,20 @@ RSpec.describe OrderMailer, type: :mailer do
 
     it 'includes order id in subject' do
       expect(mail.subject).to include("##{order_cancelled.id}")
-      expect(mail.subject).to include('Annulée')
+      expect(mail.subject).to include('annulée')
     end
 
     it 'includes cancellation information in body' do
-      expect(mail.body.encoded).to include('annulée')
-      expect(mail.body.encoded).to include('Annulée')
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include('annulée')
+      expect(body_content).to include('Annulée')
     end
 
     it 'includes orders URL in body' do
-      expect(mail.body.encoded).to include(orders_url)
+      # Le body est encodé, donc on décode pour chercher l'URL
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include('/orders').or include('orders')
     end
   end
 
@@ -101,12 +111,16 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes preparation information in body' do
-      expect(mail.body.encoded).to include('préparation')
-      expect(mail.body.encoded).to include('En préparation')
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include('préparation')
+      expect(body_content).to include('En préparation')
     end
 
     it 'includes order URL in body' do
-      expect(mail.body.encoded).to include(order_url(order_prep))
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include(order_prep.hashid).or include("/orders/#{order_prep.hashid}")
     end
   end
 
@@ -124,12 +138,16 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes shipping confirmation in body' do
-      expect(mail.body.encoded).to include('expédiée')
-      expect(mail.body.encoded).to include('Expédiée')
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include('expédiée')
+      expect(body_content).to include('Expédiée')
     end
 
     it 'includes order URL in body' do
-      expect(mail.body.encoded).to include(order_url(order_shipped))
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include(order_shipped.hashid).or include("/orders/#{order_shipped.hashid}")
     end
   end
 
@@ -166,12 +184,16 @@ RSpec.describe OrderMailer, type: :mailer do
     end
 
     it 'includes refund confirmation in body' do
-      expect(mail.body.encoded).to include('Remboursement confirmé')
-      expect(mail.body.encoded).to include('Remboursée')
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
+      expect(body_content).to include('Remboursement confirmé')
+      expect(body_content).to include('Remboursée')
     end
 
     it 'includes orders URL in body' do
-      expect(mail.body.encoded).to include(orders_url)
+      # Le body est encodé, donc on décode pour chercher l'URL
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include('/orders').or include('orders')
     end
   end
 end

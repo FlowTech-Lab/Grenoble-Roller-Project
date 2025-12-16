@@ -83,6 +83,11 @@ class Membership < ApplicationRecord
     base
   end
 
+  # Vérifie si le questionnaire de santé est complètement rempli (toutes les 9 questions)
+  def health_questionnaire_complete?
+    (1..9).all? { |i| send("health_q#{i}").present? }
+  end
+
   # Calcul automatique des dates de saison (1er sept - 31 août)
   def self.current_season_dates
     today = Date.today

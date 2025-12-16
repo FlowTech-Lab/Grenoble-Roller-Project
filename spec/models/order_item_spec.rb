@@ -6,7 +6,17 @@ RSpec.describe OrderItem, type: :model do
   let!(:order) { Order.create!(user: user, status: 'pending', total_cents: 1000, currency: 'EUR') }
   let!(:category) { ProductCategory.create!(name: 'Cat', slug: "cat-#{SecureRandom.hex(3)}") }
   let!(:product) { Product.create!(category: category, name: 'Prod', slug: "prod-#{SecureRandom.hex(3)}", price_cents: 1000, currency: 'EUR', stock_qty: 10, is_active: true, image_url: 'https://example.org/img.jpg') }
-  let!(:variant) { ProductVariant.create!(product: product, sku: "SKU-#{SecureRandom.hex(2)}", price_cents: 1000, currency: 'EUR', stock_qty: 5, is_active: true) }
+  let!(:variant) do
+    ProductVariant.create!(
+      product: product,
+      sku: "SKU-#{SecureRandom.hex(2)}",
+      price_cents: 1000,
+      currency: 'EUR',
+      stock_qty: 5,
+      is_active: true,
+      image_url: 'https://example.org/variant.jpg'
+    )
+  end
 
   it 'belongs to order and variant' do
     item = OrderItem.new(order: order, variant_id: variant.id, quantity: 2, unit_price_cents: 1000)

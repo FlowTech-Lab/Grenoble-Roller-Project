@@ -10,15 +10,30 @@ FactoryBot.define do
     confirmed_at { Time.current } # Par défaut, utilisateur confirmé
 
     trait :organizer do
-      association :role, factory: [ :role, :organizer ]
+      after(:build) do |user|
+        user.role = Role.find_or_create_by!(code: 'ORGANIZER') do |role|
+          role.name = 'Organisateur'
+          role.level = 40
+        end
+      end
     end
 
     trait :admin do
-      association :role, factory: [ :role, :admin ]
+      after(:build) do |user|
+        user.role = Role.find_or_create_by!(code: 'ADMIN') do |role|
+          role.name = 'Administrateur'
+          role.level = 60
+        end
+      end
     end
 
     trait :superadmin do
-      association :role, factory: [ :role, :superadmin ]
+      after(:build) do |user|
+        user.role = Role.find_or_create_by!(code: 'SUPERADMIN') do |role|
+          role.name = 'Super Administrateur'
+          role.level = 70
+        end
+      end
     end
 
     trait :unconfirmed do

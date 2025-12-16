@@ -63,20 +63,30 @@ Rails.application.routes.draw do
 
   # Orders (Checkout)
   resources :orders, only: [ :index, :new, :create, :show ] do
+    resources :payments, only: [:create], shallow: true, controller: 'orders/payments' do
+      collection do
+        # Statut du paiement (peut être appelé même sans payment créé)
+        get :status, action: :show
+      end
+    end
     member do
       patch :cancel
-      post :pay
       post :check_payment
-      get :payment_status
     end
   end
 
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
-    collection do
-      post :create_without_payment
+    resources :payments, only: [:create], shallow: true, controller: 'memberships/payments' do
+      collection do
+        # Paiement groupé pour plusieurs enfants en attente
+        post :create_multiple
+        # Statut du paiement (peut être appelé même sans payment créé)
+        get :status, action: :show
+      end
     end
     collection do
+      post :create_without_payment
       # Redirection de l'ancienne page choose vers new
       get :choose, to: redirect { |params, request|
         if params[:child] == "true"
@@ -85,27 +95,26 @@ Rails.application.routes.draw do
           new_membership_path(type: 'adult')
         end
       }
-      # Paiement groupé pour plusieurs enfants en attente
-      post :pay_multiple
-    end
-    member do
-      # Actions personnalisées (non-CRUD)
-      post :pay
-      get :payment_status
     end
   end
 
   # Events (Phase 2)
   resources :events do
+    resources :attendances, only: [:create], shallow: true, controller: 'events/attendances' do
+      collection do
+        delete :destroy
+        patch :toggle_reminder
+      end
+    end
+    resources :waitlist_entries, only: [:create, :destroy], shallow: true, controller: 'events/waitlist_entries' do
+      member do
+        post :convert_to_attendance
+        post :refuse
+        get :confirm, path: "confirm"
+        get :decline, path: "decline"
+      end
+    end
     member do
-      post :attend
-      delete :cancel_attendance
-      get :ical, defaults: { format: "ics" }
-      patch :toggle_reminder
-      post :join_waitlist
-      delete :leave_waitlist
-      post :convert_waitlist_to_attendance
-      post :refuse_waitlist
       get :loop_routes, defaults: { format: "json" }
       patch :reject
     end
@@ -113,19 +122,19 @@ Rails.application.routes.draw do
 
       # Initiations
       resources :initiations do
-        member do
-          post :attend
-          delete :cancel_attendance
-          get :ical, defaults: { format: "ics" }
-          patch :toggle_reminder
-          post :join_waitlist
-          delete :leave_waitlist
-          # Routes POST pour les formulaires
-          post :convert_waitlist_to_attendance
-          post :refuse_waitlist
-          # Routes GET pour les emails (redirigent vers la page de l'initiation avec confirmation)
-          get :confirm_waitlist, path: "waitlist/confirm"
-          get :decline_waitlist, path: "waitlist/decline"
+        resources :attendances, only: [:create], shallow: true, controller: 'initiations/attendances' do
+          collection do
+            delete :destroy
+            patch :toggle_reminder
+          end
+        end
+        resources :waitlist_entries, only: [:create, :destroy], shallow: true, controller: 'initiations/waitlist_entries' do
+          member do
+            post :convert_to_attendance
+            post :refuse
+            get :confirm, path: "confirm"
+            get :decline, path: "decline"
+          end
         end
       end
 

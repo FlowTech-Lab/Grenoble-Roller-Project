@@ -15,18 +15,10 @@ Distance : <%= number_with_precision(@event.distance_km, precision: 1, strip_ins
 Passé ce délai, elle sera proposée à la personne suivante en liste d'attente.
 
 Pour confirmer votre place, cliquez sur le lien suivant :
-<% if @is_initiation %>
-<%= confirm_waitlist_initiation_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
-<% else %>
-<%= confirm_waitlist_event_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
-<% end %>
+<%= confirm_waitlist_event_url_for(@event, @waitlist_entry) %>
 
 Pour refuser cette place, cliquez sur le lien suivant :
-<% if @is_initiation %>
-<%= decline_waitlist_initiation_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
-<% else %>
-<%= decline_waitlist_event_url(@event, waitlist_entry_id: @waitlist_entry.hashid) %>
-<% end %>
+<%= decline_waitlist_event_url_for(@event, @waitlist_entry) %>
 
 Si vous ne souhaitez plus participer à cet événement, vous pouvez ignorer cet email. 
 La place sera automatiquement proposée à la personne suivante.

@@ -184,6 +184,7 @@
                       <div class="age-display mt-2" id="child_age_display" style="display: none;">
                         <i class="bi bi-info-circle me-1"></i>Âge : <strong id="child_age_value"></strong> ans
                       </div>
+                      <div class="invalid-feedback d-block mt-2" id="child_date_of_birth_error" style="display: none;"></div>
                       <div class="form-text small mt-2">
                         <i class="bi bi-info-circle me-1"></i>L'âge sera calculé automatiquement à partir de la date sélectionnée.
                       </div>
@@ -589,7 +590,7 @@
         }
       }
       
-      // Calcul âge enfant
+      // Calcul âge enfant avec validation
       function checkChildAge() {
         const day = document.getElementById('child_date_of_birth_day').value;
         const month = document.getElementById('child_date_of_birth_month').value;
@@ -602,11 +603,27 @@
         const parentChildName = document.getElementById('parent_child_name');
         const firstName = document.getElementById('membership_child_first_name')?.value || '';
         const lastName = document.getElementById('membership_child_last_name')?.value || '';
+        const daySelect = document.getElementById('child_date_of_birth_day');
+        const monthSelect = document.getElementById('child_date_of_birth_month');
+        const yearSelect = document.getElementById('child_date_of_birth_year');
+        const hiddenField = document.getElementById('child_date_of_birth');
         
         if (!day || !month || !year) {
           if (ageDisplay) ageDisplay.style.display = 'none';
           if (categoryInference) categoryInference.style.display = 'none';
           if (authSection) authSection.style.display = 'none';
+          // Réinitialiser les classes de validation
+          [daySelect, monthSelect, yearSelect].forEach(select => {
+            if (select) {
+              select.classList.remove('is-invalid', 'is-valid');
+            }
+          });
+          // Masquer les messages d'erreur
+          const errorDiv = document.getElementById('child_date_of_birth_error');
+          if (errorDiv) {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+          }
           return;
         }
         
@@ -618,8 +635,96 @@
           age--;
         }
         
-        if (ageValue) ageValue.textContent = age;
-        if (ageDisplay) ageDisplay.style.display = 'block';
+        // Validation : bloquer si < 6 ans
+        if (age < 6) {
+          // Afficher erreur sur tous les champs de date
+          [daySelect, monthSelect, yearSelect].forEach(select => {
+            if (select) {
+              select.classList.add('is-invalid');
+              select.classList.remove('is-valid');
+            }
+          });
+          
+          // Afficher message d'erreur
+          const errorMessage = "L'adhésion n'est pas possible pour les enfants de moins de 6 ans.";
+          let errorDiv = document.getElementById('child_date_of_birth_error');
+          if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = 'child_date_of_birth_error';
+            errorDiv.className = 'invalid-feedback d-block mt-2';
+            const dateContainer = daySelect?.closest('.col-md-12');
+            if (dateContainer) {
+              dateContainer.appendChild(errorDiv);
+            }
+          }
+          errorDiv.textContent = errorMessage;
+          errorDiv.style.display = 'block';
+          
+          // Vider le champ caché pour empêcher la soumission
+          if (hiddenField) hiddenField.value = '';
+          
+          // Afficher l'âge en rouge
+          if (ageValue) {
+            ageValue.textContent = age;
+            ageValue.style.color = 'var(--bs-danger)';
+          }
+          if (ageDisplay) {
+            ageDisplay.style.display = 'block';
+            ageDisplay.style.color = 'var(--bs-danger)';
+          }
+          
+          // Masquer les autres sections
+          if (categoryInference) categoryInference.style.display = 'none';
+          if (authSection) authSection.style.display = 'none';
+          
+          // Désactiver le bouton de soumission
+          const submitBtn = document.getElementById('submit_btn');
+          if (submitBtn) submitBtn.disabled = true;
+          
+          return;
+        }
+        
+        // Si entre 6 et 15 ans : valide (vert)
+        if (age >= 6 && age <= 15) {
+          // Afficher en vert (valide)
+          [daySelect, monthSelect, yearSelect].forEach(select => {
+            if (select) {
+              select.classList.add('is-valid');
+              select.classList.remove('is-invalid');
+            }
+          });
+          
+          // Masquer les messages d'erreur
+          const errorDiv = document.getElementById('child_date_of_birth_error');
+          if (errorDiv) {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+          }
+          
+          if (ageValue) {
+            ageValue.textContent = age;
+            ageValue.style.color = 'var(--bs-success)';
+          }
+          if (ageDisplay) {
+            ageDisplay.style.display = 'block';
+            ageDisplay.style.color = 'inherit';
+          }
+        } else {
+          // Si >= 16 ans : pas de validation visuelle spéciale (géré ailleurs)
+          [daySelect, monthSelect, yearSelect].forEach(select => {
+            if (select) {
+              select.classList.remove('is-invalid', 'is-valid');
+            }
+          });
+          
+          if (ageValue) {
+            ageValue.textContent = age;
+            ageValue.style.color = 'inherit';
+          }
+          if (ageDisplay) {
+            ageDisplay.style.display = 'block';
+          }
+        }
         
         // Inférence catégorie
         if (categoryInference && categoryText) {
@@ -905,6 +1010,21 @@
             authCheckbox.classList.add('is-invalid');
             isValid = false;
           }
+        }
+        
+        // Vérifier que le questionnaire de santé est complété
+        let allHealthAnswered = true;
+        for (let i = 1; i <= 9; i++) {
+          const yesRadio = document.getElementById(`health_q${i}_yes`);
+          const noRadio = document.getElementById(`health_q${i}_no`);
+          if (!yesRadio?.checked && !noRadio?.checked) {
+            allHealthAnswered = false;
+            break;
+          }
+        }
+        
+        if (!allHealthAnswered) {
+          isValid = false;
         }
         
         // Vérifier certificat médical si requis

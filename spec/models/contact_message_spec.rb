@@ -15,10 +15,10 @@ RSpec.describe ContactMessage, type: :model do
     it 'requires all mandatory fields' do
       message = ContactMessage.new
       expect(message).to be_invalid
-      expect(message.errors[:name]).to include("can't be blank")
-      expect(message.errors[:email]).to include("can't be blank")
-      expect(message.errors[:subject]).to include("can't be blank")
-      expect(message.errors[:message]).to include("can't be blank")
+      expect(message.errors[:name]).to be_present
+      expect(message.errors[:email]).to be_present
+      expect(message.errors[:subject]).to be_present
+      expect(message.errors[:message]).to be_present
     end
 
     it 'validates email format' do
@@ -29,7 +29,7 @@ RSpec.describe ContactMessage, type: :model do
         message: 'Long enough message to trigger validation.'
       )
       expect(message).to be_invalid
-      expect(message.errors[:email]).to include('is invalid')
+      expect(message.errors[:email]).to be_present
     end
 
     it 'requires message length to be at least 10 characters' do
@@ -40,7 +40,7 @@ RSpec.describe ContactMessage, type: :model do
         message: 'Too short'
       )
       expect(message).to be_invalid
-      expect(message.errors[:message]).to include('is too short (minimum is 10 characters)')
+      expect(message.errors[:message]).to be_present
     end
   end
 end

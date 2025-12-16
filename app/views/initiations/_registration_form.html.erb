@@ -5,7 +5,7 @@
       Confirmer votre inscription
     </h3>
 
-    <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
+    <%= form_with url: attend_event_path_for(initiation), method: :post, local: true, data: { turbo: false } do |f| %>
       <%= render 'shared/registration_form_fields', form: f, event: initiation, prefix_id: "", show_alert: true, show_summary: false %>
 
       <!-- Bouton submit -->

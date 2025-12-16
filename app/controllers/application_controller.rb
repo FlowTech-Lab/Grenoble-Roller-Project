@@ -8,7 +8,27 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :check_email_confirmation_status, if: :user_signed_in?
 
-  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  rescue_from Pundit::NotAuthorizedError do |exception|
+    # Pour les initiations et événements en draft, rediriger vers root même pour les utilisateurs non connectés
+    if request.path.include?('/initiations/') || request.path.include?('/events/')
+      record = exception.record rescue nil
+      if record.is_a?(Event) && !record.published? && !record.canceled?
+        redirect_to root_path, alert: "Cette ressource n'est pas accessible."
+        return
+      end
+    end
+    
+    if user_signed_in?
+      user_not_authorized(exception)
+    else
+      # Pour les initiations/événements, rediriger vers root au lieu de la page de connexion
+      if request.path.include?('/initiations/') || request.path.include?('/events/')
+        redirect_to root_path, alert: "Cette ressource n'est pas accessible."
+      else
+        redirect_to new_user_session_path, alert: "Vous devez être connecté pour accéder à cette page."
+      end
+    end
+  end
 
   protected
 
@@ -55,16 +75,28 @@ class ApplicationController < ActionController::Base
         message: "Vous n'êtes pas autorisé·e à effectuer cette action."
       }, status: :forbidden
     else
-      redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+      # Pour les routes d'événements, toujours rediriger vers root_path
+      if request.path.include?('/events/') || request.path.include?('/initiations/')
+        redirect_to root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action."
+      else
+        redirect_to(request.referer || root_path, alert: "Vous n'êtes pas autorisé·e à effectuer cette action.")
+      end
     end
   end
 
   helper_method :current_user_has_attendance?
+  helper_method :can_moderate?
 
   def current_user_has_attendance?(event)
     return false unless current_user
 
     event.attendances.exists?(user_id: current_user.id)
+  end
+
+  def can_moderate?
+    return false unless current_user
+
+    current_user.role&.level.to_i >= 50 # Modérateur (50) ou Admin (60) ou SuperAdmin (70)
   end
 
   # Vérifier le statut de confirmation de l'email (gestion générale)

@@ -45,53 +45,6 @@
 <!-- Ligne de séparation blanche (pleine largeur) -->
 <div style="height: 2px; background: #ffffff; width: 100%;"></div>
 
-<!-- Annonce Initiation du dimanche 14 décembre -->
-<section class="py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-10">
-        <div class="alert alert-light border-0 shadow-lg mb-0" role="alert" style="border-radius: 15px;">
-          <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-3">
-            <div class="text-center text-md-start" style="flex-shrink: 0;">
-              <i class="bi bi-calendar-check-fill text-primary" style="font-size: 3rem;"></i>
-            </div>
-            <div class="flex-grow-1 text-center text-md-start">
-              <h3 class="h4 fw-bold mb-2 text-primary">
-                <i class="bi bi-megaphone-fill me-2"></i>
-                Initiation Roller - Dimanche 14 décembre
-              </h3>
-              <p class="mb-3 text-body-secondary">
-                <strong>Heure d'équipement :</strong> 10h15-10h30<br>
-                <strong>Heure de séance :</strong> 10h30-12h
-              </p>
-              <p class="mb-3 text-body-secondary">
-                Pour vous inscrire à cette séance d'initiation, merci d'utiliser le formulaire Google ci-dessous.
-                <br><small class="text-muted">* Merci de remplir le formulaire pour chaque participant. Si vous n'avez pas de matériel, merci de nous laisser votre pointure.</small>
-              </p>
-              <div class="d-flex flex-column flex-md-row gap-2 justify-content-center justify-content-md-start">
-                <%= link_to "https://docs.google.com/forms/d/e/1FAIpQLSdqJYRWbdUXIM8pIgIT6JVLK7bu5LQID9SBC6pioqQYPOUyBw/viewform", 
-                    target: "_blank", 
-                    rel: "noopener noreferrer",
-                    class: "btn btn-primary btn-lg" do %>
-                  <i class="bi bi-google me-2"></i>
-                  S'inscrire via le formulaire Google
-                <% end %>
-                <%= link_to initiations_path, class: "btn btn-outline-primary btn-lg" do %>
-                  <i class="bi bi-calendar-event me-2"></i>
-                  Voir toutes les initiations
-                <% end %>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Ligne de séparation blanche (pleine largeur) -->
-<div style="height: 2px; background: #ffffff; width: 100%;"></div>
-
 <!-- Section À propos -->
 <section class="py-5 section-alt">
   <div class="container">
@@ -247,7 +200,7 @@
                 <% if user_signed_in? %>
                   <% if current_user_has_attendance?(@highlighted_event) %>
                     <div class="d-grid mb-3">
-                      <%= button_to cancel_attendance_event_path(@highlighted_event), method: :delete, 
+                      <%= button_to cancel_attendance_event_path_for(@highlighted_event), method: :delete, 
                           class: 'btn btn-outline-secondary btn-lg', 
                           data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
                           aria: { label: 'Se désinscrire de cet événement' } do %>
@@ -284,7 +237,7 @@
                 <!-- Boutons secondaires groupés -->
                 <div class="d-flex flex-wrap gap-2">
                   <% if user_signed_in? %>
-                    <%= link_to ical_event_path(@highlighted_event, format: :ics), 
+                    <%= link_to event_path(@highlighted_event, format: :ics), 
                         class: 'btn btn-outline-primary', 
                         title: 'Télécharger le fichier .ics pour l\'ajouter à votre calendrier', 
                         data: { bs_toggle: 'tooltip', bs_placement: 'top' },
@@ -330,7 +283,7 @@
                 </h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
               </div>
-              <%= form_with url: attend_event_path(@highlighted_event), method: :post, data: { turbo: false } do |f| %>
+              <%= form_with url: attend_event_path_for(@highlighted_event), method: :post, data: { turbo: false } do |f| %>
                 <div class="modal-body">
                   <p class="lead mb-3">
                     Confirmez votre participation à <strong><%= @highlighted_event.title %></strong>

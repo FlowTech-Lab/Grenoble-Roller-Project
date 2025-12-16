@@ -60,7 +60,7 @@
       <%= link_to "Détails", order_path(order), class: "btn btn-sm btn-outline-primary flex-grow-1" %>
       
       <% if is_pending %>
-        <%= button_to "Payer", pay_order_path(order), method: :post, 
+        <%= button_to "Payer", order_payments_path(order), method: :post, 
             class: "btn btn-sm btn-warning", data: { turbo: false } %>
       <% end %>
     </div>

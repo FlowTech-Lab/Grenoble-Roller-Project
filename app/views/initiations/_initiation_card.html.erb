@@ -111,7 +111,7 @@
           <% if user_signed_in? %>
             <% if current_user_has_attendance?(initiation) %>
               <!-- Calendrier en premier (action positive) -->
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -134,7 +134,7 @@
                 </button>
               <% else %>
                 <!-- Une seule inscription : confirmation directe -->
-                <%= button_to cancel_attendance_initiation_path(initiation), 
+                <%= button_to cancel_attendance_event_path_for(initiation), 
                     method: :delete, 
                     class: "btn btn-outline-secondary btn-sm", 
                     params: parent_attendance ? {} : { child_membership_id: child_attendances.first&.child_membership_id },
@@ -153,7 +153,7 @@
                 <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>S'inscrire
               </button>
               <!-- Calendrier après S'inscrire -->
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -164,7 +164,7 @@
                 <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
               </button>
               <!-- Calendrier même si complet -->
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -200,7 +200,7 @@
           </h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
-        <%= form_with url: attend_initiation_path(initiation), method: :post, local: true, data: { turbo: false }, id: "attendFormInitiation#{initiation.id}", class: "attend-form" do |f| %>
+        <%= form_with url: attend_event_path_for(initiation), method: :post, local: true, data: { turbo: false }, id: "attendFormInitiation#{initiation.id}", class: "attend-form" do |f| %>
           <div class="modal-body">
             <%= render 'shared/registration_form_fields', 
                 form: f, 
@@ -211,7 +211,7 @@
 
             <!-- Bouton Ajouter au calendrier -->
             <div class="mb-3 text-center">
-              <%= link_to ical_initiation_path(initiation, format: :ics), 
+              <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm w-100", 
                   title: 'Ajouter au calendrier',
                   aria: { label: 'Ajouter au calendrier' } do %>
@@ -291,7 +291,7 @@
             
             <div class="list-group">
               <% if parent_attendance %>
-                <%= button_to cancel_attendance_initiation_path(initiation), 
+                <%= button_to cancel_attendance_event_path_for(initiation), 
                     method: :delete, 
                     class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center",
                     data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' } do %>
@@ -304,7 +304,7 @@
               <% end %>
               
               <% child_attendances.each do |child_attendance| %>
-                <%= button_to cancel_attendance_initiation_path(initiation), 
+                <%= button_to cancel_attendance_event_path_for(initiation), 
                     method: :delete, 
                     params: { child_membership_id: child_attendance.child_membership_id },
                     class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center",
