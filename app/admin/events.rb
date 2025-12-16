@@ -10,7 +10,7 @@ ActiveAdmin.register Event do
   permit_params :creator_user_id, :status, :start_at, :duration_min, :title,
                 :description, :price_cents, :currency, :location_text,
                 :meeting_lat, :meeting_lng, :route_id,
-                :max_participants, :level, :distance_km
+                :max_participants, :level, :distance_km, :cover_image
   scope("À venir") { |events| events.where("type IS NULL OR type != 'Event::Initiation'").upcoming }
   scope("Publiés") { |events| events.where("type IS NULL OR type != 'Event::Initiation'").published }
   scope("En attente de validation", default: true) { |events| events.where("type IS NULL OR type != 'Event::Initiation'").pending_validation }
