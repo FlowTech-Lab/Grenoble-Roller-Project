@@ -106,10 +106,13 @@ RSpec.describe EventMailer, type: :mailer do
     end
 
     it 'includes event date in body' do
+      # Le body peut être multipart (HTML + texte), on vérifie le HTML décodé
+      html_part = mail.body.parts.find { |p| p.content_type.include?('text/html') }
+      body_content = html_part ? html_part.decoded : mail.body.decoded
       # Vérifier que la date est présente (format peut varier)
       # On vérifie que l'année est présente et qu'il y a des chiffres (jour/mois)
-      expect(mail.body.encoded).to include(event.start_at.strftime('%Y'))
-      expect(mail.body.encoded).to match(/\d+/)
+      expect(body_content).to include(event.start_at.strftime('%Y'))
+      expect(body_content).to match(/\d+/)
     end
 
     it 'includes event URL in body' do

@@ -3,14 +3,6 @@ flowtech@dev-flowtech-lab:~/The_Hacking_Project/Mes-repo/Grenoble-Roller-Project
 Event Attendance
   Inscription à un événement
     quand l'utilisateur est connecté
-flowtech@dev-flowtech-lab:~/The_Hacking_Project/Mes-repo/Grenoble-Roller-Project$ docker compose -f ops/dev/docker-compose.yml restart web
-[+] Restarting 1/1
- ✔ Container grenoble-roller-dev  Started                                                                                                                                                                                  1.9s 
-flowtech@dev-flowtech-lab:~/The_Hacking_Project/Mes-repo/Grenoble-Roller-Project$ docker exec grenoble-roller-dev bundle exec rspec
-
-Event Attendance
-  Inscription à un événement
-    quand l'utilisateur est connecté
       affiche le bouton S'inscrire sur la page événements
       affiche le bouton S'inscrire sur la page détail de l'événement
       ouvre le popup de confirmation lors du clic sur S'inscrire
@@ -51,6 +43,7 @@ Event Management
       permet de modifier l'événement même s'il n'est pas le créateur
   Suppression d'un événement
     quand l'utilisateur est le créateur
+      n'affiche pas le bouton Supprimer (seul un admin peut supprimer)
       permet de supprimer l'événement avec confirmation (PENDING: Temporarily skipped with xit)
       annule la suppression si l'utilisateur clique sur Annuler dans le modal (PENDING: Temporarily skipped with xit)
     quand l'utilisateur est admin
@@ -115,7 +108,7 @@ EventMailer
     includes event title in subject
     includes event details in body
     includes user first name in body
-    includes event date in body
+    includes event date in body (FAILED - 1)
     includes event URL in body
   #event_reminder
     sends to user email
@@ -190,7 +183,7 @@ Attendance
   validations
     is valid with default attributes
     requires a status
-    enforces uniqueness of user scoped to event (FAILED - 1)
+    enforces uniqueness of user scoped to event
   associations
     accepts an optional payment
     counter cache
@@ -203,7 +196,7 @@ Attendance
       prevents attendance when event is full
       does not count canceled attendances when checking capacity
   scopes
-    returns non-canceled attendances for active scope (FAILED - 2)
+    returns non-canceled attendances for active scope
     returns canceled attendances for canceled scope
     .volunteers
       returns only volunteer attendances
@@ -422,6 +415,7 @@ EventPolicy
     denies the owner
     allows an admin
     denies a regular member
+    denies an organizer who is not admin
   #attend?
     allows any signed-in user when event has available spots
     allows any signed-in user when event is unlimited
@@ -694,11 +688,11 @@ Pending: (Failures listed here are expected and do not affect your suite's statu
 
   4) Event Management Suppression d'un événement quand l'utilisateur est le créateur permet de supprimer l'événement avec confirmation
      # Temporarily skipped with xit
-     # ./spec/features/event_management_spec.rb:165
+     # ./spec/features/event_management_spec.rb:170
 
   5) Event Management Suppression d'un événement quand l'utilisateur est le créateur annule la suppression si l'utilisateur clique sur Annuler dans le modal
      # Temporarily skipped with xit
-     # ./spec/features/event_management_spec.rb:184
+     # ./spec/features/event_management_spec.rb:189
 
   6) Mes sorties Accès à la page Mes sorties quand l'utilisateur est connecté permet de se désinscrire depuis la page Mes sorties
      # Temporarily skipped with xit
@@ -742,243 +736,161 @@ Pending: (Failures listed here are expected and do not affect your suite's statu
 
 Failures:
 
-  1) Attendance validations enforces uniqueness of user scoped to event
-     Got 0 failures and 2 other errors:
+  1) EventMailer#attendance_cancelled includes event date in body
+     Failure/Error: expect(mail.body.encoded).to include(event.start_at.strftime('%Y'))
 
-     1.1) Failure/Error: user.save!
+       expected "\r\n----==_mimepart_6940a1d68694c_1212d381603cd\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nCo...END app/views/layouts/mailer.html.erb -->=\r\n\r\n----==_mimepart_6940a1d68694c_1212d381603cd--\r\n" to include "2025"
+       Diff:
+       @@ -1 +1,141 @@
+       -2025
+       +
+       +----==_mimepart_6940a1d68694c_1212d381603cd
+       +Content-Type: text/plain;
+       + charset=UTF-8
+       +Content-Transfer-Encoding: base64
+       +
+       +4p2MIETDiVNJTlNDUklQVElPTiBDT05GSVJNw4lFCgpCb25qb3VyIEphbmUs
+       +CgpWb3RyZSBkw6lzaW5zY3JpcHRpb24gZGUgbCfDqXbDqW5lbWVudCBTb3J0
+       +aWUgUm9sbGVyIGEgYmllbiDDqXTDqSBlbnJlZ2lzdHLDqWUuCgrwn5OFIETD
+       +iVRBSUxTIERFIEwnw4lWw4lORU1FTlQK4pSA4pSA4pSA4pSA4pSA4pSA4pSA
+       +4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA
+       +4pSA4pSA4pSACgrwn5ONIExpZXUgOiBQYXJjIFBhdWwgTWlzdHJhbArwn5WQ
+       +IERhdGUgOiB2ZW5kcmVkaSAxOSBkw6ljZW1icmUgMjAyNSDDoCAwMGgwMwri
+       +j7HvuI8gRHVyw6llIDogNjAgbWludXRlcwoKVm9pciBsJ8OpdsOpbmVtZW50
+       +IDogaHR0cHM6Ly9kZXYtZ3Jlbm9ibGUtcm9sbGVyLmZsb3d0ZWNoLWxhYi5v
+       +cmcvZXZlbnRzL1JBM3ZUMk5YCgrilIDilIDilIDilIDilIDilIDilIDilIDi
+       +lIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDi
+       +lIDilIAKCk5vdXMgZXNww6lyb25zIHZvdXMgcmV2b2lyIGJpZW50w7R0IHN1
+       +ciB1bmUgYXV0cmUgc29ydGllICEg8J+bvAoK8J+SoSBSYXBwZWwgOiBWb3Vz
+       +IHBvdXZleiB2b3VzIHLDqWluc2NyaXJlIMOgIGNldCDDqXbDqW5lbWVudCDD
+       +oCB0b3V0IG1vbWVudCBkZXB1aXMgbGEgcGFnZSBkZSBsJ8OpdsOpbmVtZW50
+       +LgoKCg==
+       +
+       +----==_mimepart_6940a1d68694c_1212d381603cd
+       +Content-Type: text/html;
+       + charset=UTF-8
+       +Content-Transfer-Encoding: quoted-printable
+       +
+       +<!-- BEGIN app/views/layouts/mailer.html.erb
+       +--><!DOCTYPE html>
+       +<html>
+       +  <head>
+       +    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf=
+       +-8">
+       +    <meta name=3D"viewport" content=3D"width=3Ddevice-width, initial-scal=
+       +e=3D1.0">
+       +    <style>
+       +      body {
+       +        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot=
+       +o, 'Helvetica Neue', Arial, sans-serif;
+       +        line-height: 1.6;
+       +        color: #333;
+       +        max-width: 600px;
+       +        margin: 0 auto;
+       +        padding: 20px;
+       +        background-color: #f5f5f5;
+       +      }
+       +      .email-container {
+       +        background-color: #ffffff;
+       +        padding: 30px;
+       +        border-radius: 8px;
+       +        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+       +      }
+       +      .email-header {
+       +        text-align: center;
+       +        margin-bottom: 30px;
+       +        padding-bottom: 20px;
+       +        border-bottom: 2px solid #007bff;
+       +      }
+       +      .email-footer {
+       +        margin-top: 30px;
+       +        padding-top: 20px;
+       +        border-top: 1px solid #e0e0e0;
+       +        text-align: center;
+       +        font-size: 12px;
+       +        color: #6c757d;
+       +      }
+       +    </style>
+       +  </head>
+       +
+       +  <body>
+       +    <div class=3D"email-container">
+       +      <div class=3D"email-header">
+       +        <h1 style=3D"color: #007bff; margin: 0;">=F0=9F=9B=BC Grenoble Ro=
+       +ller</h1>
+       +      </div>
+       +      <!-- BEGIN app/views/event_mailer/attendance_cancelled.html.erb
+       +--><h1 style=3D"color: #dc3545; margin-top: 0;">=E2=9D=8C D=C3=A9sinscrip=
+       +tion confirm=C3=A9e</h1>
+       +
+       +<p>Bonjour Jane,</p>
+       +
+       +<p>Votre d=C3=A9sinscription de l'=C3=A9v=C3=A9nement <strong>Sortie Roll=
+       +er</strong> a bien =C3=A9t=C3=A9 enregistr=C3=A9e.</p>
+       +
+       +<div style=3D"background: #fff3cd; padding: 20px; border-radius: 10px; ma=
+       +rgin: 20px 0; border-left: 4px solid #ffc107;">
+       +  <h3 style=3D"margin-top: 0; color: #333; font-size: 18px;">=F0=9F=93=85=
+       + D=C3=A9tails de l'=C3=A9v=C3=A9nement</h3>
+       +  <table style=3D"width: 100%; border-collapse: collapse;">
+       +    <tr>
+       +      <td style=3D"padding: 8px 0; color: #666; width: 120px;">=F0=9F=93=8D=
+       + Lieu :</td>
+       +      <td style=3D"padding: 8px 0;"><strong>Parc Paul Mistral</strong></t=
+       +d>
+       +    </tr>
+       +    <tr>
+       +      <td style=3D"padding: 8px 0; color: #666;">=F0=9F=95=90 Date :</td>=
+       +
+       +      <td style=3D"padding: 8px 0;"><strong>vendredi 19 d=C3=A9cembre 202=
+       +5 =C3=A0 00h03</strong></td>
+       +    </tr>
+       +    <tr>
+       +      <td style=3D"padding: 8px 0; color: #666;">=E2=8F=B1=EF=B8=8F Dur=C3=
+       +=A9e :</td>
+       +      <td style=3D"padding: 8px 0;"><strong>60 minutes</strong></td>
+       +    </tr>
+       +  </table>
+       +</div>
+       +
+       +<div style=3D"margin: 30px 0; text-align: center;">
+       +  <a style=3D"display: inline-block; background: #6c757d; color: white; p=
+       +adding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight=
+       +: bold;" href=3D"https://dev-grenoble-roller.flowtech-lab.org/events/RA3v=
+       +T2NX">Voir l&#39;=C3=A9v=C3=A9nement</a>
+       +</div>
+       +
+       +<p style=3D"color: #6c757d; font-size: 14px; margin-top: 30px;">
+       +  Nous esp=C3=A9rons vous revoir bient=C3=B4t sur une autre sortie ! =F0=9F=
+       +=9B=BC
+       +</p>
+       +
+       +<p style=3D"color: #6c757d; font-size: 12px; margin-top: 20px; padding-to=
+       +p: 20px; border-top: 1px solid #e0e0e0;">
+       +  <strong>=F0=9F=92=A1 Rappel :</strong> Vous pouvez vous r=C3=A9inscrire=
+       + =C3=A0 cet =C3=A9v=C3=A9nement =C3=A0 tout moment depuis la page de l'=C3=
+       +=A9v=C3=A9nement.
+       +</p>
+       +
+       +<!-- END app/views/event_mailer/attendance_cancelled.html.erb -->
+       +      <div class=3D"email-footer">
+       +        <p>Grenoble Roller - Association de roller =C3=A0 Grenoble</p>
+       +        <p>Cet email a =C3=A9t=C3=A9 envoy=C3=A9 automatiquement, merci d=
+       +e ne pas y r=C3=A9pondre.</p>
+       +      </div>
+       +    </div>
+       +  </body>
+       +</html>
+       +<!-- END app/views/layouts/mailer.html.erb -->=
+       +
+       +----==_mimepart_6940a1d68694c_1212d381603cd--
+     # ./spec/mailers/event_mailer_spec.rb:111:in 'block (3 levels) in <main>'
 
-          NoMethodError:
-            undefined method '[]' for nil
-          # ./spec/support/test_data_helper.rb:28:in 'TestDataHelper#create_user'
-          # ./spec/models/attendance_spec.rb:5:in 'block (2 levels) in <main>'
-          # ./spec/models/attendance_spec.rb:20:in 'block (3 levels) in <main>'
-          # ------------------
-          # --- Caused by: ---
-          # NoMethodError:
-          #   undefined method '[]' for nil
-          #   ./spec/support/test_data_helper.rb:28:in 'TestDataHelper#create_user'
-
-     1.2) Failure/Error: context[:connection] ||= connection
-
-          NoMethodError:
-            undefined method '[]' for nil
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:228:in 'ActiveRecord::QueryLogs.tag_content'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:206:in 'ActiveRecord::QueryLogs.uncached_comment'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:201:in 'ActiveRecord::QueryLogs.comment'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:144:in 'ActiveRecord::QueryLogs.call'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:604:in 'block in ActiveRecord::ConnectionAdapters::DatabaseStatements#preprocess_query'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:603:in 'Array#each'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:603:in 'ActiveRecord::ConnectionAdapters::DatabaseStatements#preprocess_query'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:612:in 'ActiveRecord::ConnectionAdapters::DatabaseStatements#internal_execute'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql/schema_statements.rb:320:in 'ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaStatements#client_min_messages='
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql_adapter.rb:978:in 'ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#configure_connection'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:1285:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#attempt_configure_connection'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:728:in 'block (2 levels) in ActiveRecord::ConnectionAdapters::AbstractAdapter#reconnect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:410:in 'ActiveRecord::ConnectionAdapters::DatabaseStatements#reset_transaction'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:726:in 'block in ActiveRecord::ConnectionAdapters::AbstractAdapter#reconnect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:715:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#reconnect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:825:in 'block in ActiveRecord::ConnectionAdapters::AbstractAdapter#verify!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:814:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#verify!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:834:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#connect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql_adapter.rb:387:in 'block in ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#reset!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql_adapter.rb:386:in 'ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#reset!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/connection_pool.rb:396:in 'block in ActiveRecord::ConnectionAdapters::ConnectionPool#unpin_connection!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/connection_pool.rb:386:in 'ActiveRecord::ConnectionAdapters::ConnectionPool#unpin_connection!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:230:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:230:in 'ActiveRecord::TestFixtures#teardown_transactional_fixtures'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:167:in 'ActiveRecord::TestFixtures#teardown_fixtures'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:17:in 'ActiveRecord::TestFixtures#after_teardown'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/current_attributes/test_helper.rb:10:in 'ActiveSupport::CurrentAttributes::TestHelper#after_teardown'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/execution_context/test_helper.rb:10:in 'ActiveSupport::ExecutionContext::TestHelper#after_teardown'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-rails-8.0.2/lib/rspec/rails/adapters.rb:76:in 'block (2 levels) in <module:MinitestLifecycleAdapter>'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:457:in 'BasicObject#instance_exec'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:457:in 'RSpec::Core::Example#instance_exec'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:390:in 'RSpec::Core::Hooks::AroundHook#execute_with'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:628:in 'block (2 levels) in RSpec::Core::Hooks::HookCollections#run_around_example_hooks_for'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:352:in 'RSpec::Core::Example::Procsy#call'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:629:in 'RSpec::Core::Hooks::HookCollections#run_around_example_hooks_for'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:486:in 'RSpec::Core::Hooks::HookCollections#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:468:in 'RSpec::Core::Example#with_around_example_hooks'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:511:in 'RSpec::Core::Example#with_around_and_singleton_context_hooks'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:259:in 'RSpec::Core::Example#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:653:in 'block in RSpec::Core::ExampleGroup.run_examples'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:649:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:649:in 'RSpec::Core::ExampleGroup.run_examples'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:614:in 'RSpec::Core::ExampleGroup.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:615:in 'block in RSpec::Core::ExampleGroup.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:615:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:615:in 'RSpec::Core::ExampleGroup.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:121:in 'block (3 levels) in RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:121:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:121:in 'block (2 levels) in RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/configuration.rb:2097:in 'RSpec::Core::Configuration#with_suite_hooks'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:116:in 'block in RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/reporter.rb:74:in 'RSpec::Core::Reporter#report'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:115:in 'RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:89:in 'RSpec::Core::Runner#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:71:in 'RSpec::Core::Runner.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:45:in 'RSpec::Core::Runner.invoke'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/exe/rspec:4:in '<top (required)>'
-          # /rails/vendor/bundle/ruby/3.4.0/bin/rspec:25:in 'Kernel#load'
-          # /rails/vendor/bundle/ruby/3.4.0/bin/rspec:25:in '<top (required)>'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli/exec.rb:59:in 'Kernel.load'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli/exec.rb:59:in 'Bundler::CLI::Exec#kernel_load'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli/exec.rb:23:in 'Bundler::CLI::Exec#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli.rb:456:in 'Bundler::CLI#exec'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor/command.rb:28:in 'Bundler::Thor::Command#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor/invocation.rb:127:in 'Bundler::Thor::Invocation#invoke_command'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor.rb:538:in 'Bundler::Thor.dispatch'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli.rb:35:in 'Bundler::CLI.dispatch'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor/base.rb:584:in 'Bundler::Thor::Base::ClassMethods#start'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli.rb:29:in 'Bundler::CLI.start'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/exe/bundle:28:in 'block in <top (required)>'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/friendly_errors.rb:118:in 'Bundler.with_friendly_errors'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/exe/bundle:20:in '<top (required)>'
-          # /usr/local/bin/bundle:25:in 'Kernel#load'
-          # /usr/local/bin/bundle:25:in '<main>'
-          # 
-          #   Showing full backtrace because every line was filtered out.
-          #   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-          #   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-
-  2) Attendance scopes returns non-canceled attendances for active scope
-     Got 0 failures and 2 other errors:
-
-     2.1) Failure/Error: user.save!
-
-          NoMethodError:
-            undefined method '[]' for nil
-          # ./spec/support/test_data_helper.rb:28:in 'TestDataHelper#create_user'
-          # ./spec/support/test_data_helper.rb:49:in 'TestDataHelper#build_event'
-          # ./spec/support/test_data_helper.rb:72:in 'TestDataHelper#create_event'
-          # ./spec/support/test_data_helper.rb:79:in 'TestDataHelper#build_attendance'
-          # ./spec/support/test_data_helper.rb:90:in 'TestDataHelper#create_attendance'
-          # ./spec/models/attendance_spec.rb:112:in 'block (3 levels) in <main>'
-          # ------------------
-          # --- Caused by: ---
-          # NoMethodError:
-          #   undefined method '[]' for nil
-          #   ./spec/support/test_data_helper.rb:28:in 'TestDataHelper#create_user'
-
-     2.2) Failure/Error: context[:connection] ||= connection
-
-          NoMethodError:
-            undefined method '[]' for nil
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:228:in 'ActiveRecord::QueryLogs.tag_content'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:206:in 'ActiveRecord::QueryLogs.uncached_comment'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:201:in 'ActiveRecord::QueryLogs.comment'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/query_logs.rb:144:in 'ActiveRecord::QueryLogs.call'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:604:in 'block in ActiveRecord::ConnectionAdapters::DatabaseStatements#preprocess_query'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:603:in 'Array#each'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:603:in 'ActiveRecord::ConnectionAdapters::DatabaseStatements#preprocess_query'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:612:in 'ActiveRecord::ConnectionAdapters::DatabaseStatements#internal_execute'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql/schema_statements.rb:320:in 'ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaStatements#client_min_messages='
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql_adapter.rb:978:in 'ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#configure_connection'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:1285:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#attempt_configure_connection'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:728:in 'block (2 levels) in ActiveRecord::ConnectionAdapters::AbstractAdapter#reconnect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/database_statements.rb:410:in 'ActiveRecord::ConnectionAdapters::DatabaseStatements#reset_transaction'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:726:in 'block in ActiveRecord::ConnectionAdapters::AbstractAdapter#reconnect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:715:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#reconnect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:825:in 'block in ActiveRecord::ConnectionAdapters::AbstractAdapter#verify!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:814:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#verify!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract_adapter.rb:834:in 'ActiveRecord::ConnectionAdapters::AbstractAdapter#connect!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql_adapter.rb:387:in 'block in ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#reset!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/postgresql_adapter.rb:386:in 'ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#reset!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/connection_pool.rb:396:in 'block in ActiveRecord::ConnectionAdapters::ConnectionPool#unpin_connection!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:21:in 'block in ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'Thread.handle_interrupt'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/concurrency/thread_monitor.rb:17:in 'ActiveSupport::Concurrency::ThreadMonitor#synchronize'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/connection_adapters/abstract/connection_pool.rb:386:in 'ActiveRecord::ConnectionAdapters::ConnectionPool#unpin_connection!'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:230:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:230:in 'ActiveRecord::TestFixtures#teardown_transactional_fixtures'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:167:in 'ActiveRecord::TestFixtures#teardown_fixtures'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activerecord-8.1.1/lib/active_record/test_fixtures.rb:17:in 'ActiveRecord::TestFixtures#after_teardown'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/current_attributes/test_helper.rb:10:in 'ActiveSupport::CurrentAttributes::TestHelper#after_teardown'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/activesupport-8.1.1/lib/active_support/execution_context/test_helper.rb:10:in 'ActiveSupport::ExecutionContext::TestHelper#after_teardown'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-rails-8.0.2/lib/rspec/rails/adapters.rb:76:in 'block (2 levels) in <module:MinitestLifecycleAdapter>'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:457:in 'BasicObject#instance_exec'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:457:in 'RSpec::Core::Example#instance_exec'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:390:in 'RSpec::Core::Hooks::AroundHook#execute_with'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:628:in 'block (2 levels) in RSpec::Core::Hooks::HookCollections#run_around_example_hooks_for'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:352:in 'RSpec::Core::Example::Procsy#call'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:629:in 'RSpec::Core::Hooks::HookCollections#run_around_example_hooks_for'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/hooks.rb:486:in 'RSpec::Core::Hooks::HookCollections#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:468:in 'RSpec::Core::Example#with_around_example_hooks'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:511:in 'RSpec::Core::Example#with_around_and_singleton_context_hooks'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example.rb:259:in 'RSpec::Core::Example#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:653:in 'block in RSpec::Core::ExampleGroup.run_examples'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:649:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:649:in 'RSpec::Core::ExampleGroup.run_examples'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:614:in 'RSpec::Core::ExampleGroup.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:615:in 'block in RSpec::Core::ExampleGroup.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:615:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/example_group.rb:615:in 'RSpec::Core::ExampleGroup.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:121:in 'block (3 levels) in RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:121:in 'Array#map'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:121:in 'block (2 levels) in RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/configuration.rb:2097:in 'RSpec::Core::Configuration#with_suite_hooks'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:116:in 'block in RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/reporter.rb:74:in 'RSpec::Core::Reporter#report'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:115:in 'RSpec::Core::Runner#run_specs'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:89:in 'RSpec::Core::Runner#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:71:in 'RSpec::Core::Runner.run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/lib/rspec/core/runner.rb:45:in 'RSpec::Core::Runner.invoke'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/rspec-core-3.13.6/exe/rspec:4:in '<top (required)>'
-          # /rails/vendor/bundle/ruby/3.4.0/bin/rspec:25:in 'Kernel#load'
-          # /rails/vendor/bundle/ruby/3.4.0/bin/rspec:25:in '<top (required)>'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli/exec.rb:59:in 'Kernel.load'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli/exec.rb:59:in 'Bundler::CLI::Exec#kernel_load'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli/exec.rb:23:in 'Bundler::CLI::Exec#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli.rb:456:in 'Bundler::CLI#exec'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor/command.rb:28:in 'Bundler::Thor::Command#run'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor/invocation.rb:127:in 'Bundler::Thor::Invocation#invoke_command'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor.rb:538:in 'Bundler::Thor.dispatch'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli.rb:35:in 'Bundler::CLI.dispatch'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/vendor/thor/lib/thor/base.rb:584:in 'Bundler::Thor::Base::ClassMethods#start'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/cli.rb:29:in 'Bundler::CLI.start'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/exe/bundle:28:in 'block in <top (required)>'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/lib/bundler/friendly_errors.rb:118:in 'Bundler.with_friendly_errors'
-          # /rails/vendor/bundle/ruby/3.4.0/gems/bundler-2.7.2/exe/bundle:20:in '<top (required)>'
-          # /usr/local/bin/bundle:25:in 'Kernel#load'
-          # /usr/local/bin/bundle:25:in '<main>'
-          # 
-          #   Showing full backtrace because every line was filtered out.
-          #   See docs for RSpec::Configuration#backtrace_exclusion_patterns and
-          #   RSpec::Configuration#backtrace_inclusion_patterns for more information.
-
-Finished in 4 minutes 28.7 seconds (files took 2.49 seconds to load)
-401 examples, 2 failures, 15 pending
+Finished in 4 minutes 25 seconds (files took 2.49 seconds to load)
+403 examples, 1 failure, 15 pending
 
 Failed examples:
 
-rspec ./spec/models/attendance_spec.rb:19 # Attendance validations enforces uniqueness of user scoped to event
-rspec ./spec/models/attendance_spec.rb:111 # Attendance scopes returns non-canceled attendances for active scope
+rspec ./spec/mailers/event_mailer_spec.rb:108 # EventMailer#attendance_cancelled includes event date in body
+
+flowtech@dev-flowtech-lab:~/The_Hacking_Project/Mes-repo/Grenoble-Roller-Project$ 
