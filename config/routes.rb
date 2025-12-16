@@ -77,15 +77,12 @@ Rails.application.routes.draw do
 
   # Memberships - Routes REST/CRUD
   resources :memberships, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
-    resources :payments, only: [ :create ], shallow: true, controller: "memberships/payments" do
-      collection do
-        # Paiement groupé pour plusieurs enfants en attente
-        post :create_multiple
-        # Statut du paiement (peut être appelé même sans payment créé)
-        get :status, action: :show
-      end
-    end
+    resources :payments, only: [ :create ], shallow: true, controller: "memberships/payments"
+    # Route status nested (nécessite membership_id)
+    get "payments/status", to: "memberships/payments#show", as: :status_payment
     collection do
+      # Paiement groupé pour plusieurs enfants en attente
+      post "payments/create_multiple", to: "memberships/payments#create_multiple", as: :create_multiple_payments
       post :create_without_payment
       # Redirection de l'ancienne page choose vers new
       get :choose, to: redirect { |params, request|

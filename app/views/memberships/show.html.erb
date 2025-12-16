@@ -95,7 +95,7 @@
                   if (!isPolling) return;
                   
                   try {
-                    const response = await fetch('<%= status_membership_payments_path(@membership) %>', {
+                    const response = await fetch('<%= membership_status_payment_path(@membership) %>', {
                       method: 'GET',
                       headers: {
                         'Accept': 'application/json',
