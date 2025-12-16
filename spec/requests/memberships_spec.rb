@@ -63,9 +63,9 @@ RSpec.describe "Memberships", type: :request do
         login_user(user)
         # membership créée sans questionnaire (par défaut dans factory)
         allow(HelloassoService).to receive(:create_membership_checkout_intent)
-        
+
         post membership_payments_path(membership)
-        
+
         expect(response).to redirect_to(edit_membership_path(membership))
         expect(flash[:alert]).to include("questionnaire de santé")
         # Vérifier que HelloAsso n'est PAS appelé
@@ -147,9 +147,9 @@ RSpec.describe "Memberships", type: :request do
       login_user(user)
       child_membership_incomplete = create(:membership, :child, :pending, user: user) # Sans questionnaire
       allow(HelloassoService).to receive(:create_multiple_memberships_checkout_intent)
-      
+
       post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [ child_membership1.id, child_membership_incomplete.id ] }
-      
+
       expect(response).to redirect_to(memberships_path)
       expect(flash[:alert]).to include("questionnaire de santé")
       expect(HelloassoService).not_to have_received(:create_multiple_memberships_checkout_intent)
@@ -158,7 +158,7 @@ RSpec.describe "Memberships", type: :request do
 
   describe "POST /memberships - Déjà adhérent / Espèces / Chèques" do
     let(:user_with_dob) { create_user(role: role, date_of_birth: Date.new(1990, 1, 1)) }
-    
+
     before do
       # S'assurer que l'utilisateur a une date de naissance
       user_with_dob.update(date_of_birth: Date.new(1990, 1, 1)) unless user_with_dob.date_of_birth
@@ -167,7 +167,7 @@ RSpec.describe "Memberships", type: :request do
     context "when creating without payment (cash/check)" do
       it "blocks creation if questionnaire is empty for adult" do
         login_user(user_with_dob)
-        
+
         post memberships_path, params: {
           payment_method: 'cash_check',
           membership: {
@@ -177,7 +177,7 @@ RSpec.describe "Memberships", type: :request do
             # Pas de health_question_1 à health_question_9
           }
         }
-        
+
         # La redirection peut être vers new_membership_path avec ou sans type
         expect(response).to have_http_status(:redirect)
         expect(response.location).to include(new_membership_path)
@@ -187,7 +187,7 @@ RSpec.describe "Memberships", type: :request do
 
       it "blocks creation if questionnaire is empty for child" do
         login_user(user_with_dob)
-        
+
         post memberships_path, params: {
           payment_method: 'cash_check',
           membership: {
@@ -199,7 +199,7 @@ RSpec.describe "Memberships", type: :request do
             # Pas de health_question_1 à health_question_9
           }
         }
-        
+
         expect(response).to have_http_status(:redirect)
         expect(response.location).to include(new_membership_path)
         expect(flash[:alert]).to include("questionnaire de santé")
@@ -208,25 +208,25 @@ RSpec.describe "Memberships", type: :request do
 
       it "allows creation if questionnaire is complete for adult" do
         login_user(user_with_dob)
-        
+
         membership_params = {
           category: 'standard',
           first_name: 'Jean',
           last_name: 'Dupont'
         }
-        
+
         # Ajouter toutes les réponses du questionnaire
         (1..9).each do |i|
           membership_params["health_question_#{i}"] = "no"
         end
-        
+
         expect do
-          post memberships_path, params: { 
+          post memberships_path, params: {
             payment_method: 'cash_check',
-            membership: membership_params 
+            membership: membership_params
           }
         end.to change { Membership.count }.by(1)
-        
+
         membership = Membership.last
         expect(membership.user).to eq(user_with_dob)
         expect(membership.status).to eq('pending')
