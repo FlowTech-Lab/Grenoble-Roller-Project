@@ -87,7 +87,41 @@ grenoble-roller.org, www.grenoble-roller.org {
         header Cache-Control "public, max-age=86400"
     }
     
+    # Routes Active Storage - Uploads directs et fichiers
+    # Timeouts augmentés pour gérer les gros fichiers
+    handle /rails/direct_uploads/* {
+        reverse_proxy web:3000 {
+            health_uri /up
+            health_interval 10s
+            health_timeout 5s
+            
+            transport http {
+                versions 2 1.1
+                dial_timeout 10s
+                response_header_timeout 120s  # Uploads peuvent prendre du temps
+                expect_continue_timeout 120s
+            }
+        }
+    }
+    
+    # Routes Active Storage - Servir les fichiers uploadés
+    handle /rails/active_storage/* {
+        reverse_proxy web:3000 {
+            health_uri /up
+            health_interval 10s
+            health_timeout 5s
+            
+            transport http {
+                versions 2 1.1
+                dial_timeout 10s
+                response_header_timeout 120s  # Variants et gros fichiers
+                expect_continue_timeout 120s
+            }
+        }
+    }
+    
     # Reverse proxy vers l'application Rails (catch-all pour toutes les autres routes)
+    # Inclut les formulaires multipart ActiveAdmin avec uploads d'images
     handle {
         reverse_proxy web:3000 {
             # Health check continu vers Rails
@@ -95,12 +129,12 @@ grenoble-roller.org, www.grenoble-roller.org {
             health_interval 10s
             health_timeout 5s
             
-            # Timeouts pour Rails
+            # Timeouts pour Rails - Augmentés pour les uploads multipart/form-data
             transport http {
                 versions 2 1.1
                 dial_timeout 10s
-                response_header_timeout 60s
-                expect_continue_timeout 60s
+                response_header_timeout 120s  # Uploads peuvent prendre du temps
+                expect_continue_timeout 120s
             }
             
             # Gestion gracieuse des connexions
