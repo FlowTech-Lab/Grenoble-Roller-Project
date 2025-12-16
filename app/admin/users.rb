@@ -13,9 +13,10 @@ ActiveAdmin.register User do
   index do
     selectable_column
     id_column
+    column "Nom complet", :first_name do |user|
+      user.to_s # Affiche "Prénom Nom"
+    end
     column :email
-    column :first_name
-    column :last_name
     column :role
     column "Bénévole" do |user|
       status_tag(user.can_be_volunteer == true ? "Oui" : "Non", class: user.can_be_volunteer == true ? "ok" : "no")

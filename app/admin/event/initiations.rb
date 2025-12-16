@@ -64,7 +64,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
     "Annulé" => "canceled"
   }
   filter :start_at
-  filter :creator_user, collection: -> { User.order(:email) }
+  filter :creator_user, collection: -> { User.order(:last_name, :first_name) }
   filter :created_at
 
   show do
@@ -268,8 +268,8 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         },
         prompt: "Sélectionnez un statut"
       f.input :creator_user,
-        collection: User.order(:email).map { |u| [ u.email, u.id ] },
-        label_method: :email,
+        collection: User.order(:last_name, :first_name).map { |u| [ u.to_s, u.id ] },
+        label_method: :to_s,
         value_method: :id
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
       f.input :duration_min, input_html: { value: f.object.duration_min || 105 }, hint: "Durée en minutes (105 = 1h45)"

@@ -218,7 +218,7 @@ ActiveAdmin.register Membership do
     f.semantic_errors
 
     f.inputs "Adhésion" do
-      f.input :user, collection: User.order(:email).map { |u| [ u.email, u.id ] }
+      f.input :user, collection: User.order(:last_name, :first_name).map { |u| [ u.to_s, u.id ] }
       f.input :category, as: :select, collection: {
         "Standard (10€)" => "standard",
         "FFRS (56.55€)" => "with_ffrs"

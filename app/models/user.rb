@@ -51,6 +51,20 @@ class User < ApplicationRecord
     "#{first_name} #{last_name.first.upcase}."
   end
 
+  # Méthode utilisée par Active Admin pour afficher l'utilisateur
+  # Affiche "Prénom Nom" pour faciliter l'identification (prêts de rollers, etc.)
+  def to_s
+    if first_name.present? && last_name.present?
+      "#{first_name} #{last_name}"
+    elsif first_name.present?
+      first_name
+    elsif last_name.present?
+      last_name
+    else
+      email # Fallback sur email si pas de nom/prénom
+    end
+  end
+
   # Vérifier si le token de confirmation est expiré
   def confirmation_token_expired?
     return false if confirmed_at.present?

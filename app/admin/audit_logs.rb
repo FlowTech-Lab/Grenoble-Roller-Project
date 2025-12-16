@@ -6,7 +6,7 @@ ActiveAdmin.register AuditLog do
   includes :actor_user
 
   filter :action
-  filter :actor_user, collection: -> { User.order(:email) }
+  filter :actor_user, collection: -> { User.order(:last_name, :first_name) }
   filter :target_type
   filter :target_id
   filter :created_at

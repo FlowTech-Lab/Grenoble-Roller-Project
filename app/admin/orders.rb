@@ -89,7 +89,7 @@ ActiveAdmin.register Order do
     f.semantic_errors
 
     f.inputs "Commande" do
-      f.input :user, collection: User.order(:email).map { |u| [ u.email, u.id ] }
+      f.input :user, collection: User.order(:last_name, :first_name).map { |u| [ u.to_s, u.id ] }
       f.input :status, as: :select, collection: {
         "En attente" => "pending",
         "Complétée" => "completed",

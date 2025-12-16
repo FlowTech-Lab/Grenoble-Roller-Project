@@ -25,7 +25,7 @@ ActiveAdmin.register Attendance do
     actions
   end
 
-  filter :user, collection: -> { User.order(:email) }
+  filter :user, collection: -> { User.order(:last_name, :first_name) }
   filter :event
   filter :status, as: :select, collection: Attendance.statuses.keys
   filter :payment
@@ -74,7 +74,7 @@ ActiveAdmin.register Attendance do
     f.semantic_errors
 
     f.inputs "Inscription" do
-      f.input :user, collection: User.order(:email)
+      f.input :user, collection: -> { User.order(:last_name, :first_name) }
       f.input :event
       f.input :status, as: :select, collection: Attendance.statuses.keys
       f.input :is_volunteer, label: "Bénévole"
