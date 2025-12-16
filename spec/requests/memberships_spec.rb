@@ -105,13 +105,13 @@ RSpec.describe "Memberships", type: :request do
     let(:membership) { create(:membership, user: user) }
 
     it "requires authentication" do
-      get status_membership_payments_path(membership)
+      get membership_status_payment_path(membership)
       expect(response).to redirect_to(new_user_session_path)
     end
 
     it "returns payment status as JSON" do
       login_user(user)
-      get status_membership_payments_path(membership)
+      get membership_status_payment_path(membership)
       expect(response).to have_http_status(:success)
       expect(response.content_type).to include('application/json')
       json = JSON.parse(response.body)
@@ -119,12 +119,12 @@ RSpec.describe "Memberships", type: :request do
     end
   end
 
-  describe "POST /memberships/:membership_id/payments/create_multiple" do
+  describe "POST /memberships/payments/create_multiple" do
     let(:child_membership1) { create(:membership, :child, :pending, :with_health_questionnaire, user: user) }
     let(:child_membership2) { create(:membership, :child, :pending, :with_health_questionnaire, user: user) }
 
     it "requires authentication" do
-      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [ child_membership1.id, child_membership2.id ] }
+      post create_multiple_payments_memberships_path, params: { membership_ids: [ child_membership1.id, child_membership2.id ] }
       expect(response).to redirect_to(new_user_session_path)
     end
 
@@ -139,7 +139,7 @@ RSpec.describe "Memberships", type: :request do
         }
       })
 
-      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [ child_membership1.id, child_membership2.id ] }
+      post create_multiple_payments_memberships_path, params: { membership_ids: [ child_membership1.id, child_membership2.id ] }
       expect(response).to have_http_status(:redirect)
     end
 
@@ -148,7 +148,7 @@ RSpec.describe "Memberships", type: :request do
       child_membership_incomplete = create(:membership, :child, :pending, user: user) # Sans questionnaire
       allow(HelloassoService).to receive(:create_multiple_memberships_checkout_intent)
 
-      post create_multiple_membership_payments_path(child_membership1), params: { membership_ids: [ child_membership1.id, child_membership_incomplete.id ] }
+      post create_multiple_payments_memberships_path, params: { membership_ids: [ child_membership1.id, child_membership_incomplete.id ] }
 
       expect(response).to redirect_to(memberships_path)
       expect(flash[:alert]).to include("questionnaire de santé")
