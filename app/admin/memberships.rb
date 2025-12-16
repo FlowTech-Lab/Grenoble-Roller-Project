@@ -205,7 +205,7 @@ ActiveAdmin.register Membership do
   controller do
     def destroy
       @membership = resource
-
+      authorize @membership, :destroy?
       if @membership.destroy
         redirect_to collection_path, notice: "L'adhésion ##{@membership.id} a été supprimée avec succès."
       else

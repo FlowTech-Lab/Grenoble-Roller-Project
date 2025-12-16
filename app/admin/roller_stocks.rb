@@ -101,5 +101,15 @@ ActiveAdmin.register RollerStock do
         render :new
       end
     end
+
+    def destroy
+      @roller_stock = resource
+      authorize @roller_stock, :destroy?
+      if @roller_stock.destroy
+        redirect_to collection_path, notice: "Le stock ##{@roller_stock.id} a été supprimé avec succès."
+      else
+        redirect_to resource_path(@roller_stock), alert: "Impossible de supprimer le stock : #{@roller_stock.errors.full_messages.join(', ')}"
+      end
+    end
   end
 end

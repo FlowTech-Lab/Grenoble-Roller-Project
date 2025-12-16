@@ -123,6 +123,14 @@ module Memberships
         return
       end
 
+      # Vérifier que toutes les adhésions ont un questionnaire complété
+      incomplete_memberships = memberships.reject(&:health_questionnaire_complete?)
+      if incomplete_memberships.any?
+        incomplete_names = incomplete_memberships.map(&:child_full_name).join(", ")
+        redirect_to memberships_path, alert: "Le questionnaire de santé doit être complété pour #{incomplete_names} avant de procéder au paiement."
+        return
+      end
+
       # Créer un paiement groupé HelloAsso
       begin
         result = HelloassoService.create_multiple_memberships_checkout_intent(

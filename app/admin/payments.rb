@@ -127,6 +127,7 @@ ActiveAdmin.register Payment do
   controller do
     def destroy
       @payment = resource
+      authorize @payment, :destroy?
       if @payment.destroy
         redirect_to collection_path, notice: "Le paiement ##{@payment.id} a été supprimé avec succès."
       else

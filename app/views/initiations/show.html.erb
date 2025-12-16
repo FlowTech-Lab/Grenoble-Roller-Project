@@ -1,5 +1,5 @@
 <% content_for :title, @initiation.title %>
-<% content_for :description, "#{@initiation.title} - Cours d'initiation au roller le #{l(@initiation.start_at, format: :long, locale: :fr)} au Gymnase Ampère." %>
+<% content_for :description, "#{@initiation.title} - Cours d'initiation au roller le #{l(@initiation.start_at, format: :long, locale: :fr)} à #{@initiation.location_text}." %>
 
 <section class="container py-4 py-lg-5">
   <article class="card card-liquid event-detail-card shadow-liquid border-0 mx-auto">
@@ -43,7 +43,7 @@
             
             <span class="badge bg-primary">
               <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
-              <%= pluralize(@initiation.participants_count, "inscrit") %>
+              <%= pluralize(@initiation.participants_count, "inscrit", "inscrits") %>
             </span>
             
             <% if @initiation.allow_non_member_discovery? %>
