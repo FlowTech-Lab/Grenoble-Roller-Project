@@ -97,7 +97,6 @@ ActiveAdmin.register Attendance do
   controller do
     def destroy
       @attendance = resource
-      authorize @attendance, :destroy?
       if @attendance.destroy
         redirect_to collection_path, notice: "La participation ##{@attendance.id} a été supprimée avec succès."
       else

@@ -41,7 +41,6 @@ ActiveAdmin.register ContactMessage do
   controller do
     def destroy
       @contact_message = resource
-      authorize @contact_message, :destroy?
       if @contact_message.destroy
         redirect_to collection_path, notice: "Le message ##{@contact_message.id} a été supprimé avec succès."
       else

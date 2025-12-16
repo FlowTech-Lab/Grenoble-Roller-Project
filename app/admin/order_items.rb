@@ -68,7 +68,6 @@ ActiveAdmin.register OrderItem do
   controller do
     def destroy
       @order_item = resource
-      authorize @order_item, :destroy?
       if @order_item.destroy
         redirect_to collection_path, notice: "L'article de commande ##{@order_item.id} a été supprimé avec succès."
       else

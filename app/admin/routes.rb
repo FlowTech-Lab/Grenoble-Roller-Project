@@ -83,7 +83,6 @@ ActiveAdmin.register Route do
   controller do
     def destroy
       @route = resource
-      authorize @route, :destroy?
       if @route.destroy
         redirect_to collection_path, notice: "Le parcours ##{@route.id} a été supprimé avec succès."
       else
