@@ -11,19 +11,14 @@ module Initiations
       @child_membership_id_for_policy = params[:child_membership_id].presence
       @is_volunteer_for_policy = params[:is_volunteer] == "1"
       
-      # Pour les bénévoles, bypasser la vérification de capacité dans la policy
-      # car ils peuvent s'inscrire même si l'initiation est pleine
-      if @is_volunteer_for_policy && @child_membership_id_for_policy.nil?
-        unless current_user.can_be_volunteer?
-          redirect_to initiation_path(@initiation), alert: "Vous n'êtes pas autorisé à vous inscrire en tant que bénévole."
-          return
-        end
-        # Les bénévoles peuvent toujours s'inscrire, on skip la policy pour éviter le blocage sur full?
-        # On autorise quand même pour respecter la structure Pundit
-        authorize @initiation, :show? # Utiliser show? qui ne vérifie pas la capacité
-      else
-        # Autorisation via Pundit (la policy récupérera les valeurs depuis le contrôleur)
-        authorize @initiation, :attend?
+      # Autorisation via Pundit avec les paramètres passés à la policy
+      # Créer la policy directement avec les paramètres car Pundit.policy ne les passe pas
+      policy = Event::InitiationPolicy.new(current_user, @initiation,
+        child_membership_id: @child_membership_id_for_policy,
+        is_volunteer: @is_volunteer_for_policy
+      )
+      unless policy.attend?
+        raise Pundit::NotAuthorizedError, query: :attend?, record: @initiation, policy: policy
       end
 
       child_membership_id = params[:child_membership_id].presence

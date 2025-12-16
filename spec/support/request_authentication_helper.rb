@@ -6,12 +6,20 @@ module RequestAuthenticationHelper
   # @param user [User] L'utilisateur à authentifier
   # @param password [String] Le mot de passe (défaut: 'password123')
   def login_user(user, password: nil)
-    post user_session_path, params: {
-      user: {
-        email: user.email,
-        password: password || user.password || 'password123'
+    # Utiliser sign_in de Devise::Test::IntegrationHelpers si disponible
+    if respond_to?(:sign_in)
+      sign_in(user)
+    else
+      # Fallback: utiliser POST pour la session
+      post user_session_path, params: {
+        user: {
+          email: user.email,
+          password: password || user.password || 'password123'
+        }
       }
-    }
+      # Vérifier que la connexion a réussi
+      expect(response).to redirect_to(root_path) if response.redirect?
+    end
   end
 
   def logout_user

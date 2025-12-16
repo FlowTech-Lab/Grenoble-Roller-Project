@@ -1,4 +1,14 @@
 class Event::InitiationPolicy < ApplicationPolicy
+  attr_reader :child_membership_id_for_policy, :is_volunteer_for_policy
+
+  def initialize(user, record, *args)
+    super(user, record)
+    # Pundit.policy peut recevoir un 3e argument (options hash)
+    options = args.first.is_a?(Hash) ? args.first : {}
+    @child_membership_id_for_policy = options[:child_membership_id]
+    @is_volunteer_for_policy = options[:is_volunteer] || false
+  end
+
   def index?
     true # Tous peuvent voir la liste
   end
@@ -10,14 +20,9 @@ class Event::InitiationPolicy < ApplicationPolicy
   def attend?
     return false unless user
     
-    # Récupérer les paramètres depuis le contrôleur via Pundit
-    # Pundit stocke le contrôleur dans pundit_context (accessible dans la policy)
-    controller = pundit_context[:controller] rescue nil
-    child_membership_id = controller&.instance_variable_get(:@child_membership_id_for_policy) || 
-                          @controller&.instance_variable_get(:@child_membership_id_for_policy)
-    is_volunteer = controller&.instance_variable_get(:@is_volunteer_for_policy) || 
-                   @controller&.instance_variable_get(:@is_volunteer_for_policy) || 
-                   false
+    # Utiliser les paramètres passés via l'initializer
+    child_membership_id = child_membership_id_for_policy
+    is_volunteer = is_volunteer_for_policy
     
     # Pour les bénévoles, vérifier l'autorisation AVANT de vérifier si l'initiation est pleine
     # Les bénévoles peuvent toujours s'inscrire même si l'initiation est pleine

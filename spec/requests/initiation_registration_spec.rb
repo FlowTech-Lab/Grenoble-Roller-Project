@@ -336,6 +336,740 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
       end
     end
 
+    describe 'Parent and Child Registration - Tous les cas de figure' do
+      before do
+        Attendance.delete_all
+        Event.delete_all
+      end
+
+      describe 'Adulte avec adhésion' do
+        it 'permet inscription adulte seul avec adhésion' do
+          adult = create_user(role: user_role)
+          create(:membership, user: adult, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(adult)
+
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          expect(response).to redirect_to(initiation_path(initiation))
+          attendance = Attendance.last
+          expect(attendance.user).to eq(adult)
+          expect(attendance.child_membership_id).to be_nil
+          expect(attendance.for_parent?).to be(true)
+          expect(attendance.free_trial_used).to be(false)
+          expect(attendance.status).to eq('registered')
+        end
+
+        it 'permet inscription adulte puis enfant' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription adulte d'abord
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          parent_attendance = Attendance.last
+          expect(parent_attendance.user).to eq(parent)
+          expect(parent_attendance.child_membership_id).to be_nil
+          expect(parent_attendance.for_parent?).to be(true)
+
+          # Inscription enfant ensuite (doit fonctionner car child_membership_id est différent)
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(Attendance.count).to eq(2) # 1 adulte + 1 enfant
+
+          # Récupérer l'attendance enfant (la dernière créée avec child_membership_id)
+          child_attendance = Attendance.where(user: parent).where.not(child_membership_id: nil).last
+          expect(child_attendance).not_to be_nil
+          expect(child_attendance.user).to eq(parent)
+          expect(child_attendance.child_membership_id).to eq(child_membership.id)
+          expect(child_attendance.for_child?).to be(true)
+
+          # Vérifier que les deux inscriptions existent
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+
+        it 'permet inscription enfant puis adulte' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription enfant d'abord
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          child_attendance = Attendance.where(user: parent).where.not(child_membership_id: nil).last
+          expect(child_attendance).not_to be_nil
+          expect(child_attendance.user).to eq(parent)
+          expect(child_attendance.child_membership_id).to eq(child_membership.id)
+          expect(child_attendance.for_child?).to be(true)
+
+          # Inscription adulte ensuite
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          parent_attendance = Attendance.last
+          expect(parent_attendance.user).to eq(parent)
+          expect(parent_attendance.child_membership_id).to be_nil
+          expect(parent_attendance.for_parent?).to be(true)
+
+          # Vérifier que les deux inscriptions existent
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+
+        it 'permet inscription plusieurs enfants' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child1_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant1')
+          child2_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant2')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription premier enfant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child1_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription deuxième enfant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child2_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Vérifier que les deux enfants sont inscrits
+          expect(initiation.attendances.where(user: parent, child_membership_id: child1_membership.id).count).to eq(1)
+          expect(initiation.attendances.where(user: parent, child_membership_id: child2_membership.id).count).to eq(1)
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+
+        it 'permet inscription adulte + plusieurs enfants' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child1_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant1')
+          child2_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant2')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription adulte
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription premier enfant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child1_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription deuxième enfant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child2_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Vérifier que l'adulte et les deux enfants sont inscrits
+          expect(initiation.attendances.where(user: parent).count).to eq(3)
+          expect(initiation.attendances.where(user: parent, child_membership_id: nil).count).to eq(1) # Adulte
+          expect(initiation.attendances.where(user: parent).where.not(child_membership_id: nil).count).to eq(2) # Enfants
+        end
+      end
+
+      describe 'Adulte sans adhésion (avec essai gratuit)' do
+        it 'permet inscription adulte avec essai gratuit puis enfant avec adhésion' do
+          parent = create_user(role: user_role)
+          # Pas d'adhésion pour le parent (ni enfant) au début
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription adulte avec essai gratuit (pas d'adhésion enfant encore)
+          expect do
+            post initiation_attendances_path(initiation), params: { use_free_trial: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          parent_attendance = Attendance.where(user: parent, child_membership_id: nil).last
+          expect(parent_attendance).not_to be_nil
+          expect(parent_attendance.user).to eq(parent)
+          expect(parent_attendance.free_trial_used).to be(true)
+          expect(parent_attendance.for_parent?).to be(true)
+
+          # Créer l'adhésion enfant après l'inscription adulte
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          
+          # Inscription enfant (qui a une adhésion)
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          child_attendance = Attendance.where(user: parent, child_membership_id: child_membership.id).last
+          expect(child_attendance).not_to be_nil
+          expect(child_attendance.user).to eq(parent)
+          expect(child_attendance.child_membership_id).to eq(child_membership.id)
+          expect(child_attendance.for_child?).to be(true)
+
+          # Vérifier que les deux inscriptions existent
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+
+        it 'permet inscription enfant avec adhésion puis adulte (sans essai gratuit car parent considéré membre)' do
+          parent = create_user(role: user_role)
+          # Pas d'adhésion pour le parent, mais l'enfant en a une
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription enfant d'abord (qui a une adhésion)
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          child_attendance = Attendance.where(user: parent, child_membership_id: child_membership.id).last
+          expect(child_attendance).not_to be_nil
+          expect(child_attendance.user).to eq(parent)
+          expect(child_attendance.child_membership_id).to eq(child_membership.id)
+          expect(child_attendance.for_child?).to be(true)
+
+          # Inscription adulte ensuite
+          # Note: Le parent est considéré comme membre car il a une adhésion enfant active,
+          # donc pas besoin d'essai gratuit (le contrôleur ligne 87 vérifie les adhésions enfants)
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          parent_attendance = Attendance.where(user: parent, child_membership_id: nil).last
+          expect(parent_attendance).not_to be_nil
+          expect(parent_attendance.user).to eq(parent)
+          # Le parent est considéré comme membre (adhésion enfant), donc free_trial_used = false
+          expect(parent_attendance.free_trial_used).to be(false)
+          expect(parent_attendance.for_parent?).to be(true)
+
+          # Vérifier que les deux inscriptions existent
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+      end
+
+      describe 'Enfants sans adhésion' do
+        it 'bloque inscription enfant sans adhésion' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          # Enfant sans adhésion (pas de membership créé)
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Tentative d'inscription avec un child_membership_id inexistant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: 99999 }
+          end.not_to change { Attendance.count }
+
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to be_present
+        end
+
+        it 'bloque inscription enfant avec adhésion inactive' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :expired, season: '2024-2025')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Tentative d'inscription avec une adhésion enfant inactive
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.not_to change { Attendance.count }
+
+          # La policy bloque car l'adhésion enfant n'est pas active
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to be_present
+        end
+      end
+
+      describe 'Cas limites' do
+        it 'empêche inscription double du même enfant' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Première inscription enfant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Tentative de deuxième inscription du même enfant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.not_to change { Attendance.count }
+
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to be_present
+        end
+
+        it 'permet inscription adulte même si enfant déjà inscrit' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription enfant d'abord
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription adulte ensuite (doit fonctionner)
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+
+        it 'permet inscription enfant même si adulte déjà inscrit' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription adulte d'abord
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription enfant ensuite (doit fonctionner)
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+        end
+
+        it 'famille remplit initiation' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child1_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant1')
+          child2_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant2')
+          child3_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant3')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 4, # Juste assez pour la famille
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription adulte
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription 3 enfants
+          3.times do |i|
+            child_membership = [child1_membership, child2_membership, child3_membership][i]
+            expect do
+              post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+            end.to change { Attendance.count }.by(1)
+          end
+
+          # Vérifier que l'initiation est pleine
+          expect(initiation.full?).to be(true)
+          expect(initiation.attendances.where(user: parent).count).to eq(4) # 1 adulte + 3 enfants
+        end
+      end
+    end
+
+    describe 'VOLONTAIRES - Tests supplémentaires' do
+      before do
+        Attendance.delete_all
+        Event.delete_all
+      end
+
+      describe 'Volontaires' do
+        it 'adulte peut être volontaire' do
+          volunteer = create_user(role: user_role)
+          volunteer.update(can_be_volunteer: true)
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(volunteer)
+
+          expect do
+            post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          attendance = Attendance.last
+          expect(attendance.user).to eq(volunteer)
+          expect(attendance.is_volunteer).to be(true)
+          expect(attendance.status).to eq('registered')
+        end
+
+        it 'enfant CANNOT être volontaire' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Tentative d'inscription enfant en tant que volontaire
+          # Le contrôleur ignore is_volunteer si child_membership_id est présent (ligne 57)
+          # Donc l'inscription se fait normalement comme un enfant participant
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id, is_volunteer: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          # Vérifier que l'attendance créée n'est PAS volontaire
+          attendance = Attendance.last
+          expect(attendance.child_membership_id).to eq(child_membership.id)
+          expect(attendance.is_volunteer).to be(false) # Les enfants ne peuvent pas être volontaires
+        end
+
+        it 'volontaires ne comptent pas dans la capacité' do
+          volunteer1 = create_user(role: user_role)
+          volunteer1.update(can_be_volunteer: true)
+          volunteer2 = create_user(role: user_role)
+          volunteer2.update(can_be_volunteer: true)
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 2,
+            allow_non_member_discovery: false
+          )
+
+          # Remplir l'initiation avec 2 participants
+          2.times do
+            participant = create_user
+            create(:membership, user: participant, status: :active, season: '2025-2026')
+            create(:attendance, event: initiation, user: participant, is_volunteer: false, status: 'registered')
+          end
+
+          expect(initiation.full?).to be(true)
+
+          # Les volontaires peuvent s'inscrire même si l'initiation est pleine
+          login_user(volunteer1)
+          expect do
+            post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          logout_user
+          login_user(volunteer2)
+          expect do
+            post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          # Vérifier que les volontaires ne comptent pas dans la capacité
+          expect(initiation.participants_count).to eq(2) # Seulement les participants
+          expect(initiation.volunteers_count).to eq(2) # Les volontaires sont séparés
+          expect(initiation.total_attendances_count).to eq(4) # Total = 2 participants + 2 volontaires
+        end
+
+        it 'plusieurs volontaires peuvent s\'inscrire' do
+          volunteer1 = create_user(role: user_role)
+          volunteer1.update(can_be_volunteer: true)
+          volunteer2 = create_user(role: user_role)
+          volunteer2.update(can_be_volunteer: true)
+          volunteer3 = create_user(role: user_role)
+          volunteer3.update(can_be_volunteer: true)
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+
+          # Inscription de 3 volontaires
+          [volunteer1, volunteer2, volunteer3].each do |volunteer|
+            login_user(volunteer)
+            expect do
+              post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
+            end.to change { Attendance.count }.by(1)
+            logout_user
+          end
+
+          expect(initiation.volunteers_count).to eq(3)
+          expect(initiation.attendances.volunteers.count).to eq(3)
+        end
+
+        it 'volontaire peut s\'inscrire sans essai gratuit même si épuisé' do
+          volunteer = create_user(role: user_role)
+          volunteer.update(can_be_volunteer: true)
+          # Utiliser l'essai gratuit sur une autre initiation
+          other_initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(volunteer)
+          post initiation_attendances_path(other_initiation), params: { use_free_trial: "1" }
+          logout_user
+
+          # Maintenant essai gratuit épuisé, mais volontaire peut quand même s'inscrire
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(volunteer)
+
+          expect do
+            post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          attendance = Attendance.last
+          expect(attendance.is_volunteer).to be(true)
+          expect(attendance.free_trial_used).to be(false) # Pas besoin d'essai gratuit pour volontaire
+        end
+      end
+    end
+
+    describe 'NON-MEMBER + FAMILLE - Tests supplémentaires' do
+      before do
+        Attendance.delete_all
+        Event.delete_all
+      end
+
+      describe 'Famille non-adhérente avec découverte' do
+        it 'famille non-adhérente peut s\'inscrire avec découverte' do
+          parent = create_user(role: user_role)
+          # Pas d'adhésion pour le parent, mais l'enfant en a une
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 20,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5
+          )
+          login_user(parent)
+
+          # Inscription adulte (le parent est considéré comme membre car il a une adhésion enfant active)
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription enfant (qui a une adhésion, donc compte comme membre)
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+          # Le parent est considéré comme membre car il a une adhésion enfant active (ligne 98-99 du modèle)
+          # L'enfant est aussi membre
+          expect(initiation.member_participants_count).to eq(2) # Parent (via adhésion enfant) + enfant
+          expect(initiation.non_member_participants_count).to eq(0) # Aucun non-adhérent
+        end
+
+        it 'mélange adhérents et non-adhérents dans une famille' do
+          parent = create_user(role: user_role)
+          # Pas d'adhésion pour le parent, mais les enfants en ont
+          child1_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant1')
+          child2_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant2')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 20,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5
+          )
+          login_user(parent)
+
+          # Inscription adulte (le parent est considéré comme membre car il a des adhésions enfants actives)
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription 2 enfants (adhérents)
+          [child1_membership, child2_membership].each do |child_membership|
+            expect do
+              post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+            end.to change { Attendance.count }.by(1)
+          end
+
+          expect(initiation.attendances.where(user: parent).count).to eq(3)
+          # Le parent est considéré comme membre car il a des adhésions enfants actives (ligne 98-99 du modèle)
+          # Les 2 enfants sont aussi membres
+          expect(initiation.member_participants_count).to eq(3) # Parent (via adhésions enfants) + 2 enfants
+          expect(initiation.non_member_participants_count).to eq(0) # Aucun non-adhérent
+        end
+
+        it 'famille + volontaires + découverte' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026')
+          volunteer = create_user(role: user_role)
+          volunteer.update(can_be_volunteer: true)
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 10,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 3
+          )
+
+          # Inscription famille
+          login_user(parent)
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription volontaire
+          logout_user
+          login_user(volunteer)
+          expect do
+            post initiation_attendances_path(initiation), params: { is_volunteer: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          expect(initiation.attendances.where(user: parent).count).to eq(2)
+          expect(initiation.volunteers_count).to eq(1)
+          expect(initiation.participants_count).to eq(2) # Parent + enfant
+        end
+
+        it 'count adultes et enfants séparément' do
+          parent = create_user(role: user_role)
+          create(:membership, user: parent, status: :active, season: '2025-2026')
+          child1_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant1')
+          child2_membership = create(:membership, :child, user: parent, status: :active, season: '2025-2026', child_first_name: 'Enfant2')
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Inscription adulte
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription 2 enfants
+          [child1_membership, child2_membership].each do |child_membership|
+            expect do
+              post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+            end.to change { Attendance.count }.by(1)
+          end
+
+          # Vérifier les comptages
+          expect(initiation.adult_participants_count).to eq(1)
+          expect(initiation.child_participants_count).to eq(2)
+          expect(initiation.participants_count).to eq(3) # Total
+        end
+
+        it 'count membres et non-membres séparément' do
+          member_parent = create_user(role: user_role)
+          create(:membership, user: member_parent, status: :active, season: '2025-2026')
+          non_member_parent = create_user(role: user_role)
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 20,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5
+          )
+
+          # Inscription parent adhérent
+          login_user(member_parent)
+          expect do
+            post initiation_attendances_path(initiation)
+          end.to change { Attendance.count }.by(1)
+
+          # Inscription parent non-adhérent (avec essai gratuit)
+          logout_user
+          login_user(non_member_parent)
+          expect do
+            post initiation_attendances_path(initiation), params: { use_free_trial: "1" }
+          end.to change { Attendance.count }.by(1)
+
+          # Vérifier les comptages
+          expect(initiation.member_participants_count).to eq(1) # Parent adhérent
+          expect(initiation.non_member_participants_count).to eq(1) # Parent non-adhérent
+          expect(initiation.participants_count).to eq(2) # Total
+        end
+      end
+    end
+
     describe 'Non-Member Display - Afficher slots réservés' do
       it 'displays reserved slots information for non-members' do
         user = create_user(role: user_role)
