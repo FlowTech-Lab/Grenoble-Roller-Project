@@ -9,12 +9,26 @@ class Event::InitiationPolicy < ApplicationPolicy
 
   def attend?
     return false unless user
-    return false if record.full?
     
     # Récupérer les paramètres depuis le contrôleur via Pundit
-    # Pundit stocke le contrôleur dans @controller (accessible dans la policy)
-    child_membership_id = @controller&.instance_variable_get(:@child_membership_id_for_policy)
-    is_volunteer = @controller&.instance_variable_get(:@is_volunteer_for_policy) || false
+    # Pundit stocke le contrôleur dans pundit_context (accessible dans la policy)
+    controller = pundit_context[:controller] rescue nil
+    child_membership_id = controller&.instance_variable_get(:@child_membership_id_for_policy) || 
+                          @controller&.instance_variable_get(:@child_membership_id_for_policy)
+    is_volunteer = controller&.instance_variable_get(:@is_volunteer_for_policy) || 
+                   @controller&.instance_variable_get(:@is_volunteer_for_policy) || 
+                   false
+    
+    # Pour les bénévoles, vérifier l'autorisation AVANT de vérifier si l'initiation est pleine
+    # Les bénévoles peuvent toujours s'inscrire même si l'initiation est pleine
+    if is_volunteer && child_membership_id.nil?
+      return false unless user.can_be_volunteer?
+      # Les bénévoles peuvent toujours s'inscrire (pas besoin d'adhésion ni de vérifier la capacité)
+      return true
+    end
+    
+    # Pour les participants normaux, vérifier si l'initiation est pleine
+    return false if record.full?
     
     # Vérifier que child_membership_id appartient bien à l'utilisateur si fourni
     if child_membership_id.present?
@@ -42,13 +56,6 @@ class Event::InitiationPolicy < ApplicationPolicy
       end
       # Si c'est pour le parent, ne pas autoriser si déjà inscrit avec le même statut
       return false
-    end
-    
-    # Pour les bénévoles, vérifier l'autorisation
-    if is_volunteer && child_membership_id.nil?
-      return false unless user.can_be_volunteer?
-      # Les bénévoles peuvent toujours s'inscrire (pas besoin d'adhésion)
-      return true
     end
 
     # Vérifier si l'utilisateur est adhérent

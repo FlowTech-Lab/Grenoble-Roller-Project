@@ -48,6 +48,8 @@ module TestDataHelper
   def build_event(attrs = {})
     creator = attrs.delete(:creator_user) || create_user
     route   = attrs.key?(:route) ? attrs.delete(:route) : create_route
+    type = attrs.delete(:type) || 'Event'
+    
     defaults = {
       creator_user: creator,
       route: route,
@@ -64,7 +66,9 @@ module TestDataHelper
       distance_km: 10.0
     }
 
-    Event.new(defaults.merge(attrs))
+    # Gérer STI pour Event::Initiation
+    event_class = type.constantize
+    event_class.new(defaults.merge(attrs))
   end
 
   def create_event(attrs = {})
