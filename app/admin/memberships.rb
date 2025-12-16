@@ -205,11 +205,13 @@ ActiveAdmin.register Membership do
   controller do
     def destroy
       @membership = resource
-      authorize @membership, :destroy?
+      
+      # Active Admin gère déjà l'autorisation via PunditAdapter avant d'appeler cette méthode
+      # Si on arrive ici, l'autorisation a passé
       if @membership.destroy
-        redirect_to collection_path, notice: "L'adhésion ##{@membership.id} a été supprimée avec succès."
+        redirect_to collection_path, notice: "L'adhésion ##{@membership.id} a été supprimée avec succès.", status: :see_other
       else
-        redirect_to resource_path(@membership), alert: "Impossible de supprimer l'adhésion : #{@membership.errors.full_messages.join(', ')}"
+        redirect_to resource_path(@membership), alert: "Impossible de supprimer l'adhésion : #{@membership.errors.full_messages.join(', ')}", status: :see_other
       end
     end
   end

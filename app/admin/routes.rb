@@ -2,7 +2,7 @@ ActiveAdmin.register Route do
   menu priority: 3, label: "Routes", parent: "Événements"
 
   permit_params :name, :description, :distance_km, :elevation_m, :difficulty,
-                :gpx_url, :map_image_url, :safety_notes
+                :gpx_url, :map_image, :map_image_url, :safety_notes
 
   scope :all, default: true
   scope("Faciles") { |routes| routes.where(difficulty: "easy") }
@@ -83,7 +83,6 @@ ActiveAdmin.register Route do
   controller do
     def destroy
       @route = resource
-      authorize @route, :destroy?
       if @route.destroy
         redirect_to collection_path, notice: "Le parcours ##{@route.id} a été supprimé avec succès."
       else

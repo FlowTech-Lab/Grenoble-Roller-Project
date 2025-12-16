@@ -417,7 +417,6 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   controller do
     def destroy
       @initiation = resource
-      authorize @initiation, :destroy?
       if @initiation.destroy
         redirect_to collection_path, notice: "L'initiation ##{@initiation.id} a été supprimée avec succès."
       else
