@@ -280,10 +280,12 @@
                 <%= f.submit "Valider et payer",
                     class: "btn btn-liquid-primary btn-lg btn-nav",
                     id: "submit_btn",
+                    disabled: true,
                     onclick: "document.getElementById('payment_method_field').value = 'helloasso'; return true;" %>
                 <%= f.submit "Déjà adhérent / Espèces / Chèques",
                     class: "btn btn-outline-primary btn-lg btn-nav",
                     id: "submit_without_payment_btn",
+                    disabled: true,
                     onclick: "const form = document.getElementById('adult_membership_form'); if (!validateForm()) { alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.'); const firstInvalid = form?.querySelector('.is-invalid'); if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return false; } if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
               </div>
             </div>
@@ -482,6 +484,36 @@
     // Vérifier qu'une catégorie est sélectionnée
     const categorySelected = document.querySelector('.category-card.selected');
     if (!categorySelected) {
+      isValid = false;
+    }
+
+    // Vérifier que la date de naissance est valide (géré par updateAdultAge qui bloque aussi)
+    const hiddenDateField = document.getElementById('date_of_birth');
+    if (!hiddenDateField || !hiddenDateField.value) {
+      isValid = false;
+    }
+
+    // Vérifier que l'âge est >= 16 ans (vérifié par updateAdultAge qui vide le champ si < 16)
+    const day = document.getElementById('date_of_birth_day')?.value;
+    const month = document.getElementById('date_of_birth_month')?.value;
+    const year = document.getElementById('date_of_birth_year')?.value;
+    if (day && month && year) {
+      const birthDate = new Date(year, month - 1, day);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      if (age < 16) {
+        isValid = false;
+      }
+    }
+
+    // Vérifier que tous les consentements sont acceptés
+    const legalNotices = document.getElementById('legal_notices_accepted');
+    const rgpdConsent = document.getElementById('rgpd_consent');
+    if (!legalNotices?.checked || !rgpdConsent?.checked) {
       isValid = false;
     }
 

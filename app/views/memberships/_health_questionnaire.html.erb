@@ -86,7 +86,7 @@
         </div>
             <%= f.file_field :medical_certificate,
                 class: "form-control d-none",
-                id: "medical_certificate_input<%= form_id %>",
+                id: "medical_certificate_input#{form_id}",
                 accept: ".pdf,.jpg,.jpeg,.png" %>
         <button type="button" class="btn btn-outline-primary mt-3" data-certificate-button="<%= form_id %>">
           <i class="bi bi-folder2-open me-2"></i>Sélectionner un fichier
