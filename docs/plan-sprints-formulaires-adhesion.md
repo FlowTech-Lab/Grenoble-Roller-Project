@@ -10,31 +10,35 @@
 
 ---
 
-## Sprint 1 – Backend Formulaires & Bouton Espèces/Chèques (Critique)
+## Sprint 1 – Backend Formulaires & Bouton Espèces/Chèques (Critique) ✅
 
 ### Objectifs
 - Unifier la logique backend (`is_child_membership` / `type`).
 - Corriger le flux "Espèces / Chèques" adulte pour qu’il ne déclenche plus HelloAsso.
 
+### Modifications supplémentaires
+- Suppression des blocs de progression (stepper) dans les deux formulaires pour réduire l'encombrement visuel.
+- Centrage des badges "Saison" et "Dates" dans le Hero.
+
 ### Tâches
 
 #### 1.1 Unification champs cachés
-- [ ] **S1-T1** (todo `phase1-1-1`) – Analyser `is_child_membership` vs `type` dans `memberships_controller.rb`  
+- [x] **S1-T1** (todo `phase1-1-1`) – Analyser `is_child_membership` vs `type` dans `memberships_controller.rb`  
   - Fichier : `app/controllers/memberships_controller.rb`  
   - Lignes : ~183, 201, 203, 206  
   - Délivrable : décision claire sur le schéma cible (doc rapide ou commentaire dans le code).
-- [ ] **S1-T2** (todo `phase1-1-2`) – Unifier champs cachés dans `adult_form.html.erb`  
+- [x] **S1-T2** (todo `phase1-1-2`) – Unifier champs cachés dans `adult_form.html.erb`  
   - Fichier : `app/views/memberships/adult_form.html.erb` (ligne ~47)  
   - Action : remplacer `f.hidden_field :type, value: "adult"` par une approche cohérente avec `is_child_membership`.
-- [ ] **S1-T3** (todo `phase1-1-3`) – Vérifier cohérence dans `create`  
+- [x] **S1-T3** (todo `phase1-1-3`) – Vérifier cohérence dans `create`  
   - Fichier : `app/controllers/memberships_controller.rb` (lignes ~183–210)  
   - Action : s’assurer que la détection du type fonctionne encore et couvrir les cas enfant/ado/adulte.
 
 #### 1.2 Bouton "Espèces / Chèques" adulte
-- [ ] **S1-T4** (todo `phase1-2-1`) – Finaliser la gestion du bouton "Espèces / Chèques" adulte  
+- [x] **S1-T4** (todo `phase1-2-1`) – Finaliser la gestion du bouton "Espèces / Chèques" adulte  
   - Fichier : `app/views/memberships/adult_form.html.erb` (boutons + JS autour de 495–505 et 1218–1245)  
   - Objectif : clic sur ce bouton → `params[:payment_method] == "cash_check"` → `create_without_payment`.
-- [ ] **S1-T5** (todo `phase1-2-2`) – Harmoniser avec le bouton enfant  
+- [x] **S1-T5** (todo `phase1-2-2`) – Harmoniser avec le bouton enfant  
   - Fichier : `app/views/memberships/child_form.html.erb` (lignes ~519–526)  
   - Objectif : même pattern (id, nom, gestion JS) entre enfant et adulte.
 - [ ] **S1-T6** (todo `phase1-2-3`) – Tester le flux complet "Espèces / Chèques" adulte  
@@ -45,7 +49,7 @@
 
 ---
 
-## Sprint 2 – Renouvellement Adulte (Flux complet)
+## Sprint 2 – Renouvellement Adulte (Flux complet) ✅
 
 ### Objectifs
 - Finir le renouvellement adulte côté vues.
@@ -54,27 +58,27 @@
 ### Tâches
 
 #### 2.1 Liens de renouvellement
-- [ ] **S2-T1** (todo `phase1-3-1`) – Lien renouvellement adulte dans `index.html.erb`  
+- [x] **S2-T1** (todo `phase1-3-1`) – Lien renouvellement adulte dans `index.html.erb`  
   - Fichier : `app/views/memberships/index.html.erb` (lignes ~338–341)  
   - Action : utiliser `new_membership_path(type: 'adult', renew_from: membership.id)`.
-- [ ] **S2-T2** (todo `phase1-3-2`) – Lien renouvellement adulte dans `_membership_card.html.erb`  
+- [x] **S2-T2** (todo `phase1-3-2`) – Lien renouvellement adulte dans `_membership_card.html.erb`  
   - Fichier : `app/views/memberships/_membership_card.html.erb` (lignes ~104–106)  
   - Action : même logique avec `renew_from: membership.id`.
 
 #### 2.2 Vue `adult_form`
-- [ ] **S2-T3** (todo `phase1-3-3`) – Titre dynamique Hero adulte  
+- [x] **S2-T3** (todo `phase1-3-3`) – Titre dynamique Hero adulte  
   - Fichier : `app/views/memberships/adult_form.html.erb` (lignes 14–15)  
   - Action : répliquer la logique de `child_form` (`@old_membership` présent → titre renouvellement).
-- [ ] **S2-T4** (todo `phase1-3-4`) – Message d’info en étape 2  
+- [x] **S2-T4** (todo `phase1-3-4`) – Message d’info en étape 2  
   - Fichier : `adult_form.html.erb` (après le titre de la section infos, ~ligne 94)  
   - Action : `alert alert-info` conditionnelle si `@old_membership`.
-- [ ] **S2-T5** (todo `phase1-3-5`) – Pré-remplissage propre via `@membership`  
+- [x] **S2-T5** (todo `phase1-3-5`) – Pré-remplissage propre via `@membership`  
   - Fichier : `adult_form.html.erb` (tous les champs infos/coordonnées)  
   - Action : utiliser `@membership&.xxx || @user.xxx.presence` (ou `"FR"` pour le pays) comme dans le comparatif.
 
 ---
 
-## Sprint 3 – Téléphone & Questionnaire Santé
+## Sprint 3 – Téléphone & Questionnaire Santé ✅
 
 ### Objectifs
 - Avoir une validation téléphone propre et homogène.
@@ -83,17 +87,17 @@
 ### Tâches
 
 #### 3.1 Téléphone (adultes)
-- [ ] **S3-T1** (todo `phase2-1-1`) – Décider format téléphone de référence (avec ou sans espaces).  
-- [ ] **S3-T2** (todo `phase2-1-2`) – Mettre à jour le placeholder  
+- [x] **S3-T1** (todo `phase2-1-1`) – Décider format téléphone de référence (avec ou sans espaces).  
+- [x] **S3-T2** (todo `phase2-1-2`) – Mettre à jour le placeholder  
   - Fichier : `adult_form.html.erb` (lignes ~129–137).
-- [ ] **S3-T3** (todo `phase2-1-3`) – Mettre à jour le pattern HTML du champ.
-- [ ] **S3-T4** (todo `phase2-1-4`) – Mettre à jour le message d’erreur dans `validateField()` adulte.
-- [ ] **S3-T5** (todo `phase2-1-5`) – Vérifier que le contrôleur Stimulus `phone-mask` reste cohérent.
+- [x] **S3-T3** (todo `phase2-1-3`) – Mettre à jour le pattern HTML du champ.
+- [x] **S3-T4** (todo `phase2-1-4`) – Mettre à jour le message d’erreur dans `validateField()` adulte.
+- [x] **S3-T5** (todo `phase2-1-5`) – Vérifier que le contrôleur Stimulus `phone-mask` reste cohérent.
 
 #### 3.2 Questionnaire de santé
-- [ ] **S3-T6** (todo `phase2-2-1`) – Comparer les textes santé enfant/adulte (lignes ~340–351 dans les deux vues) et noter les écarts.
-- [ ] **S3-T7** (todo `phase2-2-2`) – Harmoniser les textes (ton, mentions FFRS) dans `child_form` et `adult_form`.
-- [ ] **S3-T8** (todo `phase2-2-3`) – Vérifier que `checkHealthQuestions()` a la même logique (ffrs/standard) dans les deux fichiers.
+- [x] **S3-T6** (todo `phase2-2-1`) – Comparer les textes santé enfant/adulte (lignes ~340–351 dans les deux vues) et noter les écarts.
+- [x] **S3-T7** (todo `phase2-2-2`) – Harmoniser les textes (ton, mentions FFRS) dans `child_form` et `adult_form`.
+- [x] **S3-T8** (todo `phase2-2-3`) – Vérifier que `checkHealthQuestions()` a la même logique (ffrs/standard) dans les deux fichiers.
 
 ---
 
