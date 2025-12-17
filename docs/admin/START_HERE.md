@@ -95,6 +95,7 @@ Ce fichier contient :
 
 **Guides disponibles** :
 - [BASE_UX_UI_PANEL.md](ressources/decisions/BASE_UX_UI_PANEL.md) - Base UX-UI complète
+- [TODOLIST_BASE_UX_UI.md](TODOLIST_BASE_UX_UI.md) - ⭐ Todolist détaillée pour l'implémentation
 - [ESSENTIEL.md](ESSENTIEL.md) - Liste des fichiers essentiels
 
 ---

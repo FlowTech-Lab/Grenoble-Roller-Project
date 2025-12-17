@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - <%= content_for(:title) || "Grenoble Roller" %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application.bootstrap", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <!-- NAVBAR PRINCIPALE (héritée) -->
+    <%= render 'layouts/navbar' %>
+
+    <!-- CONTENEUR ADMIN: Sidebar + Contenu -->
+    <div class="d-flex flex-grow-1" style="overflow: hidden;">
+      <!-- SIDEBAR ADMIN -->
+      <%= render 'admin/shared/sidebar' %>
+
+      <!-- CONTENU PRINCIPAL -->
+      <main class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
+        <div class="container-fluid p-3 p-lg-4">
+          <!-- Flash messages -->
+          <% if notice %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <%= notice %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          <% end %>
+          <% if alert %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= alert %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          <% end %>
+
+          <!-- Contenu -->
+          <%= yield %>
+        </div>
+      </main>
+    </div>
+
+    <!-- Footer optionnel -->
+    <footer class="mt-auto py-2 px-3 border-top bg-light">
+      <div class="container-fluid text-muted text-center">
+        <small>© 2025 Grenoble Roller Admin</small>
+      </div>
+    </footer>
+  </body>
+</html>

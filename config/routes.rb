@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
+  # ===== NOUVEAU PANEL ADMIN =====
+  namespace :admin_panel, path: 'admin-panel' do
+    root 'dashboard#index'
+  end
+
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
     resource :maintenance, only: [ :update ], controller: "/admin/maintenance_toggle" do

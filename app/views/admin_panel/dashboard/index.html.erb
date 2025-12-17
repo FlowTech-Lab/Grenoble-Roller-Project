@@ -1,0 +1,83 @@
+<div class="admin-dashboard">
+  <!-- HEADER -->
+  <div class="mb-4">
+    <h1>Dashboard Admin</h1>
+    <p class="text-muted">Bienvenue, <%= current_user.first_name || current_user.email %></p>
+  </div>
+
+  <!-- STATISTIQUES (4 cartes Bootstrap) -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title text-muted">Utilisateurs</h5>
+          <h3 class="mb-0"><%= @stats[:total_users] %></h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title text-muted">Produits</h5>
+          <h3 class="mb-0"><%= @stats[:total_products] %></h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title text-muted">Commandes</h5>
+          <h3 class="mb-0"><%= @stats[:total_orders] %></h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title text-muted">En attente</h5>
+          <h3 class="mb-0"><%= @stats[:pending_orders] %></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMANDES RÉCENTES -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Commandes Récentes</h5>
+    </div>
+    <div class="card-body">
+      <% if @recent_orders.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Total</th>
+                <th>Statut</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_orders.each do |order| %>
+                <tr>
+                  <td>#<%= order.id %></td>
+                  <td><%= order.user.email %></td>
+                  <td><%= number_to_currency(order.total_cents / 100.0, unit: '€') %></td>
+                  <td><span class="badge bg-secondary"><%= order.status %></span></td>
+                  <td><%= order.created_at.strftime('%d/%m/%Y %H:%M') %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted text-center py-4">Aucune commande récente</p>
+      <% end %>
+    </div>
+  </div>
+</div>
