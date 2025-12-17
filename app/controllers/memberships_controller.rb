@@ -56,6 +56,26 @@ class MembershipsController < ApplicationController
       end
     end
 
+    # Si renouvellement depuis une adhésion expirée (pour adultes)
+    if type == "adult" && params[:renew_from].present?
+      old_membership = current_user.memberships.find_by(id: params[:renew_from])
+      if old_membership && !old_membership.is_child_membership? && old_membership.expired?
+        @old_membership = old_membership
+        # Pré-remplir les informations depuis l'ancienne adhésion
+        # Note: Pour les adultes, les données (first_name, last_name, date_of_birth, etc.) sont dans User
+        # On crée un objet Membership avec seulement la catégorie de l'ancienne adhésion
+        # Les données du User seront utilisées directement dans la vue via @user
+        # (harmonisation avec logique enfant : @membership pour catégorie, @user pour données personnelles)
+        @membership = Membership.new(
+          is_child_membership: false,
+          category: old_membership.category,
+          with_tshirt: false,
+          tshirt_size: nil,
+          tshirt_qty: 0
+        )
+      end
+    end
+
     # Vérifier si l'utilisateur a déjà une adhésion personnelle active ou pending (sauf pour enfants)
     if %w[adult teen].include?(type)
       current_season = Membership.current_season_name
@@ -172,7 +192,9 @@ class MembershipsController < ApplicationController
 
   def create
     # Vérifier si c'est un paiement sans HelloAsso
+    Rails.logger.debug("[MembershipsController] payment_method reçu: #{params[:payment_method].inspect}")
     if params[:payment_method] == "cash_check" || params[:payment_method] == "without_payment"
+      Rails.logger.debug("[MembershipsController] Appel create_without_payment")
       create_without_payment
       return
     end

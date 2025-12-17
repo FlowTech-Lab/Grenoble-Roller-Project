@@ -496,11 +496,12 @@
                 <%= f.submit "Valider et payer",
                     class: "btn btn-liquid-primary btn-lg btn-nav",
                     id: "submit_btn",
-                    onclick: "const form = document.getElementById('adult_membership_form'); if (!validateForm()) { alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.'); const firstInvalid = form?.querySelector('.is-invalid'); if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return false; } document.getElementById('payment_method_field').value = 'helloasso'; return true;" %>
-                <%= f.submit "Déjà adhérent / Espèces / Chèques",
-                    class: "btn btn-outline-primary btn-lg btn-nav",
-                    id: "submit_without_payment_btn",
-                    onclick: "const form = document.getElementById('adult_membership_form'); if (!validateForm()) { alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.'); const firstInvalid = form?.querySelector('.is-invalid'); if (firstInvalid) { firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return false; } if(confirm('Vous allez créer une adhésion avec le statut \\'En attente\\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) { document.getElementById('payment_method_field').value = 'cash_check'; return true; } else { return false; }" %>
+                    onclick: "document.getElementById('payment_method_field').value = 'helloasso'; return true;" %>
+                <button type="button"
+                    class="btn btn-outline-primary btn-lg btn-nav"
+                    id="submit_without_payment_btn">
+                  Déjà adhérent / Espèces / Chèques
+                </button>
               </div>
             </div>
           <% end %>
@@ -575,6 +576,7 @@
     const daySelect = document.getElementById('date_of_birth_day');
     const monthSelect = document.getElementById('date_of_birth_month');
     const yearSelect = document.getElementById('date_of_birth_year');
+    let errorDiv = document.getElementById('date_of_birth_error'); // Déclaration unique au début
 
     if (!day || !month || !year) {
       if (ageDisplay) ageDisplay.style.display = 'none';
@@ -586,7 +588,6 @@
         }
       });
       // Masquer tous les messages d'erreur/avertissement
-      const errorDiv = document.getElementById('date_of_birth_error');
       if (errorDiv) {
         errorDiv.style.display = 'none';
         errorDiv.textContent = '';
@@ -631,7 +632,6 @@
 
       // Afficher message d'erreur
       const errorMessage = "L'adhésion adulte n'est pas possible pour les personnes de moins de 16 ans. Veuillez contacter un membre du bureau de l'association.";
-      let errorDiv = document.getElementById('date_of_birth_error');
       if (!errorDiv) {
         errorDiv = document.createElement('div');
         errorDiv.id = 'date_of_birth_error';
@@ -667,7 +667,6 @@
     // Si >= 16 ans : valide (vert)
     if (age >= 16) {
       // Masquer le message d'erreur < 16 ans s'il existe
-      const errorDiv = document.getElementById('date_of_birth_error');
       if (errorDiv) {
         errorDiv.style.display = 'none';
         errorDiv.textContent = '';
@@ -730,6 +729,9 @@
         validateForm();
       }
 
+      // Re-vérifier les questions de santé quand l'âge change (harmonisation avec logique enfant)
+      checkHealthQuestions();
+
       return;
     }
 
@@ -742,7 +744,7 @@
     });
 
     // Masquer TOUS les messages d'erreur/avertissement
-    const errorDiv = document.getElementById('date_of_birth_error');
+    errorDiv = document.getElementById('date_of_birth_error'); // Réutiliser la variable déclarée au début
     if (errorDiv) {
       errorDiv.style.display = 'none';
       errorDiv.textContent = ''; // Vider le contenu
@@ -772,6 +774,9 @@
       // Réactiver le bouton et vérifier la validation complète
       validateForm();
     }
+
+    // Re-vérifier les questions de santé quand l'âge change (harmonisation avec logique enfant)
+    checkHealthQuestions();
   }
 
   // Validation champ
@@ -1190,8 +1195,91 @@
       });
     }
 
+    // Initialiser les valeurs si renouvellement depuis une adhésion expirée
+    <% if @old_membership %>
+      // Initialiser la date de naissance si elle est pré-remplie
+      <% if @user.date_of_birth %>
+        setTimeout(() => {
+          updateAdultDateOfBirth();
+          updateAdultAge(); // Calculer l'âge et afficher/masquer les messages
+        }, 100);
+      <% end %>
+
+      // Sélectionner la catégorie si elle était pré-remplie
+      <% if @membership&.category %>
+        const categoryRadio = document.getElementById('category_<%= @membership.category %>');
+        if (categoryRadio) {
+          categoryRadio.checked = true;
+          updateCategorySelection(); // Mettre à jour l'affichage de la catégorie
+        }
+      <% end %>
+    <% end %>
+
+    // Gestionnaire pour le bouton "Espèces/Chèques"
+    const submitWithoutPaymentBtn = document.getElementById('submit_without_payment_btn');
+    if (submitWithoutPaymentBtn) {
+      submitWithoutPaymentBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Empêcher la soumission par défaut
+        e.stopPropagation(); // Empêcher la propagation
+        console.log('[DEBUG] Bouton Espèces/Chèques cliqué');
+        const form = document.getElementById('adult_membership_form');
+        
+        if (!form) {
+          console.error('[DEBUG] Formulaire non trouvé');
+          return false;
+        }
+        
+        // Validation
+        if (!validateForm()) {
+          alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.');
+          const firstInvalid = form.querySelector('.is-invalid');
+          if (firstInvalid) {
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstInvalid.focus();
+          }
+          return false;
+        }
+        
+        // Confirmation
+        if (!confirm('Vous allez créer une adhésion avec le statut \'En attente\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) {
+          return false;
+        }
+        
+        // Définir le mode de paiement et soumettre le formulaire
+        const paymentMethodField = document.getElementById('payment_method_field');
+        if (paymentMethodField) {
+          paymentMethodField.value = 'cash_check';
+          console.log('[DEBUG] payment_method défini à:', paymentMethodField.value);
+        } else {
+          console.error('[DEBUG] Champ payment_method_field non trouvé');
+        }
+        
+        console.log('[DEBUG] Soumission du formulaire');
+        form.submit();
+      });
+      console.log('[DEBUG] Gestionnaire click attaché au bouton Espèces/Chèques');
+    } else {
+      console.error('[DEBUG] Bouton submit_without_payment_btn non trouvé');
+    }
+
     // Validation avant soumission
     form?.addEventListener('submit', function(e) {
+      // Ne pas modifier payment_method si déjà défini à cash_check (soumission manuelle depuis le bouton Espèces/Chèques)
+      const paymentMethodField = document.getElementById('payment_method_field');
+      if (paymentMethodField && paymentMethodField.value === 'cash_check') {
+        // La valeur est déjà correcte, ne pas la modifier
+      } else {
+        // Déterminer le mode de paiement selon le bouton cliqué
+        const submitter = e.submitter;
+        if (submitter && submitter.id === 'submit_btn') {
+          // Mode paiement HelloAsso (par défaut)
+          paymentMethodField.value = 'helloasso';
+        } else if (!paymentMethodField.value || paymentMethodField.value === 'helloasso') {
+          // Par défaut, HelloAsso si pas déjà défini
+          paymentMethodField.value = 'helloasso';
+        }
+      }
+
       // Vérifier l'âge avant soumission
       const day = document.getElementById('date_of_birth_day')?.value;
       const month = document.getElementById('date_of_birth_month')?.value;
