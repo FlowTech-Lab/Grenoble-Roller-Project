@@ -338,4 +338,13 @@ Priorité : Haute / Moyenne / Basse
 
 ---
 
+## 🔗 Références Croisées
+
+- **[START_HERE.md](START_HERE.md)** - Guide de démarrage avec workflow
+- **[plan-implementation.md](plan-implementation.md)** - Plan d'implémentation (sprints, user stories)
+- **[RESUME_DECISIONS.md](RESUME_DECISIONS.md)** - Décisions techniques par US
+- **[descisions/](descisions/)** - Guides techniques détaillés
+
+---
+
 **Cette méthode est un guide. Ajustez selon votre contexte et équipe.**

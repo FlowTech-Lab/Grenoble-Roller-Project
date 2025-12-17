@@ -747,4 +747,13 @@ Ce document liste **toutes les fonctionnalités Active Admin** actuellement util
 
 ---
 
+## 🔗 Références Croisées
+
+- **[START_HERE.md](START_HERE.md)** - Guide de démarrage
+- **[plan-implementation.md](plan-implementation.md)** - Plan d'implémentation (migration de ces fonctionnalités)
+- **[RESUME_DECISIONS.md](RESUME_DECISIONS.md)** - Décisions techniques pour chaque fonctionnalité
+- **[descisions/](descisions/)** - Guides techniques détaillés
+
+---
+
 **Note** : Ce document doit être mis à jour si de nouvelles fonctionnalités Active Admin sont ajoutées avant la migration.

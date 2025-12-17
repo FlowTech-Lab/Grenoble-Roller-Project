@@ -2,6 +2,11 @@
 
 Ce dossier contient toute la documentation relative à la migration du panel d'administration de l'application Grenoble Roller.
 
+## 🚀 Commencer Ici
+
+👉 **[START_HERE.md](START_HERE.md)** - Point d'entrée avec guide complet et workflow recommandé  
+👉 **[INDEX.md](INDEX.md)** - Index complet de toute la documentation pour navigation rapide
+
 ---
 
 ## 📚 Structure de Documentation
@@ -56,6 +61,50 @@ Contient :
 
 ### 📖 Documents de Référence
 
+#### `reference-css-classes.md` ⭐ **RÉFÉRENCE CSS**
+**Référence complète des classes CSS disponibles**
+
+Contient :
+- Classes Bootstrap 5.3.2 standards
+- Classes Liquid custom du projet (card-liquid, btn-liquid-primary, etc.)
+- Variables CSS custom
+- Exemples d'utilisation depuis le codebase
+- Recommandations pour le panel admin
+
+**Utilisation** : Référence pour choisir les bonnes classes CSS
+
+#### `prompts-perplexity.md` ⭐ **PROMPTS TECHNIQUES**
+**Prompts prêts à copier-coller dans Perplexity**
+
+Contient :
+- 6 prompts pour décisions techniques (drag-drop, sidebar, recherche, etc.)
+- Questions structurées avec contraintes
+- Instructions d'usage
+- Priorisation par sprint
+
+**Utilisation** : Pour obtenir des recommandations techniques précises
+
+#### `reutilisation-dark-mode.md` ⭐ **DARK MODE**
+**Guide de réutilisation du dark mode existant**
+
+Contient :
+- Documentation du dark mode déjà implémenté
+- Instructions pour réutiliser dans le panel admin
+- Checklist de vérification
+- Pas besoin de réimplémenter
+
+**Utilisation** : Réutiliser le dark mode existant (déjà complet)
+
+#### `analyse-stack-reelle.md` ⭐ **ANALYSE STACK**
+**Comparaison plan vs stack réelle du projet**
+
+Contient :
+- Incohérences identifiées (Tailwind vs Bootstrap, etc.)
+- Corrections appliquées au plan
+- Stack confirmée (Bootstrap 5.3.2, Stimulus, Partials Rails)
+
+**Utilisation** : Comprendre les ajustements faits au plan
+
 #### `inventaire-active-admin.md`
 **Inventaire complet des fonctionnalités Active Admin**
 
@@ -76,10 +125,17 @@ Recensement exhaustif de :
 2. **`methode-realisation.md`** : Comprendre la méthode de travail
 
 ### Pour les Développeurs
-1. **`plan-implementation.md`** : Voir les user stories et estimations
-2. **`guide-ux-ui.md`** : Référence design et UX
-3. **`inventaire-active-admin.md`** : Comprendre l'existant
-4. **`methode-realisation.md`** : Workflow technique
+1. **[START_HERE.md](START_HERE.md)** ⭐ **COMMENCER ICI** - Guide de démarrage complet
+2. **[MIGRATION_RESSOURCES.md](MIGRATION_RESSOURCES.md)** ⭐ **CHECKLIST** - Toutes les ressources Active Admin à migrer (24 ressources + 2 pages)
+3. **[RESUME_DECISIONS.md](RESUME_DECISIONS.md)** ⭐ - Résumé rapide de toutes les décisions techniques
+4. **`plan-implementation.md`** : Plan complet avec user stories et estimations
+4. **`reference-css-classes.md`** : Classes CSS disponibles (Bootstrap + Liquid) ⭐
+5. **`descisions/`** : Guides complets pour chaque décision technique (Perplexity)
+6. **`guide-ux-ui.md`** : Référence design et UX
+7. **`inventaire-active-admin.md`** : Comprendre l'existant
+8. **`methode-realisation.md`** : Workflow technique
+9. **`reutilisation-dark-mode.md`** : Dark mode déjà implémenté
+10. **`analyse-stack-reelle.md`** : Stack réelle vs plan
 
 ### Pour le Designer / UX
 1. **`guide-ux-ui.md`** : Documentation complète UX/UI
@@ -161,12 +217,14 @@ Recensement exhaustif de :
 
 ## 🚀 Prochaines Actions
 
-1. ✅ **Documents créés** : Plan, guide UX/UI, méthode
-2. ⏭️ **Valider avec équipe** : Review du plan
-3. ⏭️ **Créer branche** : `feature/admin-panel-2025`
-4. ⏭️ **Démarrer Sprint 1** : Infrastructure & Navigation
+1. ✅ **Documents créés** : Plan, guides techniques, références CSS
+2. ✅ **Décisions techniques** : Toutes documentées dans `descisions/`
+3. ⏭️ **Lire** [START_HERE.md](START_HERE.md) pour guide de démarrage
+4. ⏭️ **Valider avec équipe** : Review du plan et décisions
+5. ⏭️ **Créer branche** : `feature/admin-panel-2025`
+6. ⏭️ **Démarrer Sprint 1** : US-001 (Sidebar) avec guide [sidebar_guide_bootstrap5.md](descisions/sidebar_guide_bootstrap5.md)
 
-**Prêt à démarrer ?** Consultez `plan-implementation.md` pour les détails du Sprint 1.
+**Prêt à démarrer ?** 👉 **[START_HERE.md](START_HERE.md)**
 
 ---
 

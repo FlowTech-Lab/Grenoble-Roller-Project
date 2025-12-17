@@ -391,4 +391,13 @@ Mono:     12px (logs, codes)
 
 ---
 
+## 🔗 Références Croisées
+
+- **[START_HERE.md](START_HERE.md)** - Guide de démarrage complet
+- **[plan-implementation.md](plan-implementation.md)** - Plan d'implémentation avec user stories
+- **[reference-css-classes.md](reference-css-classes.md)** - Classes CSS pour implémenter ce guide
+- **[descisions/](descisions/)** - Guides techniques détaillés pour chaque fonctionnalité
+
+---
+
 **Ce guide sert de référence pour l'implémentation. Consulter `plan-implementation.md` pour le planning détaillé.**
