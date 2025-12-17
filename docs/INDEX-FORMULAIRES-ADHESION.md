@@ -72,6 +72,19 @@ Cette documentation couvre l'analyse complète et le plan d'implémentation pour
 
 ---
 
+### 5. ✅ Tests Sprint 7 (VALIDATION)
+**Fichier :** [`tests-sprint-7-validation.md`](./tests-sprint-7-validation.md)
+
+**Contenu :**
+- Checklist complète de tous les tests à effectuer
+- Scénarios détaillés pour chaque test
+- Résultats attendus pour chaque scénario
+- Notes et points d'attention
+
+**Utilisation :** Guide de test manuel pour valider toutes les fonctionnalités implémentées
+
+---
+
 ## 🔗 Relations Entre Documents
 
 ```
@@ -92,9 +105,13 @@ INDEX-FORMULAIRES-ADHESION.md (ce fichier)
 │   ├── Section renouvellement adulte détaillée
 │   └── ⚠️ Partiellement remplacé par comparatif-complet
 │
-└── ESSAI_GRATUIT_ENFANTS.md
-    ├── Spécification essai gratuit enfants
-    └── Intégré dans : comparatif-complet-formulaires-integration.md (Phase 4)
+├── ESSAI_GRATUIT_ENFANTS.md
+│   ├── Spécification essai gratuit enfants
+│   └── Intégré dans : comparatif-complet-formulaires-integration.md (Phase 4)
+│
+└── tests-sprint-7-validation.md
+    ├── Checklist complète de tests
+    └── Référence : plan-sprints-formulaires-adhesion.md (Sprint 7)
 ```
 
 ---
@@ -127,6 +144,7 @@ INDEX-FORMULAIRES-ADHESION.md (ce fichier)
 | `plan-sprints-formulaires-adhesion.md` | ✅ Complet | 100% | 2025-01-13 | 🗓️ **Planning opérationnel** - Suivi d'avancement |
 | `comparatif-formulaires-enfant-adulte.md` | ⚠️ Archivé | 80% | 2025-01-XX | 🔄 **Référence historique** - Section renouvellement utile |
 | `ESSAI_GRATUIT_ENFANTS.md` | ✅ Complet | 100% | 2025-01-XX | 🎁 **Spécification fonctionnelle** - Essai gratuit enfants |
+| `tests-sprint-7-validation.md` | ✅ Complet | 100% | 2025-01-13 | ✅ **Guide de tests** - Checklist validation complète |
 
 **Note :** 
 - `comparatif-formulaires-enfant-adulte.md` (v1.0) est une analyse initiale consolidée dans le comparatif-complet (v2.0)

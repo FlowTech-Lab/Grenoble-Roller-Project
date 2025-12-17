@@ -23,6 +23,8 @@
           'btn-success'
         when 'expired'
           'btn-secondary'
+        when 'trial'
+          'btn-info'
         else
           'btn-secondary'
       end
@@ -34,6 +36,8 @@
           'Active'
         when 'expired'
           'Expirée'
+        when 'trial'
+          'Essai gratuit'
         else
           membership.status.humanize
       end
@@ -94,6 +98,17 @@
               form: { style: "display: inline-block;" } do %>
             <i class="bi bi-credit-card me-1"></i>Payer
           <% end %>
+        <% end %>
+      <% elsif membership.status == 'trial' && membership.is_child_membership? %>
+        <!-- Bouton pour convertir essai gratuit en adhésion payante -->
+        <%= link_to upgrade_membership_path(membership), 
+            method: :patch,
+            class: "btn btn-sm btn-success",
+            data: { 
+              turbo: false,
+              confirm: "Vous allez convertir l'essai gratuit de #{membership.child_full_name} en adhésion payante. Continuer ?"
+            } do %>
+          <i class="bi bi-credit-card me-1"></i>Adhérer maintenant
         <% end %>
       <% elsif membership.status == 'expired' %>
         <% if membership.is_child_membership? %>

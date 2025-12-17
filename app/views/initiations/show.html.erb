@@ -320,7 +320,7 @@
           <strong>Adhésion requise</strong>
           <p class="mb-0">Vous devez avoir une adhésion active ou utiliser votre essai gratuit pour vous inscrire.</p>
           <div class="mt-3">
-            <%= link_to new_membership_path(check_age: true), class: "btn btn-primary" do %>
+            <%= link_to new_membership_path(type: 'adult'), class: "btn btn-primary" do %>
               <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Adhérer maintenant
             <% end %>
           </div>

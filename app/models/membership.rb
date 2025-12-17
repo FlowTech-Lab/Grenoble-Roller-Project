@@ -11,7 +11,8 @@ class Membership < ApplicationRecord
   enum :status, {
     pending: 0,
     active: 1,
-    expired: 2
+    expired: 2,
+    trial: 3  # Essai gratuit (uniquement pour enfants)
   }
 
   enum :category, {
@@ -27,12 +28,16 @@ class Membership < ApplicationRecord
   # Validation : un utilisateur ne peut avoir qu'une adhésion personnelle par saison
   # Mais peut avoir plusieurs adhésions enfants
   validate :unique_personal_membership_per_season
-  validates :start_date, :end_date, :amount_cents, :category, presence: true
-  validates :start_date, comparison: { less_than: :end_date }
+  # Pour les essais gratuits (trial), on n'exige pas les dates et montants
+  validates :start_date, :end_date, :amount_cents, :category, presence: true, unless: -> { status == 'trial' }
+  validates :start_date, comparison: { less_than: :end_date }, if: -> { start_date.present? && end_date.present? }
 
   # Validations pour adhésions enfants
   validates :child_first_name, :child_last_name, :child_date_of_birth, presence: true, if: :is_child_membership?
   validates :parent_authorization, inclusion: { in: [ true ] }, if: -> { is_child_membership? && child_age < 16 }
+  
+  # Validation : trial uniquement pour les enfants
+  validate :trial_only_for_children
 
   # Scopes
   scope :active_now, -> { active.where("end_date > ?", Date.current) }
@@ -144,8 +149,15 @@ class Membership < ApplicationRecord
 
   private
 
+  def trial_only_for_children
+    if status == 'trial' && !is_child_membership?
+      errors.add(:status, "Le statut 'trial' est uniquement disponible pour les adhésions enfants")
+    end
+  end
+
   def unique_personal_membership_per_season
     return if is_child_membership? # Pas de validation pour les enfants
+    return if status == 'trial' # Les essais gratuits ne sont pas concernés par cette validation
 
     existing = Membership.where(
       user_id: user_id,

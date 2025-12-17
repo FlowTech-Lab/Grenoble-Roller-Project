@@ -14,19 +14,10 @@ class MembershipsController < ApplicationController
     current_season = Membership.current_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
     @pending_membership = existing_memberships.find { |m| m.status == "pending" }
-    @active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    @active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
   end
 
   def new
-    # Si paramètre check_age, calculer l'âge et rediriger
-    if params[:check_age] == "true" || params[:check_age] == true
-      check_age_and_redirect
-      return
-    end
-
-    # Adhésion simple uniquement (plus d'option T-shirt)
-    @with_tshirt = false
-
     type = params[:type] # "adult", "teen", "children", ou nil (choix initial)
     children_count = params[:count]&.to_i
 
@@ -81,8 +72,8 @@ class MembershipsController < ApplicationController
       current_season = Membership.current_season_name
       existing_memberships = current_user.memberships.personal.where(season: current_season)
 
-      # Vérifier adhésion active
-      active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+      # Vérifier adhésion active (protection contre end_date nil)
+      active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
       if active_membership
         redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
         return
@@ -99,6 +90,14 @@ class MembershipsController < ApplicationController
     @type = type
     @season = Membership.current_season_name
     @start_date, @end_date = Membership.current_season_dates
+    
+    # S'assurer que les dates sont valides (protection contre les valeurs nil)
+    unless @start_date.present? && @end_date.present?
+      Rails.logger.error("[MembershipsController#new] Erreur: start_date ou end_date est nil. start_date=#{@start_date.inspect}, end_date=#{@end_date.inspect}")
+      redirect_to memberships_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
+      return
+    end
+    
     @categories = get_categories
     @user = current_user
 
@@ -108,6 +107,8 @@ class MembershipsController < ApplicationController
     elsif type == "adult"
       # Pour les adultes, on permet de saisir la date de naissance dans le formulaire si absente
       # La vérification d'âge se fera lors de la création de l'adhésion
+      # Initialiser @membership si ce n'est pas déjà fait (pour les nouveaux adhérents)
+      @membership ||= Membership.new(is_child_membership: false)
     end
 
     # Rendre la vue appropriée
@@ -117,12 +118,17 @@ class MembershipsController < ApplicationController
     when "teen"
       render :teen_form
     when "child"
-      # Adhésion simple uniquement (plus d'option T-shirt)
-      @with_tshirt = false
-
       # Formulaire pour un seul enfant (simplifié)
       @season = Membership.current_season_name
       @start_date, @end_date = Membership.current_season_dates
+      
+      # S'assurer que les dates sont valides (protection contre les valeurs nil)
+      unless @start_date.present? && @end_date.present?
+        Rails.logger.error("[MembershipsController#new] Erreur: start_date ou end_date est nil pour child. start_date=#{@start_date.inspect}, end_date=#{@end_date.inspect}")
+        redirect_to memberships_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
+        return
+      end
+      
       @categories = {
         standard: {
           name: "Cotisation Adhérent Grenoble Roller",
@@ -144,8 +150,8 @@ class MembershipsController < ApplicationController
     current_season = Membership.current_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
 
-    # Vérifier adhésion active
-    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    # Vérifier adhésion active (protection contre end_date nil)
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
     if active_membership
       # Message adapté avec informations sur l'adhésion
       flash[:info] = "Vous avez déjà une adhésion active pour la saison #{current_season}. Elle est valable jusqu'au #{I18n.l(active_membership.end_date, format: :long)}."
@@ -191,6 +197,15 @@ class MembershipsController < ApplicationController
   end
 
   def create
+    # Vérifier si c'est un essai gratuit (statut trial) - pas de paiement nécessaire
+    if params[:create_trial] == "1"
+      membership_params = params[:membership] || params
+      if membership_params[:is_child_membership] == "true" || membership_params[:is_child_membership] == true
+        create_child_membership_single
+        return
+      end
+    end
+
     # Vérifier si c'est un paiement sans HelloAsso
     Rails.logger.debug("[MembershipsController] payment_method reçu: #{params[:payment_method].inspect}")
     if params[:payment_method] == "cash_check" || params[:payment_method] == "without_payment"
@@ -403,6 +418,32 @@ class MembershipsController < ApplicationController
     redirect_to memberships_path, alert: "Erreur lors de la suppression : #{e.message}"
   end
 
+  # Convertir un essai gratuit (trial) en adhésion payante (pending)
+  def upgrade
+    unless @membership.is_child_membership? && @membership.trial?
+      redirect_to memberships_path, alert: "Cette adhésion ne peut pas être convertie."
+      return
+    end
+
+    # Définir les dates de saison et le montant
+    start_date, end_date = Membership.current_season_dates
+    amount_cents = Membership.price_for_category(@membership.category)
+
+    # Mettre à jour l'adhésion : trial → pending avec dates et montant
+    @membership.update!(
+      status: :pending,
+      start_date: start_date,
+      end_date: end_date,
+      amount_cents: amount_cents
+    )
+
+    redirect_to membership_payments_path(@membership), notice: "L'essai gratuit de #{@membership.child_full_name} a été converti en adhésion. Vous pouvez maintenant procéder au paiement."
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors de la conversion : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to memberships_path, alert: "Erreur lors de la conversion : #{e.message}"
+  end
+
   private
 
   def set_membership
@@ -419,7 +460,7 @@ class MembershipsController < ApplicationController
       with_ffrs: {
         name: "Cotisation Adhérent Grenoble Roller + Licence FFRS",
         price_cents: 5655,
-        description: "Je souhaite être membre bienfaiteur ou actif de l'association. Je souhaite également prendre la licence de la FFRS (Loisir ou Compétition). Plus d'informations sur le site de la FFRS https://ffroller-skateboard.fr/"
+        description: "Je souhaite être membre bienfaiteur ou actif de l'association. Je souhaite également prendre la licence de la FFRS (Loisir). Plus d'informations sur le site de la FFRS"
       }
     }
   end
@@ -440,7 +481,7 @@ class MembershipsController < ApplicationController
     existing_memberships = current_user.memberships.personal.where(season: current_season)
 
     # Vérifier si une adhésion active existe
-    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
     if active_membership
       redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
       return
@@ -454,6 +495,14 @@ class MembershipsController < ApplicationController
     end
 
     start_date, end_date = Membership.current_season_dates
+    
+    # S'assurer que les dates sont valides (protection contre les valeurs nil)
+    unless start_date.present? && end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur: start_date ou end_date est nil. start_date=#{start_date.inspect}, end_date=#{end_date.inspect}")
+      redirect_to new_membership_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
+      return
+    end
+    
     amount_cents = Membership.price_for_category(category)
 
     # Mettre à jour les informations User (même si certains champs sont vides, on met à jour ceux qui sont fournis)
@@ -560,6 +609,13 @@ class MembershipsController < ApplicationController
       health_attrs["health_q#{i}"] = answer if answer.present?
     end
 
+    # S'assurer que end_date est défini avant la création (double vérification)
+    unless end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur: end_date est nil juste avant la création de l'adhésion")
+      redirect_to new_membership_path, alert: "Erreur lors du calcul de la date de fin de saison. Veuillez réessayer ou contacter le support."
+      return
+    end
+
     # Créer l'adhésion en pending
     membership = Membership.create!(
       user: current_user,
@@ -648,7 +704,7 @@ class MembershipsController < ApplicationController
     existing_memberships = current_user.memberships.personal.where(season: current_season)
 
     # Vérifier si une adhésion active existe
-    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
     if active_membership
       redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
       return
@@ -662,6 +718,14 @@ class MembershipsController < ApplicationController
     end
 
     start_date, end_date = Membership.current_season_dates
+    
+    # S'assurer que les dates sont valides (protection contre les valeurs nil)
+    unless start_date.present? && end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur: start_date ou end_date est nil. start_date=#{start_date.inspect}, end_date=#{end_date.inspect}")
+      redirect_to new_membership_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
+      return
+    end
+    
     amount_cents = Membership.price_for_category(category)
 
     # Mettre à jour les informations User (même si certains champs sont vides, on met à jour ceux qui sont fournis)
@@ -708,6 +772,13 @@ class MembershipsController < ApplicationController
       return
     elsif age >= 18
       redirect_to new_membership_path(type: "adult"), alert: "Vous avez 18 ans ou plus, veuillez choisir l'option 'Adulte'."
+      return
+    end
+
+    # S'assurer que end_date est défini avant la création (double vérification)
+    unless end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur: end_date est nil juste avant la création de l'adhésion")
+      redirect_to new_membership_path, alert: "Erreur lors du calcul de la date de fin de saison. Veuillez réessayer ou contacter le support."
       return
     end
 
@@ -784,15 +855,23 @@ class MembershipsController < ApplicationController
     membership = create_child_membership_from_params(membership_params, 0)
 
     if membership.persisted?
-      # Rediriger vers /memberships pour afficher l'enfant créé
-      redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant procéder au paiement."
+      # Message différent selon le statut
+      if membership.trial?
+        redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant utiliser l'essai gratuit pour une initiation."
+      else
+        redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant procéder au paiement."
+      end
     else
       redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
     end
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error("[MembershipsController] Erreur de validation : #{e.record.errors.full_messages.join(', ')}")
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.record.errors.full_messages.join(', ')}"
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+    error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(', ') : e.message
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{error_message}"
   end
 
   def create_child_membership_from_params(child_params, index)
@@ -844,9 +923,22 @@ class MembershipsController < ApplicationController
       return Membership.new.tap { |m| m.errors.add(:base, "L'enfant a 18 ans ou plus, il doit adhérer seul") }
     end
 
-    start_date, end_date = Membership.current_season_dates
-    amount_cents = Membership.price_for_category(category)
-    current_season = Membership.current_season_name
+    # Vérifier si c'est un essai gratuit (statut trial)
+    create_trial = params[:create_trial] == "1" || child_params[:create_trial] == "1"
+    
+    # Pour les essais gratuits, pas besoin de dates ni montants
+    if create_trial
+      start_date = nil
+      end_date = nil
+      amount_cents = 0
+      current_season = Membership.current_season_name
+      membership_status = :trial
+    else
+      start_date, end_date = Membership.current_season_dates
+      amount_cents = Membership.price_for_category(category)
+      current_season = Membership.current_season_name
+      membership_status = :pending
+    end
 
     # Mettre à jour les préférences email de l'utilisateur si fournies
     if params[:user]
@@ -923,7 +1015,7 @@ class MembershipsController < ApplicationController
     membership = Membership.create!(
       user: current_user, # Le parent
       category: category,
-      status: :pending,
+      status: membership_status,
       start_date: start_date,
       end_date: end_date,
       amount_cents: amount_cents,
@@ -963,6 +1055,9 @@ class MembershipsController < ApplicationController
     # Pas de création automatique ici
 
     membership
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error("[MembershipsController] Erreur de validation lors de la création de l'adhésion enfant : #{e.record.errors.full_messages.join(', ')}")
+    e.record
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
     membership&.destroy
@@ -984,8 +1079,8 @@ class MembershipsController < ApplicationController
     # Vérifier les adhésions existantes pour cette saison
     existing_memberships = current_user.memberships.personal.where(season: current_season)
 
-    # Vérifier si une adhésion active existe
-    active_membership = existing_memberships.find { |m| m.active? && m.end_date > Date.current }
+    # Vérifier si une adhésion active existe (protection contre end_date nil)
+    active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
     if active_membership
       redirect_to membership_path(active_membership), notice: "Vous avez déjà une adhésion active pour cette saison."
       return
@@ -1091,7 +1186,22 @@ class MembershipsController < ApplicationController
       health_attrs["health_q#{i}"] = answer if answer.present?
     end
 
+    # S'assurer que end_date est défini avant la création (double vérification)
+    unless end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur: end_date est nil juste avant la création de l'adhésion")
+      redirect_to new_membership_path, alert: "Erreur lors du calcul de la date de fin de saison. Veuillez réessayer ou contacter le support."
+      return
+    end
+
+    # S'assurer que end_date est défini avant la création (double vérification)
+    unless end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur: end_date est nil juste avant la création de l'adhésion")
+      redirect_to new_membership_path, alert: "Erreur lors du calcul de la date de fin de saison. Veuillez réessayer ou contacter le support."
+      return
+    end
+
     # Créer l'adhésion en pending SANS paiement HelloAsso
+    # Note: On utilise explicitement start_date et end_date calculés, pas ceux des paramètres
     membership = Membership.create!(
       user: current_user,
       category: category,
@@ -1141,9 +1251,13 @@ class MembershipsController < ApplicationController
     else
       redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
     end
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error("[MembershipsController] Erreur de validation : #{e.record.errors.full_messages.join(', ')}")
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.record.errors.full_messages.join(', ')}"
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant sans paiement : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+    error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(', ') : e.message
+    redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{error_message}"
   end
 end

@@ -153,10 +153,10 @@
 ### Tâches (synthèse – voir todo détaillée phase 4)
 
 #### 6.1 Modèle & contrôleurs
-- [ ] **S6-T1** (todo `phase4-1-1` + `phase4-1-2`) – Ajouter status `trial` dans `Membership` et adapter validations.
-- [ ] **S6-T2** (todo `phase4-2-1` + `phase4-2-2`) – Adapter `attendances_controller` pour différencier parent/enfant.
-- [ ] **S6-T3** (todo `phase4-3-1` + `phase4-3-2`) – Adapter `Event::InitiationPolicy`.
-- [ ] **S6-T4** (todo `phase4-4-1` + `phase4-4-2`) – Adapter validation `can_use_free_trial` dans `Attendance`.
+- [x] **S6-T1** (todo `phase4-1-1` + `phase4-1-2`) – Ajouter status `trial` dans `Membership` et adapter validations.
+- [x] **S6-T2** (todo `phase4-2-1` + `phase4-2-2`) – Adapter `attendances_controller` pour différencier parent/enfant.
+- [x] **S6-T3** (todo `phase4-3-1` + `phase4-3-2`) – Adapter `Event::InitiationPolicy`.
+- [x] **S6-T4** (todo `phase4-4-1` + `phase4-4-2`) – Adapter validation `can_use_free_trial` dans `Attendance`.
 
 #### 6.2 Frontend & flux
 - [ ] **S6-T5** (todo `phase4-5-1` + `phase4-5-2`) – Ajouter création enfant sans adhésion (status `trial`) dans `child_form` + contrôleur.
@@ -169,6 +169,9 @@
 
 ### Objectifs
 - Valider tous les flux critiques (adhésions + essais gratuits).
+
+### Document de Test
+📋 **[Guide de Tests Complet](./tests-sprint-7-validation.md)** - Checklist détaillée pour tous les scénarios de test
 
 ### Tâches
 

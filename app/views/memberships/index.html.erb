@@ -44,7 +44,7 @@
       </div>
       <% if @memberships.empty? %>
         <div class="mt-3 mt-md-0">
-          <%= link_to new_membership_path(check_age: true), class: "btn btn-light btn-lg" do %>
+          <%= link_to new_membership_path(type: 'adult'), class: "btn btn-light btn-lg" do %>
             <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
           <% end %>
         </div>
@@ -67,7 +67,7 @@
             
             <!-- Adhérer pour moi -->
             <% unless @active_membership %>
-              <%= link_to new_membership_path(check_age: true), class: "text-decoration-none" do %>
+              <%= link_to new_membership_path(type: 'adult'), class: "text-decoration-none" do %>
                 <div class="quick-action-card teal">
                   <div class="d-flex align-items-center mb-2">
                     <i class="bi bi-person-badge fs-3 text-liquid-primary me-3"></i>
@@ -204,7 +204,7 @@
           </div>
           
           <div class="empty-state-cta">
-            <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg btn-cta-modern" do %>
+            <%= link_to new_membership_path(type: 'adult'), class: "btn btn-liquid-primary btn-lg btn-cta-modern" do %>
               <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
               <i class="bi bi-arrow-right ms-2"></i>
             <% end %>

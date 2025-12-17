@@ -1,0 +1,121 @@
+<%# 
+  Partial pour la section consentements
+  Variables locales attendues:
+  - f: l'objet form
+  - form_id: ID du formulaire (pour les IDs uniques)
+  - is_child: boolean pour adapter les textes (enfant vs adulte)
+  - step_number: numéro de l'étape (pour l'affichage)
+%>
+<% form_id ||= "" %>
+<% is_child ||= false %>
+<% step_number ||= 5 %>
+
+<div class="form-section" id="step-consents<%= form_id %>">
+  <h3 class="section-title">
+    <span class="section-number"><%= step_number %></span>
+    Consentements & Confidentialité
+  </h3>
+  <p class="section-intro">Pour finaliser votre adhésion, veuillez accepter :</p>
+
+  <div class="consent-group">
+    <div class="consent-group-title">
+      <i class="bi bi-file-text consent-icon text-liquid-primary"></i>
+      Conditions d'adhésion
+    </div>
+    <div class="consent-item">
+      <div class="form-check">
+        <%= f.check_box :legal_notices_accepted,
+            { class: "form-check-input", id: "legal_notices_accepted#{form_id}", required: true },
+            "1", "0" %>
+        <label class="form-check-label" for="legal_notices_accepted<%= form_id %>">
+          Je m'engage à respecter le règlement intérieur et les CGU de Grenoble Roller
+          <%= link_to cgu_path, target: "_blank", class: "ms-2" do %>
+            Lire les CGU <i class="bi bi-box-arrow-up-right"></i>
+          <% end %>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="consent-group">
+    <div class="consent-group-title">
+      <i class="bi bi-shield-lock consent-icon text-liquid-primary"></i>
+      Données personnelles (RGPD)
+    </div>
+    <div class="consent-item">
+      <div class="form-check">
+        <%= f.check_box :rgpd_consent,
+            { class: "form-check-input", id: "rgpd_consent#{form_id}", required: true },
+            "1", "0" %>
+        <label class="form-check-label" for="rgpd_consent<%= form_id %>">
+          <% if is_child %>
+            J'autorise Grenoble Roller à collecter les données de l'enfant pour l'adhésion (conservation 3 ans)
+          <% else %>
+            J'autorise Grenoble Roller à collecter mes données pour l'adhésion (conservation 3 ans)
+          <% end %>
+          <%= link_to politique_confidentialite_path, target: "_blank", class: "ms-2" do %>
+            Politique confidentialité <i class="bi bi-box-arrow-up-right"></i>
+          <% end %>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="consent-group">
+    <div class="consent-group-title">
+      <i class="bi bi-bell consent-icon text-liquid-primary"></i>
+      Communication
+    </div>
+    <div class="consent-item">
+      <div class="form-check">
+        <%= check_box_tag "user[wants_initiation_mail]", "1", (defined?(@user) && @user ? @user.wants_initiation_mail : false),
+            { class: "form-check-input", id: "wants_initiation_mail#{form_id}" } %>
+        <label class="form-check-label" for="wants_initiation_mail<%= form_id %>">
+          Je souhaite recevoir les informations sur les initiations
+        </label>
+      </div>
+    </div>
+    <div class="consent-item">
+      <div class="form-check">
+        <%= check_box_tag "user[wants_events_mail]", "1", (defined?(@user) && @user ? @user.wants_events_mail : false),
+            { class: "form-check-input", id: "wants_events_mail#{form_id}" } %>
+        <label class="form-check-label" for="wants_events_mail<%= form_id %>">
+          Je souhaite recevoir les informations sur les événements/randonnées
+        </label>
+      </div>
+    </div>
+    <div class="form-text small mt-2">
+      <i class="bi bi-info-circle me-1"></i>
+      Vous pourrez modifier ces préférences à tout moment dans votre profil
+    </div>
+  </div>
+
+  <div class="consent-group" id="ffrs_consent_group<%= form_id %>" style="display: none;">
+    <div class="consent-group-title">
+      <i class="bi bi-people consent-icon text-liquid-primary"></i>
+      Partage FFRS (Si licence)
+    </div>
+    <div class="consent-item">
+      <div class="form-check">
+        <%= f.check_box :ffrs_data_sharing_consent,
+            { class: "form-check-input", id: "ffrs_data_sharing_consent#{form_id}" },
+            "1", "0" %>
+        <label class="form-check-label" for="ffrs_data_sharing_consent<%= form_id %>">
+          <% if is_child %>
+            J'autorise le partage des données de l'enfant avec la FFRS pour la licence
+          <% else %>
+            J'autorise le partage de mes données avec la FFRS pour la licence
+          <% end %>
+          <%= link_to "#", class: "ms-2" do %>
+            En savoir plus <i class="bi bi-box-arrow-up-right"></i>
+          <% end %>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-success mt-3" id="all_consents_accepted<%= form_id %>" style="display: none;">
+    <i class="bi bi-check-circle me-2"></i>
+    <strong>Parfait !</strong> Tous les consentements requis ont été acceptés.
+  </div>
+</div>

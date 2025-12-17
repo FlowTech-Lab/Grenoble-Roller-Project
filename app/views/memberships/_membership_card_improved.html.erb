@@ -150,7 +150,7 @@
         <i class="bi bi-credit-card me-1"></i>Finaliser paiement →
       <% end %>
     <% elsif membership.status == 'expired' %>
-      <%= link_to new_membership_path(check_age: true), class: "btn btn-sm btn-success" do %>
+      <%= link_to new_membership_path(type: 'adult'), class: "btn btn-sm btn-success" do %>
         <i class="bi bi-arrow-repeat me-1"></i>Renouveler
       <% end %>
     <% end %>
