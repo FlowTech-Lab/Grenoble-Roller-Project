@@ -41,13 +41,21 @@ module Events
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       attendance.child_membership_id = child_membership_id
 
-      # Pour les événements : pas d'adhésion requise pour le parent
-      # Pour un enfant : vérifier que l'adhésion enfant est active, trial ou pending
-      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
+      # Pour les événements normaux (randos) : vérifier l'adhésion
+      # Pour un enfant : vérifier que l'adhésion enfant est active (pas trial ni pending pour les randos)
       if child_membership_id.present?
         child_membership = current_user.memberships.find_by(id: child_membership_id)
-        unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
+        unless child_membership&.active?
           redirect_to @event, alert: "L'adhésion de cet enfant n'est pas active."
+          return
+        end
+      else
+        # Pour le parent : vérifier adhésion active (parent OU enfant) ou essai gratuit disponible
+        has_active_membership = current_user.memberships.active_now.exists?
+        has_free_trial = !current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+        
+        unless has_active_membership || has_free_trial
+          redirect_to @event, alert: "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association."
           return
         end
       end

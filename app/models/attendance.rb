@@ -31,6 +31,7 @@ class Attendance < ApplicationRecord
   validate :event_has_available_spots, on: :create
   validate :can_use_free_trial, on: :create
   validate :can_register_to_initiation, on: :create
+  validate :can_register_to_event, on: :create
   validate :child_membership_belongs_to_user
   validate :no_duplicate_registration, on: :create
 
@@ -201,6 +202,27 @@ class Attendance < ApplicationRecord
       end
       # Si l'option est activée et que l'utilisateur n'est pas adhérent,
       # l'inscription est autorisée dans les places découverte (pas besoin d'essai gratuit)
+    end
+  end
+
+  def can_register_to_event
+    return if event.is_a?(Event::Initiation) # Les initiations ont leur propre validation
+    return if is_volunteer # Bénévoles bypassent les validations
+
+    # Pour les événements normaux (randos) : vérifier adhésion active
+    if for_child?
+      # Pour un enfant : vérifier que l'adhésion enfant est active (pas trial ni pending pour les randos)
+      unless child_membership&.active?
+        errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
+      end
+    else
+      # Pour le parent : vérifier adhésion active (parent OU enfant) ou essai gratuit
+      has_active_membership = user.memberships.active_now.exists?
+      has_child_membership = user.memberships.active_now.where(is_child_membership: true).exists?
+
+      unless has_active_membership || has_child_membership || free_trial_used
+        errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
+      end
     end
   end
 

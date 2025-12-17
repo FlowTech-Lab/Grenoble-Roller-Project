@@ -304,7 +304,9 @@
               <% end %>
               
               <%# Bouton pour inscrire un enfant si disponible %>
-              <% if @can_register_child && current_user.memberships.active_now.where(is_child_membership: true).where.not(id: @child_attendances.map(&:child_membership_id).compact).exists? %>
+              <% if @can_register_child && current_user.memberships.where(is_child_membership: true)
+                  .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+                  .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists? %>
                 <button type="button" 
                         class="btn btn-outline-primary" 
                         data-bs-toggle="modal" 
@@ -351,7 +353,14 @@
 </section>
 
 <!-- Modal de confirmation d'inscription -->
-<% if show_register_button || (@initiation.full? && user_signed_in? && @can_register_child && current_user.memberships.active_now.where(is_child_membership: true).where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?) %>
+<% 
+  # Vérifier si on peut inscrire un enfant même si l'événement est complet
+  can_register_child_when_full = @initiation.full? && user_signed_in? && @can_register_child && 
+    current_user.memberships.where(is_child_membership: true)
+      .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+      .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
+%>
+<% if show_register_button || can_register_child_when_full %>
   <div class="modal fade" id="confirmAttendModalShowInitiation" tabindex="-1" aria-labelledby="confirmAttendModalShowInitiationLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">

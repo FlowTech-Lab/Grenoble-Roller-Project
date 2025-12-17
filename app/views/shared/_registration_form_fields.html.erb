@@ -27,13 +27,17 @@
     child_attendances = local_assigns[:child_attendances] || []
   end
   
-  # Filtrer uniquement les enfants avec des adhésions actives ou trial et non déjà inscrits
+  # Filtrer les enfants disponibles selon le type d'événement
   if user_signed_in?
-    # Inclure les adhésions actives, les essais gratuits (trial) ET les adhésions en attente (pending)
-    # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
-    # Note: status est un enum (entier), utiliser les valeurs numériques : active=1, trial=3, pending=0
-    child_memberships = current_user.memberships.where(is_child_membership: true)
-      .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+    if is_initiation
+      # Pour les initiations : inclure active, trial (essai gratuit) et pending (en attente)
+      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
+      child_memberships = current_user.memberships.where(is_child_membership: true)
+        .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+    else
+      # Pour les événements normaux (randos) : seulement les adhésions actives
+      child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+    end
   else
     child_memberships = []
   end
