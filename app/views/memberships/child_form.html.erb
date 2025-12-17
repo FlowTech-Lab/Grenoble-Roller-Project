@@ -295,17 +295,11 @@
                   <%= f.submit "Ajouter l'enfant",
                       class: "btn btn-liquid-primary btn-lg btn-nav",
                       id: "submit_btn",
-                      data: { payment_method: "helloasso" } %>
+                      data: { payment_method: "trial" } %>
                   <%= f.submit "Déjà adhérent / Espèces / Chèques",
                       class: "btn btn-outline-primary btn-lg btn-nav",
                       id: "submit_without_payment_btn",
                       data: { payment_method: "cash_check", confirm_message: "true" } %>
-                  <%= f.submit "Essai gratuit (sans paiement)",
-                      class: "btn btn-outline-success btn-lg btn-nav",
-                      id: "submit_trial_btn",
-                      name: "create_trial",
-                      value: "1",
-                      data: { payment_method: "trial" } %>
                 </div>
               </div>
             </div>
