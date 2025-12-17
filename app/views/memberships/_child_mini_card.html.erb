@@ -1,6 +1,13 @@
 <% 
   age = membership.child_age
-  status_class = membership.pending? ? 'pending' : (membership.active? ? 'active' : 'expired')
+  # Déterminer le statut d'affichage : pending/trial > active > expired
+  status_class = if membership.pending? || membership.trial?
+    'pending'
+  elsif membership.active?
+    'active'
+  else
+    'expired'
+  end
 %>
 
 <div class="child-mini-card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
@@ -33,7 +40,11 @@
         <% if status_class == 'active' %>
           ✓ Active
         <% elsif status_class == 'pending' %>
-          ⏳ Pending
+          <% if membership.trial? %>
+            🎁 Essai gratuit
+          <% else %>
+            ⏳ Pending
+          <% end %>
         <% else %>
           ✗ Expirée
         <% end %>

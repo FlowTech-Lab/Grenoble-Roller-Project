@@ -926,15 +926,21 @@ class MembershipsController < ApplicationController
     # Vérifier si c'est un essai gratuit (statut trial)
     create_trial = params[:create_trial] == "1" || child_params[:create_trial] == "1"
     
-    # Pour les essais gratuits, pas besoin de dates ni montants
+    # Toujours calculer les dates de saison (même pour les essais gratuits, car la DB exige end_date NOT NULL)
+    start_date, end_date = Membership.current_season_dates
+    
+    # S'assurer que les dates sont valides (protection contre les valeurs nil)
+    unless start_date.present? && end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur dans create_child_membership_from_params: start_date ou end_date est nil. start_date=#{start_date.inspect}, end_date=#{end_date.inspect}")
+      return Membership.new.tap { |m| m.errors.add(:base, "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support.") }
+    end
+    
+    # Pour les essais gratuits, montant à 0 mais dates toujours définies
     if create_trial
-      start_date = nil
-      end_date = nil
       amount_cents = 0
       current_season = Membership.current_season_name
       membership_status = :trial
     else
-      start_date, end_date = Membership.current_season_dates
       amount_cents = Membership.price_for_category(category)
       current_season = Membership.current_season_name
       membership_status = :pending
@@ -1009,6 +1015,12 @@ class MembershipsController < ApplicationController
     (1..9).each do |i|
       answer = child_params["health_question_#{i}"]
       health_attrs["health_q#{i}"] = answer if answer.present?
+    end
+
+    # Double vérification : s'assurer que end_date est toujours défini (protection finale)
+    unless end_date.present?
+      Rails.logger.error("[MembershipsController] Erreur dans create_child_membership_from_params: end_date est nil juste avant la création. create_trial=#{create_trial.inspect}, membership_status=#{membership_status.inspect}")
+      return Membership.new.tap { |m| m.errors.add(:base, "Erreur lors du calcul de la date de fin de saison. Veuillez réessayer ou contacter le support.") }
     end
 
     # Créer l'adhésion enfant

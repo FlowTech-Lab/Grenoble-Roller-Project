@@ -126,7 +126,10 @@ class Membership < ApplicationRecord
   end
 
   # Vérifier si l'adhésion est expirée
+  # Note: Les adhésions pending ou trial ne sont jamais considérées comme expirées, même si end_date est dans le passé
   def expired?
+    return false if pending? || trial? # Les adhésions en attente ou en essai ne sont jamais expirées
+    return false unless end_date.present? # Pas de date = pas expirée
     end_date < Date.current
   end
 

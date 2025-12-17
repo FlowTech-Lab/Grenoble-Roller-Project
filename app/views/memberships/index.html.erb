@@ -2,8 +2,8 @@
   # Calculs pour les stats
   personal_memberships = @memberships.select { |m| !m.is_child_membership? }
   children_memberships = @memberships.select { |m| m.is_child_membership? }
-  children_pending = children_memberships.select { |m| m.pending? }
-  children_paid = children_memberships.select { |m| !m.pending? }
+  children_pending = children_memberships.select { |m| m.pending? || m.trial? }
+  children_paid = children_memberships.select { |m| !m.pending? && !m.trial? }
   active_memberships = @memberships.select { |m| m.active? }
   pending_memberships = @memberships.select { |m| m.pending? }
   expired_memberships = @memberships.select { |m| m.expired? }
