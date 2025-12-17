@@ -42,10 +42,11 @@ module Events
       attendance.child_membership_id = child_membership_id
 
       # Pour les événements : pas d'adhésion requise pour le parent
-      # Pour un enfant : vérifier que l'adhésion enfant est active (nécessaire pour identifier l'enfant)
+      # Pour un enfant : vérifier que l'adhésion enfant est active, trial ou pending
+      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
       if child_membership_id.present?
         child_membership = current_user.memberships.find_by(id: child_membership_id)
-        unless child_membership&.active?
+        unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           redirect_to @event, alert: "L'adhésion de cet enfant n'est pas active."
           return
         end

@@ -184,9 +184,10 @@ class Attendance < ApplicationRecord
         end
       end
     else
-      # Si c'est pour un enfant, vérifier que l'adhésion enfant est active ou trial
+      # Si c'est pour un enfant, vérifier que l'adhésion enfant est active, trial ou pending
+      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
       if for_child?
-        unless child_membership&.active? || child_membership&.trial?
+        unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
         end
       elsif !event.allow_non_member_discovery?
