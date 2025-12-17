@@ -258,7 +258,10 @@
       <% 
         # Calculer si on peut vraiment s'inscrire (adulte ou enfant disponible)
         can_register_adult = @can_register && !@user_attendance&.persisted?
-        can_register_any_child = @can_register_child && current_user.memberships.active_now.where(is_child_membership: true).where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
+        # Pour les initiations, inclure aussi trial (essai gratuit) et pending (en attente)
+        can_register_any_child = @can_register_child && current_user.memberships.where(is_child_membership: true)
+          .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+          .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
         show_register_button = (can_register_adult || can_register_any_child) && !@initiation.full?
       %>
       <% if show_register_button %>

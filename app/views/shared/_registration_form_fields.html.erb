@@ -152,9 +152,17 @@
     <small class="text-muted">
       <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
       <% if user_already_registered %>
-        Seuls les enfants avec une adhésion active ou un essai gratuit et non déjà inscrits sont affichés.
+        <% if is_initiation %>
+          Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente, et non déjà inscrits sont affichés.
+        <% else %>
+          Seuls les enfants avec une adhésion active et non déjà inscrits sont affichés.
+        <% end %>
       <% else %>
-        Seuls les enfants avec une adhésion active ou un essai gratuit sont affichés. Laissez vide pour vous inscrire vous-même.
+        <% if is_initiation %>
+          Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente sont affichés. Laissez vide pour vous inscrire vous-même.
+        <% else %>
+          Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
+        <% end %>
       <% end %>
     </small>
   </div>
