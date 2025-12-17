@@ -10,10 +10,10 @@
 
 | US | Fonctionnalité | Décision | Guide | Temps |
 |----|----------------|----------|-------|-------|
-| **US-001** | Sidebar collapsible | **Offcanvas Hybrid (Bootstrap 5)** | [sidebar_guide_bootstrap5.md](descisions/sidebar_guide_bootstrap5.md) | 2-3j |
-| **US-002** | Menu hiérarchique | Bootstrap collapse | [sidebar_guide_bootstrap5.md](descisions/sidebar_guide_bootstrap5.md) | 2j (inclus US-001) |
-| **US-003** | Responsive sidebar | Inclus dans US-001 | [sidebar_guide_bootstrap5.md](descisions/sidebar_guide_bootstrap5.md) | Intégré |
-| **US-004** | Recherche globale (Cmd+K) | **Hybride (client + serveur)** | [palette-cmdk-rails.md](descisions/palette-cmdk-rails.md) | 3-4j |
+| **US-001** | Sidebar collapsible | **Offcanvas Hybrid (Bootstrap 5)** | [sidebar_guide_bootstrap5.md](ressources/decisions/sidebar_guide_bootstrap5.md) | 2-3j |
+| **US-002** | Menu hiérarchique | Bootstrap collapse | [sidebar_guide_bootstrap5.md](ressources/decisions/sidebar_guide_bootstrap5.md) | 2j (inclus US-001) |
+| **US-003** | Responsive sidebar | Inclus dans US-001 | [sidebar_guide_bootstrap5.md](ressources/decisions/sidebar_guide_bootstrap5.md) | Intégré |
+| **US-004** | Recherche globale (Cmd+K) | **Hybride (client + serveur)** | [palette-cmdk-rails.md](ressources/decisions/palette-cmdk-rails.md) | 3-4j |
 | **US-005** | Breadcrumb | Bootstrap breadcrumb | Standard Bootstrap | 1j |
 | **US-006** | Raccourcis clavier | Stimulus controller global | Standard | 2j |
 
@@ -21,11 +21,11 @@
 
 | US | Fonctionnalité | Décision | Guide | Temps |
 |----|----------------|----------|-------|-------|
-| **US-007** | Drag-drop colonnes | **SortableJS + Stimulus** ⭐ | [column_reordering_solution.md](descisions/column_reordering_solution.md) | 4h |
+| **US-007** | Drag-drop colonnes | **SortableJS + Stimulus** ⭐ | [column_reordering_solution.md](ressources/decisions/column_reordering_solution.md) | 4h |
 | **US-008** | Batch actions | Bootstrap form-check + Stimulus | Standard | 3j |
 | **US-009** | Tri et filtres | Bootstrap tables + Stimulus | Standard | 4-5j |
 | **US-010** | Boutons dynamiques | Hardcodé d'abord, DB ensuite | Standard | 5-6j |
-| **US-011** | Dashboard widgets | **SortableJS + JSONB (MVP progressif)** | [dashboard-widgets.md](descisions/dashboard-widgets.md) | 5-7j (MVP 2-3j) |
+| **US-011** | Dashboard widgets | **SortableJS + JSONB (MVP progressif)** | [dashboard-widgets.md](ressources/decisions/dashboard-widgets.md) | 5-7j (MVP 2-3j) |
 | **US-012** | Statistiques dashboard | Bootstrap cards | Standard | 2-3j |
 
 ### Sprint 5-6 : Formulaires & Features Avancées
@@ -34,9 +34,9 @@
 |----|----------------|----------|-------|-------|
 | **US-013** | Formulaires avec tabs | Bootstrap nav-tabs | Standard | 2-3j |
 | **US-014** | Panels associés | Bootstrap cards | Standard | 2j |
-| **US-015** | Validation inline | **Validation hybride (Stimulus + Rails)** ⭐ | [form-validation-guide.md](descisions/form-validation-guide.md) | 3j |
+| **US-015** | Validation inline | **Validation hybride (Stimulus + Rails)** ⭐ | [form-validation-guide.md](ressources/decisions/form-validation-guide.md) | 3j |
 | **US-016** | Présences initiations | Réutiliser existant, améliorer UX | Standard | 4-5j |
-| **US-017** | Dark mode | ✅ **DÉJÀ IMPLÉMENTÉ** | [reutilisation-dark-mode.md](reutilisation-dark-mode.md) | 0j |
+| **US-017** | Dark mode | ✅ **DÉJÀ IMPLÉMENTÉ** | [reutilisation-dark-mode.md](ressources/references/reutilisation-dark-mode.md) | 0j |
 | **US-018** | Accessibilité | Itératif (continu) | Standard | Continu |
 
 ---
@@ -78,7 +78,7 @@
 
 ### Classes CSS à Réutiliser
 
-Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complète :
+Voir [ressources/references/reference-css-classes.md](ressources/references/reference-css-classes.md) pour la liste complète :
 
 - **Cards** : `card`, `card-liquid`, `card-body`, etc.
 - **Buttons** : `btn-liquid-primary`, `btn-outline-primary`, etc.
@@ -98,7 +98,7 @@ Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complèt
 - **Desktop** : Sidebar fixe collapsible (280px / 64px)
 - **Mobile** : Bootstrap offcanvas
 - **Stimulus** : Controller pour persistence localStorage
-- **Guide** : [sidebar_guide_bootstrap5.md](descisions/sidebar_guide_bootstrap5.md)
+- **Guide** : [ressources/decisions/sidebar_guide_bootstrap5.md](ressources/decisions/sidebar_guide_bootstrap5.md)
 
 ### 2. Recherche Globale (US-004)
 
@@ -108,7 +108,7 @@ Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complèt
 - **Serveur** : Fallback AJAX si cache invalide
 - **Stimulus** : `search_palette_controller.js`
 - **Rails** : `Admin::SearchController`
-- **Guide** : [palette-cmdk-rails.md](descisions/palette-cmdk-rails.md)
+- **Guide** : [ressources/decisions/palette-cmdk-rails.md](ressources/decisions/palette-cmdk-rails.md)
 
 ### 3. Drag-Drop Colonnes (US-007)
 
@@ -117,7 +117,7 @@ Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complèt
 - **Package** : `@stimulus-components/sortable`
 - **Avantages** : Production-ready, WCAG AA, code minimal
 - **Temps** : 4 heures seulement
-- **Guide** : [column_reordering_solution.md](descisions/column_reordering_solution.md)
+- **Guide** : [ressources/decisions/column_reordering_solution.md](ressources/decisions/column_reordering_solution.md)
 
 ### 4. Dashboard Widgets (US-011)
 
@@ -126,7 +126,7 @@ Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complèt
 - **Phase 1** : Ordre fixe (2-3j) - Dashboard utilisable
 - **Phase 2** : Drag-drop (3-4j) - Ajout interactivité
 - **DB** : `users.widget_positions` (JSONB)
-- **Guide** : [dashboard-widgets.md](descisions/dashboard-widgets.md)
+- **Guide** : [ressources/decisions/dashboard-widgets.md](ressources/decisions/dashboard-widgets.md)
 
 ### 5. Validation Formulaires (US-015)
 
@@ -135,7 +135,7 @@ Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complèt
 - **Client** : Stimulus sur `blur` + `input`
 - **Serveur** : Rails validations (source de vérité)
 - **Bootstrap** : `is-invalid`, `invalid-feedback`
-- **Guide** : [form-validation-guide.md](descisions/form-validation-guide.md)
+- **Guide** : [ressources/decisions/form-validation-guide.md](ressources/decisions/form-validation-guide.md)
 
 ---
 
@@ -157,29 +157,32 @@ Voir [reference-css-classes.md](reference-css-classes.md) pour la liste complèt
 
 ## 📚 Références Rapides
 
+👉 **Voir aussi** : [ressources/RESSOURCES.md](ressources/RESSOURCES.md) - Index complet de toutes les ressources organisées
+
 ### Guides de Décision (Perplexity)
-- [sidebar_guide_bootstrap5.md](descisions/sidebar_guide_bootstrap5.md) - Sidebar
-- [palette-cmdk-rails.md](descisions/palette-cmdk-rails.md) - Recherche
-- [column_reordering_solution.md](descisions/column_reordering_solution.md) - Drag-drop colonnes
-- [dashboard-widgets.md](descisions/dashboard-widgets.md) - Dashboard
-- [form-validation-guide.md](descisions/form-validation-guide.md) - Validation
-- [darkmode-rails.md](descisions/darkmode-rails.md) - Dark mode (déjà fait)
+- [ressources/decisions/sidebar_guide_bootstrap5.md](ressources/decisions/sidebar_guide_bootstrap5.md) - Sidebar
+- [ressources/decisions/palette-cmdk-rails.md](ressources/decisions/palette-cmdk-rails.md) - Recherche
+- [ressources/decisions/column_reordering_solution.md](ressources/decisions/column_reordering_solution.md) - Drag-drop colonnes
+- [ressources/decisions/dashboard-widgets.md](ressources/decisions/dashboard-widgets.md) - Dashboard
+- [ressources/decisions/form-validation-guide.md](ressources/decisions/form-validation-guide.md) - Validation
+- [ressources/decisions/darkmode-rails.md](ressources/decisions/darkmode-rails.md) - Dark mode (déjà fait)
 
 ### Documentation
 - [START_HERE.md](START_HERE.md) - Guide de démarrage
-- [reference-css-classes.md](reference-css-classes.md) - Classes CSS
-- [reutilisation-dark-mode.md](reutilisation-dark-mode.md) - Dark mode
-- [plan-implementation.md](plan-implementation.md) - Plan complet
+- [ressources/references/reference-css-classes.md](ressources/references/reference-css-classes.md) - Classes CSS
+- [ressources/references/reutilisation-dark-mode.md](ressources/references/reutilisation-dark-mode.md) - Dark mode
+- [ressources/planning/plan-implementation.md](ressources/planning/plan-implementation.md) - Plan complet
 
 ---
 
 ## 📚 Navigation Documentation
 
+- **[ressources/RESSOURCES.md](ressources/RESSOURCES.md)** ⭐ - Index complet de toutes les ressources organisées
 - **[START_HERE.md](START_HERE.md)** - Guide de démarrage complet
 - **[INDEX.md](INDEX.md)** - Index de toute la documentation
-- **[plan-implementation.md](plan-implementation.md)** - Plan complet avec détails
+- **[ressources/planning/plan-implementation.md](ressources/planning/plan-implementation.md)** - Plan complet avec détails
 
 ---
 
 **Dernière mise à jour** : 2025-01-27  
-**Version** : 1.0
+**Version** : 2.0 (Organisation restructurée avec dossier ressources/)
