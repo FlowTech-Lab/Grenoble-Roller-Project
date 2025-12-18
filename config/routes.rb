@@ -83,6 +83,8 @@ Rails.application.routes.draw do
     member do
       # Convertir essai gratuit en adhésion payante
       patch :upgrade
+      # Renouveler une adhésion expirée (enfant uniquement)
+      post :renew
     end
     collection do
       # Paiement groupé pour plusieurs enfants en attente

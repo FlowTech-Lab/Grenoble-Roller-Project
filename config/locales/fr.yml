@@ -72,6 +72,7 @@ fr:
         child_last_name: "Nom de l'enfant"
         child_date_of_birth: "Date de naissance"
         medical_certificate: "Certificat médical"
+        parent_authorization: "Autorisation parentale"
     errors:
       models:
         user:
@@ -96,6 +97,8 @@ fr:
               blank: "doit être renseigné"
             medical_certificate:
               blank: "doit être renseigné"
+            parent_authorization:
+              inclusion: "doit être acceptée"
       messages:
         record_invalid: "La validation a échoué : %{errors}"
         blank: "doit être renseigné"

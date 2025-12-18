@@ -44,6 +44,7 @@
         <div class="card-body p-4">
               <%= form_with model: @membership || Membership.new, url: memberships_path, method: :post, local: true, data: { turbo: false }, id: "child_membership_form", multipart: true do |f| %>
                 <%= hidden_field_tag :payment_method, "helloasso", id: "payment_method_field" %>
+                <%= hidden_field_tag :renew_from, @old_membership&.id if @old_membership %>
             <%= f.hidden_field :is_child_membership, value: true %>
 
             <!-- ÉTAPE 1 : CATÉGORIE -->
@@ -283,14 +284,16 @@
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
               <div class="d-flex flex-column gap-3">
-                <!-- Essai gratuit toujours inclus -->
-                <div class="d-flex align-items-center gap-2 py-2 px-3 rounded" style="background-color: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.2);">
-                  <i class="bi bi-gift-fill text-primary" style="font-size: 1.5rem;"></i>
-                  <div class="flex-grow-1">
-                    <strong class="text-primary d-block" style="font-size: 0.95rem;">Votre enfant a droit à un essai gratuit</strong>
-                    <small class="text-muted" style="font-size: 0.85rem;">Il pourra s'inscrire à une initiation sans adhésion payée</small>
+                <!-- Essai gratuit (uniquement si l'enfant ne l'a pas déjà utilisé) -->
+                <% unless @child_has_used_trial %>
+                  <div class="d-flex align-items-center gap-2 py-2 px-3 rounded" style="background-color: rgba(13, 110, 253, 0.08); border: 1px solid rgba(13, 110, 253, 0.2);">
+                    <i class="bi bi-gift-fill text-primary" style="font-size: 1.5rem;"></i>
+                    <div class="flex-grow-1">
+                      <strong class="text-primary d-block" style="font-size: 0.95rem;">Votre enfant a droit à un essai gratuit</strong>
+                      <small class="text-muted" style="font-size: 0.85rem;">Il pourra s'inscrire à une initiation sans adhésion payée</small>
+                    </div>
                   </div>
-                </div>
+                <% end %>
                 <div class="d-flex flex-column flex-sm-row gap-2">
                   <%= f.submit "Ajouter l'enfant",
                       class: "btn btn-liquid-primary btn-lg btn-nav",

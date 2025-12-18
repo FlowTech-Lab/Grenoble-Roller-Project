@@ -1,7 +1,7 @@
 class MembershipsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_email_confirmed, only: [ :create ]
-  before_action :set_membership, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_membership, only: [ :show, :edit, :update, :destroy, :upgrade, :renew ]
 
   def index
     @memberships = current_user.memberships.includes(:payment, :tshirt_variant).order(created_at: :desc)
@@ -141,6 +141,40 @@ class MembershipsController < ApplicationController
           price_cents: 5655
         }
       }
+      @user = current_user
+      
+      # Vérifier si l'enfant a déjà utilisé son essai gratuit (pour le renouvellement ou si l'enfant existe déjà)
+      @child_has_used_trial = false
+      if @old_membership
+        # Vérifier si cet enfant a une adhésion trial qui a été utilisée pour une inscription
+        trial_membership = current_user.memberships.children
+          .where(child_first_name: @old_membership.child_first_name,
+                 child_last_name: @old_membership.child_last_name,
+                 child_date_of_birth: @old_membership.child_date_of_birth,
+                 status: :trial)
+          .first
+        if trial_membership
+          @child_has_used_trial = current_user.attendances.where(
+            child_membership_id: trial_membership.id,
+            free_trial_used: true
+          ).exists?
+        end
+      elsif @membership&.child_first_name.present? && @membership&.child_last_name.present? && @membership&.child_date_of_birth.present?
+        # Pour un enfant pré-rempli, vérifier s'il existe déjà une adhésion trial utilisée
+        existing_trial_membership = current_user.memberships.children
+          .where(child_first_name: @membership.child_first_name,
+                 child_last_name: @membership.child_last_name,
+                 child_date_of_birth: @membership.child_date_of_birth,
+                 status: :trial)
+          .first
+        if existing_trial_membership
+          @child_has_used_trial = current_user.attendances.where(
+            child_membership_id: existing_trial_membership.id,
+            free_trial_used: true
+          ).exists?
+        end
+      end
+      
       render :child_form
     end
   end
@@ -197,6 +231,20 @@ class MembershipsController < ApplicationController
   end
 
   def create
+    # Renouvellement d'une adhésion enfant expirée (avec formulaire)
+    if params[:renew_from].present?
+      old_membership = current_user.memberships.find_by(id: params[:renew_from])
+      if old_membership && old_membership.is_child_membership? && old_membership.expired?
+        membership_params = params[:membership] || params
+        # Utiliser la catégorie du formulaire (peut être différente de l'ancienne)
+        renew_child_membership_from_form(old_membership, membership_params)
+        return
+      elsif old_membership && old_membership.is_child_membership? && !old_membership.expired?
+        redirect_to memberships_path, alert: "Cette adhésion n'est pas expirée."
+        return
+      end
+    end
+
     # Vérifier si c'est un essai gratuit (statut trial) - pas de paiement nécessaire
     if params[:create_trial] == "1"
       membership_params = params[:membership] || params
@@ -398,6 +446,13 @@ class MembershipsController < ApplicationController
 
     child_name = @membership.child_full_name
 
+    # Vérifier si l'adhésion est référencée par des participations (attendances)
+    if Attendance.where(child_membership_id: @membership.id).exists?
+      redirect_to membership_path(@membership), 
+        alert: "Cette adhésion ne peut pas être supprimée car #{child_name} a déjà participé à des événements ou initiations. Veuillez contacter le support si vous souhaitez la supprimer."
+      return
+    end
+
     # Supprimer le paiement associé s'il existe et n'est pas lié à d'autres adhésions
     if @membership.payment
       payment = @membership.payment
@@ -425,23 +480,35 @@ class MembershipsController < ApplicationController
       return
     end
 
-    # Définir les dates de saison et le montant
+    # Définir les dates de saison (le montant est déjà défini lors de la création avec la catégorie)
     start_date, end_date = Membership.current_season_dates
-    amount_cents = Membership.price_for_category(@membership.category)
 
-    # Mettre à jour l'adhésion : trial → pending avec dates et montant
+    # Mettre à jour l'adhésion : trial → pending (le montant est déjà correct)
     @membership.update!(
       status: :pending,
       start_date: start_date,
-      end_date: end_date,
-      amount_cents: amount_cents
+      end_date: end_date
+      # amount_cents n'est pas modifié car il était déjà défini à la création
     )
 
-    redirect_to membership_payments_path(@membership), notice: "L'essai gratuit de #{@membership.child_full_name} a été converti en adhésion. Vous pouvez maintenant procéder au paiement."
+    redirect_to membership_path(@membership), notice: "L'essai gratuit de #{@membership.child_full_name} a été converti en adhésion. Vous pouvez maintenant procéder au paiement."
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la conversion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
     redirect_to memberships_path, alert: "Erreur lors de la conversion : #{e.message}"
+  end
+
+  # Renouvellement d'une adhésion enfant expirée (avec formulaire pour choisir la catégorie)
+  def renew
+    old_membership = @membership
+    
+    unless old_membership.is_child_membership? && old_membership.expired?
+      redirect_to membership_path(old_membership), alert: "Cette adhésion ne peut pas être renouvelée."
+      return
+    end
+    
+    # Rediriger vers le formulaire de création avec renew_from
+    redirect_to new_membership_path(type: 'child', renew_from: old_membership.id)
   end
 
   private
@@ -848,6 +915,99 @@ class MembershipsController < ApplicationController
     redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
   end
 
+  # Renouvellement depuis le formulaire (avec catégorie choisie)
+  def renew_child_membership_from_form(old_membership, membership_params)
+    # Récupérer la catégorie depuis le formulaire (peut être différente de l'ancienne)
+    category = membership_params[:category]
+    
+    unless Membership.categories.key?(category)
+      redirect_to new_membership_path(type: 'child', renew_from: old_membership.id), alert: "Catégorie d'adhésion invalide."
+      return
+    end
+
+    # Vérifier l'âge de l'enfant
+    child_age = old_membership.child_age
+    
+    if child_age >= 18
+      redirect_to memberships_path, alert: "L'enfant a maintenant 18 ans ou plus, il doit adhérer avec son propre compte."
+      return
+    end
+
+    if child_age < 6
+      redirect_to memberships_path, alert: "L'adhésion n'est pas possible pour les enfants de moins de 6 ans."
+      return
+    end
+
+    current_season = Membership.current_season_name
+    start_date, end_date = Membership.current_season_dates
+    amount_cents = Membership.price_for_category(category)
+
+    # Vérifier qu'il n'y a pas déjà une adhésion pour cette saison
+    existing_membership = current_user.memberships.children
+      .where(season: current_season)
+      .find_by(child_first_name: old_membership.child_first_name, child_last_name: old_membership.child_last_name, child_date_of_birth: old_membership.child_date_of_birth)
+    
+    if existing_membership && (existing_membership.active? || existing_membership.pending? || existing_membership.trial?)
+      redirect_to membership_path(existing_membership), notice: "Une adhésion existe déjà pour #{old_membership.child_full_name} pour cette saison."
+      return
+    end
+
+    # Créer la nouvelle adhésion avec les mêmes informations (mais catégorie depuis le formulaire)
+    membership = Membership.create!(
+      user: current_user,
+      category: category,
+      status: :pending,
+      start_date: start_date,
+      end_date: end_date,
+      amount_cents: amount_cents,
+      currency: "EUR",
+      season: current_season,
+      is_child_membership: true,
+      child_first_name: old_membership.child_first_name,
+      child_last_name: old_membership.child_last_name,
+      child_date_of_birth: old_membership.child_date_of_birth,
+      is_minor: child_age < 18,
+      parent_authorization: child_age < 16,
+      parent_authorization_date: child_age < 16 ? Date.today : nil,
+      parent_name: "#{current_user.first_name} #{current_user.last_name}",
+      parent_email: current_user.email,
+      parent_phone: current_user.phone,
+      with_tshirt: false,
+      tshirt_qty: 0,
+      rgpd_consent: true,
+      legal_notices_accepted: true,
+      ffrs_data_sharing_consent: category == "with_ffrs",
+      health_questionnaire_status: "ok",
+      # Copier les réponses au questionnaire de santé de l'ancienne adhésion
+      health_q1: old_membership.health_q1,
+      health_q2: old_membership.health_q2,
+      health_q3: old_membership.health_q3,
+      health_q4: old_membership.health_q4,
+      health_q5: old_membership.health_q5,
+      health_q6: old_membership.health_q6,
+      health_q7: old_membership.health_q7,
+      health_q8: old_membership.health_q8,
+      health_q9: old_membership.health_q9
+    )
+
+    # Copier le certificat médical si présent
+    if old_membership.medical_certificate.attached?
+      old_membership.medical_certificate.open do |file|
+        membership.medical_certificate.attach(
+          io: file,
+          filename: old_membership.medical_certificate.filename.to_s,
+          content_type: old_membership.medical_certificate.content_type
+        )
+      end
+    end
+
+    redirect_to membership_path(membership), notice: "L'adhésion de #{membership.child_full_name} a été renouvelée avec succès. Vous pouvez maintenant procéder au paiement."
+  rescue => e
+    Rails.logger.error("[MembershipsController] Erreur lors du renouvellement : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to new_membership_path(type: 'child', renew_from: old_membership.id), alert: "Erreur lors du renouvellement : #{e.message}"
+  end
+
   def create_child_membership_single
     # Création d'un enfant unique - redirection vers /memberships pour afficher l'enfant créé
     membership_params = params[:membership] || params
@@ -935,14 +1095,14 @@ class MembershipsController < ApplicationController
       return Membership.new.tap { |m| m.errors.add(:base, "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support.") }
     end
     
-    # Pour les essais gratuits, montant à 0 mais dates toujours définies
+    # Pour les essais gratuits, on stocke le montant correspondant à la catégorie choisie
+    # (même si le paiement n'est pas encore effectué, l'essai gratuit permet juste de s'inscrire aux initiations)
+    amount_cents = Membership.price_for_category(category)
+    current_season = Membership.current_season_name
+    
     if create_trial
-      amount_cents = 0
-      current_season = Membership.current_season_name
       membership_status = :trial
     else
-      amount_cents = Membership.price_for_category(category)
-      current_season = Membership.current_season_name
       membership_status = :pending
     end
 
