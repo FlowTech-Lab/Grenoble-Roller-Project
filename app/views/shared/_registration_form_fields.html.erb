@@ -55,6 +55,18 @@
   # - OU il y a des enfants disponibles à inscrire (même si l'utilisateur est déjà inscrit)
   show_child_dropdown = !user_already_registered || child_memberships.any?
   dropdown_prompt = user_already_registered ? "Sélectionner un enfant" : "S'inscrire pour moi-même"
+  
+  # Calculer si on doit afficher l'essai gratuit pour les enfants (nécessaire pour le dropdown)
+  # Vérifier si on a des enfants avec statut trial disponibles qui n'ont pas encore utilisé leur essai
+  # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+  if is_initiation && user_signed_in?
+    trial_children_preview = child_memberships.select { |m| m.trial? }
+    show_free_trial_children = trial_children_preview.any? { |child| 
+      !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+    }
+  else
+    show_free_trial_children = false
+  end
 %>
 
 <% if show_alert %>
@@ -269,24 +281,26 @@
   
   # Pour le parent (sans enfant sélectionné)
   # Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active ET n'a pas déjà utilisé son essai
+  # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
   parent_can_use_trial = !current_user.memberships.active_now.exists? && 
-                         !current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+                         !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
   
   # NOUVELLE LOGIQUE : Si le parent n'a plus d'essai gratuit mais qu'un enfant en a un, on permet quand même
   # Et inversement : si aucun enfant n'a d'essai gratuit mais que le parent en a un, on permet aussi
   parent_has_trial = parent_can_use_trial
   any_child_has_trial = trial_children.any? { |child| 
-    !current_user.attendances.where(free_trial_used: true, child_membership_id: child.id).exists?
+    !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
   }
   
   # L'option sera affichée dynamiquement via JavaScript selon l'enfant sélectionné
   # On prépare les données pour JavaScript
+  # IMPORTANT : Utiliser .active pour exclure les attendances annulées
   trial_children_data = trial_children.map do |child|
     {
       id: child.id,
       name: "#{child.child_first_name} #{child.child_last_name}",
-      has_used_trial: current_user.attendances.where(free_trial_used: true, child_membership_id: child.id).exists?,
-      can_use_trial: !current_user.attendances.where(free_trial_used: true, child_membership_id: child.id).exists?
+      has_used_trial: current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
+      can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
     }
   end.to_json
   
@@ -295,7 +309,7 @@
   # - Un enfant peut l'utiliser, OU
   # - Le parent n'a plus d'essai mais un enfant en a un (et inversement)
   show_free_trial_parent = is_initiation && !user_already_registered && parent_has_trial
-  show_free_trial_children = is_initiation && any_child_has_trial
+  # show_free_trial_children est déjà défini plus haut (avant le dropdown)
   # Variable combinée : afficher si parent OU enfant peut utiliser (même si l'autre ne peut plus)
   show_free_trial = is_initiation && !user_already_registered && (parent_has_trial || any_child_has_trial)
 %>
@@ -357,7 +371,8 @@
             // L'enfant a déjà utilisé son essai MAIS le parent peut encore utiliser le sien
             freeTrialContainer.style.display = 'block';
             freeTrialText.textContent = 'Utiliser mon essai gratuit (parent)';
-            freeTrialHelpText.innerHTML = `<strong>Essai gratuit parent :</strong> ${selectedChild.name} a déjà utilisé son essai gratuit, mais vous pouvez utiliser le vôtre pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong>`;
+            const childNameEscaped1 = String(selectedChild.name || '').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            freeTrialHelpText.innerHTML = '<strong>Essai gratuit parent :</strong> ' + childNameEscaped1 + ' a déjà utilisé son essai gratuit, mais vous pouvez utiliser le vôtre pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong>';
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = true;
               document.getElementById('use_free_trial_hidden<%= prefix_id %>').value = '1';
@@ -365,8 +380,9 @@
           } else if (!selectedChild.has_used_trial) {
             // L'enfant peut utiliser son essai gratuit - OBLIGATOIRE pour les enfants non adhérents
             freeTrialContainer.style.display = 'block';
-            freeTrialText.textContent = `Utiliser l'essai gratuit de ${selectedChild.name}`;
-            freeTrialHelpText.innerHTML = `<strong>Essai gratuit pour ${selectedChild.name} :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.`;
+            const childNameEscaped2 = String(selectedChild.name || '').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped2;
+            freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped2 + ' :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
               freeTrialCheckbox.required = true; // Rendre obligatoire
@@ -385,12 +401,17 @@
             if (parentCanUseTrial) {
               // Le parent peut utiliser son essai gratuit
               freeTrialText.textContent = 'Utiliser mon essai gratuit';
-              freeTrialHelpText.innerHTML = '<% if is_initiation && event.allow_non_member_discovery? %>Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.<% else %>Vous n\'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.<% end %>';
+              <% if is_initiation && event.allow_non_member_discovery? %>
+                freeTrialHelpText.innerHTML = 'Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.';
+              <% else %>
+                freeTrialHelpText.innerHTML = 'Vous n\'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+              <% end %>
             } else if (anyChildCanUseTrial) {
               // Le parent n'a plus d'essai mais un enfant peut utiliser le sien
               const availableChild = trialChildrenData<%= prefix_id %>.find(c => c.can_use_trial);
-              freeTrialText.textContent = `Utiliser l'essai gratuit de ${availableChild.name}`;
-              freeTrialHelpText.innerHTML = `<strong>Essai gratuit enfant :</strong> Vous avez déjà utilisé votre essai gratuit, mais ${availableChild.name} peut utiliser le sien pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong>`;
+              const childNameEscaped3 = String(availableChild.name || '').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped3;
+              freeTrialHelpText.innerHTML = '<strong>Essai gratuit enfant :</strong> Vous avez déjà utilisé votre essai gratuit, mais ' + childNameEscaped3 + ' peut utiliser le sien pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong>';
             }
             if (freeTrialCheckbox) freeTrialCheckbox.checked = false;
           } else {
@@ -543,7 +564,8 @@
           if (selectedChild && !selectedChild.has_used_trial) {
             if (!freeTrialCheckbox || !freeTrialCheckbox.checked) {
               e.preventDefault();
-              alert(`L'essai gratuit est obligatoire pour ${selectedChild.name}. Veuillez cocher la case "Utiliser l'essai gratuit" pour confirmer l'inscription.`);
+              const childNameEscapedAlert = String(selectedChild.name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+              alert('L\'essai gratuit est obligatoire pour ' + childNameEscapedAlert + '. Veuillez cocher la case "Utiliser l\'essai gratuit" pour confirmer l\'inscription.');
               if (freeTrialCheckbox) {
                 freeTrialCheckbox.focus();
                 freeTrialCheckbox.checked = true; // Cocher automatiquement

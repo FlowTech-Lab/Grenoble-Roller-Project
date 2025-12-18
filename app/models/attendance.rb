@@ -132,14 +132,15 @@ class Attendance < ApplicationRecord
     return unless user
 
     # Distinguer parent vs enfant : vérifier essai gratuit par child_membership_id si présent
+    # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
     if child_membership_id.present?
-      # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit
-      if user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+      # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit (attendance active uniquement)
+      if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
         errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit")
       end
     else
-      # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id)
-      if user.attendances.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
+      # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id, attendance active uniquement)
+      if user.attendances.active.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
         errors.add(:free_trial_used, "Vous avez déjà utilisé votre essai gratuit")
       end
     end
@@ -177,14 +178,15 @@ class Attendance < ApplicationRecord
     # Vérifier adhésion ou essai gratuit
     if free_trial_used
       # Essai utilisé → vérifier qu'il n'a pas déjà été utilisé ailleurs (distinguer parent vs enfant)
+      # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
       if child_membership_id.present?
-        # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit
-        if user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+        # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit (attendance active uniquement)
+        if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
           errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit")
         end
       else
-        # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id)
-        if user.attendances.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
+        # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id, attendance active uniquement)
+        if user.attendances.active.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
           errors.add(:free_trial_used, "Vous avez déjà utilisé votre essai gratuit")
         end
       end
@@ -204,8 +206,9 @@ class Attendance < ApplicationRecord
             errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
           end
           
-          # Vérifier que cet enfant n'a pas déjà utilisé son essai gratuit
-          if user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+          # Vérifier que cet enfant n'a pas déjà utilisé son essai gratuit (attendance active uniquement)
+          # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+          if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
             errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise.")
           end
         end

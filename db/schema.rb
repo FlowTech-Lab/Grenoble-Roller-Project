@@ -75,9 +75,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
+    t.index ["user_id", "child_membership_id"], name: "index_attendances_unique_free_trial_child_active", unique: true, where: "((free_trial_used = true) AND ((status)::text <> 'canceled'::text) AND (child_membership_id IS NOT NULL))"
     t.index ["user_id", "event_id", "child_membership_id", "is_volunteer"], name: "index_attendances_on_user_event_child_volunteer", unique: true
     t.index ["user_id", "free_trial_used"], name: "index_attendances_on_user_id_and_free_trial_used"
     t.index ["user_id"], name: "index_attendances_on_user_id"
+    t.index ["user_id"], name: "index_attendances_unique_free_trial_parent_active", unique: true, where: "((free_trial_used = true) AND ((status)::text <> 'canceled'::text) AND (child_membership_id IS NULL))"
     t.index ["wants_reminder"], name: "index_attendances_on_wants_reminder"
   end
 

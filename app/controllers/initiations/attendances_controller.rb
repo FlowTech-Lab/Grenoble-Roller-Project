@@ -46,6 +46,7 @@ module Initiations
       Rails.logger.info("Tentative d'inscription - User: #{current_user.id}, Initiation: #{@initiation.id}, Child: #{child_membership_id}, Volunteer: #{is_volunteer}")
       Rails.logger.info("Params use_free_trial: #{params[:use_free_trial].inspect}, tous les params: #{params.inspect}")
 
+      # Construction de l'attendance (hors transaction pour permettre les redirections)
       attendance = @initiation.attendances.build(user: current_user)
       attendance.status = "registered"
       # Lire les paramètres directement au niveau racine (comme EventsController)
@@ -96,8 +97,9 @@ module Initiations
       # SÉCURITÉ CRITIQUE : Gestion essai gratuit pour les enfants avec statut trial uniquement
       # Un enfant non adhérent (statut trial) DOIT utiliser son essai gratuit et ne peut l'utiliser qu'UNE SEULE FOIS
       if child_membership_id.present? && child_membership&.trial? && !is_member
-        # Vérifier d'abord si cet enfant a déjà utilisé son essai gratuit
-        if current_user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+        # Vérifier d'abord si cet enfant a déjà utilisé son essai gratuit (attendance active uniquement)
+        # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+        if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
           redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise."
           return
         end
@@ -130,8 +132,9 @@ module Initiations
           # Les non-adhérents peuvent s'inscrire dans les places découverte (pas besoin d'essai gratuit)
           # L'essai gratuit n'est utilisé que si explicitement demandé
           if params[:use_free_trial] == "1"
-            # Vérifier essai gratuit parent (sans child_membership_id)
-            if current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+            # Vérifier essai gratuit parent (sans child_membership_id, attendance active uniquement)
+            # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+            if current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
               redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
               return
             end
@@ -141,8 +144,9 @@ module Initiations
           # Option non activée : comportement classique - adhésion ou essai gratuit requis
           use_free_trial = params[:use_free_trial].present? && (params[:use_free_trial] == "1" || params[:use_free_trial] == true)
           if use_free_trial
-            # Vérifier essai gratuit parent (sans child_membership_id)
-            if current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+            # Vérifier essai gratuit parent (sans child_membership_id, attendance active uniquement)
+            # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+            if current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
               redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
               return
             end
@@ -154,6 +158,7 @@ module Initiations
         end
       end
 
+      # Protection contre race condition : transaction avec lock pessimiste lors du save
       if attendance.save
         Rails.logger.info("Inscription réussie - Attendance: #{attendance.id}, User: #{current_user.id}, Initiation: #{@initiation.id}, Type: #{attendance.for_child? ? 'Enfant' : (attendance.is_volunteer ? 'Bénévole' : 'Participant')}")
         # Email de confirmation : vérifier wants_initiation_mail pour les initiations

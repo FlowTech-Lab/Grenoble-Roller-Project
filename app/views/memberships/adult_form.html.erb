@@ -816,23 +816,24 @@
       if (checkbox) {
         checkbox.addEventListener('change', function() {
           checkAllConsents();
-    validateForm();
-    
+          validateForm();
+        });
+      }
+    });
+
     // S'assurer que tous les champs pré-remplis sont validés après un court délai
     // (pour laisser le temps aux scripts de formatage comme phone-mask de s'exécuter)
     setTimeout(function() {
       const form = document.getElementById('adult_membership_form');
       if (form) {
+        validateForm();
       }
-      validateForm();
     }, 100);
   }
 
   // Initialisation : support à la fois du chargement normal et Turbo
   function setupAdultForm() {
     initializeAdultForm();
-      }
-    });
 
     // Écouter changements champs
     const form = document.getElementById('adult_membership_form');

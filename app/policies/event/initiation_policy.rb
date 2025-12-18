@@ -101,10 +101,10 @@ class Event::InitiationPolicy < ApplicationPolicy
       true
     elsif child_membership_id.present?
       # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit
-      !user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+      !user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
     else
       # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id)
-      !user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+      !user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
     end
   end
 
