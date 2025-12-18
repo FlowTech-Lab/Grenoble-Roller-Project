@@ -7,6 +7,7 @@ RSpec.describe EventPolicy do
 
   let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
   let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:owner) { create_user(role: organizer_role) }
   let(:event) { create(:event, creator_user: owner) }
   let(:user) { owner }
@@ -88,26 +89,33 @@ RSpec.describe EventPolicy do
 
   describe '#attend?' do
     it 'allows any signed-in user when event has available spots' do
-      member = create_user
+      member = create_user(role: user_role)
+      create(:membership, user: member, status: :active, season: '2025-2026')
       event = build_event(status: 'published', max_participants: 10)
       event.save!
       expect(described_class.new(member, event).attend?).to be(true)
     end
 
     it 'allows any signed-in user when event is unlimited' do
-      member = create_user
+      member = create_user(role: user_role)
+      create(:membership, user: member, status: :active, season: '2025-2026')
       event = build_event(status: 'published', max_participants: 0)
       event.save!
       expect(described_class.new(member, event).attend?).to be(true)
     end
 
     it 'denies when event is full' do
-      member = create_user
+      member = create_user(role: user_role)
+      create(:membership, user: member, status: :active, season: '2025-2026')
       event = build_event(status: 'published', max_participants: 2)
       event.save!
       # Fill the event
-      create(:attendance, event: event, user: create_user, status: 'registered')
-      create(:attendance, event: event, user: create_user, status: 'registered')
+      user1 = create_user(role: user_role)
+      user2 = create_user(role: user_role)
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      create(:attendance, event: event, user: user1, status: 'registered')
+      create(:attendance, event: event, user: user2, status: 'registered')
       event.reload
       expect(described_class.new(member, event).attend?).to be(false)
     end
@@ -118,7 +126,8 @@ RSpec.describe EventPolicy do
   end
 
   describe '#can_attend?' do
-    let(:member) { create_user }
+    let(:member) { create_user(role: user_role) }
+    let!(:member_membership) { create(:membership, user: member, status: :active, season: '2025-2026') }
     let(:event) do
       e = build_event(status: 'published', max_participants: 10)
       e.save!
@@ -138,14 +147,17 @@ RSpec.describe EventPolicy do
     it 'returns false when event is full' do
       full_event = build_event(status: 'published', max_participants: 1)
       full_event.save!
-      create(:attendance, event: full_event, user: create_user, status: 'registered')
+      user = create_user(role: user_role)
+      create(:membership, user: user, status: :active, season: '2025-2026')
+      create(:attendance, event: full_event, user: user, status: 'registered')
       full_event.reload
       expect(described_class.new(member, full_event).can_attend?).to be(false)
     end
   end
 
   describe '#user_has_attendance?' do
-    let(:member) { create_user }
+    let(:member) { create_user(role: user_role) }
+    let!(:member_membership) { create(:membership, user: member, status: :active, season: '2025-2026') }
     let(:event) do
       e = build_event(status: 'published')
       e.save!

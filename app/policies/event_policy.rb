@@ -39,17 +39,12 @@ class EventPolicy < ApplicationPolicy
     return false unless user.present?
     return false if record.full?
 
-    # Pour les événements normaux (randos), vérifier l'adhésion
+    # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
     # Les initiations ont leur propre politique (Event::InitiationPolicy)
     return true if record.is_a?(Event::Initiation)
 
-    # Pour les événements normaux : vérifier adhésion active (parent OU enfant)
-    # ou essai gratuit disponible
-    has_active_membership = user.memberships.active_now.exists?
-    has_child_membership = user.memberships.active_now.where(is_child_membership: true).exists?
-    has_free_trial = !user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
-
-    has_active_membership || has_child_membership || has_free_trial
+    # Pour les événements normaux : ouvert à tous les utilisateurs connectés
+    true
   end
 
   def cancel_attendance?

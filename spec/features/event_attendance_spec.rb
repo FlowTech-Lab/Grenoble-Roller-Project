@@ -83,6 +83,8 @@ RSpec.describe 'Event Attendance', type: :system do
       end
 
       it 'affiche le bouton "Se désinscrire" après inscription' do
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: member, status: :active, season: '2025-2026')
         create(:attendance, user: member, event: event, status: 'registered')
         event.reload
         visit event_path(event)
@@ -122,6 +124,9 @@ RSpec.describe 'Event Attendance', type: :system do
         # Remplir l'événement avec des inscriptions actives
         user1 = create(:user, role: user_role)
         user2 = create(:user, role: user_role)
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user1, status: :active, season: '2025-2026')
+        create(:membership, user: user2, status: :active, season: '2025-2026')
         create(:attendance, event: full_event, user: user1, status: 'registered')
         create(:attendance, event: full_event, user: user2, status: 'registered')
         full_event.reload
@@ -182,7 +187,10 @@ RSpec.describe 'Event Attendance', type: :system do
       let!(:event_with_spots) { create(:event, :published, creator_user: organizer, max_participants: 5, start_at: 6.days.from_now) }
 
       it 'affiche le nombre de places disponibles' do
-        create(:attendance, event: event_with_spots, user: create(:user, role: user_role), status: 'registered')
+        other_user = create(:user, role: user_role)
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: other_user, status: :active, season: '2025-2026')
+        create(:attendance, event: event_with_spots, user: other_user, status: 'registered')
         event_with_spots.reload
 
         visit event_path(event_with_spots)
@@ -197,8 +205,13 @@ RSpec.describe 'Event Attendance', type: :system do
       let!(:almost_full_event) { create(:event, :published, creator_user: organizer, max_participants: 3, start_at: 7.days.from_now) }
 
       it 'affiche le nombre de places restantes' do
-        create(:attendance, event: almost_full_event, user: create(:user, role: user_role), status: 'registered')
-        create(:attendance, event: almost_full_event, user: create(:user, role: user_role), status: 'registered')
+        other_user1 = create(:user, role: user_role)
+        other_user2 = create(:user, role: user_role)
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: other_user1, status: :active, season: '2025-2026')
+        create(:membership, user: other_user2, status: :active, season: '2025-2026')
+        create(:attendance, event: almost_full_event, user: other_user1, status: 'registered')
+        create(:attendance, event: almost_full_event, user: other_user2, status: 'registered')
         almost_full_event.reload
 
         visit event_path(almost_full_event)

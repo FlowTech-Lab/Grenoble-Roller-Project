@@ -359,8 +359,8 @@
             .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
             .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
         else
-          # Pour les événements normaux : seulement les adhésions actives
-          can_register_any_child = @can_register_child && current_user.memberships.active_now.where(is_child_membership: true)
+          # Pour les événements normaux : tous les enfants (aucune restriction de statut)
+          can_register_any_child = @can_register_child && current_user.memberships.where(is_child_membership: true)
             .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
         end
         show_register_button = (can_register_adult || can_register_any_child) && !@event.full?
@@ -411,7 +411,8 @@
                     .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
                     .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
                 else
-                  has_available_children = current_user.memberships.active_now.where(is_child_membership: true)
+                  # Pour les événements normaux : tous les enfants (aucune restriction de statut)
+                  has_available_children = current_user.memberships.where(is_child_membership: true)
                     .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
                 end
               %>
@@ -472,8 +473,8 @@
       .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
       .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
   else
-    # Pour les événements normaux : seulement les adhésions actives
-    can_register_any_child = @can_register_child && current_user.memberships.active_now.where(is_child_membership: true)
+    # Pour les événements normaux : tous les enfants (aucune restriction de statut)
+    can_register_any_child = @can_register_child && current_user.memberships.where(is_child_membership: true)
       .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists?
   end
   # Vérifier si on peut inscrire un enfant même si l'événement est complet

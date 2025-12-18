@@ -6,6 +6,8 @@ RSpec.describe Attendance, type: :model do
 
   describe 'validations' do
     it 'is valid with default attributes' do
+      # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+      create(:membership, user: user, status: :active, season: '2025-2026')
       attendance = build_attendance(user: user, event: event)
       expect(attendance).to be_valid
     end
@@ -17,6 +19,8 @@ RSpec.describe Attendance, type: :model do
     end
 
     it 'enforces uniqueness of user scoped to event' do
+      # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+      create(:membership, user: user, status: :active, season: '2025-2026')
       create_attendance(user: user, event: event)
       duplicate = build_attendance(user: user, event: event)
 
@@ -27,6 +31,8 @@ RSpec.describe Attendance, type: :model do
 
   describe 'associations' do
     it 'accepts an optional payment' do
+      # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+      create(:membership, user: user, status: :active, season: '2025-2026')
       payment = Payment.create!(provider: 'stripe', provider_payment_id: 'pi_123', amount_cents: 1000, currency: 'EUR', status: 'succeeded')
       attendance = build_attendance(user: user, event: event, payment: payment, status: 'paid')
 
@@ -37,6 +43,8 @@ RSpec.describe Attendance, type: :model do
 
     describe 'counter cache' do
       it 'increments event.attendances_count when attendance is created' do
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user, status: :active, season: '2025-2026')
         expect(event.attendances_count).to eq(0)
 
         create_attendance(user: user, event: event)
@@ -46,6 +54,8 @@ RSpec.describe Attendance, type: :model do
       end
 
       it 'decrements event.attendances_count when attendance is destroyed' do
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user, status: :active, season: '2025-2026')
         attendance = create_attendance(user: user, event: event)
         event.reload
         expect(event.attendances_count).to eq(1)
@@ -68,20 +78,30 @@ RSpec.describe Attendance, type: :model do
       let(:limited_event) { create_event(creator_user: create_user, max_participants: 2) }
 
       it 'allows attendance when event has available spots' do
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user, status: :active, season: '2025-2026')
         attendance = build_attendance(user: user, event: limited_event)
         expect(attendance).to be_valid
       end
 
       it 'allows attendance when event is unlimited (max_participants = 0)' do
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user, status: :active, season: '2025-2026')
         unlimited_event = create_event(creator_user: create_user, max_participants: 0)
         attendance = build_attendance(user: user, event: unlimited_event)
         expect(attendance).to be_valid
       end
 
       it 'prevents attendance when event is full' do
-        # Fill the event to capacity
-        create_attendance(event: limited_event, user: create_user, status: 'registered')
-        create_attendance(event: limited_event, user: create_user, status: 'registered')
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user, status: :active, season: '2025-2026')
+        # Fill the event to capacity (créer des adhésions pour les autres utilisateurs aussi)
+        other_user1 = create_user
+        other_user2 = create_user
+        create(:membership, user: other_user1, status: :active, season: '2025-2026')
+        create(:membership, user: other_user2, status: :active, season: '2025-2026')
+        create_attendance(event: limited_event, user: other_user1, status: 'registered')
+        create_attendance(event: limited_event, user: other_user2, status: 'registered')
         limited_event.reload
 
         # Try to create another attendance
@@ -91,9 +111,15 @@ RSpec.describe Attendance, type: :model do
       end
 
       it 'does not count canceled attendances when checking capacity' do
-        # Fill with one active and one canceled
-        create_attendance(event: limited_event, user: create_user, status: 'registered')
-        create_attendance(event: limited_event, user: create_user, status: 'canceled')
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        create(:membership, user: user, status: :active, season: '2025-2026')
+        # Fill with one active and one canceled (créer des adhésions pour les autres utilisateurs aussi)
+        other_user1 = create_user
+        other_user2 = create_user
+        create(:membership, user: other_user1, status: :active, season: '2025-2026')
+        create(:membership, user: other_user2, status: :active, season: '2025-2026')
+        create_attendance(event: limited_event, user: other_user1, status: 'registered')
+        create_attendance(event: limited_event, user: other_user2, status: 'canceled')
         limited_event.reload
 
         # Should still allow new attendance (only 1 active)
@@ -109,23 +135,38 @@ RSpec.describe Attendance, type: :model do
       Attendance.delete_all
     end
     it 'returns non-canceled attendances for active scope' do
-      active = create_attendance(status: 'registered')
-      create_attendance(status: 'canceled')
+      # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+      user1 = create_user
+      user2 = create_user
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      active = create_attendance(user: user1, status: 'registered')
+      create_attendance(user: user2, status: 'canceled')
 
       expect(Attendance.active).to contain_exactly(active)
     end
 
     it 'returns canceled attendances for canceled scope' do
-      canceled = create_attendance(status: 'canceled')
-      create_attendance(status: 'registered')
+      # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+      user1 = create_user
+      user2 = create_user
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      canceled = create_attendance(user: user1, status: 'canceled')
+      create_attendance(user: user2, status: 'registered')
 
       expect(Attendance.canceled).to contain_exactly(canceled)
     end
 
     describe '.volunteers' do
       it 'returns only volunteer attendances' do
-        volunteer = create_attendance(is_volunteer: true)
-        participant = create_attendance(is_volunteer: false)
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        user1 = create_user
+        user2 = create_user
+        create(:membership, user: user1, status: :active, season: '2025-2026')
+        create(:membership, user: user2, status: :active, season: '2025-2026')
+        volunteer = create_attendance(user: user1, is_volunteer: true)
+        participant = create_attendance(user: user2, is_volunteer: false)
 
         expect(Attendance.volunteers).to contain_exactly(volunteer)
         expect(Attendance.volunteers).not_to include(participant)
@@ -134,8 +175,13 @@ RSpec.describe Attendance, type: :model do
 
     describe '.participants' do
       it 'returns only non-volunteer attendances' do
-        volunteer = create_attendance(is_volunteer: true)
-        participant = create_attendance(is_volunteer: false)
+        # Pour les événements normaux, créer une adhésion active ou utiliser essai gratuit
+        user1 = create_user
+        user2 = create_user
+        create(:membership, user: user1, status: :active, season: '2025-2026')
+        create(:membership, user: user2, status: :active, season: '2025-2026')
+        volunteer = create_attendance(user: user1, is_volunteer: true)
+        participant = create_attendance(user: user2, is_volunteer: false)
 
         expect(Attendance.participants).to contain_exactly(participant)
         expect(Attendance.participants).not_to include(volunteer)
@@ -323,10 +369,9 @@ RSpec.describe Attendance, type: :model do
           user.attendances.where(free_trial_used: true).destroy_all
         end
 
-        it 'prevents registration' do
+        it 'allows registration (events are open to everyone)' do
           attendance = build_attendance(user: user, event: regular_event, child_membership_id: nil, free_trial_used: false)
-          expect(attendance).to be_invalid
-          expect(attendance.errors[:base]).to include(match(/Adhésion requise/))
+          expect(attendance).to be_valid
         end
       end
 
