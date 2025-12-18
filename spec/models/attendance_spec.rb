@@ -240,4 +240,107 @@ RSpec.describe Attendance, type: :model do
       end
     end
   end
+
+  describe 'can_register_to_event (regular events/randos)' do
+    let(:regular_event) { build(:event, max_participants: 30) }
+    let(:user) { create_user }
+
+    context 'when registering a child' do
+      context 'with active membership' do
+        let(:child_membership) { create(:membership, :child, user: user, status: :active, season: '2025-2026') }
+
+        it 'allows registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: child_membership.id)
+          expect(attendance).to be_valid
+        end
+      end
+
+      context 'with expired membership' do
+        let(:child_membership) { create(:membership, :child, user: user, status: :expired, season: '2024-2025') }
+
+        it 'allows registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: child_membership.id)
+          expect(attendance).to be_valid
+        end
+      end
+
+      context 'with trial membership' do
+        let(:child_membership) { create(:membership, :child, user: user, status: :trial, season: '2025-2026') }
+
+        it 'allows registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: child_membership.id)
+          expect(attendance).to be_valid
+        end
+      end
+
+      context 'with pending membership' do
+        let(:child_membership) { create(:membership, :child, user: user, status: :pending, season: '2025-2026') }
+
+        it 'allows registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: child_membership.id)
+          expect(attendance).to be_valid
+        end
+      end
+
+      context 'when child membership does not belong to user' do
+        let(:other_user) { create_user }
+        let(:other_child_membership) { create(:membership, :child, user: other_user, status: :active, season: '2025-2026') }
+
+        it 'prevents registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: other_child_membership.id)
+          expect(attendance).to be_invalid
+          expect(attendance.errors[:child_membership_id]).to include("Cette adhésion enfant ne vous appartient pas")
+        end
+      end
+    end
+
+    context 'when registering as parent' do
+      context 'with active membership' do
+        before do
+          create(:membership, user: user, status: :active, season: '2025-2026')
+        end
+
+        it 'allows registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: nil)
+          expect(attendance).to be_valid
+        end
+      end
+
+      context 'with active child membership' do
+        before do
+          create(:membership, :child, user: user, status: :active, season: '2025-2026')
+        end
+
+        it 'allows registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: nil)
+          expect(attendance).to be_valid
+        end
+      end
+
+      context 'with no membership and no free trial' do
+        before do
+          user.memberships.destroy_all
+          user.attendances.where(free_trial_used: true).destroy_all
+        end
+
+        it 'prevents registration' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: nil, free_trial_used: false)
+          expect(attendance).to be_invalid
+          expect(attendance.errors[:base]).to include(match(/Adhésion requise/))
+        end
+      end
+
+      context 'with free trial available' do
+        before do
+          user.memberships.destroy_all
+          user.attendances.where(free_trial_used: true).destroy_all
+        end
+
+        it 'allows registration with free trial' do
+          attendance = build_attendance(user: user, event: regular_event, child_membership_id: nil, free_trial_used: true)
+          expect(attendance).to be_valid
+        end
+      end
+    end
+  end
 end

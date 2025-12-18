@@ -171,6 +171,8 @@
                   'btn-success'
                 when 'expired'
                   'btn-secondary'
+                when 'trial'
+                  'btn-info'
                 else
                   'btn-secondary'
               end
@@ -182,6 +184,8 @@
                   'Active'
                 when 'expired'
                   'Expirée'
+                when 'trial'
+                  '🎁 Essai gratuit actif'
                 else
                   @membership.status.humanize
               end
@@ -274,6 +278,27 @@
                   data: { turbo: false } do %>
                 <i class="bi bi-credit-card me-2"></i>Payer via HelloAsso
               <% end %>
+            <% elsif @membership.status == 'trial' %>
+              <div class="alert alert-info mb-3 w-100">
+                <i class="bi bi-gift-fill me-2"></i>
+                <strong>Essai gratuit actif</strong>
+                <p class="mb-0 mt-2">
+                  <% if @membership.is_child_membership? %>
+                    <%= @membership.child_first_name %> peut utiliser cet essai gratuit pour s'inscrire à une initiation sans adhésion payée.
+                  <% else %>
+                    Vous pouvez utiliser cet essai gratuit pour vous inscrire à une initiation.
+                  <% end %>
+                </p>
+              </div>
+              <%= button_to upgrade_membership_path(@membership),
+                  method: :patch,
+                  class: "btn btn-primary",
+                  data: { 
+                    turbo: false,
+                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
+                  } do %>
+                <i class="bi bi-credit-card me-2"></i>Payer la cotisation
+              <% end %>
             <% elsif @membership.status == 'active' %>
               <div class="alert alert-success mb-0">
                 <i class="bi bi-check-circle me-2"></i>
@@ -281,7 +306,7 @@
               </div>
             <% elsif @membership.status == 'expired' %>
               <% if @membership.is_child_membership? %>
-                <%= link_to new_membership_path(type: 'child', renew_from: @membership.id), class: "btn btn-primary" do %>
+                <%= button_to renew_membership_path(@membership), method: :post, class: "btn btn-primary", data: { turbo: false, confirm: "Renouveler l'adhésion de #{@membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
                   <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
                 <% end %>
               <% else %>

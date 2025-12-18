@@ -27,8 +27,21 @@
     child_attendances = local_assigns[:child_attendances] || []
   end
   
-  # Filtrer uniquement les enfants avec des adhésions actives et non déjà inscrits
-  child_memberships = current_user.memberships.active_now.where(is_child_membership: true) if user_signed_in?
+  # Filtrer les enfants disponibles selon le type d'événement
+  if user_signed_in?
+    if is_initiation
+      # Pour les initiations : inclure active, trial (essai gratuit) et pending (en attente)
+      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
+      child_memberships = current_user.memberships.where(is_child_membership: true)
+        .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+    else
+      # Pour les événements normaux (randos) : afficher tous les enfants (active, expired, trial, pending)
+      # Aucune restriction de statut pour les randos
+      child_memberships = current_user.memberships.where(is_child_membership: true)
+    end
+  else
+    child_memberships = []
+  end
   child_memberships ||= []
   if child_attendances.any?
     registered_child_ids = child_attendances.map(&:child_membership_id).compact
@@ -140,15 +153,17 @@
         :id, 
         ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
         { prompt: dropdown_prompt }, 
-        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: is_modal ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
-    <small class="text-muted">
-      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-      <% if user_already_registered %>
-        Seuls les enfants avec une adhésion active et non déjà inscrits sont affichés.
-      <% else %>
-        Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
-      <% end %>
-    </small>
+        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: (is_modal && is_initiation) ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
+    <% if is_initiation %>
+      <small class="text-muted">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        <% if user_already_registered %>
+          Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente, et non déjà inscrits sont affichés.
+        <% else %>
+          Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente sont affichés. Laissez vide pour vous inscrire vous-même.
+        <% end %>
+      </small>
+    <% end %>
   </div>
 <% end %>
 
@@ -237,40 +252,166 @@
   <% end %>
 <% end %>
 
-<!-- Essai gratuit si disponible (uniquement pour initiations, pas pour les bénévoles, pas pour les enfants) -->
+<!-- Essai gratuit si disponible (pour initiations, parent ou enfant avec statut trial) -->
 <% 
   # Conditions pour afficher l'essai gratuit :
   # 1. C'est une initiation
   # 2. L'utilisateur n'est pas déjà inscrit (pour lui-même)
-  # 3. Ce n'est pas pour un enfant (child_membership_id sera nil)
-  # 4. L'utilisateur n'a pas d'adhésion active
-  # 5. L'utilisateur n'a pas déjà utilisé son essai gratuit
-  # 6. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
-  show_free_trial = is_initiation && 
-                     !user_already_registered && 
-                     !current_user.memberships.active_now.exists? && 
-                     !current_user.attendances.where(free_trial_used: true).exists?
+  # 3. Soit :
+  #    a. Pour le parent : pas d'adhésion active ET pas déjà utilisé son essai gratuit
+  #    b. Pour un enfant : l'enfant a un statut trial ET n'a pas déjà utilisé son essai gratuit
+  # 4. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
+  
+  # Vérifier si on a des enfants avec statut trial disponibles
+  trial_children = child_memberships.select { |m| m.trial? }
+  has_trial_children = trial_children.any?
+  
+  # Pour le parent (sans enfant sélectionné)
+  # Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active ET n'a pas déjà utilisé son essai
+  parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+                         !current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+  
+  # NOUVELLE LOGIQUE : Si le parent n'a plus d'essai gratuit mais qu'un enfant en a un, on permet quand même
+  # Et inversement : si aucun enfant n'a d'essai gratuit mais que le parent en a un, on permet aussi
+  parent_has_trial = parent_can_use_trial
+  any_child_has_trial = trial_children.any? { |child| 
+    !current_user.attendances.where(free_trial_used: true, child_membership_id: child.id).exists?
+  }
+  
+  # L'option sera affichée dynamiquement via JavaScript selon l'enfant sélectionné
+  # On prépare les données pour JavaScript
+  trial_children_data = trial_children.map do |child|
+    {
+      id: child.id,
+      name: "#{child.child_first_name} #{child.child_last_name}",
+      has_used_trial: current_user.attendances.where(free_trial_used: true, child_membership_id: child.id).exists?,
+      can_use_trial: !current_user.attendances.where(free_trial_used: true, child_membership_id: child.id).exists?
+    }
+  end.to_json
+  
+  # Afficher l'essai gratuit si :
+  # - Le parent peut l'utiliser, OU
+  # - Un enfant peut l'utiliser, OU
+  # - Le parent n'a plus d'essai mais un enfant en a un (et inversement)
+  show_free_trial_parent = is_initiation && !user_already_registered && parent_has_trial
+  show_free_trial_children = is_initiation && any_child_has_trial
+  # Variable combinée : afficher si parent OU enfant peut utiliser (même si l'autre ne peut plus)
+  show_free_trial = is_initiation && !user_already_registered && (parent_has_trial || any_child_has_trial)
 %>
-<% if show_free_trial %>
-  <div class="mb-3 form-check">
+<% if show_free_trial_parent || show_free_trial_children %>
+  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent ? '' : 'display: none;' %>">
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
         aria: { describedby: "free_trial_help#{prefix_id}" },
         onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}()"
     } %>
-    <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label" do %>
+    <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label", id: "use_free_trial_label#{prefix_id}" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
-      Utiliser mon essai gratuit
+      <span id="free_trial_text<%= prefix_id %>">Utiliser mon essai gratuit</span>
     <% end %>
     <small id="free_trial_help<%= prefix_id %>" class="text-muted d-block mt-1">
-      <% if is_initiation && event.allow_non_member_discovery? %>
-        Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
-      <% else %>
-        Vous n'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.
-      <% end %>
+      <span id="free_trial_help_text<%= prefix_id %>">
+        <% if is_initiation && event.allow_non_member_discovery? %>
+          Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
+        <% else %>
+          Vous n'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.
+        <% end %>
+      </span>
     </small>
   </div>
+  
+  <% if show_free_trial_children %>
+    <script>
+      // Données des enfants avec statut trial
+      const trialChildrenData<%= prefix_id %> = <%= raw trial_children_data %>;
+      
+      // Fonction pour mettre à jour l'affichage de l'essai gratuit selon l'enfant sélectionné
+      function updateFreeTrialDisplay<%= prefix_id %>() {
+        const form = document.querySelector('form[id*="attendForm"]') || document.querySelector('form[action*="attend"]');
+        if (!form) return;
+        
+        const childSelect = form.querySelector('select[name="child_membership_id"]');
+        const freeTrialContainer = document.getElementById('free_trial_container<%= prefix_id %>');
+        const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+        const freeTrialText = document.getElementById('free_trial_text<%= prefix_id %>');
+        const freeTrialHelpText = document.getElementById('free_trial_help_text<%= prefix_id %>');
+        
+        if (!freeTrialContainer) return;
+        
+        const selectedChildId = childSelect ? parseInt(childSelect.value) : null;
+        const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
+        
+        if (selectedChild) {
+          // Un enfant avec statut trial est sélectionné
+          const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+          
+          if (selectedChild.has_used_trial && !parentCanUseTrial) {
+            // L'enfant a déjà utilisé son essai ET le parent n'en a plus non plus
+            freeTrialContainer.style.display = 'none';
+            if (freeTrialCheckbox) freeTrialCheckbox.checked = false;
+          } else if (selectedChild.has_used_trial && parentCanUseTrial) {
+            // L'enfant a déjà utilisé son essai MAIS le parent peut encore utiliser le sien
+            freeTrialContainer.style.display = 'block';
+            freeTrialText.textContent = 'Utiliser mon essai gratuit (parent)';
+            freeTrialHelpText.innerHTML = `<strong>Essai gratuit parent :</strong> ${selectedChild.name} a déjà utilisé son essai gratuit, mais vous pouvez utiliser le vôtre pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong>`;
+            if (freeTrialCheckbox) freeTrialCheckbox.checked = true;
+          } else if (!selectedChild.has_used_trial) {
+            // L'enfant peut utiliser son essai gratuit
+            freeTrialContainer.style.display = 'block';
+            freeTrialText.textContent = `Utiliser l'essai gratuit de ${selectedChild.name}`;
+            freeTrialHelpText.innerHTML = `<strong>Essai gratuit pour ${selectedChild.name} :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.`;
+            if (freeTrialCheckbox) freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
+          }
+        } else {
+          // Pas d'enfant sélectionné ou enfant avec adhésion active
+          const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+          const anyChildCanUseTrial = trialChildrenData<%= prefix_id %>.some(c => c.can_use_trial);
+          
+          // Afficher si le parent peut utiliser son essai OU si un enfant peut utiliser le sien
+          if (parentCanUseTrial || anyChildCanUseTrial) {
+            freeTrialContainer.style.display = 'block';
+            if (parentCanUseTrial) {
+              // Le parent peut utiliser son essai gratuit
+              freeTrialText.textContent = 'Utiliser mon essai gratuit';
+              freeTrialHelpText.innerHTML = '<% if is_initiation && event.allow_non_member_discovery? %>Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.<% else %>Vous n\'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.<% end %>';
+            } else if (anyChildCanUseTrial) {
+              // Le parent n'a plus d'essai mais un enfant peut utiliser le sien
+              const availableChild = trialChildrenData<%= prefix_id %>.find(c => c.can_use_trial);
+              freeTrialText.textContent = `Utiliser l'essai gratuit de ${availableChild.name}`;
+              freeTrialHelpText.innerHTML = `<strong>Essai gratuit enfant :</strong> Vous avez déjà utilisé votre essai gratuit, mais ${availableChild.name} peut utiliser le sien pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong>`;
+            }
+            if (freeTrialCheckbox) freeTrialCheckbox.checked = false;
+          } else {
+            // Ni le parent ni les enfants ne peuvent utiliser d'essai gratuit
+            freeTrialContainer.style.display = 'none';
+            if (freeTrialCheckbox) freeTrialCheckbox.checked = false;
+          }
+        }
+        
+        // Appeler toggleSubmitButton pour mettre à jour l'état du bouton
+        if (window.toggleSubmitButton<%= prefix_id %>) {
+          window.toggleSubmitButton<%= prefix_id %>();
+        }
+      }
+      
+      // Écouter les changements sur le select enfant
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[id*="attendForm"]') || document.querySelector('form[action*="attend"]');
+        if (form) {
+          const childSelect = form.querySelector('select[name="child_membership_id"]');
+          if (childSelect) {
+            childSelect.addEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
+            // Appeler une première fois pour initialiser l'affichage
+            updateFreeTrialDisplay<%= prefix_id %>();
+          } else {
+            // Pas de select enfant, vérifier si on doit afficher pour le parent
+            updateFreeTrialDisplay<%= prefix_id %>();
+          }
+        }
+      });
+    </script>
+  <% end %>
 <% end %>
 
 <!-- Rappel email -->

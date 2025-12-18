@@ -74,21 +74,39 @@ module Initiations
 
       # Vérifier si l'utilisateur est adhérent
       is_member = if child_membership_id.present?
-        # Pour un enfant : vérifier l'adhésion enfant
+        # Pour un enfant : vérifier l'adhésion enfant (active, trial ou pending)
+        # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
         child_membership = current_user.memberships.find_by(id: child_membership_id)
-        unless child_membership&.active?
+        unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           redirect_to initiation_path(@initiation), alert: "L'adhésion de cet enfant n'est pas active."
           return
         end
-        true
+        # L'enfant est considéré comme membre si l'adhésion est active ou pending (pas trial)
+        child_membership.active? || child_membership.pending?
       else
         # Pour le parent : vérifier adhésion parent ou enfant
         current_user.memberships.active_now.exists? ||
-          current_user.memberships.active_now.where(is_child_membership: true).exists?
+          # Pour les initiations, inclure aussi trial et pending
+          current_user.memberships.where(is_child_membership: true)
+            .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+            .exists?
       end
 
-      # Gestion essai gratuit et vérification adhésion
-      if child_membership_id.nil? && !is_member
+      # Gestion essai gratuit pour les enfants avec statut trial uniquement
+      if child_membership_id.present? && child_membership&.trial? && !is_member
+        # Enfant avec statut trial : utiliser l'essai gratuit
+        if params[:use_free_trial] == "1"
+          # Vérifier si cet enfant a déjà utilisé son essai gratuit
+          if current_user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+            redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit."
+            return
+          end
+          attendance.free_trial_used = true
+        else
+          redirect_to initiation_path(@initiation), alert: "Adhésion requise. Utilisez l'essai gratuit ou adhérez pour cet enfant."
+          return
+        end
+      elsif child_membership_id.nil? && !is_member
         # Non-adhérent parent : vérifier si l'option de découverte est activée
         if @initiation.allow_non_member_discovery?
           # Option activée : vérifier qu'il reste des places découverte
@@ -99,7 +117,8 @@ module Initiations
           # Les non-adhérents peuvent s'inscrire dans les places découverte (pas besoin d'essai gratuit)
           # L'essai gratuit n'est utilisé que si explicitement demandé
           if params[:use_free_trial] == "1"
-            if current_user.attendances.where(free_trial_used: true).exists?
+            # Vérifier essai gratuit parent (sans child_membership_id)
+            if current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
               redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
               return
             end
@@ -108,7 +127,8 @@ module Initiations
         else
           # Option non activée : comportement classique - adhésion ou essai gratuit requis
           if params[:use_free_trial] == "1"
-            if current_user.attendances.where(free_trial_used: true).exists?
+            # Vérifier essai gratuit parent (sans child_membership_id)
+            if current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
               redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
               return
             end

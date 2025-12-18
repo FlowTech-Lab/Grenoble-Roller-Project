@@ -4,7 +4,7 @@ ActiveAdmin.register Product do
   includes :category
 
   permit_params :category_id, :name, :slug, :description, :price_cents,
-                :currency, :stock_qty, :is_active, :image_url
+                :currency, :stock_qty, :is_active, :image_url, :image
 
   scope :all, default: true
   scope("Actifs") { |products| products.where(is_active: true) }
@@ -67,7 +67,7 @@ ActiveAdmin.register Product do
       end
       row :image do |product|
         if product.image.attached?
-          image_tag(product.image, height: 150, style: "border-radius: 8px;")
+          image_tag(product.image.variant(resize_to_limit: [300, 300]), style: "border-radius: 8px; max-width: 300px;")
         elsif product.image_url.present?
           image_tag(product.image_url, height: 150, style: "border-radius: 8px;")
         else

@@ -2,3 +2,10 @@
 import "@hotwired/turbo-rails"
 import "controllers"
 import * as bootstrap from "bootstrap"
+// Import des fonctions de validation harmonisées pour les formulaires d'adhésion
+import { validateHealthQuestions, markHealthQuestionInvalid, markHealthQuestionValid, validateField } from "membership_form_validation"
+// Exporter globalement pour utilisation dans les scripts inline
+window.validateHealthQuestions = validateHealthQuestions
+window.markHealthQuestionInvalid = markHealthQuestionInvalid
+window.markHealthQuestionValid = markHealthQuestionValid
+window.validateField = validateField

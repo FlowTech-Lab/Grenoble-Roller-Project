@@ -2,8 +2,10 @@
   # Calculs pour les stats
   personal_memberships = @memberships.select { |m| !m.is_child_membership? }
   children_memberships = @memberships.select { |m| m.is_child_membership? }
-  children_pending = children_memberships.select { |m| m.pending? }
-  children_paid = children_memberships.select { |m| !m.pending? }
+  # Séparation : essais gratuits vs paiements en attente
+  children_trial = children_memberships.select { |m| m.trial? }
+  children_pending = children_memberships.select { |m| m.pending? && m.total_amount_cents > 0 }
+  children_paid = children_memberships.select { |m| !m.pending? && !m.trial? && m.status != 'expired' }
   active_memberships = @memberships.select { |m| m.active? }
   pending_memberships = @memberships.select { |m| m.pending? }
   expired_memberships = @memberships.select { |m| m.expired? }
@@ -44,7 +46,7 @@
       </div>
       <% if @memberships.empty? %>
         <div class="mt-3 mt-md-0">
-          <%= link_to new_membership_path(check_age: true), class: "btn btn-light btn-lg" do %>
+          <%= link_to new_membership_path(type: 'adult'), class: "btn btn-light btn-lg" do %>
             <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
           <% end %>
         </div>
@@ -67,7 +69,7 @@
             
             <!-- Adhérer pour moi -->
             <% unless @active_membership %>
-              <%= link_to new_membership_path(check_age: true), class: "text-decoration-none" do %>
+              <%= link_to new_membership_path(type: 'adult'), class: "text-decoration-none" do %>
                 <div class="quick-action-card teal">
                   <div class="d-flex align-items-center mb-2">
                     <i class="bi bi-person-badge fs-3 text-liquid-primary me-3"></i>
@@ -94,8 +96,8 @@
                   <div class="flex-grow-1">
                     <h4 class="h6 mb-0 fw-bold">Ajouter un enfant</h4>
                     <small class="text-muted">
-                      <% if children_pending.any? %>
-                        <%= children_pending.count %> en attente
+                      <% if children_trial.any? || children_pending.any? %>
+                        <%= children_trial.count + children_pending.count %> à finaliser
                       <% else %>
                         Inscrire un enfant
                       <% end %>
@@ -204,7 +206,7 @@
           </div>
           
           <div class="empty-state-cta">
-            <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg btn-cta-modern" do %>
+            <%= link_to new_membership_path(type: 'adult'), class: "btn btn-liquid-primary btn-lg btn-cta-modern" do %>
               <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
               <i class="bi bi-arrow-right ms-2"></i>
             <% end %>
@@ -233,9 +235,65 @@
                     <% end %>
               </div>
 
-              <!-- Enfants en attente de paiement -->
+              <!-- ESSAIS GRATUITS ACTIFS (en haut) -->
+              <% if children_trial.any? %>
+                <div class="alert alert-info payment-alert-improved mb-4" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%); border: 1px solid rgba(13, 110, 253, 0.3);">
+                  <h4 class="h6 mb-3">
+                    <i class="bi bi-gift-fill me-2"></i>
+                    <%= children_trial.count %> ESSAI(S) GRATUIT(S) ACTIF(S)
+                  </h4>
+                  <p class="small mb-3 text-muted">
+                    Ces enfants peuvent utiliser leur essai gratuit pour s'inscrire à une initiation.
+                  </p>
+                  
+                  <div class="mb-3">
+                    <% children_trial.each do |membership| %>
+                      <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-info border-opacity-25">
+                        <div>
+                          <strong><%= membership.child_full_name %></strong>
+                          <small class="text-muted d-block">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Peut s'inscrire a une initiations sans adhésion
+                          </small>
+                          <small class="text-muted d-block mt-1">
+                            <i class="bi bi-tag me-1"></i>
+                            Cotisation : <%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
+                          </small>
+                        </div>
+                        <span class="badge bg-info text-white">🎁 Essai gratuit</span>
+                      </div>
+                    <% end %>
+                  </div>
+                  
+                  <div class="d-flex gap-2 flex-wrap">
+                    <% children_trial.each do |membership| %>
+                      <%= button_to upgrade_membership_path(membership),
+                          method: :patch,
+                          class: "btn btn-primary btn-sm",
+                          data: { 
+                            turbo: false,
+                            confirm: "Payer la cotisation de #{membership.child_full_name} (#{number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
+                          } do %>
+                        <i class="bi bi-credit-card me-1"></i>
+                        Payer la cotisation de <%= membership.child_first_name %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+                
+                <!-- Mini cards enfants trial -->
+                <div class="row g-2 mb-4">
+                  <% children_trial.each do |membership| %>
+                    <div class="col-12 col-md-6">
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: false } %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <!-- ENFANTS EN ATTENTE DE PAIEMENT (en bas) -->
               <% if children_pending.any? %>
-                <div class="alert alert-warning payment-alert-improved">
+                <div class="alert alert-warning payment-alert-improved <%= 'mt-4' if children_trial.any? %>">
                   <h4 class="h6 mb-3">
                     <i class="bi bi-pin-map me-2"></i>
                     <%= children_pending.count %> ENFANT(S) EN ATTENTE DE PAIEMENT
@@ -291,7 +349,7 @@
 
               <!-- Enfants payés/actifs -->
               <% if children_paid.any? %>
-                <% if children_pending.any? %>
+                <% if children_trial.any? || children_pending.any? %>
                   <hr class="my-4">
                   <h4 class="h6 mb-3 text-muted">Payées / Actives</h4>
                 <% end %>
@@ -332,11 +390,24 @@
                     </small>
                   </div>
                   <% if membership.is_child_membership? %>
-                    <%= link_to new_membership_path(type: 'child', renew_from: membership.id), class: "btn btn-sm btn-success" do %>
-                      <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
+                    <% 
+                      # Vérifier si l'enfant a déjà une adhésion pour la saison courante
+                      current_season = Membership.current_season_name
+                      has_current_season_membership = current_user.memberships.children
+                        .where(season: current_season,
+                               child_first_name: membership.child_first_name,
+                               child_last_name: membership.child_last_name,
+                               child_date_of_birth: membership.child_date_of_birth)
+                        .where(status: [Membership.statuses[:active], Membership.statuses[:pending], Membership.statuses[:trial]])
+                        .exists?
+                    %>
+                    <% unless has_current_season_membership %>
+                      <%= button_to renew_membership_path(membership), method: :post, class: "btn btn-sm btn-success", data: { turbo: false, confirm: "Renouveler l'adhésion de #{membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
+                        <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
+                      <% end %>
                     <% end %>
                   <% else %>
-                    <%= link_to new_membership_path(check_age: true), class: "btn btn-sm btn-success" do %>
+                    <%= link_to new_membership_path(type: 'adult', renew_from: membership.id), class: "btn btn-sm btn-success" do %>
                       <i class="bi bi-arrow-repeat me-1"></i>Renouveler
                     <% end %>
                   <% end %>

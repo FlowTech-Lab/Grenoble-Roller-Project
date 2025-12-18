@@ -30,7 +30,7 @@
                             S'inscrire
                         <% end %>
                         <% elsif !current_user.has_active_membership? %>
-                        <%= link_to new_membership_path(check_age: true), class: "btn btn-outline-light btn-lg" do %>
+                        <%= link_to new_membership_path(type: 'adult'), class: "btn btn-outline-light btn-lg" do %>
                             <i class="bi bi-person-badge me-2" aria-hidden="true"></i>
                             Adhérer
                         <% end %>

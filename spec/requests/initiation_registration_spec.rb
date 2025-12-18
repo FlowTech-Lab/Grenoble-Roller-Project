@@ -333,6 +333,106 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         expect(attendance.user).to eq(parent)
         expect(attendance.child_membership_id).to eq(child_membership.id)
         expect(attendance.status).to eq('registered')
+        expect(attendance.free_trial_used).to be false # Pas besoin d'essai gratuit avec adhésion active
+      end
+
+      context 'avec adhésion enfant active' do
+        it 'permet inscription sans essai gratuit' do
+          parent = create_user(role: user_role)
+          child_membership = create(:membership, :child, :with_health_questionnaire,
+            user: parent,
+            status: :active,
+            season: '2025-2026'
+          )
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          attendance = Attendance.last
+          expect(attendance.free_trial_used).to be false
+          expect(response).to redirect_to(initiation_path(initiation))
+        end
+      end
+
+      context 'avec adhésion enfant pending' do
+        it 'permet inscription sans essai gratuit' do
+          parent = create_user(role: user_role)
+          child_membership = create(:membership, :child, :pending, :with_health_questionnaire,
+            user: parent,
+            season: '2025-2026'
+          )
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          expect do
+            post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+          end.to change { Attendance.count }.by(1)
+
+          attendance = Attendance.last
+          expect(attendance.free_trial_used).to be false
+          expect(response).to redirect_to(initiation_path(initiation))
+        end
+      end
+
+      context 'avec adhésion enfant trial' do
+        it 'requiert essai gratuit pour inscription' do
+          parent = create_user(role: user_role)
+          child_membership = create(:membership, :child, :trial, :with_health_questionnaire,
+            user: parent,
+            season: '2025-2026'
+          )
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          # Sans use_free_trial, doit être bloqué
+          post initiation_attendances_path(initiation), params: { child_membership_id: child_membership.id }
+
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(flash[:alert]).to include("Adhésion requise")
+        end
+
+        it 'permet inscription avec essai gratuit' do
+          parent = create_user(role: user_role)
+          child_membership = create(:membership, :child, :trial, :with_health_questionnaire,
+            user: parent,
+            season: '2025-2026'
+          )
+          initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+
+          expect do
+            post initiation_attendances_path(initiation), params: { 
+              child_membership_id: child_membership.id,
+              use_free_trial: '1'
+            }
+          end.to change { Attendance.count }.by(1)
+
+          attendance = Attendance.last
+          expect(attendance.free_trial_used).to be true
+        end
       end
     end
 

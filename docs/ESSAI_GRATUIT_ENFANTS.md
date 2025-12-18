@@ -1,5 +1,11 @@
 # Essai Gratuit pour les Enfants - Analyse et Proposition
 
+> 📚 **Index Documentation :** Voir [`INDEX-FORMULAIRES-ADHESION.md`](./INDEX-FORMULAIRES-ADHESION.md) pour la vue d'ensemble  
+> 📊 **Analyse Complète :** Voir [`comparatif-complet-formulaires-integration.md`](./comparatif-complet-formulaires-integration.md) - Phase 4 pour l'intégration dans le plan global  
+> 🗓️ **Plan de Sprints :** Voir [`plan-sprints-formulaires-adhesion.md`](./plan-sprints-formulaires-adhesion.md) - Sprint 6 pour le planning d'implémentation
+
+---
+
 ## 📋 État Actuel
 
 ### Fonctionnement actuel
@@ -324,4 +330,13 @@ end
 **Date de création :** 2025-01-XX  
 **Auteur :** Analyse technique  
 **Destinataires :** Bénévoles association Grenoble Roller
+
+---
+
+## 🔗 Liens Vers Autres Documents
+
+- 📚 **[Index Documentation](./INDEX-FORMULAIRES-ADHESION.md)** - Vue d'ensemble de tous les documents
+- 📊 **[Analyse Complète](./comparatif-complet-formulaires-integration.md)** - Phase 4 pour l'intégration dans le plan global
+- 🗓️ **[Plan de Sprints](./plan-sprints-formulaires-adhesion.md)** - Sprint 6 pour le planning d'implémentation
+- 🔄 **[Comparatif Formulaires](./comparatif-formulaires-enfant-adulte.md)** - Analyse comparative initiale
 
