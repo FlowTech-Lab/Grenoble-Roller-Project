@@ -8,6 +8,7 @@ RSpec.describe Event, type: :model do
   end
 
   let(:creator) { create_user }
+  let(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
 
   describe 'validations' do
     it 'is valid with default attributes' do
@@ -98,24 +99,34 @@ RSpec.describe Event, type: :model do
 
     it 'returns false when not at capacity' do
       event = create_event(creator_user: creator, max_participants: 10)
-      create_attendance(event: event)
+      user = create_user(role: user_role)
+      create(:membership, user: user, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user)
       expect(event.full?).to be false
     end
 
     it 'returns true when at capacity' do
       event = create_event(creator_user: creator, max_participants: 2)
-      create_attendance(event: event, user: create_user)
-      create_attendance(event: event, user: create_user)
+      user1 = create_user(role: user_role)
+      user2 = create_user(role: user_role)
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user1)
+      create_attendance(event: event, user: user2)
       event.reload
       expect(event.full?).to be true
     end
 
     it 'does not count canceled attendances' do
       event = create_event(creator_user: creator, max_participants: 1)
+      user1 = create_user(role: user_role)
+      user2 = create_user(role: user_role)
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
       # Create canceled attendance first (should not count toward limit)
-      canceled_attendance = create_attendance(event: event, user: create_user, status: 'canceled')
+      canceled_attendance = create_attendance(event: event, user: user1, status: 'canceled')
       # Then create active attendance (should work because only canceled exists)
-      active_attendance = create_attendance(event: event, user: create_user, status: 'registered')
+      active_attendance = create_attendance(event: event, user: user2, status: 'registered')
       event.reload
       expect(event.full?).to be true # 1 active attendance, event is full
       # But if we cancel the active one, event should not be full anymore
@@ -133,23 +144,33 @@ RSpec.describe Event, type: :model do
 
     it 'returns correct number of remaining spots' do
       event = create_event(creator_user: creator, max_participants: 10)
-      create_attendance(event: event, user: create_user)
+      user = create_user(role: user_role)
+      create(:membership, user: user, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user)
       event.reload
       expect(event.remaining_spots).to eq(9)
     end
 
     it 'returns 0 when full' do
       event = create_event(creator_user: creator, max_participants: 2)
-      create_attendance(event: event, user: create_user)
-      create_attendance(event: event, user: create_user)
+      user1 = create_user(role: user_role)
+      user2 = create_user(role: user_role)
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user1)
+      create_attendance(event: event, user: user2)
       event.reload
       expect(event.remaining_spots).to eq(0)
     end
 
     it 'does not count canceled attendances' do
       event = create_event(creator_user: creator, max_participants: 2)
-      create_attendance(event: event, user: create_user, status: 'registered')
-      create_attendance(event: event, user: create_user, status: 'canceled')
+      user1 = create_user(role: user_role)
+      user2 = create_user(role: user_role)
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user1, status: 'registered')
+      create_attendance(event: event, user: user2, status: 'canceled')
       event.reload
       expect(event.remaining_spots).to eq(1) # Only 1 active attendance
     end
@@ -163,15 +184,21 @@ RSpec.describe Event, type: :model do
 
     it 'returns true when not at capacity' do
       event = create_event(creator_user: creator, max_participants: 10)
-      create_attendance(event: event, user: create_user)
+      user = create_user(role: user_role)
+      create(:membership, user: user, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user)
       event.reload
       expect(event.has_available_spots?).to be true
     end
 
     it 'returns false when at capacity' do
       event = create_event(creator_user: creator, max_participants: 2)
-      create_attendance(event: event, user: create_user)
-      create_attendance(event: event, user: create_user)
+      user1 = create_user(role: user_role)
+      user2 = create_user(role: user_role)
+      create(:membership, user: user1, status: :active, season: '2025-2026')
+      create(:membership, user: user2, status: :active, season: '2025-2026')
+      create_attendance(event: event, user: user1)
+      create_attendance(event: event, user: user2)
       event.reload
       expect(event.has_available_spots?).to be false
     end

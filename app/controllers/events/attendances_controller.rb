@@ -41,25 +41,16 @@ module Events
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       attendance.child_membership_id = child_membership_id
 
-      # Pour les événements normaux (randos) : aucune restriction pour les enfants
-      # Tous les enfants peuvent être inscrits, quel que soit leur statut d'adhésion
+      # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
+      # Vérifier seulement que l'adhésion enfant appartient à l'utilisateur si un enfant est inscrit
       if child_membership_id.present?
-        # Vérifier seulement que l'adhésion enfant appartient à l'utilisateur
         child_membership = current_user.memberships.find_by(id: child_membership_id, is_child_membership: true)
         unless child_membership
           redirect_to @event, alert: "Cette adhésion enfant ne vous appartient pas."
           return
         end
-      else
-        # Pour le parent : vérifier adhésion active (parent OU enfant) ou essai gratuit disponible
-        has_active_membership = current_user.memberships.active_now.exists?
-        has_free_trial = !current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
-        
-        unless has_active_membership || has_free_trial
-          redirect_to @event, alert: "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association."
-          return
-        end
       end
+      # Pour le parent : aucune restriction, ouvert à tous
 
       if attendance.save
         EventMailer.attendance_confirmed(attendance).deliver_later

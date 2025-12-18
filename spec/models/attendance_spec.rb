@@ -369,10 +369,9 @@ RSpec.describe Attendance, type: :model do
           user.attendances.where(free_trial_used: true).destroy_all
         end
 
-        it 'prevents registration' do
+        it 'allows registration (events are open to everyone)' do
           attendance = build_attendance(user: user, event: regular_event, child_membership_id: nil, free_trial_used: false)
-          expect(attendance).to be_invalid
-          expect(attendance.errors[:base]).to include(match(/Adhésion requise/))
+          expect(attendance).to be_valid
         end
       end
 

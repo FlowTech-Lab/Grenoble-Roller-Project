@@ -24,6 +24,8 @@ RSpec.describe EventReminderJob, type: :job do
     let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
     let!(:user) { create_user(email: 'test@example.com', role: user_role) }
     let!(:organizer) { create_user(role: organizer_role) }
+    # Créer une adhésion active pour l'utilisateur (requis pour les événements normaux)
+    let!(:user_membership) { create(:membership, user: user, status: :active, season: '2025-2026') }
     # Événement demain matin (10h)
     let!(:event_tomorrow_morning) { create_event(status: 'published', creator_user: organizer, start_at: Time.zone.now.beginning_of_day + 1.day + 10.hours, title: 'Event Tomorrow Morning') }
     # Événement demain après-midi (15h)
@@ -165,6 +167,9 @@ RSpec.describe EventReminderJob, type: :job do
     context 'with multiple attendees' do
       let!(:user2) { create_user(email: 'test2@example.com', role: user_role) }
       let!(:user3) { create_user(email: 'test3@example.com', role: user_role) }
+      # Créer des adhésions actives pour tous les utilisateurs (requis pour les événements normaux)
+      let!(:user2_membership) { create(:membership, user: user2, status: :active, season: '2025-2026') }
+      let!(:user3_membership) { create(:membership, user: user3, status: :active, season: '2025-2026') }
       let!(:attendance1) { create_attendance(user: user, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
       let!(:attendance2) { create_attendance(user: user2, event: event_tomorrow_morning, status: 'registered', wants_reminder: true) }
       let!(:attendance3) { create_attendance(user: user3, event: event_tomorrow_morning, status: 'registered', wants_reminder: false) }

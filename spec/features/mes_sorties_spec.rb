@@ -13,6 +13,8 @@ RSpec.describe 'Mes sorties', type: :system do
   describe 'Accès à la page Mes sorties' do
     context 'quand l\'utilisateur est connecté' do
       before do
+        # Créer une adhésion active pour le membre (requis pour les événements normaux)
+        create(:membership, user: member, status: :active, season: '2025-2026')
         login_as member
       end
 
@@ -26,6 +28,7 @@ RSpec.describe 'Mes sorties', type: :system do
       end
 
       it 'affiche la page Mes sorties avec les événements inscrits' do
+        # L'adhésion est déjà créée dans le before block
         create(:attendance, user: member, event: event1, status: 'registered')
         create(:attendance, user: member, event: event2, status: 'registered')
 
@@ -69,6 +72,7 @@ RSpec.describe 'Mes sorties', type: :system do
       end
 
       it 'affiche les informations de l\'événement (date, lieu, nombre d\'inscrits)' do
+        # L'adhésion est déjà créée dans le before block
         create(:attendance, user: member, event: event1, status: 'registered')
 
         visit attendances_path
@@ -82,6 +86,8 @@ RSpec.describe 'Mes sorties', type: :system do
 
       it 'n\'affiche que les événements où l\'utilisateur est inscrit' do
         other_user = create(:user, role: user_role)
+        # Créer une adhésion active pour l'autre utilisateur
+        create(:membership, user: other_user, status: :active, season: '2025-2026')
         create(:attendance, user: member, event: event1, status: 'registered')
         create(:attendance, user: other_user, event: event2, status: 'registered')
 
@@ -92,6 +98,7 @@ RSpec.describe 'Mes sorties', type: :system do
       end
 
       it 'n\'affiche pas les inscriptions annulées' do
+        # L'adhésion est déjà créée dans le before block
         create(:attendance, user: member, event: event1, status: 'registered')
         create(:attendance, user: member, event: event2, status: 'canceled')
 
@@ -112,6 +119,8 @@ RSpec.describe 'Mes sorties', type: :system do
 
   describe 'Navigation depuis Mes sorties' do
     before do
+      # Créer une adhésion active pour le membre (requis pour les événements normaux)
+      create(:membership, user: member, status: :active, season: '2025-2026')
       login_as member
       create(:attendance, user: member, event: event1, status: 'registered')
     end
