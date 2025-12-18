@@ -35,8 +35,9 @@
       child_memberships = current_user.memberships.where(is_child_membership: true)
         .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
     else
-      # Pour les événements normaux (randos) : seulement les adhésions actives
-      child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+      # Pour les événements normaux (randos) : afficher tous les enfants (active, expired, trial, pending)
+      # Aucune restriction de statut pour les randos
+      child_memberships = current_user.memberships.where(is_child_membership: true)
     end
   else
     child_memberships = []
@@ -152,23 +153,17 @@
         :id, 
         ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
         { prompt: dropdown_prompt }, 
-        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: is_modal ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
-    <small class="text-muted">
-      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-      <% if user_already_registered %>
-        <% if is_initiation %>
+        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: (is_modal && is_initiation) ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
+    <% if is_initiation %>
+      <small class="text-muted">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        <% if user_already_registered %>
           Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente, et non déjà inscrits sont affichés.
         <% else %>
-          Seuls les enfants avec une adhésion active et non déjà inscrits sont affichés.
-        <% end %>
-      <% else %>
-        <% if is_initiation %>
           Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente sont affichés. Laissez vide pour vous inscrire vous-même.
-        <% else %>
-          Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
         <% end %>
-      <% end %>
-    </small>
+      </small>
+    <% end %>
   </div>
 <% end %>
 

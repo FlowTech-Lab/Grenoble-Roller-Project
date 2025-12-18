@@ -209,11 +209,12 @@ class Attendance < ApplicationRecord
     return if event.is_a?(Event::Initiation) # Les initiations ont leur propre validation
     return if is_volunteer # Bénévoles bypassent les validations
 
-    # Pour les événements normaux (randos) : vérifier adhésion active
+    # Pour les événements normaux (randos) : aucune restriction pour les enfants
+    # Tous les enfants peuvent être inscrits, quel que soit leur statut d'adhésion
     if for_child?
-      # Pour un enfant : vérifier que l'adhésion enfant est active (pas trial ni pending pour les randos)
-      unless child_membership&.active?
-        errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
+      # Vérifier seulement que l'adhésion enfant appartient à l'utilisateur
+      unless child_membership && user.memberships.exists?(id: child_membership_id, is_child_membership: true)
+        errors.add(:child_membership_id, "Cette adhésion enfant ne vous appartient pas")
       end
     else
       # Pour le parent : vérifier adhésion active (parent OU enfant) ou essai gratuit
