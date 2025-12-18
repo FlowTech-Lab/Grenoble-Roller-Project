@@ -237,10 +237,11 @@ RSpec.describe "Memberships", type: :request do
 
   describe "POST /memberships/:id/renew - Renouvellement adhésion enfant" do
     let(:current_season) { Membership.current_season_name }
-    let(:old_start_date) { Date.new(2024, 9, 1) }
-    let(:old_end_date) { Date.new(2025, 8, 31) }
-    let(:expired_start_date) { Date.new(2024, 9, 1) }
-    let(:expired_end_date) { Date.new(2025, 8, 31) }
+    # Dates pour une adhésion expirée (saison 2023-2024, clairement expirée en décembre 2025)
+    let(:old_start_date) { Date.new(2023, 9, 1) }
+    let(:old_end_date) { Date.new(2024, 8, 31) }
+    let(:expired_start_date) { old_start_date }
+    let(:expired_end_date) { old_end_date }
 
     context "avec adhésion enfant expirée" do
       let(:expired_child_membership) do

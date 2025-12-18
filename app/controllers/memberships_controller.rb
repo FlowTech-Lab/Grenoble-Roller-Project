@@ -255,9 +255,7 @@ class MembershipsController < ApplicationController
     end
 
     # Vérifier si c'est un paiement sans HelloAsso
-    Rails.logger.debug("[MembershipsController] payment_method reçu: #{params[:payment_method].inspect}")
     if params[:payment_method] == "cash_check" || params[:payment_method] == "without_payment"
-      Rails.logger.debug("[MembershipsController] Appel create_without_payment")
       create_without_payment
       return
     end
@@ -943,11 +941,20 @@ class MembershipsController < ApplicationController
     amount_cents = Membership.price_for_category(category)
 
     # Vérifier qu'il n'y a pas déjà une adhésion pour cette saison
-    existing_membership = current_user.memberships.children
+    # On vérifie pour le même enfant (même nom, prénom, date de naissance)
+    # Récupérer toutes les adhésions enfants pour cette saison avec les statuts actifs
+    current_season_memberships = current_user.memberships.children
       .where(season: current_season)
-      .find_by(child_first_name: old_membership.child_first_name, child_last_name: old_membership.child_last_name, child_date_of_birth: old_membership.child_date_of_birth)
+      .where(status: [Membership.statuses[:active], Membership.statuses[:pending], Membership.statuses[:trial]])
+      .to_a
     
-    if existing_membership && (existing_membership.active? || existing_membership.pending? || existing_membership.trial?)
+    existing_membership = current_season_memberships.find do |m|
+      m.child_first_name == old_membership.child_first_name &&
+      m.child_last_name == old_membership.child_last_name &&
+      m.child_date_of_birth == old_membership.child_date_of_birth
+    end
+    
+    if existing_membership
       redirect_to membership_path(existing_membership), notice: "Une adhésion existe déjà pour #{old_membership.child_full_name} pour cette saison."
       return
     end
