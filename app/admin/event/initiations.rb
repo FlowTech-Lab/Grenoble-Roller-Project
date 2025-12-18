@@ -280,7 +280,10 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         label_method: :to_s,
         value_method: :id
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
-      f.input :duration_min, input_html: { value: f.object.duration_min || 105 }, hint: "Durée en minutes (105 = 1h45)"
+      f.input :duration_min, 
+        input_html: { value: f.object.duration_min.present? ? f.object.duration_min : 105 }, 
+        hint: "Durée en minutes (105 = 1h45)",
+        required: true
       f.input :max_participants, label: "Nombre maximum de participants", input_html: { value: f.object.max_participants || 30 }
       f.input :description
     end
@@ -423,6 +426,29 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   end
 
   controller do
+    def build_resource
+      super.tap do |initiation|
+        # Définir la valeur par défaut pour duration_min si elle n'est pas présente
+        initiation.duration_min ||= 105 if initiation.duration_min.blank?
+      end
+    end
+
+    def create
+      # S'assurer que duration_min a une valeur par défaut si elle n'est pas fournie
+      if params[:initiation] && params[:initiation][:duration_min].blank?
+        params[:initiation][:duration_min] = 105
+      end
+      super
+    end
+
+    def update
+      # S'assurer que duration_min a une valeur par défaut si elle n'est pas fournie
+      if params[:initiation] && params[:initiation][:duration_min].blank?
+        params[:initiation][:duration_min] = resource.duration_min || 105
+      end
+      super
+    end
+
     def destroy
       @initiation = resource
       if @initiation.destroy

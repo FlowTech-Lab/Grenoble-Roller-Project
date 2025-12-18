@@ -356,13 +356,19 @@
             freeTrialContainer.style.display = 'block';
             freeTrialText.textContent = 'Utiliser mon essai gratuit (parent)';
             freeTrialHelpText.innerHTML = `<strong>Essai gratuit parent :</strong> ${selectedChild.name} a déjà utilisé son essai gratuit, mais vous pouvez utiliser le vôtre pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong>`;
-            if (freeTrialCheckbox) freeTrialCheckbox.checked = true;
+            if (freeTrialCheckbox) {
+              freeTrialCheckbox.checked = true;
+              document.getElementById('use_free_trial_hidden<%= prefix_id %>').value = '1';
+            }
           } else if (!selectedChild.has_used_trial) {
             // L'enfant peut utiliser son essai gratuit
             freeTrialContainer.style.display = 'block';
             freeTrialText.textContent = `Utiliser l'essai gratuit de ${selectedChild.name}`;
             freeTrialHelpText.innerHTML = `<strong>Essai gratuit pour ${selectedChild.name} :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.`;
-            if (freeTrialCheckbox) freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
+            if (freeTrialCheckbox) {
+              freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
+              document.getElementById('use_free_trial_hidden<%= prefix_id %>').value = '1';
+            }
           }
         } else {
           // Pas d'enfant sélectionné ou enfant avec adhésion active
@@ -500,12 +506,24 @@
       
       // Vérifier que l'essai gratuit est coché si requis (pas de places découverte)
       <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+        const freeTrialContainer = document.getElementById('free_trial_container<%= prefix_id %>');
         const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
-        if (freeTrialCheckbox && !freeTrialCheckbox.checked) {
-          e.preventDefault();
-          alert('Veuillez cocher la case "Utiliser mon essai gratuit" pour confirmer votre inscription.');
-          freeTrialCheckbox.focus();
-          return false;
+        // Ne valider que si le conteneur est visible (le checkbox peut être masqué selon l'enfant sélectionné)
+        if (freeTrialContainer && freeTrialCheckbox) {
+          const isContainerVisible = freeTrialContainer.style.display !== 'none' && 
+                                     window.getComputedStyle(freeTrialContainer).display !== 'none';
+          // Debug
+          console.log('Validation essai gratuit:', {
+            containerVisible: isContainerVisible,
+            checkboxChecked: freeTrialCheckbox.checked,
+            checkboxValue: freeTrialCheckbox.value
+          });
+          if (isContainerVisible && !freeTrialCheckbox.checked) {
+            e.preventDefault();
+            alert('Veuillez cocher la case "Utiliser mon essai gratuit" pour confirmer votre inscription.');
+            freeTrialCheckbox.focus();
+            return false;
+          }
         }
       <% end %>
       
