@@ -153,7 +153,7 @@
         :id, 
         ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
         { prompt: dropdown_prompt }, 
-        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: (is_modal && is_initiation) ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
+        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: (is_modal && is_initiation) ? "toggleVolunteerVisibility#{prefix_id}(); #{show_free_trial_children ? "updateFreeTrialDisplay#{prefix_id}();" : ''}" : (show_free_trial_children ? "updateFreeTrialDisplay#{prefix_id}();" : nil) } %>
     <% if is_initiation %>
       <small class="text-muted">
         <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
@@ -300,12 +300,14 @@
   show_free_trial = is_initiation && !user_already_registered && (parent_has_trial || any_child_has_trial)
 %>
 <% if show_free_trial_parent || show_free_trial_children %>
-  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent ? '' : 'display: none;' %>">
+  <%# Champ caché pour garantir l'envoi de la valeur même si la checkbox est masquée %>
+  <%= hidden_field_tag "use_free_trial_hidden#{prefix_id}", "0", id: "use_free_trial_hidden#{prefix_id}" %>
+  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent || (show_free_trial_children && child_memberships.any? { |m| m.trial? }) ? '' : 'display: none;' %>">
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
         aria: { describedby: "free_trial_help#{prefix_id}" },
-        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}()"
+        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}(); if (this.checked) { document.getElementById('use_free_trial_hidden#{prefix_id}').value = '1'; } else { document.getElementById('use_free_trial_hidden#{prefix_id}').value = '0'; }"
     } %>
     <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label", id: "use_free_trial_label#{prefix_id}" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
@@ -361,13 +363,15 @@
               document.getElementById('use_free_trial_hidden<%= prefix_id %>').value = '1';
             }
           } else if (!selectedChild.has_used_trial) {
-            // L'enfant peut utiliser son essai gratuit
+            // L'enfant peut utiliser son essai gratuit - OBLIGATOIRE pour les enfants non adhérents
             freeTrialContainer.style.display = 'block';
             freeTrialText.textContent = `Utiliser l'essai gratuit de ${selectedChild.name}`;
             freeTrialHelpText.innerHTML = `<strong>Essai gratuit pour ${selectedChild.name} :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.`;
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
-              document.getElementById('use_free_trial_hidden<%= prefix_id %>').value = '1';
+              freeTrialCheckbox.required = true; // Rendre obligatoire
+              const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
+              if (hiddenField) hiddenField.value = '1';
             }
           }
         } else {
@@ -402,12 +406,14 @@
         }
       }
       
-      // Écouter les changements sur le select enfant
-      document.addEventListener('DOMContentLoaded', function() {
+      // Fonction d'initialisation réutilisable
+      function setupFreeTrialDisplay<%= prefix_id %>() {
         const form = document.querySelector('form[id*="attendForm"]') || document.querySelector('form[action*="attend"]');
         if (form) {
           const childSelect = form.querySelector('select[name="child_membership_id"]');
           if (childSelect) {
+            // Retirer l'ancien listener s'il existe
+            childSelect.removeEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
             childSelect.addEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
             // Appeler une première fois pour initialiser l'affichage
             updateFreeTrialDisplay<%= prefix_id %>();
@@ -415,6 +421,23 @@
             // Pas de select enfant, vérifier si on doit afficher pour le parent
             updateFreeTrialDisplay<%= prefix_id %>();
           }
+        }
+      }
+      
+      // Écouter les changements sur le select enfant : support à la fois du chargement normal et Turbo
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupFreeTrialDisplay<%= prefix_id %>);
+      } else {
+        // Le DOM est déjà chargé, initialiser immédiatement
+        setupFreeTrialDisplay<%= prefix_id %>();
+      }
+
+      // Support Turbo : réinitialiser lors des navigations Turbo
+      document.addEventListener('turbo:load', setupFreeTrialDisplay<%= prefix_id %>);
+      document.addEventListener('turbo:frame-load', function(e) {
+        // Vérifier si le formulaire est dans le frame chargé
+        if (e.target.querySelector('form[id*="attendForm"]') || e.target.querySelector('form[action*="attend"]')) {
+          setupFreeTrialDisplay<%= prefix_id %>();
         }
       });
     </script>
@@ -508,16 +531,34 @@
       <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
         const freeTrialContainer = document.getElementById('free_trial_container<%= prefix_id %>');
         const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+        
+        // Vérifier si un enfant trial est sélectionné (essai gratuit OBLIGATOIRE)
+        <% if show_free_trial_children %>
+          const trialChildrenData = <%= raw trial_children_data %>;
+          const selectedChildId = childSelect ? parseInt(childSelect.value) : null;
+          const selectedChild = trialChildrenData.find(c => c.id === selectedChildId);
+          
+          // Si un enfant trial est sélectionné et n'a pas encore utilisé son essai, la checkbox est OBLIGATOIRE
+          if (selectedChild && !selectedChild.has_used_trial) {
+            if (!freeTrialCheckbox || !freeTrialCheckbox.checked) {
+              e.preventDefault();
+              alert(`L'essai gratuit est obligatoire pour ${selectedChild.name}. Veuillez cocher la case "Utiliser l'essai gratuit" pour confirmer l'inscription.`);
+              if (freeTrialCheckbox) {
+                freeTrialCheckbox.focus();
+                freeTrialCheckbox.checked = true; // Cocher automatiquement
+                const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
+                if (hiddenField) hiddenField.value = '1';
+              }
+              return false;
+            }
+          }
+        <% end %>
+        
         // Ne valider que si le conteneur est visible (le checkbox peut être masqué selon l'enfant sélectionné)
         if (freeTrialContainer && freeTrialCheckbox) {
           const isContainerVisible = freeTrialContainer.style.display !== 'none' && 
                                      window.getComputedStyle(freeTrialContainer).display !== 'none';
-          // Debug
-          console.log('Validation essai gratuit:', {
-            containerVisible: isContainerVisible,
-            checkboxChecked: freeTrialCheckbox.checked,
-            checkboxValue: freeTrialCheckbox.value
-          });
           if (isContainerVisible && !freeTrialCheckbox.checked) {
             e.preventDefault();
             alert('Veuillez cocher la case "Utiliser mon essai gratuit" pour confirmer votre inscription.');

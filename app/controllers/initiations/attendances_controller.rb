@@ -93,21 +93,32 @@ module Initiations
             .exists?
       end
 
-      # Gestion essai gratuit pour les enfants avec statut trial uniquement
+      # SÉCURITÉ CRITIQUE : Gestion essai gratuit pour les enfants avec statut trial uniquement
+      # Un enfant non adhérent (statut trial) DOIT utiliser son essai gratuit et ne peut l'utiliser qu'UNE SEULE FOIS
       if child_membership_id.present? && child_membership&.trial? && !is_member
-        # Enfant avec statut trial : utiliser l'essai gratuit
-        use_free_trial = params[:use_free_trial].present? && (params[:use_free_trial] == "1" || params[:use_free_trial] == true)
-        if use_free_trial
-          # Vérifier si cet enfant a déjà utilisé son essai gratuit
-          if current_user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
-            redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit."
-            return
-          end
-          attendance.free_trial_used = true
-        else
-          redirect_to initiation_path(@initiation), alert: "Adhésion requise. Utilisez l'essai gratuit ou adhérez pour cet enfant."
+        # Vérifier d'abord si cet enfant a déjà utilisé son essai gratuit
+        if current_user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+          redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise."
           return
         end
+        
+        # Enfant avec statut trial : l'essai gratuit est OBLIGATOIRE
+        # Vérifier dans les paramètres (checkbox ou champ caché pour tous les préfixes possibles)
+        use_free_trial = params[:use_free_trial].present? && (params[:use_free_trial] == "1" || params[:use_free_trial] == true)
+        
+        # Si la checkbox n'est pas cochée, vérifier les champs cachés (pour tous les préfixes possibles)
+        unless use_free_trial
+          # Chercher tous les champs cachés use_free_trial_hidden*
+          hidden_trial_params = params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }
+          use_free_trial = hidden_trial_params.any?
+        end
+        
+        unless use_free_trial
+          redirect_to initiation_path(@initiation), alert: "Adhésion requise. L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante."
+          return
+        end
+        
+        attendance.free_trial_used = true
       elsif child_membership_id.nil? && !is_member
         # Non-adhérent parent : vérifier si l'option de découverte est activée
         if @initiation.allow_non_member_discovery?

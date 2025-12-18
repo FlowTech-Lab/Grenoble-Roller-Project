@@ -195,6 +195,20 @@ class Attendance < ApplicationRecord
         unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
         end
+        
+        # SÉCURITÉ CRITIQUE : Si l'enfant a un statut trial (non adhérent), l'essai gratuit est OBLIGATOIRE
+        # et ne peut être utilisé qu'UNE SEULE FOIS
+        if child_membership&.trial? && !user.memberships.active_now.exists?
+          # Vérifier que l'essai gratuit est utilisé
+          unless free_trial_used
+            errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
+          end
+          
+          # Vérifier que cet enfant n'a pas déjà utilisé son essai gratuit
+          if user.attendances.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+            errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise.")
+          end
+        end
       elsif !event.allow_non_member_discovery?
         # Si l'option n'est pas activée, vérifier adhésion active (parent OU enfant) ou essai gratuit
         has_active_membership = user.memberships.active_now.exists?
