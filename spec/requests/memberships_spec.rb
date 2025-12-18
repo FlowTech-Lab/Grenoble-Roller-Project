@@ -234,4 +234,381 @@ RSpec.describe "Memberships", type: :request do
       end
     end
   end
+
+  describe "POST /memberships/:id/renew - Renouvellement adhésion enfant" do
+    let(:current_season) { Membership.current_season_name }
+    let(:old_start_date) { Date.new(2024, 9, 1) }
+    let(:old_end_date) { Date.new(2025, 8, 31) }
+    let(:expired_start_date) { Date.new(2024, 9, 1) }
+    let(:expired_end_date) { Date.new(2025, 8, 31) }
+
+    context "avec adhésion enfant expirée" do
+      let(:expired_child_membership) do
+        create(:membership, 
+          :child, 
+          :with_health_questionnaire,
+          user: user,
+          status: :expired,
+          season: '2024-2025',
+          start_date: expired_start_date,
+          end_date: expired_end_date,
+          child_first_name: 'Léa',
+          child_last_name: 'Astier',
+          child_date_of_birth: Date.new(2012, 7, 22),
+          category: 'standard'
+        )
+      end
+
+      it "redirige vers le formulaire de renouvellement avec les informations pré-remplies" do
+        login_user(user)
+        post renew_membership_path(expired_child_membership)
+
+        expect(response).to redirect_to(new_membership_path(type: 'child', renew_from: expired_child_membership.id))
+      end
+
+      context "lorsque l'enfant a déjà une adhésion pour la saison courante" do
+        let!(:current_child_membership) do
+          create(:membership,
+            :child,
+            :with_health_questionnaire,
+            user: user,
+            status: :active,
+            season: current_season,
+            child_first_name: 'Léa',
+            child_last_name: 'Astier',
+            child_date_of_birth: Date.new(2012, 7, 22),
+            category: 'standard'
+          )
+        end
+
+        it "bloque le renouvellement et redirige vers l'adhésion existante" do
+          login_user(user)
+          
+          expect do
+            post memberships_path, params: {
+              renew_from: expired_child_membership.id,
+              membership: {
+                category: 'standard',
+                is_child_membership: 'true',
+                child_first_name: expired_child_membership.child_first_name,
+                child_last_name: expired_child_membership.child_last_name,
+                child_date_of_birth: expired_child_membership.child_date_of_birth
+              }
+            }
+          end.not_to change { Membership.count }
+
+          expect(response).to redirect_to(membership_path(current_child_membership))
+          expect(flash[:notice]).to include("Une adhésion existe déjà")
+        end
+      end
+
+      context "lors de la soumission du formulaire de renouvellement" do
+        it "crée une nouvelle adhésion avec les informations de l'ancienne" do
+          login_user(user)
+          # Simuler le formulaire de renouvellement avec choix de catégorie
+          membership_params = {
+            category: 'standard',
+            is_child_membership: 'true',
+            child_first_name: expired_child_membership.child_first_name,
+            child_last_name: expired_child_membership.child_last_name,
+            child_date_of_birth: expired_child_membership.child_date_of_birth,
+            parent_authorization: '1',
+            rgpd_consent: '1',
+            legal_notices_accepted: '1'
+          }
+          
+          # Ajouter les réponses du questionnaire de santé
+          (1..9).each do |i|
+            membership_params["health_question_#{i}"] = "no"
+          end
+
+          expect do
+            post memberships_path, params: {
+              renew_from: expired_child_membership.id,
+              membership: membership_params
+            }
+          end.to change { Membership.count }.by(1)
+
+          new_membership = Membership.last
+          expect(new_membership.status).to eq('pending')
+          expect(new_membership.season).to eq(current_season)
+          expect(new_membership.child_first_name).to eq(expired_child_membership.child_first_name)
+          expect(new_membership.child_last_name).to eq(expired_child_membership.child_last_name)
+          expect(new_membership.category).to eq('standard')
+        end
+
+        it "permet de changer de catégorie lors du renouvellement" do
+          login_user(user)
+          membership_params = {
+            category: 'with_ffrs', # Changement de catégorie
+            is_child_membership: 'true',
+            child_first_name: expired_child_membership.child_first_name,
+            child_last_name: expired_child_membership.child_last_name,
+            child_date_of_birth: expired_child_membership.child_date_of_birth,
+            parent_authorization: '1',
+            rgpd_consent: '1',
+            legal_notices_accepted: '1',
+            ffrs_data_sharing_consent: '1'
+          }
+          
+          (1..9).each do |i|
+            membership_params["health_question_#{i}"] = "no"
+          end
+
+          post memberships_path, params: {
+            renew_from: expired_child_membership.id,
+            membership: membership_params
+          }
+
+          new_membership = Membership.last
+          expect(new_membership.category).to eq('with_ffrs')
+          expect(new_membership.amount_cents).to eq(5655) # Prix FFRS
+        end
+      end
+
+      context "si l'enfant a maintenant 18 ans ou plus" do
+        let(:expired_child_membership_18) do
+          create(:membership,
+            :child,
+            :with_health_questionnaire,
+            user: user,
+            status: :expired,
+            season: '2024-2025',
+            start_date: expired_start_date,
+            end_date: expired_end_date,
+            child_first_name: 'Adulte',
+            child_last_name: 'Test',
+            child_date_of_birth: 18.years.ago,
+            category: 'standard'
+          )
+        end
+
+        it "bloque le renouvellement et affiche un message d'erreur" do
+          login_user(user)
+          
+          # S'assurer que l'enfant a bien 18 ans ou plus
+          expect(expired_child_membership_18.child_age).to be >= 18
+          
+          expect do
+            post memberships_path, params: {
+              renew_from: expired_child_membership_18.id,
+              membership: {
+                category: 'standard',
+                is_child_membership: 'true',
+                child_first_name: expired_child_membership_18.child_first_name,
+                child_last_name: expired_child_membership_18.child_last_name,
+                child_date_of_birth: expired_child_membership_18.child_date_of_birth,
+                # Ajouter les réponses du questionnaire (nécessaires pour que la création passe normalement)
+                health_question_1: 'no',
+                health_question_2: 'no',
+                health_question_3: 'no',
+                health_question_4: 'no',
+                health_question_5: 'no',
+                health_question_6: 'no',
+                health_question_7: 'no',
+                health_question_8: 'no',
+                health_question_9: 'no',
+                parent_authorization: '1',
+                rgpd_consent: '1',
+                legal_notices_accepted: '1'
+              }
+            }
+          end.not_to change { Membership.count }
+
+          expect(response).to redirect_to(memberships_path)
+          expect(flash[:alert]).to include("18 ans ou plus")
+        end
+      end
+    end
+  end
+
+  describe "POST /memberships/:id/upgrade - Conversion essai gratuit en adhésion payante" do
+    let(:trial_membership) do
+      create(:membership,
+        :child,
+        :with_health_questionnaire,
+        user: user,
+        status: :trial,
+        season: Membership.current_season_name,
+        category: 'standard',
+        amount_cents: 1000
+      )
+    end
+
+    it "convertit l'essai gratuit en adhésion pending" do
+      login_user(user)
+      
+      patch upgrade_membership_path(trial_membership)
+
+      trial_membership.reload
+      expect(trial_membership.status).to eq('pending')
+      expect(trial_membership.amount_cents).to eq(1000) # Montant déjà défini
+      expect(response).to redirect_to(membership_path(trial_membership))
+    end
+
+    context "si l'adhésion n'est pas un essai gratuit" do
+      let(:active_membership) do
+        create(:membership,
+          :child,
+          :with_health_questionnaire,
+          user: user,
+          status: :active,
+          season: Membership.current_season_name
+        )
+      end
+
+      it "bloque la conversion" do
+        login_user(user)
+        
+        patch upgrade_membership_path(active_membership)
+
+        expect(response).to redirect_to(memberships_path)
+        expect(flash[:alert]).to include("ne peut pas être convertie")
+      end
+    end
+  end
+
+  describe "GET /memberships - Affichage bouton Réadhérer" do
+    let(:current_season) { Membership.current_season_name }
+    let(:expired_season) { '2024-2025' }
+
+    context "avec adhésion enfant expirée sans adhésion courante" do
+      let!(:expired_child_membership) do
+        create(:membership,
+          :child,
+          user: user,
+          status: :expired,
+          season: expired_season,
+          start_date: Date.new(2024, 9, 1),
+          end_date: Date.new(2025, 8, 31),
+          child_first_name: 'Léa',
+          child_last_name: 'Astier',
+          child_date_of_birth: Date.new(2012, 7, 22)
+        )
+      end
+
+      it "affiche le bouton Réadhérer" do
+        login_user(user)
+        get memberships_path
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include("Réadhérer")
+      end
+    end
+
+    context "avec adhésion enfant expirée ET adhésion courante" do
+      let!(:expired_child_membership) do
+        create(:membership,
+          :child,
+          user: user,
+          status: :expired,
+          season: expired_season,
+          start_date: Date.new(2024, 9, 1),
+          end_date: Date.new(2025, 8, 31),
+          child_first_name: 'Léa',
+          child_last_name: 'Astier',
+          child_date_of_birth: Date.new(2012, 7, 22)
+        )
+      end
+
+      let!(:current_child_membership) do
+        create(:membership,
+          :child,
+          user: user,
+          status: :active,
+          season: current_season,
+          child_first_name: 'Léa',
+          child_last_name: 'Astier',
+          child_date_of_birth: Date.new(2012, 7, 22)
+        )
+      end
+
+      it "n'affiche PAS le bouton Réadhérer" do
+        login_user(user)
+        get memberships_path
+
+        expect(response).to have_http_status(:success)
+        # Vérifier que le bouton Réadhérer n'apparaît pas pour cette adhésion expirée
+        # (il peut y avoir d'autres boutons Réadhérer pour d'autres enfants, mais pas pour celui-ci)
+        expect(response.body).not_to match(/Réadhérer.*Léa Astier|Léa Astier.*Réadhérer/)
+      end
+    end
+  end
+
+  describe "GET /memberships/new?type=child - Affichage message essai gratuit" do
+    context "quand l'enfant a déjà utilisé son essai gratuit" do
+      let(:trial_membership) do
+        create(:membership,
+          :child,
+          :with_health_questionnaire,
+          user: user,
+          status: :trial,
+          season: Membership.current_season_name,
+          child_first_name: 'Enfant',
+          child_last_name: 'Test',
+          child_date_of_birth: Date.new(2015, 1, 1)
+        )
+      end
+
+      let!(:attendance_with_trial) do
+        create(:attendance,
+          user: user,
+          child_membership_id: trial_membership.id,
+          free_trial_used: true
+        )
+      end
+
+      it "n'affiche PAS le message d'essai gratuit" do
+        login_user(user)
+        # Simuler un renouvellement avec @old_membership
+        old_membership = create(:membership,
+          :child,
+          user: user,
+          status: :expired,
+          season: '2024-2025',
+          child_first_name: trial_membership.child_first_name,
+          child_last_name: trial_membership.child_last_name,
+          child_date_of_birth: trial_membership.child_date_of_birth
+        )
+
+        get new_membership_path(type: 'child', renew_from: old_membership.id)
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include("Votre enfant a droit à un essai gratuit")
+      end
+    end
+
+    context "quand l'enfant n'a pas encore utilisé son essai gratuit" do
+      let(:trial_membership) do
+        create(:membership,
+          :child,
+          :with_health_questionnaire,
+          user: user,
+          status: :trial,
+          season: Membership.current_season_name,
+          child_first_name: 'Enfant',
+          child_last_name: 'Nouveau',
+          child_date_of_birth: Date.new(2016, 1, 1)
+        )
+      end
+
+      it "affiche le message d'essai gratuit" do
+        login_user(user)
+        old_membership = create(:membership,
+          :child,
+          user: user,
+          status: :expired,
+          season: '2024-2025',
+          child_first_name: trial_membership.child_first_name,
+          child_last_name: trial_membership.child_last_name,
+          child_date_of_birth: trial_membership.child_date_of_birth
+        )
+
+        get new_membership_path(type: 'child', renew_from: old_membership.id)
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include("Votre enfant a droit à un essai gratuit")
+      end
+    end
+  end
 end

@@ -33,6 +33,11 @@ FactoryBot.define do
       status { :expired }
     end
 
+    trait :trial do
+      status { :trial }
+      amount_cents { 0 }
+    end
+
     trait :with_health_questionnaire do
       after(:build) do |membership|
         (1..9).each do |i|

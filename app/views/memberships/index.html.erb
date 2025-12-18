@@ -390,8 +390,21 @@
                     </small>
                   </div>
                   <% if membership.is_child_membership? %>
-                    <%= button_to renew_membership_path(membership), method: :post, class: "btn btn-sm btn-success", data: { turbo: false, confirm: "Renouveler l'adhésion de #{membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
-                      <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
+                    <% 
+                      # Vérifier si l'enfant a déjà une adhésion pour la saison courante
+                      current_season = Membership.current_season_name
+                      has_current_season_membership = current_user.memberships.children
+                        .where(season: current_season,
+                               child_first_name: membership.child_first_name,
+                               child_last_name: membership.child_last_name,
+                               child_date_of_birth: membership.child_date_of_birth)
+                        .where(status: [Membership.statuses[:active], Membership.statuses[:pending], Membership.statuses[:trial]])
+                        .exists?
+                    %>
+                    <% unless has_current_season_membership %>
+                      <%= button_to renew_membership_path(membership), method: :post, class: "btn btn-sm btn-success", data: { turbo: false, confirm: "Renouveler l'adhésion de #{membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
+                        <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
+                      <% end %>
                     <% end %>
                   <% else %>
                     <%= link_to new_membership_path(type: 'adult', renew_from: membership.id), class: "btn btn-sm btn-success" do %>

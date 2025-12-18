@@ -81,8 +81,8 @@ module Initiations
           redirect_to initiation_path(@initiation), alert: "L'adhésion de cet enfant n'est pas active."
           return
         end
-        # Si l'enfant a un statut trial, il peut utiliser l'essai gratuit
-        child_membership.trial?
+        # L'enfant est considéré comme membre si l'adhésion est active ou pending (pas trial)
+        child_membership.active? || child_membership.pending?
       else
         # Pour le parent : vérifier adhésion parent ou enfant
         current_user.memberships.active_now.exists? ||
@@ -92,8 +92,8 @@ module Initiations
             .exists?
       end
 
-      # Gestion essai gratuit et vérification adhésion
-      if child_membership_id.present? && !is_member
+      # Gestion essai gratuit pour les enfants avec statut trial uniquement
+      if child_membership_id.present? && child_membership&.trial? && !is_member
         # Enfant avec statut trial : utiliser l'essai gratuit
         if params[:use_free_trial] == "1"
           # Vérifier si cet enfant a déjà utilisé son essai gratuit
