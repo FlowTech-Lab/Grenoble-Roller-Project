@@ -737,8 +737,8 @@
     }
   }
 
-      // Initialisation
-      document.addEventListener('DOMContentLoaded', function() {
+      // Fonction d'initialisation réutilisable
+      function initializeChildForm() {
         updateCategorySelection();
         updateChildDateOfBirth(); // Vérifier au chargement si une date est déjà présente
         checkHealthQuestions(); // Vérifier les questions de santé
@@ -977,5 +977,22 @@
         return false;
       }
     });
+  }
+
+  // Initialisation : support à la fois du chargement normal et Turbo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeChildForm);
+  } else {
+    // Le DOM est déjà chargé, initialiser immédiatement
+    initializeChildForm();
+  }
+
+  // Support Turbo : réinitialiser lors des navigations Turbo
+  document.addEventListener('turbo:load', initializeChildForm);
+  document.addEventListener('turbo:frame-load', function(e) {
+    // Vérifier si le formulaire est dans le frame chargé
+    if (e.target.querySelector('#child_membership_form')) {
+      initializeChildForm();
+    }
   });
 </script>

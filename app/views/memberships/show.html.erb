@@ -310,7 +310,7 @@
                   <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
                 <% end %>
               <% else %>
-                <%= link_to new_membership_path(type: 'adult'), class: "btn btn-primary" do %>
+                <%= link_to new_membership_path(type: 'adult'), class: "btn btn-primary", data: { turbo: false } do %>
                   <i class="bi bi-arrow-repeat me-2"></i>Renouveler mon adhésion
                 <% end %>
               <% end %>

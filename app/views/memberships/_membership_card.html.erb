@@ -112,7 +112,7 @@
         <% end %>
       <% elsif membership.status == 'expired' %>
         <% if membership.is_child_membership? %>
-          <%= link_to new_membership_path(type: 'child', renew_from: membership.id), class: "btn btn-sm btn-success" do %>
+          <%= link_to new_membership_path(type: 'child', renew_from: membership.id), class: "btn btn-sm btn-success", data: { turbo: false } do %>
             <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
           <% end %>
         <% else %>
