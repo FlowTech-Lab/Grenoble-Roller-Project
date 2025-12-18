@@ -148,7 +148,11 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
                     data: { confirm: "Retirer le statut bénévole pour #{attendance.user.email} ?" })
           end
           column "Matériel demandé" do |attendance|
-            attendance.equipment_note.presence || "-"
+            if attendance.needs_equipment? && attendance.roller_size.present?
+              "Roller #{attendance.roller_size} (EU)"
+            else
+              "-"
+            end
           end
           column :created_at
         end
@@ -180,7 +184,11 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
                     data: { confirm: "Ajouter le statut bénévole pour #{attendance.user.email} ?" })
           end
           column "Matériel demandé" do |attendance|
-            attendance.equipment_note.presence || "-"
+            if attendance.needs_equipment? && attendance.roller_size.present?
+              "Roller #{attendance.roller_size} (EU)"
+            else
+              "-"
+            end
           end
           column :created_at
         end

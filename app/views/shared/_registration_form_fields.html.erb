@@ -227,7 +227,8 @@
     </small>
   </div>
   
-  <% if child_memberships.any? && is_modal %>
+  <%# Définir la fonction JavaScript si c'est une initiation dans un modal ET que le select enfant existe %>
+  <% if is_modal && show_child_dropdown %>
     <script>
       function toggleVolunteerVisibility<%= prefix_id %>() {
         const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');

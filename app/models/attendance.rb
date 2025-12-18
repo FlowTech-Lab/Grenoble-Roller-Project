@@ -35,6 +35,10 @@ class Attendance < ApplicationRecord
   validate :child_membership_belongs_to_user
   validate :no_duplicate_registration, on: :create
 
+  after_create :decrement_roller_stock, if: :should_decrement_stock? # Décrémenter le stock si matériel demandé
+  after_update :handle_stock_on_equipment_change # Gérer le stock si besoin matériel change
+  after_update :handle_stock_on_status_change, if: :saved_change_to_status? # Gérer le stock si statut change
+  after_destroy :increment_roller_stock, if: :should_increment_stock_on_destroy? # Incrémenter le stock si matériel était demandé
   after_destroy :notify_waitlist_if_needed # Notifier la liste d'attente si une place se libère
   after_update :notify_waitlist_on_cancellation, if: :saved_change_to_status? # Notifier si le statut passe à "canceled"
 
@@ -283,6 +287,95 @@ class Attendance < ApplicationRecord
         # Notifier la première personne en liste d'attente
         WaitlistEntry.notify_next_in_queue(event, count: 1)
       end
+    end
+  end
+
+  # Gestion du stock de rollers
+  def should_decrement_stock?
+    needs_equipment? && roller_size.present? && status != "canceled"
+  end
+
+  def should_increment_stock_on_destroy?
+    needs_equipment? && roller_size.present?
+  end
+
+  def decrement_roller_stock
+    return unless needs_equipment? && roller_size.present?
+
+    roller_stock = RollerStock.find_by(size: roller_size)
+    if roller_stock && roller_stock.quantity > 0
+      roller_stock.decrement!(:quantity)
+      Rails.logger.info("Stock décrémenté pour taille #{roller_size}: #{roller_stock.quantity} restants")
+    elsif roller_stock
+      Rails.logger.warn("Impossible de décrémenter le stock : taille #{roller_size} déjà à 0")
+    else
+      Rails.logger.warn("Taille de roller #{roller_size} non trouvée dans le stock")
+    end
+  end
+
+  def increment_roller_stock
+    return unless needs_equipment? && roller_size.present?
+
+    roller_stock = RollerStock.find_by(size: roller_size)
+    if roller_stock
+      roller_stock.increment!(:quantity)
+      Rails.logger.info("Stock incrémenté pour taille #{roller_size}: #{roller_stock.quantity} disponibles")
+    else
+      Rails.logger.warn("Taille de roller #{roller_size} non trouvée dans le stock lors de l'incrémentation")
+    end
+  end
+
+  def handle_stock_on_equipment_change
+    # Si le besoin de matériel change
+    if saved_change_to_needs_equipment? || saved_change_to_roller_size?
+      old_needs = saved_change_to_needs_equipment? ? saved_change_to_needs_equipment[0] : needs_equipment?
+      old_size = saved_change_to_roller_size? ? saved_change_to_roller_size[0] : roller_size
+      new_needs = needs_equipment?
+      new_size = roller_size
+
+      # Si on passait de "besoin matériel" à "pas besoin", incrémenter le stock de l'ancienne taille
+      if old_needs && old_size.present? && !new_needs && status != "canceled"
+        old_stock = RollerStock.find_by(size: old_size)
+        old_stock&.increment!(:quantity)
+        Rails.logger.info("Stock incrémenté (changement besoin matériel) pour taille #{old_size}")
+      end
+
+      # Si on passe de "pas besoin" à "besoin matériel", décrémenter le stock de la nouvelle taille
+      if !old_needs && new_needs && new_size.present? && status != "canceled"
+        new_stock = RollerStock.find_by(size: new_size)
+        if new_stock && new_stock.quantity > 0
+          new_stock.decrement!(:quantity)
+          Rails.logger.info("Stock décrémenté (changement besoin matériel) pour taille #{new_size}")
+        end
+      end
+
+      # Si la taille change mais qu'on a toujours besoin de matériel
+      if old_needs && new_needs && old_size != new_size && old_size.present? && new_size.present? && status != "canceled"
+        old_stock = RollerStock.find_by(size: old_size)
+        old_stock&.increment!(:quantity)
+        new_stock = RollerStock.find_by(size: new_size)
+        if new_stock && new_stock.quantity > 0
+          new_stock.decrement!(:quantity)
+          Rails.logger.info("Stock mis à jour : taille #{old_size} incrémentée, taille #{new_size} décrémentée")
+        end
+      end
+    end
+  end
+
+  def handle_stock_on_status_change
+    return unless needs_equipment? && roller_size.present?
+
+    old_status = status_before_last_save
+    new_status = status
+
+    # Si on passe de "non canceled" à "canceled", incrémenter le stock
+    if old_status != "canceled" && new_status == "canceled"
+      increment_roller_stock
+    end
+
+    # Si on passe de "canceled" à "non canceled", décrémenter le stock
+    if old_status == "canceled" && new_status != "canceled"
+      decrement_roller_stock
     end
   end
 end
