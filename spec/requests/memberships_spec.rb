@@ -167,6 +167,9 @@ RSpec.describe "Memberships", type: :request do
     context "when creating without payment (cash/check)" do
       it "blocks creation if questionnaire is empty for adult" do
         login_user(user_with_dob)
+        
+        # Compter les adhésions avant la tentative
+        initial_count = Membership.count
 
         post memberships_path, params: {
           payment_method: 'cash_check',
@@ -182,11 +185,15 @@ RSpec.describe "Memberships", type: :request do
         expect(response).to have_http_status(:redirect)
         expect(response.location).to include(new_membership_path)
         expect(flash[:alert]).to include("questionnaire de santé")
-        expect(Membership.count).to eq(0) # Aucune adhésion créée
+        # Aucune nouvelle adhésion créée
+        expect(Membership.count).to eq(initial_count)
       end
 
       it "blocks creation if questionnaire is empty for child" do
         login_user(user_with_dob)
+        
+        # Compter les adhésions avant la tentative
+        initial_count = Membership.count
 
         post memberships_path, params: {
           payment_method: 'cash_check',
@@ -203,7 +210,8 @@ RSpec.describe "Memberships", type: :request do
         expect(response).to have_http_status(:redirect)
         expect(response.location).to include(new_membership_path)
         expect(flash[:alert]).to include("questionnaire de santé")
-        expect(Membership.count).to eq(0) # Aucune adhésion créée
+        # Aucune nouvelle adhésion créée
+        expect(Membership.count).to eq(initial_count)
       end
 
       it "allows creation if questionnaire is complete for adult" do
@@ -285,19 +293,22 @@ RSpec.describe "Memberships", type: :request do
         it "bloque le renouvellement et redirige vers l'adhésion existante" do
           login_user(user)
           
-          expect do
-            post memberships_path, params: {
-              renew_from: expired_child_membership.id,
-              membership: {
-                category: 'standard',
-                is_child_membership: 'true',
-                child_first_name: expired_child_membership.child_first_name,
-                child_last_name: expired_child_membership.child_last_name,
-                child_date_of_birth: expired_child_membership.child_date_of_birth
-              }
+          # Compter les adhésions avant la tentative
+          initial_count = Membership.count
+          
+          post memberships_path, params: {
+            renew_from: expired_child_membership.id,
+            membership: {
+              category: 'standard',
+              is_child_membership: 'true',
+              child_first_name: expired_child_membership.child_first_name,
+              child_last_name: expired_child_membership.child_last_name,
+              child_date_of_birth: expired_child_membership.child_date_of_birth
             }
-          end.not_to change { Membership.count }
+          }
 
+          # Aucune nouvelle adhésion créée
+          expect(Membership.count).to eq(initial_count)
           expect(response).to redirect_to(membership_path(current_child_membership))
           expect(flash[:notice]).to include("Une adhésion existe déjà")
         end
