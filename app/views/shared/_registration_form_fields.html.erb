@@ -219,7 +219,7 @@
       <%= label_tag "roller_size_select#{prefix_id}", "Taille de rollers", class: "form-label" %>
       <%= select_tag :roller_size, 
           options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
-          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}", required: true } } %>
+          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}" } } %>
       <small id="roller_size_help<%= prefix_id %>" class="text-muted">
         <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
         Sous réserve de disponibilité du matériel.
@@ -237,12 +237,25 @@
         if (checkbox.checked) {
           container.style.display = 'block';
           select.required = true;
+          // S'assurer que le champ est accessible pour la validation
+          select.removeAttribute('disabled');
+          select.removeAttribute('hidden');
         } else {
           container.style.display = 'none';
           select.required = false;
           select.value = '';
+          // Réinitialiser le champ quand la checkbox est décochée
         }
       }
+    }
+    
+    // Initialiser l'état au chargement (au cas où la checkbox serait déjà cochée)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        toggleRollerSize<%= prefix_id %>();
+      });
+    } else {
+      toggleRollerSize<%= prefix_id %>();
     }
   </script>
 <% end %>
@@ -293,36 +306,15 @@
       // Support Turbo
       document.addEventListener('turbo:load', initVolunteerVisibility<%= prefix_id %>);
       
-      // IMPORTANT : Réinitialiser quand le modal Bootstrap s'ouvre
-      // Le modal peut être chargé dans le DOM mais pas visible, donc les scripts ne s'exécutent pas
-      // Trouver le modal parent du formulaire (chercher par ID avec et sans underscore)
-      function setupModalListener<%= prefix_id %>() {
-        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, ''); // Enlever le underscore initial
-        const formElement<%= prefix_id %> = document.getElementById('attendForm<%= prefix_id %>') || 
-                                            document.getElementById('attendForm' + prefixIdClean) ||
-                                            document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
-                                            document.getElementById('joinWaitlistForm' + prefixIdClean) ||
-                                            document.querySelector('form[id*="attendForm"]') ||
-                                            document.querySelector('form[id*="waitlist"]');
-        
-        if (formElement<%= prefix_id %>) {
-          const modalElement<%= prefix_id %> = formElement<%= prefix_id %>.closest('.modal');
-          if (modalElement<%= prefix_id %>) {
-            // Ajouter l'écouteur (une seule fois par modal)
-            const handler<%= prefix_id %> = function() {
-              // Réinitialiser la visibilité du bénévole quand le modal s'ouvre
-              setTimeout(function() {
-                toggleVolunteerVisibility<%= prefix_id %>();
-              }, 100);
-            };
-            modalElement<%= prefix_id %>.addEventListener('shown.bs.modal', handler<%= prefix_id %>);
-          }
-        }
-      }
-      
-      // Essayer de trouver le modal immédiatement et après un délai (au cas où le DOM n'est pas encore prêt)
-      setupModalListener<%= prefix_id %>();
-      setTimeout(setupModalListener<%= prefix_id %>, 500);
+      // Configurer l'écouteur pour le bénévole (utilise setupModalListenerGeneric défini au début du script)
+      setupModalListenerGeneric<%= prefix_id %>(function() {
+        toggleVolunteerVisibility<%= prefix_id %>();
+      });
+      setTimeout(function() {
+        setupModalListenerGeneric<%= prefix_id %>(function() {
+          toggleVolunteerVisibility<%= prefix_id %>();
+        });
+      }, 500);
     </script>
   <% end %>
 <% end %>
@@ -382,19 +374,21 @@
   # show_free_trial_children est déjà défini plus haut (avant le dropdown)
   # Variable combinée : afficher si parent OU enfant peut utiliser (même si l'autre ne peut plus)
   show_free_trial = is_initiation && !user_already_registered && (parent_has_trial || any_child_has_trial)
+  
+  # Vérifier si le parent a une adhésion active (pour déterminer si l'essai est obligatoire pour les enfants pending)
+  parent_has_active_membership = current_user.memberships.active_now.exists?
 %>
 <% if show_free_trial_parent || show_free_trial_children %>
-  <%# Champ caché pour garantir l'envoi de la valeur même si la checkbox est masquée %>
-  <%= hidden_field_tag "use_free_trial_hidden#{prefix_id}", "0", id: "use_free_trial_hidden#{prefix_id}" %>
   <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent || (show_free_trial_children && (child_memberships.any? { |m| m.trial? } || child_memberships.any? { |m| m.pending? })) ? '' : 'display: none;' %>">
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
         aria: { describedby: "free_trial_help#{prefix_id}" },
-        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}(); if (this.checked) { document.getElementById('use_free_trial_hidden#{prefix_id}').value = '1'; } else { document.getElementById('use_free_trial_hidden#{prefix_id}').value = '0'; }"
+        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}();"
     } %>
     <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label", id: "use_free_trial_label#{prefix_id}" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
+      <span id="free_trial_text<%= prefix_id %>">Utiliser mon essai gratuit</span>
     <% end %>
     <small id="free_trial_help<%= prefix_id %>" class="text-muted d-block mt-1">
       <span id="free_trial_help_text<%= prefix_id %>">
@@ -414,16 +408,24 @@
       
       // Fonction pour mettre à jour l'affichage de l'essai gratuit selon l'enfant sélectionné
       function updateFreeTrialDisplay<%= prefix_id %>() {
-        const form = document.querySelector('form[id*="attendForm"]') || document.querySelector('form[action*="attend"]');
+        // Utiliser un sélecteur strict pour éviter les conflits multi-instances
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const form = document.getElementById('attendForm<%= prefix_id %>') || 
+                     document.getElementById('attendForm' + prefixIdClean) ||
+                     document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                     document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                     document.querySelector('form[id*="attendForm"]') ||
+                     document.querySelector('form[action*="attend"]');
         if (!form) return;
         
-        const childSelect = form.querySelector('select[name="child_membership_id"]');
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>') || 
+                           form.querySelector('select[name="child_membership_id"]');
         const freeTrialContainer = document.getElementById('free_trial_container<%= prefix_id %>');
         const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
         const freeTrialText = document.getElementById('free_trial_text<%= prefix_id %>');
         const freeTrialHelpText = document.getElementById('free_trial_help_text<%= prefix_id %>');
         
-        if (!freeTrialContainer) return;
+        if (!freeTrialContainer || !freeTrialText) return;
         
         const selectedChildId = childSelect ? parseInt(childSelect.value) : null;
         const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
@@ -442,27 +444,36 @@
             
             if (isTrial) {
               // Enfant trial : essai gratuit OBLIGATOIRE
-              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped;
-              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (OBLIGATOIRE)';
+              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (OBLIGATOIRE) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
               if (freeTrialCheckbox) {
                 freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
                 freeTrialCheckbox.required = true; // Rendre obligatoire
-                const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
-                if (hiddenField) hiddenField.value = '1';
-                // IMPORTANT : Déclencher l'événement change pour que toggleSubmitButton soit appelé
-                freeTrialCheckbox.dispatchEvent(new Event('change'));
+                // toggleSubmitButton sera appelé à la fin de la fonction
               }
             } else if (isPending) {
-              // Enfant pending : essai gratuit OPTIONNEL (selon 02-statut-pending.md)
-              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (optionnel)';
-              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (optionnel) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation, mais ce n\'est pas obligatoire car son adhésion est en attente de paiement. Vous pouvez vous inscrire sans utiliser l\'essai gratuit.';
-              if (freeTrialCheckbox) {
-                freeTrialCheckbox.checked = false; // Pas cochée par défaut pour les enfants pending
-                freeTrialCheckbox.required = false; // Pas obligatoire
-                const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
-                if (hiddenField) hiddenField.value = '0';
-                // IMPORTANT : Déclencher l'événement change pour que toggleSubmitButton soit appelé
-                freeTrialCheckbox.dispatchEvent(new Event('change'));
+              // Enfant pending : essai gratuit OPTIONNEL si parent adhérent, OBLIGATOIRE sinon
+              const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
+              const allowNonMemberDiscovery = <%= event.allow_non_member_discovery? ? 'true' : 'false' %>;
+              
+              if (parentHasActiveMembership || allowNonMemberDiscovery) {
+                // Parent adhérent OU places découverte → essai optionnel
+                freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (optionnel)';
+                freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (optionnel) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation, mais ce n\'est pas obligatoire car son adhésion est en attente de paiement. Vous pouvez vous inscrire sans utiliser l\'essai gratuit.';
+                if (freeTrialCheckbox) {
+                  freeTrialCheckbox.checked = false; // Pas cochée par défaut pour les enfants pending
+                  freeTrialCheckbox.required = false; // Pas obligatoire
+                  // toggleSubmitButton sera appelé à la fin de la fonction
+                }
+              } else {
+                // Parent non adhérent ET pas de places découverte → essai OBLIGATOIRE
+                freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (OBLIGATOIRE)';
+                freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (OBLIGATOIRE) :</strong> Cet enfant doit utiliser son essai gratuit pour cette initiation car vous n\'avez pas d\'adhésion active. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+                if (freeTrialCheckbox) {
+                  freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants pending si parent non adhérent
+                  freeTrialCheckbox.required = true; // Rendre obligatoire
+                  // toggleSubmitButton sera appelé à la fin de la fonction
+                }
               }
             }
           } else {
@@ -471,10 +482,7 @@
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = false;
               freeTrialCheckbox.required = false;
-              const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
-              if (hiddenField) hiddenField.value = '0';
-              // IMPORTANT : Déclencher l'événement change pour que toggleSubmitButton soit appelé
-              freeTrialCheckbox.dispatchEvent(new Event('change'));
+              // toggleSubmitButton sera appelé à la fin de la fonction
             }
           }
         } else {
@@ -486,7 +494,9 @@
           if (parentCanUseTrial) {
             // Le parent peut utiliser son essai gratuit (inscription pour lui-même)
             freeTrialContainer.style.display = 'block';
-            freeTrialText.textContent = 'Utiliser mon essai gratuit';
+            if (freeTrialText) {
+              freeTrialText.textContent = 'Utiliser mon essai gratuit';
+            }
             <% if is_initiation && event.allow_non_member_discovery? %>
               freeTrialHelpText.innerHTML = 'Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.';
             <% else %>
@@ -495,10 +505,7 @@
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = false; // Pas cochée par défaut, l'utilisateur doit cocher explicitement
               freeTrialCheckbox.required = false; // Pas obligatoire si allow_non_member_discovery est activé
-              const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
-              if (hiddenField) hiddenField.value = '0';
-              // IMPORTANT : Déclencher l'événement change pour que toggleSubmitButton soit appelé
-              freeTrialCheckbox.dispatchEvent(new Event('change'));
+              // toggleSubmitButton sera appelé à la fin de la fonction
             }
           } else {
             // Le parent n'a pas d'essai gratuit disponible → MASQUER la checkbox
@@ -506,16 +513,12 @@
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = false;
               freeTrialCheckbox.required = false;
-              const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
-              if (hiddenField) hiddenField.value = '0';
-              // IMPORTANT : Déclencher l'événement change pour que toggleSubmitButton soit appelé
-              freeTrialCheckbox.dispatchEvent(new Event('change'));
+              // toggleSubmitButton sera appelé à la fin de la fonction
             }
           }
         }
         
-        // Appeler toggleSubmitButton pour mettre à jour l'état du bouton
-        // (double appel pour être sûr, même si l'événement change devrait le déclencher)
+        // Appeler toggleSubmitButton UNE SEULE FOIS à la fin pour mettre à jour l'état du bouton
         if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
           window.toggleSubmitButton<%= prefix_id %>();
         }
@@ -523,9 +526,17 @@
       
       // Fonction d'initialisation réutilisable
       function setupFreeTrialDisplay<%= prefix_id %>() {
-        const form = document.querySelector('form[id*="attendForm"]') || document.querySelector('form[action*="attend"]');
+        // Utiliser un sélecteur strict pour éviter les conflits multi-instances
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const form = document.getElementById('attendForm<%= prefix_id %>') || 
+                     document.getElementById('attendForm' + prefixIdClean) ||
+                     document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                     document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                     document.querySelector('form[id*="attendForm"]') ||
+                     document.querySelector('form[action*="attend"]');
         if (form) {
-          const childSelect = form.querySelector('select[name="child_membership_id"]');
+          const childSelect = document.getElementById('child_membership_id<%= prefix_id %>') || 
+                             form.querySelector('select[name="child_membership_id"]');
           if (childSelect) {
             // Retirer l'ancien listener s'il existe
             childSelect.removeEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
@@ -560,40 +571,42 @@
         }
       });
       
-      // IMPORTANT : Réinitialiser quand le modal Bootstrap s'ouvre
-      // Le modal peut être chargé dans le DOM mais pas visible, donc les scripts ne s'exécutent pas
-      // Trouver le modal parent du formulaire (chercher par ID avec et sans underscore)
-      function setupModalListenerFreeTrial<%= prefix_id %>() {
-        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, ''); // Enlever le underscore initial
-        const formElement<%= prefix_id %> = document.getElementById('attendForm<%= prefix_id %>') || 
-                                            document.getElementById('attendForm' + prefixIdClean) ||
-                                            document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
-                                            document.getElementById('joinWaitlistForm' + prefixIdClean) ||
-                                            document.querySelector('form[id*="attendForm"]') ||
-                                            document.querySelector('form[id*="waitlist"]');
+      // Fonction générique pour configurer l'écouteur modal (réutilisable)
+      function setupModalListenerGeneric<%= prefix_id %>(callback) {
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                           document.getElementById('attendForm' + prefixIdClean) ||
+                           document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                           document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                           document.querySelector('form[id*="attendForm"]') ||
+                           document.querySelector('form[id*="waitlist"]');
         
-        if (formElement<%= prefix_id %>) {
-          const modalElement<%= prefix_id %> = formElement<%= prefix_id %>.closest('.modal');
-          if (modalElement<%= prefix_id %>) {
-            // Ajouter l'écouteur (une seule fois par modal)
-            const handler<%= prefix_id %> = function() {
-              // Réinitialiser l'affichage de l'essai gratuit quand le modal s'ouvre
-              setTimeout(function() {
-                setupFreeTrialDisplay<%= prefix_id %>();
-                // Réinitialiser aussi le bouton submit
-                if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
-                  window.toggleSubmitButton<%= prefix_id %>();
-                }
-              }, 100);
+        if (formElement) {
+          const modalElement = formElement.closest('.modal');
+          if (modalElement && typeof callback === 'function') {
+            const handler = function() {
+              setTimeout(callback, 100);
             };
-            modalElement<%= prefix_id %>.addEventListener('shown.bs.modal', handler<%= prefix_id %>);
+            modalElement.addEventListener('shown.bs.modal', handler);
           }
         }
       }
       
-      // Essayer de trouver le modal immédiatement et après un délai (au cas où le DOM n'est pas encore prêt)
-      setupModalListenerFreeTrial<%= prefix_id %>();
-      setTimeout(setupModalListenerFreeTrial<%= prefix_id %>, 500);
+      // Configurer l'écouteur pour l'essai gratuit
+      setupModalListenerGeneric<%= prefix_id %>(function() {
+        setupFreeTrialDisplay<%= prefix_id %>();
+        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+          window.toggleSubmitButton<%= prefix_id %>();
+        }
+      });
+      setTimeout(function() {
+        setupModalListenerGeneric<%= prefix_id %>(function() {
+          setupFreeTrialDisplay<%= prefix_id %>();
+          if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+            window.toggleSubmitButton<%= prefix_id %>();
+          }
+        });
+      }, 500);
     </script>
   <% end %>
 <% end %>
@@ -608,6 +621,27 @@
 </div>
 
 <script>
+  // Fonction générique pour configurer l'écouteur modal (définie une seule fois, réutilisable partout)
+  function setupModalListenerGeneric<%= prefix_id %>(callback) {
+    const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+    const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                       document.getElementById('attendForm' + prefixIdClean) ||
+                       document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                       document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                       document.querySelector('form[id*="attendForm"]') ||
+                       document.querySelector('form[id*="waitlist"]');
+    
+    if (formElement) {
+      const modalElement = formElement.closest('.modal');
+      if (modalElement && typeof callback === 'function') {
+        const handler = function() {
+          setTimeout(callback, 100);
+        };
+        modalElement.addEventListener('shown.bs.modal', handler);
+      }
+    }
+  }
+  
   // Fonction pour activer/désactiver le bouton de soumission selon l'essai gratuit (accessible globalement)
   <% if show_free_trial %>
     // Définir la fonction globalement pour qu'elle soit accessible depuis l'attribut onchange
@@ -633,6 +667,9 @@
       const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
       const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
       
+      // Déclarer les variables une seule fois au début de la fonction (évite les erreurs de redéclaration)
+      const allowNonMemberDiscovery = <%= event.allow_non_member_discovery? ? 'true' : 'false' %>;
+      
       // Si pas de checkbox essai gratuit, activer le bouton (pas d'essai gratuit requis)
       if (!freeTrialCheckbox) {
         btn.disabled = false;
@@ -646,12 +683,17 @@
       // L'utilisateur doit explicitement cocher la checkbox pour activer le bouton
       // (même si techniquement il pourrait s'inscrire via les places découverte, on force l'utilisation de l'essai gratuit)
       
+      // Données des enfants (disponibles même si show_free_trial_children est false, pour le cas parent seul)
+      <% if show_free_trial %>
+        const trialChildrenData<%= prefix_id %> = <%= raw trial_children_data %>;
+        const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
+      <% end %>
+      
       // Vérifier d'abord si un enfant est sélectionné (logique spécifique pour les enfants)
       if (childSelect && childSelect.value) {
         const selectedChildId = parseInt(childSelect.value);
-        <% if show_free_trial_children %>
-          const trialChildrenData = <%= raw trial_children_data %>;
-          const selectedChild = trialChildrenData.find(c => c.id === selectedChildId);
+        <% if show_free_trial %>
+          const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
           
           if (selectedChild) {
             const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
@@ -665,32 +707,72 @@
               btn.style.cursor = 'not-allowed';
               return;
             }
-            // Pour les enfants pending : essai gratuit OPTIONNEL, le bouton reste actif même si non coché
+            // Pour les enfants pending : essai gratuit OPTIONNEL si parent adhérent, OBLIGATOIRE sinon
             if (isPending) {
-              btn.disabled = false;
-              btn.classList.remove('disabled', 'opacity-50');
-              btn.style.opacity = '1';
-              btn.style.cursor = 'pointer';
-              return;
+              if (parentHasActiveMembership || allowNonMemberDiscovery) {
+                // Parent adhérent OU places découverte → essai optionnel
+                btn.disabled = false;
+                btn.classList.remove('disabled', 'opacity-50');
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                return;
+              } else {
+                // Parent non adhérent ET pas de places découverte → essai OBLIGATOIRE
+                if (!freeTrialCheckbox.checked) {
+                  btn.disabled = true;
+                  btn.classList.add('disabled', 'opacity-50');
+                  btn.style.opacity = '0.6';
+                  btn.style.cursor = 'not-allowed';
+                  return;
+                }
+              }
             }
           }
         <% end %>
       }
       
-      // Pour le parent ou si aucun enfant sélectionné : désactiver le bouton si la checkbox n'est pas cochée
-      // Même si allow_non_member_discovery est activé, on force l'utilisation de l'essai gratuit
+      // Pour le parent ou si aucun enfant sélectionné
+      // Vérifier que le parent a réellement un essai gratuit disponible
+      <% if show_free_trial %>
+        const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+      <% else %>
+        const parentCanUseTrial = false;
+      <% end %>
+      
       if (freeTrialCheckbox.checked) {
+        // La checkbox est cochée : vérifier que le parent a vraiment un essai disponible
+        if (!parentCanUseTrial && !allowNonMemberDiscovery) {
+          // Le parent n'a pas d'essai ET pas de places découverte → bloquer
+          btn.disabled = true;
+          btn.classList.add('disabled', 'opacity-50');
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+          console.warn('toggleSubmitButton<%= prefix_id %>: Parent n\'a pas d\'essai gratuit disponible');
+          return;
+        }
+        // Le parent a un essai OU places découverte disponibles → activer
         btn.disabled = false;
         btn.classList.remove('disabled', 'opacity-50');
         btn.style.opacity = '1';
         btn.style.cursor = 'pointer';
         console.log('toggleSubmitButton<%= prefix_id %>: Bouton activé (checkbox cochée)');
       } else {
-        btn.disabled = true;
-        btn.classList.add('disabled', 'opacity-50');
-        btn.style.opacity = '0.6';
-        btn.style.cursor = 'not-allowed';
-        console.log('toggleSubmitButton<%= prefix_id %>: Bouton désactivé (checkbox non cochée)');
+        // La checkbox n'est pas cochée
+        if (allowNonMemberDiscovery) {
+          // Places découverte disponibles → permettre l'inscription sans essai
+          btn.disabled = false;
+          btn.classList.remove('disabled', 'opacity-50');
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          console.log('toggleSubmitButton<%= prefix_id %>: Bouton activé (places découverte disponibles)');
+        } else {
+          // Pas de places découverte → bloquer si pas d'essai
+          btn.disabled = true;
+          btn.classList.add('disabled', 'opacity-50');
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+          console.log('toggleSubmitButton<%= prefix_id %>: Bouton désactivé (checkbox non cochée)');
+        }
       }
     };
   <% else %>
@@ -762,13 +844,14 @@
     
     // Initialiser l'état du bouton au chargement
     <% if show_free_trial %>
-      // IMPORTANT : Même avec allow_non_member_discovery activé, le bouton doit être gris par défaut
-      // L'utilisateur doit explicitement cocher la checkbox pour activer le bouton
-      // Désactiver le bouton par défaut (il sera activé par toggleSubmitButton si la checkbox est cochée)
-      submitButton.disabled = true;
-      submitButton.classList.add('disabled', 'opacity-50');
-      submitButton.style.opacity = '0.6';
-      submitButton.style.cursor = 'not-allowed';
+      // Désactiver le bouton par défaut si essai gratuit requis
+      // Si allow_non_member_discovery est activé, le bouton sera activé par toggleSubmitButton
+      <% if !event.allow_non_member_discovery? %>
+        submitButton.disabled = true;
+        submitButton.classList.add('disabled', 'opacity-50');
+        submitButton.style.opacity = '0.6';
+        submitButton.style.cursor = 'not-allowed';
+      <% end %>
       
       // Initialiser l'état au chargement
       function initSubmitButton<%= prefix_id %>() {
@@ -786,36 +869,15 @@
       // Support Turbo
       document.addEventListener('turbo:load', initSubmitButton<%= prefix_id %>);
       
-      // IMPORTANT : Réinitialiser quand le modal Bootstrap s'ouvre
-      // Le modal peut être chargé dans le DOM mais pas visible, donc les scripts ne s'exécutent pas
-      // Trouver le modal parent du formulaire (chercher par ID avec et sans underscore)
-      function setupModalListenerSubmit<%= prefix_id %>() {
-        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, ''); // Enlever le underscore initial
-        const formElement<%= prefix_id %> = document.getElementById('attendForm<%= prefix_id %>') || 
-                                            document.getElementById('attendForm' + prefixIdClean) ||
-                                            document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
-                                            document.getElementById('joinWaitlistForm' + prefixIdClean) ||
-                                            document.querySelector('form[id*="attendForm"]') ||
-                                            document.querySelector('form[id*="waitlist"]');
-        
-        if (formElement<%= prefix_id %>) {
-          const modalElement<%= prefix_id %> = formElement<%= prefix_id %>.closest('.modal');
-          if (modalElement<%= prefix_id %>) {
-            // Ajouter l'écouteur (une seule fois par modal)
-            const handler<%= prefix_id %> = function() {
-              // Réinitialiser le bouton submit quand le modal s'ouvre
-              setTimeout(function() {
-                initSubmitButton<%= prefix_id %>();
-              }, 100);
-            };
-            modalElement<%= prefix_id %>.addEventListener('shown.bs.modal', handler<%= prefix_id %>);
-          }
-        }
-      }
-      
-      // Essayer de trouver le modal immédiatement et après un délai (au cas où le DOM n'est pas encore prêt)
-      setupModalListenerSubmit<%= prefix_id %>();
-      setTimeout(setupModalListenerSubmit<%= prefix_id %>, 500);
+      // Configurer l'écouteur pour le bouton submit (utilise setupModalListenerGeneric défini au début du script)
+      setupModalListenerGeneric<%= prefix_id %>(function() {
+        initSubmitButton<%= prefix_id %>();
+      });
+      setTimeout(function() {
+        setupModalListenerGeneric<%= prefix_id %>(function() {
+          initSubmitButton<%= prefix_id %>();
+        });
+      }, 500);
     <% end %>
   })();
 </script>

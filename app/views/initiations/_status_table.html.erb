@@ -1,0 +1,145 @@
+<%# Tableau statut glassmorphism avec mini-cards row %>
+<div class="status-table-container">
+  <div class="status-table-wrapper">
+    <!-- En-tête du tableau -->
+    <div class="status-table-header">
+      <div class="status-col-person">Personne</div>
+      <div class="status-col-status">Statut</div>
+      <div class="status-col-action">Action</div>
+    </div>
+
+    <!-- Contenu du tableau -->
+    <div class="status-table-body">
+      <!-- VOUS (Parent) -->
+      <div class="status-row status-row-parent">
+        <div class="status-cell status-col-person">
+          <span class="status-badge-person">
+            <i class="bi bi-person-circle text-liquid-primary me-2" aria-hidden="true"></i>
+            <strong>Vous</strong>
+          </span>
+        </div>
+        
+        <div class="status-cell status-col-status">
+          <% parent_has_active = current_user.memberships.active_now.exists? %>
+          <% parent_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists? %>
+          
+          <% if parent_has_active %>
+            <span class="badge bg-success fs-6">
+              <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+              Adhérent actif
+            </span>
+          <% elsif parent_free_trial_used %>
+            <span class="badge bg-danger fs-6">
+              <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+              Essai utilisé
+            </span>
+          <% else %>
+            <span class="badge bg-info fs-6">
+              <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+              Essai disponible
+            </span>
+          <% end %>
+        </div>
+        
+        <div class="status-cell status-col-action text-center">
+          <% if parent_has_active || !parent_free_trial_used %>
+            <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
+          <% else %>
+            <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- ENFANTS -->
+      <% child_memberships = current_user.memberships.where(is_child_membership: true).order(created_at: :desc) %>
+      <% if child_memberships.any? %>
+        <% child_memberships.each do |child| %>
+          <div class="status-row status-row-child">
+            <div class="status-cell status-col-person">
+              <span class="status-badge-person">
+                <i class="bi bi-person text-liquid-primary me-2" aria-hidden="true"></i>
+                <div>
+                  <strong><%= child.child_first_name %></strong>
+                  <br>
+                  <small class="text-muted"><%= child.child_last_name %></small>
+                </div>
+              </span>
+            </div>
+            
+            <div class="status-cell status-col-status">
+              <% case child.status %>
+              <% when 'active' %>
+                <span class="badge bg-success fs-6">
+                  <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                  Adhérent actif
+                </span>
+              <% when 'pending' %>
+                <% if current_user.memberships.active_now.exists? %>
+                  <span class="badge bg-warning fs-6">
+                    <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>
+                    En attente
+                  </span>
+                <% else %>
+                  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+                  <% if child_free_trial_used %>
+                    <span class="badge bg-danger fs-6">
+                      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                      Essai utilisé
+                    </span>
+                  <% else %>
+                    <span class="badge bg-info fs-6">
+                      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+                      Essai dispo
+                    </span>
+                  <% end %>
+                <% end %>
+              <% when 'trial' %>
+                <% if current_user.memberships.active_now.exists? %>
+                  <span class="badge bg-success fs-6">
+                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                    Accès parent
+                  </span>
+                <% else %>
+                  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+                  <% if child_free_trial_used %>
+                    <span class="badge bg-danger fs-6">
+                      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                      Essai utilisé
+                    </span>
+                  <% else %>
+                    <span class="badge bg-info fs-6">
+                      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+                      Essai dispo
+                    </span>
+                  <% end %>
+                <% end %>
+              <% when 'expired' %>
+                <span class="badge bg-secondary fs-6">
+                  <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>
+                  Expiré
+                </span>
+              <% end %>
+            </div>
+            
+            <div class="status-cell status-col-action text-center">
+              <% if child.status == 'active' %>
+                <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
+              <% elsif child.status == 'expired' %>
+                <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
+              <% elsif current_user.memberships.active_now.exists? %>
+                <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
+              <% else %>
+                <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+                <% if child_free_trial_used %>
+                  <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
+                <% else %>
+                  <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
