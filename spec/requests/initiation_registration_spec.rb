@@ -99,6 +99,96 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
         expect(response).to redirect_to(root_path)
         expect(flash[:alert]).to be_present
       end
+      
+      it 'prevents user from registering to second initiation even with allow_non_member_discovery enabled' do
+        # SÉCURITÉ CRITIQUE : Même si allow_non_member_discovery est activé,
+        # l'utilisateur ne peut pas s'inscrire à une deuxième initiation si l'essai gratuit a déjà été utilisé
+        user = create_user(role: user_role)
+        # Pas d'adhésion active
+        
+        # Première initiation avec essai gratuit utilisé
+        first_initiation = create_event(
+          type: 'Event::Initiation',
+          status: 'published',
+          max_participants: 30,
+          allow_non_member_discovery: false  # Essai gratuit requis
+        )
+        login_user(user)
+        post initiation_attendances_path(first_initiation), params: { use_free_trial: "1" }
+        expect(response).to redirect_to(initiation_path(first_initiation))
+        
+        # Vérifier que l'essai gratuit est consommé
+        expect(user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?).to be true
+        
+        # Tentative d'inscription à une deuxième initiation avec allow_non_member_discovery activé
+        # MAIS sans utiliser l'essai gratuit (places découverte)
+        second_initiation = create_event(
+          type: 'Event::Initiation',
+          status: 'published',
+          max_participants: 30,
+          allow_non_member_discovery: true,  # Places découverte activées
+          non_member_discovery_slots: 10
+        )
+        
+        # L'inscription doit être BLOQUÉE car l'essai gratuit a déjà été utilisé
+        expect do
+          post initiation_attendances_path(second_initiation)
+        end.not_to change { Attendance.count }
+        
+        # Le contrôleur doit rediriger avec un message d'erreur
+        expect(response).to redirect_to(initiation_path(second_initiation))
+        expect(flash[:alert]).to include("Vous avez déjà utilisé votre essai gratuit")
+        expect(flash[:alert]).to include("Une adhésion est maintenant requise")
+      end
+      
+      it 'prevents child from registering to second initiation even with allow_non_member_discovery enabled' do
+        # SÉCURITÉ CRITIQUE : Même si allow_non_member_discovery est activé,
+        # un enfant ne peut pas s'inscrire à une deuxième initiation si l'essai gratuit a déjà été utilisé
+        parent = create_user(role: user_role)
+        child_membership = create(:membership, :child, :trial, :with_health_questionnaire,
+          user: parent,
+          season: '2025-2026'
+        )
+        
+        # Première initiation avec essai gratuit utilisé
+        first_initiation = create_event(
+          type: 'Event::Initiation',
+          status: 'published',
+          max_participants: 30,
+          allow_non_member_discovery: false  # Essai gratuit requis
+        )
+        login_user(parent)
+        post initiation_attendances_path(first_initiation), params: {
+          child_membership_id: child_membership.id,
+          use_free_trial: "1"
+        }
+        expect(response).to redirect_to(initiation_path(first_initiation))
+        
+        # Vérifier que l'essai gratuit est consommé
+        expect(parent.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be true
+        
+        # Tentative d'inscription à une deuxième initiation avec allow_non_member_discovery activé
+        # MAIS sans utiliser l'essai gratuit (places découverte)
+        second_initiation = create_event(
+          type: 'Event::Initiation',
+          status: 'published',
+          max_participants: 30,
+          allow_non_member_discovery: true,  # Places découverte activées
+          non_member_discovery_slots: 10
+        )
+        
+        # L'inscription doit être BLOQUÉE car l'essai gratuit a déjà été utilisé
+        expect do
+          post initiation_attendances_path(second_initiation), params: {
+            child_membership_id: child_membership.id
+          }
+        end.not_to change { Attendance.count }
+        
+        # Le contrôleur doit rediriger avec un message d'erreur
+        expect(response).to redirect_to(initiation_path(second_initiation))
+        expect(flash[:alert]).to include("Cet enfant a déjà utilisé son essai gratuit")
+        expect(flash[:alert]).to include("Une adhésion")
+      end
     end
 
     describe 'Full Capacity - Bloquer quand complet' do
@@ -426,7 +516,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
           # Vérifier que l'essai gratuit est maintenant consommé
           expect(parent.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be true
           
-          # Vérifier que l'enfant ne peut plus utiliser son essai gratuit pour une autre initiation
+          # Vérifier que l'enfant ne peut plus s'inscrire à une autre initiation (essai déjà utilisé, adhésion non payée)
           second_initiation = create_event(
             type: 'Event::Initiation',
             status: 'published',
@@ -434,16 +524,140 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
             allow_non_member_discovery: false
           )
           
+          # L'inscription doit être BLOQUÉE car l'essai gratuit a déjà été utilisé
           expect do
             post initiation_attendances_path(second_initiation), params: {
+              child_membership_id: child_membership.id
+            }
+          end.not_to change { Attendance.count }
+          
+          # Le contrôleur doit rediriger avec un message d'erreur
+          expect(response).to redirect_to(initiation_path(second_initiation))
+          expect(flash[:alert]).to include("L'essai gratuit a déjà été utilisé")
+        end
+        
+        it 'bloque inscription enfant pending si essai gratuit déjà utilisé' do
+          parent = create_user(role: user_role)
+          child_membership = create(:membership, :child, :pending, :with_health_questionnaire,
+            user: parent,
+            season: '2025-2026'
+          )
+          
+          # Utiliser l'essai gratuit sur une première initiation
+          first_initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+          
+          # Première inscription avec essai gratuit
+          post initiation_attendances_path(first_initiation), params: {
+            child_membership_id: child_membership.id,
+            use_free_trial: "1"
+          }
+          expect(response).to redirect_to(initiation_path(first_initiation))
+          
+          # Vérifier que l'essai gratuit est consommé
+          expect(parent.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be true
+          
+          # Tentative d'inscription à une deuxième initiation (sans essai gratuit)
+          second_initiation = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          
+          # L'inscription doit être BLOQUÉE
+          expect do
+            post initiation_attendances_path(second_initiation), params: {
+              child_membership_id: child_membership.id
+            }
+          end.not_to change { Attendance.count }
+          
+          # Le contrôleur doit rediriger avec un message d'erreur
+          expect(response).to redirect_to(initiation_path(second_initiation))
+          expect(flash[:alert]).to include("L'essai gratuit a déjà été utilisé")
+          expect(flash[:alert]).to include("Une adhésion active est maintenant requise")
+        end
+        
+        it 'permet inscription sans essai puis avec essai, puis bloque après consommation' do
+          # Selon la documentation 02-statut-pending.md (exemple T0-T5) :
+          # T1: Enfant s'inscrit à Initiation A SANS essai gratuit → free_trial_used = false
+          # T2: L'essai gratuit reste disponible
+          # T3: Enfant s'inscrit à Initiation B AVEC essai gratuit → free_trial_used = true
+          # T4: L'essai gratuit est consommé
+          # T5: Enfant essaie de s'inscrire à Initiation C SANS essai → BLOQUÉ
+          
+          parent = create_user(role: user_role)
+          child_membership = create(:membership, :child, :pending, :with_health_questionnaire,
+            user: parent,
+            season: '2025-2026'
+          )
+          
+          initiation_a = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          login_user(parent)
+          
+          # T1: Inscription Initiation A SANS essai gratuit
+          expect do
+            post initiation_attendances_path(initiation_a), params: {
+              child_membership_id: child_membership.id
+            }
+          end.to change { Attendance.count }.by(1)
+          
+          attendance_a = Attendance.last
+          expect(attendance_a.free_trial_used).to be false
+          expect(response).to redirect_to(initiation_path(initiation_a))
+          
+          # T2: Vérifier que l'essai gratuit est toujours disponible
+          expect(parent.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be false
+          
+          # T3: Inscription Initiation B AVEC essai gratuit
+          initiation_b = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          
+          expect do
+            post initiation_attendances_path(initiation_b), params: {
               child_membership_id: child_membership.id,
               use_free_trial: "1"
             }
           end.to change { Attendance.count }.by(1)
           
-          # L'inscription réussit (car pending = is_member = true), mais sans essai gratuit
-          second_attendance = Attendance.where(user: parent, event: second_initiation, child_membership_id: child_membership.id).last
-          expect(second_attendance.free_trial_used).to be false # Essai déjà utilisé, donc false
+          attendance_b = Attendance.last
+          expect(attendance_b.free_trial_used).to be true
+          expect(response).to redirect_to(initiation_path(initiation_b))
+          
+          # T4: Vérifier que l'essai gratuit est maintenant consommé
+          expect(parent.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be true
+          
+          # T5: Tentative d'inscription Initiation C SANS essai gratuit → BLOQUÉ
+          initiation_c = create_event(
+            type: 'Event::Initiation',
+            status: 'published',
+            max_participants: 30,
+            allow_non_member_discovery: false
+          )
+          
+          expect do
+            post initiation_attendances_path(initiation_c), params: {
+              child_membership_id: child_membership.id
+            }
+          end.not_to change { Attendance.count }
+          
+          expect(response).to redirect_to(initiation_path(initiation_c))
+          expect(flash[:alert]).to include("L'essai gratuit a déjà été utilisé")
+          expect(flash[:alert]).to include("Une adhésion active est maintenant requise")
         end
       end
 

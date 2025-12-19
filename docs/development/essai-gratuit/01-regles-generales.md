@@ -74,6 +74,10 @@ end
 - Il peut s'inscrire à nouveau à une initiation en utilisant son essai gratuit
 - Seules les attendances avec `status = "canceled"` sont exclues des vérifications
 
+**Cas limites détaillés** :
+- **Cas limite 5.3** : [Annulation puis Double Inscription](05-cas-limites.md#53-annulation-puis-double-inscription) - Protection contre les race conditions lors de réinscriptions parallèles après annulation
+- **Cas limite 5.6** : [Réinscription à la Même Initiation Après Annulation](05-cas-limites.md#56-réinscription-à-la-même-initiation-après-annulation) - Réutilisation de l'essai gratuit pour la même initiation après annulation
+
 **Exemple concret** :
 ```
 T0: Enfant créé → pending + essai gratuit disponible (implicite)
@@ -83,6 +87,10 @@ T3: Enfant annule Initiation A → Attendance.status = "canceled"
 T4: Essai gratuit redevient disponible (scope .active exclut canceled)
 T5: Enfant peut s'inscrire à Initiation B avec essai gratuit
 ```
+
+**Voir aussi** :
+- [Section détaillée : Réutilisation après annulation](16-reutilisation-annulation.md) - Exemple complet avec code
+- [Cas limites complets](05-cas-limites.md) - Tous les cas limites documentés (5.1 à 5.6)
 
 ---
 

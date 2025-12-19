@@ -19,9 +19,18 @@
 - `trial` = Non adhérent, essai gratuit **OBLIGATOIRE** pour s'inscrire
 - `pending` = Adhérent en attente de paiement, essai gratuit **OPTIONNEL**
 
-**Clarification importante** :
-- Si un enfant `pending` s'inscrit **SANS** utiliser son essai gratuit, l'essai gratuit **reste disponible** pour une future initiation
+**⚠️ NOTE IMPORTANTE - Essai Gratuit Optionnel pour Pending** :
+- Si un enfant `pending` s'inscrit **SANS** utiliser son essai gratuit (checkbox non cochée), l'essai gratuit **reste disponible** pour une future initiation
+- Si un enfant `pending` s'inscrit **AVEC** son essai gratuit (checkbox cochée), l'essai gratuit est **consommé** et l'enfant **ne pourra plus s'inscrire** sans adhésion active
 - L'essai gratuit n'est "consommé" que lorsqu'une `Attendance` est créée avec `free_trial_used = true`
+- **Exemple concret** :
+  - T0: Enfant créé en `pending` → essai gratuit disponible (implicite)
+  - T1: Enfant s'inscrit à Initiation A **SANS** cocher la checkbox essai gratuit → `Attendance` créée avec `free_trial_used = false`
+  - T2: L'essai gratuit est **toujours disponible** (car `free_trial_used = false`)
+  - T3: Enfant peut s'inscrire à Initiation B **AVEC** essai gratuit → `Attendance` créée avec `free_trial_used = true`
+  - T4: L'essai gratuit est maintenant **consommé** (car `free_trial_used = true`)
+  - T5: Enfant essaie de s'inscrire à Initiation C **SANS** essai gratuit → **BLOQUÉ** (essai déjà utilisé, adhésion non payée)
+- **Voir aussi** : [Section détaillée sur la réutilisation](16-reutilisation-annulation.md) et [Cas limite 5.6](05-cas-limites.md#56-réinscription-à-la-même-initiation-après-annulation)
 
 ## 2.2. Contexte de Création
 

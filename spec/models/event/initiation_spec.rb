@@ -135,6 +135,194 @@ RSpec.describe Event::Initiation, type: :model do
     end
   end
 
+  describe '#available_non_member_places' do
+    context 'when allow_non_member_discovery is false' do
+      it 'returns 0' do
+        initiation = create(:event_initiation, 
+          creator_user: creator,
+          allow_non_member_discovery: false,
+          non_member_discovery_slots: nil
+        )
+        expect(initiation.available_non_member_places).to eq(0)
+      end
+    end
+
+    context 'when allow_non_member_discovery is true' do
+      context 'when non_member_discovery_slots is nil (illimité)' do
+        it 'returns Float::INFINITY' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: nil,
+            max_participants: 30
+          )
+          expect(initiation.available_non_member_places).to eq(Float::INFINITY)
+        end
+
+        it 'returns Float::INFINITY even with non-member participants' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: nil,
+            max_participants: 30
+          )
+          # Créer 10 participants non-adhérents
+          10.times do
+            user = create_user
+            create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+          end
+          expect(initiation.available_non_member_places).to eq(Float::INFINITY)
+        end
+      end
+
+      context 'when non_member_discovery_slots is defined (limité)' do
+        it 'calculates available places correctly' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5,
+            max_participants: 30
+          )
+          expect(initiation.available_non_member_places).to eq(5)
+        end
+
+        it 'decreases when non-member participants register' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5,
+            max_participants: 30
+          )
+          # Créer 2 participants non-adhérents
+          2.times do
+            user = create_user
+            create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+          end
+          expect(initiation.available_non_member_places).to eq(3) # 5 - 2 = 3
+        end
+
+        it 'returns 0 when limit is reached' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5,
+            max_participants: 30
+          )
+          # Créer 5 participants non-adhérents
+          5.times do
+            user = create_user
+            create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+          end
+          expect(initiation.available_non_member_places).to eq(0)
+        end
+      end
+    end
+  end
+
+  describe '#full_for_non_members?' do
+    context 'when allow_non_member_discovery is false' do
+      it 'returns false' do
+        initiation = create(:event_initiation,
+          creator_user: creator,
+          allow_non_member_discovery: false
+        )
+        expect(initiation.full_for_non_members?).to be false
+      end
+    end
+
+    context 'when allow_non_member_discovery is true' do
+      context 'when non_member_discovery_slots is nil (illimité)' do
+        it 'returns false (never full)' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: nil,
+            max_participants: 30
+          )
+          # Créer 100 participants non-adhérents (dépasse max_participants)
+          100.times do
+            user = create_user
+            create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+          end
+          expect(initiation.full_for_non_members?).to be false
+        end
+      end
+
+      context 'when non_member_discovery_slots is defined (limité)' do
+        it 'returns false when places available' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5,
+            max_participants: 30
+          )
+          expect(initiation.full_for_non_members?).to be false
+        end
+
+        it 'returns true when limit is reached' do
+          initiation = create(:event_initiation,
+            creator_user: creator,
+            allow_non_member_discovery: true,
+            non_member_discovery_slots: 5,
+            max_participants: 30
+          )
+          # Créer 5 participants non-adhérents
+          5.times do
+            user = create_user
+            create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+          end
+          expect(initiation.full_for_non_members?).to be true
+        end
+      end
+    end
+  end
+
+  describe '#full? with allow_non_member_discovery' do
+    context 'when non_member_discovery_slots is nil (illimité)' do
+      it 'returns false if member places available, even if many non-members' do
+        initiation = create(:event_initiation,
+          creator_user: creator,
+          allow_non_member_discovery: true,
+          non_member_discovery_slots: nil,
+          max_participants: 30
+        )
+        # Créer 1 participant adhérent
+        member = create_user
+        create(:membership, user: member, status: :active, season: '2025-2026')
+        create(:attendance, event: initiation, user: member, is_volunteer: false, status: 'registered')
+        # Créer 50 participants non-adhérents (dépasse max_participants mais illimité pour non-members)
+        50.times do
+          user = create_user
+          create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+        end
+        expect(initiation.full?).to be false # Places adhérents disponibles
+      end
+    end
+
+    context 'when non_member_discovery_slots is defined (limité)' do
+      it 'returns true only when both member and non-member places are full' do
+        initiation = create(:event_initiation,
+          creator_user: creator,
+          allow_non_member_discovery: true,
+          non_member_discovery_slots: 5,
+          max_participants: 30
+        )
+        # Remplir les places adhérents (30 - 5 = 25 places)
+        25.times do
+          member = create_user
+          create(:membership, user: member, status: :active, season: '2025-2026')
+          create(:attendance, event: initiation, user: member, is_volunteer: false, status: 'registered')
+        end
+        # Remplir les places non-adhérents (5 places)
+        5.times do
+          user = create_user
+          create(:attendance, event: initiation, user: user, is_volunteer: false, status: 'registered')
+        end
+        expect(initiation.full?).to be true
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.by_season' do
       it 'filters by season' do

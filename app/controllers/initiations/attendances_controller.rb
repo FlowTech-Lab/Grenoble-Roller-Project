@@ -74,17 +74,20 @@ module Initiations
         return
       end
 
+      # IMPORTANT : Définir child_membership AVANT son utilisation (cohérent avec la documentation 14-flux-inscription.md:55)
+      # Cela améliore la lisibilité et évite toute confusion sur la portée de la variable
+      child_membership = child_membership_id.present? ? current_user.memberships.find_by(id: child_membership_id) : nil
+
       # Vérifier si l'utilisateur est adhérent
       is_member = if child_membership_id.present?
         # Pour un enfant : vérifier l'adhésion enfant (active, trial ou pending)
         # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
-        child_membership = current_user.memberships.find_by(id: child_membership_id)
         unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           redirect_to initiation_path(@initiation), alert: "L'adhésion de cet enfant n'est pas active."
           return
         end
         # L'enfant est considéré comme membre si l'adhésion est active ou pending (pas trial)
-        child_membership.active? || child_membership.pending?
+        child_membership&.active? || child_membership&.pending?
       else
         # Pour le parent : vérifier adhésion parent ou enfant
         current_user.memberships.active_now.exists? ||
@@ -98,15 +101,23 @@ module Initiations
       # Selon la documentation 02-statut-pending.md :
       # "Un enfant avec statut pending peut OPTIONNELLEMENT utiliser son essai gratuit"
       # "L'essai gratuit reste disponible s'il n'est pas utilisé lors de l'inscription"
-      # L'enfant peut s'inscrire sans utiliser l'essai gratuit (pending = valide, is_member = true)
-      # Mais peut aussi utiliser son essai gratuit si disponible et si la checkbox est cochée
+      # IMPORTANT : Si l'essai gratuit a déjà été utilisé, l'enfant ne peut plus s'inscrire sans adhésion active
+      # même si allow_non_member_discovery est activé
       if child_membership_id.present? && child_membership&.pending?
+        # Vérifier si l'essai gratuit a déjà été utilisé (attendance active uniquement)
+        # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+        free_trial_already_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+        
+        if free_trial_already_used
+          # L'essai gratuit a déjà été utilisé : l'enfant ne peut plus s'inscrire sans adhésion active
+          # même si allow_non_member_discovery est activé
+          redirect_to initiation_path(@initiation), alert: "L'essai gratuit a déjà été utilisé. Une adhésion active est maintenant requise pour s'inscrire."
+          return
+        end
+        
+        # L'essai gratuit est disponible : l'enfant peut s'inscrire avec ou sans essai gratuit (optionnel)
         if params[:use_free_trial] == "1"
-          # Vérifier que l'essai n'a pas déjà été utilisé (attendance active uniquement)
-          # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
-          unless current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
-            attendance.free_trial_used = true
-          end
+          attendance.free_trial_used = true
         end
       elsif child_membership_id.present? && child_membership&.trial? && !is_member
         # SÉCURITÉ CRITIQUE : Gestion essai gratuit pour les enfants avec statut trial uniquement
@@ -126,7 +137,7 @@ module Initiations
         unless use_free_trial
           # Chercher tous les champs cachés use_free_trial_hidden*
           hidden_trial_params = params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }
-          use_free_trial = hidden_trial_params.any?
+          use_free_trial = hidden_trial_params.present?
         end
         
         unless use_free_trial
@@ -136,7 +147,19 @@ module Initiations
         
         attendance.free_trial_used = true
       elsif child_membership_id.nil? && !is_member
-        # Non-adhérent parent : vérifier si l'option de découverte est activée
+        # Non-adhérent parent : vérifier si l'essai gratuit a déjà été utilisé
+        # IMPORTANT : Cette vérification doit être faite AVANT de permettre l'inscription
+        # même si allow_non_member_discovery est activé
+        free_trial_already_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
+        
+        if free_trial_already_used
+          # L'essai gratuit a déjà été utilisé : l'utilisateur ne peut plus s'inscrire sans adhésion
+          # même si allow_non_member_discovery est activé
+          redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit. Une adhésion est maintenant requise pour continuer."
+          return
+        end
+        
+        # Vérifier si l'option de découverte est activée
         if @initiation.allow_non_member_discovery?
           # Option activée : vérifier qu'il reste des places découverte
           if @initiation.full_for_non_members?
@@ -146,12 +169,7 @@ module Initiations
           # Les non-adhérents peuvent s'inscrire dans les places découverte (pas besoin d'essai gratuit)
           # L'essai gratuit n'est utilisé que si explicitement demandé
           if params[:use_free_trial] == "1"
-            # Vérifier essai gratuit parent (sans child_membership_id, attendance active uniquement)
-            # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
-            if current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
-              redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
-              return
-            end
+            # L'essai gratuit n'a pas encore été utilisé (vérifié plus haut)
             attendance.free_trial_used = true
           end
         else

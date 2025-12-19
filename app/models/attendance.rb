@@ -220,9 +220,25 @@ class Attendance < ApplicationRecord
         unless has_active_membership || has_child_membership || free_trial_used
           errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
         end
+      else
+        # Si l'option est activée et que l'utilisateur n'est pas adhérent,
+        # SÉCURITÉ : Vérifier que l'essai gratuit n'a pas déjà été utilisé
+        # Si l'essai gratuit a déjà été utilisé, l'utilisateur ne peut plus s'inscrire sans adhésion
+        # même si allow_non_member_discovery est activé
+        unless is_member
+          if child_membership_id.present?
+            # Pour un enfant : vérifier si cet enfant a déjà utilisé son essai gratuit
+            if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+              errors.add(:base, "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise.")
+            end
+          else
+            # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit
+            if user.attendances.active.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
+              errors.add(:base, "Vous avez déjà utilisé votre essai gratuit. Une adhésion est maintenant requise pour continuer.")
+            end
+          end
+        end
       end
-      # Si l'option est activée et que l'utilisateur n'est pas adhérent,
-      # l'inscription est autorisée dans les places découverte (pas besoin d'essai gratuit)
     end
   end
 

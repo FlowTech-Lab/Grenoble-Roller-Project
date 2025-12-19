@@ -15,7 +15,8 @@
 **Pour enfant `pending`** :
 - ✅ **Affichée** : Si l'enfant n'a pas encore utilisé son essai gratuit
 - ❌ **Pas cochée par défaut** : L'essai gratuit est optionnel (l'adhésion `pending` est valide)
-- ❌ **Pas obligatoire** : L'enfant peut s'inscrire sans utiliser l'essai gratuit
+- ❌ **Pas obligatoire** : L'enfant peut s'inscrire sans utiliser l'essai gratuit (si l'essai n'a pas encore été utilisé)
+- ⚠️ **IMPORTANT** : Si l'essai gratuit a déjà été utilisé, l'enfant **ne peut plus s'inscrire** sans adhésion active
 
 **Pour enfant `trial`** :
 - ✅ **Affichée** : Si l'enfant n'a pas encore utilisé son essai gratuit
@@ -26,8 +27,15 @@
 
 **Parent soumet**
 - Le contrôleur reçoit `params[:use_free_trial]` (checkbox ou champ caché)
-- Pour enfant `trial` : Le contrôleur vérifie que `use_free_trial` est présent
+- Pour enfant `trial` : Le contrôleur vérifie que `use_free_trial` est présent (obligatoire)
 - Pour enfant `pending` : Le contrôleur utilise l'essai gratuit si `use_free_trial = "1"`, sinon l'enfant s'inscrit sans essai gratuit
+
+**⚠️ NOTE IMPORTANTE - Essai Gratuit Optionnel pour Pending** :
+- Si l'essai gratuit **n'a pas encore été utilisé** : l'enfant peut s'inscrire avec ou sans utiliser l'essai gratuit (optionnel, car `pending = is_member = true`)
+- Si l'essai gratuit **a déjà été utilisé** : l'enfant **ne peut plus s'inscrire** sans adhésion active (l'essai est consommé et l'adhésion n'est pas encore payée)
+- L'essai gratuit **reste disponible** pour une future initiation si `free_trial_used = false` lors de l'inscription
+- L'essai gratuit est **consommé** si `free_trial_used = true` lors de la création de l'`Attendance`
+- **Voir aussi** : [Clarification statut pending](02-statut-pending.md#22-clarification-importante) pour plus de détails
 
 **Serveur utilise essai gratuit**
 - Le contrôleur crée `Attendance` avec `free_trial_used = true` si l'essai est utilisé
@@ -77,14 +85,21 @@ def create
   end
   
   # Pour un enfant avec statut pending : essai gratuit optionnel
+  # IMPORTANT : Si l'essai gratuit a déjà été utilisé, l'enfant ne peut plus s'inscrire sans adhésion active
   if child_membership_id.present? && child_membership&.pending?
-    # L'enfant peut s'inscrire sans utiliser l'essai gratuit (pending = valide)
-    # Mais peut aussi utiliser son essai gratuit si disponible
+    # Vérifier si l'essai gratuit a déjà été utilisé (attendance active uniquement)
+    # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+    free_trial_already_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+    
+    if free_trial_already_used
+      # L'essai gratuit a déjà été utilisé : l'enfant ne peut plus s'inscrire sans adhésion active
+      redirect_to initiation_path(@initiation), alert: "L'essai gratuit a déjà été utilisé. Une adhésion active est maintenant requise pour s'inscrire."
+      return
+    end
+    
+    # L'essai gratuit est disponible : l'enfant peut s'inscrire avec ou sans essai gratuit (optionnel)
     if params[:use_free_trial] == "1"
-      # Vérifier que l'essai n'a pas déjà été utilisé (attendance active uniquement)
-      unless current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
-        attendance.free_trial_used = true
-      end
+      attendance.free_trial_used = true
     end
   end
   

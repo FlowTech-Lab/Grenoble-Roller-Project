@@ -21,7 +21,12 @@ class Event::Initiation < Event
   def full?
     if allow_non_member_discovery?
       # Si l'option est activée, vérifier les places séparément
-      available_member_places <= 0 && available_non_member_places <= 0
+      # Si non_member_discovery_slots est nil (illimité), vérifier seulement les places adhérents
+      if non_member_discovery_slots.nil?
+        available_member_places <= 0
+      else
+        available_member_places <= 0 && available_non_member_places <= 0
+      end
     else
       # Sinon, comportement classique : tout le monde peut s'inscrire
       available_places <= 0
@@ -35,13 +40,21 @@ class Event::Initiation < Event
 
   def full_for_non_members?
     return false unless allow_non_member_discovery?
+    # Si non_member_discovery_slots est nil, c'est illimité → jamais complet
+    return false if non_member_discovery_slots.nil?
+    # Si non_member_discovery_slots est défini, vérifier si on a atteint la limite
     available_non_member_places <= 0
   end
 
   def available_places
     if allow_non_member_discovery?
       # Si l'option est activée, retourner le total des places disponibles
-      available_member_places + available_non_member_places
+      # Si non_member_discovery_slots est nil (illimité), retourner Float::INFINITY
+      if available_non_member_places == Float::INFINITY
+        Float::INFINITY
+      else
+        available_member_places + available_non_member_places
+      end
     else
       # Sinon, comportement classique
       max_participants - participants_count
@@ -57,7 +70,10 @@ class Event::Initiation < Event
 
   def available_non_member_places
     return 0 unless allow_non_member_discovery?
-    (non_member_discovery_slots || 0) - non_member_participants_count
+    # Si non_member_discovery_slots est nil, c'est illimité → retourner un grand nombre
+    return Float::INFINITY if non_member_discovery_slots.nil?
+    # Si non_member_discovery_slots est défini, calculer les places restantes
+    non_member_discovery_slots - non_member_participants_count
   end
 
   # Comptage des participants (exclut les bénévoles)

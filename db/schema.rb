@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -133,7 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
     t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
-    t.integer "non_member_discovery_slots", default: 0, null: false
+    t.integer "non_member_discovery_slots", default: 0
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"
