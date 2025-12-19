@@ -19,6 +19,16 @@ ActiveAdmin.register Attendance do
     column :status do |attendance|
       status_tag(attendance.status)
     end
+    column :needs_equipment do |attendance|
+      status_tag(attendance.needs_equipment? ? "Oui" : "Non", class: attendance.needs_equipment? ? "ok" : "")
+    end
+    column :roller_size do |attendance|
+      if attendance.needs_equipment? && attendance.roller_size.present?
+        "#{attendance.roller_size} (EU)"
+      else
+        "-"
+      end
+    end
     column :payment
     column :stripe_customer_id
     column :created_at
@@ -31,6 +41,8 @@ ActiveAdmin.register Attendance do
   filter :payment
   filter :is_volunteer
   filter :free_trial_used
+  filter :needs_equipment
+  filter :roller_size
   filter :created_at
 
   show do

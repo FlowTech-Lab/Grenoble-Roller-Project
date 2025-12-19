@@ -16,7 +16,7 @@ module Initiations
       use_free_trial = params[:use_free_trial] == "1"
 
       # Vérifier que l'utilisateur peut utiliser l'essai gratuit si demandé
-      if use_free_trial && current_user.attendances.where(free_trial_used: true).exists?
+      if use_free_trial && current_user.attendances.active.where(free_trial_used: true).exists?
         redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
         return
       end

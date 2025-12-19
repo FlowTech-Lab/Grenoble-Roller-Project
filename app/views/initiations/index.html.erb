@@ -10,7 +10,7 @@
           <i class="bi bi-book-fill banner-icon-small mb-2" aria-hidden="true"></i>
           <h1 class="banner-title-page mb-3">Initiations Roller</h1>
           <p class="banner-subtitle-page mb-4">
-            Cours d'initiation tous les samedis matin
+            Cours d'initiation pour les adhérents et les enfants (essai gratuit possible)
           </p>
         </div>
       </div>
@@ -43,6 +43,10 @@
     </div>
   </div>
 
+  <% if user_signed_in? %>
+    <%= render 'initiations/status_table' %>
+  <% end %>
+
           <!-- Liste des prochaines initiations -->
           <div id="initiations-upcoming">
             <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
@@ -72,9 +76,40 @@
       <div class="event-grid">
         <div class="row g-4">
           <% @initiations.each_with_index do |initiation, index| %>
-            <%= render 'initiations/initiation_card',
-                       initiation: initiation,
-                       is_first: (index == 0) %>
+            <%# Vérification de la policy avant d'afficher la carte %>
+            <% if user_signed_in? %>
+              <%# Pour les utilisateurs connectés, vérifier la policy %>
+              <% if policy(initiation).attend? %>
+                <%= render 'initiations/initiation_card_modern',
+                           initiation: initiation,
+                           is_first: (index == 0) %>
+              <% else %>
+                <%# Carte grisée si l'utilisateur ne peut pas s'inscrire %>
+                <div class="col-12 col-sm-6 col-lg-4">
+                  <article class="card card-event card-liquid rounded-liquid shadow-liquid h-100 opacity-50">
+                    <div class="card-body p-3 p-md-4">
+                      <h5 class="card-title mb-2">
+                        <%= link_to initiation.title, initiation_path(initiation), 
+                            class: 'text-decoration-none text-body' %>
+                      </h5>
+                      <p class="text-muted small mb-0">
+                        <i class="bi bi-calendar-week text-liquid-primary me-2" aria-hidden="true"></i>
+                        <%= l initiation.start_at, format: :event_long, locale: :fr %>
+                      </p>
+                      <div class="alert alert-warning mt-3 mb-0">
+                        <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+                        Vous ne pouvez pas vous inscrire à cette initiation.
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              <% end %>
+            <% else %>
+              <%# Pour les utilisateurs non connectés, afficher la carte normalement %>
+              <%= render 'initiations/initiation_card_modern',
+                         initiation: initiation,
+                         is_first: (index == 0) %>
+            <% end %>
           <% end %>
         </div>
       </div>

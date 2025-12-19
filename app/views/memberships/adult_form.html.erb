@@ -710,8 +710,8 @@
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
-  // Initialisation
-  document.addEventListener('DOMContentLoaded', function() {
+  // Fonction d'initialisation réutilisable
+  function initializeAdultForm() {
     updateCategorySelection();
     updateAdultAge(); // Vérifier au chargement si une date est déjà présente
     checkHealthQuestions(); // Vérifier les questions de santé
@@ -816,19 +816,24 @@
       if (checkbox) {
         checkbox.addEventListener('change', function() {
           checkAllConsents();
-    validateForm();
-    
+          validateForm();
+        });
+      }
+    });
+
     // S'assurer que tous les champs pré-remplis sont validés après un court délai
     // (pour laisser le temps aux scripts de formatage comme phone-mask de s'exécuter)
     setTimeout(function() {
       const form = document.getElementById('adult_membership_form');
       if (form) {
+        validateForm();
       }
-      validateForm();
     }, 100);
-  });
-      }
-    });
+  }
+
+  // Initialisation : support à la fois du chargement normal et Turbo
+  function setupAdultForm() {
+    initializeAdultForm();
 
     // Écouter changements champs
     const form = document.getElementById('adult_membership_form');
@@ -924,5 +929,22 @@
         return false;
       }
     });
+  }
+
+  // Initialisation : support à la fois du chargement normal et Turbo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAdultForm);
+  } else {
+    // Le DOM est déjà chargé, initialiser immédiatement
+    setupAdultForm();
+  }
+
+  // Support Turbo : réinitialiser lors des navigations Turbo
+  document.addEventListener('turbo:load', setupAdultForm);
+  document.addEventListener('turbo:frame-load', function(e) {
+    // Vérifier si le formulaire est dans le frame chargé
+    if (e.target.querySelector('#adult_membership_form')) {
+      setupAdultForm();
+    }
   });
 </script>

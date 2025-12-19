@@ -185,7 +185,7 @@ class InitiationsController < ApplicationController
     # Vérifier adhésion ou essai gratuit disponible
     # Utiliser exists? (optimisé) plutôt que count > 0
     has_membership = current_user.memberships.active_now.exists?
-    has_used_trial = current_user.attendances.where(free_trial_used: true).exists?
+    has_used_trial = current_user.attendances.active.where(free_trial_used: true).exists?
 
     has_membership || !has_used_trial
   end

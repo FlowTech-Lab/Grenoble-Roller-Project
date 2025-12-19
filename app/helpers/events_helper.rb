@@ -72,4 +72,30 @@ module EventsHelper
   def decline_waitlist_event_url_for(event, waitlist_entry)
     decline_waitlist_entry_url(waitlist_entry)
   end
+
+  # Formate la durée d'un événement et calcule l'heure de fin
+  def format_event_duration(event)
+    return nil unless event.start_at && event.duration_min
+
+    # Calculer l'heure de fin
+    end_time = event.start_at + event.duration_min.minutes
+
+    # Formater la durée (ex: 60 min = 1h, 105 min = 1h45)
+    hours = event.duration_min / 60
+    minutes = event.duration_min % 60
+    
+    duration_text = if hours > 0 && minutes > 0
+      "#{hours}h#{minutes.to_s.rjust(2, '0')}"
+    elsif hours > 0
+      "#{hours}h"
+    else
+      "#{minutes}min"
+    end
+
+    # Formater les heures de début et fin (format: "10h15")
+    start_time_text = event.start_at.strftime("%Hh%M")
+    end_time_text = end_time.strftime("%Hh%M")
+
+    "#{duration_text} (#{start_time_text} - #{end_time_text})"
+  end
 end

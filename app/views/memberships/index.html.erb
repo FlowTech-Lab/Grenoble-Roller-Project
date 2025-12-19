@@ -89,7 +89,7 @@
             <% end %>
             
             <!-- Ajouter un enfant -->
-            <%= link_to new_membership_path(type: 'child'), class: "text-decoration-none" do %>
+            <%= link_to new_membership_path(type: 'child'), class: "text-decoration-none", data: { turbo: false } do %>
               <div class="quick-action-card orange">
                 <div class="d-flex align-items-center mb-2">
                   <i class="bi bi-person-plus fs-3 text-liquid-warning me-3"></i>
@@ -230,7 +230,7 @@
                   Adhésions enfants
                   <span class="badge bg-liquid-warning text-dark ms-2"><%= children_memberships.count %></span>
                 </h3>
-                    <%= link_to new_membership_path(type: 'child'), class: "btn btn-sm btn-liquid-warning" do %>
+                      <%= link_to new_membership_path(type: 'child'), class: "btn btn-sm btn-liquid-warning", data: { turbo: false } do %>
                       <i class="bi bi-person-plus me-1"></i>Ajouter
                     <% end %>
               </div>

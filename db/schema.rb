@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -75,9 +75,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
+    t.index ["user_id", "child_membership_id"], name: "index_attendances_unique_free_trial_child_active", unique: true, where: "((free_trial_used = true) AND ((status)::text <> 'canceled'::text) AND (child_membership_id IS NOT NULL))"
     t.index ["user_id", "event_id", "child_membership_id", "is_volunteer"], name: "index_attendances_on_user_event_child_volunteer", unique: true
     t.index ["user_id", "free_trial_used"], name: "index_attendances_on_user_id_and_free_trial_used"
     t.index ["user_id"], name: "index_attendances_on_user_id"
+    t.index ["user_id"], name: "index_attendances_unique_free_trial_parent_active", unique: true, where: "((free_trial_used = true) AND ((status)::text <> 'canceled'::text) AND (child_membership_id IS NULL))"
     t.index ["wants_reminder"], name: "index_attendances_on_wants_reminder"
   end
 
@@ -131,7 +133,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_12_170113) do
     t.integer "max_participants", default: 0, null: false
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
-    t.integer "non_member_discovery_slots", default: 0, null: false
+    t.integer "non_member_discovery_slots", default: 0
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"

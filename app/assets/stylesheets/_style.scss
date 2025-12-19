@@ -5790,3 +5790,318 @@
       padding: 0.75rem;
     }
   }
+
+/* === STATUS TABLE - MODERN GLASSMORPHISM === */
+
+.status-table-container {
+  margin-bottom: 2rem;
+}
+
+.status-table-wrapper {
+  background: var(--liquid-glass-bg);
+  backdrop-filter: var(--liquid-blur);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  border: 1px solid var(--liquid-glass-border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: var(--bs-box-shadow);
+  transition: var(--transition-liquid);
+}
+
+.status-table-wrapper:hover {
+  box-shadow: var(--bs-box-shadow-lg);
+}
+
+/* En-tête du tableau */
+.status-table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.75fr;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(0, 123, 255, 0.08);
+  border-bottom: 1px solid var(--liquid-glass-border);
+  font-weight: 600;
+  color: var(--gr-primary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Corps du tableau */
+.status-table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ligne du tableau */
+.status-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.75fr;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--liquid-glass-border);
+  align-items: center;
+  transition: var(--transition-liquid-fast);
+}
+
+.status-row:last-child {
+  border-bottom: none;
+}
+
+.status-row:hover {
+  background: rgba(0, 123, 255, 0.04);
+}
+
+/* Cellules */
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-cell.status-col-action {
+  justify-content: center;
+}
+
+/* Badge personne */
+.status-badge-person {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.status-badge-person i {
+  font-size: 1.5rem;
+}
+
+.status-badge-person strong {
+  font-weight: 600;
+}
+
+.status-badge-person small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+/* Badges statut */
+.status-row .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+}
+
+.status-row .badge i {
+  font-size: 1rem;
+}
+
+/* Légende */
+.status-table-legend {
+  padding: 0.875rem 1.5rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid var(--liquid-glass-border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+  .status-table-header {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .status-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .status-cell {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--liquid-glass-border);
+  }
+
+  .status-cell:last-child {
+    border-bottom: none;
+  }
+
+  .status-cell.status-col-action {
+    justify-content: flex-end;
+  }
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .status-table-header {
+  background: rgba(77, 148, 255, 0.08);
+  color: var(--gr-primary-dark);
+}
+
+[data-bs-theme="dark"] .status-row:hover {
+  background: rgba(77, 148, 255, 0.04);
+}
+
+[data-bs-theme="dark"] .status-table-legend {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* === INITIATION CARD MODERN - GLASSMORPHISM === */
+
+.initiation-card-modern {
+  background: var(--liquid-glass-bg);
+  backdrop-filter: var(--liquid-blur);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  border: 1px solid var(--liquid-glass-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-liquid);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.initiation-card-modern:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover-card);
+  border-color: rgba(0, 123, 255, 0.3);
+}
+
+/* Badge Prochaine */
+.initiation-badge-prochaine {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
+  color: #000;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+  box-shadow: var(--shadow-hover);
+}
+
+.initiation-card-modern-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Titre */
+.initiation-card-modern-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--bs-body-color);
+  margin-bottom: 1.5rem;
+}
+
+.initiation-card-modern-title a {
+  color: inherit;
+  transition: var(--transition-liquid-fast);
+}
+
+.initiation-card-modern-title a:hover {
+  color: var(--gr-primary);
+  text-decoration: underline;
+}
+
+/* Détails */
+.initiation-card-modern-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+  background: rgba(0, 123, 255, 0.05);
+  border-radius: 0.5rem;
+}
+
+.detail-item i {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  margin-top: 0.125rem;
+}
+
+.detail-item strong {
+  color: var(--bs-body-color);
+}
+
+.detail-item small {
+  color: var(--gr-muted);
+}
+
+/* Badges capacité */
+.initiation-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.initiation-card-badges .badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.7rem;
+}
+
+/* Actions */
+.initiation-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.initiation-card-actions .btn {
+  transition: var(--transition-liquid-fast);
+  min-height: 40px;
+}
+
+.initiation-card-actions .btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .initiation-card-modern:hover {
+  border-color: rgba(77, 148, 255, 0.3);
+}
+
+[data-bs-theme="dark"] .detail-item {
+  background: rgba(77, 148, 255, 0.08);
+}
+
+/* Responsive */
+@media (max-width: 575px) {
+  .initiation-card-modern {
+    padding: 1.25rem;
+  }
+
+  .initiation-badge-prochaine {
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .initiation-card-modern-title {
+    font-size: 1rem;
+  }
+}
