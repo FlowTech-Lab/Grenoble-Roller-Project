@@ -133,9 +133,9 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         table_for volunteers do
           column "Bénévole" do |attendance|
             if attendance.child_membership_id.present?
-              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+              "#{attendance.participant_name} (enfant de #{attendance.user.to_s})"
             else
-              attendance.user.email
+              attendance.user.to_s
             end
           end
           column :status do |attendance|
@@ -166,9 +166,9 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         table_for participants do
           column "Participant" do |attendance|
             if attendance.child_membership_id.present?
-              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+              "#{attendance.participant_name} (enfant de #{attendance.user.to_s})"
             else
-              attendance.user.email
+              attendance.user.to_s
             end
           end
           column :status do |attendance|
@@ -207,9 +207,9 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
           end
           column "Personne" do |entry|
             if entry.child_membership_id.present?
-              "#{entry.participant_name} (enfant de #{entry.user.email})"
+              "#{entry.participant_name} (enfant de #{entry.user.to_s})"
             else
-              entry.user.email
+              entry.user.to_s
             end
           end
           column :status do |entry|
