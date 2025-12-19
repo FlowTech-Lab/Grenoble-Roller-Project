@@ -94,9 +94,23 @@ module Initiations
             .exists?
       end
 
-      # SÉCURITÉ CRITIQUE : Gestion essai gratuit pour les enfants avec statut trial uniquement
-      # Un enfant non adhérent (statut trial) DOIT utiliser son essai gratuit et ne peut l'utiliser qu'UNE SEULE FOIS
-      if child_membership_id.present? && child_membership&.trial? && !is_member
+      # Pour un enfant avec statut pending : essai gratuit optionnel
+      # Selon la documentation 02-statut-pending.md :
+      # "Un enfant avec statut pending peut OPTIONNELLEMENT utiliser son essai gratuit"
+      # "L'essai gratuit reste disponible s'il n'est pas utilisé lors de l'inscription"
+      # L'enfant peut s'inscrire sans utiliser l'essai gratuit (pending = valide, is_member = true)
+      # Mais peut aussi utiliser son essai gratuit si disponible et si la checkbox est cochée
+      if child_membership_id.present? && child_membership&.pending?
+        if params[:use_free_trial] == "1"
+          # Vérifier que l'essai n'a pas déjà été utilisé (attendance active uniquement)
+          # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+          unless current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+            attendance.free_trial_used = true
+          end
+        end
+      elsif child_membership_id.present? && child_membership&.trial? && !is_member
+        # SÉCURITÉ CRITIQUE : Gestion essai gratuit pour les enfants avec statut trial uniquement
+        # Un enfant non adhérent (statut trial) DOIT utiliser son essai gratuit et ne peut l'utiliser qu'UNE SEULE FOIS
         # Vérifier d'abord si cet enfant a déjà utilisé son essai gratuit (attendance active uniquement)
         # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
         if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?

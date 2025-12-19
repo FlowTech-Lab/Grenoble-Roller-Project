@@ -78,6 +78,26 @@ Pour chaque référence de code :
 - [ ] Les validations décrites sont présentes dans le code
 - [ ] Les migrations mentionnées existent et sont correctes
 
+**✅ Vérification d'Impact sur les Vues (CRITIQUE)** :
+- [ ] **Avant modification** : Identifier toutes les vues qui utilisent le code modifié
+  ```bash
+  # Rechercher les vues qui référencent le contrôleur/modèle modifié
+  grep -r "nom_du_controleur\|nom_du_modele" app/views/
+  ```
+- [ ] **Après modification** : Vérifier que les vues sont cohérentes avec la modification
+  - [ ] Les variables passées aux vues existent toujours
+  - [ ] Les formulaires envoient les bons paramètres
+  - [ ] Le JavaScript gère correctement les nouveaux comportements
+  - [ ] Les conditions d'affichage sont correctes
+- [ ] **Tests d'intégration** : Vérifier que les tests de vues passent
+  ```bash
+  # Exécuter les tests de requêtes qui testent les vues
+  bundle exec rspec spec/requests/
+  ```
+- [ ] **Documentation** : Créer un rapport d'impact si modification importante
+  - Fichier : `IMPACT_VUES_XX-nom.md` dans le dossier de documentation
+  - Contenu : Liste des vues modifiées, changements apportés, tests de validation
+
 **✅ Vérification Automatique par Scripts** :
 - [ ] **Variables définies avant utilisation** : Script bash/ruby vérifie que `child_membership` est défini avant utilisation
   ```bash
@@ -463,13 +483,14 @@ Avant de valider une documentation à 100%, s'assurer que :
 
 ## Checklist Rapide Anti-Dette de Documentation
 
-**Avant chaque validation, vérifier ces 5 points critiques** :
+**Avant chaque validation, vérifier ces 6 points critiques** :
 
 1. ✅ **Variables définies** : `child_membership` défini avant utilisation ?
 2. ✅ **Scopes corrects** : `.active` pour Attendance, `.active_now` pour Membership ?
 3. ✅ **Index composite** : `[:user_id, :child_membership_id]` pour enfants ?
 4. ✅ **Commentaire prod** : `disable_ddl_transaction!` expliqué ?
 5. ✅ **Objets vs IDs** : Distinction `child_membership` (objet) vs `child_membership_id` (ID) claire ?
+6. ✅ **Impact vues** : Les vues sont-elles cohérentes avec les modifications du contrôleur/modèle ?
 
 **Si tous ces points sont ✅, la documentation est prête pour validation à 100%.**
 

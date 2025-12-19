@@ -57,13 +57,19 @@
   dropdown_prompt = user_already_registered ? "Sélectionner un enfant" : "S'inscrire pour moi-même"
   
   # Calculer si on doit afficher l'essai gratuit pour les enfants (nécessaire pour le dropdown)
-  # Vérifier si on a des enfants avec statut trial disponibles qui n'ont pas encore utilisé leur essai
+  # Vérifier si on a des enfants avec statut trial (obligatoire) OU pending (optionnel) disponibles qui n'ont pas encore utilisé leur essai
   # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
   if is_initiation && user_signed_in?
+    # Enfants trial : essai gratuit OBLIGATOIRE
     trial_children_preview = child_memberships.select { |m| m.trial? }
-    show_free_trial_children = trial_children_preview.any? { |child| 
+    # Enfants pending : essai gratuit OPTIONNEL (selon 02-statut-pending.md)
+    pending_children_preview = child_memberships.select { |m| m.pending? }
+    # Afficher si on a des enfants trial OU pending qui peuvent utiliser leur essai
+    show_free_trial_children = (trial_children_preview.any? { |child| 
       !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
-    }
+    } || pending_children_preview.any? { |child| 
+      !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+    })
   else
     show_free_trial_children = false
   end
@@ -275,9 +281,11 @@
   #    b. Pour un enfant : l'enfant a un statut trial ET n'a pas déjà utilisé son essai gratuit
   # 4. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
   
-  # Vérifier si on a des enfants avec statut trial disponibles
+  # Vérifier si on a des enfants avec statut trial (obligatoire) OU pending (optionnel) disponibles
   trial_children = child_memberships.select { |m| m.trial? }
+  pending_children = child_memberships.select { |m| m.pending? }
   has_trial_children = trial_children.any?
+  has_pending_children = pending_children.any?
   
   # Pour le parent (sans enfant sélectionné)
   # Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active ET n'a pas déjà utilisé son essai
@@ -288,19 +296,25 @@
   # NOUVELLE LOGIQUE : Si le parent n'a plus d'essai gratuit mais qu'un enfant en a un, on permet quand même
   # Et inversement : si aucun enfant n'a d'essai gratuit mais que le parent en a un, on permet aussi
   parent_has_trial = parent_can_use_trial
-  any_child_has_trial = trial_children.any? { |child| 
+  any_child_has_trial = (trial_children.any? { |child| 
     !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
-  }
+  } || pending_children.any? { |child| 
+    !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+  })
   
   # L'option sera affichée dynamiquement via JavaScript selon l'enfant sélectionné
   # On prépare les données pour JavaScript
   # IMPORTANT : Utiliser .active pour exclure les attendances annulées
-  trial_children_data = trial_children.map do |child|
+  # Inclure les enfants trial (obligatoire) ET pending (optionnel)
+  trial_children_data = (trial_children + pending_children).map do |child|
     {
       id: child.id,
       name: "#{child.child_first_name} #{child.child_last_name}",
+      status: child.status, # 'trial' ou 'pending' pour distinguer obligatoire vs optionnel
       has_used_trial: current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
-      can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+      can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
+      is_trial: child.trial?, # Essai gratuit OBLIGATOIRE
+      is_pending: child.pending? # Essai gratuit OPTIONNEL
     }
   end.to_json
   
@@ -316,7 +330,7 @@
 <% if show_free_trial_parent || show_free_trial_children %>
   <%# Champ caché pour garantir l'envoi de la valeur même si la checkbox est masquée %>
   <%= hidden_field_tag "use_free_trial_hidden#{prefix_id}", "0", id: "use_free_trial_hidden#{prefix_id}" %>
-  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent || (show_free_trial_children && child_memberships.any? { |m| m.trial? }) ? '' : 'display: none;' %>">
+  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent || (show_free_trial_children && (child_memberships.any? { |m| m.trial? } || child_memberships.any? { |m| m.pending? })) ? '' : 'display: none;' %>">
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
@@ -360,13 +374,18 @@
         const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
         
         if (selectedChild) {
-          // Un enfant avec statut trial est sélectionné
+          // Un enfant avec statut trial (obligatoire) OU pending (optionnel) est sélectionné
           const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+          const isTrial = selectedChild.is_trial || selectedChild.status === 'trial'; // Essai gratuit OBLIGATOIRE
+          const isPending = selectedChild.is_pending || selectedChild.status === 'pending'; // Essai gratuit OPTIONNEL
           
           if (selectedChild.has_used_trial && !parentCanUseTrial) {
             // L'enfant a déjà utilisé son essai ET le parent n'en a plus non plus
             freeTrialContainer.style.display = 'none';
-            if (freeTrialCheckbox) freeTrialCheckbox.checked = false;
+            if (freeTrialCheckbox) {
+              freeTrialCheckbox.checked = false;
+              freeTrialCheckbox.required = false;
+            }
           } else if (selectedChild.has_used_trial && parentCanUseTrial) {
             // L'enfant a déjà utilisé son essai MAIS le parent peut encore utiliser le sien
             freeTrialContainer.style.display = 'block';
@@ -375,19 +394,34 @@
             freeTrialHelpText.innerHTML = '<strong>Essai gratuit parent :</strong> ' + childNameEscaped1 + ' a déjà utilisé son essai gratuit, mais vous pouvez utiliser le vôtre pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong>';
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = true;
+              freeTrialCheckbox.required = true; // Obligatoire pour le parent
               document.getElementById('use_free_trial_hidden<%= prefix_id %>').value = '1';
             }
           } else if (!selectedChild.has_used_trial) {
-            // L'enfant peut utiliser son essai gratuit - OBLIGATOIRE pour les enfants non adhérents
+            // L'enfant peut utiliser son essai gratuit
             freeTrialContainer.style.display = 'block';
             const childNameEscaped2 = String(selectedChild.name || '').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped2;
-            freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped2 + ' :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
-            if (freeTrialCheckbox) {
-              freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
-              freeTrialCheckbox.required = true; // Rendre obligatoire
-              const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
-              if (hiddenField) hiddenField.value = '1';
+            
+            if (isTrial) {
+              // Enfant trial : essai gratuit OBLIGATOIRE
+              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped2;
+              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped2 + ' :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+              if (freeTrialCheckbox) {
+                freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
+                freeTrialCheckbox.required = true; // Rendre obligatoire
+                const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
+                if (hiddenField) hiddenField.value = '1';
+              }
+            } else if (isPending) {
+              // Enfant pending : essai gratuit OPTIONNEL (selon 02-statut-pending.md)
+              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped2 + ' (optionnel)';
+              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped2 + ' (optionnel) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation, mais ce n\'est pas obligatoire car son adhésion est en attente de paiement. Vous pouvez vous inscrire sans utiliser l\'essai gratuit.';
+              if (freeTrialCheckbox) {
+                freeTrialCheckbox.checked = false; // Pas cochée par défaut pour les enfants pending
+                freeTrialCheckbox.required = false; // Pas obligatoire
+                const hiddenField = document.getElementById('use_free_trial_hidden<%= prefix_id %>');
+                if (hiddenField) hiddenField.value = '0';
+              }
             }
           }
         } else {
@@ -480,12 +514,44 @@
     // Définir la fonction globalement pour qu'elle soit accessible depuis l'attribut onchange
     window.toggleSubmitButton<%= prefix_id %> = function() {
       // Si l'essai gratuit est requis (pas de places découverte), désactiver le bouton si non coché
+      // MAIS seulement pour les enfants trial (obligatoire), pas pour les enfants pending (optionnel)
       const form = document.querySelector('form[id*="attendForm"]');
       if (!form) return;
       const btn = form.querySelector('input[type="submit"], button[type="submit"]');
       if (!btn) return;
       const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
-      if (freeTrialCheckbox) {
+      const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+      
+      if (freeTrialCheckbox && childSelect) {
+        const selectedChildId = childSelect.value ? parseInt(childSelect.value) : null;
+        <% if show_free_trial_children %>
+          const trialChildrenData = <%= raw trial_children_data %>;
+          const selectedChild = trialChildrenData.find(c => c.id === selectedChildId);
+          
+          if (selectedChild) {
+            const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
+            const isPending = selectedChild.is_pending || selectedChild.status === 'pending';
+            
+            // Pour les enfants trial : essai gratuit OBLIGATOIRE, désactiver le bouton si non coché
+            if (isTrial && !freeTrialCheckbox.checked) {
+              btn.disabled = true;
+              btn.classList.add('disabled', 'opacity-50');
+              btn.style.opacity = '0.6';
+              btn.style.cursor = 'not-allowed';
+              return;
+            }
+            // Pour les enfants pending : essai gratuit OPTIONNEL, le bouton reste actif même si non coché
+            if (isPending) {
+              btn.disabled = false;
+              btn.classList.remove('disabled', 'opacity-50');
+              btn.style.opacity = '1';
+              btn.style.cursor = 'pointer';
+              return;
+            }
+          }
+        <% end %>
+        
+        // Pour le parent ou si aucun enfant sélectionné : désactiver si non coché
         if (freeTrialCheckbox.checked) {
           btn.disabled = false;
           btn.classList.remove('disabled', 'opacity-50');
@@ -554,15 +620,18 @@
         const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
         const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
         
-        // Vérifier si un enfant trial est sélectionné (essai gratuit OBLIGATOIRE)
+        // Vérifier si un enfant trial (obligatoire) OU pending (optionnel) est sélectionné
         <% if show_free_trial_children %>
           const trialChildrenData = <%= raw trial_children_data %>;
           const selectedChildId = childSelect ? parseInt(childSelect.value) : null;
           const selectedChild = trialChildrenData.find(c => c.id === selectedChildId);
           
-          // Si un enfant trial est sélectionné et n'a pas encore utilisé son essai, la checkbox est OBLIGATOIRE
           if (selectedChild && !selectedChild.has_used_trial) {
-            if (!freeTrialCheckbox || !freeTrialCheckbox.checked) {
+            const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
+            const isPending = selectedChild.is_pending || selectedChild.status === 'pending';
+            
+            // Si un enfant trial est sélectionné, la checkbox est OBLIGATOIRE
+            if (isTrial && (!freeTrialCheckbox || !freeTrialCheckbox.checked)) {
               e.preventDefault();
               const childNameEscapedAlert = String(selectedChild.name || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
               alert('L\'essai gratuit est obligatoire pour ' + childNameEscapedAlert + '. Veuillez cocher la case "Utiliser l\'essai gratuit" pour confirmer l\'inscription.');
@@ -574,6 +643,8 @@
               }
               return false;
             }
+            // Si un enfant pending est sélectionné, la checkbox est OPTIONNELLE (pas de validation)
+            // L'enfant peut s'inscrire même sans cocher la case (car pending = is_member = true)
           }
         <% end %>
         

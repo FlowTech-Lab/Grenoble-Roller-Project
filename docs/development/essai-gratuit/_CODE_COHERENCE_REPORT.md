@@ -68,7 +68,8 @@ Ce fichier contient les résultats des vérifications automatiques de cohérence
 | Fichier | Utilisation | Correct | Statut | Commentaire |
 |---------|-------------|---------|--------|-------------|
 | 14-flux-inscription.md | child_membership_id (param) | ✅ | ⬜ | À vérifier |
-| 14-flux-inscription.md | child_membership (objet) | ✅ | ⬜ | À vérifier définition avant utilisation |
+| 14-flux-inscription.md | child_membership (objet) | ✅ | ✅ | Défini ligne 81 avant utilisation ligne 87, 103 |
+| 14-flux-inscription.md | Bloc pending avec essai optionnel | ✅ | ✅ | Bloc ajouté lignes 97-111, correspond à doc lignes 79-89 |
 
 **Résultat** : ⬜ Non vérifié
 

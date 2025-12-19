@@ -114,11 +114,10 @@
 **Vérification** : ✅ **CORRESPOND** (logique correcte : si `is_member = true` (pending), l'enfant peut s'inscrire sans essai gratuit)
 
 **Note importante** : 
-- Le code réel du contrôleur (lignes 78-95) gère `pending` en définissant `is_member = true` si pending
-- Si `is_member = true`, l'enfant peut s'inscrire directement (pas de bloc spécifique pour essai optionnel pending)
-- La documentation dans `14-flux-inscription.md` montre un bloc pour pending avec essai optionnel qui n'existe pas dans le code réel
-- **Cependant**, la logique est correcte : un enfant `pending` peut s'inscrire sans essai gratuit (car `is_member = true`), et peut aussi utiliser son essai gratuit si la checkbox est cochée (géré par le JavaScript et les paramètres)
-- **À vérifier** : Le bloc documenté dans `14-flux-inscription.md` lignes 79-89 devrait-il être ajouté au contrôleur, ou la logique actuelle est-elle suffisante ?
+- ✅ **CORRIGÉ** : Le bloc pour pending avec essai optionnel a été ajouté dans le contrôleur (lignes 97-111)
+- Le code correspond maintenant exactement à la documentation `14-flux-inscription.md:79-89`
+- Le bloc gère l'essai gratuit optionnel pour les enfants `pending` : si `use_free_trial = "1"`, l'essai est utilisé
+- Si `use_free_trial` n'est pas présent ou = "0", l'enfant peut s'inscrire sans essai (car `is_member = true`)
 
 ### ✅ Logique d'Affichage
 
