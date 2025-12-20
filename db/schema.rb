@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_20_062313) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -65,6 +65,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
     t.boolean "is_volunteer", default: false, null: false
     t.boolean "needs_equipment", default: false, null: false
     t.bigint "payment_id"
+    t.datetime "reminder_sent_at"
     t.string "roller_size"
     t.string "status", limit: 20, default: "registered", null: false
     t.string "stripe_customer_id", limit: 255
@@ -134,6 +135,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
     t.integer "non_member_discovery_slots", default: 0
+    t.datetime "participants_report_sent_at"
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"
@@ -147,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["creator_user_id"], name: "index_events_on_creator_user_id"
+    t.index ["participants_report_sent_at"], name: "index_events_on_participants_report_sent_at"
     t.index ["route_id"], name: "index_events_on_route_id"
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
     t.index ["type", "season"], name: "index_events_on_type_and_season"
@@ -164,6 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
     t.string "emergency_contact_name"
     t.string "emergency_contact_phone"
     t.date "end_date", null: false
+    t.datetime "expired_email_sent_at"
     t.boolean "ffrs_data_sharing_consent", default: false
     t.string "health_q1"
     t.string "health_q2"
@@ -188,6 +192,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_053227) do
     t.string "parent_phone"
     t.bigint "payment_id"
     t.string "provider_order_id"
+    t.datetime "renewal_reminder_sent_at"
     t.boolean "rgpd_consent", default: false
     t.string "season"
     t.date "start_date", null: false

@@ -265,8 +265,8 @@ Ce document centralise l'état de toutes les fonctionnalités prévues, impléme
 
 ## 🔗 Références
 
-- **Todo restant détaillé** : [`docs/09-product/todo-restant.md`](../09-product/todo-restant.md)
-- **Backlog UX complet** : [`docs/09-product/ux-improvements-backlog.md`](../09-product/ux-improvements-backlog.md)
+- **Todo restant détaillé** : [`docs/development/ux-improvements/todo-restant.md`](../development/ux-improvements/todo-restant.md)
+- **Backlog UX complet** : [`docs/development/ux-improvements/ux-improvements-backlog.md`](../development/ux-improvements/ux-improvements-backlog.md)
 - **Améliorations implémentées** : [`docs/09-product/ameliorations-implementees.md`](../09-product/ameliorations-implementees.md)
 
 ---

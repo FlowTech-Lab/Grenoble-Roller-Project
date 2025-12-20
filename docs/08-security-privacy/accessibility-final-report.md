@@ -134,7 +134,7 @@ Tous les éléments critiques et importants d'accessibilité ont été **corrig�
 
 ## 📚 **Documentation Créée**
 
-1. `docs/08-security-privacy/accessibility-audit.md` - Audit complet
+1. `docs/development/accessibility/accessibility-audit.md` - Audit complet
 2. `docs/08-security-privacy/accessibility-summary.md` - Résumé
 3. `docs/08-security-privacy/a11y-reports/pa11y-results-summary.md` - Résultats initiaux
 4. `docs/08-security-privacy/a11y-reports/corrections-applied.md` - Détails corrections

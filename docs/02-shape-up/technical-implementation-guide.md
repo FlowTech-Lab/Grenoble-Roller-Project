@@ -661,7 +661,7 @@ end
 
 ## ✅ CHECKLIST PHASE 2
 
-> **📋 Checklist complète** : Voir le plan détaillé dans [`building/cycle-01-phase-2-plan.md`](building/cycle-01-phase-2-plan.md)
+> **📋 Checklist complète** : Voir le plan détaillé dans [`../development/phase2/cycle-01-phase-2-plan.md`](../development/phase2/cycle-01-phase-2-plan.md)
 
 ### ✅ PRÉ-REQUIS (Avant Jour 1)
 - [ ] ER Diagram créé (Event → Route, User, Attendance)

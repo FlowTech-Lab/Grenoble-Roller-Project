@@ -1,0 +1,50 @@
+📋 RAPPORT PARTICIPANTS - INITIATION
+
+Bonjour,
+
+Voici le rapport des participants et du matériel demandé pour l'initiation du <%= l(@initiation.start_at, format: :event_long, locale: :fr) %>.
+
+📅 DÉTAILS DE L'INITIATION
+─────────────────────────
+
+📝 Titre : <%= @initiation.title %>
+🕐 Date : <%= l(@initiation.start_at, format: :event_long, locale: :fr) %>
+📍 Lieu : <%= @initiation.location_text %>
+👥 Participants : <%= @participants.count %> inscrit(s)
+📦 Matériel demandé : <%= @participants_with_equipment.count %> demande(s)
+
+─────────────────────────
+👥 LISTE DES PARTICIPANTS
+─────────────────────────
+
+<% if @participants.any? %>
+<% @participants.each do |attendance| %>
+<%= attendance.for_child? ? "#{attendance.child_membership.child_first_name} #{attendance.child_membership.child_last_name}" : "#{attendance.user.first_name} #{attendance.user.last_name}" %>
+  Email : <%= attendance.user.email %>
+  Type : <%= attendance.for_child? ? 'Enfant' : 'Adulte' %>
+  Matériel : <%= attendance.needs_equipment? ? 'Oui' : 'Non' %>
+  Pointure : <%= attendance.needs_equipment? && attendance.roller_size.present? ? attendance.roller_size : '-' %>
+─────────────────────────
+<% end %>
+<% else %>
+Aucun participant inscrit pour le moment.
+─────────────────────────
+<% end %>
+
+<% if @participants_with_equipment.any? %>
+─────────────────────────
+📦 RÉSUMÉ MATÉRIEL DEMANDÉ
+─────────────────────────
+<% @participants_with_equipment.group_by(&:roller_size).sort.each do |size, attendances| %>
+Pointure <%= size %> : <%= attendances.count %> paire(s)
+<% end %>
+
+Total : <%= @participants_with_equipment.count %> demande(s) de matériel
+─────────────────────────
+<% end %>
+
+Voir l'initiation : <%= initiation_url(@initiation) %>
+
+─────────────────────────
+
+Bonne journée ! 🛼

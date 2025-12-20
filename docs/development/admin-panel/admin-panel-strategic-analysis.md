@@ -52,7 +52,7 @@
 - Non spécifié dans la documentation
 - Recommandation : Finaliser les tests Capybara en préprod avant production
 
-**Source** : `docs/02-shape-up/shape-up-methodology.md`, `docs/02-shape-up/building/cycle-01-phase-2-plan.md`
+**Source** : `docs/02-shape-up/shape-up-methodology.md`, `docs/development/phase2/cycle-01-phase-2-plan.md`
 
 ---
 
@@ -207,7 +207,7 @@
 - **Import** : Utile pour 100+ produits (mais pas prioritaire actuellement)
 - **Export** : Utile pour partenaires/trésorier (mais pas implémenté)
 
-**Source** : `docs/04-rails/admin-panel-research.md`, `docs/02-shape-up/building/cycle-01-phase-2-plan.md`
+**Source** : `docs/04-rails/admin-panel-research.md`, `docs/development/phase2/cycle-01-phase-2-plan.md`
 
 ---
 

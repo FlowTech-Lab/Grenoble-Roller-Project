@@ -709,7 +709,7 @@ production:
 
 - **Schema DB** : `ressources/db/dbdiagram.md`
 - **Documentation modèles** : `docs/03-architecture/domain/models.md`
-- **Migrations Phase 2** : `docs/04-rails/phase2-migrations-models.md`
+- **Migrations Phase 2** : `docs/development/phase2/phase2-migrations-models.md`
 - **Guide technique** : [`../technical-implementation-guide.md`](../technical-implementation-guide.md)
 
 ---

@@ -18,8 +18,10 @@ class EventReminderJob < ApplicationJob
       is_initiation = event.is_a?(Event::Initiation)
 
       # Envoyer un rappel uniquement aux participants actifs qui ont activé le rappel
+      # et qui n'ont pas encore reçu de rappel pour cet événement
       event.attendances.active
            .where(wants_reminder: true)
+           .where(reminder_sent_at: nil)
            .includes(:user, :event)
            .find_each do |attendance|
         # Vérifier que l'utilisateur existe et a un email
@@ -32,6 +34,8 @@ class EventReminderJob < ApplicationJob
 
         # Envoyer l'email de rappel
         EventMailer.event_reminder(attendance).deliver_later
+        # Mettre à jour le flag pour éviter les doublons (utiliser update_column pour éviter les callbacks)
+        attendance.update_column(:reminder_sent_at, Time.zone.now)
       end
     end
   end

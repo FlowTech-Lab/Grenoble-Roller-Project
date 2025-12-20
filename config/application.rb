@@ -22,7 +22,9 @@ module App
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # Configuration du fuseau horaire pour l'application
+    # Important pour EventReminderJob et tous les calculs de dates/heures
+    config.time_zone = "Europe/Paris"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Configuration I18n - Locale par défaut française
