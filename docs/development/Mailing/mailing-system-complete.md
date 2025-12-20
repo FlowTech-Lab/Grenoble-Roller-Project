@@ -2,8 +2,8 @@
 
 **Date** : 2025-12-20  
 **Dernière mise à jour** : 2025-12-20  
-**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11)  
-**Version** : 2.2
+**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + 🚨 **SITUATION CRITIQUE** : Supercronic ne tourne pas (Point 3)  
+**Version** : 2.3
 
 ---
 
@@ -36,14 +36,15 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 
 | Job | Fréquence | Domaine | Système | Status |
 |-----|-----------|---------|---------|--------|
-| **EventReminderJob** | Quotidien (19h) | Rappels événements | Supercronic | ✅ **VÉRIFIÉ** |
-| **HelloAsso Sync** | Toutes les 5 min | Paiements | Supercronic | ✅ Actif |
-| **Memberships Expired** | Quotidien (00h) | Adhésions expirées | Supercronic | ✅ Actif |
-| **Renewal Reminders** | Quotidien (09h) | Rappels renouvellement | Supercronic | ✅ Actif |
+| **EventReminderJob** | Quotidien (19h) | Rappels événements | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
+| **HelloAsso Sync** | Toutes les 5 min | Paiements | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
+| **Memberships Expired** | Quotidien (00h) | Adhésions expirées | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
+| **Renewal Reminders** | Quotidien (09h) | Rappels renouvellement | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
+| **Initiation Participants Report** | Quotidien (07h) | Rapport participants | Supercronic | 📝 **À IMPLÉMENTER** (voir Section 7.5) |
 
 **✅ SYSTÈME VÉRIFIÉ** : Tous les points "À VÉRIFIER" ont été vérifiés avec tous les liens vers fichiers, variables et logiques.
 
-**🚨 AUDIT CRITIQUE** : 14 points identifiés (3 critiques ✅ TERMINÉS, 5 à vérifier, 6 améliorations). Voir **Section 12** pour détails complets et **Section 20** pour plan d'action priorisé.
+**🚨 AUDIT CRITIQUE** : 14 points identifiés (3 critiques ✅ TERMINÉS, 1 🚨 CRITIQUE URGENT, 5 à vérifier, 6 améliorations). Voir **Section 12** pour détails complets et **Section 20** pour plan d'action priorisé.
 
 **✅ CORRECTIONS IMPLÉMENTÉES** :
 - ✅ Point 1 : Rake tasks `deliver_now` → `deliver_later` (TERMINÉ)
@@ -51,7 +52,12 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 - ✅ Point 11 : Timezone configuré `Europe/Paris` (TERMINÉ)
 - ✅ Bonus : Cohérence `update_column`, `Rails.logger`, monitoring Sentry (TERMINÉ)
 
-**⚠️ PROBLÈME IDENTIFIÉ** : Les rappels EventReminderJob ne semblent pas fonctionner malgré la configuration. Voir section "Diagnostic EventReminderJob" (section 17) pour le diagnostic complet.
+**🚨 PROBLÈME CRITIQUE IDENTIFIÉ** :
+- 🚨 **Point 3** : **Supercronic ne tourne PAS** = Aucun job cron ne s'exécute (EventReminderJob, HelloAsso sync, memberships tasks)
+- **Impact** : Tous les jobs automatiques sont inactifs
+- **Voir Section 12.3** pour diagnostic complet et solutions
+
+**🚨 PROBLÈME CRITIQUE IDENTIFIÉ** : **Supercronic ne tourne PAS** = Aucun job cron ne s'exécute (EventReminderJob, HelloAsso sync, memberships tasks). Voir **Section 12.3** pour diagnostic complet et solutions. Voir aussi section "Diagnostic EventReminderJob" (section 17) pour le diagnostic détaillé.
 
 ---
 
@@ -152,9 +158,10 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 **Fichier mailer** : [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) (lignes 40-56)
 
 **Déclencheur** :
-- **Job automatique** : [`EventReminderJob`](../app/jobs/event_reminder_job.rb) (tous les jours à 19h)
-- **Appel dans le code** : [`app/jobs/event_reminder_job.rb`](../app/jobs/event_reminder_job.rb) (ligne 34) - `EventMailer.event_reminder(attendance).deliver_later`
-- Envoie un rappel la veille pour les événements du lendemain
+- **Job automatique** : [`EventReminderJob`](../app/jobs/event_reminder_job.rb) (tous les jours à **19h00**)
+- **Appel dans le code** : [`app/jobs/event_reminder_job.rb`](../app/jobs/event_reminder_job.rb) (ligne 36) - `EventMailer.event_reminder(attendance).deliver_later`
+- Envoie un rappel la veille (à 19h) pour les **événements ET initiations** du lendemain
+- **Participants concernés** : Parents ET enfants qui ont demandé des rappels (`wants_reminder: true`)
 
 **Templates** :
 - HTML : [`app/views/event_mailer/event_reminder.html.erb`](../app/views/event_mailer/event_reminder.html.erb)
@@ -178,8 +185,12 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 
 **Logique de filtrage** :
 - Le job filtre les attendances avec `wants_reminder: true` (champ dans [`app/models/attendance.rb`](../app/models/attendance.rb) ligne 73 du schema)
-- Pour les initiations, vérifie aussi `user.wants_initiation_mail?` (champ dans [`app/models/user.rb`](../app/models/user.rb), migration [`db/migrate/20251201020755_add_email_preferences_to_users.rb`](../db/migrate/20251201020755_add_email_preferences_to_users.rb))
-- **Note importante** : Le champ `is_volunteer` n'est **PAS** utilisé dans le filtrage - bénévoles et participants reçoivent le même email
+- **Parents ET enfants** : Le job traite toutes les attendances (parents avec `child_membership_id: nil` ET enfants avec `child_membership_id: present`)
+- Chaque attendance a son propre flag `wants_reminder`, donc :
+  - Si un parent s'inscrit et coche "rappels" → il recevra un email
+  - Si un enfant est inscrit et le parent coche "rappels" pour cet enfant → l'attendance de l'enfant recevra un email
+- Pour les initiations, vérifie aussi `user.wants_initiation_mail?` (préférence globale utilisateur - voir [`app/models/user.rb`](../app/models/user.rb), migration [`db/migrate/20251201020755_add_email_preferences_to_users.rb`](../db/migrate/20251201020755_add_email_preferences_to_users.rb))
+- **Note importante** : Le champ `is_volunteer` n'est **PAS** utilisé dans le filtrage - bénévoles et participants reçoivent le même email s'ils ont coché "rappels"
 
 **Références** :
 - Job : [`app/jobs/event_reminder_job.rb`](../app/jobs/event_reminder_job.rb)
@@ -255,6 +266,43 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 - Modèle WaitlistEntry : [`app/models/waitlist_entry.rb`](../app/models/waitlist_entry.rb) (méthode `send_notification_email` ligne 229)
 - Modèle Attendance : [`app/models/attendance.rb`](../app/models/attendance.rb) (callback `notify_waitlist_if_needed` ligne 295)
 - Documentation waitlist : [`docs/06-events/waitlist-system.md`](../06-events/waitlist-system.md)
+
+---
+
+#### 📝 `initiation_participants_report(initiation)` - À IMPLÉMENTER
+
+**Sujet** : `Rapport participants - Initiation [Date]`
+
+**Fichier mailer** : [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) (méthode à ajouter)
+
+**Déclencheur** :
+- **Job automatique** : [`InitiationParticipantsReportJob`](../app/jobs/initiation_participants_report_job.rb) (tous les jours à 7h, uniquement en production)
+- **Appel dans le code** : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) (à créer) - `EventMailer.initiation_participants_report(initiation).deliver_later`
+- Envoie un rapport le matin à 7h pour chaque initiation du jour
+
+**Templates** :
+- HTML : [`app/views/event_mailer/initiation_participants_report.html.erb`](../app/views/event_mailer/initiation_participants_report.html.erb) (à créer)
+- Text : [`app/views/event_mailer/initiation_participants_report.text.erb`](../app/views/event_mailer/initiation_participants_report.text.erb) (à créer)
+
+**Variables disponibles** :
+- `@initiation` : Objet [`Event::Initiation`](../app/models/event/initiation.rb) (paramètre `initiation`)
+- `@participants` : Liste des participants actifs (non bénévoles, non annulés) - via `initiation.attendances.active.participants.includes(:user, :child_membership)`
+- `@participants_with_equipment` : Participants qui demandent du matériel - filtré depuis `@participants` avec `needs_equipment? && roller_size.present?`
+
+**Logique** :
+- Destinataire : `contact@grenoble-roller.org` (hardcodé dans le mailer)
+- Uniquement en production (vérification dans le job)
+- Uniquement les jours où il y a une initiation (filtre dans le job)
+- Liste tous les participants avec leur nom, email, type (adulte/enfant), matériel demandé, pointure
+
+**Contenu** :
+- Détails de l'initiation (titre, date, lieu)
+- Tableau des participants (nom, email, type, matériel, pointure)
+- Résumé du matériel demandé par pointure
+
+**Références** :
+- Job : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) (à créer)
+- Voir Section 7.5 pour détails complets de l'implémentation
 
 ---
 
@@ -991,16 +1039,45 @@ smtp:
 **Fréquence** : Tous les jours à **19h00** (7:00pm)
 
 **Configuration** :
-- ⚠️ **IMPORTANT** : Le système réel utilisé est **Supercronic**, pas SolidQueue pour les jobs récurrents
-- **Supercronic** : [`config/schedule.rb`](../config/schedule.rb) → [`config/crontab`](../config/crontab) (généré automatiquement)
+- 🚨 **SITUATION CRITIQUE** : **Supercronic ne tourne PAS** = EventReminderJob **N'EST PAS EXÉCUTÉ**
+- **Supercronic** (devrait être) : [`config/schedule.rb`](../config/schedule.rb) → [`config/crontab`](../config/crontab) (généré automatiquement)
 - **SolidQueue** : [`config/recurring.yml`](../config/recurring.yml) existe mais **N'EST PAS UTILISÉ** pour EventReminderJob
-- **Voir Section 12.3** pour clarification complète de l'architecture
+- **Démarrage prévu** : [`bin/docker-entrypoint`](../bin/docker-entrypoint) (lignes 68-82) mais **NE FONCTIONNE PAS**
+- **Voir Section 12.3** pour diagnostic complet et solutions
 
-**Fonction** : Envoie des rappels la veille pour les événements du lendemain
+**Fonction** : Envoie des rappels la veille (à 19h) pour les événements et initiations du lendemain
+
+**Types d'événements traités** :
+- ✅ **Événements** (Event) : Randos, sorties, etc.
+- ✅ **Initiations** (Event::Initiation) : Initiations roller du samedi
+
+**Participants concernés** :
+- ✅ **Parents** : Les parents qui se sont inscrits eux-mêmes et ont coché "Je veux recevoir un rappel"
+- ✅ **Enfants** : Les enfants inscrits par leurs parents (si le parent a coché "Je veux recevoir un rappel" lors de l'inscription de l'enfant)
+- ✅ **Bénévoles** : Les bénévoles qui ont coché "Je veux recevoir un rappel" (même logique que les participants)
+
+**Logique de filtrage** :
+1. **Événements** : Trouve tous les événements publiés qui ont lieu demain (voir [`app/jobs/event_reminder_job.rb`](../app/jobs/event_reminder_job.rb) lignes 8-15)
+2. **Attendances** : Pour chaque événement, filtre les attendances :
+   - ✅ Actives (non annulées) : `.active` (exclut `canceled` mais inclut `no_show` - voir Section 12.5)
+   - ✅ Avec rappel demandé : `.where(wants_reminder: true)` (champ dans [`app/models/attendance.rb`](../app/models/attendance.rb))
+   - ✅ Pas encore envoyé : `.where(reminder_sent_at: nil)` (protection contre doublons)
+3. **Préférences utilisateur** :
+   - Pour les **initiations** : Vérifie aussi `user.wants_initiation_mail?` (préférence globale - voir [`app/jobs/event_reminder_job.rb`](../app/jobs/event_reminder_job.rb) lignes 30-32)
+   - Pour les **événements** : Pas de vérification supplémentaire (seulement `wants_reminder` par inscription)
+4. **Envoi** : Un email par attendance (donc un parent peut recevoir plusieurs emails s'il a inscrit plusieurs enfants)
+
+**Exemple concret** :
+- Un parent inscrit 2 enfants à une initiation du samedi
+- Le parent coche "Je veux recevoir un rappel" pour chaque enfant lors de l'inscription
+- Le vendredi à 19h, le parent recevra **2 emails de rappel** (un par enfant inscrit)
+- Chaque email contient les détails de l'initiation et le nom de l'enfant concerné
 
 **Références** :
 - Documentation complète : [`docs/06-events/event-reminder-job.md`](../06-events/event-reminder-job.md)
 - Architecture : Section 12.3 de ce document
+- Code du job : [`app/jobs/event_reminder_job.rb`](../app/jobs/event_reminder_job.rb)
+- Modèle Attendance : [`app/models/attendance.rb`](../app/models/attendance.rb) (scope `.active`, champ `wants_reminder`, `child_membership_id`)
 
 ---
 
@@ -1020,6 +1097,8 @@ end
 - Généré dans [`config/crontab`](../config/crontab) (ligne 7) via Supercronic
 
 **Fonction** : Synchronise les statuts de paiement HelloAsso (déclenche emails `order_paid`, `membership_activated`, `payment_failed`)
+
+**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
 
 **Logique** :
 - Filtre les paiements `pending` créés dans les dernières 24h (voir [`lib/tasks/helloasso.rake`](../lib/tasks/helloasso.rake) lignes 4-6)
@@ -1050,6 +1129,8 @@ end
 
 **Fonction** : Met à jour les statuts d'adhésions expirées et envoie `membership_expired`
 
+**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
+
 **Logique** :
 - Filtre les adhésions `active` avec `end_date < Date.current` (voir [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) lignes 6-9)
 - Met à jour le statut vers `expired` (ligne 10)
@@ -1069,6 +1150,8 @@ end
 
 **Fréquence** : Tous les jours à **09h00**
 
+**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
+
 **Configuration** :
 - [`config/schedule.rb`](../config/schedule.rb) (lignes 23-25) :
 ```ruby
@@ -1080,6 +1163,8 @@ end
 
 **Fonction** : Envoie `membership_renewal_reminder` 30 jours avant expiration
 
+**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
+
 **Logique** :
 - Calcule la date cible : `30.days.from_now.to_date` (voir [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) ligne 26)
 - Filtre les adhésions `active` avec `end_date = reminder_date` (lignes 29-32)
@@ -1090,6 +1175,156 @@ end
 
 **Références** :
 - Modèle Membership : [`app/models/membership.rb`](../app/models/membership.rb) (enum `status` lignes 11-16)
+
+---
+
+### 7.5. Rapport Participants Initiation (À IMPLÉMENTER)
+
+**Fichier à créer** : `app/jobs/initiation_participants_report_job.rb`
+
+**Fréquence** : Tous les jours à **07h00** (uniquement en production)
+
+**Configuration à ajouter dans `config/schedule.rb`** :
+
+```ruby
+# Rapport participants initiation (tous les jours à 7h, uniquement en production)
+every 1.day, at: "7:00 am" do
+  runner "InitiationParticipantsReportJob.perform_now" if Rails.env.production?
+end
+```
+
+**Fonction** : Envoie un email à `contact@grenoble-roller.org` avec la liste des participants et le matériel demandé pour chaque initiation du jour.
+
+**Logique du Job** :
+
+```ruby
+class InitiationParticipantsReportJob < ApplicationJob
+  queue_as :default
+
+  def perform
+    # Ne s'exécute qu'en production
+    return unless Rails.env.production?
+
+    # Trouver toutes les initiations du jour (aujourd'hui entre 00:00 et 23:59:59)
+    today_start = Time.zone.now.beginning_of_day
+    today_end = today_start.end_of_day
+
+    initiations = Event::Initiation
+                   .published
+                   .where(start_at: today_start..today_end)
+
+    # Si aucune initiation aujourd'hui, ne rien faire
+    return if initiations.empty?
+
+    # Envoyer un email pour chaque initiation
+    initiations.find_each do |initiation|
+      EventMailer.initiation_participants_report(initiation).deliver_later
+    end
+  end
+end
+```
+
+**Mailer à ajouter dans `app/mailers/event_mailer.rb`** :
+
+```ruby
+def initiation_participants_report(initiation)
+  @initiation = initiation
+  
+  # Récupérer tous les participants actifs (non bénévoles, non annulés)
+  @participants = initiation.attendances
+                            .active
+                            .participants
+                            .includes(:user, :child_membership)
+                            .order(:created_at)
+  
+  # Filtrer uniquement ceux qui demandent du matériel
+  @participants_with_equipment = @participants.select { |a| a.needs_equipment? && a.roller_size.present? }
+  
+  mail(
+    to: "contact@grenoble-roller.org",
+    subject: "Rapport participants - Initiation #{l(@initiation.start_at, format: :long)}"
+  )
+end
+```
+
+**Template à créer** : `app/views/event_mailer/initiation_participants_report.html.erb`
+
+**Code basique (sans CSS ni classes)** :
+
+```erb
+<div>
+  <h1>Rapport Participants - Initiation</h1>
+  
+  <div>
+    <h2><%= @initiation.title %></h2>
+    <p><strong>Date :</strong> <%= l(@initiation.start_at, format: :long) %></p>
+    <p><strong>Lieu :</strong> <%= @initiation.location_text %></p>
+    <p><strong>Total participants :</strong> <%= @participants.count %></p>
+    <p><strong>Participants avec matériel :</strong> <%= @participants_with_equipment.count %></p>
+  </div>
+  
+  <div>
+    <h3>Liste des Participants</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Matériel</th>
+          <th>Pointure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @participants.each do |attendance| %>
+          <tr>
+            <td>
+              <% if attendance.for_child? %>
+                <%= attendance.child_membership.child_first_name %> <%= attendance.child_membership.child_last_name %>
+              <% else %>
+                <%= attendance.user.first_name %> <%= attendance.user.last_name %>
+              <% end %>
+            </td>
+            <td><%= attendance.user.email %></td>
+            <td><%= attendance.for_child? ? 'Enfant' : 'Adulte' %></td>
+            <td><%= attendance.needs_equipment? ? 'Oui' : 'Non' %></td>
+            <td><%= attendance.needs_equipment? && attendance.roller_size.present? ? attendance.roller_size : '-' %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  
+  <% if @participants_with_equipment.any? %>
+    <div>
+      <h3>Résumé Matériel Demandé</h3>
+      <ul>
+        <% @participants_with_equipment.group_by(&:roller_size).sort.each do |size, attendances| %>
+          <li>Pointure <%= size %> : <%= attendances.count %> paire(s)</li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>
+```
+
+**Template texte** : `app/views/event_mailer/initiation_participants_report.text.erb`
+
+**Avantages de cette solution** :
+- ✅ Utilise la même architecture que les autres jobs (Supercronic)
+- ✅ S'exécute uniquement en production (vérification dans le job)
+- ✅ Ne s'exécute que s'il y a des initiations aujourd'hui (optimisé)
+- ✅ Utilise `deliver_later` pour traitement asynchrone
+- ✅ Réutilise `EventMailer` (cohérent avec le reste du système)
+- ✅ Facile à tester et maintenir
+
+**Références** :
+- Job : `app/jobs/initiation_participants_report_job.rb` (à créer)
+- Mailer : `app/mailers/event_mailer.rb` (méthode à ajouter)
+- Templates : `app/views/event_mailer/initiation_participants_report.html.erb` et `.text.erb` (à créer)
+- Schedule : `config/schedule.rb` (ligne à ajouter)
+
+**Note** : ⚠️ Ce job ne fonctionnera que lorsque Supercronic sera corrigé (voir Section 12.3).
 
 ---
 
@@ -1161,16 +1396,18 @@ end
 
 ## 📊 9. Statistiques Globales
 
+**Total emails** : 19 emails (18 existants + 1 à implémenter)
+
 ### 9.1. Résumé par Mailer
 
 | Mailer | Emails | HTML | Text | Status |
 |--------|--------|------|------|--------|
-| **EventMailer** | 5 | ✅ 5/5 | ✅ 5/5 | ✅ **100%** |
+| **EventMailer** | 6 (5 + 1 à implémenter) | ✅ 5/6 | ✅ 5/6 | 📝 **83%** (1 à implémenter) |
 | **OrderMailer** | 7 | ✅ 7/7 | ✅ 7/7 | ✅ **100%** |
 | **MembershipMailer** | 4 | ✅ 4/4 | ✅ 4/4 | ✅ **100%** |
 | **UserMailer** | 1 | ✅ 1/1 | ✅ 1/1 | ✅ **100%** |
 | **DeviseMailer** | 1 | ✅ 1/1 | ✅ 1/1 | ✅ **100%** |
-| **TOTAL** | **18** | ✅ **18/18** | ✅ **18/18** | ✅ **100%** |
+| **TOTAL** | **19** (18 + 1 à implémenter) | ✅ **18/19** | ✅ **18/19** | 📝 **95%** (1 à implémenter) |
 
 ---
 
@@ -1179,6 +1416,7 @@ end
 | Type | Compteur |
 |------|----------|
 | ✅ **Emails complets** (HTML + Texte) | 18 |
+| 📝 **Emails à implémenter** | 1 (`initiation_participants_report`) |
 | ⚠️ **Emails partiels** (HTML seulement) | 0 |
 | ❌ **Emails manquants** | 0 |
 
@@ -1303,12 +1541,15 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 
 ---
 
-#### 3. ⚠️ SolidQueue vs Supercronic - Architecture Floue
+#### 3. 🚨 SolidQueue vs Supercronic - SITUATION CRITIQUE
 
-**Problème identifié** :
-- [`config/recurring.yml`](../config/recurring.yml) existe et définit `event_reminder` pour SolidQueue
-- Mais le système réel utilisé est **Supercronic** (via [`config/schedule.rb`](../config/schedule.rb) → [`config/crontab`](../config/crontab))
-- **Qui gère vraiment** : Supercronic (pas SolidQueue pour les jobs récurrents)
+**🚨 PROBLÈME CRITIQUE IDENTIFIÉ** :
+- **Supercronic ne tourne PAS** = Aucun job cron ne s'exécute
+- Les jobs automatiques (EventReminderJob, HelloAsso sync, memberships tasks) **NE SONT PAS EXÉCUTÉS**
+- [`config/recurring.yml`](../config/recurring.yml) existe mais n'est pas utilisé
+- Le système réel utilisé devrait être **Supercronic** (via [`config/schedule.rb`](../config/schedule.rb) → [`config/crontab`](../config/crontab))
+
+**Architecture prévue** :
 
 **Architecture réelle** :
 - **Supercronic** : Gère TOUS les jobs cron (EventReminderJob, HelloAsso sync, memberships tasks)
@@ -1320,49 +1561,112 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
   - Plugin Puma : [`config/puma.rb`](../config/puma.rb) (ligne 38) - `plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]`
   - Variable env : `SOLID_QUEUE_IN_PUMA: true` dans [`config/deploy.yml`](../config/deploy.yml) (ligne 41)
 
-**Architecture réelle clarifiée** :
+**Architecture prévue (mais Supercronic ne tourne PAS actuellement)** :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    SYSTÈME DE JOBS                          │
 └─────────────────────────────────────────────────────────────┘
 
-1. JOBS CRON RÉCURRENTS (Supercronic)
+1. JOBS CRON RÉCURRENTS (Supercronic) ⚠️ NE TOURNE PAS
    ├─ Source : config/schedule.rb (Whenever)
    ├─ Généré : config/crontab (Supercronic)
-   ├─ Démarrage : bin/docker-entrypoint (lignes 68-82)
-   └─ Jobs :
-      ├─ EventReminderJob (19h quotidien)
-      ├─ helloasso:sync_payments (toutes les 5 min)
-      ├─ memberships:update_expired (00h quotidien)
-      ├─ memberships:send_renewal_reminders (09h quotidien)
-      └─ memberships:check_* (hebdomadaire)
+   ├─ Démarrage : bin/docker-entrypoint (lignes 68-82) ⚠️ PROBLÈME ICI
+   └─ Jobs (⚠️ NON EXÉCUTÉS) :
+      ├─ EventReminderJob (19h quotidien) ❌
+      ├─ helloasso:sync_payments (toutes les 5 min) ❌
+      ├─ memberships:update_expired (00h quotidien) ❌
+      ├─ memberships:send_renewal_reminders (09h quotidien) ❌
+      └─ memberships:check_* (hebdomadaire) ❌
 
-2. JOBS ACTIVEJOB ASYNCHRONES (SolidQueue)
+2. JOBS ACTIVEJOB ASYNCHRONES (SolidQueue) ✅ FONCTIONNE
    ├─ Configuration : config/queue.yml
    ├─ Plugin Puma : config/puma.rb ligne 38
    ├─ Variable env : SOLID_QUEUE_IN_PUMA=true
    └─ Jobs :
-      └─ Tous les deliver_later (emails, etc.)
+      └─ Tous les deliver_later (emails, etc.) ✅
 
 3. CONFIG/RECURRING.YML (⚠️ NON UTILISÉ)
    ├─ Fichier existe mais n'est PAS lu
    ├─ SolidQueue ne lit PAS ce fichier pour les jobs récurrents
-   └─ Les jobs récurrents sont gérés par Supercronic uniquement
+   └─ Les jobs récurrents DEVRAIENT être gérés par Supercronic (mais ne tourne pas)
 ```
 
+**🚨 DIAGNOSTIC - Pourquoi Supercronic ne tourne pas** :
+
+1. **Conditions de démarrage dans `bin/docker-entrypoint`** (lignes 68-82) :
+   ```bash
+   if [ "${RAILS_ENV}" == "production" ] || [ "${APP_ENV}" == "staging" ] || 
+      [ "${DEPLOY_ENV}" == "staging" ] || [ "${DEPLOY_ENV}" == "production" ]; then
+     if [ -f "/rails/config/crontab" ]; then
+       supercronic /rails/config/crontab &
+   ```
+   - ⚠️ **Problème potentiel 1** : Variables d'environnement non définies correctement
+   - ⚠️ **Problème potentiel 2** : Fichier `/rails/config/crontab` n'existe pas ou n'est pas généré
+
+2. **Génération du crontab** :
+   - Le crontab est généré par [`ops/lib/deployment/cron.sh`](../ops/lib/deployment/cron.sh) lors du déploiement
+   - Fonction `install_crontab()` est appelée dans [`ops/deploy.sh`](../ops/deploy.sh) ligne 382
+   - ⚠️ **Problème potentiel 3** : Le crontab n'est pas généré ou n'est pas écrit correctement
+
+3. **Supercronic installé dans Dockerfile** :
+   - ✅ Supercronic est installé dans le Dockerfile (lignes 30-31)
+   - ⚠️ **Problème potentiel 4** : Supercronic n'est peut-être pas dans le PATH ou n'a pas les permissions
+
+**🔧 ACTIONS REQUISES URGENTES** :
+
+1. **Vérifier si Supercronic tourne** :
+   ```bash
+   docker exec -it grenoble-roller-production ps aux | grep supercronic
+   # Si aucun résultat → Supercronic ne tourne pas
+   ```
+
+2. **Vérifier si le crontab existe** :
+   ```bash
+   docker exec -it grenoble-roller-production ls -la /rails/config/crontab
+   # Si fichier n'existe pas → Problème de génération
+   ```
+
+3. **Vérifier les variables d'environnement** :
+   ```bash
+   docker exec -it grenoble-roller-production env | grep -E "RAILS_ENV|APP_ENV|DEPLOY_ENV"
+   # Vérifier que les variables sont définies correctement
+   ```
+
+4. **Démarrer Supercronic manuellement (solution temporaire)** :
+   ```bash
+   docker exec -d grenoble-roller-production supercronic /rails/config/crontab
+   ```
+
+5. **Générer le crontab manuellement** :
+   ```bash
+   docker exec -it grenoble-roller-production bash -c "cd /rails && bundle exec whenever --set 'environment=production' > /rails/config/crontab"
+   ```
+
+6. **Vérifier les logs** :
+   ```bash
+   docker exec -it grenoble-roller-production tail -f log/cron.log
+   # Vérifier si des tâches s'exécutent
+   ```
+
 **Action requise** :
-1. ✅ **Clarification documentée** : Supercronic = jobs cron récurrents, SolidQueue = jobs ActiveJob asynchrones
-2. ⚠️ **À décider** : Supprimer `config/recurring.yml` ou le configurer pour SolidQueue (actuellement non utilisé)
-3. ✅ **Architecture complète documentée** ci-dessus
+1. 🚨 **URGENT** : Diagnostiquer pourquoi Supercronic ne démarre pas
+2. 🚨 **URGENT** : Vérifier que le crontab est généré et existe dans le conteneur
+3. 🚨 **URGENT** : Vérifier les variables d'environnement dans le conteneur
+4. ⚠️ **À décider** : Supprimer `config/recurring.yml` ou le configurer pour SolidQueue (actuellement non utilisé)
+5. ✅ **Architecture documentée** : Supercronic = jobs cron récurrents (quand il tourne), SolidQueue = jobs ActiveJob asynchrones
 
 **Références** :
 - Recurring config : [`config/recurring.yml`](../config/recurring.yml) (⚠️ Non utilisé actuellement - peut être supprimé ou configuré)
-- Schedule config : [`config/schedule.rb`](../config/schedule.rb) (✅ Utilisé - source pour Supercronic)
-- Crontab généré : [`config/crontab`](../config/crontab) (✅ Utilisé par Supercronic)
+- Schedule config : [`config/schedule.rb`](../config/schedule.rb) (✅ Source pour Supercronic - mais Supercronic ne tourne pas)
+- Crontab généré : [`config/crontab`](../config/crontab) (⚠️ Devrait être utilisé par Supercronic - mais Supercronic ne tourne pas)
+- Docker entrypoint : [`bin/docker-entrypoint`](../bin/docker-entrypoint) (lignes 68-82 - démarrage Supercronic)
+- Script déploiement : [`ops/lib/deployment/cron.sh`](../ops/lib/deployment/cron.sh) (génération crontab)
+- Deploy script : [`ops/deploy.sh`](../ops/deploy.sh) (ligne 382 - appel install_crontab)
 - Queue config : [`config/queue.yml`](../config/queue.yml) (✅ Utilisé par SolidQueue pour deliver_later)
 - Puma config : [`config/puma.rb`](../config/puma.rb) (ligne 38 - plugin SolidQueue)
 - Deploy config : [`config/deploy.yml`](../config/deploy.yml) (ligne 41 - SOLID_QUEUE_IN_PUMA: true)
+- Documentation cron : [`ops/CRON.md`](../ops/CRON.md) (documentation Supercronic)
 
 ---
 
@@ -1514,10 +1818,269 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 
 ### 🟢 AMÉLIORATIONS (Court terme)
 
-#### 9. Monitoring et Logs
-- Ajouter des logs structurés pour chaque email envoyé
-- Dashboard admin avec statistiques emails
-- Alertes si taux d'échec > seuil
+#### 9. ✅ Dashboard Admin pour Monitorer les Crons - Solution Proposée
+
+**Problème** : Impossible de savoir si les crons tournent sans accéder au conteneur Docker.
+
+**Solution** : Créer une page admin pour visualiser le statut de tous les crons en temps réel.
+
+**Fichier à créer** : `app/views/admin/crons/status.html.erb`
+
+**Code basique (sans CSS ni classes)** :
+
+```erb
+<div>
+  <h1>Crons Status Dashboard</h1>
+  
+  <div>
+    <div>
+      <h3>HelloAsso Sync</h3>
+      <p>Every 5 minutes</p>
+      
+      <div>
+        <span></span>
+        <%= @status[:helloasso_sync][:status].upcase %>
+      </div>
+      
+      <div>
+        <p><strong>Last Run:</strong> <%= @status[:helloasso_sync][:last_run]&.strftime('%Y-%m-%d %H:%M:%S') || 'Never' %></p>
+        <p><strong>Pending Payments:</strong> <%= @status[:helloasso_sync][:pending_payments] %></p>
+      </div>
+      
+      <button onclick="runCronNow('helloasso:sync_payments')">Run Now</button>
+    </div>
+    
+    <div>
+      <h3>Event Reminders</h3>
+      <p>Daily at 19:00</p>
+      
+      <div>
+        <span></span>
+        <%= @status[:event_reminders][:status].upcase %>
+      </div>
+      
+      <div>
+        <p><strong>Last Run:</strong> <%= @status[:event_reminders][:last_run]&.strftime('%Y-%m-%d %H:%M:%S') || 'Never' %></p>
+        <p><strong>Events Tomorrow:</strong> <%= @status[:event_reminders][:events_tomorrow] %></p>
+      </div>
+      
+      <button onclick="runCronNow('EventReminderJob')">Run Now</button>
+    </div>
+    
+    <div>
+      <h3>Memberships Expired</h3>
+      <p>Daily at 00:00</p>
+      
+      <div>
+        <span></span>
+        <%= @status[:memberships_expired][:status].upcase %>
+      </div>
+      
+      <div>
+        <p><strong>Last Run:</strong> <%= @status[:memberships_expired][:last_run]&.strftime('%Y-%m-%d %H:%M:%S') || 'Never' %></p>
+        <p><strong>Expired Today:</strong> <%= @status[:memberships_expired][:expired_today] %></p>
+      </div>
+      
+      <button onclick="runCronNow('memberships:update_expired')">Run Now</button>
+    </div>
+    
+    <div>
+      <h3>Renewal Reminders</h3>
+      <p>Daily at 09:00</p>
+      
+      <div>
+        <span></span>
+        <%= @status[:renewal_reminders][:status].upcase %>
+      </div>
+      
+      <div>
+        <p><strong>Last Run:</strong> <%= @status[:renewal_reminders][:last_run]&.strftime('%Y-%m-%d %H:%M:%S') || 'Never' %></p>
+        <p><strong>Expiring in 30 days:</strong> <%= @status[:renewal_reminders][:expiring_in_30_days] %></p>
+      </div>
+      
+      <button onclick="runCronNow('memberships:send_renewal_reminders')">Run Now</button>
+    </div>
+  </div>
+  
+  <div>
+    <h2>Recent Cron Logs</h2>
+    <pre><%= File.read('log/cron.log').lines.last(50).join if File.exist?('log/cron.log') %></pre>
+  </div>
+</div>
+```
+
+**Controller à créer** : `app/controllers/admin/crons_controller.rb`
+
+**Exemple de controller (code basique)** :
+
+```ruby
+class Admin::CronsController < ApplicationController
+  before_action :authenticate_user!
+  before_action :ensure_admin
+  
+  def status
+    @status = {
+      helloasso_sync: {
+        status: check_cron_status('helloasso:sync_payments'),
+        last_run: get_last_run_time('helloasso:sync_payments'),
+        pending_payments: Payment.where(status: :pending).where('created_at > ?', 24.hours.ago).count
+      },
+      event_reminders: {
+        status: check_cron_status('EventReminderJob'),
+        last_run: get_last_run_time('EventReminderJob'),
+        events_tomorrow: Event.published.upcoming.where(start_at: (Time.zone.now.beginning_of_day + 1.day)..(Time.zone.now.end_of_day + 1.day)).count
+      },
+      memberships_expired: {
+        status: check_cron_status('memberships:update_expired'),
+        last_run: get_last_run_time('memberships:update_expired'),
+        expired_today: Membership.where(status: :expired).where('updated_at > ?', Time.zone.now.beginning_of_day).count
+      },
+      renewal_reminders: {
+        status: check_cron_status('memberships:send_renewal_reminders'),
+        last_run: get_last_run_time('memberships:send_renewal_reminders'),
+        expiring_in_30_days: Membership.where(status: :active).where(end_date: 30.days.from_now.to_date).count
+      }
+    }
+  end
+  
+  def run_now
+    cron_name = params[:cron_name]
+    
+    case cron_name
+    when 'helloasso:sync_payments'
+      Rake::Task['helloasso:sync_payments'].invoke
+    when 'EventReminderJob'
+      EventReminderJob.perform_now
+    when 'memberships:update_expired'
+      Rake::Task['memberships:update_expired'].invoke
+    when 'memberships:send_renewal_reminders'
+      Rake::Task['memberships:send_renewal_reminders'].invoke
+    end
+    
+    redirect_to admin_crons_status_path, notice: "Cron #{cron_name} exécuté avec succès"
+  rescue => e
+    redirect_to admin_crons_status_path, alert: "Erreur: #{e.message}"
+  end
+  
+  private
+  
+  def ensure_admin
+    redirect_to root_path unless current_user&.admin?
+  end
+  
+  def check_cron_status(cron_name)
+    # Vérifier si Supercronic tourne
+    supercronic_running = system('pgrep -f supercronic > /dev/null 2>&1')
+    return 'unknown' unless supercronic_running
+    
+    # Vérifier dernière exécution (basé sur logs ou flags)
+    last_run = get_last_run_time(cron_name)
+    return 'unknown' if last_run.nil?
+    
+    # Déterminer si healthy basé sur dernière exécution
+    case cron_name
+    when 'helloasso:sync_payments'
+      last_run > 10.minutes.ago ? 'healthy' : 'unknown'
+    when 'EventReminderJob'
+      # Vérifier si exécuté aujourd'hui à 19h
+      today_19h = Time.zone.now.beginning_of_day + 19.hours
+      (last_run >= today_19h && last_run < today_19h + 1.hour) ? 'healthy' : 'unknown'
+    when 'memberships:update_expired'
+      last_run > Time.zone.now.beginning_of_day ? 'healthy' : 'unknown'
+    when 'memberships:send_renewal_reminders'
+      last_run > Time.zone.now.beginning_of_day ? 'healthy' : 'unknown'
+    else
+      'unknown'
+    end
+  end
+  
+  def get_last_run_time(cron_name)
+    # Méthode 1 : Lire depuis log/cron.log
+    if File.exist?('log/cron.log')
+      log_content = File.read('log/cron.log')
+      # Chercher dernière ligne contenant le nom du cron
+      matching_lines = log_content.lines.select { |line| line.include?(cron_name) }
+      return nil if matching_lines.empty?
+      # Extraire timestamp de la dernière ligne (format à adapter selon vos logs)
+      # Exemple: "2025-12-20 19:00:01 - EventReminderJob.perform_now"
+      last_line = matching_lines.last
+      # Parser le timestamp (à adapter selon format réel)
+      # Time.zone.parse(...)
+    end
+    
+    # Méthode 2 : Utiliser les flags de suivi (reminder_sent_at, etc.)
+    case cron_name
+    when 'EventReminderJob'
+      Attendance.where.not(reminder_sent_at: nil).maximum(:reminder_sent_at)
+    when 'memberships:update_expired'
+      Membership.where.not(expired_email_sent_at: nil).maximum(:expired_email_sent_at)
+    when 'memberships:send_renewal_reminders'
+      Membership.where.not(renewal_reminder_sent_at: nil).maximum(:renewal_reminder_sent_at)
+    end
+  end
+end
+```
+
+**Routes à ajouter dans `config/routes.rb`** :
+
+```ruby
+namespace :admin do
+  resources :crons, only: [] do
+    collection do
+      get :status
+      post :run_now
+    end
+  end
+end
+```
+
+**JavaScript pour le bouton "Run Now"** :
+
+```javascript
+function runCronNow(cronName) {
+  if (confirm('Exécuter ' + cronName + ' maintenant ?')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/crons/run_now';
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'cron_name';
+    input.value = cronName;
+    form.appendChild(input);
+    
+    const token = document.querySelector('meta[name="csrf-token"]');
+    if (token) {
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'authenticity_token';
+      csrfInput.value = token.content;
+      form.appendChild(csrfInput);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+```
+
+**Logique nécessaire** :
+- Récupérer le statut de chaque cron (dernière exécution, nombre d'éléments à traiter)
+- Permettre l'exécution manuelle via bouton "Run Now"
+- Afficher les logs récents depuis `log/cron.log`
+- Vérifier si Supercronic tourne (processus `pgrep -f supercronic`)
+
+**Bénéfices** :
+- ✅ Visualisation en temps réel du statut des crons
+- ✅ Exécution manuelle possible (dépannage)
+- ✅ Consultation des logs sans accès SSH/Docker
+- ✅ Détection rapide des crons inactifs
+- ✅ Vérification si Supercronic tourne
+
+**Références** :
+- Vue : `app/views/admin/crons/status.html.erb` (à créer)
+- Controller : `app/controllers/admin/crons_controller.rb` (à créer)
+- Routes : Ajouter dans `config/routes.rb` sous namespace `admin`
 
 #### 10. Error Handling
 - Gestion d'erreurs SMTP plus robuste
@@ -1771,7 +2334,17 @@ config.time_zone = "Europe/Paris"
 
 ## 🎯 16. Améliorations Futures Possibles
 
-### 1. Rappels Multiples
+### 1. ✅ Dashboard Admin pour Monitorer les Crons (Solution Proposée)
+
+**Problème identifié** : Impossible de savoir si les crons tournent sans accéder au conteneur Docker.
+
+**Solution** : Créer une page admin pour visualiser le statut de tous les crons en temps réel.
+
+**Voir Section 12.9** pour le code complet (vue ERB, controller, routes, JavaScript).
+
+---
+
+### 2. Rappels Multiples
 - Rappel à 48h, 24h, 1h avant événement
 - Personnalisation horaire par utilisateur
 
@@ -1959,8 +2532,8 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 ---
 
 **Dernière mise à jour** : 2025-12-20  
-**Version** : 2.2  
-**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + Améliorations (update_column, Rails.logger, Sentry)
+**Version** : 2.3  
+**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + 🚨 **SITUATION CRITIQUE** : Supercronic ne tourne pas (Point 3)
 
 ---
 
@@ -1999,11 +2572,11 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 **Impact** : Affecte EventReminderJob  
 **Temps estimé** : Discussion métier + 10 minutes si modification
 
-#### 5. Clarifier Architecture SolidQueue/Supercronic
-**Fichier** : [`config/recurring.yml`](../config/recurring.yml)  
-**Action** : Décider si supprimer ou configurer  
-**Impact** : Clarification architecture  
-**Temps estimé** : 15 minutes
+#### 5. 🚨 URGENT - Corriger Supercronic (ne tourne pas)
+**Fichiers** : [`bin/docker-entrypoint`](../bin/docker-entrypoint), [`ops/lib/deployment/cron.sh`](../ops/lib/deployment/cron.sh)  
+**Action** : Diagnostiquer pourquoi Supercronic ne démarre pas et corriger  
+**Impact** : **CRITIQUE** - Tous les jobs cron sont inactifs (EventReminderJob, HelloAsso sync, memberships tasks)  
+**Temps estimé** : 1-2 heures (diagnostic + correction)
 
 ---
 
@@ -2040,7 +2613,7 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 |---|-------|---------|-------|----------------|----------|--------|
 | 1 | Rake tasks `deliver_now` | [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) | 20, 43 | ✅ Changer en `deliver_later` | 🔴 CRITIQUE | ✅ TERMINÉ |
 | 2 | Flags de suivi manquants | [`db/migrate/`](../db/migrate/) | - | ✅ Ajouter 3 migrations | 🔴 CRITIQUE | ✅ TERMINÉ |
-| 3 | Architecture SolidQueue/Supercronic | [`config/recurring.yml`](../config/recurring.yml) | - | Clarifier documentation | 🔴 CRITIQUE | 🟡 EN ATTENTE |
+| 3 | Architecture SolidQueue/Supercronic | [`bin/docker-entrypoint`](../bin/docker-entrypoint) | 68-82 | 🚨 **Supercronic ne tourne PAS** - Diagnostiquer et corriger | 🔴 CRITIQUE | 🚨 URGENT |
 | 11 | Timezone non configuré | [`config/application.rb`](../config/application.rb) | 27 | ✅ Configurer `Europe/Paris` | 🟡 IMPORTANT | ✅ TERMINÉ |
 
 ### 🟡 À Vérifier (Important)
@@ -2102,7 +2675,7 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 ### ✅ Tous les Points Vérifiés
 
 #### Mailers (18 emails)
-- ✅ **EventMailer** : 5 méthodes vérifiées avec tous les appels dans controllers/models
+- ✅ **EventMailer** : 5 méthodes vérifiées avec tous les appels dans controllers/models + 1 méthode à implémenter (`initiation_participants_report` - voir Section 7.5)
 - ✅ **OrderMailer** : 7 méthodes vérifiées avec callback dans Order model
 - ✅ **MembershipMailer** : 4 méthodes vérifiées avec appels dans Membership model, HelloassoService, rake tasks
 - ✅ **UserMailer** : 1 méthode vérifiée avec callback dans User model
@@ -2150,7 +2723,7 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 ## 🔗 19. Index des Liens Vers Fichiers
 
 ### Mailers
-- [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) - EventMailer (5 méthodes)
+- [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) - EventMailer (5 méthodes existantes + 1 à implémenter)
 - [`app/mailers/order_mailer.rb`](../app/mailers/order_mailer.rb) - OrderMailer (7 méthodes)
 - [`app/mailers/membership_mailer.rb`](../app/mailers/membership_mailer.rb) - MembershipMailer (4 méthodes)
 - [`app/mailers/user_mailer.rb`](../app/mailers/user_mailer.rb) - UserMailer (1 méthode)
