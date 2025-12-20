@@ -51,10 +51,7 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo", "legal", "rg
 
 ### Accessibilité
 
-3. **[Accessibility Audit Report](accessibility-audit.md)**
-   - Audit complet WCAG 2.1 AA
-   - Problèmes identifiés et corrigés
-   - Tests automatisés (Pa11y)
+3. ⚠️ **Déplacé** : [`../development/accessibility/accessibility-audit.md`](../development/accessibility/accessibility-audit.md) - Audit complet WCAG 2.1 AA (actions à réaliser)
 
 4. **[Accessibility Summary](accessibility-summary.md)**
    - Récapitulatif exécutif
@@ -66,9 +63,7 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo", "legal", "rg
 
 ### Performance & SEO (Lighthouse)
 
-6. **[Lighthouse Action Plan](lighthouse-action-plan.md)**
-   - Plan d'action complet
-   - Quick wins vs optimisations futures
+6. ⚠️ **Déplacé** : [`../development/accessibility/lighthouse-action-plan.md`](../development/accessibility/lighthouse-action-plan.md) - Plan d'action complet (actions à réaliser)
 
 7. **[Lighthouse Quick Wins Completed](lighthouse-quick-wins-completed.md)**
    - Quick wins appliqués
@@ -76,9 +71,7 @@ tags: ["accessibility", "a11y", "performance", "lighthouse", "seo", "legal", "rg
 
 ### Tests & Rapports
 
-8. **[A11Y Testing Guide](a11y-testing.md)**
-   - Guide d'utilisation des outils de test
-   - Pa11y, Lighthouse, WAVE, Axe
+8. ⚠️ **Déplacé** : [`../development/accessibility/a11y-testing.md`](../development/accessibility/a11y-testing.md) - Guide d'utilisation des outils de test
 
 9. **[Pa11y Results Summary](a11y-reports/pa11y-results-summary.md)**
    - Résultats initiaux des tests Pa11y

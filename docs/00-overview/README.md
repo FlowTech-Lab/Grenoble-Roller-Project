@@ -270,7 +270,7 @@ Créer une plateforme complète qui rassemble la communauté roller grenobloise 
 - Codes promo
 - Statistiques personnelles utilisateur
 
-**Voir détails complets** : [`docs/09-product/todo-restant.md`](../09-product/todo-restant.md)
+**Voir détails complets** : [`docs/development/ux-improvements/todo-restant.md`](../development/ux-improvements/todo-restant.md)
 
 ---
 
@@ -311,8 +311,8 @@ docs/
 - **Changelog** : [`docs/10-decisions-and-changelog/CHANGELOG.md`](../10-decisions-and-changelog/CHANGELOG.md)
 
 ### Product & UX
-- **Backlog UX** : [`docs/09-product/ux-improvements-backlog.md`](../09-product/ux-improvements-backlog.md)
-- **Todo restant** : [`docs/09-product/todo-restant.md`](../09-product/todo-restant.md)
+- **Backlog UX** : [`docs/development/ux-improvements/ux-improvements-backlog.md`](../development/ux-improvements/ux-improvements-backlog.md)
+- **Todo restant** : [`docs/development/ux-improvements/todo-restant.md`](../development/ux-improvements/todo-restant.md)
 
 ### Ops & Deploy
 - **Runbooks** : [`docs/07-ops/runbooks/`](../07-ops/runbooks/)

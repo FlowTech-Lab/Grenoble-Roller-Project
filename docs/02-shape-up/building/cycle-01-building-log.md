@@ -15,7 +15,7 @@ tags: ["shape-up", "building", "cycle-01", "roadmap"]
 **Methodology** : Shape Up (6 weeks cycle)
 
 > **Related Documents** :
-> - Phase 2 detailed plan : [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md)
+> - Phase 2 detailed plan : [`../../development/phase2/cycle-01-phase-2-plan.md`](../../development/phase2/cycle-01-phase-2-plan.md)
 > - Shape Up methodology : [`../shape-up-methodology.md`](../shape-up-methodology.md)
 > - Technical implementation guide : [`../technical-implementation-guide.md`](../technical-implementation-guide.md)
 
@@ -275,7 +275,7 @@ Basé sur l'analyse du contenu existant, voici les fonctionnalités prioritaires
 
 #### 📋 **Sprint 5 : Admin Panel (ActiveAdmin)**
 
-> **📋 Voir [`cycle-01-phase-2-plan.md`](cycle-01-phase-2-plan.md) pour le plan détaillé complet**
+> **📋 Voir [`../../development/phase2/cycle-01-phase-2-plan.md`](../../development/phase2/cycle-01-phase-2-plan.md) pour le plan détaillé complet**
 
 **Résumé** :
 - ✅ **Pré-requis** : Modèles Phase 2 créés et stables
