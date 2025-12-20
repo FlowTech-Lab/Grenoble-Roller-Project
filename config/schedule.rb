@@ -14,6 +14,11 @@ every 1.day, at: "7:00 pm" do
   runner "EventReminderJob.perform_now"
 end
 
+# Rapport participants initiation (tous les jours à 7h, uniquement en production)
+every 1.day, at: "7:00 am" do
+  runner "InitiationParticipantsReportJob.perform_now" if Rails.env.production?
+end
+
 # Mettre à jour les adhésions expirées (tous les jours à minuit)
 every 1.day, at: "12:00 am" do
   runner 'Rake::Task["memberships:update_expired"].invoke'

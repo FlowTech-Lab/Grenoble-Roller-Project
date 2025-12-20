@@ -1,0 +1,99 @@
+<h1 style="color: #ffc107; margin-top: 0;">📋 Rapport Participants - Initiation</h1>
+
+<p>Bonjour,</p>
+
+<p>Voici le rapport des participants et du matériel demandé pour l'initiation du <strong><%= l(@initiation.start_at, format: :event_long, locale: :fr) %></strong>.</p>
+
+<div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107;">
+  <h3 style="margin-top: 0; color: #333; font-size: 18px;">📅 Détails de l'initiation</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #666; width: 120px;">📝 Titre :</td>
+      <td style="padding: 8px 0;"><strong><%= @initiation.title %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">🕐 Date :</td>
+      <td style="padding: 8px 0;"><strong><%= l(@initiation.start_at, format: :event_long, locale: :fr) %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">📍 Lieu :</td>
+      <td style="padding: 8px 0;"><strong><%= @initiation.location_text %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">👥 Participants :</td>
+      <td style="padding: 8px 0;"><strong><%= @participants.count %> inscrit(s)</strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">📦 Matériel demandé :</td>
+      <td style="padding: 8px 0;"><strong><%= @participants_with_equipment.count %> demande(s)</strong></td>
+    </tr>
+  </table>
+</div>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+  <h3 style="margin-top: 0; color: #333; font-size: 18px;">👥 Liste des Participants</h3>
+  <% if @participants.any? %>
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dee2e6;">
+      <thead>
+        <tr style="background: #e9ecef;">
+          <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Nom</th>
+          <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Email</th>
+          <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Type</th>
+          <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Matériel</th>
+          <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Pointure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @participants.each do |attendance| %>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #dee2e6;">
+              <% if attendance.for_child? %>
+                <strong><%= attendance.child_membership.child_first_name %> <%= attendance.child_membership.child_last_name %></strong>
+              <% else %>
+                <strong><%= attendance.user.first_name %> <%= attendance.user.last_name %></strong>
+              <% end %>
+            </td>
+            <td style="padding: 10px; border: 1px solid #dee2e6;"><%= attendance.user.email %></td>
+            <td style="padding: 10px; border: 1px solid #dee2e6;"><%= attendance.for_child? ? 'Enfant' : 'Adulte' %></td>
+            <td style="padding: 10px; border: 1px solid #dee2e6;"><%= attendance.needs_equipment? ? 'Oui' : 'Non' %></td>
+            <td style="padding: 10px; border: 1px solid #dee2e6;">
+              <% if attendance.needs_equipment? && attendance.roller_size.present? %>
+                <strong><%= attendance.roller_size %></strong>
+              <% else %>
+                -
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p style="color: #6c757d; font-style: italic;">Aucun participant inscrit pour le moment.</p>
+  <% end %>
+</div>
+
+<% if @participants_with_equipment.any? %>
+  <div style="background: #d1ecf1; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #0c5460;">
+    <h3 style="margin-top: 0; color: #333; font-size: 18px;">📦 Résumé Matériel Demandé</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+      <% @participants_with_equipment.group_by(&:roller_size).sort.each do |size, attendances| %>
+        <tr>
+          <td style="padding: 8px 0; color: #666; width: 150px;">Pointure <strong><%= size %></strong> :</td>
+          <td style="padding: 8px 0;"><strong><%= attendances.count %> paire(s)</strong></td>
+        </tr>
+      <% end %>
+    </table>
+    <p style="margin-top: 15px; color: #0c5460; font-size: 14px;">
+      <strong>Total :</strong> <%= @participants_with_equipment.count %> demande(s) de matériel
+    </p>
+  </div>
+<% end %>
+
+<div style="margin: 30px 0; text-align: center;">
+  <%= link_to 'Voir l\'initiation', initiation_url(@initiation), 
+      style: 'display: inline-block; background: #ffc107; color: #333; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+  Bonne journée ! 🛼
+</p>

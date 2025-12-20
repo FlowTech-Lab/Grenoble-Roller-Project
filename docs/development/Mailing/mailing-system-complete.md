@@ -1178,9 +1178,9 @@ end
 
 ---
 
-### 7.5. Rapport Participants Initiation (À IMPLÉMENTER)
+### 7.5. Rapport Participants Initiation ✅ **IMPLÉMENTÉ**
 
-**Fichier à créer** : `app/jobs/initiation_participants_report_job.rb`
+**Fichier** : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb)
 
 **Fréquence** : Tous les jours à **07h00** (uniquement en production)
 
@@ -1202,16 +1202,19 @@ class InitiationParticipantsReportJob < ApplicationJob
   queue_as :default
 
   def perform
-    # Ne s'exécute qu'en production
-    return unless Rails.env.production?
+    # Ne s'exécute qu'en production (ou si FORCE_INITIATION_REPORT=true pour tests)
+    return unless Rails.env.production? || ENV['FORCE_INITIATION_REPORT'] == 'true'
 
     # Trouver toutes les initiations du jour (aujourd'hui entre 00:00 et 23:59:59)
+    # qui n'ont pas encore reçu de rapport aujourd'hui (prévention doublons)
     today_start = Time.zone.now.beginning_of_day
     today_end = today_start.end_of_day
 
     initiations = Event::Initiation
                    .published
                    .where(start_at: today_start..today_end)
+                   .where(participants_report_sent_at: nil) # Prévention doublons
+                   .includes(:attendances, :creator_user) # Éviter N+1 queries
 
     # Si aucune initiation aujourd'hui, ne rien faire
     return if initiations.empty?
@@ -1219,12 +1222,19 @@ class InitiationParticipantsReportJob < ApplicationJob
     # Envoyer un email pour chaque initiation
     initiations.find_each do |initiation|
       EventMailer.initiation_participants_report(initiation).deliver_later
+      # Marquer comme envoyé pour éviter les doublons
+      initiation.update_column(:participants_report_sent_at, Time.zone.now)
     end
   end
 end
 ```
 
-**Mailer à ajouter dans `app/mailers/event_mailer.rb`** :
+**Optimisations implémentées** :
+- ✅ **Includes pour éviter N+1** : `.includes(:attendances, :creator_user)` - charge les associations en une seule requête
+- ✅ **Vérification production optimisée** : Permet de tester en dev avec `FORCE_INITIATION_REPORT=true bin/rails runner "InitiationParticipantsReportJob.perform_now"`
+- ✅ **Flag de suivi anti-doublons** : `participants_report_sent_at` - évite les relances si cron exécuté 2x le même jour
+
+**Mailer** : Méthode `initiation_participants_report` dans [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) ✅ **CRÉÉ**
 
 ```ruby
 def initiation_participants_report(initiation)
@@ -1242,12 +1252,14 @@ def initiation_participants_report(initiation)
   
   mail(
     to: "contact@grenoble-roller.org",
-    subject: "Rapport participants - Initiation #{l(@initiation.start_at, format: :long)}"
+    subject: "📋 Rapport participants - Initiation #{l(@initiation.start_at, format: :day_month, locale: :fr)}"
   )
 end
 ```
 
-**Template à créer** : `app/views/event_mailer/initiation_participants_report.html.erb`
+**Templates** : ✅ **CRÉÉS**
+- HTML : [`app/views/event_mailer/initiation_participants_report.html.erb`](../app/views/event_mailer/initiation_participants_report.html.erb)
+- Texte : [`app/views/event_mailer/initiation_participants_report.text.erb`](../app/views/event_mailer/initiation_participants_report.text.erb)
 
 **Code basique (sans CSS ni classes)** :
 
@@ -1319,10 +1331,18 @@ end
 - ✅ Facile à tester et maintenir
 
 **Références** :
-- Job : `app/jobs/initiation_participants_report_job.rb` (à créer)
-- Mailer : `app/mailers/event_mailer.rb` (méthode à ajouter)
-- Templates : `app/views/event_mailer/initiation_participants_report.html.erb` et `.text.erb` (à créer)
-- Schedule : `config/schedule.rb` (ligne à ajouter)
+- Job : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) ✅ **CRÉÉ**
+- Mailer : [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) (méthode `initiation_participants_report`) ✅ **CRÉÉ**
+- Templates : 
+  - [`app/views/event_mailer/initiation_participants_report.html.erb`](../app/views/event_mailer/initiation_participants_report.html.erb) ✅ **CRÉÉ**
+  - [`app/views/event_mailer/initiation_participants_report.text.erb`](../app/views/event_mailer/initiation_participants_report.text.erb) ✅ **CRÉÉ**
+- Schedule : [`config/schedule.rb`](../config/schedule.rb) (ligne ajoutée) ✅ **CRÉÉ**
+- Migration : [`db/migrate/20251220062313_add_participants_report_sent_at_to_events.rb`](../db/migrate/20251220062313_add_participants_report_sent_at_to_events.rb) ✅ **CRÉÉ**
+
+**Optimisations implémentées** :
+- ✅ **Includes pour éviter N+1** : `.includes(:attendances, :creator_user)` - charge les associations en une seule requête
+- ✅ **Vérification production optimisée** : Permet de tester en dev avec `FORCE_INITIATION_REPORT=true bin/rails runner "InitiationParticipantsReportJob.perform_now"`
+- ✅ **Flag de suivi anti-doublons** : `participants_report_sent_at` - évite les relances si cron exécuté 2x le même jour
 
 **Note** : ⚠️ Ce job ne fonctionnera que lorsque Supercronic sera corrigé (voir Section 12.3).
 

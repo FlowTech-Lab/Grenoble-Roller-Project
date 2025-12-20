@@ -93,4 +93,24 @@ class EventMailer < ApplicationMailer
       subject: subject
     )
   end
+
+  # Email de rapport des participants et matériel pour une initiation (envoyé à 7h le jour de l'initiation)
+  def initiation_participants_report(initiation)
+    @initiation = initiation
+
+    # Récupérer tous les participants actifs (non bénévoles, non annulés)
+    @participants = initiation.attendances
+                              .active
+                              .participants
+                              .includes(:user, :child_membership)
+                              .order(:created_at)
+
+    # Filtrer uniquement ceux qui demandent du matériel
+    @participants_with_equipment = @participants.select { |a| a.needs_equipment? && a.roller_size.present? }
+
+    mail(
+      to: "contact@grenoble-roller.org",
+      subject: "📋 Rapport participants - Initiation #{l(@initiation.start_at, format: :day_month, locale: :fr)}"
+    )
+  end
 end
