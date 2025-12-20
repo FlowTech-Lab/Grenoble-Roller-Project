@@ -85,6 +85,12 @@ Rails.application.routes.draw do
     resources :payments, only: [ :create ], shallow: true, controller: "memberships/payments"
     # Route status nested (nécessite membership_id)
     get "payments/status", to: "memberships/payments#show", as: :status_payment
+    member do
+      # Convertir essai gratuit en adhésion payante
+      patch :upgrade
+      # Renouveler une adhésion expirée (enfant uniquement)
+      post :renew
+    end
     collection do
       # Paiement groupé pour plusieurs enfants en attente
       post "payments/create_multiple", to: "memberships/payments#create_multiple", as: :create_multiple_payments

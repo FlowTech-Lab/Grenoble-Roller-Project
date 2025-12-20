@@ -31,9 +31,14 @@ class Attendance < ApplicationRecord
   validate :event_has_available_spots, on: :create
   validate :can_use_free_trial, on: :create
   validate :can_register_to_initiation, on: :create
+  validate :can_register_to_event, on: :create
   validate :child_membership_belongs_to_user
   validate :no_duplicate_registration, on: :create
 
+  after_create :decrement_roller_stock, if: :should_decrement_stock? # Décrémenter le stock si matériel demandé
+  after_update :handle_stock_on_equipment_change # Gérer le stock si besoin matériel change
+  after_update :handle_stock_on_status_change, if: :saved_change_to_status? # Gérer le stock si statut change
+  after_destroy :increment_roller_stock, if: :should_increment_stock_on_destroy? # Incrémenter le stock si matériel était demandé
   after_destroy :notify_waitlist_if_needed # Notifier la liste d'attente si une place se libère
   after_update :notify_waitlist_on_cancellation, if: :saved_change_to_status? # Notifier si le statut passe à "canceled"
 
@@ -126,9 +131,18 @@ class Attendance < ApplicationRecord
     return unless free_trial_used
     return unless user
 
-    # Vérifier que l'utilisateur n'a pas déjà utilisé son essai gratuit
-    if user.attendances.where(free_trial_used: true).where.not(id: id).exists?
-      errors.add(:free_trial_used, "Vous avez déjà utilisé votre essai gratuit")
+    # Distinguer parent vs enfant : vérifier essai gratuit par child_membership_id si présent
+    # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+    if child_membership_id.present?
+      # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit (attendance active uniquement)
+      if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+        errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit")
+      end
+    else
+      # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id, attendance active uniquement)
+      if user.attendances.active.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
+        errors.add(:free_trial_used, "Vous avez déjà utilisé votre essai gratuit")
+      end
     end
   end
 
@@ -163,15 +177,40 @@ class Attendance < ApplicationRecord
 
     # Vérifier adhésion ou essai gratuit
     if free_trial_used
-      # Essai utilisé → vérifier qu'il n'a pas déjà été utilisé ailleurs
-      if user.attendances.where(free_trial_used: true).where.not(id: id).exists?
-        errors.add(:free_trial_used, "Vous avez déjà utilisé votre essai gratuit")
+      # Essai utilisé → vérifier qu'il n'a pas déjà été utilisé ailleurs (distinguer parent vs enfant)
+      # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+      if child_membership_id.present?
+        # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit (attendance active uniquement)
+        if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+          errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit")
+        end
+      else
+        # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id, attendance active uniquement)
+        if user.attendances.active.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
+          errors.add(:free_trial_used, "Vous avez déjà utilisé votre essai gratuit")
+        end
       end
     else
-      # Si c'est pour un enfant, vérifier que l'adhésion enfant est active
+      # Si c'est pour un enfant, vérifier que l'adhésion enfant est active, trial ou pending
+      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
       if for_child?
-        unless child_membership&.active?
+        unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
+        end
+        
+        # SÉCURITÉ CRITIQUE : Si l'enfant a un statut trial (non adhérent), l'essai gratuit est OBLIGATOIRE
+        # et ne peut être utilisé qu'UNE SEULE FOIS
+        if child_membership&.trial? && !user.memberships.active_now.exists?
+          # Vérifier que l'essai gratuit est utilisé
+          unless free_trial_used
+            errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
+          end
+          
+          # Vérifier que cet enfant n'a pas déjà utilisé son essai gratuit (attendance active uniquement)
+          # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+          if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+            errors.add(:free_trial_used, "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise.")
+          end
         end
       elsif !event.allow_non_member_discovery?
         # Si l'option n'est pas activée, vérifier adhésion active (parent OU enfant) ou essai gratuit
@@ -181,10 +220,40 @@ class Attendance < ApplicationRecord
         unless has_active_membership || has_child_membership || free_trial_used
           errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
         end
+      else
+        # Si l'option est activée et que l'utilisateur n'est pas adhérent,
+        # SÉCURITÉ : Vérifier que l'essai gratuit n'a pas déjà été utilisé
+        # Si l'essai gratuit a déjà été utilisé, l'utilisateur ne peut plus s'inscrire sans adhésion
+        # même si allow_non_member_discovery est activé
+        unless is_member
+          if child_membership_id.present?
+            # Pour un enfant : vérifier si cet enfant a déjà utilisé son essai gratuit
+            if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?
+              errors.add(:base, "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise.")
+            end
+          else
+            # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit
+            if user.attendances.active.where(free_trial_used: true, child_membership_id: nil).where.not(id: id).exists?
+              errors.add(:base, "Vous avez déjà utilisé votre essai gratuit. Une adhésion est maintenant requise pour continuer.")
+            end
+          end
+        end
       end
-      # Si l'option est activée et que l'utilisateur n'est pas adhérent,
-      # l'inscription est autorisée dans les places découverte (pas besoin d'essai gratuit)
     end
+  end
+
+  def can_register_to_event
+    return if event.is_a?(Event::Initiation) # Les initiations ont leur propre validation
+    return if is_volunteer # Bénévoles bypassent les validations
+
+    # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
+    # Vérifier seulement que l'adhésion enfant appartient à l'utilisateur si un enfant est inscrit
+    if for_child?
+      unless child_membership && user.memberships.exists?(id: child_membership_id, is_child_membership: true)
+        errors.add(:child_membership_id, "Cette adhésion enfant ne vous appartient pas")
+      end
+    end
+    # Pour le parent : aucune restriction, ouvert à tous
   end
 
   def child_membership_belongs_to_user
@@ -251,6 +320,95 @@ class Attendance < ApplicationRecord
         # Notifier la première personne en liste d'attente
         WaitlistEntry.notify_next_in_queue(event, count: 1)
       end
+    end
+  end
+
+  # Gestion du stock de rollers
+  def should_decrement_stock?
+    needs_equipment? && roller_size.present? && status != "canceled"
+  end
+
+  def should_increment_stock_on_destroy?
+    needs_equipment? && roller_size.present?
+  end
+
+  def decrement_roller_stock
+    return unless needs_equipment? && roller_size.present?
+
+    roller_stock = RollerStock.find_by(size: roller_size)
+    if roller_stock && roller_stock.quantity > 0
+      roller_stock.decrement!(:quantity)
+      Rails.logger.info("Stock décrémenté pour taille #{roller_size}: #{roller_stock.quantity} restants")
+    elsif roller_stock
+      Rails.logger.warn("Impossible de décrémenter le stock : taille #{roller_size} déjà à 0")
+    else
+      Rails.logger.warn("Taille de roller #{roller_size} non trouvée dans le stock")
+    end
+  end
+
+  def increment_roller_stock
+    return unless needs_equipment? && roller_size.present?
+
+    roller_stock = RollerStock.find_by(size: roller_size)
+    if roller_stock
+      roller_stock.increment!(:quantity)
+      Rails.logger.info("Stock incrémenté pour taille #{roller_size}: #{roller_stock.quantity} disponibles")
+    else
+      Rails.logger.warn("Taille de roller #{roller_size} non trouvée dans le stock lors de l'incrémentation")
+    end
+  end
+
+  def handle_stock_on_equipment_change
+    # Si le besoin de matériel change
+    if saved_change_to_needs_equipment? || saved_change_to_roller_size?
+      old_needs = saved_change_to_needs_equipment? ? saved_change_to_needs_equipment[0] : needs_equipment?
+      old_size = saved_change_to_roller_size? ? saved_change_to_roller_size[0] : roller_size
+      new_needs = needs_equipment?
+      new_size = roller_size
+
+      # Si on passait de "besoin matériel" à "pas besoin", incrémenter le stock de l'ancienne taille
+      if old_needs && old_size.present? && !new_needs && status != "canceled"
+        old_stock = RollerStock.find_by(size: old_size)
+        old_stock&.increment!(:quantity)
+        Rails.logger.info("Stock incrémenté (changement besoin matériel) pour taille #{old_size}")
+      end
+
+      # Si on passe de "pas besoin" à "besoin matériel", décrémenter le stock de la nouvelle taille
+      if !old_needs && new_needs && new_size.present? && status != "canceled"
+        new_stock = RollerStock.find_by(size: new_size)
+        if new_stock && new_stock.quantity > 0
+          new_stock.decrement!(:quantity)
+          Rails.logger.info("Stock décrémenté (changement besoin matériel) pour taille #{new_size}")
+        end
+      end
+
+      # Si la taille change mais qu'on a toujours besoin de matériel
+      if old_needs && new_needs && old_size != new_size && old_size.present? && new_size.present? && status != "canceled"
+        old_stock = RollerStock.find_by(size: old_size)
+        old_stock&.increment!(:quantity)
+        new_stock = RollerStock.find_by(size: new_size)
+        if new_stock && new_stock.quantity > 0
+          new_stock.decrement!(:quantity)
+          Rails.logger.info("Stock mis à jour : taille #{old_size} incrémentée, taille #{new_size} décrémentée")
+        end
+      end
+    end
+  end
+
+  def handle_stock_on_status_change
+    return unless needs_equipment? && roller_size.present?
+
+    old_status = status_before_last_save
+    new_status = status
+
+    # Si on passe de "non canceled" à "canceled", incrémenter le stock
+    if old_status != "canceled" && new_status == "canceled"
+      increment_roller_stock
+    end
+
+    # Si on passe de "canceled" à "non canceled", décrémenter le stock
+    if old_status == "canceled" && new_status != "canceled"
+      decrement_roller_stock
     end
   end
 end

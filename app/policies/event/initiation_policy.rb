@@ -40,9 +40,10 @@ class Event::InitiationPolicy < ApplicationPolicy
       unless user.memberships.exists?(id: child_membership_id, is_child_membership: true)
         return false
       end
-      # Vérifier que l'adhésion enfant est active
+      # Vérifier que l'adhésion enfant est active, trial ou pending
+      # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
       child_membership = user.memberships.find_by(id: child_membership_id)
-      return false unless child_membership&.active?
+      return false unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
     end
 
     # Vérifier si l'utilisateur est déjà inscrit avec le même statut
@@ -56,7 +57,10 @@ class Event::InitiationPolicy < ApplicationPolicy
       # Si c'est pour un enfant, autoriser si d'autres enfants peuvent être inscrits
       if child_membership_id.present?
         registered_child_ids = user.attendances.where(event: record).where.not(child_membership_id: nil, status: "canceled").pluck(:child_membership_id).compact
-        available_children = user.memberships.active_now.where(is_child_membership: true).where.not(id: registered_child_ids)
+        # Inclure les adhésions active, trial et pending pour les initiations
+        available_children = user.memberships.where(is_child_membership: true)
+          .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+          .where.not(id: registered_child_ids)
         return available_children.exists?
       end
       # Si c'est pour le parent, ne pas autoriser si déjà inscrit avec le même statut
@@ -65,12 +69,15 @@ class Event::InitiationPolicy < ApplicationPolicy
 
     # Vérifier si l'utilisateur est adhérent
     is_member = if child_membership_id.present?
-      # Pour un enfant : vérifier l'adhésion enfant (déjà vérifiée plus haut)
-      true
+      # Pour un enfant : vérifier l'adhésion enfant (active, trial ou pending, déjà vérifiée plus haut)
+      child_membership&.active? || child_membership&.trial? || child_membership&.pending?
     else
       # Pour le parent : vérifier adhésion parent ou enfant
       user.memberships.active_now.exists? ||
-      user.memberships.active_now.where(is_child_membership: true).exists?
+      # Pour les initiations, inclure aussi trial et pending
+      user.memberships.where(is_child_membership: true)
+        .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+        .exists?
     end
 
     # Si l'option de limitation des non-adhérents est activée
@@ -89,7 +96,16 @@ class Event::InitiationPolicy < ApplicationPolicy
 
     # Si l'option n'est pas activée : comportement classique
     # Vérifier adhésion ou essai gratuit disponible
-    is_member || !user.attendances.where(free_trial_used: true).exists?
+    # Distinguer parent vs enfant pour l'essai gratuit
+    if is_member
+      true
+    elsif child_membership_id.present?
+      # Pour un enfant : vérifier si cet enfant spécifique a déjà utilisé son essai gratuit
+      !user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+    else
+      # Pour le parent : vérifier si le parent a déjà utilisé son essai gratuit (sans child_membership_id)
+      !user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
+    end
   end
 
   def cancel_attendance?

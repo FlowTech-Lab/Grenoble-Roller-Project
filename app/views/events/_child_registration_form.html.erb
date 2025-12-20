@@ -7,7 +7,17 @@
 
     <%= form_with url: attend_event_path_for(event), method: :post, local: true, data: { turbo: false } do |f| %>
       <!-- Sélection enfant -->
-      <% child_memberships = current_user.memberships.active_now.where(is_child_membership: true) %>
+      <% 
+        # Pour les événements normaux : tous les enfants (aucune restriction de statut)
+        # Pour les initiations : inclure active, trial et pending
+        is_initiation = event.is_a?(Event::Initiation)
+        if is_initiation
+          child_memberships = current_user.memberships.where(is_child_membership: true)
+            .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+        else
+          child_memberships = current_user.memberships.where(is_child_membership: true)
+        end
+      %>
       <% registered_child_ids = (@child_attendances&.any? ? @child_attendances.pluck(:child_membership_id).compact : []) %>
       <% available_children = child_memberships.where.not(id: registered_child_ids) %>
       

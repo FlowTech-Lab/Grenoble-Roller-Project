@@ -7,6 +7,8 @@ RSpec.describe EventMailer, type: :mailer do
   describe '#attendance_confirmed' do
     let(:user) { create(:user, first_name: 'John', email: 'john@example.com', role: user_role) }
     let(:organizer) { create(:user, role: organizer_role) }
+    # Créer une adhésion active pour l'utilisateur (requis pour les événements normaux)
+    let!(:user_membership) { create(:membership, user: user, status: :active, season: '2025-2026') }
     let(:event) { create(:event, :published, :upcoming, title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer) }
     let(:attendance) { create(:attendance, user: user, event: event) }
     let(:mail) { EventMailer.attendance_confirmed(attendance) }
@@ -126,6 +128,8 @@ RSpec.describe EventMailer, type: :mailer do
   describe '#event_reminder' do
     let(:organizer) { create_user(role: organizer_role) }
     let(:user) { create_user(first_name: 'Bob', email: 'bob@example.com', role: user_role) }
+    # Créer une adhésion active pour l'utilisateur (requis pour les événements normaux)
+    let!(:user_membership) { create(:membership, user: user, status: :active, season: '2025-2026') }
     let(:event) { create_event(status: 'published', title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer, start_at: 3.days.from_now) }
     let(:attendance) { create_attendance(user: user, event: event) }
     let(:mail) { EventMailer.event_reminder(attendance) }

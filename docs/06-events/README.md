@@ -11,6 +11,7 @@
 - **[Gestion Stock Rollers (RollerStock)](roller-stock.md)** ⭐ NOUVEAU - Système de gestion d'inventaire des rollers
 - **[Boucles Multiples (EventLoopRoute)](event-loop-routes.md)** ⭐ NOUVEAU - Événements avec plusieurs boucles
 - **[Job de Rappel Événements (EventReminderJob)](event-reminder-job.md)** ⭐ NOUVEAU - Rappels automatiques la veille à 19h
+- **[Logique d'Essai Gratuit (Free Trial)](logique-essai-gratuit.md)** ⭐ NOUVEAU - Documentation complète v3.0 de la logique d'essai gratuit pour les initiations
 
 ### Documentation Existant
 

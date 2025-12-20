@@ -133,9 +133,9 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         table_for volunteers do
           column "Bénévole" do |attendance|
             if attendance.child_membership_id.present?
-              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+              "#{attendance.participant_name} (enfant de #{attendance.user.to_s})"
             else
-              attendance.user.email
+              attendance.user.to_s
             end
           end
           column :status do |attendance|
@@ -148,7 +148,11 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
                     data: { confirm: "Retirer le statut bénévole pour #{attendance.user.email} ?" })
           end
           column "Matériel demandé" do |attendance|
-            attendance.equipment_note.presence || "-"
+            if attendance.needs_equipment? && attendance.roller_size.present?
+              "Roller #{attendance.roller_size} (EU)"
+            else
+              "-"
+            end
           end
           column :created_at
         end
@@ -162,9 +166,9 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         table_for participants do
           column "Participant" do |attendance|
             if attendance.child_membership_id.present?
-              "#{attendance.participant_name} (enfant de #{attendance.user.email})"
+              "#{attendance.participant_name} (enfant de #{attendance.user.to_s})"
             else
-              attendance.user.email
+              attendance.user.to_s
             end
           end
           column :status do |attendance|
@@ -180,7 +184,11 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
                     data: { confirm: "Ajouter le statut bénévole pour #{attendance.user.email} ?" })
           end
           column "Matériel demandé" do |attendance|
-            attendance.equipment_note.presence || "-"
+            if attendance.needs_equipment? && attendance.roller_size.present?
+              "Roller #{attendance.roller_size} (EU)"
+            else
+              "-"
+            end
           end
           column :created_at
         end
@@ -199,9 +207,9 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
           end
           column "Personne" do |entry|
             if entry.child_membership_id.present?
-              "#{entry.participant_name} (enfant de #{entry.user.email})"
+              "#{entry.participant_name} (enfant de #{entry.user.to_s})"
             else
-              entry.user.email
+              entry.user.to_s
             end
           end
           column :status do |entry|
@@ -272,7 +280,10 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         label_method: :to_s,
         value_method: :id
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
-      f.input :duration_min, input_html: { value: f.object.duration_min || 105 }, hint: "Durée en minutes (105 = 1h45)"
+      f.input :duration_min, 
+        input_html: { value: f.object.duration_min.present? ? f.object.duration_min : 105 }, 
+        hint: "Durée en minutes (105 = 1h45)",
+        required: true
       f.input :max_participants, label: "Nombre maximum de participants", input_html: { value: f.object.max_participants || 30 }
       f.input :description
     end
@@ -415,6 +426,29 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
   end
 
   controller do
+    def build_resource
+      super.tap do |initiation|
+        # Définir la valeur par défaut pour duration_min si elle n'est pas présente
+        initiation.duration_min ||= 105 if initiation.duration_min.blank?
+      end
+    end
+
+    def create
+      # S'assurer que duration_min a une valeur par défaut si elle n'est pas fournie
+      if params[:initiation] && params[:initiation][:duration_min].blank?
+        params[:initiation][:duration_min] = 105
+      end
+      super
+    end
+
+    def update
+      # S'assurer que duration_min a une valeur par défaut si elle n'est pas fournie
+      if params[:initiation] && params[:initiation][:duration_min].blank?
+        params[:initiation][:duration_min] = resource.duration_min || 105
+      end
+      super
+    end
+
     def destroy
       @initiation = resource
       if @initiation.destroy

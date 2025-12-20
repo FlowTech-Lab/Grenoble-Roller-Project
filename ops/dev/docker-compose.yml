@@ -21,6 +21,7 @@ services:
       PORT: 3000
       # Enable polling for file watcher (required for Docker volumes on Linux)
       LISTEN_GEM_USE_POLLING: "true"
+      TZ: Europe/Paris
     ports:
       - "3000:3000"
     entrypoint: ["./bin/docker-entrypoint"]
@@ -34,6 +35,8 @@ services:
       - ../../:/rails
       - grenoble-roller-dev-bundle:/rails/vendor/bundle
       - grenoble-roller-dev-node-modules:/rails/node_modules
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s

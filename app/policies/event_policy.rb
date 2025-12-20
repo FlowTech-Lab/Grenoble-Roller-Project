@@ -39,6 +39,11 @@ class EventPolicy < ApplicationPolicy
     return false unless user.present?
     return false if record.full?
 
+    # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
+    # Les initiations ont leur propre politique (Event::InitiationPolicy)
+    return true if record.is_a?(Event::Initiation)
+
+    # Pour les événements normaux : ouvert à tous les utilisateurs connectés
     true
   end
 

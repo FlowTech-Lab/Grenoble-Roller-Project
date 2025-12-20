@@ -32,11 +32,24 @@
           </p>
           <p class="mb-1">
             <i class="bi bi-geo-alt text-liquid-primary me-2" aria-hidden="true"></i>
-            <%= initiation.location_text %>
+            <% 
+              # Retirer "France" du texte de localisation
+              location_text_clean = initiation.location_text.to_s.gsub(/\s*,\s*France\s*$/i, '').gsub(/\s*France\s*$/i, '').strip
+              # Séparer l'adresse pour mobile : saut de ligne avant code postal et ville
+              location_parts = location_text_clean.split(',').map(&:strip).reject(&:blank?)
+              if location_parts.length > 1
+                # Prendre tout sauf le dernier élément (adresse), puis le dernier (code postal + ville)
+                address_part = location_parts[0..-2].join(', ')
+                postal_city = location_parts.last
+            %>
+              <span class="d-inline"><%= address_part %>,</span><br><span class="d-inline"><%= postal_city %></span>
+            <% else %>
+              <%= location_text_clean %>
+            <% end %>
           </p>
           <p class="mb-0">
             <i class="bi bi-clock text-liquid-primary me-2" aria-hidden="true"></i>
-            1h45 (10h15 - 12h00)
+            <%= format_event_duration(initiation) %>
           </p>
         </div>
 

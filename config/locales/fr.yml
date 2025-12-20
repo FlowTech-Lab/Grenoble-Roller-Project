@@ -53,6 +53,7 @@ fr:
   activerecord:
     models:
       user: "Utilisateur"
+      membership: "Adhésion"
     attributes:
       user:
         role: "Rôle"
@@ -62,6 +63,16 @@ fr:
         first_name: "Prénom"
         last_name: "Nom"
         skill_level: "Niveau"
+      membership:
+        start_date: "Date de début"
+        end_date: "Date de fin"
+        category: "Catégorie"
+        status: "Statut"
+        child_first_name: "Prénom de l'enfant"
+        child_last_name: "Nom de l'enfant"
+        child_date_of_birth: "Date de naissance"
+        medical_certificate: "Certificat médical"
+        parent_authorization: "Autorisation parentale"
     errors:
       models:
         user:
@@ -70,6 +81,27 @@ fr:
               required: "doit être renseigné"
             role_id:
               required: "doit être renseigné"
+        membership:
+          attributes:
+            start_date:
+              blank: "doit être renseigné"
+            end_date:
+              blank: "doit être renseigné"
+            category:
+              blank: "doit être renseigné"
+            child_first_name:
+              blank: "doit être renseigné"
+            child_last_name:
+              blank: "doit être renseigné"
+            child_date_of_birth:
+              blank: "doit être renseigné"
+            medical_certificate:
+              blank: "doit être renseigné"
+            parent_authorization:
+              inclusion: "doit être acceptée"
+      messages:
+        record_invalid: "La validation a échoué : %{errors}"
+        blank: "doit être renseigné"
   
   errors:
     messages:

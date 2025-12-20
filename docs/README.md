@@ -9,12 +9,14 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - 03-architecture: vues C4, domaine, NFRs, ADRs
 - 04-rails: conventions, structure app, setup, sécurité, perf, API
 - 05-testing: stratégie de tests, RSpec, données de test, de bout en bout
+- 06-events: gestion des événements et initiations (waitlist, essai gratuit, stock rollers) - **Voir [`06-events/README.md`](06-events/README.md)**
 - 06-infrastructure: déploiement, CI/CD, observabilité
 - 07-ops: runbooks (setup local, backup/restore, incidents)
 - 08-security-privacy: modèle de menace, checklist Rails, secrets, RGPD, accessibilité - **Voir [`08-security-privacy/README.md`](08-security-privacy/README.md)**
 - 09-product: personas, parcours, critères d'acceptation, wireframes - **Voir [`09-product/README.md`](09-product/README.md)**
 - 10-decisions-and-changelog: décisions et changelog
 - 11-templates: gabarits (ADR, PR, issues, architectures)
+- development: fonctionnalités en développement, plans, audits - **Voir [`development/README.md`](development/README.md)**
 
 ## Contribuer à la doc
 1. Créer/éditer dans la section adéquate (voir sommaire).
@@ -104,8 +106,20 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `04-rails/routes.md` - Routes et flux principaux (incluant pages légales et cookies)
 - ✅ `04-rails/conventions/README.md` - Conventions Rails du projet
 - ✅ `04-rails/admin-panel-research.md` - Recherche et recommandations pour le panel admin (Phase 2)
-- ✅ `04-rails/phase2-migrations-models.md` - Documentation Phase 2 (migrations et modèles)
+- ⚠️ **Déplacé** : `development/phase2/phase2-migrations-models.md` - Documentation Phase 2 (migrations et modèles)
 - ✅ `04-rails/setup/README.md` - Index de la documentation setup Rails
+
+### Événements & Initiations
+- ✅ `06-events/README.md` - Documentation complète gestion événements
+- ✅ `06-events/logique-essai-gratuit.md` - Logique d'essai gratuit v3.0 (règles métier, validations, cas limites)
+
+### Développement en Cours
+- ✅ `development/README.md` - Documentation des fonctionnalités en développement
+- ⚠️ `development/ux-improvements/` - Backlog UX et améliorations (119 items)
+- ⚠️ `development/admin-panel/` - Analyses stratégiques admin panel
+- ⚠️ `development/accessibility/` - Audits et plans d'action accessibilité
+- ⚠️ `development/phase2/` - Documentation Phase 2 (non implémentée)
+- ⚠️ `development/testing/` - Roadmaps et todolists tests
 
 ### Tests
 - ✅ `05-testing/strategy.md` - Stratégie de tests (RSpec configuré)

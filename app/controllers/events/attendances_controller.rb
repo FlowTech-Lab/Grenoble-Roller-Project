@@ -41,15 +41,16 @@ module Events
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       attendance.child_membership_id = child_membership_id
 
-      # Pour les événements : pas d'adhésion requise pour le parent
-      # Pour un enfant : vérifier que l'adhésion enfant est active (nécessaire pour identifier l'enfant)
+      # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
+      # Vérifier seulement que l'adhésion enfant appartient à l'utilisateur si un enfant est inscrit
       if child_membership_id.present?
-        child_membership = current_user.memberships.find_by(id: child_membership_id)
-        unless child_membership&.active?
-          redirect_to @event, alert: "L'adhésion de cet enfant n'est pas active."
+        child_membership = current_user.memberships.find_by(id: child_membership_id, is_child_membership: true)
+        unless child_membership
+          redirect_to @event, alert: "Cette adhésion enfant ne vous appartient pas."
           return
         end
       end
+      # Pour le parent : aucune restriction, ouvert à tous
 
       if attendance.save
         EventMailer.attendance_confirmed(attendance).deliver_later

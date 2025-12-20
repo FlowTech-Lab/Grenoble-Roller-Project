@@ -185,7 +185,7 @@ class InitiationsController < ApplicationController
     # Vérifier adhésion ou essai gratuit disponible
     # Utiliser exists? (optimisé) plutôt que count > 0
     has_membership = current_user.memberships.active_now.exists?
-    has_used_trial = current_user.attendances.where(free_trial_used: true).exists?
+    has_used_trial = current_user.attendances.active.where(free_trial_used: true).exists?
 
     has_membership || !has_used_trial
   end
@@ -194,8 +194,10 @@ class InitiationsController < ApplicationController
   def can_register_child?
     return false unless user_signed_in?
     return false if @initiation.full?
-    # Vérifier qu'il y a des adhésions enfants actives disponibles
-    child_memberships = current_user.memberships.active_now.where(is_child_membership: true)
+    # Vérifier qu'il y a des adhésions enfants disponibles (active, trial ou pending)
+    # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
+    child_memberships = current_user.memberships.where(is_child_membership: true)
+      .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
     return false if child_memberships.empty?
 
     # Vérifier qu'il reste des enfants non inscrits

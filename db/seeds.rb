@@ -76,6 +76,7 @@ OptionType.delete_all
 ProductVariant.delete_all
 Product.delete_all
 ProductCategory.delete_all
+Membership.destroy_all
 User.destroy_all
 Role.destroy_all
 
@@ -99,10 +100,47 @@ end
 admin_role = Role.find_by!(code: "ADMIN")
 user_role  = Role.find_by!(code: "USER")
 superadmin_role = Role.find_by!(code: "SUPERADMIN")
+organizer_role = Role.find_by!(code: "ORGANIZER")
 
 puts "✅ #{Role.count} rôles créés avec succès !"
 
-# 👑 Admin principal
+# 👑 Super Admins (PAS d'adhésion adulte)
+puts "\n👑 Création des Super Admins..."
+superadmins = [
+  {
+    email: "olivevht@gmail.com",
+    password: "password12345678",
+    password_confirmation: "password12345678",
+    first_name: "Olivier",
+    last_name: "VHT",
+    phone: "0612345678",
+    date_of_birth: Date.new(1985, 6, 15),
+    skill_level: "advanced",
+    role: superadmin_role,
+    confirmed_at: Time.now
+  },
+  {
+    email: "darkigel27@gmail.com",
+    password: "password12345678",
+    password_confirmation: "password12345678",
+    first_name: "Dark",
+    last_name: "Igel",
+    phone: "0698765432",
+    date_of_birth: Date.new(1990, 3, 27),
+    skill_level: "advanced",
+    role: superadmin_role,
+    confirmed_at: Time.now
+  }
+]
+
+superadmins.each do |attrs|
+  user = User.new(attrs)
+  user.skip_confirmation_notification!
+  user.save!
+  puts "  ✅ Super Admin créé : #{user.email}"
+end
+
+# 👨‍💻 Admin principal
 admin = User.new(
   email: "admin@roller.com",
   password: "admin12345678",  # Minimum 12 caractères requis
@@ -142,9 +180,12 @@ puts "👨‍💻 Utilisateur Florian (SUPERADMIN) créé !"
 puts "   📧 Email: #{florian.email}"
 puts "   🆔 ID: #{florian.id}"
 
-# 👥 Utilisateurs de test
+# 👥 Utilisateurs de test (50 utilisateurs au lieu de 20)
 skill_levels = [ "beginner", "intermediate", "advanced" ]
-20.times do |i|
+first_names = %w[Alice Bob Charlie Diana Eve Frank Grace Henry Iris Jack Kate Leo Mia Noah Olivia Paul Quinn Ruby Sam Tina Victor Wendy Xavier Yvonne Zach]
+last_names = %w[Martin Bernard Dubois Thomas Robert Petit Durand Leroy Moreau Simon Laurent Lefebvre Michel Garcia David Bertrand Roux Vincent Fournier Morel Girard Andre]
+
+50.times do |i|
   confirmed = rand > 0.2  # 80% des utilisateurs confirmés
   # Générer une date de naissance (entre 18 et 65 ans)
   age = rand(18..65)
@@ -153,30 +194,29 @@ skill_levels = [ "beginner", "intermediate", "advanced" ]
   birth_day = rand(1..28)
 
   user = User.new(
-    email: "client#{i + 1}@example.com",
+    email: "user#{i + 1}@example.com",
     password: "password12345678",  # Minimum 12 caractères requis
     password_confirmation: "password12345678",
-    first_name: [ "Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry", "Iris", "Jack", "Kate", "Leo", "Mia", "Noah", "Olivia", "Paul", "Quinn", "Ruby", "Sam", "Tina" ][i],
-    last_name: [ "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel" ][i],
+    first_name: first_names[i % first_names.size],
+    last_name: last_names[i % last_names.size],
     bio: "Membre passionné de la communauté roller grenobloise",
     phone: "06#{rand(10000000..99999999)}",
     role: user_role,
     skill_level: skill_levels.sample,
     date_of_birth: Date.new(birth_year, birth_month, birth_day),
-    confirmed_at: confirmed ? (Time.now - rand(0..7).days) : nil,  # Confirmation à des dates variées
-    created_at: Time.now - rand(1..30).days,
+    confirmed_at: confirmed ? (Time.now - rand(0..30).days) : nil,  # Confirmation à des dates variées
+    created_at: Time.now - rand(1..60).days,
     updated_at: Time.now
   )
   user.skip_confirmation_notification!
   user.save!
-  puts "👤 Utilisateur client #{i + 1} créé !"
 end
+puts "✅ 50 utilisateurs créés !"
 
 # 💸 Paiements
 puts "🧾 Création des paiements..."
 
-
-# On crée 4 paiements “manuels” : 1 stripe réussi / 1 paypal en attente / 1 stripe échoué / 1 mollie réussi
+# On crée 4 paiements "manuels" : 1 stripe réussi / 1 paypal en attente / 1 stripe échoué / 1 mollie réussi
 payments_data = [
   {
     provider: "stripe",
@@ -212,13 +252,11 @@ payments_data = [
   }
 ]
 
-
-
 payments_data.each { |attrs| Payment.create!(attrs) }
 puts "✅ #{Payment.count} paiements créés !"
 
 # On veut autant de paiements que de commandes (ici 5).
-# Les paiements ajoutés ici sont “aléatoires”
+# Les paiements ajoutés ici sont "aléatoires"
 TARGET_ORDERS = 5
 if Payment.count < TARGET_ORDERS
   (TARGET_ORDERS - Payment.count).times do
@@ -239,7 +277,7 @@ puts "Création des commandes..."
 users = User.all
 payments = Payment.order(:created_at).limit(TARGET_ORDERS)
 
-# Chaque order dépend donc d’un paiement existant et d’un utilisateur.
+# Chaque order dépend donc d'un paiement existant et d'un utilisateur.
 # On récupère les 5 paiements les plus récents.
 
 if users.empty?
@@ -279,13 +317,11 @@ puts "🖼️ Catégories créées!"
 
 puts "🛼 Création des produits..."
 
-
 puts "🎨 Création des types d'options..."
 option_types = [
   { name: "size", presentation: "Taille" },
   { name: "color", presentation: "Couleur" }
 ].map { |attrs| OptionType.create!(attrs) }
-
 
 puts "🎯 Création des valeurs d'options..."
 # Tailles chaussures
@@ -313,7 +349,6 @@ color_blue = OptionValue.find_by!(option_type: option_types[1], value: "Blue")
 color_white = OptionValue.find_by!(option_type: option_types[1], value: "White")
 color_red = OptionValue.find_by!(option_type: option_types[1], value: "Red")
 color_violet = OptionValue.find_by!(option_type: option_types[1], value: "Violet")
-
 
 # ---------------------------
 # 1. CASQUE LED - 3 tailles (S, M, L)
@@ -607,12 +642,11 @@ routes = routes_data.map { |attrs| Route.create!(attrs) }
 puts "✅ #{Route.count} routes créées !"
 
 # 👥 Récupération des utilisateurs et rôles pour Phase 2
-organizer_role = Role.find_by(code: "ORGANIZER")
-admin_role = Role.find_by(code: "ADMIN")
 users = User.all
 # Recharger florian et admin depuis la base (ils ont été créés plus haut)
 florian = User.find_by(email: "T3rorX@hotmail.fr") || users.find { |u| u.email == "T3rorX@hotmail.fr" }
 admin_user = User.find_by(email: "admin@roller.com") || users.find { |u| u.email == "admin@roller.com" }
+regular_users = users.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com", "olivevht@gmail.com", "darkigel27@gmail.com" ])
 
 # 🎪 Events (événements)
 puts "🎪 Création des événements..."
@@ -779,7 +813,6 @@ puts "✅ #{Event.count} événements créés !"
 # 📝 Attendances (inscriptions aux événements)
 puts "📝 Création des inscriptions..."
 published_events = Event.where(status: "published")
-regular_users = users.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com" ])
 
 if published_events.any? && regular_users.any?
   published_events.each do |event|
@@ -788,23 +821,27 @@ if published_events.any? && regular_users.any?
       # Inscrire exactement le nombre maximum de participants pour rendre l'événement complet
       subscribers = regular_users.sample(event.max_participants)
       subscribers.each do |user|
+        is_volunteer = rand > 0.85 # 15% de bénévoles
         Attendance.create!(
           user: user,
           event: event,
           status: event.price_cents > 0 ? "registered" : "registered",
+          is_volunteer: is_volunteer,
           created_at: event.created_at + rand(1..5).hours
         )
       end
       puts "  ✅ Événement '#{event.title}' : #{event.max_participants} participants (COMPLET)"
     else
       # Pour les autres événements, inscription de quelques utilisateurs
-      num_subscribers = (event.max_participants == 0) ? rand(3..8) : [ rand(2..6), event.max_participants ].min
+      num_subscribers = (event.max_participants == 0) ? rand(3..10) : [ rand(2..6), event.max_participants ].min
       subscribers = regular_users.sample(num_subscribers)
       subscribers.each do |user|
+        is_volunteer = rand > 0.85 # 15% de bénévoles
         Attendance.create!(
           user: user,
           event: event,
           status: event.price_cents > 0 ? "registered" : "registered",
+          is_volunteer: is_volunteer,
           created_at: event.created_at + rand(1..5).hours
         )
       end
@@ -893,7 +930,7 @@ if florian || admin_user
   ]
 
   initiations = initiations_data.map do |attrs|
-    status = attrs[:status]
+    status = attrs.delete(:status)
     # Créer l'initiation avec build pour pouvoir attacher l'image avant save
     initiation = Event::Initiation.new(attrs)
     # Attacher une image de test si l'initiation est publiée (avant save pour validation)
@@ -905,11 +942,53 @@ if florian || admin_user
   end
 
   puts "✅ #{Event::Initiation.count} initiations créées !"
+
+  # Inscriptions aux initiations (avec enfants)
+  published_initiations = Event::Initiation.where(status: "published")
+  published_initiations.each do |initiation|
+    num_subscribers = [rand(5..15), initiation.max_participants].min
+    subscribers = regular_users.sample(num_subscribers)
+    
+    subscribers.each do |user|
+      # Inscription adulte ou enfant selon le hasard
+      if rand > 0.6 # 40% d'inscriptions enfants
+        child_membership = user.memberships.children.where(status: [:active, :pending, :trial]).sample
+        if child_membership
+          Attendance.create!(
+            user: user,
+            event: initiation,
+            child_membership: child_membership,
+            status: "registered",
+            is_volunteer: false,
+            created_at: initiation.created_at + rand(1..5).hours
+          )
+        else
+          # Inscription adulte si pas d'enfant disponible
+          Attendance.create!(
+            user: user,
+            event: initiation,
+            status: "registered",
+            is_volunteer: rand > 0.9,
+            created_at: initiation.created_at + rand(1..5).hours
+          )
+        end
+      else
+        # Inscription adulte
+        Attendance.create!(
+          user: user,
+          event: initiation,
+          status: "registered",
+          is_volunteer: rand > 0.9,
+          created_at: initiation.created_at + rand(1..5).hours
+        )
+      end
+    end
+  end
 end
 
 # 📋 OrganizerApplications (candidatures organisateur)
 puts "📋 Création des candidatures organisateur..."
-regular_users_for_apps = users.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com" ]).where(role: user_role).limit(5)
+regular_users_for_apps = regular_users.where(role: user_role).limit(5)
 if regular_users_for_apps.any? && (admin_user || florian)
   organizer_apps_data = [
     {
@@ -1079,10 +1158,10 @@ puts "   - Messages de contact : #{ContactMessage.count}"
 puts "   - Logs d'audit : #{AuditLog.count}"
 
 # ========================================
-# 👥 ADHÉSIONS
+# 👥 ADHÉSIONS - TOUS LES CAS DE FIGURE
 # ========================================
 
-puts "\n👥 Création des adhésions..."
+puts "\n👥 Création des adhésions (tous les cas de figure)..."
 
 # Calculer les dates de saison
 def season_dates_for_year(year)
@@ -1098,27 +1177,27 @@ previous_season_start, previous_season_end = season_dates_for_year(current_year 
 current_season_name = "#{current_season_start.year}-#{current_season_end.year}"
 previous_season_name = "#{previous_season_start.year}-#{previous_season_end.year}"
 
-# Récupérer les utilisateurs réguliers (pas admin)
-regular_users = User.where.not(email: [ "T3rorX@hotmail.fr", "admin@roller.com" ]).limit(15)
+# Récupérer les utilisateurs réguliers (pas admin, pas superadmins)
+regular_users_for_memberships = regular_users.limit(50)
 
-if regular_users.any?
+if regular_users_for_memberships.any?
   # Créer des paiements pour les adhésions
   membership_payments = []
-  10.times do
+  30.times do
     membership_payments << Payment.create!(
       provider: "helloasso",
       provider_payment_id: "ha_#{SecureRandom.hex(8)}",
       amount_cents: [ 1000, 5655, 2400 ].sample, # 10€ standard, 56.55€ FFRS, 24€ avec T-shirt
       currency: "EUR",
       status: "succeeded",
-      created_at: Time.now - rand(1..60).days
+      created_at: Time.now - rand(1..90).days
     )
   end
 
-  # Adhésions personnelles ACTIVES pour cette année
-  puts "  📝 Création d'adhésions personnelles actives..."
-  active_users = regular_users.first(5)
-  active_users.each_with_index do |user, index|
+  # 1. ADHÉSIONS ADULTES ACTIVES (cette saison)
+  puts "  📝 Adhésions adultes actives..."
+  active_adults = regular_users_for_memberships.first(8)
+  active_adults.each_with_index do |user, index|
     payment = membership_payments[index] if index < membership_payments.count
     category = [ :standard, :with_ffrs ].sample
 
@@ -1137,17 +1216,17 @@ if regular_users.any?
       rgpd_consent: true,
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: category == :with_ffrs,
-      **fill_health_questionnaire(has_issue: false),
-      created_at: current_season_start + rand(0..30).days
+      **fill_health_questionnaire(has_issue: rand > 0.8),
+      created_at: current_season_start + rand(0..60).days
     )
   end
-  puts "    ✅ #{active_users.count} adhésions personnelles actives créées"
+  puts "    ✅ #{active_adults.count} adhésions adultes actives créées"
 
-  # Adhésions personnelles EXPIRÉES pour l'année précédente
-  puts "  📝 Création d'adhésions personnelles expirées..."
-  expired_users = regular_users[5..7] || []
-  expired_users.each_with_index do |user, index|
-    payment = membership_payments[5 + index] if (5 + index) < membership_payments.count
+  # 2. ADHÉSIONS ADULTES EXPIRÉES (saison précédente)
+  puts "  📝 Adhésions adultes expirées..."
+  expired_adults = regular_users_for_memberships[8..12] || []
+  expired_adults.each_with_index do |user, index|
+    payment = membership_payments[8 + index] if (8 + index) < membership_payments.count
     category = [ :standard, :with_ffrs ].sample
 
     Membership.create!(
@@ -1166,34 +1245,62 @@ if regular_users.any?
       legal_notices_accepted: true,
       ffrs_data_sharing_consent: category == :with_ffrs,
       **fill_health_questionnaire(has_issue: false),
-      created_at: previous_season_start + rand(0..30).days
+      created_at: previous_season_start + rand(0..60).days
     )
   end
-  puts "    ✅ #{expired_users.count} adhésions personnelles expirées créées"
+  puts "    ✅ #{expired_adults.count} adhésions adultes expirées créées"
 
-  # Adhésions ENFANTS ACTIVES pour cette année
-  puts "  📝 Création d'adhésions enfants actives..."
-  users_with_active_children = regular_users[8..10] || []
+  # 3. ADHÉSIONS ADULTES EN ATTENTE (pending)
+  puts "  📝 Adhésions adultes en attente..."
+  pending_adults = regular_users_for_memberships[13..15] || []
+  pending_adults.each do |user|
+    category = [ :standard, :with_ffrs ].sample
+    
+    Membership.create!(
+      user: user,
+      payment: nil,
+      category: category,
+      status: :pending,
+      season: current_season_name,
+      start_date: current_season_start,
+      end_date: current_season_end,
+      amount_cents: Membership.price_for_category(category),
+      currency: "EUR",
+      is_child_membership: false,
+      is_minor: user.is_minor?,
+      rgpd_consent: true,
+      legal_notices_accepted: true,
+      ffrs_data_sharing_consent: category == :with_ffrs,
+      **fill_health_questionnaire(has_issue: false),
+      created_at: Time.now - rand(1..7).days
+    )
+  end
+  puts "    ✅ #{pending_adults.count} adhésions adultes en attente créées"
+
+  # 4. ADHÉSIONS ENFANTS ACTIVES (cette saison)
+  puts "  📝 Adhésions enfants actives..."
+  users_with_active_children = regular_users_for_memberships[16..25] || []
   users_with_active_children.each_with_index do |user, index|
-    payment = membership_payments[8 + index] if (8 + index) < membership_payments.count
+    payment = membership_payments[16 + index] if (16 + index) < membership_payments.count
     child_age = rand(6..17)
     child_birth_year = current_year - child_age
     child_birth_month = rand(1..12)
     child_birth_day = rand(1..28)
+    category = [ :standard, :with_ffrs ].sample
 
     Membership.create!(
       user: user,
       payment: payment,
-      category: :standard,
+      category: category,
       status: :active,
       season: current_season_name,
       start_date: current_season_start,
       end_date: current_season_end,
-      amount_cents: Membership.price_for_category(:standard),
+      amount_cents: Membership.price_for_category(category),
       currency: "EUR",
       is_child_membership: true,
       is_minor: true,
-      child_first_name: [ "Emma", "Lucas", "Sophie", "Max", "Léa", "Tom", "Chloé", "Hugo" ].sample,
+      child_first_name: %w[Emma Lucas Sophie Max Léa Tom Chloé Hugo Léo Manon Nathan Inès Ethan Zoé Noah Lilou].sample,
       child_last_name: user.last_name || "Dupont",
       child_date_of_birth: Date.new(child_birth_year, child_birth_month, child_birth_day),
       parent_authorization: child_age < 16,
@@ -1203,36 +1310,37 @@ if regular_users.any?
       parent_phone: user.phone,
       rgpd_consent: true,
       legal_notices_accepted: true,
-      ffrs_data_sharing_consent: false,
-      **fill_health_questionnaire(has_issue: false),
-      created_at: current_season_start + rand(0..30).days
+      ffrs_data_sharing_consent: category == :with_ffrs,
+      **fill_health_questionnaire(has_issue: rand > 0.9),
+      created_at: current_season_start + rand(0..60).days
     )
   end
   puts "    ✅ #{users_with_active_children.count} adhésions enfants actives créées"
 
-  # Adhésions ENFANTS EXPIRÉES pour l'année précédente
-  puts "  📝 Création d'adhésions enfants expirées..."
-  users_with_expired_children = regular_users[11..13] || []
+  # 5. ADHÉSIONS ENFANTS EXPIRÉES (saison précédente) - À RENOUVELER
+  puts "  📝 Adhésions enfants expirées (à renouveler)..."
+  users_with_expired_children = regular_users_for_memberships[26..35] || []
   users_with_expired_children.each_with_index do |user, index|
-    payment = membership_payments[11 + index] if (11 + index) < membership_payments.count
+    payment = membership_payments[26 + index] if (26 + index) < membership_payments.count
     child_age_last_year = rand(6..17)
     child_birth_year = previous_season_start.year - child_age_last_year
     child_birth_month = rand(1..12)
     child_birth_day = rand(1..28)
+    category = [ :standard, :with_ffrs ].sample
 
     Membership.create!(
       user: user,
       payment: payment,
-      category: :standard,
+      category: category,
       status: :expired,
       season: previous_season_name,
       start_date: previous_season_start,
       end_date: previous_season_end,
-      amount_cents: Membership.price_for_category(:standard),
+      amount_cents: Membership.price_for_category(category),
       currency: "EUR",
       is_child_membership: true,
       is_minor: true,
-      child_first_name: [ "Léo", "Manon", "Nathan", "Inès", "Ethan", "Zoé", "Noah", "Lilou" ].sample,
+      child_first_name: %w[Léo Manon Nathan Inès Ethan Zoé Noah Lilou Emma Lucas Sophie Max].sample,
       child_last_name: user.last_name || "Martin",
       child_date_of_birth: Date.new(child_birth_year, child_birth_month, child_birth_day),
       parent_authorization: child_age_last_year < 16,
@@ -1242,44 +1350,98 @@ if regular_users.any?
       parent_phone: user.phone,
       rgpd_consent: true,
       legal_notices_accepted: true,
-      ffrs_data_sharing_consent: false,
+      ffrs_data_sharing_consent: category == :with_ffrs,
       **fill_health_questionnaire(has_issue: false),
-      created_at: previous_season_start + rand(0..30).days
+      created_at: previous_season_start + rand(0..60).days
     )
   end
   puts "    ✅ #{users_with_expired_children.count} adhésions enfants expirées créées"
 
-  # Adhésions EN ATTENTE (pending)
-  puts "  📝 Création d'adhésions en attente..."
-  pending_user = regular_users[14] || regular_users.first
-  if pending_user
+  # 6. ADHÉSIONS ENFANTS EN ATTENTE (pending)
+  puts "  📝 Adhésions enfants en attente..."
+  users_with_pending_children = regular_users_for_memberships[36..40] || []
+  users_with_pending_children.each do |user|
+    child_age = rand(6..17)
+    child_birth_year = current_year - child_age
+    child_birth_month = rand(1..12)
+    child_birth_day = rand(1..28)
+    category = [ :standard, :with_ffrs ].sample
+    
     Membership.create!(
-      user: pending_user,
+      user: user,
       payment: nil,
-      category: :standard,
+      category: category,
       status: :pending,
       season: current_season_name,
       start_date: current_season_start,
       end_date: current_season_end,
-      amount_cents: Membership.price_for_category(:standard),
+      amount_cents: Membership.price_for_category(category),
       currency: "EUR",
-      is_child_membership: false,
-      is_minor: pending_user.is_minor?,
+      is_child_membership: true,
+      is_minor: true,
+      child_first_name: %w[Emma Lucas Sophie Max Léa Tom Chloé Hugo].sample,
+      child_last_name: user.last_name || "Dupont",
+      child_date_of_birth: Date.new(child_birth_year, child_birth_month, child_birth_day),
+      parent_authorization: child_age < 16,
+      parent_authorization_date: child_age < 16 ? Date.today : nil,
+      parent_name: "#{user.first_name} #{user.last_name}",
+      parent_email: user.email,
+      parent_phone: user.phone,
       rgpd_consent: true,
       legal_notices_accepted: true,
-      ffrs_data_sharing_consent: false,
+      ffrs_data_sharing_consent: category == :with_ffrs,
       **fill_health_questionnaire(has_issue: false),
-      created_at: Time.now - 2.days
+      created_at: Time.now - rand(1..5).days
     )
-    puts "    ✅ 1 adhésion personnelle en attente créée"
   end
+  puts "    ✅ #{users_with_pending_children.count} adhésions enfants en attente créées"
+
+  # 7. ADHÉSIONS ENFANTS TRIAL (essai gratuit)
+  puts "  📝 Adhésions enfants essai gratuit (trial)..."
+  users_with_trial_children = regular_users_for_memberships[41..45] || []
+  users_with_trial_children.each do |user|
+    child_age = rand(6..17)
+    child_birth_year = current_year - child_age
+    child_birth_month = rand(1..12)
+    child_birth_day = rand(1..28)
+    category = [ :standard, :with_ffrs ].sample
+    
+    Membership.create!(
+      user: user,
+      payment: nil,
+      category: category,
+      status: :trial,
+      season: current_season_name,
+      start_date: current_season_start,
+      end_date: current_season_end,
+      amount_cents: Membership.price_for_category(category), # Montant noté même pour trial
+      currency: "EUR",
+      is_child_membership: true,
+      is_minor: true,
+      child_first_name: %w[Emma Lucas Sophie Max Léa Tom Chloé Hugo].sample,
+      child_last_name: user.last_name || "Dupont",
+      child_date_of_birth: Date.new(child_birth_year, child_birth_month, child_birth_day),
+      parent_authorization: child_age < 16,
+      parent_authorization_date: child_age < 16 ? Date.today : nil,
+      parent_name: "#{user.first_name} #{user.last_name}",
+      parent_email: user.email,
+      parent_phone: user.phone,
+      rgpd_consent: true,
+      legal_notices_accepted: true,
+      ffrs_data_sharing_consent: category == :with_ffrs,
+      **fill_health_questionnaire(has_issue: false),
+      created_at: Time.now - rand(1..10).days
+    )
+  end
+  puts "    ✅ #{users_with_trial_children.count} adhésions enfants essai gratuit créées"
 end
 
-puts "✅ #{Membership.count} adhésions créées au total !"
-puts "   - Actives cette année : #{Membership.active_now.count}"
-puts "   - Expirées : #{Membership.expired.count}"
-puts "   - En attente : #{Membership.pending.count}"
-puts "   - Personnelles : #{Membership.personal.count}"
+puts "\n✅ #{Membership.count} adhésions créées au total !"
+puts "   - Actives : #{Membership.where(status: :active).count}"
+puts "   - Expirées : #{Membership.where(status: :expired).count}"
+puts "   - En attente : #{Membership.where(status: :pending).count}"
+puts "   - Essai gratuit : #{Membership.where(status: :trial).count}"
+puts "   - Adultes : #{Membership.personal.count}"
 puts "   - Enfants : #{Membership.children.count}"
 
 # ========================================
@@ -1289,8 +1451,6 @@ puts "   - Enfants : #{Membership.children.count}"
 puts "\n🎯 Création de tous les cas de figure pour Florian (T3rorX)..."
 
 # Récupérer Florian - utiliser la variable créée au début ou rechercher
-# Note: La variable florian créée au début du seed n'est pas accessible ici
-# car elle est dans une portée locale, donc on doit la rechercher
 florian = User.find_by(email: "T3rorX@hotmail.fr")
 
 # Debug : afficher tous les utilisateurs si pas trouvé
@@ -1518,8 +1678,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: nil,
-    tshirt_price_cents: nil,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
@@ -1562,8 +1720,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: tshirt_variant&.id,
-    tshirt_price_cents: tshirt_price,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
@@ -1606,8 +1762,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: nil,
-    tshirt_price_cents: nil,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: true,
@@ -1650,8 +1804,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: nil,
-    tshirt_price_cents: nil,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
@@ -1694,8 +1846,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: tshirt_variant&.id,
-    tshirt_price_cents: tshirt_price,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: true,
@@ -1729,8 +1879,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: nil,
-    tshirt_price_cents: nil,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: false,
@@ -1764,8 +1912,6 @@ if florian
     parent_name: "Florian Astier",
     parent_email: florian.email,
     parent_phone: florian.phone,
-    tshirt_variant_id: tshirt_variant&.id,
-    tshirt_price_cents: tshirt_price,
     rgpd_consent: true,
     legal_notices_accepted: true,
     ffrs_data_sharing_consent: true,

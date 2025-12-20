@@ -27,8 +27,37 @@
     child_attendances = local_assigns[:child_attendances] || []
   end
   
-  # Filtrer uniquement les enfants avec des adhésions actives et non déjà inscrits
-  child_memberships = current_user.memberships.active_now.where(is_child_membership: true) if user_signed_in?
+  # Filtrer les enfants disponibles selon le type d'événement
+  if user_signed_in?
+    if is_initiation
+      # Pour les initiations : inclure active, trial (essai gratuit) et pending (en attente)
+      # IMPORTANT : Exclure les enfants pending qui ont déjà utilisé leur essai gratuit
+      # (car ils ne peuvent plus s'inscrire sans adhésion active selon le contrôleur)
+      child_memberships = current_user.memberships.where(is_child_membership: true)
+        .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+      
+      # Filtrer les enfants pending qui ont déjà utilisé leur essai gratuit
+      # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+      # Convertir en array pour pouvoir utiliser reject
+      child_memberships_array = child_memberships.to_a
+      child_memberships_filtered = child_memberships_array.reject do |child|
+        if child.pending?
+          # Si l'enfant est pending ET a déjà utilisé son essai gratuit, l'exclure du dropdown
+          current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+        else
+          false # Garder les enfants active et trial
+        end
+      end
+      # Reconvertir en relation ActiveRecord pour compatibilité avec where.not plus bas
+      child_memberships = Membership.where(id: child_memberships_filtered.map(&:id))
+    else
+      # Pour les événements normaux (randos) : afficher tous les enfants (active, expired, trial, pending)
+      # Aucune restriction de statut pour les randos
+      child_memberships = current_user.memberships.where(is_child_membership: true)
+    end
+  else
+    child_memberships = []
+  end
   child_memberships ||= []
   if child_attendances.any?
     registered_child_ids = child_attendances.map(&:child_membership_id).compact
@@ -42,6 +71,24 @@
   # - OU il y a des enfants disponibles à inscrire (même si l'utilisateur est déjà inscrit)
   show_child_dropdown = !user_already_registered || child_memberships.any?
   dropdown_prompt = user_already_registered ? "Sélectionner un enfant" : "S'inscrire pour moi-même"
+  
+  # Calculer si on doit afficher l'essai gratuit pour les enfants (nécessaire pour le dropdown)
+  # Vérifier si on a des enfants avec statut trial (obligatoire) OU pending (optionnel) disponibles qui n'ont pas encore utilisé leur essai
+  # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+  if is_initiation && user_signed_in?
+    # Enfants trial : essai gratuit OBLIGATOIRE
+    trial_children_preview = child_memberships.select { |m| m.trial? }
+    # Enfants pending : essai gratuit OPTIONNEL (selon 02-statut-pending.md)
+    pending_children_preview = child_memberships.select { |m| m.pending? }
+    # Afficher si on a des enfants trial OU pending qui peuvent utiliser leur essai
+    show_free_trial_children = (trial_children_preview.any? { |child| 
+      !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+    } || pending_children_preview.any? { |child| 
+      !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+    })
+  else
+    show_free_trial_children = false
+  end
 %>
 
 <% if show_alert %>
@@ -140,15 +187,17 @@
         :id, 
         ->(m) { "#{m.child_first_name} #{m.child_last_name}" }, 
         { prompt: dropdown_prompt }, 
-        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: is_modal ? "toggleVolunteerVisibility#{prefix_id}()" : nil } %>
-    <small class="text-muted">
-      <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-      <% if user_already_registered %>
-        Seuls les enfants avec une adhésion active et non déjà inscrits sont affichés.
-      <% else %>
-        Seuls les enfants avec une adhésion active sont affichés. Laissez vide pour vous inscrire vous-même.
-      <% end %>
-    </small>
+        { class: "form-select", id: "child_membership_id#{prefix_id}", onchange: (is_modal && is_initiation) ? "toggleVolunteerVisibility#{prefix_id}(); #{show_free_trial_children ? "updateFreeTrialDisplay#{prefix_id}();" : ''}" : (show_free_trial_children ? "updateFreeTrialDisplay#{prefix_id}();" : nil) } %>
+    <% if is_initiation %>
+      <small class="text-muted">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        <% if user_already_registered %>
+          Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente, et non déjà inscrits sont affichés.
+        <% else %>
+          Seuls les enfants avec une adhésion active, un essai gratuit ou une adhésion en attente sont affichés. Laissez vide pour vous inscrire vous-même.
+        <% end %>
+      </small>
+    <% end %>
   </div>
 <% end %>
 
@@ -170,7 +219,7 @@
       <%= label_tag "roller_size_select#{prefix_id}", "Taille de rollers", class: "form-label" %>
       <%= select_tag :roller_size, 
           options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
-          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}", required: true } } %>
+          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}" } } %>
       <small id="roller_size_help<%= prefix_id %>" class="text-muted">
         <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
         Sous réserve de disponibilité du matériel.
@@ -188,12 +237,25 @@
         if (checkbox.checked) {
           container.style.display = 'block';
           select.required = true;
+          // S'assurer que le champ est accessible pour la validation
+          select.removeAttribute('disabled');
+          select.removeAttribute('hidden');
         } else {
           container.style.display = 'none';
           select.required = false;
           select.value = '';
+          // Réinitialiser le champ quand la checkbox est décochée
         }
       }
+    }
+    
+    // Initialiser l'état au chargement (au cas où la checkbox serait déjà cochée)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        toggleRollerSize<%= prefix_id %>();
+      });
+    } else {
+      toggleRollerSize<%= prefix_id %>();
     }
   </script>
 <% end %>
@@ -212,7 +274,8 @@
     </small>
   </div>
   
-  <% if child_memberships.any? && is_modal %>
+  <%# Définir la fonction JavaScript si c'est une initiation dans un modal ET que le select enfant existe %>
+  <% if is_modal && show_child_dropdown %>
     <script>
       function toggleVolunteerVisibility<%= prefix_id %>() {
         const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
@@ -230,47 +293,322 @@
       }
       
       // Initialiser au chargement
-      document.addEventListener('DOMContentLoaded', function() {
+      function initVolunteerVisibility<%= prefix_id %>() {
+        toggleVolunteerVisibility<%= prefix_id %>();
+      }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initVolunteerVisibility<%= prefix_id %>);
+      } else {
+        initVolunteerVisibility<%= prefix_id %>();
+      }
+      
+      // Support Turbo
+      document.addEventListener('turbo:load', initVolunteerVisibility<%= prefix_id %>);
+      
+      // Configurer l'écouteur pour le bénévole (utilise setupModalListenerGeneric défini au début du script)
+      setupModalListenerGeneric<%= prefix_id %>(function() {
         toggleVolunteerVisibility<%= prefix_id %>();
       });
+      setTimeout(function() {
+        setupModalListenerGeneric<%= prefix_id %>(function() {
+          toggleVolunteerVisibility<%= prefix_id %>();
+        });
+      }, 500);
     </script>
   <% end %>
 <% end %>
 
-<!-- Essai gratuit si disponible (uniquement pour initiations, pas pour les bénévoles, pas pour les enfants) -->
+<!-- Essai gratuit si disponible (pour initiations, parent ou enfant avec statut trial) -->
 <% 
   # Conditions pour afficher l'essai gratuit :
   # 1. C'est une initiation
   # 2. L'utilisateur n'est pas déjà inscrit (pour lui-même)
-  # 3. Ce n'est pas pour un enfant (child_membership_id sera nil)
-  # 4. L'utilisateur n'a pas d'adhésion active
-  # 5. L'utilisateur n'a pas déjà utilisé son essai gratuit
-  # 6. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
-  show_free_trial = is_initiation && 
-                     !user_already_registered && 
-                     !current_user.memberships.active_now.exists? && 
-                     !current_user.attendances.where(free_trial_used: true).exists?
+  # 3. Soit :
+  #    a. Pour le parent : pas d'adhésion active ET pas déjà utilisé son essai gratuit
+  #    b. Pour un enfant : l'enfant a un statut trial ET n'a pas déjà utilisé son essai gratuit
+  # 4. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
+  
+  # Vérifier si on a des enfants avec statut trial (obligatoire) OU pending (optionnel) disponibles
+  trial_children = child_memberships.select { |m| m.trial? }
+  pending_children = child_memberships.select { |m| m.pending? }
+  has_trial_children = trial_children.any?
+  has_pending_children = pending_children.any?
+  
+  # Pour le parent (sans enfant sélectionné)
+  # Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active ET n'a pas déjà utilisé son essai
+  # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
+  parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+                         !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
+  
+  # NOUVELLE LOGIQUE : Si le parent n'a plus d'essai gratuit mais qu'un enfant en a un, on permet quand même
+  # Et inversement : si aucun enfant n'a d'essai gratuit mais que le parent en a un, on permet aussi
+  parent_has_trial = parent_can_use_trial
+  any_child_has_trial = (trial_children.any? { |child| 
+    !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+  } || pending_children.any? { |child| 
+    !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
+  })
+  
+  # L'option sera affichée dynamiquement via JavaScript selon l'enfant sélectionné
+  # On prépare les données pour JavaScript
+  # IMPORTANT : Utiliser .active pour exclure les attendances annulées
+  # Inclure les enfants trial (obligatoire) ET pending (optionnel)
+  trial_children_data = (trial_children + pending_children).map do |child|
+    {
+      id: child.id,
+      name: "#{child.child_first_name} #{child.child_last_name}",
+      status: child.status, # 'trial' ou 'pending' pour distinguer obligatoire vs optionnel
+      has_used_trial: current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
+      can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
+      is_trial: child.trial?, # Essai gratuit OBLIGATOIRE
+      is_pending: child.pending? # Essai gratuit OPTIONNEL
+    }
+  end.to_json
+  
+  # Afficher l'essai gratuit si :
+  # - Le parent peut l'utiliser, OU
+  # - Un enfant peut l'utiliser, OU
+  # - Le parent n'a plus d'essai mais un enfant en a un (et inversement)
+  show_free_trial_parent = is_initiation && !user_already_registered && parent_has_trial
+  # show_free_trial_children est déjà défini plus haut (avant le dropdown)
+  # Variable combinée : afficher si parent OU enfant peut utiliser (même si l'autre ne peut plus)
+  show_free_trial = is_initiation && !user_already_registered && (parent_has_trial || any_child_has_trial)
+  
+  # Vérifier si le parent a une adhésion active (pour déterminer si l'essai est obligatoire pour les enfants pending)
+  parent_has_active_membership = current_user.memberships.active_now.exists?
 %>
-<% if show_free_trial %>
-  <div class="mb-3 form-check">
+<% if show_free_trial_parent || show_free_trial_children %>
+  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent || (show_free_trial_children && (child_memberships.any? { |m| m.trial? } || child_memberships.any? { |m| m.pending? })) ? '' : 'display: none;' %>">
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
         aria: { describedby: "free_trial_help#{prefix_id}" },
-        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}()"
+        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}();"
     } %>
-    <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label" do %>
+    <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label", id: "use_free_trial_label#{prefix_id}" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
-      Utiliser mon essai gratuit
+      <span id="free_trial_text<%= prefix_id %>">Utiliser mon essai gratuit</span>
     <% end %>
     <small id="free_trial_help<%= prefix_id %>" class="text-muted d-block mt-1">
-      <% if is_initiation && event.allow_non_member_discovery? %>
-        Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
-      <% else %>
-        Vous n'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.
-      <% end %>
+      <span id="free_trial_help_text<%= prefix_id %>">
+        <% if is_initiation && event.allow_non_member_discovery? %>
+          Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.
+        <% else %>
+          Vous pouvez utiliser votre essai gratuit. <strong>Après cet essai, une adhésion sera requise pour continuer.</strong>
+        <% end %>
+      </span>
     </small>
   </div>
+  
+  <% if show_free_trial_children %>
+    <script>
+      // Données des enfants avec statut trial
+      const trialChildrenData<%= prefix_id %> = <%= raw trial_children_data %>;
+      
+      // Fonction pour mettre à jour l'affichage de l'essai gratuit selon l'enfant sélectionné
+      function updateFreeTrialDisplay<%= prefix_id %>() {
+        // Utiliser un sélecteur strict pour éviter les conflits multi-instances
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const form = document.getElementById('attendForm<%= prefix_id %>') || 
+                     document.getElementById('attendForm' + prefixIdClean) ||
+                     document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                     document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                     document.querySelector('form[id*="attendForm"]') ||
+                     document.querySelector('form[action*="attend"]');
+        if (!form) return;
+        
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>') || 
+                           form.querySelector('select[name="child_membership_id"]');
+        const freeTrialContainer = document.getElementById('free_trial_container<%= prefix_id %>');
+        const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+        const freeTrialText = document.getElementById('free_trial_text<%= prefix_id %>');
+        const freeTrialHelpText = document.getElementById('free_trial_help_text<%= prefix_id %>');
+        
+        if (!freeTrialContainer || !freeTrialText) return;
+        
+        const selectedChildId = childSelect ? parseInt(childSelect.value) : null;
+        const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
+        
+        if (selectedChild) {
+          // Un enfant est sélectionné dans le menu déroulant
+          // IMPORTANT : Afficher la checkbox UNIQUEMENT si cet enfant a un essai gratuit disponible
+          const isTrial = selectedChild.is_trial || selectedChild.status === 'trial'; // Essai gratuit OBLIGATOIRE
+          const isPending = selectedChild.is_pending || selectedChild.status === 'pending'; // Essai gratuit OPTIONNEL
+          const canUseTrial = selectedChild.can_use_trial && !selectedChild.has_used_trial;
+          
+          if (canUseTrial && (isTrial || isPending)) {
+            // L'enfant sélectionné peut utiliser son essai gratuit → AFFICHER la checkbox
+            freeTrialContainer.style.display = 'block';
+            const childNameEscaped = String(selectedChild.name || '').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            if (isTrial) {
+              // Enfant trial : essai gratuit OBLIGATOIRE
+              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (OBLIGATOIRE)';
+              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (OBLIGATOIRE) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+              if (freeTrialCheckbox) {
+                freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
+                freeTrialCheckbox.required = true; // Rendre obligatoire
+                // toggleSubmitButton sera appelé à la fin de la fonction
+              }
+            } else if (isPending) {
+              // Enfant pending : essai gratuit OPTIONNEL si parent adhérent, OBLIGATOIRE sinon
+              const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
+              const allowNonMemberDiscovery = <%= event.allow_non_member_discovery? ? 'true' : 'false' %>;
+              
+              if (parentHasActiveMembership || allowNonMemberDiscovery) {
+                // Parent adhérent OU places découverte → essai optionnel
+                freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (optionnel)';
+                freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (optionnel) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation, mais ce n\'est pas obligatoire car son adhésion est en attente de paiement. Vous pouvez vous inscrire sans utiliser l\'essai gratuit.';
+                if (freeTrialCheckbox) {
+                  freeTrialCheckbox.checked = false; // Pas cochée par défaut pour les enfants pending
+                  freeTrialCheckbox.required = false; // Pas obligatoire
+                  // toggleSubmitButton sera appelé à la fin de la fonction
+                }
+              } else {
+                // Parent non adhérent ET pas de places découverte → essai OBLIGATOIRE
+                freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (OBLIGATOIRE)';
+                freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (OBLIGATOIRE) :</strong> Cet enfant doit utiliser son essai gratuit pour cette initiation car vous n\'avez pas d\'adhésion active. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+                if (freeTrialCheckbox) {
+                  freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants pending si parent non adhérent
+                  freeTrialCheckbox.required = true; // Rendre obligatoire
+                  // toggleSubmitButton sera appelé à la fin de la fonction
+                }
+              }
+            }
+          } else {
+            // L'enfant sélectionné n'a PAS d'essai gratuit disponible → MASQUER la checkbox
+            freeTrialContainer.style.display = 'none';
+            if (freeTrialCheckbox) {
+              freeTrialCheckbox.checked = false;
+              freeTrialCheckbox.required = false;
+              // toggleSubmitButton sera appelé à la fin de la fonction
+            }
+          }
+        } else {
+          // Aucun enfant sélectionné dans le menu déroulant
+          // Si le parent s'inscrit lui-même ET qu'il a un essai gratuit → Afficher la checkbox pour le parent
+          // Sinon → Masquer la checkbox
+          const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+          
+          if (parentCanUseTrial) {
+            // Le parent peut utiliser son essai gratuit (inscription pour lui-même)
+            freeTrialContainer.style.display = 'block';
+            if (freeTrialText) {
+              freeTrialText.textContent = 'Utiliser mon essai gratuit';
+            }
+            <% if is_initiation && event.allow_non_member_discovery? %>
+              freeTrialHelpText.innerHTML = 'Vous pouvez utiliser votre essai gratuit maintenant ou vous inscrire dans les places découverte disponibles. Après cet essai, une adhésion sera requise pour continuer.';
+            <% else %>
+              freeTrialHelpText.innerHTML = 'Vous n\'avez pas encore utilisé votre essai gratuit. <strong>Cette case doit être cochée pour confirmer votre inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+            <% end %>
+            if (freeTrialCheckbox) {
+              freeTrialCheckbox.checked = false; // Pas cochée par défaut, l'utilisateur doit cocher explicitement
+              freeTrialCheckbox.required = false; // Pas obligatoire si allow_non_member_discovery est activé
+              // toggleSubmitButton sera appelé à la fin de la fonction
+            }
+          } else {
+            // Le parent n'a pas d'essai gratuit disponible → MASQUER la checkbox
+            freeTrialContainer.style.display = 'none';
+            if (freeTrialCheckbox) {
+              freeTrialCheckbox.checked = false;
+              freeTrialCheckbox.required = false;
+              // toggleSubmitButton sera appelé à la fin de la fonction
+            }
+          }
+        }
+        
+        // Appeler toggleSubmitButton UNE SEULE FOIS à la fin pour mettre à jour l'état du bouton
+        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+          window.toggleSubmitButton<%= prefix_id %>();
+        }
+      }
+      
+      // Fonction d'initialisation réutilisable
+      function setupFreeTrialDisplay<%= prefix_id %>() {
+        // Utiliser un sélecteur strict pour éviter les conflits multi-instances
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const form = document.getElementById('attendForm<%= prefix_id %>') || 
+                     document.getElementById('attendForm' + prefixIdClean) ||
+                     document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                     document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                     document.querySelector('form[id*="attendForm"]') ||
+                     document.querySelector('form[action*="attend"]');
+        if (form) {
+          const childSelect = document.getElementById('child_membership_id<%= prefix_id %>') || 
+                             form.querySelector('select[name="child_membership_id"]');
+          if (childSelect) {
+            // Retirer l'ancien listener s'il existe
+            childSelect.removeEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
+            childSelect.addEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
+            // Appeler une première fois pour initialiser l'affichage
+            updateFreeTrialDisplay<%= prefix_id %>();
+          } else {
+            // Pas de select enfant, vérifier si on doit afficher pour le parent
+            updateFreeTrialDisplay<%= prefix_id %>();
+          }
+        }
+      }
+      
+      // Écouter les changements sur le select enfant : support à la fois du chargement normal et Turbo
+      function initFreeTrialDisplay<%= prefix_id %>() {
+        setupFreeTrialDisplay<%= prefix_id %>();
+      }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFreeTrialDisplay<%= prefix_id %>);
+      } else {
+        // Le DOM est déjà chargé, initialiser immédiatement
+        initFreeTrialDisplay<%= prefix_id %>();
+      }
+
+      // Support Turbo : réinitialiser lors des navigations Turbo
+      document.addEventListener('turbo:load', initFreeTrialDisplay<%= prefix_id %>);
+      document.addEventListener('turbo:frame-load', function(e) {
+        // Vérifier si le formulaire est dans le frame chargé
+        if (e.target.querySelector('form[id*="attendForm"]') || e.target.querySelector('form[action*="attend"]')) {
+          initFreeTrialDisplay<%= prefix_id %>();
+        }
+      });
+      
+      // Fonction générique pour configurer l'écouteur modal (réutilisable)
+      function setupModalListenerGeneric<%= prefix_id %>(callback) {
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                           document.getElementById('attendForm' + prefixIdClean) ||
+                           document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                           document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                           document.querySelector('form[id*="attendForm"]') ||
+                           document.querySelector('form[id*="waitlist"]');
+        
+        if (formElement) {
+          const modalElement = formElement.closest('.modal');
+          if (modalElement && typeof callback === 'function') {
+            const handler = function() {
+              setTimeout(callback, 100);
+            };
+            modalElement.addEventListener('shown.bs.modal', handler);
+          }
+        }
+      }
+      
+      // Configurer l'écouteur pour l'essai gratuit
+      setupModalListenerGeneric<%= prefix_id %>(function() {
+        setupFreeTrialDisplay<%= prefix_id %>();
+        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+          window.toggleSubmitButton<%= prefix_id %>();
+        }
+      });
+      setTimeout(function() {
+        setupModalListenerGeneric<%= prefix_id %>(function() {
+          setupFreeTrialDisplay<%= prefix_id %>();
+          if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+            window.toggleSubmitButton<%= prefix_id %>();
+          }
+        });
+      }, 500);
+    </script>
+  <% end %>
 <% end %>
 
 <!-- Rappel email -->
@@ -283,34 +621,164 @@
 </div>
 
 <script>
+  // Fonction générique pour configurer l'écouteur modal (définie une seule fois, réutilisable partout)
+  function setupModalListenerGeneric<%= prefix_id %>(callback) {
+    const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+    const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                       document.getElementById('attendForm' + prefixIdClean) ||
+                       document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                       document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                       document.querySelector('form[id*="attendForm"]') ||
+                       document.querySelector('form[id*="waitlist"]');
+    
+    if (formElement) {
+      const modalElement = formElement.closest('.modal');
+      if (modalElement && typeof callback === 'function') {
+        const handler = function() {
+          setTimeout(callback, 100);
+        };
+        modalElement.addEventListener('shown.bs.modal', handler);
+      }
+    }
+  }
+  
   // Fonction pour activer/désactiver le bouton de soumission selon l'essai gratuit (accessible globalement)
-  <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
+  <% if show_free_trial %>
     // Définir la fonction globalement pour qu'elle soit accessible depuis l'attribut onchange
     window.toggleSubmitButton<%= prefix_id %> = function() {
-      // Si l'essai gratuit est requis (pas de places découverte), désactiver le bouton si non coché
-      const form = document.querySelector('form[id*="attendForm"]');
-      if (!form) return;
+      // Trouver le formulaire avec le bon ID (chercher avec et sans underscore)
+      const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, ''); // Enlever le underscore initial
+      const formId = 'attendForm<%= prefix_id %>';
+      const formIdClean = 'attendForm' + prefixIdClean;
+      const form = document.getElementById(formId) || 
+                   document.getElementById(formIdClean) ||
+                   document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                   document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                   document.querySelector('form[id*="attendForm"]');
+      if (!form) {
+        console.warn('toggleSubmitButton<%= prefix_id %>: Formulaire non trouvé (cherché:', formId, formIdClean, ')');
+        return;
+      }
       const btn = form.querySelector('input[type="submit"], button[type="submit"]');
-      if (!btn) return;
+      if (!btn) {
+        console.warn('toggleSubmitButton<%= prefix_id %>: Bouton submit non trouvé dans le formulaire:', form.id);
+        return;
+      }
       const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
-      if (freeTrialCheckbox) {
-        if (freeTrialCheckbox.checked) {
-          btn.disabled = false;
-          btn.classList.remove('disabled', 'opacity-50');
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-        } else {
+      const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+      
+      // Déclarer les variables une seule fois au début de la fonction (évite les erreurs de redéclaration)
+      const allowNonMemberDiscovery = <%= event.allow_non_member_discovery? ? 'true' : 'false' %>;
+      
+      // Si pas de checkbox essai gratuit, activer le bouton (pas d'essai gratuit requis)
+      if (!freeTrialCheckbox) {
+        btn.disabled = false;
+        btn.classList.remove('disabled', 'opacity-50');
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        return;
+      }
+      
+      // IMPORTANT : Même avec allow_non_member_discovery activé, le bouton doit être gris si la checkbox n'est pas cochée
+      // L'utilisateur doit explicitement cocher la checkbox pour activer le bouton
+      // (même si techniquement il pourrait s'inscrire via les places découverte, on force l'utilisation de l'essai gratuit)
+      
+      // Données des enfants (disponibles même si show_free_trial_children est false, pour le cas parent seul)
+      <% if show_free_trial %>
+        const trialChildrenData<%= prefix_id %> = <%= raw trial_children_data %>;
+        const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
+      <% end %>
+      
+      // Vérifier d'abord si un enfant est sélectionné (logique spécifique pour les enfants)
+      if (childSelect && childSelect.value) {
+        const selectedChildId = parseInt(childSelect.value);
+        <% if show_free_trial %>
+          const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
+          
+          if (selectedChild) {
+            const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
+            const isPending = selectedChild.is_pending || selectedChild.status === 'pending';
+            
+            // Pour les enfants trial : essai gratuit OBLIGATOIRE, désactiver le bouton si non coché
+            if (isTrial && !freeTrialCheckbox.checked) {
+              btn.disabled = true;
+              btn.classList.add('disabled', 'opacity-50');
+              btn.style.opacity = '0.6';
+              btn.style.cursor = 'not-allowed';
+              return;
+            }
+            // Pour les enfants pending : essai gratuit OPTIONNEL si parent adhérent, OBLIGATOIRE sinon
+            if (isPending) {
+              if (parentHasActiveMembership || allowNonMemberDiscovery) {
+                // Parent adhérent OU places découverte → essai optionnel
+                btn.disabled = false;
+                btn.classList.remove('disabled', 'opacity-50');
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                return;
+              } else {
+                // Parent non adhérent ET pas de places découverte → essai OBLIGATOIRE
+                if (!freeTrialCheckbox.checked) {
+                  btn.disabled = true;
+                  btn.classList.add('disabled', 'opacity-50');
+                  btn.style.opacity = '0.6';
+                  btn.style.cursor = 'not-allowed';
+                  return;
+                }
+              }
+            }
+          }
+        <% end %>
+      }
+      
+      // Pour le parent ou si aucun enfant sélectionné
+      // Vérifier que le parent a réellement un essai gratuit disponible
+      <% if show_free_trial %>
+        const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+      <% else %>
+        const parentCanUseTrial = false;
+      <% end %>
+      
+      if (freeTrialCheckbox.checked) {
+        // La checkbox est cochée : vérifier que le parent a vraiment un essai disponible
+        if (!parentCanUseTrial && !allowNonMemberDiscovery) {
+          // Le parent n'a pas d'essai ET pas de places découverte → bloquer
           btn.disabled = true;
           btn.classList.add('disabled', 'opacity-50');
           btn.style.opacity = '0.6';
           btn.style.cursor = 'not-allowed';
+          console.warn('toggleSubmitButton<%= prefix_id %>: Parent n\'a pas d\'essai gratuit disponible');
+          return;
+        }
+        // Le parent a un essai OU places découverte disponibles → activer
+        btn.disabled = false;
+        btn.classList.remove('disabled', 'opacity-50');
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        console.log('toggleSubmitButton<%= prefix_id %>: Bouton activé (checkbox cochée)');
+      } else {
+        // La checkbox n'est pas cochée
+        if (allowNonMemberDiscovery) {
+          // Places découverte disponibles → permettre l'inscription sans essai
+          btn.disabled = false;
+          btn.classList.remove('disabled', 'opacity-50');
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          console.log('toggleSubmitButton<%= prefix_id %>: Bouton activé (places découverte disponibles)');
+        } else {
+          // Pas de places découverte → bloquer si pas d'essai
+          btn.disabled = true;
+          btn.classList.add('disabled', 'opacity-50');
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+          console.log('toggleSubmitButton<%= prefix_id %>: Bouton désactivé (checkbox non cochée)');
         }
       }
     };
   <% else %>
-    // Fonction vide si l'essai gratuit n'est pas requis (pour éviter les erreurs)
+    // Fonction vide si l'essai gratuit n'est pas disponible (pour éviter les erreurs)
     window.toggleSubmitButton<%= prefix_id %> = function() {
-      // Ne rien faire si l'essai gratuit n'est pas requis
+      // Ne rien faire si l'essai gratuit n'est pas disponible
     };
   <% end %>
   
@@ -356,16 +824,11 @@
         }
       <% end %>
       
-      // Vérifier que l'essai gratuit est coché si requis (pas de places découverte)
-      <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
-        const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
-        if (freeTrialCheckbox && !freeTrialCheckbox.checked) {
-          e.preventDefault();
-          alert('Veuillez cocher la case "Utiliser mon essai gratuit" pour confirmer votre inscription.');
-          freeTrialCheckbox.focus();
-          return false;
-        }
-      <% end %>
+      // NOTE : Pas de validation JavaScript pour l'essai gratuit car :
+      // 1. Le bouton est déjà désactivé (gris) si l'essai gratuit n'est pas coché (via toggleSubmitButton)
+      // 2. Si le bouton est actif (bleu), c'est que l'essai gratuit est coché
+      // 3. La validation serveur existe déjà pour sécuriser
+      // Cette validation JavaScript était redondante et créait un conflit
       
       // Marquer comme en cours de soumission
       isSubmitting = true;
@@ -379,20 +842,42 @@
       }
     });
     
-    // Initialiser l'état du bouton au chargement si l'essai gratuit est requis
-    <% if show_free_trial && !(is_initiation && event.allow_non_member_discovery?) %>
-      // Désactiver le bouton par défaut
-      submitButton.disabled = true;
-      submitButton.classList.add('disabled', 'opacity-50');
-      submitButton.style.opacity = '0.6';
-      submitButton.style.cursor = 'not-allowed';
+    // Initialiser l'état du bouton au chargement
+    <% if show_free_trial %>
+      // Désactiver le bouton par défaut si essai gratuit requis
+      // Si allow_non_member_discovery est activé, le bouton sera activé par toggleSubmitButton
+      <% if !event.allow_non_member_discovery? %>
+        submitButton.disabled = true;
+        submitButton.classList.add('disabled', 'opacity-50');
+        submitButton.style.opacity = '0.6';
+        submitButton.style.cursor = 'not-allowed';
+      <% end %>
       
       // Initialiser l'état au chargement
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', window.toggleSubmitButton<%= prefix_id %>);
-      } else {
-        window.toggleSubmitButton<%= prefix_id %>();
+      function initSubmitButton<%= prefix_id %>() {
+        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+          window.toggleSubmitButton<%= prefix_id %>();
+        }
       }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSubmitButton<%= prefix_id %>);
+      } else {
+        initSubmitButton<%= prefix_id %>();
+      }
+      
+      // Support Turbo
+      document.addEventListener('turbo:load', initSubmitButton<%= prefix_id %>);
+      
+      // Configurer l'écouteur pour le bouton submit (utilise setupModalListenerGeneric défini au début du script)
+      setupModalListenerGeneric<%= prefix_id %>(function() {
+        initSubmitButton<%= prefix_id %>();
+      });
+      setTimeout(function() {
+        setupModalListenerGeneric<%= prefix_id %>(function() {
+          initSubmitButton<%= prefix_id %>();
+        });
+      }, 500);
     <% end %>
   })();
 </script>

@@ -62,12 +62,15 @@ services:
       RAILS_FORCE_SSL: "true"
       # Master key Rails (nécessaire pour décrypter les credentials)
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-}
+      TZ: Europe/Paris
     # AUCUN port exposé - accès uniquement via réseau Docker interne
     expose:
       - "3000"
     # Monter le fichier master.key pour que Rails puisse décrypter les credentials
     volumes:
       - ../../config/master.key:/rails/config/master.key:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       db:
         condition: service_healthy

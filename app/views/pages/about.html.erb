@@ -25,7 +25,7 @@
           lien social dans un esprit convivial et sportif.
         </p>
         <div class="d-flex gap-3 flex-wrap mb-4">
-          <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg" do %>
+          <%= link_to new_membership_path(type: 'adult'), class: "btn btn-liquid-primary btn-lg" do %>
             <i class="bi bi-person-plus me-2" aria-hidden="true"></i>
             Rejoignez-nous
           <% end %>
@@ -1050,7 +1050,7 @@
           dans une ambiance conviviale et sécurisée !
         </p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-          <%= link_to new_membership_path(check_age: true), class: "btn btn-liquid-primary btn-lg" do %>
+          <%= link_to new_membership_path(type: 'adult'), class: "btn btn-liquid-primary btn-lg" do %>
             <i class="bi bi-person-plus me-2" aria-hidden="true"></i>
             Adhérer en ligne
           <% end %>
