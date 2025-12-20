@@ -15,8 +15,10 @@ every 1.day, at: "7:00 pm" do
 end
 
 # Rapport participants initiation (tous les jours à 7h, uniquement en production)
+# Note: La vérification de l'environnement se fait dans le job lui-même
+# pour éviter les problèmes de chargement de Rails lors de la génération du crontab
 every 1.day, at: "7:00 am" do
-  runner "InitiationParticipantsReportJob.perform_now" if Rails.env.production?
+  runner 'InitiationParticipantsReportJob.perform_now'
 end
 
 # Mettre à jour les adhésions expirées (tous les jours à minuit)
