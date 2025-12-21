@@ -51,14 +51,14 @@
         <div class="collapse" id="submenu-utilisateurs" data-admin-menu-section-target="submenu">
           <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
             <li class="nav-item">
-              <%= link_to admin_users_path, 
+              <%= link_to activeadmin_users_path, 
                   class: "nav-link small #{'active' if controller_name == 'users'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Utilisateurs</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_roles_path, 
+              <%= link_to activeadmin_roles_path, 
                   class: "nav-link small #{'active' if controller_name == 'roles'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Rôles</span>
@@ -102,42 +102,42 @@
         <div class="collapse" id="submenu-boutique" data-admin-menu-section-target="submenu">
           <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
             <li class="nav-item">
-              <%= link_to admin_products_path, 
+              <%= link_to activeadmin_products_path, 
                   class: "nav-link small #{'active' if controller_name == 'products'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Produits</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_product_categories_path, 
+              <%= link_to activeadmin_product_categories_path, 
                   class: "nav-link small #{'active' if controller_name == 'product_categories'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Catégories</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_product_variants_path, 
+              <%= link_to activeadmin_product_variants_path, 
                   class: "nav-link small #{'active' if controller_name == 'product_variants'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Variantes</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_option_types_path, 
+              <%= link_to activeadmin_option_types_path, 
                   class: "nav-link small #{'active' if controller_name == 'option_types'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Types d'Options</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_option_values_path, 
+              <%= link_to activeadmin_option_values_path, 
                   class: "nav-link small #{'active' if controller_name == 'option_values'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Valeurs d'Options</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_variant_option_values_path, 
+              <%= link_to activeadmin_variant_option_values_path, 
                   class: "nav-link small #{'active' if controller_name == 'variant_option_values'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Associations</span>
@@ -163,21 +163,21 @@
         <div class="collapse" id="submenu-commandes" data-admin-menu-section-target="submenu">
           <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
             <li class="nav-item">
-              <%= link_to admin_orders_path, 
+              <%= link_to activeadmin_orders_path, 
                   class: "nav-link small #{'active' if controller_name == 'orders'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Commandes</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_order_items_path, 
+              <%= link_to activeadmin_order_items_path, 
                   class: "nav-link small #{'active' if controller_name == 'order_items'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Articles</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_payments_path, 
+              <%= link_to activeadmin_payments_path, 
                   class: "nav-link small #{'active' if controller_name == 'payments'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Paiements</span>
@@ -230,7 +230,7 @@
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_routes_path, 
+              <%= link_to activeadmin_routes_path, 
                   class: "nav-link small #{'active' if controller_name == 'routes'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Parcours</span>
@@ -256,14 +256,14 @@
         <div class="collapse" id="submenu-communication" data-admin-menu-section-target="submenu">
           <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
             <li class="nav-item">
-              <%= link_to admin_contact_messages_path, 
+              <%= link_to activeadmin_contact_messages_path, 
                   class: "nav-link small #{'active' if controller_name == 'contact_messages'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Messages de Contact</span>
               <% end %>
             </li>
             <li class="nav-item">
-              <%= link_to admin_partners_path, 
+              <%= link_to activeadmin_partners_path, 
                   class: "nav-link small #{'active' if controller_name == 'partners'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Partenaires</span>
@@ -289,7 +289,7 @@
         <div class="collapse" id="submenu-materiel" data-admin-menu-section-target="submenu">
           <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
             <li class="nav-item">
-              <%= link_to admin_roller_stocks_path, 
+              <%= link_to activeadmin_roller_stocks_path, 
                   class: "nav-link small #{'active' if controller_name == 'roller_stocks'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Stock Rollers</span>
@@ -315,7 +315,7 @@
         <div class="collapse" id="submenu-systeme" data-admin-menu-section-target="submenu">
           <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
             <li class="nav-item">
-              <%= link_to admin_audit_logs_path, 
+              <%= link_to activeadmin_audit_logs_path, 
                   class: "nav-link small #{'active' if controller_name == 'audit_logs'}",
                   data: { bs_dismiss: "" } do %>
                 <span class="sidebar-label">Audit Logs</span>

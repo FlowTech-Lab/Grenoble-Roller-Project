@@ -22,14 +22,14 @@
 - **Admins** : Peu techniques (peuvent gérer via ActiveAdmin)
 - **SuperAdmin** : Technique (développeur)
 
-**Rôles distincts** :
-- **SUPERADMIN** (niveau 70) : Accès total, gestion technique
-- **ADMIN** (niveau 60) : Gestion complète via ActiveAdmin
-- **MODERATOR** (niveau 50) : Modération des événements
-- **INITIATION** (niveau 40) : Accès initiations - liste des présents et materiel demandé. 
-- **ORGANIZER** (niveau 30) : Création/gestion de SES événements uniquement
-- **REGISTERED** (niveau 20) : Membre inscrit
+**Rôles distincts** (ordre par niveau) :
 - **USER** (niveau 10) : Utilisateur de base
+- **REGISTERED** (niveau 20) : Membre inscrit
+- **INITIATION** (niveau 30) : Accès initiations - liste des présents et matériel demandé
+- **ORGANIZER** (niveau 40) : Création/gestion de SES événements uniquement
+- **MODERATOR** (niveau 50) : Modération des événements
+- **ADMIN** (niveau 60) : Gestion complète via ActiveAdmin + AdminPanel
+- **SUPERADMIN** (niveau 70) : Accès total, gestion technique
 
 **Source** : `app/models/role.rb`, `db/seeds.rb`, `docs/04-rails/admin-panel-research.md`
 
@@ -359,27 +359,18 @@ t.string "recurring_time"
 - ✅ Peut modifier le statut des événements (via `EventPolicy`)
 - ✅ Peut voir tous les événements (via `EventPolicy::Scope`)
 
-**INITIATION (niveau 40)** :
+**INITIATION (niveau 30)** :
 - ✅ Accès initiations - liste des présents et matériel demandé (via `Admin::InitiationPolicy`)
 - ✅ Peut voir et gérer les présences des initiations (via `presences?` et `update_presences?`)
 - ✅ Accès aux informations sur le matériel demandé par les participants
+- ✅ Peut gérer les initiations (via `Event::InitiationPolicy#manage?` - niveau >= 30)
 
-**ORGANIZER (niveau 30)** :
-- ✅ Peut créer des événements (via `EventPolicy#create?`)
+**ORGANIZER (niveau 40)** :
+- ✅ Peut créer des événements (via `EventPolicy#create?` - niveau >= 40)
 - ✅ Peut modifier SES événements (via `EventPolicy#update?` - owner check)
 - ❌ Ne peut PAS modifier le statut (seuls modos+ peuvent)
 
-**Support (non défini)** :
-- ❌ Pas de rôle "SUPPORT" actuellement
-- ⚠️ Besoin à clarifier : rôle dédié ou permissions sur rôles existants ?
-- ❌ **VÉRIFIÉ** : Aucune mention de SUPPORT dans `db/seeds.rb`
-- ❌ **VÉRIFIÉ** : Pas de constantes ROLES définies dans `app/models/role.rb`
-
-**Manager produits (non défini)** :
-- ❌ Pas de rôle "PRODUCT_MANAGER" actuellement
-- ⚠️ Besoin à clarifier : rôle dédié ou permissions sur rôles existants ?
-- ❌ **VÉRIFIÉ** : Aucune mention de PRODUCT_MANAGER dans `db/seeds.rb`
-- ❌ **VÉRIFIÉ** : Pas de constantes ROLES définies dans `app/models/role.rb`
+**Note** : Les rôles existants (7 niveaux) sont suffisants. Seuls ADMIN/SUPERADMIN accèdent à AdminPanel pour gérer produits et commandes.
 
 **Source** : `app/policies/application_policy.rb`, `app/policies/admin/application_policy.rb`, `app/policies/event_policy.rb`, `app/models/role.rb`
 
@@ -643,19 +634,21 @@ t.string "recurring_time"
 
 ---
 
-### B) Permissions Granulaires - RÔLES MANQUANTS
+### B) Permissions Granulaires - RÔLES EXISTANTS SUFFISANTS
 
 **État actuel** :
 - ✅ **Modèle Role existe** : `app/models/role.rb`
-- ❌ **Pas de rôles PRODUCT_MANAGER (niveau 55)** dans les seeds ou migrations
-- ❌ **Pas de rôles SUPPORT (niveau 45)** dans les seeds ou migrations
-- ✅ Rôles existants : SUPERADMIN (70), ADMIN (60), MODERATOR (50), INITIATION (40), ORGANIZER (30), REGISTERED (20), USER (10)
+- ✅ **7 rôles implémentés** : SUPERADMIN (70), ADMIN (60), MODERATOR (50), ORGANIZER (40), INITIATION (30), REGISTERED (20), USER (10)
+- ✅ **Policies implémentées** : `AdminPanel::BasePolicy`, `AdminPanel::ProductPolicy`, `AdminPanel::OrderPolicy`
+- ✅ **Seuls ADMIN/SUPERADMIN** accèdent à AdminPanel (niveau 60+)
+- ✅ **VÉRIFIÉ** : Rôles en base : USER (10), REGISTERED (20), INITIATION (30), ORGANIZER (40), MODERATOR (50), ADMIN (60), SUPERADMIN (70)
 
 **Références** :
-- `app/models/role.rb` : Modèle existe mais pas de constantes ROLES définies
-- `db/seeds.rb` : Aucune mention de PRODUCT_MANAGER ou SUPPORT trouvée
+- `app/models/role.rb` : Modèle fonctionnel
+- `app/policies/admin_panel/` : Policies créées et fonctionnelles
+- Base de données : 7 rôles présents et vérifiés
 
-**Conclusion** : **PARTIELLEMENT IMPLÉMENTÉ** - Rôles PRODUCT_MANAGER et SUPPORT n'existent pas.
+**Conclusion** : **IMPLÉMENTÉ** - Les rôles existants sont suffisants. Seuls ADMIN/SUPERADMIN (niveau 60+) gèrent produits et commandes via AdminPanel. Pas besoin de rôles supplémentaires (PRODUCT_MANAGER/SUPPORT).
 
 ---
 
@@ -746,7 +739,7 @@ t.string "recurring_time"
 | 9. Stimulus Sidebar | ✅ Implémenté | `app/javascript/controllers/admin/admin_sidebar_controller.js:9` |
 | 10. Validation SKU | ❌ Non implémenté | Pas d'endpoint trouvé |
 | A. ProductVariantGenerator | ❌ Non implémenté | Aucun service trouvé |
-| B. Rôles PRODUCT_MANAGER/SUPPORT | ❌ Non implémenté | `app/models/role.rb` (pas de constantes) |
+| B. Rôles PRODUCT_MANAGER/SUPPORT | ✅ Non nécessaire | Rôles existants suffisants (ADMIN/SUPERADMIN gèrent tout) |
 | C. OrderExporter | ❌ Non implémenté | `app/services/` (pas de service) |
 | D. AdminDashboardService | ❌ Non implémenté | `app/admin/dashboard.rb` (KPIs basiques seulement) |
 | E. ProductImporter | ❌ Non implémenté | Aucun service trouvé |
@@ -793,7 +786,7 @@ t.string "recurring_time"
 | AdminDashboardService | ❌ NON implémenté | `app/services/` (vérifié) |
 | Pagination | ❌ NON implémenté | `Gemfile` (vérifié) |
 | Upload GPX direct | ⚠️ Partiel (gpx_url seulement) | `app/models/route.rb` (vérifié) |
-| Rôles PRODUCT_MANAGER/SUPPORT | ❌ NON implémenté | `db/seeds.rb` (vérifié) |
+| Rôles PRODUCT_MANAGER/SUPPORT | ✅ Non nécessaire | Rôles existants suffisants (ADMIN/SUPERADMIN) |
 
 ### ❌ INFORMATIONS MANQUANTES
 
@@ -803,8 +796,8 @@ t.string "recurring_time"
 | Timeline exacte avant production | ❌ Non spécifié | Demander à l'utilisateur |
 | Besoin d'import Excel 100+ produits | ❌ Non spécifié | Demander à l'utilisateur |
 | Besoin d'export Excel pour trésorier | ❌ Non spécifié | Demander à l'utilisateur |
-| Rôle "SUPPORT" nécessaire ? | ❌ Non défini | Demander à l'utilisateur |
-| Rôle "PRODUCT_MANAGER" nécessaire ? | ❌ Non défini | Demander à l'utilisateur |
+| Rôle "SUPPORT" nécessaire ? | ✅ Non nécessaire | ADMIN/SUPERADMIN gèrent tout |
+| Rôle "PRODUCT_MANAGER" nécessaire ? | ✅ Non nécessaire | ADMIN/SUPERADMIN gèrent tout |
 | Upload GPX direct nécessaire ? | ❌ Non spécifié | Demander à l'utilisateur |
 | Récurrence automatique nécessaire ? | ❌ Non spécifié | Demander à l'utilisateur |
 | Unifier namespace AdminPanel/Admin | ⚠️ Incohérence confirmée | `config/routes.rb` (vérifié) |
@@ -829,9 +822,9 @@ t.string "recurring_time"
    - **VÉRIFIÉ** : Pas de `ProductVariantGenerator` dans `app/services/`
 
 3. **Permissions granulaires** :
-   - Clarifier les besoins pour "SUPPORT" et "PRODUCT_MANAGER"
-   - Implémenter les rôles si nécessaire
-   - **VÉRIFIÉ** : Rôles PRODUCT_MANAGER (niveau 55) et SUPPORT (niveau 45) n'existent pas dans `db/seeds.rb`
+   - ✅ **DÉJÀ IMPLÉMENTÉ** : Système Pundit avec 7 rôles (USER à SUPERADMIN)
+   - ✅ **VÉRIFIÉ** : Seuls ADMIN/SUPERADMIN accèdent à AdminPanel (niveau 60+)
+   - ✅ **VÉRIFIÉ** : Rôles existants suffisants (pas besoin de PRODUCT_MANAGER/SUPPORT)
 
 ### 🟡 Important (À faire prochainement)
 
@@ -890,6 +883,116 @@ t.string "recurring_time"
 
 ---
 
+## 🔐 RÔLES & PERMISSIONS - QUI PEUT FAIRE QUOI
+
+### Hiérarchie des Rôles (par niveau)
+
+| Niveau | Code | Nom | Description |
+|--------|------|-----|-------------|
+| 70 | SUPERADMIN | Super Admin | Accès total, gestion technique |
+| 60 | ADMIN | Admin | Gestion complète ActiveAdmin + AdminPanel |
+| 50 | MODERATOR | Modérateur | Modération des événements |
+| 40 | ORGANIZER | Organisateur | Création/gestion de SES événements uniquement |
+| 30 | INITIATION | Initiation | Accès initiations - présences et matériel |
+| 20 | REGISTERED | Inscrit | Membre inscrit |
+| 10 | USER | Utilisateur | Utilisateur de base |
+
+### Permissions par Fonctionnalité
+
+#### 🛒 GESTION PRODUITS (AdminPanel)
+| Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
+|--------|------|------------|------------|-----------|-----------|-------|-------------|
+| Voir produits (public) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Voir produits (admin) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Créer produit | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Modifier produit | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Supprimer produit | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Gérer variantes | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Exporter produits | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Importer produits | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+
+**Policies** : `AdminPanel::ProductPolicy` (seulement ADMIN/SUPERADMIN)
+
+---
+
+#### 📦 GESTION COMMANDES (AdminPanel)
+| Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
+|--------|------|------------|------------|-----------|-----------|-------|-------------|
+| Voir SES commandes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Voir TOUTES commandes (admin) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Modifier statut commande | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Exporter commandes | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+
+**Policies** : `AdminPanel::OrderPolicy` (seulement ADMIN/SUPERADMIN)
+
+---
+
+#### 📅 GESTION ÉVÉNEMENTS
+| Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
+|--------|------|------------|------------|-----------|-----------|-------|-------------|
+| Voir événements publiés | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Créer événement | ❌ | ❌ | ❌ | ✅ (SES événements) | ❌ | ✅ | ✅ |
+| Modifier SES événements | ❌ | ❌ | ❌ | ✅ (owner check) | ❌ | ✅ | ✅ |
+| Modifier statut événement | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Voir TOUS événements (draft) | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+
+**Policies** : `EventPolicy` (ORGANIZER niveau 40+, MODERATOR niveau 50+, ADMIN niveau 60+)
+
+---
+
+#### 🎓 GESTION INITIATIONS
+| Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
+|--------|------|------------|------------|-----------|-----------|-------|-------------|
+| Voir initiations publiées | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Gérer initiations | ❌ | ❌ | ✅ (niveau 30+) | ✅ | ✅ | ✅ | ✅ |
+| Voir présences | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Modifier présences | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Créer initiation | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ (niveau 60+) | ✅ |
+
+**Policies** : `Event::InitiationPolicy` (INITIATION niveau 30+ pour manage?, ADMIN niveau 60+ pour create?)
+
+---
+
+#### 👥 GESTION UTILISATEURS (ActiveAdmin)
+| Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
+|--------|------|------------|------------|-----------|-----------|-------|-------------|
+| Voir utilisateurs | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Modifier utilisateurs | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Gérer rôles | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+
+**Policies** : `Admin::ApplicationPolicy` (seulement ADMIN/SUPERADMIN)
+
+---
+
+#### 🏠 ADMIN PANEL (Dashboard)
+| Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
+|--------|------|------------|------------|-----------|-----------|-------|-------------|
+| Accéder au dashboard | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Voir KPIs | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+
+**Policies** : `AdminPanel::BasePolicy` (seulement ADMIN/SUPERADMIN)
+
+---
+
+### Règles de Permission
+
+1. **Principe de hiérarchie** : Un niveau supérieur hérite des permissions des niveaux inférieurs
+2. **Owner check** : ORGANIZER peut modifier SES événements uniquement (vérification `creator_user_id`)
+3. **Statut événements** : Seuls MODERATOR+ peuvent modifier le statut (draft → published)
+4. **AdminPanel** : Seulement ADMIN/SUPERADMIN (niveau 60+)
+5. **ActiveAdmin** : Seulement ADMIN/SUPERADMIN (niveau 60+)
+
+### Fichiers de Policies
+
+- `app/policies/admin_panel/base_policy.rb` : Base pour AdminPanel (ADMIN/SUPERADMIN)
+- `app/policies/admin_panel/product_policy.rb` : Produits (ADMIN/SUPERADMIN)
+- `app/policies/admin_panel/order_policy.rb` : Commandes (ADMIN/SUPERADMIN)
+- `app/policies/event_policy.rb` : Événements (ORGANIZER 40+, MODERATOR 50+, ADMIN 60+)
+- `app/policies/event/initiation_policy.rb` : Initiations (INITIATION 30+, ADMIN 60+)
+- `app/policies/admin/application_policy.rb` : ActiveAdmin (ADMIN/SUPERADMIN)
+
+---
+
 ## 📂 FICHIERS À CRÉER (Index Global)
 
 ### Controllers
@@ -916,7 +1019,7 @@ t.string "recurring_time"
 - `app/policies/admin_panel/order_policy.rb`
 
 ### Migrations
-- `db/migrate/xxxxx_add_product_manager_and_support_roles.rb`
+- ~~`db/migrate/xxxxx_add_product_manager_and_support_roles.rb`~~ (ANNULÉE - rôles non nécessaires)
 
 ### Views (25+ fichiers)
 - `app/views/admin_panel/products/index.html.erb`
@@ -1067,30 +1170,22 @@ end
 - [ ] Helpers utilisables dans vues
 - [ ] Tests passent
 
-### Tâche 1.3 : Rôles SUPPORT + PRODUCT_MANAGER
-**Durée** : 2h  
-**Créer migration** :
-```ruby
-# db/migrate/xxxxx_add_product_manager_and_support_roles.rb
-Role.find_or_create_by(code: 'PRODUCT_MANAGER', name: 'Gestionnaire produits', level: 55)
-Role.find_or_create_by(code: 'SUPPORT', name: 'Support', level: 45)
-```
+### Tâche 1.3 : Vérifier Rôles Existants
+**Durée** : 30m  
+**État** : ✅ **DÉJÀ FAIT** - Les 7 rôles existants sont suffisants
 
-**Ajouter dans `app/models/user.rb`** :
-```ruby
-def product_manager?
-  role.level >= 55 && role.level < 60
-end
+**Rôles en base** :
+- USER (10), REGISTERED (20), INITIATION (30), ORGANIZER (40), MODERATOR (50), ADMIN (60), SUPERADMIN (70)
 
-def support?
-  role.level >= 45 && role.level < 50
-end
-```
+**Policies** :
+- `AdminPanel::BasePolicy` : Seulement ADMIN/SUPERADMIN (niveau 60+)
+- `AdminPanel::ProductPolicy` : Seulement ADMIN/SUPERADMIN
+- `AdminPanel::OrderPolicy` : Seulement ADMIN/SUPERADMIN
 
 **Checklist** :
-- [ ] Migration lancée
-- [ ] Rôles visibles dans BD
-- [ ] Permissions testées
+- [x] Rôles vérifiés en base (7 rôles présents)
+- [x] Policies créées et fonctionnelles
+- [x] Permissions testées (seulement ADMIN/SUPERADMIN)
 
 ### Tâche 1.4 : Layout Admin Adapté
 **Durée** : 1h  
@@ -1587,7 +1682,7 @@ rails test models/route_test.rb
 | # | Point | Impact | Durée | Priorité | Phase |
 |---|-------|--------|-------|----------|-------|
 | 1 | Namespace incohérence | Architecture | 2h | 🔴 BLOQUANT | 0 |
-| 2 | Rôles SUPPORT/PRODUCT_MANAGER | Sécurité | 2h | 🔴 CRITIQUE | 1 |
+| 2 | Vérifier rôles existants | Sécurité | 30m | ✅ FAIT | 1 |
 | 3 | Pagination manquante | Scalabilité | 30m | 🔴 CRITIQUE | 0 |
 | 4 | Variantes manuelles vs auto | UX/Vitesse | 3h | 🟠 HAUTE | 2 |
 | 5 | Exports CSV/Excel | Opérations | 2h | 🟠 HAUTE | 3 |
