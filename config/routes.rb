@@ -4,11 +4,27 @@ Rails.application.routes.draw do
   # ===== NOUVEAU PANEL ADMIN =====
   namespace :admin_panel, path: 'admin-panel' do
     root 'dashboard#index'
+    
+    resources :products do
+      resources :product_variants, only: %i[edit update destroy]
+      collection do
+        get :check_sku
+        post :import
+        get :export
+      end
+    end
+    
+    resources :product_categories
+    
+    resources :orders do
+      member { patch :change_status }
+      collection { get :export }
+    end
   end
 
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
-    resource :maintenance, only: [ :update ], controller: "/admin/maintenance_toggle" do
+    resource :maintenance, only: [ :update ], controller: "/admin_legacy/maintenance_toggle" do
       member do
         patch :toggle
       end

@@ -29,6 +29,11 @@ gem "rack-cors" # CORS pour applications mobiles
 
 gem "table_print"
 
+# Pagination
+gem "pagy", "~> 8.0"
+
+# Excel export (XLSX)
+gem "rubyXL", "~> 3.4"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
