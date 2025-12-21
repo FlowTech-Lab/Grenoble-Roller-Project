@@ -748,6 +748,36 @@ t.string "recurring_time"
 
 ---
 
+## ⚠️ SIMPLIFICATIONS & RECOMMANDATIONS (2025-12-21)
+
+### **Décisions stratégiques :**
+
+1. **ProductTemplate & OptionSets → SKIP** ⚠️
+   - **Raison** : Overkill pour le cas d'usage actuel (3-5 produits MAX)
+   - **Alternative** : Utiliser `OptionType` directement (existe déjà)
+   - **Futur** : À ajouter dans 6-12 mois si besoin réel apparaît
+
+2. **Upload de fichiers uniquement** ✅
+   - **Décision** : Supprimer les liens `image_url`, seulement upload via Active Storage
+   - **Migration** : Script de migration `image_url` → Active Storage (voir `flux-utilisateur-boutique.md`)
+
+3. **Workflow Order amélioré** ✅
+   - **Ajout** : Reserve/release stock avec `inventories` table
+   - **Workflow** : Réserver à la création, libérer si annulé, déduire si expédié
+
+4. **GRID éditeur simplifié** ✅
+   - **Améliorations** : Validation client, debounce, optimistic locking
+   - **Complexité** : Réduite pour v1 (pas d'édition inline complexe)
+
+5. **Estimation révisée** 📊
+   - **Initiale** : 5 semaines
+   - **Réaliste** : 6-8 semaines
+   - **Minimal Viable** : 4 semaines (80% de la valeur)
+
+> 📄 **Document détaillé** : Voir `docs/development/admin-panel/flux-utilisateur-boutique.md` pour l'architecture complète et les migrations.
+
+---
+
 ## 📋 RÉSUMÉ DES VÉRIFICATIONS
 
 | Point | État | Référence Fichier |
@@ -1901,15 +1931,31 @@ Respecter les durées estimées et les dépendances entre phases.
 ---
 
 **Document créé le** : 2025-12-21  
-**Dernière mise à jour** : 2025-12-21 (État actuel complet + flux utilisateur documenté)  
-**Version** : 2.5
+**Dernière mise à jour** : 2025-12-21 (Simplifié selon recommandations d'analyse)  
+**Version** : 2.6
 
 **📄 Document complémentaire** : `docs/development/admin-panel/flux-utilisateur-boutique.md`  
 → Documentation détaillée du flux utilisateur pour la gestion de la boutique
 
+> ⚠️ **IMPORTANT - SIMPLIFICATIONS** :  
+> - **ProductTemplate** et **OptionSets** sont **SKIP** pour l'instant (overkill pour le cas d'usage actuel)  
+> - **Upload de fichiers uniquement** : Pas de liens `image_url`, seulement upload via Active Storage  
+> - Voir section "Extensions futures" dans `flux-utilisateur-boutique.md` pour détails
+
 ---
 
 ## 📝 CHANGELOG
+
+### Version 2.6 (2025-12-21)
+- ⚠️ **SIMPLIFICATIONS** : ProductTemplate et OptionSets SKIP (overkill)
+- ✅ **Upload fichiers uniquement** : Suppression des liens image_url, seulement Active Storage
+- ✅ **Workflow Order amélioré** : Reserve/release stock avec inventories
+- ✅ **GRID éditeur amélioré** : Validation, debounce, optimistic locking
+- ✅ **Estimation révisée** : 6-8 semaines au lieu de 5 semaines
+- ✅ **Plan Minimal Viable** : 4 semaines pour 80% de la valeur
+
+### Version 2.5 (2025-12-21)
+- ✅ **Documentation harmonisée** : Référence à flux-utilisateur-boutique.md
 
 ### Version 2.4 (2025-12-21)
 - ✅ **PHASE 0 terminée** : Fondations critiques complètes

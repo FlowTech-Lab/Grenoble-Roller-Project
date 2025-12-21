@@ -67,7 +67,7 @@
                 <td>
                   <strong><%= product.name %></strong>
                   <br>
-                  <small class="text-muted"><%= product.slug %></small>
+                  <small class="text-muted" title="Référence URL"><%= product.slug %></small>
                 </td>
                 <td><%= product.category&.name || "-" %></td>
                 <td><%= price_display(product.price_cents, product.currency) %></td>
