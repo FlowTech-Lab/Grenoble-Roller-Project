@@ -348,7 +348,12 @@ t.string "recurring_time"
 - ✅ Peut modifier le statut des événements (via `EventPolicy`)
 - ✅ Peut voir tous les événements (via `EventPolicy::Scope`)
 
-**ORGANIZER (niveau 40)** :
+**INITIATION (niveau 40)** :
+- ✅ Accès initiations - liste des présents et matériel demandé (via `Admin::InitiationPolicy`)
+- ✅ Peut voir et gérer les présences des initiations (via `presences?` et `update_presences?`)
+- ✅ Accès aux informations sur le matériel demandé par les participants
+
+**ORGANIZER (niveau 30)** :
 - ✅ Peut créer des événements (via `EventPolicy#create?`)
 - ✅ Peut modifier SES événements (via `EventPolicy#update?` - owner check)
 - ❌ Ne peut PAS modifier le statut (seuls modos+ peuvent)
