@@ -26,8 +26,8 @@
 - **SUPERADMIN** (niveau 70) : Accès total, gestion technique
 - **ADMIN** (niveau 60) : Gestion complète via ActiveAdmin
 - **MODERATOR** (niveau 50) : Modération des événements
-- **ORGANIZER** (niveau 40) : Création/gestion de SES événements uniquement
-- **INITIATION** (niveau 30) : Accès initiations
+- **INITIATION** (niveau 40) : Accès initiations - liste des présents et materiel demandé. 
+- **ORGANIZER** (niveau 30) : Création/gestion de SES événements uniquement
 - **REGISTERED** (niveau 20) : Membre inscrit
 - **USER** (niveau 10) : Utilisateur de base
 
