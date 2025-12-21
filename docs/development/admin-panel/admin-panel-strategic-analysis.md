@@ -562,22 +562,25 @@ t.string "recurring_time"
 
 ---
 
-### 7. ⚠️ Dark Mode - FONCTIONNEL MAIS PAS DANS SIDEBAR ADMIN
+### 7. ✅ Dark Mode - FONCTIONNEL ET TOUJOURS ACCESSIBLE
 
 **État actuel** :
 - ✅ **Fonction `toggleTheme()` existe** : `app/views/layouts/application.html.erb` ligne 45
-- ✅ **Toggle dans navbar principale** : `app/views/layouts/_navbar.html.erb` ligne 64
-- ❌ **Pas de toggle dans sidebar admin** : 
-  - `app/views/layouts/admin.html.erb` ne contient pas de toggle
+- ✅ **Toggle dans navbar principale** : `app/views/layouts/_navbar.html.erb` lignes 61-72 (bouton avec icônes sun/moon)
+- ✅ **Navbar est sticky-top** : `app/views/layouts/_navbar.html.erb` ligne 11 (classe `sticky-top`) → **TOUJOURS VISIBLE**
+- ✅ **Layout admin inclut navbar** : `app/views/layouts/admin.html.erb` ligne 15 (`render 'layouts/navbar'`)
+- ⚠️ **Pas de toggle dans sidebar admin footer** : 
   - `app/views/admin/shared/_sidebar.html.erb` footer (lignes 332-341) ne contient pas de toggle dark mode
+  - **MAIS** : Pas nécessaire car navbar sticky rend le toggle toujours accessible
 
 **Références** :
 - `app/views/layouts/application.html.erb` : lignes 43-55 (fonction toggleTheme)
-- `app/views/layouts/_navbar.html.erb` : lignes 61-68 (bouton toggle)
-- `app/views/layouts/admin.html.erb` : Pas de toggle trouvé
-- `app/views/admin/shared/_sidebar.html.erb` : lignes 332-341 (footer sans toggle)
+- `app/views/layouts/_navbar.html.erb` : lignes 61-72 (bouton toggle avec `id="theme-toggle"` et `onclick="toggleTheme()"`)
+- `app/views/layouts/_navbar.html.erb` : ligne 11 (classe `sticky-top` → navbar toujours visible)
+- `app/views/layouts/admin.html.erb` : ligne 15 (inclut navbar sticky)
+- `app/views/admin/shared/_sidebar.html.erb` : lignes 332-341 (footer sans toggle, mais pas nécessaire)
 
-**Conclusion** : **PARTIELLEMENT IMPLÉMENTÉ** - Dark mode fonctionne mais pas accessible depuis sidebar admin.
+**Conclusion** : **FONCTIONNEL** - Dark mode fonctionne et est **toujours accessible** via navbar sticky. Ajouter un toggle dans sidebar footer est **optionnel** (amélioration UX mineure).
 
 ---
 
@@ -738,7 +741,7 @@ t.string "recurring_time"
 | 4. Pagination | ❌ Non implémenté | `Gemfile` (aucune gem) |
 | 5. Helpers Namespace | ❌ Non implémenté | `app/helpers/` (pas de dossier admin) |
 | 6. Routes ActiveAdmin | ✅ Conflit évité | `config/routes.rb:2,5` (chemins différents) |
-| 7. Dark Mode Sidebar | ⚠️ Partiel | `app/views/layouts/admin.html.erb` (pas de toggle) |
+| 7. Dark Mode Sidebar | ✅ Fonctionnel | Toggle existe dans navbar sticky (`_navbar.html.erb:11,61-72`), toujours accessible |
 | 8. Breadcrumb Helper | ❌ Non implémenté | Aucun helper trouvé |
 | 9. Stimulus Sidebar | ✅ Implémenté | `app/javascript/controllers/admin/admin_sidebar_controller.js:9` |
 | 10. Validation SKU | ❌ Non implémenté | Pas d'endpoint trouvé |
@@ -756,7 +759,7 @@ t.string "recurring_time"
 1. **Stimulus Sidebar Controller** : Existe et fonctionne (`app/javascript/controllers/admin/admin_sidebar_controller.js`)
 2. **Dashboard ActiveAdmin** : KPIs basiques implémentés (`app/admin/dashboard.rb`)
 3. **Routes séparées** : ActiveAdmin et admin_panel sur chemins différents (pas de conflit)
-4. **Dark Mode** : Fonctionne dans l'application principale (pas dans sidebar admin)
+4. **Dark Mode** : Fonctionne et toujours accessible via navbar sticky-top (visible en permanence lors du scroll)
 
 ---
 
@@ -808,7 +811,7 @@ t.string "recurring_time"
 | Ajouter pagination | ❌ Non implémenté | `Gemfile` (vérifié) |
 | Créer helpers admin namespace | ❌ Non implémenté | `app/helpers/` (vérifié) |
 | Ajouter endpoint check_sku | ❌ Non implémenté | Routes (vérifié) |
-| Toggle dark mode sidebar | ⚠️ Partiel | `app/views/admin/shared/_sidebar.html.erb` (vérifié) |
+| Toggle dark mode sidebar | ✅ Fonctionnel | Toggle existe dans navbar sticky (toujours visible), ajout sidebar footer optionnel |
 
 ---
 
@@ -868,9 +871,12 @@ t.string "recurring_time"
 7. **Récurrence automatique** :
    - Job pour créer instances récurrentes
 
-8. **Dark Mode Sidebar** :
-   - Ajouter toggle dark mode dans sidebar admin footer
-   - **VÉRIFIÉ** : Dark mode fonctionne dans app principale mais pas accessible depuis sidebar admin
+8. **Dark Mode Sidebar** (OPTIONNEL) :
+   - Ajouter toggle dark mode dans sidebar admin footer (amélioration UX mineure)
+   - **VÉRIFIÉ** : Toggle dark mode existe déjà dans navbar principale (`app/views/layouts/_navbar.html.erb:61-72`)
+   - **VÉRIFIÉ** : Navbar est `sticky-top` (ligne 11) → **TOUJOURS VISIBLE** lors du scroll
+   - **VÉRIFIÉ** : Layout admin inclut navbar sticky, donc toggle **toujours accessible**
+   - **Conclusion** : **OPTIONNEL** - Peut être sautée car navbar sticky rend le toggle toujours disponible
 
 ---
 
@@ -1010,14 +1016,26 @@ end
 - [ ] Vérifier aucune vue n'inclut navbar en interne
 - [ ] Tester responsive
 
-### Tâche 0.5 : Ajouter Toggle Dark Mode Sidebar
-**Problème** : Dark mode dans navbar principale, pas accessible dans sidebar admin  
-**Solution** : Ajouter bouton toggle dans sidebar footer  
-**Durée** : 1h  
-**Checklist** :
-- [ ] Ajouter bouton dans `app/views/admin/shared/_sidebar.html.erb:340`
+### Tâche 0.5 : Ajouter Toggle Dark Mode Sidebar (OPTIONNEL)
+**État actuel** : ✅ **Toggle dark mode existe déjà dans la navbar principale** (`app/views/layouts/_navbar.html.erb` lignes 61-72)  
+**État navbar** : ✅ **Navbar est `sticky-top`** (ligne 11) → **TOUJOURS VISIBLE** lors du scroll  
+**Conclusion** : Le toggle dark mode est **déjà accessible en permanence** depuis la navbar sticky  
+**Priorité** : 🟢 **OPTIONNEL** - Amélioration UX mineure (dupliquer le toggle dans sidebar footer)  
+**Durée** : 1h (peut être fait plus tard si temps disponible)  
+**Références** :
+- Toggle existant : `app/views/layouts/_navbar.html.erb:61-72` (fonction `toggleTheme()`)
+- Navbar sticky : `app/views/layouts/_navbar.html.erb:11` (classe `sticky-top`)
+- Script existant : `app/views/layouts/application.html.erb:45` (fonction `toggleTheme()`)
+- Sidebar footer : `app/views/admin/shared/_sidebar.html.erb:332-341` (à modifier si on veut dupliquer)
+
+**Checklist** (si on décide de l'implémenter) :
+- [ ] Ajouter bouton toggle dans `app/views/admin/shared/_sidebar.html.erb:340` (dans le footer)
+- [ ] Utiliser la même fonction `toggleTheme()` déjà présente
 - [ ] Vérifier `toggleTheme()` fonctionne depuis sidebar
-- [ ] Tester dark mode persiste
+- [ ] Tester dark mode persiste après rechargement
+- [ ] Vérifier que les icônes (sun/moon) s'affichent correctement
+
+**Note** : Cette tâche peut être **sautée** car la navbar sticky rend le toggle toujours accessible.
 
 ---
 
@@ -1576,7 +1594,7 @@ rails test models/route_test.rb
 | 6 | Validation SKU real-time | UX | 1h | 🟠 HAUTE | 2 |
 | 7 | Dashboard KPIs avancés | Business | 2h | 🟢 OPTIONNEL | 4 |
 | 8 | Navbar doublon | UX | 30m | 🟡 FAIBLE | 0 |
-| 9 | Dark mode sidebar | UX | 1h | 🟡 FAIBLE | 1 |
+| 9 | Dark mode sidebar | UX | 1h | 🟢 OPTIONNEL | 0 (peut être sautée) |
 
 ---
 
