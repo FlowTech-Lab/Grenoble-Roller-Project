@@ -6,6 +6,29 @@
 
 ---
 
+## ⚠️ IMPORTANT - DASHBOARD ADMIN UNIQUEMENT
+
+**L'AdminPanel est un dashboard ADMIN, pas utilisateur.**
+
+### Ce que l'AdminPanel fait :
+- ✅ Gère **TOUTES les données** de l'application (tous les utilisateurs, toutes les commandes, tous les produits)
+- ✅ Accessible **uniquement aux ADMIN/SUPERADMIN** (niveau 60+)
+- ✅ Vue globale pour la gestion administrative
+
+### Ce que les utilisateurs ont déjà (ne PAS refaire) :
+- ✅ `/orders` → "Mes commandes" (`OrdersController#index` - affiche `current_user.orders`)
+- ✅ `/memberships` → "Mes adhésions" (`MembershipsController#index` - affiche `current_user.memberships`)
+- ✅ `/attendances` → "Mes sorties" (`AttendancesController#index` - affiche `current_user.attendances`)
+
+**Références** :
+- `app/controllers/orders_controller.rb:24` → `current_user.orders`
+- `app/controllers/memberships_controller.rb:6` → `current_user.memberships`
+- `app/controllers/attendances_controller.rb:4` → `current_user.attendances`
+
+**Conclusion** : L'AdminPanel doit gérer **TOUTES les commandes** (`Order.all`), **TOUTES les adhésions** (`Membership.all`), etc. - pas seulement celles de l'utilisateur connecté.
+
+---
+
 ## A) CONTEXTE & ÉQUIPE
 
 ### Qui va utiliser cet admin panel ?
@@ -881,6 +904,15 @@ t.string "recurring_time"
 - **Stack** : Rails 8.1.1 + Bootstrap 5.3.2 + Stimulus
 - **Deadline recommandée** : Avant production (à définir)
 
+**⚠️ IMPORTANT - DASHBOARD ADMIN UNIQUEMENT** :
+- L'AdminPanel est **réservé aux ADMIN/SUPERADMIN** (niveau 60+)
+- Il gère **TOUTES les données** de l'application (pas seulement celles de l'utilisateur connecté)
+- **Les utilisateurs ont déjà** :
+  - `/orders` → "Mes commandes" (`OrdersController#index`)
+  - `/memberships` → "Mes adhésions" (`MembershipsController#index`)
+  - `/attendances` → "Mes sorties" (`AttendancesController#index`)
+- **Ne PAS refaire** ces fonctionnalités dans l'AdminPanel
+
 ---
 
 ## 🔐 RÔLES & PERMISSIONS - QUI PEUT FAIRE QUOI
@@ -916,14 +948,18 @@ t.string "recurring_time"
 ---
 
 #### 📦 GESTION COMMANDES (AdminPanel)
+**⚠️ IMPORTANT** : L'AdminPanel gère **TOUTES les commandes** (pas seulement celles de l'utilisateur).  
+**Les utilisateurs ont déjà** : `OrdersController#index` → "Mes commandes" (route `/orders`)
+
 | Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
 |--------|------|------------|------------|-----------|-----------|-------|-------------|
-| Voir SES commandes | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Voir SES commandes (utilisateur) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Voir TOUTES commandes (admin) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Modifier statut commande | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Exporter commandes | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 
-**Policies** : `AdminPanel::OrderPolicy` (seulement ADMIN/SUPERADMIN)
+**Policies** : `AdminPanel::OrderPolicy` (seulement ADMIN/SUPERADMIN)  
+**Routes utilisateur existantes** : `/orders` (OrdersController) → "Mes commandes"
 
 ---
 
@@ -965,12 +1001,20 @@ t.string "recurring_time"
 ---
 
 #### 🏠 ADMIN PANEL (Dashboard)
+**⚠️ IMPORTANT** : Dashboard **ADMIN uniquement** - Vue globale de toutes les données de l'application.  
+**Les utilisateurs ont déjà** :
+- `/orders` → "Mes commandes" (OrdersController)
+- `/memberships` → "Mes adhésions" (MembershipsController)
+- `/attendances` → "Mes sorties" (AttendancesController)
+
 | Action | USER | REGISTERED | INITIATION | ORGANIZER | MODERATOR | ADMIN | SUPERADMIN |
 |--------|------|------------|------------|-----------|-----------|-------|-------------|
-| Accéder au dashboard | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Voir KPIs | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Accéder au dashboard ADMIN | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Voir KPIs globaux | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Voir statistiques globales | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 
-**Policies** : `AdminPanel::BasePolicy` (seulement ADMIN/SUPERADMIN)
+**Policies** : `AdminPanel::BasePolicy` (seulement ADMIN/SUPERADMIN)  
+**Routes utilisateur existantes** : `/orders`, `/memberships`, `/attendances` (ne PAS refaire dans AdminPanel)
 
 ---
 
@@ -1253,13 +1297,17 @@ end
 
 **Dépend de** : PHASE 1 ✓
 
-### Tâche 3.1 : OrdersController Complet
+**⚠️ IMPORTANT** : L'AdminPanel gère **TOUTES les commandes** (pas seulement celles de l'utilisateur connecté).  
+**Les utilisateurs ont déjà** : `OrdersController#index` → "Mes commandes" (route `/orders`)  
+**Ne PAS refaire** : La fonctionnalité "Mes commandes" existe déjà pour les utilisateurs.
+
+### Tâche 3.1 : OrdersController Complet (ADMIN uniquement)
 **Durée** : 3h  
 **Créer** : `app/controllers/admin_panel/orders_controller.rb`
-- [ ] Index avec filtres
-- [ ] Show détail
+- [ ] Index avec filtres (**TOUTES les commandes**, pas `current_user.orders`)
+- [ ] Show détail (n'importe quelle commande, pas seulement celles de l'utilisateur)
 - [ ] Change status avec transitions validées
-- [ ] Export commande
+- [ ] Export commandes (toutes les commandes)
 
 **Checklist** :
 - [ ] Workflow statuts fonctionne
@@ -1280,14 +1328,15 @@ end
 ### Tâche 3.3 : Vues Orders + Dashboard
 **Durée** : 5h  
 **Créer** :
-- `app/views/admin_panel/orders/index.html.erb`
-- `app/views/admin_panel/orders/show.html.erb`
-- Améliorer dashboard avec KPIs basiques
+- `app/views/admin_panel/orders/index.html.erb` (**TOUTES les commandes**, avec filtres par utilisateur)
+- `app/views/admin_panel/orders/show.html.erb` (détail complet de n'importe quelle commande)
+- Améliorer dashboard avec KPIs basiques (statistiques globales)
 
 **Checklist** :
-- [ ] Tableau commandes visible
+- [ ] Tableau commandes visible (**TOUTES les commandes**, pas seulement `current_user.orders`)
 - [ ] Changement statuts fonctionne
-- [ ] Dashboard affiche KPIs
+- [ ] Dashboard affiche KPIs **globaux** (pas personnels)
+- [ ] Filtres par utilisateur fonctionnent (pour trouver une commande spécifique)
 
 ---
 
