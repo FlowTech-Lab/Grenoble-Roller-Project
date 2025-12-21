@@ -48,5 +48,69 @@
         <small>© 2025 Grenoble Roller Admin</small>
       </div>
     </footer>
+
+    <!-- Theme toggle script -->
+    <script>
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        html.setAttribute('data-bs-theme', newTheme);
+        
+        // Mettre à jour les icônes
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+        const toggle = document.getElementById('theme-toggle');
+        
+        if (sunIcon && moonIcon) {
+          const isDark = newTheme === 'dark';
+          sunIcon.classList.toggle('d-none', !isDark);
+          moonIcon.classList.toggle('d-none', isDark);
+        }
+        
+        // Mettre à jour ARIA
+        if (toggle) {
+          const isDark = newTheme === 'dark';
+          toggle.setAttribute('aria-pressed', isDark);
+          toggle.setAttribute('aria-label', 
+            isDark 
+              ? 'Basculer vers le thème clair' 
+              : 'Basculer vers le thème sombre'
+          );
+        }
+        
+        localStorage.setItem('theme', newTheme);
+      }
+      
+      // Initialize theme when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const html = document.documentElement;
+        
+        html.setAttribute('data-bs-theme', savedTheme);
+        
+        // Initialiser les icônes
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+        const toggle = document.getElementById('theme-toggle');
+        
+        if (sunIcon && moonIcon) {
+          const isDark = savedTheme === 'dark';
+          sunIcon.classList.toggle('d-none', !isDark);
+          moonIcon.classList.toggle('d-none', isDark);
+        }
+        
+        if (toggle) {
+          const isDark = savedTheme === 'dark';
+          toggle.setAttribute('aria-pressed', isDark);
+          toggle.setAttribute('aria-label', 
+            isDark 
+              ? 'Basculer vers le thème clair' 
+              : 'Basculer vers le thème sombre'
+          );
+        }
+      });
+    </script>
   </body>
 </html>

@@ -1,0 +1,20 @@
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <%= link_to "Dashboard", admin_panel_root_path, class: "text-decoration-none" %>
+    </li>
+    <% if defined?(breadcrumb_items) && breadcrumb_items.present? %>
+      <% breadcrumb_items.each do |item| %>
+        <% if item[:url] %>
+          <li class="breadcrumb-item">
+            <%= link_to item[:label], item[:url], class: "text-decoration-none" %>
+          </li>
+        <% else %>
+          <li class="breadcrumb-item active" aria-current="page">
+            <%= item[:label] %>
+          </li>
+        <% end %>
+      <% end %>
+    <% end %>
+  </ol>
+</nav>

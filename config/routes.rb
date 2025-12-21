@@ -6,11 +6,13 @@ Rails.application.routes.draw do
     root 'dashboard#index'
     
     resources :products do
-      resources :product_variants, only: %i[edit update destroy]
+      resources :product_variants, except: %i[index show]
       collection do
         get :check_sku
         post :import
         get :export
+        post :preview_variants
+        patch :bulk_update_variants
       end
     end
     

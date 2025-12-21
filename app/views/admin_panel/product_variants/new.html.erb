@@ -1,0 +1,131 @@
+<% 
+  breadcrumb_items = [
+    { label: "Produits", url: admin_panel_products_path },
+    { label: @product.name, url: admin_panel_product_path(@product) },
+    { label: "Nouvelle variante", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Nouvelle variante : <%= @product.name %></h1>
+  <%= link_to "Retour", admin_panel_product_path(@product), class: "btn btn-outline-secondary" %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <%= form_with model: [:admin_panel, @product, @variant], local: true, multipart: true do |f| %>
+          <% if @variant.errors.any? %>
+            <div class="alert alert-danger">
+              <ul class="mb-0">
+                <% @variant.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :sku, "SKU *", class: "form-label" %>
+            <%= f.text_field :sku, class: "form-control", required: true, maxlength: 80,
+                data: { 
+                  controller: "sku-validator",
+                  sku_validator_check_url_value: check_sku_admin_panel_products_path
+                } %>
+            <div class="form-text">
+              Identifiant unique. 
+              <span id="sku-status" class="text-muted"></span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :price_cents, "Prix (en centimes) *", class: "form-label" %>
+              <%= f.number_field :price_cents, class: "form-control", required: true, min: 0, step: 1 %>
+              <div class="form-text">Ex: 4000 = 40,00 €</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :currency, "Devise *", class: "form-label" %>
+              <%= f.select :currency, [["EUR", "EUR"], ["USD", "USD"]], {}, { class: "form-select", required: true } %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :stock_qty, "Stock", class: "form-label" %>
+            <%= f.number_field :stock_qty, class: "form-control", min: 0, step: 1 %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :is_active, class: "form-check-label" do %>
+              <%= f.check_box :is_active, class: "form-check-input" %>
+              Variante active
+            <% end %>
+          </div>
+
+          <!-- Options (couleur, taille, etc.) -->
+          <% if @option_types.any? %>
+            <div class="mb-3">
+              <label class="form-label">Options associées</label>
+              <div class="border rounded p-3">
+                <% @option_types.each do |option_type| %>
+                  <div class="mb-3">
+                    <strong><%= option_type.presentation || option_type.name %></strong>
+                    <div class="mt-2">
+                      <% option_type.option_values.each do |option_value| %>
+                        <div class="form-check form-check-inline">
+                          <%= check_box_tag "option_value_ids[]", option_value.id, false, 
+                              id: "option_value_#{option_value.id}", 
+                              class: "form-check-input" %>
+                          <%= label_tag "option_value_#{option_value.id}", 
+                              option_value.presentation || option_value.value, 
+                              class: "form-check-label" %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <div class="form-text">Sélectionnez les options pour cette variante (ex: Taille M + Couleur Rouge)</div>
+            </div>
+          <% end %>
+
+          <div class="mb-3">
+            <%= f.label :image, "Image", class: "form-label" %>
+            <%= f.file_field :image, accept: "image/*", class: "form-control" %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :image_url, "OU URL image", class: "form-label" %>
+            <%= f.url_field :image_url, class: "form-control", placeholder: "https://..." %>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <%= link_to "Annuler", admin_panel_product_path(@product), class: "btn btn-outline-secondary" %>
+            <%= f.submit "Créer la variante", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Astuce</h5>
+      </div>
+      <div class="card-body">
+        <p class="small text-muted">
+          <strong>Génération automatique :</strong> Pour créer plusieurs variantes en une fois (ex: toutes les combinaisons taille × couleur), 
+          utilisez le formulaire de création de produit et sélectionnez les types d'options à combiner.
+        </p>
+        <p class="small text-muted">
+          <strong>Création manuelle :</strong> Utilisez ce formulaire pour créer une variante spécifique avec des options précises.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -27,7 +27,7 @@
       <!-- TABLEAU DE BORD -->
       <li class="nav-item">
         <%= link_to admin_panel_root_path, 
-            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'dashboard'}",
+            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'dashboard' && controller.class.name.start_with?('AdminPanel::')}",
             title: "Tableau de bord",
             data: { tooltip_placement: "right" } do %>
           <i class="bi bi-speedometer2 fs-5"></i>
@@ -35,294 +35,44 @@
         <% end %>
       </li>
 
-      <!-- UTILISATEURS -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-utilisateurs"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Utilisateurs">
-          <i class="bi bi-people fs-5"></i>
-          <span class="sidebar-label">Utilisateurs</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-utilisateurs" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to activeadmin_users_path, 
-                  class: "nav-link small #{'active' if controller_name == 'users'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Utilisateurs</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_roles_path, 
-                  class: "nav-link small #{'active' if controller_name == 'roles'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Rôles</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "#", 
-                  class: "nav-link small #{'active' if controller_name == 'memberships'}",
-                  data: { bs_dismiss: "" },
-                  onclick: "return false;",
-                  title: "À venir" do %>
-                <span class="sidebar-label">Adhésions</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "#", 
-                  class: "nav-link small #{'active' if controller_name == 'organizer_applications'}",
-                  data: { bs_dismiss: "" },
-                  onclick: "return false;",
-                  title: "À venir" do %>
-                <span class="sidebar-label">Candidatures Organisateurs</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
-      </li>
-
-      <!-- BOUTIQUE -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-boutique"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Boutique">
+      <!-- PRODUITS (AdminPanel) -->
+      <li class="nav-item">
+        <%= link_to admin_panel_products_path, 
+            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'products' && controller.class.name.start_with?('AdminPanel::')}",
+            title: "Produits",
+            data: { tooltip_placement: "right" } do %>
           <i class="bi bi-bag fs-5"></i>
-          <span class="sidebar-label">Boutique</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-boutique" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to activeadmin_products_path, 
-                  class: "nav-link small #{'active' if controller_name == 'products'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Produits</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_product_categories_path, 
-                  class: "nav-link small #{'active' if controller_name == 'product_categories'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Catégories</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_product_variants_path, 
-                  class: "nav-link small #{'active' if controller_name == 'product_variants'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Variantes</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_option_types_path, 
-                  class: "nav-link small #{'active' if controller_name == 'option_types'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Types d'Options</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_option_values_path, 
-                  class: "nav-link small #{'active' if controller_name == 'option_values'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Valeurs d'Options</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_variant_option_values_path, 
-                  class: "nav-link small #{'active' if controller_name == 'variant_option_values'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Associations</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
+          <span class="sidebar-label">Produits</span>
+        <% end %>
       </li>
 
-      <!-- COMMANDES -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-commandes"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Commandes">
+      <!-- COMMANDES (AdminPanel) -->
+      <li class="nav-item">
+        <%= link_to admin_panel_orders_path, 
+            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'orders' && controller.class.name.start_with?('AdminPanel::')}",
+            title: "Commandes",
+            data: { tooltip_placement: "right" } do %>
           <i class="bi bi-box-seam fs-5"></i>
           <span class="sidebar-label">Commandes</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-commandes" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to activeadmin_orders_path, 
-                  class: "nav-link small #{'active' if controller_name == 'orders'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Commandes</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_order_items_path, 
-                  class: "nav-link small #{'active' if controller_name == 'order_items'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Articles</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_payments_path, 
-                  class: "nav-link small #{'active' if controller_name == 'payments'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Paiements</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
+        <% end %>
       </li>
 
-      <!-- ÉVÉNEMENTS -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-evenements"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Événements">
-          <i class="bi bi-calendar-event fs-5"></i>
-          <span class="sidebar-label">Événements</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-evenements" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to "#", 
-                  class: "nav-link small #{'active' if controller_name == 'events' && controller.class.parent != Admin::Event}",
-                  data: { bs_dismiss: "" },
-                  onclick: "return false;",
-                  title: "À venir" do %>
-                <span class="sidebar-label">Randos (Events)</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "#", 
-                  class: "nav-link small #{'active' if controller_name == 'initiations' && controller.class.parent == Admin::Event}",
-                  data: { bs_dismiss: "" },
-                  onclick: "return false;",
-                  title: "À venir" do %>
-                <span class="sidebar-label">Initiations</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to "#", 
-                  class: "nav-link small #{'active' if controller_name == 'attendances'}",
-                  data: { bs_dismiss: "" },
-                  onclick: "return false;",
-                  title: "À venir" do %>
-                <span class="sidebar-label">Participations</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_routes_path, 
-                  class: "nav-link small #{'active' if controller_name == 'routes'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Parcours</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
+      <!-- SÉPARATEUR -->
+      <li class="nav-item">
+        <hr class="border-secondary my-2">
       </li>
 
-      <!-- COMMUNICATION -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-communication"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Communication">
-          <i class="bi bi-chat-dots fs-5"></i>
-          <span class="sidebar-label">Communication</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-communication" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to activeadmin_contact_messages_path, 
-                  class: "nav-link small #{'active' if controller_name == 'contact_messages'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Messages de Contact</span>
-              <% end %>
-            </li>
-            <li class="nav-item">
-              <%= link_to activeadmin_partners_path, 
-                  class: "nav-link small #{'active' if controller_name == 'partners'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Partenaires</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
-      </li>
-
-      <!-- MATÉRIEL -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-materiel"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Matériel">
-          <i class="bi bi-tools fs-5"></i>
-          <span class="sidebar-label">Matériel</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-materiel" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to activeadmin_roller_stocks_path, 
-                  class: "nav-link small #{'active' if controller_name == 'roller_stocks'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Stock Rollers</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
-      </li>
-
-      <!-- SYSTÈME -->
-      <li class="nav-item" data-controller="admin-menu-section">
-        <button class="nav-link w-100 d-flex align-items-center gap-2 text-start"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-systeme"
-                data-action="click->admin-menu-section#toggle"
-                aria-expanded="false"
-                title="Système">
-          <i class="bi bi-shield-check fs-5"></i>
-          <span class="sidebar-label">Système</span>
-          <i class="bi bi-chevron-down ms-auto sidebar-label" data-admin-menu-section-target="chevron"></i>
-        </button>
-        <div class="collapse" id="submenu-systeme" data-admin-menu-section-target="submenu">
-          <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
-            <li class="nav-item">
-              <%= link_to activeadmin_audit_logs_path, 
-                  class: "nav-link small #{'active' if controller_name == 'audit_logs'}",
-                  data: { bs_dismiss: "" } do %>
-                <span class="sidebar-label">Audit Logs</span>
-              <% end %>
-            </li>
-          </ul>
-        </div>
+      <!-- ACTIVEADMIN (Lien vers l'ancien admin) -->
+      <li class="nav-item">
+        <%= link_to "/activeadmin", 
+            class: "nav-link d-flex align-items-center gap-2 text-warning",
+            title: "ActiveAdmin (Ancien panel)",
+            target: "_blank",
+            data: { tooltip_placement: "right" } do %>
+          <i class="bi bi-gear fs-5"></i>
+          <span class="sidebar-label">ActiveAdmin</span>
+          <i class="bi bi-box-arrow-up-right ms-auto small"></i>
+        <% end %>
       </li>
 
     </ul>
@@ -358,13 +108,37 @@
       <ul class="nav nav-pills flex-column gap-2 px-2">
         <li class="nav-item">
           <%= link_to admin_panel_root_path, 
-              class: "nav-link #{'active' if controller_name == 'dashboard'}", 
+              class: "nav-link #{'active' if controller_name == 'dashboard' && controller.class.name.start_with?('AdminPanel::')}", 
               data: { bs_dismiss: "offcanvas" } do %>
             <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
           <% end %>
         </li>
-        <!-- TODO: Ajouter les autres sections du menu pour mobile -->
-        <!-- Pour l'instant, on garde la structure simple, on complétera quand on migrera les ressources -->
+        <li class="nav-item">
+          <%= link_to admin_panel_products_path, 
+              class: "nav-link #{'active' if controller_name == 'products' && controller.class.name.start_with?('AdminPanel::')}", 
+              data: { bs_dismiss: "offcanvas" } do %>
+            <i class="bi bi-bag me-2"></i>Produits
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to admin_panel_orders_path, 
+              class: "nav-link #{'active' if controller_name == 'orders' && controller.class.name.start_with?('AdminPanel::')}", 
+              data: { bs_dismiss: "offcanvas" } do %>
+            <i class="bi bi-box-seam me-2"></i>Commandes
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <hr class="border-secondary my-2">
+        </li>
+        <li class="nav-item">
+          <%= link_to "/activeadmin", 
+              class: "nav-link text-warning", 
+              target: "_blank",
+              data: { bs_dismiss: "offcanvas" } do %>
+            <i class="bi bi-gear me-2"></i>ActiveAdmin
+            <i class="bi bi-box-arrow-up-right ms-auto small"></i>
+          <% end %>
+        </li>
       </ul>
     </nav>
   </div>

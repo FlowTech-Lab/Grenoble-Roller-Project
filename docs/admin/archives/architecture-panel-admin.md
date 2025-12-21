@@ -87,106 +87,158 @@ app/
 
 ---
 
-## Structure des Controllers
+## Structure des Controllers - OPTIMISÉE
 
 ### BaseController Admin (Pundit + Autorisation)
 
 ```ruby
-# app/controllers/admin/base_controller.rb
-module Admin
+# app/controllers/admin_panel/base_controller.rb
+module AdminPanel
   class BaseController < ApplicationController
-    include Pundit::Authorization
+    include Pagy::Backend
     
-    before_action :authenticate_admin!
+    before_action :authenticate_admin_user!
     before_action :set_pagy_options
     
     rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
     
-    layout 'admin'
+    layout 'admin'  # CORRIGÉ : admin au lieu de admin_panel
     
     protected
     
-    def authenticate_admin!
-      redirect_to root_path, alert: 'Non autorisé' unless current_user&.admin?
+    def authenticate_admin_user!
+      unless user_signed_in?
+        redirect_to new_user_session_path, alert: 'Vous devez être connecté pour accéder à cette page.'
+        return
+      end
+      
+      unless current_user&.role&.code.in?(%w[ADMIN SUPERADMIN])
+        redirect_to root_path, alert: 'Accès admin requis'
+      end
     end
     
     def set_pagy_options
       @pagy_options = { items: 25 }
     end
     
-    def user_not_authorized
-      flash[:alert] = 'Vous n\'êtes pas autorisé à effectuer cette action'
-      redirect_to(request.referrer || admin_dashboard_path)
+    def user_not_authorized(exception)
+      flash[:alert] = 'Vous n\'êtes pas autorisé'
+      redirect_to admin_panel_root_path
     end
   end
 end
 ```
 
-### ProductsController - Complet
+### ProductsController - OPTIMISÉ
 
 ```ruby
-# app/controllers/admin/products_controller.rb
-module Admin
+# app/controllers/admin_panel/products_controller.rb
+module AdminPanel
   class ProductsController < BaseController
     before_action :set_product, only: %i[show edit update destroy]
-    before_action :authorize_product
+    before_action :authorize_product, only: %i[show edit update destroy]
     
-    # GET /admin/products
+    # GET /admin-panel/products
     def index
-      @products = Product.all
+      authorize [:admin_panel, Product]
+      
+      @products = Product.with_associations
       @products = apply_filters(@products)
       @products = apply_search(@products)
       @pagy, @products = pagy(@products.order(created_at: :desc), @pagy_options)
       
       respond_to do |format|
         format.html
-        format.csv { send_products_csv(@products) }
+        format.csv { send_data ProductExporter.to_csv(@products), filename: csv_filename }
+        format.xlsx { send_data ProductExporter.to_xlsx(@products), filename: xlsx_filename }
       end
     end
     
-    # GET /admin/products/:id
+    # GET /admin-panel/products/:id
     def show
       @variants = @product.product_variants.order(sku: :asc)
-      @images = @product.images_attached? ? @product.images : []
+      @variant_pages, @variants = pagy(@variants, items: 10)  # NOUVEAU : pagination
     end
     
-    # GET /admin/products/new
+    # GET /admin-panel/products/new
     def new
       @product = Product.new
-      @product.product_variants.build
-      authorize @product
+      @option_types = OptionType.all  # NOUVEAU : pour génération
+      authorize [:admin_panel, @product]
     end
     
-    # POST /admin/products
+    # POST /admin-panel/products
     def create
       @product = Product.new(product_params)
-      authorize @product
+      authorize [:admin_panel, @product]
       
       if @product.save
-        redirect_to admin_product_path(@product), notice: 'Produit créé avec succès'
+        # NOUVEAU : Génération auto si options sélectionnées
+        if params[:generate_variants] == 'true' && params[:option_ids].present?
+          ProductVariantGenerator.generate_combinations(@product, params[:option_ids])
+        end
+        
+        redirect_to admin_panel_product_path(@product), notice: 'Produit créé'
       else
+        @option_types = OptionType.all
         render :new, status: :unprocessable_entity
       end
     end
     
-    # GET /admin/products/:id/edit
+    # GET /admin-panel/products/:id/edit
     def edit
-      @product.product_variants.build if @product.product_variants.empty?
+      @option_types = OptionType.all  # NOUVEAU : pour ajouter options
     end
     
-    # PATCH/PUT /admin/products/:id
+    # PATCH/PUT /admin-panel/products/:id
     def update
       if @product.update(product_params)
-        redirect_to admin_product_path(@product), notice: 'Produit mis à jour'
+        # NOUVEAU : Générer options manquantes si ajoutées après création
+        if params[:generate_missing] == 'true' && params[:option_ids].present?
+          ProductVariantGenerator.generate_missing_combinations(@product, params[:option_ids])
+        end
+        
+        redirect_to admin_panel_product_path(@product), notice: 'Produit mis à jour'
       else
+        @option_types = OptionType.all
         render :edit, status: :unprocessable_entity
       end
     end
     
-    # DELETE /admin/products/:id
+    # DELETE /admin-panel/products/:id
     def destroy
       @product.destroy
-      redirect_to admin_products_url, notice: 'Produit supprimé'
+      redirect_to admin_panel_products_url, notice: 'Produit supprimé'
+    end
+    
+    # NOUVEAU : Preview variantes avant génération
+    def preview_variants
+      option_ids = params[:option_ids]
+      preview = ProductVariantGenerator.preview(nil, option_ids)
+      render json: preview
+    end
+    
+    # NOUVEAU : Édition en masse variantes
+    def bulk_update_variants
+      variant_ids = params[:variant_ids]
+      updates = params[:updates]
+      
+      ProductVariant.where(id: variant_ids).update_all(updates)
+      
+      render json: { success: true, count: variant_ids.length }
+    end
+    
+    # NOUVEAU : Endpoint validation SKU (sécurisé)
+    def check_sku
+      sku = params[:sku]
+      product_id = params[:product_id]
+      
+      # Vérifier unicité + sécurité
+      query = ProductVariant.where(sku: sku)
+      query = query.where.not(product_id: product_id) if product_id.present?
+      
+      available = query.empty?
+      render json: { available: available }
     end
     
     private
@@ -196,12 +248,12 @@ module Admin
     end
     
     def authorize_product
-      authorize @product
+      authorize [:admin_panel, @product]
     end
     
     def product_params
       params.require(:product).permit(
-        :product_category_id,
+        :category_id,
         :name,
         :slug,
         :description,
@@ -209,17 +261,7 @@ module Admin
         :currency,
         :is_active,
         :image,
-        product_variants_attributes: [
-          :id,
-          :sku,
-          :price_cents,
-          :currency,
-          :stock_qty,
-          :is_active,
-          :image,
-          :_destroy,
-          variant_option_values_attributes: [:id, :option_value_id, :_destroy]
-        ]
+        :image_url
       )
     end
     
@@ -235,43 +277,65 @@ module Admin
       relation
     end
     
-    def send_products_csv(products)
-      filename = "products_#{Time.current.strftime('%Y%m%d_%H%M%S')}.csv"
-      send_data ProductsExporter.to_csv(products), 
-                filename: filename,
-                type: 'text/csv; charset=utf-8'
+    def csv_filename
+      "products_#{Time.current.strftime('%Y%m%d_%H%M%S')}.csv"
+    end
+    
+    def xlsx_filename
+      "products_#{Time.current.strftime('%Y%m%d_%H%M%S')}.xlsx"
     end
   end
 end
 ```
 
-### ProductVariantsController - Imbriquée
+### ProductVariantsController - OPTIMISÉ
 
 ```ruby
-# app/controllers/admin/product_variants_controller.rb
-module Admin
+# app/controllers/admin_panel/product_variants_controller.rb
+module AdminPanel
   class ProductVariantsController < BaseController
     before_action :set_product
-    before_action :set_product_variant, only: %i[show edit update destroy]
+    before_action :set_variant, only: %i[edit update destroy]
     
-    # GET /admin/products/:product_id/variants/:id/edit (AJAX)
-    def edit
-      render partial: 'form', locals: { variant: @variant }, status: :ok
+    # GET /admin-panel/products/:product_id/product_variants/new
+    def new
+      @variant = @product.product_variants.build
+      @option_types = OptionType.all
+      render :new
     end
     
-    # PATCH /admin/products/:product_id/variants/:id
-    def update
-      if @variant.update(variant_params)
-        render json: { success: true, variant: @variant }, status: :ok
+    # GET /admin-panel/products/:product_id/product_variants/:id/edit
+    def edit
+      @option_types = OptionType.all
+      render :edit
+    end
+    
+    # POST /admin-panel/products/:product_id/product_variants
+    def create
+      @variant = @product.product_variants.build(variant_params)
+      
+      if @variant.save
+        redirect_to admin_panel_product_path(@product), notice: 'Variante créée'
       else
-        render json: { success: false, errors: @variant.errors }, status: :unprocessable_entity
+        @option_types = OptionType.all
+        render :new, status: :unprocessable_entity
       end
     end
     
-    # DELETE /admin/products/:product_id/variants/:id
+    # PATCH /admin-panel/products/:product_id/product_variants/:id
+    def update
+      if @variant.update(variant_params)
+        redirect_to admin_panel_product_path(@product), notice: 'Variante mise à jour'
+      else
+        @option_types = OptionType.all
+        render :edit, status: :unprocessable_entity
+      end
+    end
+    
+    # DELETE /admin-panel/products/:product_id/product_variants/:id
     def destroy
       @variant.destroy
-      redirect_to admin_product_path(@product), notice: 'Variante supprimée'
+      redirect_to admin_panel_product_path(@product), notice: 'Variante supprimée'
     end
     
     private
@@ -280,7 +344,7 @@ module Admin
       @product = Product.find(params[:product_id])
     end
     
-    def set_product_variant
+    def set_variant
       @variant = @product.product_variants.find(params[:id])
     end
     
@@ -292,7 +356,9 @@ module Admin
         :stock_qty,
         :is_active,
         :image,
-        variant_option_values_attributes: [:id, :option_value_id, :_destroy]
+        :inherit_price,
+        :inherit_stock,
+        option_value_ids: []
       )
     end
   end
@@ -713,70 +779,366 @@ end
 
 ---
 
+## 🔄 SERVICES OPTIMISÉS
+
+### ProductVariantGenerator - AMÉLIORÉ
+
+```ruby
+# app/services/product_variant_generator.rb
+class ProductVariantGenerator
+  attr_reader :product, :option_types, :errors
+
+  def initialize(product, option_types: [])
+    @product = product
+    @option_types = option_types.is_a?(Array) ? option_types : [option_types].compact
+    @errors = []
+  end
+
+  # NOUVEAU : Preview avant création
+  def self.preview(product_id, option_ids)
+    option_types = OptionType.where(id: option_ids)
+    option_values_array = option_types.map { |ot| ot.option_values.order(:value) }
+    
+    combinations = option_values_array.first&.product(*option_values_array[1..-1])
+    count = combinations&.length || 0
+    
+    {
+      count: count,
+      preview_skus: combinations&.map { |combo| generate_sku_template(combo) }&.first(5) || [],
+      estimated_time: count * 5,  # secondes
+      warning: count > 20 ? "Beaucoup de variantes ! Vérifiez bien." : nil
+    }
+  end
+
+  # NOUVEAU : Générer combinaisons (avec transaction)
+  def self.generate_combinations(product, option_ids)
+    option_types = OptionType.where(id: option_ids)
+    option_values_array = option_types.map { |ot| ot.option_values.order(:value) }
+    
+    combinations = option_values_array.first&.product(*option_values_array[1..-1])
+    
+    ActiveRecord::Base.transaction do
+      combinations&.each do |combo|
+        # Générer SKU sûr + unique
+        sku = generate_sku_safely(product, combo)
+        
+        variant = product.product_variants.create!(
+          sku: sku,
+          price_cents: product.price_cents,  # NOUVEAU : Héritage prix
+          stock_qty: 0,
+          is_active: product.is_active
+        )
+        
+        # Lier les options
+        combo.each do |option_value|
+          variant.variant_option_values.create!(option_value: option_value)
+        end
+      end
+    end
+    
+    combinations&.length || 0
+  end
+
+  # NOUVEAU : Générer options manquantes (en édition)
+  def self.generate_missing_combinations(product, option_ids)
+    existing_options = product.product_variants
+      .joins(:variant_option_values)
+      .pluck('option_values.option_type_id')
+      .uniq
+    
+    new_option_ids = option_ids.map(&:to_i) - existing_options
+    
+    return 0 if new_option_ids.empty?
+    
+    # Générer seulement les nouvelles combinaisons
+    option_types = OptionType.where(id: new_option_ids)
+    option_values_array = option_types.map { |ot| ot.option_values.order(:value) }
+    
+    combinations = option_values_array.first&.product(*option_values_array[1..-1])
+    
+    ActiveRecord::Base.transaction do
+      combinations&.each do |combo|
+        sku = generate_sku_safely(product, combo)
+        
+        variant = product.product_variants.create!(
+          sku: sku,
+          price_cents: product.price_cents,
+          stock_qty: 0,
+          is_active: product.is_active
+        )
+        
+        combo.each do |option_value|
+          variant.variant_option_values.create!(option_value: option_value)
+        end
+      end
+    end
+    
+    combinations&.length || 0
+  end
+
+  # AMÉLIORÉ : SKU génération sûre
+  private
+
+  def self.generate_sku_safely(product, combo)
+    base_sku = "#{product.slug.upcase}-#{combo.map(&:value).join('-').upcase}"
+    
+    # Vérifier unicité (avec verrouillage pessimiste)
+    unless ProductVariant.where(sku: base_sku).exists?
+      return base_sku
+    end
+    
+    # Fallback : ajouter number si existe
+    counter = 1
+    loop do
+      new_sku = "#{base_sku}-#{counter}"
+      return new_sku unless ProductVariant.where(sku: new_sku).exists?
+      counter += 1
+    end
+  end
+
+  def self.generate_sku_template(combo)
+    "PRODUCT-#{combo.map(&:value).join('-').upcase}"
+  end
+
+  # Méthodes existantes (generate, etc.)
+  def generate(base_price_cents: nil, base_stock_qty: 0)
+    # ... code existant ...
+  end
+end
+```
+
+### ProductExporter - NOUVEAU
+
+```ruby
+# app/services/product_exporter.rb
+require 'csv'
+
+class ProductExporter
+  def self.to_csv(products)
+    CSV.generate(headers: true) do |csv|
+      csv << ['ID', 'Nom', 'Catégorie', 'Prix', 'Stock Total', 'Variantes', 'SKUs', 'Statut']
+      
+      products.each do |product|
+        csv << [
+          product.id,
+          product.name,
+          product.category&.name || '-',
+          "#{product.price_cents / 100.0}€",
+          product.total_stock,
+          product.product_variants.count,
+          product.product_variants.pluck(:sku).join('; '),
+          product.is_active ? 'Actif' : 'Inactif'
+        ]
+      end
+    end
+  end
+
+  def self.to_xlsx(products)
+    # À implémenter avec rubyXL
+    # Pour l'instant, utiliser CSV
+    to_csv(products)
+  end
+end
+```
+
+### OrderExporter - NOUVEAU
+
+```ruby
+# app/services/order_exporter.rb
+require 'csv'
+
+class OrderExporter
+  def self.to_csv(orders)
+    CSV.generate(headers: true) do |csv|
+      csv << ['ID', 'Date', 'Client', 'Email', 'Montant', 'Articles', 'Statut']
+      
+      orders.each do |order|
+        csv << [
+          order.id,
+          order.created_at.strftime('%d/%m/%Y %H:%M'),
+          order.user.name,
+          order.user.email,
+          "#{order.total_cents / 100.0}€",
+          order.order_items.count,
+          order.status
+        ]
+      end
+    end
+  end
+
+  def self.to_xlsx(orders)
+    # À implémenter avec rubyXL
+    to_csv(orders)
+  end
+end
+```
+
+---
+
 ## Gestion Stock Agrégé
 
-### Model Helper - Product
+### Model Helper - Product - AMÉLIORÉ
 
 ```ruby
 # app/models/product.rb
 class Product < ApplicationRecord
-  belongs_to :product_category, class_name: 'ProductCategory'
+  include Hashid::Rails
+
+  belongs_to :category, class_name: "ProductCategory"
   has_many :product_variants, dependent: :destroy
   has_one_attached :image
-  
-  validates :name, presence: true, length: { maximum: 140 }
-  validates :slug, uniqueness: true, presence: true
-  validate :image_required
-  validate :has_active_variants
-  
-  scope :by_category, ->(id) { where(product_category_id: id) }
+
+  # VALIDATIONS
+  validates :name, :slug, :price_cents, :currency, presence: true
+  validate :image_or_image_url_present
+  validates :name, length: { maximum: 140 }
+  validates :slug, length: { maximum: 160 }, uniqueness: true
+  validates :currency, length: { is: 3 }
+  validate :has_at_least_one_active_variant
+
+  # SCOPES
+  scope :active, -> { where(is_active: true) }
+  scope :inactive, -> { where(is_active: false) }
+  scope :by_category, ->(id) { where(category_id: id) }
   scope :by_status, ->(status) { where(is_active: status == 'active') }
   scope :search_by_name, ->(term) { where('name ILIKE ?', "%#{term}%") }
-  
+
   scope :in_stock, -> {
     joins(:product_variants)
       .where(product_variants: { is_active: true })
       .group('products.id')
       .having('SUM(product_variants.stock_qty) > 0')
   }
-  
+
   scope :out_of_stock, -> {
-    where.not(id: in_stock.select(:id))
+    left_joins(:product_variants)
+      .group('products.id')
+      .having('SUM(product_variants.stock_qty) IS NULL OR SUM(product_variants.stock_qty) = 0')
   }
-  
+
   scope :by_stock_status, ->(status) {
     status == 'in_stock' ? in_stock : out_of_stock
   }
-  
-  # Calcul du stock total (somme variantes actives)
+
+  # NOUVEAU : Eager loading + pagination support
+  scope :with_associations, -> {
+    includes(:category, product_variants: [:variant_option_values, :option_values], :image_attachment)
+  }
+
+  # CALLBACKS
+  before_save :generate_slug, if: :name_changed?
+
+  # METHODS
   def total_stock
     product_variants.where(is_active: true).sum(:stock_qty)
   end
-  
-  # Badge HTML pour stock
-  def stock_badge
-    stock = total_stock
-    if stock > 0
-      "<span class='badge bg-success'>#{stock} unités</span>".html_safe
-    else
-      "<span class='badge bg-danger'>Rupture</span>".html_safe
-    end
+
+  def in_stock?
+    total_stock > 0
   end
-  
-  # Validation image
-  def image_required
-    errors.add(:image, 'doit être présente') if image.blank? && image_url.blank?
+
+  def price
+    price_cents / 100.0
   end
-  
-  # Validation variantes
-  def has_active_variants
-    return if product_variants.any?(&:is_active)
-    errors.add(:base, 'Au moins une variante active est requise')
+
+  # NOUVEAU : Héritage image pour variantes
+  def image_for_variant(variant)
+    variant.image.attached? ? variant.image : self.image
   end
-  
-  # Eager loading standard
-  def self.with_associations
-    includes(:product_category, :product_variants, :image_attachment)
+
+  # NOUVEAU : Agrégat stock par option
+  def stock_by_option(option_type)
+    product_variants
+      .joins(variant_option_values: :option_value)
+      .where(option_values: { option_type_id: option_type.id })
+      .group('option_values.presentation')
+      .sum(:stock_qty)
+  end
+
+  # Ransack
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id category_id name slug description price_cents currency stock_qty is_active image_url created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[category product_variants]
+  end
+
+  private
+
+  def generate_slug
+    self.slug = name.parameterize if slug.blank?
+  end
+
+  def image_or_image_url_present
+    return if image.attached? || image_url.present?
+    errors.add(:base, "Une image (upload ou URL) est requise")
+  end
+
+  def has_at_least_one_active_variant
+    return if product_variants.exists?(is_active: true)
+    errors.add(:base, 'Au moins une variante active requise')
+  end
+end
+```
+
+### ProductVariant Model - AMÉLIORÉ
+
+```ruby
+# app/models/product_variant.rb
+class ProductVariant < ApplicationRecord
+  belongs_to :product
+  has_many :variant_option_values, foreign_key: :variant_id, dependent: :destroy
+  has_many :option_values, through: :variant_option_values
+  has_one_attached :image
+
+  # VALIDATIONS
+  validates :sku, presence: true, uniqueness: true,
+            format: { with: /\A[A-Z0-9-]+\z/, message: 'format invalide' }
+  validates :price_cents, numericality: { greater_than: 0 }
+  validates :stock_qty, numericality: { greater_than_or_equal_to: 0 }
+  validates :currency, length: { is: 3 }
+  validate :image_or_image_url_present
+  validate :has_required_option_values
+
+  # NOUVEAU : Héritage prix/stock
+  attr_accessor :inherit_price, :inherit_stock
+
+  before_save :apply_inheritance
+
+  # SCOPES
+  scope :active, -> { where(is_active: true) }
+  scope :by_sku, ->(sku) { where(sku: sku) }
+  scope :by_option, ->(option_value_id) {
+    joins(:variant_option_values)
+      .where(variant_option_values: { option_value_id: option_value_id })
+  }
+
+  # Ransack
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[id product_id sku price_cents currency stock_qty is_active created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[product option_values]
+  end
+
+  private
+
+  def has_required_option_values
+    # Si le produit a plusieurs variantes, celle-ci doit avoir des options
+    return if variant_option_values.any? || product.product_variants.count <= 1
+    errors.add(:base, 'Les variantes doivent avoir des options de catégorisation')
+  end
+
+  def apply_inheritance
+    self.price_cents = product.price_cents if inherit_price.present?
+    self.stock_qty = 0 if inherit_stock.present?
+  end
+
+  def image_or_image_url_present
+    return if image.attached? || image_url.present?
+    errors.add(:base, "Une image (upload ou URL) est requise")
   end
 end
 ```

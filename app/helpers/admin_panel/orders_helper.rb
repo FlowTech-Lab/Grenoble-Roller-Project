@@ -2,9 +2,10 @@
 
 module AdminPanel
   module OrdersHelper
-    # Badge pour le statut de la commande
-    def status_badge(order)
-      case order.status
+    # Badge pour le statut de la commande (accepte order ou status string)
+    def status_badge(order_or_status)
+      status = order_or_status.is_a?(String) ? order_or_status : order_or_status.status
+      case status
       when "pending"
         content_tag(:span, "En attente", class: "badge bg-warning")
       when "paid"
