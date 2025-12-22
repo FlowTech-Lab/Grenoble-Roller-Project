@@ -63,6 +63,8 @@ services:
       # Master key Rails (nécessaire pour décrypter les credentials)
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:-}
       TZ: Europe/Paris
+      # Run Solid Queue supervisor inside Puma (single-server deployment)
+      SOLID_QUEUE_IN_PUMA: "true"
     # AUCUN port exposé - accès uniquement via réseau Docker interne
     expose:
       - "3000"

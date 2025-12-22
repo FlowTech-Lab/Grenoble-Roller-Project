@@ -5,6 +5,9 @@ Rails.application.routes.draw do
   namespace :admin_panel, path: 'admin-panel' do
     root 'dashboard#index'
     
+    # Mission Control Jobs - Dashboard pour monitoring des jobs Solid Queue
+    mount MissionControl::Jobs::Engine, at: "/jobs"
+    
     resources :products do
       resources :product_variants, except: %i[index show]
       collection do

@@ -22,6 +22,8 @@ services:
       # Enable polling for file watcher (required for Docker volumes on Linux)
       LISTEN_GEM_USE_POLLING: "true"
       TZ: Europe/Paris
+      # Run Solid Queue supervisor inside Puma (single-server deployment)
+      SOLID_QUEUE_IN_PUMA: "true"
     ports:
       - "3000:3000"
     entrypoint: ["./bin/docker-entrypoint"]
