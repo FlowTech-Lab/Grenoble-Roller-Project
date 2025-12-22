@@ -16,9 +16,31 @@ module Initiations
       use_free_trial = params[:use_free_trial] == "1"
 
       # Vérifier que l'utilisateur peut utiliser l'essai gratuit si demandé
-      if use_free_trial && current_user.attendances.active.where(free_trial_used: true).exists?
-        redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
-        return
+      # IMPORTANT : Distinguer parent vs enfant pour vérifier l'essai gratuit
+      if use_free_trial
+        if child_membership_id.present?
+          # Pour un enfant : vérifier si CET ENFANT a déjà utilisé son essai gratuit
+          free_trial_already_used = current_user.attendances.active.where(
+            free_trial_used: true, 
+            child_membership_id: child_membership_id
+          ).exists?
+          
+          if free_trial_already_used
+            redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit."
+            return
+          end
+        else
+          # Pour le parent : vérifier si le PARENT a déjà utilisé son essai gratuit
+          free_trial_already_used = current_user.attendances.active.where(
+            free_trial_used: true, 
+            child_membership_id: nil
+          ).exists?
+          
+          if free_trial_already_used
+            redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
+            return
+          end
+        end
       end
 
       if needs_equipment && roller_size.blank?
