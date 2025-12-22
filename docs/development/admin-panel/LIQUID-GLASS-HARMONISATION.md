@@ -1,6 +1,6 @@
 # 🎨 LIQUID GLASS - Harmonisation Admin Panel
 
-**Date** : 2025-12-22 | **Version** : 2.0
+**Date** : 2025-12-22 | **Version** : 2.1
 
 ---
 

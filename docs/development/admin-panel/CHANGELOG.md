@@ -6,6 +6,36 @@
 
 ## ✅ Modifications Récentes
 
+### **2025-12-22 - Nettoyage Sidebar et Favicon**
+
+#### **🧹 Sidebar Simplifiée**
+- ✅ **Suppression "Tableau de bord"** : Retiré de la sidebar (non conforme)
+- ✅ **Suppression "Boutique"** : Retiré de la sidebar avec ses sous-menus (non conforme)
+- ✅ **Menu épuré** : Sidebar contient maintenant uniquement :
+  - Initiations (level >= 30)
+  - Commandes (level >= 60)
+  - ActiveAdmin (lien externe)
+- ✅ **Meilleure cohérence** : Focus sur les modules réellement implémentés et conformes
+
+#### **🎨 Favicon Restauré**
+- ✅ **Favicon corrigé** : Utilisation de `app/assets/images/favicon-512.png` via `asset_path`
+- ✅ **Configuration mise à jour** : Les layouts utilisent maintenant `favicon_link_tag` avec le bon fichier
+- ✅ **SVG ignoré** : Plus de référence au SVG cassé (cercle rouge)
+
+#### **📁 Fichiers Modifiés**
+- `app/views/admin/shared/_menu_items.html.erb` - Suppression Tableau de bord et Boutique
+- `app/views/layouts/admin.html.erb` - Favicon corrigé
+- `app/views/layouts/application.html.erb` - Favicon corrigé
+
+#### **📚 Documentation**
+- `CHANGELOG.md` - Entrée ajoutée
+- `00-dashboard/sidebar.md` - Mise à jour avec menu actuel, suppression références sous-menus
+- `README.md` - Mise à jour vue d'ensemble avec status actuel
+- `INDEX.md` - Mise à jour version et dates
+- `LIQUID-GLASS-HARMONISATION.md` - Version mise à jour
+
+---
+
 ### **2025-12-22 - Harmonisation Footer et Sidebar**
 
 #### **🎨 Footer Unifié**
@@ -118,15 +148,22 @@
 
 ---
 
-## 📊 État d'Avancement
+## 📊 État d'Avancement (2025-12-22)
 
-| Module | Status | Tests | Documentation |
-|--------|--------|-------|---------------|
-| **Initiations** | ✅ 100% | ✅ 109 exemples | ✅ Complète |
-| **Sidebar** | ✅ 100% | ✅ Optimisée | ✅ Complète |
-| **Dashboard** | 🟡 30% | ⚠️ À créer | ✅ Partielle |
-| **Boutique** | 🟡 40% | ⚠️ À créer | ✅ Partielle |
-| **Commandes** | 🟡 60% | ⚠️ À créer | ✅ Partielle |
+| Module | Status | Tests | Documentation | Sidebar |
+|--------|--------|-------|---------------|---------|
+| **Sidebar** | ✅ 100% | ✅ Optimisée | ✅ Complète | ✅ Implémenté |
+| **Initiations** | ✅ 100% | ✅ 109 exemples | ✅ Complète | ✅ Dans sidebar |
+| **Commandes** | 🟡 60% | ⚠️ À créer | ✅ Partielle | ✅ Dans sidebar |
+| **Dashboard** | 🟡 30% | ⚠️ À créer | ✅ Partielle | ❌ Retiré (non conforme) |
+| **Boutique** | 🟡 40% | ⚠️ À créer | ✅ Partielle | ❌ Retiré (non conforme) |
+
+**Menu Sidebar Actuel** :
+- ✅ Initiations (level >= 30)
+- ✅ Commandes (level >= 60)
+- ✅ ActiveAdmin (lien externe)
+- ❌ Tableau de bord (retiré - non conforme)
+- ❌ Boutique (retiré - non conforme)
 
 ---
 

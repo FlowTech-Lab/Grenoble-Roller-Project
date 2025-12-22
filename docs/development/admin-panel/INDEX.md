@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-12-21 | **Version** : 1.1 | **État** : 60% complété | **Dernière mise à jour** : 2025-01-XX
+**Date** : 2025-12-22 | **Version** : 2.0 | **État** : 60% complété | **Dernière mise à jour** : 2025-12-22
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -224,17 +224,18 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 
 ## 📊 Vue d'Ensemble Globale
 
-| Thème | Priorité | Phase | Semaines | % Complété |
-|-------|----------|-------|----------|------------|
-| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% |
-| **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ~40% |
-| **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% |
-| **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** |
-| **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% |
-| **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 0% |
-| **Communication** | 🟢 BASSE | 7 | 7+ | 0% |
-| **Système** | 🟡 MOYENNE | 8 | 8+ | 0% |
-| **Mailing** | 🟢 BASSE | Future | 6+ | - |
+| Thème | Priorité | Phase | Semaines | % Complété | Status Sidebar |
+|-------|----------|-------|----------|------------|----------------|
+| **Sidebar** | 🔴 HAUTE | 0 | 1 | ✅ **100%** | ✅ Implémenté |
+| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% | ❌ Retiré (non conforme) |
+| **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ~40% | ❌ Retiré (non conforme) |
+| **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% | ✅ Dans sidebar |
+| **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
+| **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
+| **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 0% | ⏸️ En attente |
+| **Communication** | 🟢 BASSE | 7 | 7+ | 0% | ⏸️ En attente |
+| **Système** | 🟡 MOYENNE | 8 | 8+ | 0% | ⏸️ En attente |
+| **Mailing** | 🟢 BASSE | Future | 6+ | - | ⏸️ En attente |
 
 ---
 
@@ -588,4 +589,4 @@ bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel
 
 ---
 
-**Créé le** : 2025-12-21 | **Version** : 1.1 | **Dernière mise à jour** : 2025-01-XX
+**Créé le** : 2025-12-21 | **Version** : 2.0 | **Dernière mise à jour** : 2025-12-22

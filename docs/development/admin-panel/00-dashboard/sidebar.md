@@ -1,12 +1,19 @@
 # 🎨 SIDEBAR ADMIN PANEL - Documentation Technique
 
-**Date** : 2025-01-XX | **Version** : 1.0 | **Status** : ✅ **IMPLÉMENTÉ**
+**Date** : 2025-12-22 | **Version** : 2.0 | **Status** : ✅ **IMPLÉMENTÉ**
 
 ---
 
 ## 📋 Vue d'Ensemble
 
-Sidebar responsive avec collapse/expand, sous-menus, permissions par grade, et optimisations performance.
+Sidebar responsive avec collapse/expand, permissions par grade, et optimisations performance.
+
+**Menu Actuel (2025-12-22)** :
+- ✅ Initiations (level >= 30)
+- ✅ Commandes (level >= 60)
+- ✅ ActiveAdmin (lien externe)
+- ❌ Tableau de bord (retiré - non conforme)
+- ❌ Boutique (retiré - non conforme)
 
 **Fichiers principaux** :
 - `app/views/admin/shared/_sidebar.html.erb` - Template principal
@@ -52,7 +59,55 @@ app/
 
 ## 🎯 Fonctionnalités
 
-### ✅ **1. Partial Réutilisable**
+### ✅ **1. Menu Actuel (2025-12-22)**
+
+**Structure du menu sidebar** :
+1. **Initiations** (level >= 30)
+   - Icône : `bi-people`
+   - Route : `admin_panel_initiations_path`
+   - Permissions : Lecture (level >= 30), Écriture (level >= 60)
+
+2. **Commandes** (level >= 60)
+   - Icône : `bi-box-seam`
+   - Route : `admin_panel_orders_path`
+   - Permissions : Accès complet (level >= 60)
+
+3. **Séparateur** (`<hr>`)
+
+4. **ActiveAdmin** (lien externe)
+   - Icône : `bi-gear`
+   - Route : `/activeadmin`
+   - Accessible à tous (ouvre dans un nouvel onglet)
+
+**Modules retirés** (non conformes) :
+- ❌ **Tableau de bord** - Retiré le 2025-12-22 (non conforme)
+- ❌ **Boutique** - Retiré le 2025-12-22 avec ses sous-menus (non conforme)
+
+**Code actuel** :
+```erb
+<!-- Initiations -->
+<% if can_view_initiations? %>
+  <li class="nav-item">
+    <%= link_to admin_panel_initiations_path, class: "nav-link..." %>
+  </li>
+<% end %>
+
+<!-- Commandes -->
+<% if can_access_admin_panel?(60) %>
+  <li class="nav-item">
+    <%= link_to admin_panel_orders_path, class: "nav-link..." %>
+  </li>
+<% end %>
+
+<!-- ActiveAdmin -->
+<li class="nav-item">
+  <%= link_to "/activeadmin", target: "_blank", class: "nav-link..." %>
+</li>
+```
+
+---
+
+### ✅ **2. Partial Réutilisable**
 
 **Fichier** : `app/views/admin/shared/_menu_items.html.erb`
 
@@ -71,34 +126,19 @@ app/
 
 ---
 
-### ✅ **2. Sous-menus avec Collapse/Expand**
+### ✅ **2. Menu Actuel (2025-12-22)**
 
-**Section Boutique** avec sous-menus Bootstrap :
-- **Produits** → `admin_panel_products_path`
-- **Inventaire** → TODO (route à ajouter)
-- **Catégories** → `admin_panel_product_categories_path`
+**Structure du menu** :
+- ✅ **Initiations** (level >= 30) → `admin_panel_initiations_path`
+- ✅ **Commandes** (level >= 60) → `admin_panel_orders_path`
+- ✅ **Séparateur**
+- ✅ **ActiveAdmin** (lien externe) → `/activeadmin`
 
-**Fonctionnalités** :
-- ✅ Collapse/expand avec Bootstrap
-- ✅ Icône chevron qui change (right ↔ down)
-- ✅ État actif détecté automatiquement (parent + enfants)
-- ✅ ID unique par instance (desktop/mobile)
+**Modules retirés** (non conformes) :
+- ❌ **Tableau de bord** - Retiré (non conforme)
+- ❌ **Boutique** - Retiré avec ses sous-menus (non conforme)
 
-**Code** :
-```erb
-<a class="nav-link" 
-   href="#collapse-boutique" 
-   data-bs-toggle="collapse">
-  <i class="bi bi-shop"></i>
-  <span class="sidebar-label">Boutique</span>
-  <i class="bi bi-chevron-right ms-auto"></i>
-</a>
-<div class="collapse" id="collapse-boutique">
-  <ul class="nav nav-pills flex-column ms-3">
-    <!-- Sous-menus -->
-  </ul>
-</div>
-```
+**Raison** : Focus sur les modules réellement implémentés et fonctionnels.
 
 ---
 
@@ -126,7 +166,7 @@ admin_panel_active?(controller_name, action_name = nil)
 
 ---
 
-### ✅ **4. Controller Stimulus Optimisé**
+### ✅ **5. Controller Stimulus Optimisé**
 
 **Fichier** : `app/javascript/controllers/admin/admin_sidebar_controller.js`
 
@@ -194,7 +234,7 @@ static values = {
 
 ---
 
-### ✅ **6. JavaScript Séparé**
+### ✅ **7. JavaScript Séparé**
 
 **Fichier** : `app/javascript/admin_panel_navbar.js`
 
@@ -233,33 +273,31 @@ pin "admin_panel_navbar", to: "admin_panel_navbar.js"
 
 ## 🔐 Permissions par Grade
 
-### **Tableau des Accès**
+### **Tableau des Accès (État Actuel - 2025-12-22)**
 
-| Grade | Level | Dashboard | Boutique | Initiations | Commandes |
-|-------|-------|-----------|----------|-------------|-----------|
-| INITIATION | 30 | ❌ | ❌ | ✅ Lecture | ❌ |
-| ORGANIZER | 40 | ❌ | ❌ | ✅ Lecture | ❌ |
-| MODERATOR | 50 | ❌ | ❌ | ✅ Lecture | ❌ |
-| ADMIN | 60 | ✅ | ✅ | ✅ Complet | ✅ |
-| SUPERADMIN | 70 | ✅ | ✅ | ✅ Complet | ✅ |
+| Grade | Level | Initiations | Commandes | ActiveAdmin |
+|-------|-------|-------------|-----------|------------|
+| INITIATION | 30 | ✅ Lecture | ❌ | ✅ (lien externe) |
+| ORGANIZER | 40 | ✅ Lecture | ❌ | ✅ (lien externe) |
+| MODERATOR | 50 | ✅ Lecture | ❌ | ✅ (lien externe) |
+| ADMIN | 60 | ✅ Complet | ✅ Complet | ✅ (lien externe) |
+| SUPERADMIN | 70 | ✅ Complet | ✅ Complet | ✅ (lien externe) |
 
 ### **Implémentation dans la Sidebar**
 
 ```erb
-<!-- Dashboard : level >= 60 -->
-<% if can_access_admin_panel?(60) %>
-  <li class="nav-item">...</li>
-<% end %>
-
-<!-- Boutique : level >= 60 -->
-<% if can_view_boutique? %>
-  <li class="nav-item">...</li>
-<% end %>
-
 <!-- Initiations : level >= 30 -->
 <% if can_view_initiations? %>
   <li class="nav-item">...</li>
 <% end %>
+
+<!-- Commandes : level >= 60 -->
+<% if can_access_admin_panel?(60) %>
+  <li class="nav-item">...</li>
+<% end %>
+
+<!-- ActiveAdmin : Accessible à tous (lien externe) -->
+<li class="nav-item">...</li>
 ```
 
 **Voir** : [`../PERMISSIONS.md`](../PERMISSIONS.md) pour la documentation complète.
@@ -286,16 +324,15 @@ pin "admin_panel_navbar", to: "admin_panel_navbar.js"
 
 ### **Sidebar Expanded (280px)**
 - ✅ Labels visibles
-- ✅ Chevrons visibles
-- ✅ Sous-menus accessibles
+- ✅ Icônes visibles
 - ✅ Contenu principal : `margin-left: 280px`
+- ✅ Transitions fluides (300ms cubic-bezier)
 
 ### **Sidebar Collapsed (64px)**
 - ✅ Labels masqués (`.d-none`)
-- ✅ Chevrons masqués (`.d-none`)
-- ✅ Sous-menus masqués
+- ✅ Icônes visibles (centrées)
 - ✅ Contenu principal : `margin-left: 64px`
-- ✅ Transitions fluides
+- ✅ Transitions fluides (300ms cubic-bezier)
 
 ---
 
@@ -311,24 +348,25 @@ pin "admin_panel_navbar", to: "admin_panel_navbar.js"
 ## ✅ Checklist Implémentation
 
 - [x] Partial réutilisable `_menu_items.html.erb`
-- [x] Sous-menus Boutique avec collapse/expand
 - [x] Helpers permissions (`can_access_admin_panel?`, etc.)
 - [x] Controller Stimulus optimisé (7 problèmes corrigés)
-- [x] CSS organisé dans `admin_panel.scss`
+- [x] CSS organisé dans `_style.scss` (liquid glass)
 - [x] JavaScript séparé (`admin_panel_navbar.js`)
 - [x] Suppression styles inline
 - [x] Transitions fluides
 - [x] Responsive desktop/mobile
 - [x] Persistance LocalStorage
+- [x] Footer sidebar supprimé (redondant avec navbar)
+- [x] Menu épuré (Tableau de bord et Boutique retirés)
 
 ---
 
 ## 🚀 Prochaines Améliorations (Optionnel)
 
 - [ ] Tooltips au rétrécissement (sidebar collapsed)
-- [ ] LocalStorage pour état des sous-menus (collapsed/expanded)
 - [ ] Animation plus sophistiquée (slide)
 - [ ] Thème dark/light adaptatif
+- [ ] Ajout de nouveaux modules conformes dans la sidebar
 
 ---
 

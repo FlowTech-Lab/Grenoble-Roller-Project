@@ -696,7 +696,16 @@
     }
 
     .dropdown-item:hover {
-      background: rgba(0, 123, 255, 0.15);
+      background: rgba(0, 123, 255, 0.15) !important;
+    }
+    
+    .navbar-grenoble-roller .dropdown-item {
+      color: var(--bs-body-color) !important;
+    }
+    
+    .navbar-grenoble-roller .dropdown-item:hover {
+      background: rgba(0, 123, 255, 0.15) !important;
+      color: var(--gr-primary-light) !important;
     }
 
     .list-group-item:hover {
@@ -1033,14 +1042,41 @@
   }
   
   /* Mobile : Hamburger menu button */
-  .navbar-toggler:focus-visible {
+  .navbar-grenoble-roller .navbar-toggler {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    transition: var(--transition-liquid);
+  }
+  
+  .navbar-grenoble-roller .navbar-toggler:hover {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: var(--gr-primary);
+  }
+  
+  .navbar-grenoble-roller .navbar-toggler:focus-visible {
     outline: 2px solid var(--gr-primary);
     outline-offset: 2px;
     box-shadow: none; /* Retire le box-shadow Bootstrap par défaut */
+    background: rgba(255, 255, 255, 0.45);
   }
   
-  [data-bs-theme="dark"] .navbar-toggler:focus-visible {
+  [data-bs-theme="dark"] .navbar-grenoble-roller .navbar-toggler {
+    background: rgba(30, 30, 30, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .navbar-toggler:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--gr-primary-light);
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .navbar-toggler:focus-visible {
     outline-color: var(--gr-primary-dark);
+    background: rgba(255, 255, 255, 0.15);
   }
   
   .navbar-grenoble-roller .nav-link.active {
@@ -1075,19 +1111,71 @@
   
   /* Dropdown menus */
   .navbar-grenoble-roller .dropdown-menu {
-    border: 1px solid var(--liquid-glass-border);
-    box-shadow: var(--bs-box-shadow-lg);
-    border-radius: 0.5rem;
+    background: var(--liquid-glass-bg) !important;
+    backdrop-filter: var(--liquid-blur) !important;
+    -webkit-backdrop-filter: var(--liquid-blur) !important;
+    border: 1px solid var(--liquid-glass-border) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.5rem !important;
   }
   
   .navbar-grenoble-roller .dropdown-item {
-    transition: var(--transition-liquid-fast);
+    transition: var(--transition-liquid-fast) !important;
+    color: var(--bs-body-color) !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x) !important;
   }
   
   .navbar-grenoble-roller .dropdown-item:hover {
-    background: var(--liquid-glass-bg);
-    color: var(--gr-primary);
+    background: rgba(0, 123, 255, 0.1) !important;
+    color: var(--gr-primary) !important;
     transform: translateX(5px);
+  }
+  
+  .navbar-grenoble-roller .dropdown-item:focus,
+  .navbar-grenoble-roller .dropdown-item:focus-visible {
+    background: rgba(0, 123, 255, 0.1) !important;
+    color: var(--gr-primary) !important;
+    outline: none !important;
+  }
+  
+  /* Bouton déconnexion - force couleur rouge */
+  .navbar-grenoble-roller .dropdown-item.text-danger {
+    color: var(--bs-danger) !important;
+  }
+  
+  .navbar-grenoble-roller .dropdown-item.text-danger:hover,
+  .navbar-grenoble-roller .dropdown-item.text-danger:focus {
+    color: var(--bs-danger) !important;
+    background: rgba(220, 53, 69, 0.1) !important;
+  }
+  
+  /* Dark mode pour dropdown navbar */
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-menu {
+    background: rgba(30, 30, 30, 1) !important;
+    border-color: rgba(255, 255, 255, 0.445) !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item.text-danger {
+    color: #dc3545 !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item.text-danger:hover,
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item.text-danger:focus {
+    color: #ff6b7a !important;
+    background: rgba(220, 53, 69, 0.15) !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item {
+    color: var(--bs-body-color) !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item:hover,
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item:focus {
+    background: rgba(0, 123, 255, 0.15) !important;
+    color: var(--gr-primary-light) !important;
   }
   
   .navbar-grenoble-roller .dropdown-divider {
