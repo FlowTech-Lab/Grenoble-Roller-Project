@@ -5641,3 +5641,16 @@
   "deployment_id": "deploy-20251222-054656-16546",
   "deploy_duration_seconds": 384
 }
+{
+  "timestamp": "2025-12-22T19:59:48Z",
+  "level": "INFO",
+  "message": "🔐 Master key chargée depuis config/master.key (dev)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251222-205948-23037",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-22T19:59:49Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━�
