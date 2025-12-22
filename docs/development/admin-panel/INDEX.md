@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-12-21 | **Version** : 1.0 | **État** : 55% complété
+**Date** : 2025-12-21 | **Version** : 1.1 | **État** : 60% complété | **Dernière mise à jour** : 2025-01-XX
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -90,17 +90,22 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`03-initiations/gestion-initiations.md`](./03-initiations/gestion-initiations.md) - Workflow complet
 
 **Éléments inclus** :
-- ✅ Controller Initiations
+- ✅ Controller Initiations (séparation à venir/passées)
 - ✅ Controller RollerStock (stock rollers)
-- ✅ Policy Initiation
-- ✅ Policy RollerStock
-- ✅ Vues (index, show, presences)
+- ✅ Policy Initiation (lecture level >= 30, écriture level >= 60)
+- ✅ Policy RollerStock (level >= 60)
+- ✅ Vues (index avec sections séparées, show avec panel matériel, presences)
 - ✅ Vues RollerStock (index, show, edit, new)
 - ✅ Routes initiations + roller_stock
+- ✅ **Tests RSpec complets** (109 exemples, 0 échecs)
 
 **Priorité** : 🟡 MOYENNE | **Phase** : 5 | **Semaine** : 5
 
-**Note** : Actuellement géré via ActiveAdmin, à migrer vers AdminPanel
+**Status** : ✅ **IMPLÉMENTÉ** - Module complet fonctionnel avec permissions par grade
+
+**Permissions** : 
+- Grade 30+ (INITIATION, ORGANIZER, MODERATOR) : Lecture seule
+- Grade 60+ (ADMIN, SUPERADMIN) : Accès complet
 
 ---
 
@@ -222,7 +227,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ~40% |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% |
-| **Initiations** | 🟡 MOYENNE | 5 | 5 | 0% |
+| **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** |
 | **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% |
 | **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 0% |
 | **Communication** | 🟢 BASSE | 7 | 7+ | 0% |
@@ -342,13 +347,14 @@ Système (indépendant)
 - [ ] Vues
 
 ### 🎓 Initiations
-- [ ] Controller Initiations
-- [ ] Controller RollerStock
-- [ ] Policy Initiation
-- [ ] Policy RollerStock
-- [ ] Routes initiations + roller_stock
-- [ ] Vues (index, show, presences)
-- [ ] Vues RollerStock (index, show, edit, new)
+- [x] Controller Initiations (séparation à venir/passées)
+- [x] Controller RollerStock
+- [x] Policy Initiation (permissions par grade)
+- [x] Policy RollerStock
+- [x] Routes initiations + roller_stock
+- [x] Vues (index avec sections, show avec panel matériel, presences)
+- [x] Vues RollerStock (index, show, edit, new)
+- [x] Tests RSpec (109 exemples)
 
 ### 📅 Événements
 - [ ] Controller Events
@@ -555,7 +561,28 @@ Implémenter selon les besoins urgents du moment
 - [Utilisateurs - README](./06-utilisateurs/README.md)
 - [Communication - README](./07-communication/README.md)
 - [Système - README](./08-systeme/README.md)
+- [**Permissions par Grade**](./PERMISSIONS.md) - 🔐 Documentation complète des permissions
+- [**CHANGELOG**](./CHANGELOG.md) - 📝 Historique des modifications
 
 ---
 
-**Créé le** : 2025-12-21 | **Version** : 1.0
+## 🧪 Tests RSpec
+
+**Status** : ✅ Tests complets pour AdminPanel
+
+**Couverture** :
+- ✅ Policies (BasePolicy, InitiationPolicy, OrderPolicy, ProductPolicy, RollerStockPolicy)
+- ✅ Controllers (BaseController, InitiationsController, DashboardController, OrdersController)
+- ✅ Permissions par grade (30, 40, 60, 70)
+- ✅ 109 exemples, 0 échecs
+
+**Exécution** :
+```bash
+bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel
+```
+
+**Documentation** : Voir [`spec/requests/admin_panel/README.md`](../../../spec/requests/admin_panel/README.md)
+
+---
+
+**Créé le** : 2025-12-21 | **Version** : 1.1 | **Dernière mise à jour** : 2025-01-XX

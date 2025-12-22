@@ -8,9 +8,9 @@
 
 Gestion complète des initiations : création, participants, bénévoles, liste d'attente, présences.
 
-**Fichier actuel** : `app/admin/event/initiations.rb` (ActiveAdmin)
+**Status** : ✅ **IMPLÉMENTÉ** - Module complet fonctionnel dans AdminPanel
 
-**Objectif** : Migrer vers AdminPanel pour interface unifiée.
+**Fichier original** : `app/admin/event/initiations.rb` (ActiveAdmin) - ⚠️ Conservé pour référence
 
 ---
 
@@ -30,16 +30,42 @@ module AdminPanel
     before_action :authorize_initiation
     
     def index
-      @initiations = Event::Initiation
-        .includes(:creator_user, :attendances)
-        .order(start_at: :desc)
-      
+      authorize ::Event::Initiation, policy_class: AdminPanel::Event::InitiationPolicy
+
+      base_scope = ::Event::Initiation
+        .includes(:creator_user, :attendances, :waitlist_entries)
+
       # Filtres
-      @initiations = @initiations.where(status: params[:status]) if params[:status].present?
-      @initiations = @initiations.upcoming_initiations if params[:scope] == 'upcoming'
-      @initiations = @initiations.published if params[:scope] == 'published'
+      base_scope = base_scope.where(status: params[:status]) if params[:status].present?
+      base_scope = base_scope.where(status: 'published') if params[:scope] == 'published'
+
+      # Recherche Ransack
+      @q = base_scope.ransack(params[:q])
+      base_scope = @q.result(distinct: true)
+
+      # Séparer initiations à venir et passées
+      now = Time.current
       
-      @pagy, @initiations = pagy(@initiations, items: 25)
+      # Si filtre "upcoming", ne garder que les à venir
+      if params[:scope] == 'upcoming'
+        @upcoming_initiations = base_scope
+          .where("start_at > ?", now)
+          .order(start_at: :asc) # Prochaines d'abord, triées par date croissante
+        @past_initiations = [] # Ne pas afficher les passées
+      else
+        # Sinon, afficher les deux sections
+        @upcoming_initiations = base_scope
+          .where("start_at > ?", now)
+          .order(start_at: :asc) # Prochaines d'abord, triées par date croissante
+
+        @past_initiations = base_scope
+          .where("start_at <= ?", now)
+          .order(start_at: :desc) # Passées ensuite, triées par date décroissante (plus récentes d'abord)
+      end
+
+      # Pour la pagination, on combine les deux listes
+      # Mais on affiche séparément dans la vue
+      @initiations = @upcoming_initiations + @past_initiations
     end
     
     def show
@@ -47,6 +73,24 @@ module AdminPanel
         .includes(:user, :child_membership)
         .where(is_volunteer: true)
         .order(:created_at)
+
+      @participants = @initiation.attendances
+        .includes(:user, :child_membership)
+        .where(is_volunteer: false)
+        .order(:created_at)
+
+      @waitlist_entries = @initiation.waitlist_entries
+        .includes(:user, :child_membership)
+        .active
+        .ordered_by_position
+
+      # Récapitulatif matériel demandé
+      @equipment_requests = @initiation.attendances
+        .where(needs_equipment: true)
+        .where.not(roller_size: nil)
+        .includes(:user, :child_membership)
+        .group_by(&:roller_size)
+        .transform_values { |attendances| attendances.count }
       
       @participants = @initiation.attendances
         .includes(:user, :child_membership)

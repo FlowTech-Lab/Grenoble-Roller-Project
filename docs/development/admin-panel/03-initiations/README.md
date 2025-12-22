@@ -25,6 +25,7 @@ Gestion des initiations : participants, bénévoles, liste d'attente, présences
 - [`06-policies.md`](./06-policies.md) - Policies (code exact)
 - [`07-vues.md`](./07-vues.md) - Vues ERB (code exact)
 - [`08-javascript.md`](./08-javascript.md) - JavaScript (code exact)
+- [`09-tests.md`](./09-tests.md) - Tests RSpec (code exact)
 
 ### **📁 Fichiers par fonctionnalité**
 - [`gestion-initiations.md`](./gestion-initiations.md) - Workflow complet initiations
@@ -65,16 +66,17 @@ Gestion des initiations : participants, bénévoles, liste d'attente, présences
 ## ✅ Checklist Globale
 
 ### **Phase 5 (Semaine 5)**
-- [ ] Controller InitiationsController
-- [ ] Controller RollerStock
-- [ ] Policy InitiationPolicy
-- [ ] Policy RollerStock
-- [ ] Routes initiations + roller_stock
-- [ ] Vue index
-- [ ] Vue show
-- [ ] Vue presences
-- [ ] Vues RollerStock (index, show, edit, new)
-- [ ] Partials (bénévoles, participants, waitlist)
+- [x] Controller InitiationsController (séparation à venir/passées)
+- [x] Controller RollerStock
+- [x] Policy InitiationPolicy (permissions par grade)
+- [x] Policy RollerStock
+- [x] Routes initiations + roller_stock
+- [x] Vue index (sections séparées, bouton création conditionnel)
+- [x] Vue show (panel matériel, bouton édition conditionnel)
+- [x] Vue presences (statuts traduits)
+- [x] Vues RollerStock (index, show, edit, new)
+- [x] Helpers traduction (attendance_status_fr, waitlist_status_fr)
+- [x] Tests RSpec (109 exemples, 0 échecs)
 
 ---
 
@@ -83,7 +85,37 @@ Gestion des initiations : participants, bénévoles, liste d'attente, présences
 - **Temps** : 1-2 semaines
 - **Complexité** : ⭐⭐⭐
 - **Dépendances** : Aucune (utilise le modèle `Attendance` existant pour demandes matériel)
+- **Status** : ✅ **TERMINÉ** - Implémentation complète avec tests
 
 ---
 
-**Retour** : [INDEX principal](../INDEX.md)
+## 🔐 Permissions
+
+**Voir documentation complète** : [`../PERMISSIONS.md`](../PERMISSIONS.md)
+
+**Résumé** :
+- **Grade 30+** (INITIATION, ORGANIZER, MODERATOR) : Lecture seule des initiations
+- **Grade 60+** (ADMIN, SUPERADMIN) : Accès complet (création, modification, présences)
+
+**Implémentation** : Utilise `role&.level.to_i >= X` (niveaux numériques) au lieu des codes de rôle.
+
+---
+
+## 🧪 Tests RSpec
+
+**Status** : ✅ Tests complets (109 exemples, 0 échecs)
+
+**Fichiers** :
+- `spec/policies/admin_panel/event/initiation_policy_spec.rb` - Tests InitiationPolicy
+- `spec/policies/admin_panel/roller_stock_policy_spec.rb` - Tests RollerStockPolicy
+- `spec/requests/admin_panel/initiations_spec.rb` - Tests InitiationsController
+
+**Exécution** :
+```bash
+bundle exec rspec spec/policies/admin_panel/event/initiation_policy_spec.rb
+bundle exec rspec spec/requests/admin_panel/initiations_spec.rb
+```
+
+---
+
+**Retour** : [INDEX principal](../INDEX.md) | [Permissions complètes](../PERMISSIONS.md)

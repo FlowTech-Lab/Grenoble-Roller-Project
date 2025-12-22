@@ -862,15 +862,25 @@ Les statuts sont traduits en français via les helpers `attendance_status_fr` et
 ## ✅ Checklist Globale
 
 ### **Phase 5 (Semaine 5)**
-- [ ] Créer vue index initiations
-- [ ] Créer vue show initiations
-- [ ] Créer vue presences initiations
-- [ ] Créer vue index roller_stocks
-- [ ] Créer vue show roller_stocks (optionnel)
-- [ ] Créer vue new/edit roller_stocks
-- [ ] Tester toutes les vues
-- [ ] Vérifier responsive mobile
+- [x] Créer vue index initiations (sections séparées, bouton création conditionnel)
+- [x] Créer vue show initiations (panel matériel, bouton édition conditionnel)
+- [x] Créer vue presences initiations (statuts traduits)
+- [x] Créer vue index roller_stocks
+- [x] Créer vue show roller_stocks
+- [x] Créer vue new/edit roller_stocks
+- [x] Helpers traduction (attendance_status_fr, waitlist_status_fr)
+- [x] Tester toutes les vues (tests RSpec)
 
 ---
 
-**Retour** : [README Initiations](./README.md) | [INDEX principal](../INDEX.md)
+## 🔐 Permissions dans les Vues
+
+**Boutons conditionnels** :
+- Bouton "Créer une initiation" : Visible uniquement si `current_user&.role&.level.to_i >= 60`
+- Bouton "Éditer" : Visible uniquement si `current_user&.role&.level.to_i >= 60`
+
+**Sidebar** : Les liens sont conditionnels selon le grade (voir `app/views/admin/shared/_sidebar.html.erb`)
+
+---
+
+**Retour** : [README Initiations](./README.md) | [INDEX principal](../INDEX.md) | [Permissions](../PERMISSIONS.md)

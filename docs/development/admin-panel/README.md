@@ -59,11 +59,19 @@ Gestion des commandes et workflow stock (reserve/release).
 
 **Priorité** : 🟡 MOYENNE | **Phase** : 5 | **Semaine** : 5
 
+**Status** : ✅ **IMPLÉMENTÉ** - Module complet avec permissions par grade
+
 Gestion des initiations, participants, bénévoles, liste d'attente.
 
 **Fichiers** :
 - [`README.md`](./03-initiations/README.md) - Vue d'ensemble
 - [`gestion-initiations.md`](./03-initiations/gestion-initiations.md) - Workflow complet
+
+**Fonctionnalités** :
+- ✅ Séparation initiations à venir/passées
+- ✅ Panel matériel demandé (groupé par taille)
+- ✅ Permissions par grade (lecture level >= 30, écriture level >= 60)
+- ✅ Tests RSpec complets (109 exemples)
 
 ---
 
@@ -96,7 +104,7 @@ Gestion des emails et notifications.
 | **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ~40% |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% |
-| **Initiations** | 🟡 MOYENNE | 5 | 5 | 0% |
+| **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** |
 | **Événements** | 🟢 BASSE | Future | 6+ | - |
 | **Mailing** | 🟢 BASSE | Future | 6+ | - |
 
@@ -128,8 +136,39 @@ Gestion des emails et notifications.
 ## 📋 Index Complet
 
 - [`INDEX.md`](./INDEX.md) - Index détaillé avec tous les blocs
-- [`elements-manquants.md`](./elements-manquants.md) - ⚠️ ARCHIVÉ (référence historique)
+- [`PERMISSIONS.md`](./PERMISSIONS.md) - 🔐 Documentation complète des permissions par grade
+- [`ARCHIVES/elements-manquants.md`](./ARCHIVES/elements-manquants.md) - ⚠️ ARCHIVÉ (référence historique)
 - [`00-dashboard/README.md`](./00-dashboard/README.md) - Dashboard
+
+---
+
+## 🔐 Permissions par Grade
+
+**Documentation complète** : [`PERMISSIONS.md`](./PERMISSIONS.md)
+
+**Résumé** :
+- **Grade 30+** (INITIATION, ORGANIZER, MODERATOR) : Lecture seule des initiations
+- **Grade 60+** (ADMIN, SUPERADMIN) : Accès complet à toutes les ressources
+
+**Implémentation** : Utilise `role&.level.to_i >= X` (niveaux numériques) pour plus de flexibilité.
+
+---
+
+## 🧪 Tests RSpec
+
+**Status** : ✅ Tests complets pour AdminPanel (109 exemples, 0 échecs)
+
+**Couverture** :
+- ✅ Policies (BasePolicy, InitiationPolicy, OrderPolicy, ProductPolicy, RollerStockPolicy)
+- ✅ Controllers (BaseController, InitiationsController, DashboardController, OrdersController)
+- ✅ Permissions par grade (30, 40, 60, 70)
+
+**Exécution** :
+```bash
+bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel
+```
+
+**Documentation** : Voir [`spec/requests/admin_panel/README.md`](../../../spec/requests/admin_panel/README.md)
 
 ---
 
@@ -161,4 +200,4 @@ Gestion des emails et notifications.
 
 ---
 
-**Créé le** : 2025-12-21 | **Version** : 1.0
+**Créé le** : 2025-12-21 | **Version** : 1.1 | **Dernière mise à jour** : 2025-01-XX

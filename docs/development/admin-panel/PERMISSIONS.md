@@ -1,6 +1,6 @@
 # 🔐 PERMISSIONS ADMIN PANEL - Par Grade
 
-**Date de mise à jour** : 2025-01-XX
+**Date de mise à jour** : 2025-01-XX | **Version** : 1.0
 
 ---
 
@@ -105,14 +105,21 @@
 
 ```ruby
 def authenticate_admin_user!
-  # Les initiations sont accessibles pour level >= 30
-  # Toutes les autres ressources nécessitent level >= 60
+  unless user_signed_in?
+    redirect_to new_user_session_path, alert: 'Vous devez être connecté pour accéder à cette page.'
+    return
+  end
+  
+  user_level = current_user&.role&.level.to_i
+  
+  # Les initiations sont accessibles pour level >= 30 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
+  # Toutes les autres ressources nécessitent level >= 60 (ADMIN, SUPERADMIN)
   if controller_name == 'initiations'
     unless user_level >= 30
       redirect_to root_path, alert: 'Accès non autorisé'
     end
   else
-    unless user_level >= 60
+    unless user_level >= 60 # ADMIN (60) ou SUPERADMIN (70)
       redirect_to root_path, alert: 'Accès admin requis'
     end
   end
@@ -240,6 +247,34 @@ Les liens de la sidebar sont conditionnels selon le grade :
    - **Controller** : `BaseController#authenticate_admin_user!` bloque l'accès
    - **Policy** : Pundit vérifie les permissions spécifiques
 
+5. **Tests** : Toutes les permissions sont testées via RSpec (109 exemples, 0 échecs).
+
 ---
 
-**Retour** : [INDEX principal](./INDEX.md)
+---
+
+## 🧪 Tests RSpec
+
+**Status** : ✅ Tests complets (109 exemples, 0 échecs)
+
+**Fichiers** :
+- `spec/policies/admin_panel/base_policy_spec.rb` - Tests BasePolicy
+- `spec/policies/admin_panel/event/initiation_policy_spec.rb` - Tests InitiationPolicy
+- `spec/policies/admin_panel/order_policy_spec.rb` - Tests OrderPolicy
+- `spec/policies/admin_panel/product_policy_spec.rb` - Tests ProductPolicy
+- `spec/policies/admin_panel/roller_stock_policy_spec.rb` - Tests RollerStockPolicy
+- `spec/requests/admin_panel/base_controller_spec.rb` - Tests BaseController
+- `spec/requests/admin_panel/initiations_spec.rb` - Tests InitiationsController
+- `spec/requests/admin_panel/dashboard_spec.rb` - Tests DashboardController
+- `spec/requests/admin_panel/orders_spec.rb` - Tests OrdersController
+
+**Exécution** :
+```bash
+bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel
+```
+
+**Documentation** : Voir [`spec/requests/admin_panel/README.md`](../../../spec/requests/admin_panel/README.md)
+
+---
+
+**Retour** : [INDEX principal](./INDEX.md) | [Initiations - Tests](../03-initiations/09-tests.md)

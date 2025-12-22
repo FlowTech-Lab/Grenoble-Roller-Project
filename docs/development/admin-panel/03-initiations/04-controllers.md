@@ -326,11 +326,35 @@ end
 ## ✅ Checklist Globale
 
 ### **Phase 5 (Semaine 5)**
-- [ ] Créer InitiationsController
-- [ ] Créer RollerStocksController
-- [ ] Tester toutes les actions
-- [ ] Tester autorisations Pundit
+- [x] Créer InitiationsController (séparation à venir/passées)
+- [x] Créer RollerStocksController
+- [x] Tester toutes les actions (tests RSpec)
+- [x] Tester autorisations Pundit (permissions par grade)
 
 ---
 
-**Retour** : [README Initiations](./README.md) | [INDEX principal](../INDEX.md)
+## 🔐 Permissions
+
+**BaseController** : Permet l'accès aux initiations pour level >= 30, bloque le reste pour level < 60.
+
+**InitiationPolicy** :
+- Lecture (index?, show?) : `level >= 30`
+- Écriture (create?, update?, destroy?) : `level >= 60`
+- Actions spéciales : `level >= 60`
+
+**Voir** : [`../PERMISSIONS.md`](../PERMISSIONS.md) pour la documentation complète.
+
+---
+
+## 🧪 Tests RSpec
+
+**Status** : ✅ Tests complets (voir [`09-tests.md`](./09-tests.md))
+
+**Exécution** :
+```bash
+bundle exec rspec spec/requests/admin_panel/initiations_spec.rb
+```
+
+---
+
+**Retour** : [README Initiations](./README.md) | [INDEX principal](../INDEX.md) | [Permissions](../PERMISSIONS.md)

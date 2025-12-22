@@ -22,7 +22,7 @@ Modèles utilisés pour les initiations. Tous les modèles existent déjà, vér
 - `participants_count` - Nombre de participants (hors bénévoles)
 - `volunteers_count` - Nombre de bénévoles
 - `upcoming_initiations` - Scope pour initiations à venir
-- `by_season(season)` - Scope par saison
+- `by_season(season)` - Scope par saison (⚠️ **Non utilisé** - Filtre saison retiré de l'interface)
 
 **Associations** :
 - `has_many :attendances`
