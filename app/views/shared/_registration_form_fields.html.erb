@@ -73,12 +73,13 @@
   dropdown_prompt = user_already_registered ? "Sélectionner un enfant" : "S'inscrire pour moi-même"
   
   # Calculer si on doit afficher l'essai gratuit pour les enfants (nécessaire pour le dropdown)
-  # Vérifier si on a des enfants avec statut trial (obligatoire) OU pending (optionnel) disponibles qui n'ont pas encore utilisé leur essai
+  # RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - chaque enfant DOIT utiliser son propre essai gratuit
+  # Vérifier si on a des enfants avec statut trial OU pending (tous OBLIGATOIRES) disponibles qui n'ont pas encore utilisé leur essai
   # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
   if is_initiation && user_signed_in?
-    # Enfants trial : essai gratuit OBLIGATOIRE
+    # Enfants trial : essai gratuit OBLIGATOIRE (nominatif)
     trial_children_preview = child_memberships.select { |m| m.trial? }
-    # Enfants pending : essai gratuit OPTIONNEL (selon 02-statut-pending.md)
+    # Enfants pending : essai gratuit OBLIGATOIRE (nominatif, même si parent adhérent)
     pending_children_preview = child_memberships.select { |m| m.pending? }
     # Afficher si on a des enfants trial OU pending qui peuvent utiliser leur essai
     show_free_trial_children = (trial_children_preview.any? { |child| 
@@ -351,10 +352,12 @@
   # 2. L'utilisateur n'est pas déjà inscrit (pour lui-même)
   # 3. Soit :
   #    a. Pour le parent : pas d'adhésion active ET pas déjà utilisé son essai gratuit
-  #    b. Pour un enfant : l'enfant a un statut trial ET n'a pas déjà utilisé son essai gratuit
+  #    b. Pour un enfant : l'enfant a un statut trial OU pending ET n'a pas déjà utilisé son essai gratuit (OBLIGATOIRE - nominatif)
   # 4. Si allow_non_member_discovery est activé, on affiche quand même l'option (l'utilisateur peut choisir)
+  # RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - chaque enfant DOIT utiliser son propre essai gratuit, même si le parent est adhérent
   
-  # Vérifier si on a des enfants avec statut trial (obligatoire) OU pending (optionnel) disponibles
+  # RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - chaque enfant DOIT utiliser son propre essai gratuit
+  # Vérifier si on a des enfants avec statut trial OU pending (tous OBLIGATOIRES) disponibles
   trial_children = child_memberships.select { |m| m.trial? }
   pending_children = child_memberships.select { |m| m.pending? }
   has_trial_children = trial_children.any?
@@ -378,16 +381,16 @@
   # L'option sera affichée dynamiquement via JavaScript selon l'enfant sélectionné
   # On prépare les données pour JavaScript
   # IMPORTANT : Utiliser .active pour exclure les attendances annulées
-  # Inclure les enfants trial (obligatoire) ET pending (optionnel)
+  # RÈGLE v4.0 : Inclure les enfants trial ET pending (tous OBLIGATOIRES - essais gratuits nominatifs)
   trial_children_data = (trial_children + pending_children).map do |child|
     {
       id: child.id,
       name: "#{child.child_first_name} #{child.child_last_name}",
-      status: child.status, # 'trial' ou 'pending' pour distinguer obligatoire vs optionnel
+      status: child.status, # 'trial' ou 'pending' - tous OBLIGATOIRES (essais gratuits nominatifs)
       has_used_trial: current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
       can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?,
-      is_trial: child.trial?, # Essai gratuit OBLIGATOIRE
-      is_pending: child.pending? # Essai gratuit OPTIONNEL
+      is_trial: child.trial?, # Essai gratuit OBLIGATOIRE (nominatif)
+      is_pending: child.pending? # Essai gratuit OBLIGATOIRE (nominatif, même si parent adhérent)
     }
   end.to_json
   
@@ -458,8 +461,9 @@
         if (selectedChild) {
           // Un enfant est sélectionné dans le menu déroulant
           // IMPORTANT : Afficher la checkbox UNIQUEMENT si cet enfant a un essai gratuit disponible
-          const isTrial = selectedChild.is_trial || selectedChild.status === 'trial'; // Essai gratuit OBLIGATOIRE
-          const isPending = selectedChild.is_pending || selectedChild.status === 'pending'; // Essai gratuit OPTIONNEL
+          // RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - tous les enfants pending et trial DOIVENT utiliser leur essai gratuit
+          const isTrial = selectedChild.is_trial || selectedChild.status === 'trial'; // Essai gratuit OBLIGATOIRE (nominatif)
+          const isPending = selectedChild.is_pending || selectedChild.status === 'pending'; // Essai gratuit OBLIGATOIRE (nominatif)
           const canUseTrial = selectedChild.can_use_trial && !selectedChild.has_used_trial;
           
           if (canUseTrial && (isTrial || isPending)) {
@@ -477,28 +481,13 @@
                 // toggleSubmitButton sera appelé à la fin de la fonction
               }
             } else if (isPending) {
-              // Enfant pending : essai gratuit OPTIONNEL si parent adhérent, OBLIGATOIRE sinon
-              const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
-              const allowNonMemberDiscovery = <%= event.allow_non_member_discovery? ? 'true' : 'false' %>;
-              
-              if (parentHasActiveMembership || allowNonMemberDiscovery) {
-                // Parent adhérent OU places découverte → essai optionnel
-                freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (optionnel)';
-                freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (optionnel) :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation, mais ce n\'est pas obligatoire car son adhésion est en attente de paiement. Vous pouvez vous inscrire sans utiliser l\'essai gratuit.';
-                if (freeTrialCheckbox) {
-                  freeTrialCheckbox.checked = false; // Pas cochée par défaut pour les enfants pending
-                  freeTrialCheckbox.required = false; // Pas obligatoire
-                  // toggleSubmitButton sera appelé à la fin de la fonction
-                }
-              } else {
-                // Parent non adhérent ET pas de places découverte → essai OBLIGATOIRE
-                freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (OBLIGATOIRE)';
-                freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (OBLIGATOIRE) :</strong> Cet enfant doit utiliser son essai gratuit pour cette initiation car vous n\'avez pas d\'adhésion active. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
-                if (freeTrialCheckbox) {
-                  freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants pending si parent non adhérent
-                  freeTrialCheckbox.required = true; // Rendre obligatoire
-                  // toggleSubmitButton sera appelé à la fin de la fonction
-                }
+              // RÈGLE v4.0 : Essais gratuits NOMINATIFS - l'essai gratuit est OBLIGATOIRE pour les enfants pending, même si le parent est adhérent
+              freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped + ' (OBLIGATOIRE)';
+              freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' (OBLIGATOIRE) :</strong> Cet enfant doit utiliser son essai gratuit pour cette initiation. Les essais gratuits sont nominatifs - chaque enfant a droit à son propre essai gratuit. <strong>Cette case doit être cochée pour confirmer l\'inscription.</strong> Après cet essai, une adhésion sera requise pour continuer.';
+              if (freeTrialCheckbox) {
+                freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants pending (obligatoire)
+                freeTrialCheckbox.required = true; // Rendre obligatoire
+                // toggleSubmitButton sera appelé à la fin de la fonction
               }
             }
           } else {
@@ -730,6 +719,7 @@
             const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
             const isPending = selectedChild.is_pending || selectedChild.status === 'pending';
             
+            // RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - tous les enfants trial et pending DOIVENT utiliser leur essai gratuit
             // Pour les enfants trial : essai gratuit OBLIGATOIRE, désactiver le bouton si non coché
             if (isTrial && !freeTrialCheckbox.checked) {
               btn.disabled = true;
@@ -738,25 +728,13 @@
               btn.style.cursor = 'not-allowed';
               return;
             }
-            // Pour les enfants pending : essai gratuit OPTIONNEL si parent adhérent, OBLIGATOIRE sinon
-            if (isPending) {
-              if (parentHasActiveMembership || allowNonMemberDiscovery) {
-                // Parent adhérent OU places découverte → essai optionnel
-                btn.disabled = false;
-                btn.classList.remove('disabled', 'opacity-50');
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-                return;
-              } else {
-                // Parent non adhérent ET pas de places découverte → essai OBLIGATOIRE
-                if (!freeTrialCheckbox.checked) {
-                  btn.disabled = true;
-                  btn.classList.add('disabled', 'opacity-50');
-                  btn.style.opacity = '0.6';
-                  btn.style.cursor = 'not-allowed';
-                  return;
-                }
-              }
+            // Pour les enfants pending : essai gratuit OBLIGATOIRE (nominatif, même si parent adhérent)
+            if (isPending && !freeTrialCheckbox.checked) {
+              btn.disabled = true;
+              btn.classList.add('disabled', 'opacity-50');
+              btn.style.opacity = '0.6';
+              btn.style.cursor = 'not-allowed';
+              return;
             }
           }
         <% end %>

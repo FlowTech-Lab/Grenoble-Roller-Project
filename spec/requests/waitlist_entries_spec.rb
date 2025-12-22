@@ -61,6 +61,211 @@ RSpec.describe 'Waitlist Entries', type: :request do
     end
   end
 
+  describe 'POST /initiations/:initiation_id/waitlist_entries' do
+    context 'when initiation is full' do
+      before do
+        fill_event_to_capacity(initiation, 2)
+      end
+
+      it 'requires authentication' do
+        post initiation_waitlist_entries_path(initiation)
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+
+      context 'with parent free trial' do
+        it 'allows parent to join waitlist with free trial if not already used' do
+          login_user(user)
+
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.to change { WaitlistEntry.count }.by(1)
+
+          waitlist_entry = WaitlistEntry.last
+          expect(waitlist_entry.use_free_trial).to be true
+          expect(waitlist_entry.child_membership_id).to be_nil
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(flash[:notice]).to be_present
+        end
+
+        it 'prevents parent from joining waitlist if free trial already used' do
+          # Créer une attendance avec essai gratuit utilisé pour le parent
+          other_initiation = create(:event_initiation, :published, :upcoming, max_participants: 10)
+          create(:attendance, 
+            user: user, 
+            event: other_initiation, 
+            status: 'registered',
+            free_trial_used: true,
+            child_membership_id: nil
+          )
+
+          login_user(user)
+
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.not_to change { WaitlistEntry.count }
+
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(flash[:alert]).to include("Vous avez déjà utilisé votre essai gratuit")
+        end
+      end
+
+      context 'with child free trial' do
+        let(:child_membership) do
+          create(:membership, :child, :trial, :with_health_questionnaire,
+            user: user,
+            season: '2025-2026'
+          )
+        end
+
+        it 'allows child to join waitlist with free trial if not already used' do
+          login_user(user)
+
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              child_membership_id: child_membership.id,
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.to change { WaitlistEntry.count }.by(1)
+
+          waitlist_entry = WaitlistEntry.last
+          expect(waitlist_entry.use_free_trial).to be true
+          expect(waitlist_entry.child_membership_id).to eq(child_membership.id)
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(flash[:notice]).to be_present
+        end
+
+        it 'prevents child from joining waitlist if free trial already used for this child' do
+          # Créer une attendance avec essai gratuit utilisé pour CET ENFANT
+          other_initiation = create(:event_initiation, :published, :upcoming, max_participants: 10)
+          create(:attendance, 
+            user: user, 
+            event: other_initiation, 
+            status: 'registered',
+            free_trial_used: true,
+            child_membership_id: child_membership.id
+          )
+
+          login_user(user)
+
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              child_membership_id: child_membership.id,
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.not_to change { WaitlistEntry.count }
+
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(flash[:alert]).to include("Cet enfant a déjà utilisé son essai gratuit")
+        end
+
+        it 'allows child to join waitlist even if parent has used free trial' do
+          # Créer une attendance avec essai gratuit utilisé pour le PARENT (pas l'enfant)
+          other_initiation = create(:event_initiation, :published, :upcoming, max_participants: 10)
+          create(:attendance, 
+            user: user, 
+            event: other_initiation, 
+            status: 'registered',
+            free_trial_used: true,
+            child_membership_id: nil  # Essai utilisé par le parent
+          )
+
+          login_user(user)
+
+          # L'enfant devrait pouvoir utiliser son essai gratuit même si le parent a utilisé le sien
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              child_membership_id: child_membership.id,
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.to change { WaitlistEntry.count }.by(1)
+
+          waitlist_entry = WaitlistEntry.last
+          expect(waitlist_entry.use_free_trial).to be true
+          expect(waitlist_entry.child_membership_id).to eq(child_membership.id)
+          expect(response).to redirect_to(initiation_path(initiation))
+          expect(flash[:notice]).to be_present
+        end
+
+        it 'allows multiple children to join waitlist with their own free trials' do
+          child_membership1 = create(:membership, :child, :trial, :with_health_questionnaire,
+            user: user,
+            season: '2025-2026',
+            child_first_name: 'Enfant1',
+            child_last_name: 'Test'
+          )
+          child_membership2 = create(:membership, :child, :trial, :with_health_questionnaire,
+            user: user,
+            season: '2025-2026',
+            child_first_name: 'Enfant2',
+            child_last_name: 'Test'
+          )
+
+          login_user(user)
+
+          # Premier enfant
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              child_membership_id: child_membership1.id,
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.to change { WaitlistEntry.count }.by(1)
+
+          # Deuxième enfant (devrait pouvoir utiliser son propre essai gratuit)
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              child_membership_id: child_membership2.id,
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.to change { WaitlistEntry.count }.by(1)
+
+          waitlist_entries = WaitlistEntry.where(event: initiation, user: user).order(:created_at)
+          expect(waitlist_entries.count).to eq(2)
+          expect(waitlist_entries.first.child_membership_id).to eq(child_membership1.id)
+          expect(waitlist_entries.second.child_membership_id).to eq(child_membership2.id)
+          expect(waitlist_entries.first.use_free_trial).to be true
+          expect(waitlist_entries.second.use_free_trial).to be true
+        end
+      end
+
+      context 'with child pending membership' do
+        let(:child_membership) do
+          create(:membership, :child, :pending, :with_health_questionnaire,
+            user: user,
+            season: '2025-2026'
+          )
+        end
+
+        it 'allows child with pending membership to join waitlist with free trial' do
+          login_user(user)
+
+          expect {
+            post initiation_waitlist_entries_path(initiation), params: { 
+              child_membership_id: child_membership.id,
+              use_free_trial: '1',
+              wants_reminder: false
+            }
+          }.to change { WaitlistEntry.count }.by(1)
+
+          waitlist_entry = WaitlistEntry.last
+          expect(waitlist_entry.use_free_trial).to be true
+          expect(waitlist_entry.child_membership_id).to eq(child_membership.id)
+        end
+      end
+    end
+  end
+
   describe 'DELETE /waitlist_entries/:id' do
     # Créer dans before block pour éviter le cache d'association RSpec
     before do

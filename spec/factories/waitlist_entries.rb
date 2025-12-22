@@ -38,5 +38,13 @@ FactoryBot.define do
     trait :with_reminder do
       wants_reminder { true }
     end
+
+    trait :with_free_trial do
+      use_free_trial { true }
+    end
+
+    trait :for_child do
+      association :child_membership, factory: :membership, traits: [:child, :trial, :with_health_questionnaire]
+    end
   end
 end
