@@ -22,6 +22,20 @@ Rails.application.routes.draw do
       member { patch :change_status }
       collection { get :export }
     end
+    
+    # Initiations
+    resources :initiations do
+      member do
+        get :presences
+        patch :update_presences
+        post :convert_waitlist
+        post :notify_waitlist
+        patch :toggle_volunteer
+      end
+    end
+    
+    # Roller Stock
+    resources :roller_stocks, path: 'roller-stocks'
   end
 
   # Ressource REST pour le mode maintenance

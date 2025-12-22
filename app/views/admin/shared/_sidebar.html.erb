@@ -35,14 +35,14 @@
         <% end %>
       </li>
 
-      <!-- PRODUITS (AdminPanel) -->
+      <!-- INITIATIONS (AdminPanel) -->
       <li class="nav-item">
-        <%= link_to admin_panel_products_path, 
-            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'products' && controller.class.name.start_with?('AdminPanel::')}",
-            title: "Produits",
+        <%= link_to admin_panel_initiations_path, 
+            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'initiations' && controller.class.name.start_with?('AdminPanel::')}",
+            title: "Initiations",
             data: { tooltip_placement: "right" } do %>
-          <i class="bi bi-bag fs-5"></i>
-          <span class="sidebar-label">Produits</span>
+          <i class="bi bi-people fs-5"></i>
+          <span class="sidebar-label">Initiations</span>
         <% end %>
       </li>
 
@@ -114,10 +114,10 @@
           <% end %>
         </li>
         <li class="nav-item">
-          <%= link_to admin_panel_products_path, 
-              class: "nav-link #{'active' if controller_name == 'products' && controller.class.name.start_with?('AdminPanel::')}", 
+          <%= link_to admin_panel_initiations_path, 
+              class: "nav-link #{'active' if controller_name == 'initiations' && controller.class.name.start_with?('AdminPanel::')}", 
               data: { bs_dismiss: "offcanvas" } do %>
-            <i class="bi bi-bag me-2"></i>Produits
+            <i class="bi bi-people me-2"></i>Initiations
           <% end %>
         </li>
         <li class="nav-item">

@@ -21,7 +21,7 @@ module AdminPanel
         return
       end
       
-      unless current_user&.role&.code.in?(%w[ADMIN SUPERADMIN])
+      unless current_user&.role&.level.to_i >= 60 # ADMIN (60) ou SUPERADMIN (70)
         redirect_to root_path, alert: 'Accès admin requis'
       end
     end

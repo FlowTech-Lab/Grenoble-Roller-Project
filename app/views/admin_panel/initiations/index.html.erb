@@ -1,0 +1,216 @@
+<% 
+  breadcrumb_items = [
+    { label: "Initiations", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Initiations</h1>
+  <% if current_user&.role&.level.to_i >= 60 %>
+    <%= link_to new_initiation_path, class: "btn btn-primary", target: "_blank" do %>
+      <i class="bi bi-plus-circle me-2"></i>
+      Créer une initiation
+    <% end %>
+  <% end %>
+</div>
+
+<!-- Filtres et recherche -->
+<div class="card mb-4">
+  <div class="card-body">
+    <%= search_form_for @q, url: admin_panel_initiations_path, method: :get, class: "row g-3" do |f| %>
+      <div class="col-md-4">
+        <%= f.label :title_cont, "Titre", class: "form-label" %>
+        <%= f.search_field :title_cont, class: "form-control", placeholder: "Rechercher..." %>
+      </div>
+      <div class="col-md-2">
+        <%= f.label :status_eq, "Statut", class: "form-label" %>
+        <%= f.select :status_eq,
+            options_for_select([
+              ["Tous", ""],
+              ["Brouillon", "draft"],
+              ["Publié", "published"],
+              ["Annulé", "canceled"]
+            ], params.dig(:q, :status_eq)),
+            {},
+            { class: "form-select" } %>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Filtre</label>
+        <%= select_tag :scope,
+            options_for_select([
+              ["Toutes", ""],
+              ["À venir uniquement", "upcoming"],
+              ["Publiées uniquement", "published"]
+            ], params[:scope]),
+            { class: "form-select" } %>
+      </div>
+      <div class="col-md-4 d-flex align-items-end justify-content-end gap-2">
+        <%= f.submit "Filtrer", class: "btn btn-outline-primary" %>
+        <%= link_to "Réinitialiser", admin_panel_initiations_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Initiations à venir -->
+<% if @upcoming_initiations.any? %>
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+        <i class="bi bi-calendar-event me-2"></i>
+        Initiations à venir (<%= @upcoming_initiations.count %>)
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Date/Heure</th>
+              <th>Statut</th>
+              <th>Places</th>
+              <th>Participants</th>
+              <th>Bénévoles</th>
+              <th>Liste d'attente</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @upcoming_initiations.each do |initiation| %>
+              <tr>
+                <td><%= initiation.title %></td>
+                <td>
+                  <%= l(initiation.start_at, format: :short) if initiation.start_at %>
+                  <br>
+                  <small class="text-muted">10h15-12h00</small>
+                </td>
+                <td>
+                  <% case initiation.status %>
+                  <% when 'published' %>
+                    <span class="badge bg-success">Publié</span>
+                  <% when 'draft' %>
+                    <span class="badge bg-secondary">Brouillon</span>
+                  <% when 'canceled' %>
+                    <span class="badge bg-danger">Annulé</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if initiation.full? %>
+                    <span class="badge bg-danger">COMPLET</span>
+                  <% else %>
+                    <span class="badge bg-success">
+                      <%= initiation.participants_count %>/<%= initiation.max_participants %>
+                    </span>
+                  <% end %>
+                </td>
+                <td><%= initiation.participants_count %></td>
+                <td><%= initiation.volunteers_count %></td>
+                <td>
+                  <% waitlist_count = initiation.waitlist_entries.active.count %>
+                  <% if waitlist_count > 0 %>
+                    <span class="badge bg-warning"><%= waitlist_count %></span>
+                  <% else %>
+                    <span class="text-muted">0</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "Voir", admin_panel_initiation_path(initiation), class: "btn btn-outline-primary" %>
+                    <%= link_to "Présences", presences_admin_panel_initiation_path(initiation), class: "btn btn-outline-info" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Initiations passées -->
+<% if @past_initiations.any? %>
+  <div class="card">
+    <div class="card-header bg-secondary text-white">
+      <h5 class="mb-0">
+        <i class="bi bi-calendar-check me-2"></i>
+        Initiations passées (<%= @past_initiations.count %>)
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Date/Heure</th>
+              <th>Statut</th>
+              <th>Places</th>
+              <th>Participants</th>
+              <th>Bénévoles</th>
+              <th>Liste d'attente</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @past_initiations.each do |initiation| %>
+              <tr class="opacity-75">
+                <td><%= initiation.title %></td>
+                <td>
+                  <%= l(initiation.start_at, format: :short) if initiation.start_at %>
+                  <br>
+                  <small class="text-muted">10h15-12h00</small>
+                </td>
+                <td>
+                  <% case initiation.status %>
+                  <% when 'published' %>
+                    <span class="badge bg-success">Publié</span>
+                  <% when 'draft' %>
+                    <span class="badge bg-secondary">Brouillon</span>
+                  <% when 'canceled' %>
+                    <span class="badge bg-danger">Annulé</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if initiation.full? %>
+                    <span class="badge bg-danger">COMPLET</span>
+                  <% else %>
+                    <span class="badge bg-success">
+                      <%= initiation.participants_count %>/<%= initiation.max_participants %>
+                    </span>
+                  <% end %>
+                </td>
+                <td><%= initiation.participants_count %></td>
+                <td><%= initiation.volunteers_count %></td>
+                <td>
+                  <% waitlist_count = initiation.waitlist_entries.active.count %>
+                  <% if waitlist_count > 0 %>
+                    <span class="badge bg-warning"><%= waitlist_count %></span>
+                  <% else %>
+                    <span class="text-muted">0</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "Voir", admin_panel_initiation_path(initiation), class: "btn btn-outline-primary" %>
+                    <%= link_to "Présences", presences_admin_panel_initiation_path(initiation), class: "btn btn-outline-info" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Message si aucune initiation -->
+<% if @upcoming_initiations.empty? && @past_initiations.empty? %>
+  <div class="alert alert-info">
+    Aucune initiation trouvée.
+  </div>
+<% end %>

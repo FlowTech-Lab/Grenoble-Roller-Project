@@ -1,0 +1,57 @@
+<% 
+  breadcrumb_items = [
+    { label: "Stock Rollers", url: admin_panel_roller_stocks_path },
+    { label: "Taille #{@roller_stock.size}", url: admin_panel_roller_stock_path(@roller_stock) },
+    { label: "Éditer", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Éditer Stock - Taille <%= @roller_stock.size %></h1>
+  <%= link_to "Retour", admin_panel_roller_stock_path(@roller_stock), class: "btn btn-outline-secondary" %>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <%= form_with model: [:admin_panel, @roller_stock], local: true do |f| %>
+      <% if @roller_stock.errors.any? %>
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            <% @roller_stock.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="row">
+        <div class="col-md-6">
+          <%= f.label :size, "Taille (EU)", class: "form-label" %>
+          <%= f.select :size,
+              options_for_select(RollerStock::SIZES.map { |s| [s, s] }, @roller_stock.size),
+              {},
+              { class: "form-select", disabled: true } %>
+          <small class="text-muted">La taille ne peut pas être modifiée.</small>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :quantity, "Quantité", class: "form-label" %>
+          <%= f.number_field :quantity, class: "form-control", min: 0 %>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <div class="form-check">
+          <%= f.check_box :is_active, class: "form-check-input" %>
+          <%= f.label :is_active, "Actif", class: "form-check-label" %>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <%= f.submit "Mettre à jour", class: "btn btn-primary" %>
+        <%= link_to "Annuler", admin_panel_roller_stock_path(@roller_stock), class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

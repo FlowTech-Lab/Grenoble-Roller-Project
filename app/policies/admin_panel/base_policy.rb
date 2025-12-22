@@ -44,14 +44,14 @@ module AdminPanel
       private
 
       def admin_user?
-        user.present? && user.role&.code.in?(%w[ADMIN SUPERADMIN])
+        user.present? && user.role&.level.to_i >= 60 # ADMIN (60) ou SUPERADMIN (70)
       end
     end
 
     private
 
     def admin_user?
-      user.present? && user.role&.code.in?(%w[ADMIN SUPERADMIN])
+      user.present? && user.role&.level.to_i >= 60 # ADMIN (60) ou SUPERADMIN (70)
     end
   end
 end
