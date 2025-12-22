@@ -8,6 +8,9 @@
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application.bootstrap", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <script type="module">
+      import "admin_panel_navbar";
+    </script>
   </head>
 
   <body class="d-flex flex-column min-vh-100">
@@ -15,12 +18,12 @@
     <%= render 'layouts/navbar' %>
 
     <!-- CONTENEUR ADMIN: Sidebar + Contenu -->
-    <div class="d-flex flex-grow-1" style="overflow: hidden;">
-      <!-- SIDEBAR ADMIN -->
+    <div class="d-flex flex-grow-1 position-relative admin-container">
+      <!-- SIDEBAR ADMIN (fixed pour coller en haut après navbar) -->
       <%= render 'admin/shared/sidebar' %>
 
-      <!-- CONTENU PRINCIPAL -->
-      <main class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
+      <!-- CONTENU PRINCIPAL (avec marge pour la sidebar) -->
+      <main class="flex-grow-1 d-flex flex-column admin-main-content">
         <div class="container-fluid p-3 p-lg-4">
           <!-- Flash messages -->
           <% if notice %>

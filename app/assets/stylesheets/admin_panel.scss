@@ -1,0 +1,65 @@
+// ============================================
+// ADMIN PANEL - Styles spécifiques
+// ============================================
+
+// Variables CSS
+:root {
+  --navbar-height: 76px; // Hauteur approximative de la navbar
+}
+
+// Sidebar fixe qui colle en haut après navbar
+.admin-sidebar {
+  width: 280px;
+  height: calc(100vh - var(--navbar-height, 76px));
+  top: var(--navbar-height, 76px);
+  left: 0;
+  z-index: 1000;
+  transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#sidebar {
+  top: var(--navbar-height, 76px) !important;
+  height: calc(100vh - var(--navbar-height, 76px)) !important;
+}
+
+// Ajuster le contenu principal quand sidebar est réduite
+.admin-main-content {
+  margin-left: 280px;
+  transition: margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#sidebar.collapsed ~ * .admin-main-content,
+#sidebar.collapsed + main.admin-main-content {
+  margin-left: 64px;
+}
+
+// Transitions fluides pour les labels et chevrons
+.sidebar-label,
+.bi-chevron-right,
+.bi-chevron-down {
+  transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+#sidebar.collapsed .sidebar-label,
+#sidebar.collapsed .bi-chevron-right,
+#sidebar.collapsed .bi-chevron-down {
+  opacity: 0;
+  visibility: hidden;
+}
+
+// Bouton toggle bien positionné dans le header
+.admin-sidebar-toggle {
+  right: 0.75rem;
+  z-index: 10;
+}
+
+// Conteneur admin
+.admin-container {
+  overflow: hidden;
+}
+
+// Bouton hamburger mobile
+.admin-mobile-menu-toggle {
+  top: var(--navbar-height, 76px);
+  z-index: 1030;
+}

@@ -13,6 +13,34 @@ module AdminPanelHelper
     current_user.role.level.to_i >= 60 # ADMIN (60) ou SUPERADMIN (70)
   end
 
+  # Helper pour vérifier les permissions sidebar par niveau
+  def can_access_admin_panel?(min_level = 60)
+    return false unless current_user&.role
+
+    current_user.role.level.to_i >= min_level
+  end
+
+  # Helper pour vérifier si on peut voir les initiations (level >= 30)
+  def can_view_initiations?
+    can_access_admin_panel?(30)
+  end
+
+  # Helper pour vérifier si on peut voir la boutique (level >= 60)
+  def can_view_boutique?
+    can_access_admin_panel?(60)
+  end
+
+  # Helper pour vérifier si un controller est actif dans AdminPanel
+  def admin_panel_active?(controller_name, action_name = nil)
+    return false unless controller.class.name.start_with?('AdminPanel::')
+
+    if action_name
+      controller_name.to_s == controller.controller_name && action_name.to_s == controller.action_name
+    else
+      controller_name.to_s == controller.controller_name
+    end
+  end
+
   # Traduit les statuts d'attendance en français
   def attendance_status_fr(status)
     case status.to_s

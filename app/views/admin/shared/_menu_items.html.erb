@@ -1,0 +1,110 @@
+<% 
+  # Partial réutilisable pour les items de menu
+  # Utilisé à la fois pour desktop et mobile
+%>
+
+<!-- TABLEAU DE BORD (level >= 60 uniquement) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="nav-item">
+    <%= link_to admin_panel_root_path, 
+        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('dashboard')}",
+        title: "Tableau de bord",
+        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-speedometer2 fs-5"></i>
+      <span class="sidebar-label">Tableau de bord</span>
+    <% end %>
+  </li>
+<% end %>
+
+<!-- BOUTIQUE (level >= 60 uniquement) - Avec sous-menus -->
+<% if can_view_boutique? %>
+  <li class="nav-item">
+    <% 
+      # Vérifier si on est dans une section boutique
+      boutique_active = admin_panel_active?('products') || 
+                        admin_panel_active?('product_categories') ||
+                        (controller.controller_name == 'product_variants' && controller.class.name.start_with?('AdminPanel::'))
+      collapse_id = "collapse-boutique-#{mobile ? 'mobile' : 'desktop'}"
+    %>
+    <a class="nav-link d-flex align-items-center gap-2 <%= 'active' if boutique_active %>" 
+       href="#<%= collapse_id %>" 
+       data-bs-toggle="collapse" 
+       aria-expanded="<%= boutique_active ? 'true' : 'false' %>"
+       aria-controls="<%= collapse_id %>"
+       title="Boutique"
+       data: { tooltip_placement: "right" }>
+      <i class="bi bi-shop fs-5"></i>
+      <span class="sidebar-label">Boutique</span>
+      <i class="bi bi-chevron-<%= boutique_active ? 'down' : 'right' %> ms-auto"></i>
+    </a>
+    <div class="collapse <%= 'show' if boutique_active %>" id="<%= collapse_id %>">
+      <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
+        <li class="nav-item">
+          <%= link_to admin_panel_products_path, 
+              class: "nav-link small #{'active' if admin_panel_active?('products')}",
+              data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+            <span class="sidebar-label">Produits</span>
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to admin_panel_products_path, 
+              class: "nav-link small #{'active' if false}", # TODO: Ajouter route inventaire quand disponible
+              data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+            <span class="sidebar-label">Inventaire</span>
+          <% end %>
+        </li>
+        <li class="nav-item">
+          <%= link_to admin_panel_product_categories_path, 
+              class: "nav-link small #{'active' if admin_panel_active?('product_categories')}",
+              data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+            <span class="sidebar-label">Catégories</span>
+          <% end %>
+        </li>
+      </ul>
+    </div>
+  </li>
+<% end %>
+
+<!-- INITIATIONS (level >= 30 : INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN) -->
+<% if can_view_initiations? %>
+  <li class="nav-item">
+    <%= link_to admin_panel_initiations_path, 
+        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('initiations')}",
+        title: "Initiations",
+        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-people fs-5"></i>
+      <span class="sidebar-label">Initiations</span>
+    <% end %>
+  </li>
+<% end %>
+
+<!-- COMMANDES (level >= 60 uniquement) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="nav-item">
+    <%= link_to admin_panel_orders_path, 
+        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('orders')}",
+        title: "Commandes",
+        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-box-seam fs-5"></i>
+      <span class="sidebar-label">Commandes</span>
+    <% end %>
+  </li>
+<% end %>
+
+<!-- SÉPARATEUR -->
+<li class="nav-item">
+  <hr class="border-secondary my-2">
+</li>
+
+<!-- ACTIVEADMIN (Lien vers l'ancien admin) -->
+<li class="nav-item">
+  <%= link_to "/activeadmin", 
+      class: "nav-link d-flex align-items-center gap-2 text-warning",
+      title: "ActiveAdmin (Ancien panel)",
+      target: "_blank",
+      data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+    <i class="bi bi-gear fs-5"></i>
+    <span class="sidebar-label">ActiveAdmin</span>
+    <i class="bi bi-box-arrow-up-right ms-auto small"></i>
+  <% end %>
+</li>
