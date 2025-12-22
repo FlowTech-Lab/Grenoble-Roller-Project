@@ -62,8 +62,7 @@ class WaitlistEntry < ApplicationRecord
     if attendance.save(validate: false) # Sauvegarder sans validation pour éviter les erreurs d'autorisation
       update!(
         status: "notified",
-        notified_at: Time.current,
-        pending_attendance_id: attendance.id  # Stocker l'ID pour éviter les problèmes de recherche
+        notified_at: Time.current
       )
 
       # Envoyer l'email immédiatement (pas en queue) pour s'assurer qu'il est envoyé
