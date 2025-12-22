@@ -133,47 +133,12 @@
                   freeTrialCheckbox.required = false;
                 }
               }
-              
-              // Mettre à jour l'état du bouton
-              toggleSubmitButton();
-            }
-            
-            function toggleSubmitButton() {
-              if (!submitBtn || !freeTrialCheckbox) return;
-              
-              const selectedChildId = parseInt(childSelect?.value);
-              const selectedChild = childMemberships.find(c => c.id === selectedChildId);
-              
-              if (selectedChild && (selectedChild.status === 'trial' || selectedChild.status === 'pending')) {
-                // Essai gratuit obligatoire
-                if (!freeTrialCheckbox.checked) {
-                  submitBtn.disabled = true;
-                  submitBtn.classList.add('disabled', 'opacity-50');
-                  submitBtn.style.opacity = '0.6';
-                  submitBtn.style.cursor = 'not-allowed';
-                } else {
-                  submitBtn.disabled = false;
-                  submitBtn.classList.remove('disabled', 'opacity-50');
-                  submitBtn.style.opacity = '1';
-                  submitBtn.style.cursor = 'pointer';
-                }
-              } else {
-                // Pas d'essai gratuit requis
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('disabled', 'opacity-50');
-                submitBtn.style.opacity = '1';
-                submitBtn.style.cursor = 'pointer';
-              }
             }
             
             if (childSelect) {
               childSelect.addEventListener('change', updateFreeTrialDisplay);
               // Initialiser au chargement
               updateFreeTrialDisplay();
-            }
-            
-            if (freeTrialCheckbox) {
-              freeTrialCheckbox.addEventListener('change', toggleSubmitButton);
             }
           })();
         </script>

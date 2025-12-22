@@ -226,10 +226,14 @@ class WaitlistEntry < ApplicationRecord
   end
 
   # Envoyer l'email de notification pour une place disponible
+  # IMPORTANT : Cet email est TOUJOURS envoyé, même si l'utilisateur a désactivé wants_events_mail
+  # Car c'est un email critique qui permet à l'utilisateur de confirmer sa place dans les 24h
+  # L'utilisateur a explicitement demandé à être sur la file d'attente, il doit recevoir la notification
   def send_notification_email
-    EventMailer.waitlist_spot_available(self).deliver_now
+    EventMailer.waitlist_spot_available(self).deliver_later
   rescue => e
     Rails.logger.error("Failed to send waitlist notification email for WaitlistEntry #{id}: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
     # Ne pas faire échouer la notification si l'email échoue
   end
 

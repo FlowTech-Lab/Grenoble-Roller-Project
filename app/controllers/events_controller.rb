@@ -3,6 +3,8 @@ class EventsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
   before_action :load_supporting_data, only: %i[new create edit update]
 
+  rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
+
   def index
     # Exclure les initiations (qui ont leur propre contrôleur)
     scoped_events = policy_scope(Event.not_initiations.includes(:route, :creator_user))
@@ -303,5 +305,9 @@ class EventsController < ApplicationController
         distance_km: distance_km
       )
     end
+  end
+
+  def handle_record_not_found
+    redirect_to events_path, alert: "Cet événement n'existe pas ou n'est plus disponible."
   end
 end

@@ -217,7 +217,9 @@
       <% end %>
     </div>
       <div id="roller_size_container<%= prefix_id %>" style="display: none;" class="ms-4">
-      <%= label_tag "roller_size_select#{prefix_id}", "Taille de rollers", class: "form-label" %>
+      <%= label_tag "roller_size_select#{prefix_id}", class: "form-label" do %>
+        Taille de rollers
+      <% end %>
       <%= select_tag :roller_size, 
           options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
           { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}" } } %>
@@ -411,8 +413,7 @@
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
-        aria: { describedby: "free_trial_help#{prefix_id}" },
-        onchange: "window.toggleSubmitButton#{prefix_id} && window.toggleSubmitButton#{prefix_id}();"
+        aria: { describedby: "free_trial_help#{prefix_id}" }
     } %>
     <%= label_tag "use_free_trial#{prefix_id}", class: "form-check-label", id: "use_free_trial_label#{prefix_id}" do %>
       <i class="bi bi-gift me-1" aria-hidden="true"></i>
@@ -478,7 +479,6 @@
               if (freeTrialCheckbox) {
                 freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants trial
                 freeTrialCheckbox.required = true; // Rendre obligatoire
-                // toggleSubmitButton sera appelé à la fin de la fonction
               }
             } else if (isPending) {
               // RÈGLE v4.0 : Essais gratuits NOMINATIFS - l'essai gratuit est OBLIGATOIRE pour les enfants pending, même si le parent est adhérent
@@ -487,7 +487,6 @@
               if (freeTrialCheckbox) {
                 freeTrialCheckbox.checked = true; // Cocher par défaut pour les enfants pending (obligatoire)
                 freeTrialCheckbox.required = true; // Rendre obligatoire
-                // toggleSubmitButton sera appelé à la fin de la fonction
               }
             }
           } else {
@@ -496,7 +495,6 @@
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = false;
               freeTrialCheckbox.required = false;
-              // toggleSubmitButton sera appelé à la fin de la fonction
             }
           }
         } else {
@@ -519,7 +517,6 @@
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = false; // Pas cochée par défaut, l'utilisateur doit cocher explicitement
               freeTrialCheckbox.required = false; // Pas obligatoire si allow_non_member_discovery est activé
-              // toggleSubmitButton sera appelé à la fin de la fonction
             }
           } else {
             // Le parent n'a pas d'essai gratuit disponible → MASQUER la checkbox
@@ -527,14 +524,8 @@
             if (freeTrialCheckbox) {
               freeTrialCheckbox.checked = false;
               freeTrialCheckbox.required = false;
-              // toggleSubmitButton sera appelé à la fin de la fonction
             }
           }
-        }
-        
-        // Appeler toggleSubmitButton UNE SEULE FOIS à la fin pour mettre à jour l'état du bouton
-        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
-          window.toggleSubmitButton<%= prefix_id %>();
         }
       }
       
@@ -612,16 +603,10 @@
       if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'function') {
         window.setupModalListenerGeneric<%= prefix_id %>(function() {
           setupFreeTrialDisplay<%= prefix_id %>();
-          if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
-            window.toggleSubmitButton<%= prefix_id %>();
-          }
         });
         setTimeout(function() {
           window.setupModalListenerGeneric<%= prefix_id %>(function() {
             setupFreeTrialDisplay<%= prefix_id %>();
-            if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
-              window.toggleSubmitButton<%= prefix_id %>();
-            }
           });
         }, 500);
       }
@@ -661,135 +646,6 @@
       }
     };
   }
-  
-  // Fonction pour activer/désactiver le bouton de soumission selon l'essai gratuit (accessible globalement)
-  <% if show_free_trial %>
-    // Définir la fonction globalement pour qu'elle soit accessible depuis l'attribut onchange
-    window.toggleSubmitButton<%= prefix_id %> = function() {
-      // Trouver le formulaire avec le bon ID (chercher avec et sans underscore)
-      const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, ''); // Enlever le underscore initial
-      const formId = 'attendForm<%= prefix_id %>';
-      const formIdClean = 'attendForm' + prefixIdClean;
-      const form = document.getElementById(formId) || 
-                   document.getElementById(formIdClean) ||
-                   document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
-                   document.getElementById('joinWaitlistForm' + prefixIdClean) ||
-                   document.querySelector('form[id*="attendForm"]');
-      if (!form) {
-        console.warn('toggleSubmitButton<%= prefix_id %>: Formulaire non trouvé (cherché:', formId, formIdClean, ')');
-        return;
-      }
-      const btn = form.querySelector('input[type="submit"], button[type="submit"]');
-      if (!btn) {
-        console.warn('toggleSubmitButton<%= prefix_id %>: Bouton submit non trouvé dans le formulaire:', form.id);
-        return;
-      }
-      const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
-      const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
-      
-      // Déclarer les variables une seule fois au début de la fonction (évite les erreurs de redéclaration)
-      const allowNonMemberDiscovery = <%= event.allow_non_member_discovery? ? 'true' : 'false' %>;
-      
-      // Si pas de checkbox essai gratuit, activer le bouton (pas d'essai gratuit requis)
-      if (!freeTrialCheckbox) {
-        btn.disabled = false;
-        btn.classList.remove('disabled', 'opacity-50');
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-        return;
-      }
-      
-      // IMPORTANT : Même avec allow_non_member_discovery activé, le bouton doit être gris si la checkbox n'est pas cochée
-      // L'utilisateur doit explicitement cocher la checkbox pour activer le bouton
-      // (même si techniquement il pourrait s'inscrire via les places découverte, on force l'utilisation de l'essai gratuit)
-      
-      // Données des enfants (disponibles même si show_free_trial_children est false, pour le cas parent seul)
-      <% if show_free_trial %>
-        const trialChildrenData<%= prefix_id %> = <%= raw trial_children_data %>;
-        const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
-      <% end %>
-      
-      // Vérifier d'abord si un enfant est sélectionné (logique spécifique pour les enfants)
-      if (childSelect && childSelect.value) {
-        const selectedChildId = parseInt(childSelect.value);
-        <% if show_free_trial %>
-          const selectedChild = trialChildrenData<%= prefix_id %>.find(c => c.id === selectedChildId);
-          
-          if (selectedChild) {
-            const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
-            const isPending = selectedChild.is_pending || selectedChild.status === 'pending';
-            
-            // RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - tous les enfants trial et pending DOIVENT utiliser leur essai gratuit
-            // Pour les enfants trial : essai gratuit OBLIGATOIRE, désactiver le bouton si non coché
-            if (isTrial && !freeTrialCheckbox.checked) {
-              btn.disabled = true;
-              btn.classList.add('disabled', 'opacity-50');
-              btn.style.opacity = '0.6';
-              btn.style.cursor = 'not-allowed';
-              return;
-            }
-            // Pour les enfants pending : essai gratuit OBLIGATOIRE (nominatif, même si parent adhérent)
-            if (isPending && !freeTrialCheckbox.checked) {
-              btn.disabled = true;
-              btn.classList.add('disabled', 'opacity-50');
-              btn.style.opacity = '0.6';
-              btn.style.cursor = 'not-allowed';
-              return;
-            }
-          }
-        <% end %>
-      }
-      
-      // Pour le parent ou si aucun enfant sélectionné
-      // Vérifier que le parent a réellement un essai gratuit disponible
-      <% if show_free_trial %>
-        const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
-      <% else %>
-        const parentCanUseTrial = false;
-      <% end %>
-      
-      if (freeTrialCheckbox.checked) {
-        // La checkbox est cochée : vérifier que le parent a vraiment un essai disponible
-        if (!parentCanUseTrial && !allowNonMemberDiscovery) {
-          // Le parent n'a pas d'essai ET pas de places découverte → bloquer
-          btn.disabled = true;
-          btn.classList.add('disabled', 'opacity-50');
-          btn.style.opacity = '0.6';
-          btn.style.cursor = 'not-allowed';
-          console.warn('toggleSubmitButton<%= prefix_id %>: Parent n\'a pas d\'essai gratuit disponible');
-          return;
-        }
-        // Le parent a un essai OU places découverte disponibles → activer
-        btn.disabled = false;
-        btn.classList.remove('disabled', 'opacity-50');
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-        console.log('toggleSubmitButton<%= prefix_id %>: Bouton activé (checkbox cochée)');
-      } else {
-        // La checkbox n'est pas cochée
-        if (allowNonMemberDiscovery) {
-          // Places découverte disponibles → permettre l'inscription sans essai
-          btn.disabled = false;
-          btn.classList.remove('disabled', 'opacity-50');
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-          console.log('toggleSubmitButton<%= prefix_id %>: Bouton activé (places découverte disponibles)');
-        } else {
-          // Pas de places découverte → bloquer si pas d'essai
-          btn.disabled = true;
-          btn.classList.add('disabled', 'opacity-50');
-          btn.style.opacity = '0.6';
-          btn.style.cursor = 'not-allowed';
-          console.log('toggleSubmitButton<%= prefix_id %>: Bouton désactivé (checkbox non cochée)');
-        }
-      }
-    };
-  <% else %>
-    // Fonction vide si l'essai gratuit n'est pas disponible (pour éviter les erreurs)
-    window.toggleSubmitButton<%= prefix_id %> = function() {
-      // Ne rien faire si l'essai gratuit n'est pas disponible
-    };
-  <% end %>
   
   // Validation JavaScript avant soumission (spécifique à ce formulaire)
   (function() {
@@ -833,11 +689,8 @@
         }
       <% end %>
       
-      // NOTE : Pas de validation JavaScript pour l'essai gratuit car :
-      // 1. Le bouton est déjà désactivé (gris) si l'essai gratuit n'est pas coché (via toggleSubmitButton)
-      // 2. Si le bouton est actif (bleu), c'est que l'essai gratuit est coché
-      // 3. La validation serveur existe déjà pour sécuriser
-      // Cette validation JavaScript était redondante et créait un conflit
+      // NOTE : La validation serveur existe pour sécuriser l'inscription
+      // Les erreurs seront affichées via des notifications
       
       // Marquer comme en cours de soumission
       isSubmitting = true;
@@ -850,46 +703,6 @@
         submitButton.textContent = 'Inscription en cours...';
       }
     });
-    
-    // Initialiser l'état du bouton au chargement
-    <% if show_free_trial %>
-      // Désactiver le bouton par défaut si essai gratuit requis
-      // Si allow_non_member_discovery est activé, le bouton sera activé par toggleSubmitButton
-      <% if !event.allow_non_member_discovery? %>
-        submitButton.disabled = true;
-        submitButton.classList.add('disabled', 'opacity-50');
-        submitButton.style.opacity = '0.6';
-        submitButton.style.cursor = 'not-allowed';
-      <% end %>
-      
-      // Initialiser l'état au chargement
-      function initSubmitButton<%= prefix_id %>() {
-        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
-          window.toggleSubmitButton<%= prefix_id %>();
-        }
-      }
-      
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSubmitButton<%= prefix_id %>);
-      } else {
-        initSubmitButton<%= prefix_id %>();
-      }
-      
-      // Support Turbo
-      document.addEventListener('turbo:load', initSubmitButton<%= prefix_id %>);
-      
-      // Configurer l'écouteur pour le bouton submit
-      if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'function') {
-        window.setupModalListenerGeneric<%= prefix_id %>(function() {
-          initSubmitButton<%= prefix_id %>();
-        });
-        setTimeout(function() {
-          window.setupModalListenerGeneric<%= prefix_id %>(function() {
-            initSubmitButton<%= prefix_id %>();
-          });
-        }, 500);
-      }
-    <% end %>
   })();
 </script>
 

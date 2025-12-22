@@ -292,21 +292,20 @@
           <p class="mb-0">Toutes les places sont prises. Rejoignez la liste d'attente pour être notifié(e) si une place se libère.</p>
           <% if user_signed_in? %>
             <div class="mt-3 d-flex flex-wrap gap-2">
-              <%# Bouton pour rejoindre la liste d'attente (adulte) si pas déjà en liste d'attente %>
-              <% if @user_waitlist_entry.nil? && !@user_attendance&.persisted? %>
-                <button type="button" 
-                        class="btn btn-liquid-primary" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#joinWaitlistModalShowInitiation"
-                        aria-label="Rejoindre la liste d'attente">
-                  <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Rejoindre la liste d'attente
-                </button>
-              <% end %>
+              <%# Bouton pour rejoindre la liste d'attente : toujours disponible %>
+              <button type="button" 
+                      class="btn btn-liquid-primary" 
+                      data-bs-toggle="modal" 
+                      data-bs-target="#joinWaitlistModalShowInitiation"
+                      aria-label="Rejoindre la liste d'attente">
+                <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Rejoindre la liste d'attente
+              </button>
               
               <%# Bouton pour inscrire un enfant si disponible %>
-              <% if @can_register_child && current_user.memberships.where(is_child_membership: true)
+              <% has_available_children = @can_register_child && current_user.memberships.where(is_child_membership: true)
                   .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
                   .where.not(id: @child_attendances.map(&:child_membership_id).compact).exists? %>
+              <% if has_available_children %>
                 <button type="button" 
                         class="btn btn-outline-primary" 
                         data-bs-toggle="modal" 
