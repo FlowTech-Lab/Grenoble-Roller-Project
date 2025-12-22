@@ -24,38 +24,44 @@
   <nav class="flex-grow-1 overflow-y-auto px-2 py-3">
     <ul class="nav nav-pills flex-column gap-2">
       
-      <!-- TABLEAU DE BORD -->
-      <li class="nav-item">
-        <%= link_to admin_panel_root_path, 
-            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'dashboard' && controller.class.name.start_with?('AdminPanel::')}",
-            title: "Tableau de bord",
-            data: { tooltip_placement: "right" } do %>
-          <i class="bi bi-speedometer2 fs-5"></i>
-          <span class="sidebar-label">Tableau de bord</span>
-        <% end %>
-      </li>
+      <!-- TABLEAU DE BORD (level >= 60 uniquement) -->
+      <% if current_user&.role&.level.to_i >= 60 %>
+        <li class="nav-item">
+          <%= link_to admin_panel_root_path, 
+              class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'dashboard' && controller.class.name.start_with?('AdminPanel::')}",
+              title: "Tableau de bord",
+              data: { tooltip_placement: "right" } do %>
+            <i class="bi bi-speedometer2 fs-5"></i>
+            <span class="sidebar-label">Tableau de bord</span>
+          <% end %>
+        </li>
+      <% end %>
 
-      <!-- INITIATIONS (AdminPanel) -->
-      <li class="nav-item">
-        <%= link_to admin_panel_initiations_path, 
-            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'initiations' && controller.class.name.start_with?('AdminPanel::')}",
-            title: "Initiations",
-            data: { tooltip_placement: "right" } do %>
-          <i class="bi bi-people fs-5"></i>
-          <span class="sidebar-label">Initiations</span>
-        <% end %>
-      </li>
+      <!-- INITIATIONS (level >= 30 : INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN) -->
+      <% if current_user&.role&.level.to_i >= 30 %>
+        <li class="nav-item">
+          <%= link_to admin_panel_initiations_path, 
+              class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'initiations' && controller.class.name.start_with?('AdminPanel::')}",
+              title: "Initiations",
+              data: { tooltip_placement: "right" } do %>
+            <i class="bi bi-people fs-5"></i>
+            <span class="sidebar-label">Initiations</span>
+          <% end %>
+        </li>
+      <% end %>
 
-      <!-- COMMANDES (AdminPanel) -->
-      <li class="nav-item">
-        <%= link_to admin_panel_orders_path, 
-            class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'orders' && controller.class.name.start_with?('AdminPanel::')}",
-            title: "Commandes",
-            data: { tooltip_placement: "right" } do %>
-          <i class="bi bi-box-seam fs-5"></i>
-          <span class="sidebar-label">Commandes</span>
-        <% end %>
-      </li>
+      <!-- COMMANDES (level >= 60 uniquement) -->
+      <% if current_user&.role&.level.to_i >= 60 %>
+        <li class="nav-item">
+          <%= link_to admin_panel_orders_path, 
+              class: "nav-link d-flex align-items-center gap-2 #{'active' if controller_name == 'orders' && controller.class.name.start_with?('AdminPanel::')}",
+              title: "Commandes",
+              data: { tooltip_placement: "right" } do %>
+            <i class="bi bi-box-seam fs-5"></i>
+            <span class="sidebar-label">Commandes</span>
+          <% end %>
+        </li>
+      <% end %>
 
       <!-- SÉPARATEUR -->
       <li class="nav-item">
@@ -106,27 +112,33 @@
     <!-- Même menu navigation (cloner la structure) -->
     <nav class="py-3">
       <ul class="nav nav-pills flex-column gap-2 px-2">
-        <li class="nav-item">
-          <%= link_to admin_panel_root_path, 
-              class: "nav-link #{'active' if controller_name == 'dashboard' && controller.class.name.start_with?('AdminPanel::')}", 
-              data: { bs_dismiss: "offcanvas" } do %>
-            <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
-          <% end %>
-        </li>
-        <li class="nav-item">
-          <%= link_to admin_panel_initiations_path, 
-              class: "nav-link #{'active' if controller_name == 'initiations' && controller.class.name.start_with?('AdminPanel::')}", 
-              data: { bs_dismiss: "offcanvas" } do %>
-            <i class="bi bi-people me-2"></i>Initiations
-          <% end %>
-        </li>
-        <li class="nav-item">
-          <%= link_to admin_panel_orders_path, 
-              class: "nav-link #{'active' if controller_name == 'orders' && controller.class.name.start_with?('AdminPanel::')}", 
-              data: { bs_dismiss: "offcanvas" } do %>
-            <i class="bi bi-box-seam me-2"></i>Commandes
-          <% end %>
-        </li>
+        <% if current_user&.role&.level.to_i >= 60 %>
+          <li class="nav-item">
+            <%= link_to admin_panel_root_path, 
+                class: "nav-link #{'active' if controller_name == 'dashboard' && controller.class.name.start_with?('AdminPanel::')}", 
+                data: { bs_dismiss: "offcanvas" } do %>
+              <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+            <% end %>
+          </li>
+        <% end %>
+        <% if current_user&.role&.level.to_i >= 30 %>
+          <li class="nav-item">
+            <%= link_to admin_panel_initiations_path, 
+                class: "nav-link #{'active' if controller_name == 'initiations' && controller.class.name.start_with?('AdminPanel::')}", 
+                data: { bs_dismiss: "offcanvas" } do %>
+              <i class="bi bi-people me-2"></i>Initiations
+            <% end %>
+          </li>
+        <% end %>
+        <% if current_user&.role&.level.to_i >= 60 %>
+          <li class="nav-item">
+            <%= link_to admin_panel_orders_path, 
+                class: "nav-link #{'active' if controller_name == 'orders' && controller.class.name.start_with?('AdminPanel::')}", 
+                data: { bs_dismiss: "offcanvas" } do %>
+              <i class="bi bi-box-seam me-2"></i>Commandes
+            <% end %>
+          </li>
+        <% end %>
         <li class="nav-item">
           <hr class="border-secondary my-2">
         </li>

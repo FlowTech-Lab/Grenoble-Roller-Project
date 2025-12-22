@@ -21,8 +21,18 @@ module AdminPanel
         return
       end
       
-      unless current_user&.role&.level.to_i >= 60 # ADMIN (60) ou SUPERADMIN (70)
-        redirect_to root_path, alert: 'Accès admin requis'
+      user_level = current_user&.role&.level.to_i
+      
+      # Les initiations sont accessibles pour level >= 30 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
+      # Toutes les autres ressources nécessitent level >= 60 (ADMIN, SUPERADMIN)
+      if controller_name == 'initiations'
+        unless user_level >= 30
+          redirect_to root_path, alert: 'Accès non autorisé'
+        end
+      else
+        unless user_level >= 60 # ADMIN (60) ou SUPERADMIN (70)
+          redirect_to root_path, alert: 'Accès admin requis'
+        end
       end
     end
     

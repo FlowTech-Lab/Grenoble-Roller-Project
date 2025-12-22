@@ -1,0 +1,73 @@
+require 'rails_helper'
+
+RSpec.describe AdminPanel::OrderPolicy do
+  subject(:policy) { described_class.new(user, order) }
+
+  let(:order) { create(:order) }
+  let(:admin_role) { create(:role, :admin) }
+  let(:organizer_role) { create(:role, :organizer) }
+
+  describe '#index?' do
+    context 'when user is admin (level 60)' do
+      let(:user) { create(:user, role: admin_role) }
+
+      it { expect(policy.index?).to be(true) }
+    end
+
+    context 'when user is organizer (level 40)' do
+      let(:user) { create(:user, role: organizer_role) }
+
+      it { expect(policy.index?).to be(false) }
+    end
+  end
+
+  describe '#show?' do
+    context 'when user is admin (level 60)' do
+      let(:user) { create(:user, role: admin_role) }
+
+      it { expect(policy.show?).to be(true) }
+    end
+
+    context 'when user is organizer (level 40)' do
+      let(:user) { create(:user, role: organizer_role) }
+
+      it { expect(policy.show?).to be(false) }
+    end
+  end
+
+  describe '#create?' do
+    context 'when user is admin (level 60)' do
+      let(:user) { create(:user, role: admin_role) }
+
+      it { expect(policy.create?).to be(false) } # Les commandes sont créées par les utilisateurs
+    end
+  end
+
+  describe '#change_status?' do
+    context 'when user is admin (level 60)' do
+      let(:user) { create(:user, role: admin_role) }
+
+      it { expect(policy.change_status?).to be(true) }
+    end
+
+    context 'when user is organizer (level 40)' do
+      let(:user) { create(:user, role: organizer_role) }
+
+      it { expect(policy.change_status?).to be(false) }
+    end
+  end
+
+  describe '#export?' do
+    context 'when user is admin (level 60)' do
+      let(:user) { create(:user, role: admin_role) }
+
+      it { expect(policy.export?).to be(true) }
+    end
+
+    context 'when user is organizer (level 40)' do
+      let(:user) { create(:user, role: organizer_role) }
+
+      it { expect(policy.export?).to be(false) }
+    end
+  end
+end
