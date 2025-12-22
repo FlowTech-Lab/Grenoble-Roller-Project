@@ -120,48 +120,85 @@
         }
       });
 
-      // Gestion offcanvas mobile - Premium 2025
-      document.addEventListener('DOMContentLoaded', function() {
+      // Gestion offcanvas mobile - Premium 2025 (compatible Turbo)
+      // Stocker les handlers pour pouvoir les supprimer
+      let clickHandler = null;
+      let collapseShownHandler = null;
+      let collapseHiddenHandler = null;
+      let keydownHandler = null;
+      let showOffcanvasHandler = null;
+      let hiddenOffcanvasHandler = null;
+
+      function initOffcanvasHandlers() {
         const offcanvas = document.getElementById('offcanvasSidebar');
         if (!offcanvas) return;
 
-        // Fermer offcanvas quand on clique sur un lien de navigation (pas les toggles)
-        offcanvas.addEventListener('click', function(e) {
-          const link = e.target.closest('a.nav-link[href]');
+        // Supprimer les anciens listeners s'ils existent
+        if (clickHandler) {
+          offcanvas.removeEventListener('click', clickHandler, true);
+          clickHandler = null;
+        }
+        if (collapseShownHandler) {
+          offcanvas.removeEventListener('shown.bs.collapse', collapseShownHandler);
+          collapseShownHandler = null;
+        }
+        if (collapseHiddenHandler) {
+          offcanvas.removeEventListener('hidden.bs.collapse', collapseHiddenHandler);
+          collapseHiddenHandler = null;
+        }
+        if (keydownHandler) {
+          offcanvas.removeEventListener('keydown', keydownHandler);
+          keydownHandler = null;
+        }
+        if (showOffcanvasHandler) {
+          offcanvas.removeEventListener('show.bs.offcanvas', showOffcanvasHandler);
+          showOffcanvasHandler = null;
+        }
+        if (hiddenOffcanvasHandler) {
+          offcanvas.removeEventListener('hidden.bs.offcanvas', hiddenOffcanvasHandler);
+          hiddenOffcanvasHandler = null;
+        }
+
+        // Fermer offcanvas quand on clique sur un lien avec data-bs-dismiss
+        // Bootstrap ne gère pas automatiquement data-bs-dismiss sur les liens <a>
+        // Utiliser capture phase pour intercepter AVANT Turbo
+        clickHandler = function(e) {
+          const link = e.target.closest('a.nav-link');
           
-          // Ignorer les liens avec data-bs-toggle="collapse" (sous-menus)
-          if (link && link.hasAttribute('data-bs-toggle') && link.getAttribute('data-bs-toggle') === 'collapse') {
-            // Laisser Bootstrap gérer le toggle
+          if (!link) return;
+          
+          // Ignorer si c'est un toggle collapse
+          if (link.hasAttribute('data-bs-toggle') && link.getAttribute('data-bs-toggle') === 'collapse') {
             return;
           }
           
-          // Fermer offcanvas pour les autres liens de navigation
-          if (link && 
-              !link.hasAttribute('target') &&
-              link.getAttribute('href') !== '#' &&
-              link.getAttribute('href') &&
-              !link.getAttribute('href').startsWith('http')) {
+          // Vérifier si le lien a data-bs-dismiss="offcanvas"
+          if (link.getAttribute('data-bs-dismiss') === 'offcanvas') {
+            // Empêcher Turbo de naviguer immédiatement
+            e.preventDefault();
+            e.stopPropagation();
             
-            // Utiliser l'API Bootstrap si disponible
+            // Fermer l'offcanvas
             if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
               const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
               if (offcanvasInstance) {
+                const href = link.href;
                 offcanvasInstance.hide();
+                
+                // Naviguer après fermeture de l'offcanvas (une seule fois)
+                const navigateAfterClose = function() {
+                  window.location.href = href;
+                  offcanvas.removeEventListener('hidden.bs.offcanvas', navigateAfterClose);
+                };
+                offcanvas.addEventListener('hidden.bs.offcanvas', navigateAfterClose, { once: true });
               }
-            } else {
-              // Fallback: utiliser data-bs-dismiss
-              const btn = document.createElement('button');
-              btn.setAttribute('data-bs-dismiss', 'offcanvas');
-              btn.style.display = 'none';
-              offcanvas.appendChild(btn);
-              btn.click();
-              offcanvas.removeChild(btn);
             }
           }
-        });
+        };
+        offcanvas.addEventListener('click', clickHandler, true); // Capture phase pour intercepter avant Turbo
 
         // Mettre à jour les chevrons quand collapse change (animation premium)
-        offcanvas.addEventListener('shown.bs.collapse', function(e) {
+        collapseShownHandler = function(e) {
           const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
           if (toggle) {
             toggle.setAttribute('aria-expanded', 'true');
@@ -170,9 +207,10 @@
               chevron.style.transform = 'rotate(90deg)';
             }
           }
-        });
+        };
+        offcanvas.addEventListener('shown.bs.collapse', collapseShownHandler);
 
-        offcanvas.addEventListener('hidden.bs.collapse', function(e) {
+        collapseHiddenHandler = function(e) {
           const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
           if (toggle) {
             toggle.setAttribute('aria-expanded', 'false');
@@ -181,26 +219,60 @@
               chevron.style.transform = 'rotate(0deg)';
             }
           }
-        });
+        };
+        offcanvas.addEventListener('hidden.bs.collapse', collapseHiddenHandler);
 
         // Keyboard navigation - Escape pour fermer
-        offcanvas.addEventListener('keydown', function(e) {
+        keydownHandler = function(e) {
           if (e.key === 'Escape') {
-            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
-            if (offcanvasInstance) {
-              offcanvasInstance.hide();
+            if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+              const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+              if (offcanvasInstance) {
+                offcanvasInstance.hide();
+              }
             }
           }
-        });
+        };
+        offcanvas.addEventListener('keydown', keydownHandler);
 
         // Empêcher scroll body quand offcanvas ouvert
-        offcanvas.addEventListener('show.bs.offcanvas', function() {
+        showOffcanvasHandler = function() {
           document.body.style.overflow = 'hidden';
-        });
+        };
+        offcanvas.addEventListener('show.bs.offcanvas', showOffcanvasHandler);
 
-        offcanvas.addEventListener('hidden.bs.offcanvas', function() {
+        hiddenOffcanvasHandler = function() {
           document.body.style.overflow = '';
+        };
+        offcanvas.addEventListener('hidden.bs.offcanvas', hiddenOffcanvasHandler);
+      }
+
+      // Attendre que Bootstrap soit chargé
+      function waitForBootstrap(callback) {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+          callback();
+        } else {
+          setTimeout(function() { waitForBootstrap(callback); }, 50);
+        }
+      }
+
+      // Initialiser au chargement initial ET après chaque navigation Turbo
+      function runInit() {
+        waitForBootstrap(function() {
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initOffcanvasHandlers);
+          } else {
+            initOffcanvasHandlers();
+          }
         });
+      }
+
+      runInit();
+      document.addEventListener('turbo:load', function() {
+        waitForBootstrap(initOffcanvasHandlers);
+      });
+      document.addEventListener('turbo:frame-load', function() {
+        waitForBootstrap(initOffcanvasHandlers);
       });
     </script>
   </body>
