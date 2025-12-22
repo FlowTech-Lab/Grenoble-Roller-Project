@@ -20,11 +20,14 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 
 **Priorité** : 🔴 HAUTE | **Phase** : 0-1 | **Semaine** : 1
 
+**Status** : ✅ **Sidebar implémentée** | 🟡 Dashboard à améliorer
+
 Dashboard principal avec KPIs, statistiques et vue d'ensemble.
 
 **Fichiers** :
 - [`README.md`](./00-dashboard/README.md) - Vue d'ensemble
 - [`dashboard.md`](./00-dashboard/dashboard.md) - Implémentation complète
+- [`sidebar.md`](./00-dashboard/sidebar.md) - 🎨 **Sidebar Admin Panel** (structure, optimisations)
 
 ---
 
@@ -101,7 +104,7 @@ Gestion des emails et notifications.
 
 | Thème | Priorité | Phase | Semaines | % Complété |
 |-------|----------|-------|----------|------------|
-| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% |
+| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | 🟡 30% (Sidebar ✅ 100%) |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ~40% |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** |

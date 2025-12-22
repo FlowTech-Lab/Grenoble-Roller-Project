@@ -29,6 +29,7 @@ Tableau de bord principal de l'Admin Panel : KPIs, statistiques, vue d'ensemble 
 ### **📁 Fichiers par fonctionnalité**
 - [`dashboard.md`](./dashboard.md) - Implémentation complète du dashboard
 - [`maintenance.md`](./maintenance.md) - Mode maintenance
+- [`sidebar.md`](./sidebar.md) - 🎨 **Sidebar Admin Panel** (structure, partials, optimisations)
 
 ---
 
@@ -48,6 +49,18 @@ Tableau de bord principal de l'Admin Panel : KPIs, statistiques, vue d'ensemble 
 - Toggle via controller personnalisé
 - Affichage statut actuel
 - Informations techniques
+
+### ✅ Sidebar Admin Panel
+- **Partial réutilisable** : Desktop + Mobile (DRY)
+- **Sous-menus** : Boutique avec collapse/expand Bootstrap
+- **Helpers permissions** : `can_access_admin_panel?()`, `can_view_initiations?()`, etc.
+- **Controller Stimulus optimisé** : 7 problèmes critiques corrigés (debounce, cache, cleanup, etc.)
+- **CSS organisé** : Fichier `admin_panel.scss` dédié (0 style inline)
+- **JavaScript séparé** : `admin_panel_navbar.js` pour calcul hauteur navbar
+- **Responsive** : Desktop (sidebar fixe) + Mobile (offcanvas)
+- **Persistance** : LocalStorage pour état collapsed/expanded
+
+**Voir** : [`sidebar.md`](./sidebar.md) pour la documentation complète.
 
 ### 🔧 Améliorations à Apporter
 - KPIs avancés (CA, stock faible, initiations à venir)

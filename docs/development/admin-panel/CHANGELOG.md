@@ -6,6 +6,38 @@
 
 ## ✅ Modifications Récentes
 
+### **2025-01-XX - Optimisations Sidebar Admin Panel**
+
+#### **🎨 Refactorisation Complète**
+- ✅ **Partial réutilisable** : `_menu_items.html.erb` (desktop + mobile)
+- ✅ **Sous-menus Boutique** : Produits, Inventaire, Catégories avec collapse/expand
+- ✅ **Helpers permissions** : `can_access_admin_panel?()`, `can_view_initiations?()`, `can_view_boutique?()`
+- ✅ **CSS organisé** : Fichier `admin_panel.scss` dédié (0 style inline)
+- ✅ **JavaScript séparé** : `admin_panel_navbar.js` pour calcul hauteur navbar
+- ✅ **Controller Stimulus optimisé** : 7 problèmes critiques corrigés
+
+#### **🔧 7 Problèmes Critiques Corrigés**
+1. ✅ Debounce resize (250ms) - Pas de CPU spike
+2. ✅ Constantes au lieu de magic strings - `static values`
+3. ✅ Media query observer - Responsive breakpoint sync
+4. ✅ Cache références DOM - Pas de requêtes répétées
+5. ✅ Bootstrap classes - Pas de style inline
+6. ✅ Guard clauses - Early returns
+7. ✅ Cleanup listeners - Pas de memory leak
+
+#### **📁 Fichiers Créés/Modifiés**
+- `app/views/admin/shared/_menu_items.html.erb` (nouveau)
+- `app/assets/stylesheets/admin_panel.scss` (nouveau)
+- `app/javascript/admin_panel_navbar.js` (nouveau)
+- `app/helpers/admin_panel_helper.rb` (modifié - helpers ajoutés)
+- `app/javascript/controllers/admin/admin_sidebar_controller.js` (refactorisé)
+- `app/views/admin/shared/_sidebar.html.erb` (nettoyé - 0 style inline)
+- `app/views/layouts/admin.html.erb` (nettoyé - CSS/JS séparés)
+- `app/assets/stylesheets/application.bootstrap.scss` (modifié - import admin_panel)
+- `config/importmap.rb` (modifié - pin admin_panel_navbar)
+
+---
+
 ### **2025-01-XX - Module Initiations Complet**
 
 #### **🔐 Permissions par Grade**
@@ -42,6 +74,7 @@
 | Module | Status | Tests | Documentation |
 |--------|--------|-------|---------------|
 | **Initiations** | ✅ 100% | ✅ 109 exemples | ✅ Complète |
+| **Sidebar** | ✅ 100% | ✅ Optimisée | ✅ Complète |
 | **Dashboard** | 🟡 30% | ⚠️ À créer | ✅ Partielle |
 | **Boutique** | 🟡 40% | ⚠️ À créer | ✅ Partielle |
 | **Commandes** | 🟡 60% | ⚠️ À créer | ✅ Partielle |

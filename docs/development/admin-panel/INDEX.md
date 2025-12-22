@@ -23,6 +23,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 **Fichiers** :
 - [`00-dashboard/README.md`](./00-dashboard/README.md) - Vue d'ensemble dashboard
 - [`00-dashboard/dashboard.md`](./00-dashboard/dashboard.md) - Implémentation complète
+- [`00-dashboard/sidebar.md`](./00-dashboard/sidebar.md) - 🎨 **Sidebar Admin Panel** (structure, optimisations)
 
 **Éléments inclus** :
 - ✅ Controller Dashboard (existe déjà, à améliorer)
@@ -32,6 +33,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - ✅ Graphiques ventes
 - ✅ Widgets personnalisables
 - ✅ Mode Maintenance (toggle activation/désactivation)
+- ✅ **Sidebar Admin Panel** (partial réutilisable, sous-menus, optimisations)
 
 **Priorité** : 🔴 HAUTE | **Phase** : 0-1 | **Semaine** : 1
 
