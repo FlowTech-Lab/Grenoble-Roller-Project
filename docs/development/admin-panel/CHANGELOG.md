@@ -1,10 +1,32 @@
 # 📝 CHANGELOG - Admin Panel
 
-**Dernière mise à jour** : 2025-01-XX
+**Dernière mise à jour** : 2025-12-22
 
 ---
 
 ## ✅ Modifications Récentes
+
+### **2025-12-22 - Harmonisation Footer et Sidebar**
+
+#### **🎨 Footer Unifié**
+- ✅ **Layout admin** : Utilise maintenant le footer de l'application normale (`_footer-simple.html.erb`)
+- ✅ **Cohérence visuelle** : Même footer dans toute l'application (site + admin)
+- ✅ **Suppression footer inline** : Retrait du footer minimaliste "© 2025 Grenoble Roller Admin"
+
+#### **🧹 Nettoyage Sidebar**
+- ✅ **Footer sidebar supprimé** : Retrait de l'email utilisateur et du lien de déconnexion
+- ✅ **Évite redondance** : Ces éléments sont déjà disponibles dans le menu déroulant de la navbar
+- ✅ **Meilleure UX** : Sidebar plus épurée, focus sur la navigation
+
+#### **📁 Fichiers Modifiés**
+- `app/views/layouts/admin.html.erb` - Footer remplacé par `render 'layouts/footer-simple'`
+- `app/views/admin/shared/_sidebar.html.erb` - Footer supprimé (lignes 29-39)
+
+#### **📚 Documentation**
+- `CHANGELOG.md` - Entrée ajoutée
+- `00-dashboard/sidebar.md` - Section mise à jour
+
+---
 
 ### **2025-01-XX - Harmonisation Liquid Glass Design**
 

@@ -63,26 +63,26 @@
           <tbody>
             <% @products.each do |product| %>
               <tr>
-                <td><%= product.id %></td>
-                <td>
+                <td data-label="ID"><%= product.id %></td>
+                <td data-label="Nom">
                   <strong><%= product.name %></strong>
                   <br>
                   <small class="text-muted" title="Référence URL"><%= product.slug %></small>
                 </td>
-                <td><%= product.category&.name || "-" %></td>
-                <td><%= price_display(product.price_cents, product.currency) %></td>
-                <td>
+                <td data-label="Catégorie"><%= product.category&.name || "-" %></td>
+                <td data-label="Prix"><%= price_display(product.price_cents, product.currency) %></td>
+                <td data-label="Stock">
                   <% if product.in_stock? %>
                     <span class="badge badge-liquid-success"><%= product.total_stock %> unités</span>
                   <% else %>
                     <span class="badge bg-danger">Rupture</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Variantes">
                   <span class="badge bg-info"><%= product.product_variants.count %></span>
                 </td>
-                <td><%= active_badge(product.is_active) %></td>
-                <td>
+                <td data-label="Statut"><%= active_badge(product.is_active) %></td>
+                <td data-label="Actions">
                   <div class="btn-group btn-group-sm">
                     <%= link_to "Voir", admin_panel_product_path(product), class: "btn btn-outline-primary" %>
                     <%= link_to "Modifier", edit_admin_panel_product_path(product), class: "btn btn-outline-secondary" %>

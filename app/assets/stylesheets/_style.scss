@@ -109,8 +109,15 @@
   /* === LIQUID BODY BACKGROUND === */
   body {
     background: var(--gradient-liquid-pastel);
-    background-attachment: fixed;
+    /* background-attachment: fixed désactivé sur mobile pour performance */
     position: relative; /* Pour le skip link */
+  }
+  
+  /* Activer background-attachment: fixed uniquement sur tablet/desktop */
+  @media (min-width: 768px) {
+    body {
+      background-attachment: fixed;
+    }
   }
   
   /* Global link styles - adaptés aux thèmes */
@@ -128,24 +135,71 @@
   
   [data-bs-theme=dark] body {
     background: linear-gradient(120deg, rgba(0, 122, 255, 0.05) 0%, rgba(92, 90, 231, 0.185) 50%, rgba(138, 5, 226, 0.05) 100%);
-    background-attachment: fixed;
+    /* background-attachment: fixed désactivé sur mobile pour performance */
+  }
+  
+  /* Activer background-attachment: fixed uniquement sur tablet/desktop */
+  @media (min-width: 768px) {
+    [data-bs-theme=dark] body {
+      background-attachment: fixed;
+    }
   }
   
   /* === LIQUID TYPOGRAPHY === */
   
   h1 {
     font-family: 'Poppins', system-ui, BlinkMacSystemFont, sans-serif;
-    font-size: 3.5rem;
+    font-size: 2.5rem; /* Mobile first */
     font-weight: 900;
     line-height: 1.1;
     letter-spacing: -0.02em;
-
     margin-bottom: 1.5rem;
   }
   
-  @media (max-width: 768px) {
+  h2 {
+    font-size: 2rem; /* Mobile first */
+  }
+  
+  h3 {
+    font-size: 1.75rem; /* Mobile first */
+  }
+  
+  h4 {
+    font-size: 1.5rem; /* Mobile first */
+  }
+  
+  h5 {
+    font-size: 1.25rem; /* Mobile first */
+  }
+  
+  h6 {
+    font-size: 1rem; /* Mobile first */
+  }
+  
+  /* Desktop: Tailles plus grandes */
+  @media (min-width: 768px) {
     h1 {
+      font-size: 3.5rem;
+    }
+    
+    h2 {
       font-size: 2.5rem;
+    }
+    
+    h3 {
+      font-size: 2rem;
+    }
+    
+    h4 {
+      font-size: 1.75rem;
+    }
+    
+    h5 {
+      font-size: 1.5rem;
+    }
+    
+    h6 {
+      font-size: 1.25rem;
     }
   }
   
@@ -299,13 +353,27 @@
   }
   
   .card-liquid .card-header {
-    background: rgba(255, 255, 255, 0.4);
-    border-bottom: 1px solid var(--card-border-color);
+    background: rgba(255, 255, 255, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border-bottom: 1px solid var(--card-border-color) !important;
+    /* Arrondis en haut seulement pour le premier card-header */
+    border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
+    color: var(--bs-card-cap-color);
   }
   
   .card-liquid-primary .card-header {
-    background: var(--gradient-liquid-primary);
-    color: white;
+    background: var(--gradient-liquid-primary) !important;
+    background-color: transparent !important;
+    color: white !important;
+    /* Arrondis en haut seulement pour le premier card-header */
+    border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
+  }
+  
+  /* S'assurer que les card-header dans les cards liquid ont les arrondis */
+  .card-liquid > .card-header:first-child {
+    border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
   }
   
   /* Liquid navbar */
@@ -329,6 +397,327 @@
   .form-control-liquid:focus {
     background: rgba(255, 255, 255, 0.35);
     box-shadow: 0 0 0 0.25rem rgba(0, 122, 255, 0.25);
+  }
+
+  /* === BOOTSTRAP ELEMENTS - LIQUID GLASS STYLING === */
+  
+  /* 1. Form Control - Liquid Glass */
+  .form-control {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid);
+  }
+
+  .form-control:focus {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: var(--gr-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 122, 255, 0.25);
+    outline: 3px solid var(--gr-primary);
+    outline-offset: 2px;
+  }
+
+  /* 2. Form Select - Liquid Glass */
+  .form-select {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid);
+    padding-right: 4.125rem;
+  }
+
+  .form-select:focus {
+    border-color: var(--gr-primary);
+    outline: 3px solid var(--gr-primary);
+    outline-offset: 2px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  /* 3. Textarea - Liquid Glass */
+  textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    font-family: var(--bs-body-font-family);
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+  }
+
+  textarea.form-control:focus {
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  /* 4. Buttons Primary & Secondary - Override */
+  .btn-primary {
+    background: var(--gr-primary);
+    border-color: var(--gr-primary);
+    color: white;
+    transition: var(--transition-liquid);
+  }
+
+  .btn-primary:hover {
+    background: var(--gr-primary-light);
+    border-color: var(--gr-primary-light);
+  }
+
+  .btn-secondary {
+    background: var(--gr-muted);
+    border-color: var(--gr-muted);
+    color: white;
+    transition: var(--transition-liquid);
+  }
+
+  .btn-secondary:hover {
+    background: #6c757d;
+  }
+
+  /* 5. Modal Content - Glassmorphism */
+  .modal-content {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 1rem;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--liquid-glass-border);
+    background: rgba(0, 123, 255, 0.08);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* 6. Table - Liquid Styling */
+  .table {
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    --bs-table-bg: transparent;
+  }
+
+  .table th {
+    background: rgba(0, 123, 255, 0.08);
+    border-bottom: 2px solid var(--liquid-glass-border);
+    font-weight: 600;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+  }
+
+  /* 7. Dropdown Menu - Glassmorphism */
+  .dropdown-menu {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .dropdown-item {
+    transition: var(--transition-liquid-fast);
+    color: var(--bs-body-color);
+  }
+
+  .dropdown-item:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--gr-primary);
+  }
+
+  /* 8. List Group - Liquid Glass */
+  .list-group {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .list-group-item {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--liquid-glass-border);
+    transition: var(--transition-liquid-fast);
+    color: var(--bs-body-color);
+  }
+
+  .list-group-item:hover {
+    background: rgba(0, 123, 255, 0.08);
+  }
+
+  .list-group-item:last-child {
+    border-bottom: none;
+  }
+
+  /* 9. Input Group Text - Integration */
+  .input-group-text {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid);
+  }
+
+  /* 10. Range Input - Custom Slider */
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, var(--gr-primary), var(--gr-primary-light));
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid var(--gr-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--gr-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+
+  /* 11. Pagination - Liquid */
+  .pagination .page-link {
+    color: var(--gr-primary);
+    border: 1px solid var(--liquid-glass-border);
+    background: var(--liquid-glass-bg);
+    transition: var(--transition-liquid-fast);
+  }
+
+  .pagination .page-link:hover {
+    background: rgba(0, 123, 255, 0.1);
+  }
+
+  .pagination .page-item.active .page-link {
+    background: var(--gr-primary);
+    border-color: var(--gr-primary);
+    color: white;
+  }
+
+  /* 12. Fieldset & Legend - Styling */
+  fieldset {
+    border: 1px solid var(--liquid-glass-border);
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  legend {
+    font-weight: 600;
+    color: var(--gr-primary);
+    padding: 0 0.5rem;
+  }
+
+  /* 13. Label (Global) - Styling */
+  label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--bs-body-color);
+  }
+
+  /* 14. HR - Gradient */
+  hr {
+    border: none;
+    border-top: 1px solid var(--liquid-glass-border);
+    opacity: 0.5;
+    margin: 2rem 0;
+  }
+
+  /* 15. Breadcrumb - Liquid */
+  .breadcrumb {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+  }
+
+  .breadcrumb-item a {
+    color: var(--gr-primary);
+    transition: var(--transition-liquid-fast);
+  }
+
+  .breadcrumb-item a:hover {
+    color: var(--gr-primary-light);
+  }
+
+  /* Dark Mode pour tous les éléments Bootstrap */
+  [data-bs-theme="dark"] {
+    .form-control,
+    .form-select,
+    textarea.form-control,
+    .modal-content,
+    .table,
+    .dropdown-menu,
+    .list-group,
+    .input-group-text,
+    fieldset,
+    .pagination .page-link,
+    .breadcrumb {
+      background: rgba(30, 30, 30, 0.85);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--bs-body-color);
+    }
+
+    .table th {
+      background: rgba(0, 123, 255, 0.15);
+    }
+
+    .dropdown-item:hover {
+      background: rgba(0, 123, 255, 0.15);
+    }
+
+    .list-group-item:hover {
+      background: rgba(0, 123, 255, 0.12);
+    }
+
+    .modal-header {
+      background: rgba(0, 123, 255, 0.15);
+    }
+
+    .breadcrumb-item a {
+      color: var(--gr-primary-light);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    textarea.form-control:focus {
+      background: rgba(255, 255, 255, 0.15);
+    }
   }
 
   /* Input number compact - réutilisable */
@@ -3938,10 +4327,18 @@
   }
   
   .password-strength-meter {
-    height: 100%;
+    height: 4px; /* Hauteur fixe mobile */
+    min-height: 4px;
     width: 0%;
     transition: width 0.3s ease, background-color 0.3s ease;
     border-radius: 2px;
+  }
+  
+  /* Desktop: Hauteur légèrement plus grande */
+  @media (min-width: 768px) {
+    .password-strength-meter {
+      height: 6px;
+    }
   }
   
   .password-strength-weak {
@@ -4024,6 +4421,17 @@
     align-items: center;
   }
   
+  /* Mobile: Augmenter gap sur très petits écrans pour meilleure accessibilité */
+  @media (max-width: 480px) {
+    .form-check {
+      gap: 1rem; /* 16px au lieu de 12px pour meilleur espacement tactile */
+    }
+    
+    .btn {
+      padding: 0.625rem 1.25rem; /* Plus de padding sur mobile */
+    }
+  }
+  
   /* 2.4.11 - Focus clairement visible (outline ≥ 3px, contraste ≥ 3:1) */
   .form-control:focus,
   .form-control:focus-visible,
@@ -4038,6 +4446,17 @@
     outline: 3px solid var(--gr-primary);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Mobile: Réduire outline-offset pour éviter débordement */
+  @media (max-width: 480px) {
+    .form-control:focus-visible,
+    .btn:focus-visible,
+    button:focus-visible,
+    .form-check-input:focus-visible {
+      outline-offset: 0;
+      outline-width: 2px;
+    }
   }
   
   /* Mode sombre - Focus plus visible */
@@ -4089,7 +4508,9 @@
   }
   
   /* Input-group avec erreur : contour rouge sur tout le groupe */
-  .input-group:has(.form-control.is-invalid) {
+  /* Utilise :has() avec fallback pour navigateurs anciens */
+  .input-group:has(.form-control.is-invalid),
+  .input-group.has-error {
     .form-control {
       border-color: #dc3545;
     }
@@ -4100,7 +4521,8 @@
   }
   
   /* Input-group avec succès : contour vert sur tout le groupe */
-  .input-group:has(.form-control.is-valid) {
+  .input-group:has(.form-control.is-valid),
+  .input-group.has-success {
     .form-control {
       border-color: #198754;
     }
@@ -4128,6 +4550,16 @@
     background-repeat: no-repeat;
     background-position: right calc(0.375em + 0.1875rem) center;
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+  
+  /* Mobile: Ajuster taille des icônes de validation sur petits écrans */
+  @media (max-width: 480px) {
+    .form-control.is-invalid,
+    .form-control.is-valid {
+      padding-right: calc(1.25em + 0.5rem); /* Moins d'espace sur mobile */
+      background-size: 1.2em 1.2em; /* Icône plus grande pour meilleure visibilité */
+      background-position: right calc(0.25em + 0.125rem) center;
+    }
   }
   
   .valid-feedback {
@@ -5511,6 +5943,26 @@
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     padding-right: calc(1.5em + 0.75rem);
   }
+  
+  /* Mobile: Ajuster taille des icônes de validation sur petits écrans (formulaires membreships) */
+  @media (max-width: 480px) {
+    .form-control.is-invalid,
+    .form-control.is-valid {
+      padding-right: calc(1.25em + 0.5rem);
+      background-size: 1.2em 1.2em;
+      background-position: right calc(0.25em + 0.125rem) center;
+    }
+  }
+  
+  /* Mobile: Ajuster taille des icônes de validation sur petits écrans (formulaires membreships) */
+  @media (max-width: 480px) {
+    .form-control.is-invalid,
+    .form-control.is-valid {
+      padding-right: calc(1.25em + 0.5rem);
+      background-size: 1.2em 1.2em;
+      background-position: right calc(0.25em + 0.125rem) center;
+    }
+  }
 
   .invalid-feedback {
     display: block;
@@ -6268,6 +6720,55 @@ body.admin-panel {
   overflow: hidden;
 }
 
+/* === ADMIN SIDEBAR LOGO TEXT - Adaptatif thème clair/sombre === */
+/* Forcer la couleur même si parent a text-white */
+.admin-sidebar .admin-sidebar-logo-text,
+#offcanvasSidebar .admin-sidebar-logo-text,
+.admin-sidebar-logo-text {
+  color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="dark"] .admin-sidebar .admin-sidebar-logo-text,
+[data-bs-theme="dark"] #offcanvasSidebar .admin-sidebar-logo-text,
+[data-bs-theme="dark"] .admin-sidebar-logo-text {
+  color: white !important;
+}
+
+/* === ADMIN ACTIVEADMIN LINK - Visible en mode clair et sombre === */
+.admin-activeadmin-link {
+  color: #ff9800 !important; /* Orange visible en clair et sombre */
+}
+
+.admin-activeadmin-link:hover {
+  color: #f57c00 !important; /* Orange plus foncé au hover */
+}
+
+[data-bs-theme="dark"] .admin-activeadmin-link {
+  color: #ffb74d !important; /* Orange plus clair en mode sombre */
+}
+
+[data-bs-theme="dark"] .admin-activeadmin-link:hover {
+  color: #ffa726 !important; /* Orange hover en mode sombre */
+}
+
+/* === ADMIN SIDEBAR LINKS - Couleur adaptative === */
+.admin-sidebar-link {
+  color: var(--bs-body-color) !important;
+  opacity: 0.7;
+}
+
+.admin-sidebar-link:hover {
+  opacity: 1;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-link:hover {
+  color: white !important;
+}
+
 /* === ADMIN NAV LINKS - Touch-Friendly === */
 .admin-sidebar .nav-link {
   transition: var(--transition-liquid-fast);
@@ -6453,40 +6954,149 @@ body.admin-panel {
 /* Pas besoin de redéfinir, juste s'assurer qu'elles sont utilisées */
 
 /* === ADMIN TABLES - Mobile-First === */
+/* Forcer background transparent - Bootstrap utilise --bs-table-bg qui n'existe pas */
 .admin-panel .card .table,
-.admin-dashboard .card .table {
-  background: transparent;
+.admin-dashboard .card .table,
+.admin-panel .table,
+.admin-dashboard .table {
+  background: transparent !important;
+  background-color: transparent !important;
+  --bs-table-bg: transparent !important;
 }
 
-.admin-panel .card .table thead {
-  background: rgba(255, 255, 255, 0.3);
+/* Forcer .bg-dark dans admin à ne pas utiliser --bs-bg-opacity */
+.admin-panel .bg-dark,
+.admin-dashboard .bg-dark,
+.admin-sidebar.bg-dark,
+#offcanvasSidebar.bg-dark {
+  --bs-bg-opacity: 0 !important;
+  opacity: 1 !important;
+}
+
+.admin-panel .card .table thead,
+.admin-panel .table thead {
+  background: rgba(255, 255, 255, 0.3) !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  --bs-table-bg: rgba(255, 255, 255, 0.3) !important;
   border-bottom: 1px solid var(--liquid-glass-border);
 }
 
-.admin-panel .card .table tbody tr {
+.admin-panel .card .table tbody tr,
+.admin-panel .table tbody tr {
+  background: transparent !important;
+  background-color: transparent !important;
+  --bs-table-bg: transparent !important;
   transition: var(--transition-liquid-fast);
 }
 
-.admin-panel .card .table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.15);
+.admin-panel .card .table tbody tr:hover,
+.admin-panel .table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  --bs-table-bg: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Mobile: Tables responsive avec scroll horizontal */
+/* === ADMIN TABLES - Mobile-First Responsive (2025) === */
+/* Mobile: Transformer les tableaux en cards avec labels */
 @media (max-width: 767px) {
   .admin-panel .table-responsive {
-    -webkit-overflow-scrolling: touch;
+    overflow-x: visible; /* Pas de scroll horizontal */
     border-radius: var(--bs-border-radius);
   }
 
   .admin-panel .table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 0.875rem;
-    min-width: 600px; /* Force scroll horizontal si nécessaire */
+    min-width: auto !important; /* Pas de largeur minimale forcée */
   }
 
-  .admin-panel .table th,
-  .admin-panel .table td {
-    padding: 0.5rem 0.75rem;
-    white-space: nowrap;
+  /* Cacher le header sur mobile */
+  .admin-panel .table thead {
+    display: none;
+  }
+
+  /* Transformer les lignes en cards avec style liquid glass */
+  .admin-panel .table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    /* Utiliser les mêmes styles que .card-liquid */
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 1.6rem; /* rounded-liquid */
+    box-shadow: var(--bs-box-shadow);
+    padding: 1rem;
+    transition: var(--transition-liquid);
+  }
+
+  .admin-panel .table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: var(--bs-box-shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  /* Transformer les cellules en lignes avec labels */
+  .admin-panel .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .admin-panel .table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* Label avant chaque valeur (utilise data-label ou génère depuis th) */
+  .admin-panel .table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gr-muted);
+    margin-right: 1rem;
+    flex-shrink: 0;
+    min-width: 100px;
+    text-align: left;
+  }
+
+  /* Si pas de data-label, utiliser le texte du th correspondant via JS ou CSS */
+  /* Pour l'instant, on utilise data-label dans les vues */
+
+  /* Actions en colonne */
+  .admin-panel .table tbody td:last-child {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .admin-panel .table tbody td:last-child::before {
+    content: "Actions";
+  }
+
+  .admin-panel .table tbody td .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .admin-panel .table tbody td .btn-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Badges et spans dans les cellules */
+  .admin-panel .table tbody td .badge,
+  .admin-panel .table tbody td span {
+    display: inline-block;
+    margin-left: auto;
+    text-align: right;
   }
 
   /* Titres plus petits sur mobile */
@@ -6498,6 +7108,76 @@ body.admin-panel {
   /* Cards avec padding réduit */
   .admin-panel .card-body {
     padding: 1rem;
+  }
+
+  /* Éviter les débordements */
+  .admin-panel .table tbody td,
+  .admin-panel .table tbody td * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Éviter les débordements horizontaux */
+  .admin-panel .card-body {
+    overflow-x: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Padding top pour éviter débordement en haut */
+  .admin-panel .container-fluid {
+    padding-top: 1rem;
+  }
+
+  /* Tables dans cards - éviter débordement */
+  .admin-panel .card .table-responsive {
+    margin: -1rem;
+    padding: 1rem;
+    overflow-x: visible;
+  }
+
+  /* Améliorer l'affichage des selects dans les tableaux mobiles */
+  .admin-panel .table tbody td select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Améliorer l'affichage des checkboxes */
+  .admin-panel .table tbody td input[type="checkbox"] {
+    margin: 0 auto;
+    display: block;
+  }
+}
+
+/* Tablet: Scroll horizontal avec meilleur style */
+@media (min-width: 768px) and (max-width: 991px) {
+  .admin-panel .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--bs-border-radius);
+    overflow-x: auto;
+  }
+
+  .admin-panel .table {
+    font-size: 0.9rem;
+    min-width: 700px;
+  }
+
+  .admin-panel .table th,
+  .admin-panel .table td {
+    padding: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+/* Desktop: Tableau normal */
+@media (min-width: 992px) {
+  .admin-panel .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-panel .table th,
+  .admin-panel .table td {
+    padding: 0.75rem 1rem;
   }
 }
 
@@ -6530,11 +7210,15 @@ body.admin-panel {
     max-width: 100vw !important;
     min-width: 100vw !important;
     
-    /* Glassmorphism premium 2025 */
-    background: rgba(17, 24, 39, 0.95) !important;
+    /* Glassmorphism premium 2025 - Adaptatif selon thème */
+    background: var(--liquid-glass-bg) !important;
+    background-color: var(--liquid-glass-bg) !important;
+    /* Forcer --bs-bg-opacity à 0 pour éviter les problèmes avec .bg-dark */
+    --bs-bg-opacity: 0 !important;
     backdrop-filter: blur(10px) saturate(1.2) !important;
     -webkit-backdrop-filter: blur(10px) saturate(1.2) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-right: 1px solid var(--liquid-glass-border) !important;
+    color: var(--bs-body-color) !important;
     
     /* Shadow premium */
     box-shadow: 4px 0 32px rgba(0, 0, 0, 0.24) !important;
@@ -6544,6 +7228,22 @@ body.admin-panel {
     
     /* Animation premium 2025 */
     transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+  
+  /* En mode sombre, offcanvas avec fond plus sombre et texte blanc */
+  [data-bs-theme="dark"] #offcanvasSidebar {
+    background: rgba(17, 24, 39, 0.95) !important;
+    background-color: rgba(17, 24, 39, 0.95) !important;
+    color: white !important;
+  }
+  
+  /* Forcer les nav-links dans offcanvas à utiliser la couleur du thème */
+  [data-bs-theme="dark"] #offcanvasSidebar .nav-link {
+    color: white !important;
+  }
+  
+  #offcanvasSidebar .nav-link {
+    color: var(--bs-body-color) !important;
   }
 
   /* Backdrop avec opacity - Premium 2025 */

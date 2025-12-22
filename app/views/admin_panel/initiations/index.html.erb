@@ -81,13 +81,13 @@
           <tbody>
             <% @upcoming_initiations.each do |initiation| %>
               <tr>
-                <td><%= initiation.title %></td>
-                <td>
+                <td data-label="Titre"><%= initiation.title %></td>
+                <td data-label="Date/Heure">
                   <%= l(initiation.start_at, format: :short) if initiation.start_at %>
                   <br>
                   <small class="text-muted">10h15-12h00</small>
                 </td>
-                <td>
+                <td data-label="Statut">
                   <% case initiation.status %>
                   <% when 'published' %>
                     <span class="badge badge-liquid-success">Publié</span>
@@ -97,7 +97,7 @@
                     <span class="badge badge-liquid-danger">Annulé</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Places">
                   <% if initiation.full? %>
                     <span class="badge badge-liquid-danger">COMPLET</span>
                   <% else %>
@@ -106,9 +106,9 @@
                     </span>
                   <% end %>
                 </td>
-                <td><%= initiation.participants_count %></td>
-                <td><%= initiation.volunteers_count %></td>
-                <td>
+                <td data-label="Participants"><%= initiation.participants_count %></td>
+                <td data-label="Bénévoles"><%= initiation.volunteers_count %></td>
+                <td data-label="Liste d'attente">
                   <% waitlist_count = initiation.waitlist_entries.active.count %>
                   <% if waitlist_count > 0 %>
                     <span class="badge badge-liquid-warning"><%= waitlist_count %></span>
@@ -116,7 +116,7 @@
                     <span class="text-muted">0</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Actions">
                   <div class="btn-group btn-group-sm">
                     <%= link_to "Voir", admin_panel_initiation_path(initiation), class: "btn btn-outline-liquid-primary" %>
                     <%= link_to "Présences", presences_admin_panel_initiation_path(initiation), class: "btn btn-outline-info" %>
@@ -158,13 +158,13 @@
           <tbody>
             <% @past_initiations.each do |initiation| %>
               <tr class="opacity-75">
-                <td><%= initiation.title %></td>
-                <td>
+                <td data-label="Titre"><%= initiation.title %></td>
+                <td data-label="Date/Heure">
                   <%= l(initiation.start_at, format: :short) if initiation.start_at %>
                   <br>
                   <small class="text-muted">10h15-12h00</small>
                 </td>
-                <td>
+                <td data-label="Statut">
                   <% case initiation.status %>
                   <% when 'published' %>
                     <span class="badge badge-liquid-success">Publié</span>
@@ -174,7 +174,7 @@
                     <span class="badge badge-liquid-danger">Annulé</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Places">
                   <% if initiation.full? %>
                     <span class="badge badge-liquid-danger">COMPLET</span>
                   <% else %>
@@ -183,9 +183,9 @@
                     </span>
                   <% end %>
                 </td>
-                <td><%= initiation.participants_count %></td>
-                <td><%= initiation.volunteers_count %></td>
-                <td>
+                <td data-label="Participants"><%= initiation.participants_count %></td>
+                <td data-label="Bénévoles"><%= initiation.volunteers_count %></td>
+                <td data-label="Liste d'attente">
                   <% waitlist_count = initiation.waitlist_entries.active.count %>
                   <% if waitlist_count > 0 %>
                     <span class="badge badge-liquid-warning"><%= waitlist_count %></span>
@@ -193,7 +193,7 @@
                     <span class="text-muted">0</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Actions">
                   <div class="btn-group btn-group-sm">
                     <%= link_to "Voir", admin_panel_initiation_path(initiation), class: "btn btn-outline-liquid-primary" %>
                     <%= link_to "Présences", presences_admin_panel_initiation_path(initiation), class: "btn btn-outline-info" %>

@@ -37,6 +37,17 @@ app/
     └── admin_panel_helper.rb      # Helpers permissions
 ```
 
+### **⚠️ Important : Footer et Déconnexion**
+
+**Footer de l'application** :
+- Le layout admin (`app/views/layouts/admin.html.erb`) utilise maintenant le footer standard de l'application (`_footer-simple.html.erb`)
+- Cohérence visuelle avec le reste du site
+
+**Déconnexion et informations utilisateur** :
+- ❌ **Supprimé de la sidebar** : Le footer avec email et déconnexion a été retiré
+- ✅ **Disponible dans la navbar** : Ces éléments sont accessibles via le menu déroulant utilisateur dans la navbar principale
+- **Raison** : Éviter la redondance et améliorer la cohérence UX
+
 ---
 
 ## 🎯 Fonctionnalités

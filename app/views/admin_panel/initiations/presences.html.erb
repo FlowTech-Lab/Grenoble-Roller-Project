@@ -57,9 +57,9 @@
               <% @volunteers.each do |attendance| %>
                 <%= f.hidden_field "attendance_ids[]", value: attendance.id %>
                 <tr>
-                  <td><%= attendance.participant_name %></td>
-                  <td><%= attendance.user.email %></td>
-                  <td>
+                  <td data-label="Nom"><%= attendance.participant_name %></td>
+                  <td data-label="Email"><%= attendance.user.email %></td>
+                  <td data-label="Matériel">
                     <% if attendance.needs_equipment? %>
                       <% if attendance.roller_size.present? %>
                         <span class="badge bg-info">Taille: <%= attendance.roller_size %></span>
@@ -71,7 +71,7 @@
                       <span class="text-muted">-</span>
                     <% end %>
                   </td>
-                  <td>
+                  <td data-label="Présence">
                     <%= f.select "presences[#{attendance.id}]",
                         options_for_select([
                           ["Inscrit", "registered"],
@@ -82,7 +82,7 @@
                         {},
                         { class: "form-select form-select-sm" } %>
                   </td>
-                  <td>
+                  <td data-label="Bénévole">
                     <%= f.check_box "is_volunteer[#{attendance.id}]", { checked: attendance.is_volunteer? }, "1", "0" %>
                   </td>
                 </tr>
@@ -119,9 +119,9 @@
               <% @participants.each do |attendance| %>
                 <%= f.hidden_field "attendance_ids[]", value: attendance.id %>
                 <tr>
-                  <td><%= attendance.participant_name %></td>
-                  <td><%= attendance.user.email %></td>
-                  <td>
+                  <td data-label="Nom"><%= attendance.participant_name %></td>
+                  <td data-label="Email"><%= attendance.user.email %></td>
+                  <td data-label="Matériel">
                     <% if attendance.needs_equipment? %>
                       <% if attendance.roller_size.present? %>
                         <span class="badge bg-info">Taille: <%= attendance.roller_size %></span>
@@ -133,14 +133,14 @@
                       <span class="text-muted">-</span>
                     <% end %>
                   </td>
-                  <td>
+                  <td data-label="Essai gratuit">
                     <% if attendance.free_trial_used? %>
                       <span class="badge bg-danger">Oui</span>
                     <% else %>
                       <span class="text-muted">Non</span>
                     <% end %>
                   </td>
-                  <td>
+                  <td data-label="Présence">
                     <%= f.select "presences[#{attendance.id}]",
                         options_for_select([
                           ["Inscrit", "registered"],
@@ -151,7 +151,7 @@
                         {},
                         { class: "form-select form-select-sm" } %>
                   </td>
-                  <td>
+                  <td data-label="Bénévole">
                     <%= f.check_box "is_volunteer[#{attendance.id}]", { checked: attendance.is_volunteer? }, "1", "0" %>
                   </td>
                 </tr>

@@ -60,22 +60,22 @@
           <tbody>
             <% @roller_stocks.each do |stock| %>
               <tr>
-                <td><strong><%= stock.size %></strong></td>
-                <td>
+                <td data-label="Taille (EU)"><strong><%= stock.size %></strong></td>
+                <td data-label="Quantité">
                   <% if stock.quantity > 0 %>
                     <span class="badge bg-success"><%= stock.quantity %></span>
                   <% else %>
                     <span class="badge bg-danger">0</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Statut">
                   <% if stock.is_active? %>
                     <span class="badge bg-success">Actif</span>
                   <% else %>
                     <span class="badge bg-secondary">Inactif</span>
                   <% end %>
                 </td>
-                <td>
+                <td data-label="Actions">
                   <div class="btn-group btn-group-sm">
                     <%= link_to "Voir", admin_panel_roller_stock_path(stock), class: "btn btn-outline-primary" %>
                     <%= link_to "Éditer", edit_admin_panel_roller_stock_path(stock), class: "btn btn-outline-secondary" %>
@@ -120,11 +120,11 @@
           <tbody>
             <% @pending_requests.each do |attendance| %>
               <tr>
-                <td><%= attendance.participant_name %></td>
-                <td><%= attendance.user.email %></td>
-                <td><strong><%= attendance.roller_size %></strong></td>
-                <td><%= attendance.event.title %></td>
-                <td><%= l(attendance.created_at, format: :short) %></td>
+                <td data-label="Nom"><%= attendance.participant_name %></td>
+                <td data-label="Email"><%= attendance.user.email %></td>
+                <td data-label="Taille demandée"><strong><%= attendance.roller_size %></strong></td>
+                <td data-label="Initiation"><%= attendance.event.title %></td>
+                <td data-label="Date"><%= l(attendance.created_at, format: :short) %></td>
               </tr>
             <% end %>
           </tbody>

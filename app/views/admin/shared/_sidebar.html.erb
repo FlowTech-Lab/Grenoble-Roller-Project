@@ -4,14 +4,14 @@
 %>
 
 <!-- SIDEBAR: Desktop/Tablet (hidden on mobile) -->
-<aside class="d-none d-lg-flex flex-column bg-dark text-white border-end position-fixed admin-sidebar" 
+<aside class="d-none d-lg-flex flex-column border-end position-fixed admin-sidebar" 
        id="sidebar" 
        data-admin--admin-sidebar-target="sidebar"
        data-controller="admin--admin-sidebar">
   
   <!-- Header avec logo/titre -->
   <div class="p-3 border-bottom border-secondary d-flex align-items-center justify-content-between position-relative">
-    <span class="d-inline fw-bold sidebar-label" id="sidebar-logo-text">Grenoble Roller</span>
+    <span class="d-inline fw-bold sidebar-label admin-sidebar-logo-text" id="sidebar-logo-text">Grenoble Roller</span>
     <button class="btn btn-sm btn-outline-light d-none d-lg-block position-absolute end-0 me-3 admin-sidebar-toggle"
             data-action="click->admin--admin-sidebar#toggle"
             aria-label="Réduire la sidebar">
@@ -25,22 +25,10 @@
       <%= render 'admin/shared/menu_items', mobile: false %>
     </ul>
   </nav>
-
-  <!-- Footer -->
-  <div class="p-3 border-top border-secondary">
-    <div class="small text-muted">
-      <div class="sidebar-label"><%= current_user.email %></div>
-      <%= link_to destroy_user_session_path, method: :delete, 
-          class: "text-white-50 text-decoration-none small sidebar-label",
-          data: { bs_dismiss: "" } do %>
-        <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
-      <% end %>
-    </div>
-  </div>
 </aside>
 
 <!-- OFFCANVAS: Mobile only - Pleine largeur (100vw) -->
-<div class="offcanvas offcanvas-start bg-dark text-white" 
+<div class="offcanvas offcanvas-start" 
      tabindex="-1" 
      id="offcanvasSidebar" 
      role="navigation"

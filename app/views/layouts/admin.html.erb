@@ -50,12 +50,8 @@
       </main>
     </div>
 
-    <!-- Footer optionnel -->
-    <footer class="mt-auto py-2 px-3 border-top bg-light">
-      <div class="container-fluid text-muted text-center">
-        <small>© 2025 Grenoble Roller Admin</small>
-      </div>
-    </footer>
+    <!-- Footer de l'application normale -->
+    <%= render 'layouts/footer-simple' %>
 
     <!-- Theme toggle script -->
     <script>
@@ -274,6 +270,32 @@
       document.addEventListener('turbo:frame-load', function() {
         waitForBootstrap(initOffcanvasHandlers);
       });
+
+      // Générer automatiquement les data-label pour les tableaux responsive mobile
+      function initResponsiveTables() {
+        document.querySelectorAll('.admin-panel .table').forEach(function(table) {
+          const headers = Array.from(table.querySelectorAll('thead th'));
+          if (headers.length === 0) return;
+
+          table.querySelectorAll('tbody tr').forEach(function(row) {
+            const cells = Array.from(row.querySelectorAll('td'));
+            cells.forEach(function(cell, index) {
+              if (!cell.hasAttribute('data-label') && headers[index]) {
+                cell.setAttribute('data-label', headers[index].textContent.trim());
+              }
+            });
+          });
+        });
+      }
+
+      // Initialiser au chargement et après Turbo
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initResponsiveTables);
+      } else {
+        initResponsiveTables();
+      }
+      document.addEventListener('turbo:load', initResponsiveTables);
+      document.addEventListener('turbo:frame-load', initResponsiveTables);
     </script>
   </body>
 </html>

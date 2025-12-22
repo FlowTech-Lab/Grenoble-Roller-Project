@@ -65,11 +65,11 @@
             <tbody>
               <% @recent_orders.each do |order| %>
                 <tr>
-                  <td>#<%= order.id %></td>
-                  <td><%= order.user.email %></td>
-                  <td><%= number_to_currency(order.total_cents / 100.0, unit: '€') %></td>
-                  <td><span class="badge badge-liquid-secondary"><%= order.status %></span></td>
-                  <td><%= order.created_at.strftime('%d/%m/%Y %H:%M') %></td>
+                  <td data-label="ID">#<%= order.id %></td>
+                  <td data-label="Client"><%= order.user.email %></td>
+                  <td data-label="Total"><%= number_to_currency(order.total_cents / 100.0, unit: '€') %></td>
+                  <td data-label="Statut"><span class="badge badge-liquid-secondary"><%= order.status %></span></td>
+                  <td data-label="Date"><%= order.created_at.strftime('%d/%m/%Y %H:%M') %></td>
                 </tr>
               <% end %>
             </tbody>

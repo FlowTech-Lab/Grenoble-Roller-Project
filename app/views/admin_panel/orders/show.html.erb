@@ -64,11 +64,11 @@
               <tbody>
                 <% @order.order_items.each do |item| %>
                   <tr>
-                    <td><%= item.variant&.product&.name || "N/A" %></td>
-                    <td><code><%= item.variant&.sku || "N/A" %></code></td>
-                    <td><%= item.quantity %></td>
-                    <td><%= number_to_currency(item.unit_price_cents / 100.0, unit: '€') %></td>
-                    <td><%= number_to_currency(item.unit_price_cents * item.quantity / 100.0, unit: '€') %></td>
+                    <td data-label="Produit"><%= item.variant&.product&.name || "N/A" %></td>
+                    <td data-label="Variante"><code><%= item.variant&.sku || "N/A" %></code></td>
+                    <td data-label="Quantité"><%= item.quantity %></td>
+                    <td data-label="Prix unitaire"><%= number_to_currency(item.unit_price_cents / 100.0, unit: '€') %></td>
+                    <td data-label="Total"><%= number_to_currency(item.unit_price_cents * item.quantity / 100.0, unit: '€') %></td>
                   </tr>
                 <% end %>
               </tbody>
