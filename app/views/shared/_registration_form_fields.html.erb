@@ -306,15 +306,40 @@
       // Support Turbo
       document.addEventListener('turbo:load', initVolunteerVisibility<%= prefix_id %>);
       
-      // Configurer l'écouteur pour le bénévole (utilise setupModalListenerGeneric défini au début du script)
-      setupModalListenerGeneric<%= prefix_id %>(function() {
-        toggleVolunteerVisibility<%= prefix_id %>();
-      });
-      setTimeout(function() {
-        setupModalListenerGeneric<%= prefix_id %>(function() {
+      // Fonction générique pour configurer l'écouteur modal (définie ici pour être disponible)
+      if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'undefined') {
+        window.setupModalListenerGeneric<%= prefix_id %> = function(callback) {
+          const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+          const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                             document.getElementById('attendForm' + prefixIdClean) ||
+                             document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                             document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                             document.querySelector('form[id*="attendForm"]') ||
+                             document.querySelector('form[id*="waitlist"]');
+          
+          if (formElement) {
+            const modalElement = formElement.closest('.modal');
+            if (modalElement && typeof callback === 'function') {
+              const handler = function() {
+                setTimeout(callback, 100);
+              };
+              modalElement.addEventListener('shown.bs.modal', handler);
+            }
+          }
+        };
+      }
+      
+      // Configurer l'écouteur pour le bénévole
+      if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'function') {
+        window.setupModalListenerGeneric<%= prefix_id %>(function() {
           toggleVolunteerVisibility<%= prefix_id %>();
         });
-      }, 500);
+        setTimeout(function() {
+          window.setupModalListenerGeneric<%= prefix_id %>(function() {
+            toggleVolunteerVisibility<%= prefix_id %>();
+          });
+        }, 500);
+      }
     </script>
   <% end %>
 <% end %>
@@ -572,41 +597,45 @@
       });
       
       // Fonction générique pour configurer l'écouteur modal (réutilisable)
-      function setupModalListenerGeneric<%= prefix_id %>(callback) {
-        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
-        const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
-                           document.getElementById('attendForm' + prefixIdClean) ||
-                           document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
-                           document.getElementById('joinWaitlistForm' + prefixIdClean) ||
-                           document.querySelector('form[id*="attendForm"]') ||
-                           document.querySelector('form[id*="waitlist"]');
-        
-        if (formElement) {
-          const modalElement = formElement.closest('.modal');
-          if (modalElement && typeof callback === 'function') {
-            const handler = function() {
-              setTimeout(callback, 100);
-            };
-            modalElement.addEventListener('shown.bs.modal', handler);
+      if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'undefined') {
+        window.setupModalListenerGeneric<%= prefix_id %> = function(callback) {
+          const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+          const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                             document.getElementById('attendForm' + prefixIdClean) ||
+                             document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                             document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                             document.querySelector('form[id*="attendForm"]') ||
+                             document.querySelector('form[id*="waitlist"]');
+          
+          if (formElement) {
+            const modalElement = formElement.closest('.modal');
+            if (modalElement && typeof callback === 'function') {
+              const handler = function() {
+                setTimeout(callback, 100);
+              };
+              modalElement.addEventListener('shown.bs.modal', handler);
+            }
           }
-        }
+        };
       }
       
       // Configurer l'écouteur pour l'essai gratuit
-      setupModalListenerGeneric<%= prefix_id %>(function() {
-        setupFreeTrialDisplay<%= prefix_id %>();
-        if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
-          window.toggleSubmitButton<%= prefix_id %>();
-        }
-      });
-      setTimeout(function() {
-        setupModalListenerGeneric<%= prefix_id %>(function() {
+      if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'function') {
+        window.setupModalListenerGeneric<%= prefix_id %>(function() {
           setupFreeTrialDisplay<%= prefix_id %>();
           if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
             window.toggleSubmitButton<%= prefix_id %>();
           }
         });
-      }, 500);
+        setTimeout(function() {
+          window.setupModalListenerGeneric<%= prefix_id %>(function() {
+            setupFreeTrialDisplay<%= prefix_id %>();
+            if (typeof window.toggleSubmitButton<%= prefix_id %> === 'function') {
+              window.toggleSubmitButton<%= prefix_id %>();
+            }
+          });
+        }, 500);
+      }
     </script>
   <% end %>
 <% end %>
@@ -622,24 +651,26 @@
 
 <script>
   // Fonction générique pour configurer l'écouteur modal (définie une seule fois, réutilisable partout)
-  function setupModalListenerGeneric<%= prefix_id %>(callback) {
-    const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
-    const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
-                       document.getElementById('attendForm' + prefixIdClean) ||
-                       document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
-                       document.getElementById('joinWaitlistForm' + prefixIdClean) ||
-                       document.querySelector('form[id*="attendForm"]') ||
-                       document.querySelector('form[id*="waitlist"]');
-    
-    if (formElement) {
-      const modalElement = formElement.closest('.modal');
-      if (modalElement && typeof callback === 'function') {
-        const handler = function() {
-          setTimeout(callback, 100);
-        };
-        modalElement.addEventListener('shown.bs.modal', handler);
+  if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'undefined') {
+    window.setupModalListenerGeneric<%= prefix_id %> = function(callback) {
+      const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+      const formElement = document.getElementById('attendForm<%= prefix_id %>') || 
+                         document.getElementById('attendForm' + prefixIdClean) ||
+                         document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                         document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                         document.querySelector('form[id*="attendForm"]') ||
+                         document.querySelector('form[id*="waitlist"]');
+      
+      if (formElement) {
+        const modalElement = formElement.closest('.modal');
+        if (modalElement && typeof callback === 'function') {
+          const handler = function() {
+            setTimeout(callback, 100);
+          };
+          modalElement.addEventListener('shown.bs.modal', handler);
+        }
       }
-    }
+    };
   }
   
   // Fonction pour activer/désactiver le bouton de soumission selon l'essai gratuit (accessible globalement)
@@ -869,15 +900,17 @@
       // Support Turbo
       document.addEventListener('turbo:load', initSubmitButton<%= prefix_id %>);
       
-      // Configurer l'écouteur pour le bouton submit (utilise setupModalListenerGeneric défini au début du script)
-      setupModalListenerGeneric<%= prefix_id %>(function() {
-        initSubmitButton<%= prefix_id %>();
-      });
-      setTimeout(function() {
-        setupModalListenerGeneric<%= prefix_id %>(function() {
+      // Configurer l'écouteur pour le bouton submit
+      if (typeof window.setupModalListenerGeneric<%= prefix_id %> === 'function') {
+        window.setupModalListenerGeneric<%= prefix_id %>(function() {
           initSubmitButton<%= prefix_id %>();
         });
-      }, 500);
+        setTimeout(function() {
+          window.setupModalListenerGeneric<%= prefix_id %>(function() {
+            initSubmitButton<%= prefix_id %>();
+          });
+        }, 500);
+      }
     <% end %>
   })();
 </script>
