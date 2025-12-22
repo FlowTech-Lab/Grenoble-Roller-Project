@@ -3,11 +3,11 @@ require 'rails_helper'
 RSpec.describe 'AdminPanel::Initiations', type: :request do
   include RequestAuthenticationHelper
 
-  let(:initiation_role) { create(:role, :initiation) }
-  let(:organizer_role) { create(:role, :organizer) }
-  let(:admin_role) { create(:role, :admin) }
-  let(:superadmin_role) { create(:role, :superadmin) }
-  let(:user_role) { create(:role, level: 10) }
+  let(:initiation_role) { Role.find_or_create_by!(code: 'INITIATION') { |r| r.name = 'Initiation'; r.level = 30 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:superadmin_role) { Role.find_or_create_by!(code: 'SUPERADMIN') { |r| r.name = 'Super Administrateur'; r.level = 70 } }
+  let(:user_role) { Role.find_or_create_by!(code: 'USER') { |r| r.name = 'Utilisateur'; r.level = 10 } }
 
   let(:initiation) { create(:event_initiation) }
 
@@ -143,7 +143,9 @@ RSpec.describe 'AdminPanel::Initiations', type: :request do
   end
 
   describe 'PATCH /admin-panel/initiations/:id/update_presences' do
-    let(:attendance) { create(:attendance, event: initiation, status: 'registered') }
+    let(:attendance_user) { create(:user) }
+    let!(:membership) { create(:membership, user: attendance_user, status: :active, season: '2025-2026') }
+    let(:attendance) { create(:attendance, event: initiation, user: attendance_user, status: 'registered') }
 
     context 'when user is admin (level 60)' do
       let(:admin_user) { create(:user, :admin) }

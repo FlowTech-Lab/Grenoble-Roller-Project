@@ -3,12 +3,13 @@ require 'rails_helper'
 RSpec.describe AdminPanel::Event::InitiationPolicy do
   subject(:policy) { described_class.new(user, initiation) }
 
-  let(:initiation) { create(:event_initiation) }
-  let(:initiation_role) { create(:role, :initiation) }
-  let(:organizer_role) { create(:role, :organizer) }
-  let(:moderator_role) { create(:role, :moderator) }
-  let(:admin_role) { create(:role, :admin) }
-  let(:superadmin_role) { create(:role, :superadmin) }
+  let(:creator_user) { create(:user) } # Utilisateur avec rôle par défaut
+  let(:initiation) { create(:event_initiation, creator_user: creator_user) }
+  let(:initiation_role) { Role.find_or_create_by!(code: 'INITIATION') { |r| r.name = 'Initiation'; r.level = 30 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+  let(:moderator_role) { Role.find_or_create_by!(code: 'MODERATOR') { |r| r.name = 'Modérateur'; r.level = 50 } }
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:superadmin_role) { Role.find_or_create_by!(code: 'SUPERADMIN') { |r| r.name = 'Super Administrateur'; r.level = 70 } }
 
   describe '#index?' do
     context 'when user is initiation (level 30)' do

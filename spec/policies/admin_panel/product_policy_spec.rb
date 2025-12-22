@@ -3,9 +3,22 @@ require 'rails_helper'
 RSpec.describe AdminPanel::ProductPolicy do
   subject(:policy) { described_class.new(user, product) }
 
-  let(:product) { create(:product) }
-  let(:admin_role) { create(:role, :admin) }
-  let(:organizer_role) { create(:role, :organizer) }
+  # Pour les tests de policy, on peut utiliser build_stubbed (pas besoin de DB)
+  # ou créer un produit avec variante
+  let(:product) do
+    p = build(:product)
+    p.product_variants.build(
+      sku: "SKU-#{SecureRandom.hex(4)}",
+      price_cents: 5000,
+      currency: 'EUR',
+      stock_qty: 10,
+      is_active: true
+    )
+    p.save(validate: false) # Skip validation pour les tests de policy
+    p
+  end
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
 
   describe '#index?' do
     context 'when user is admin (level 60)' do

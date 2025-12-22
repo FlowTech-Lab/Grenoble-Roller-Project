@@ -3,9 +3,9 @@ require 'rails_helper'
 RSpec.describe 'AdminPanel::Dashboard', type: :request do
   include RequestAuthenticationHelper
 
-  let(:admin_role) { create(:role, :admin) }
-  let(:organizer_role) { create(:role, :organizer) }
-  let(:user_role) { create(:role, level: 10) }
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+  let(:user_role) { Role.find_or_create_by!(code: 'USER') { |r| r.name = 'Utilisateur'; r.level = 10 } }
 
   describe 'GET /admin-panel' do
     context 'when user is admin (level 60)' do

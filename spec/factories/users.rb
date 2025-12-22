@@ -1,6 +1,11 @@
 FactoryBot.define do
   factory :user do
-    association :role
+    after(:build) do |user|
+      user.role ||= Role.find_or_create_by!(code: 'USER') do |r|
+        r.name = 'Utilisateur'
+        r.level = 10
+      end
+    end
     sequence(:first_name) { |n| "User#{n}" }
     sequence(:last_name) { |n| "Tester#{n}" }
     sequence(:email) { |n| "user#{n}@example.com" }

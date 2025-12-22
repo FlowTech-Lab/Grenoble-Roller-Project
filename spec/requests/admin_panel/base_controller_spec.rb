@@ -3,10 +3,10 @@ require 'rails_helper'
 RSpec.describe 'AdminPanel::BaseController', type: :request do
   include RequestAuthenticationHelper
 
-  let(:initiation_role) { create(:role, :initiation) }
-  let(:organizer_role) { create(:role, :organizer) }
-  let(:admin_role) { create(:role, :admin) }
-  let(:user_role) { create(:role, level: 10) }
+  let(:initiation_role) { Role.find_or_create_by!(code: 'INITIATION') { |r| r.name = 'Initiation'; r.level = 30 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:user_role) { Role.find_or_create_by!(code: 'USER') { |r| r.name = 'Utilisateur'; r.level = 10 } }
 
   describe 'Authentication and authorization' do
     context 'when accessing initiations (level >= 30 required)' do

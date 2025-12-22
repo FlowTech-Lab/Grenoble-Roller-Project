@@ -4,8 +4,8 @@ RSpec.describe AdminPanel::OrderPolicy do
   subject(:policy) { described_class.new(user, order) }
 
   let(:order) { create(:order) }
-  let(:admin_role) { create(:role, :admin) }
-  let(:organizer_role) { create(:role, :organizer) }
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
 
   describe '#index?' do
     context 'when user is admin (level 60)' do

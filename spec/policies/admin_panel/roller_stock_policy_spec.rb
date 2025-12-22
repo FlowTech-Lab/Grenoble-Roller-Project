@@ -3,9 +3,14 @@ require 'rails_helper'
 RSpec.describe AdminPanel::RollerStockPolicy do
   subject(:policy) { described_class.new(user, roller_stock) }
 
-  let(:roller_stock) { create(:roller_stock) }
-  let(:admin_role) { create(:role, :admin) }
-  let(:organizer_role) { create(:role, :organizer) }
+  let(:roller_stock) do
+    # Utiliser une taille qui n'existe pas encore
+    available_sizes = RollerStock::SIZES - RollerStock.pluck(:size)
+    size = available_sizes.any? ? available_sizes.first : RollerStock::SIZES.first
+    create(:roller_stock, size: size)
+  end
+  let(:admin_role) { Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 } }
+  let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
 
   describe '#index?' do
     context 'when user is admin (level 60)' do
