@@ -3,8 +3,8 @@
 #
 # Configuration sécurisée production :
 # - Caddy reverse proxy avec HTTPS automatique (Let's Encrypt)
-# - Application Rails isolée (pas de ports exposés)
-# - Tout le trafic passe par Caddy (ports 80/443 uniquement)
+# - Application Rails accessible via Caddy (ports 80/443) ET directement (port 3000)
+# - Port 3000 exposé pour accès direct en plus de Caddy
 # - Réseau Docker interne pour communication entre services
 
 services:
@@ -37,7 +37,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
 
-  # Application Rails - ISOLÉE (pas de ports exposés)
+  # Application Rails - Accessible via Caddy (80/443) et directement (3000)
   web:
     build:
       context: ../..
@@ -65,9 +65,9 @@ services:
       TZ: Europe/Paris
       # Run Solid Queue supervisor inside Puma (single-server deployment)
       SOLID_QUEUE_IN_PUMA: "true"
-    # AUCUN port exposé - accès uniquement via réseau Docker interne
-    expose:
-      - "3000"
+    # Port 3000 exposé pour accès direct (en plus de Caddy)
+    ports:
+      - "3000:3000"
     # Monter le fichier master.key pour que Rails puisse décrypter les credentials
     volumes:
       - ../../config/master.key:/rails/config/master.key:ro

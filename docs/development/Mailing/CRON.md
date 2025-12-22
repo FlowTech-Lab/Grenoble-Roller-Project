@@ -122,6 +122,42 @@ fi
 
 ---
 
+**Configuration Development** :
+
+❌ **Development n'est PAS configuré** pour que Supercronic démarre automatiquement :
+
+- **Variables d'environnement** (`ops/dev/docker-compose.yml` ligne 20) :
+  ```yaml
+  RAILS_ENV: development    # ← Condition NON remplie
+  # Pas de APP_ENV
+  # Pas de DEPLOY_ENV
+  ```
+
+- **Condition dans docker-entrypoint** :
+  ```bash
+  if [ "${RAILS_ENV}" == "production" ] || [ "${APP_ENV}" == "staging" ] || 
+     [ "${DEPLOY_ENV}" == "staging" ] || [ "${DEPLOY_ENV}" == "production" ]; then
+  ```
+  - `RAILS_ENV == "production"` ❌ (RAILS_ENV=development)
+  - `APP_ENV == "staging"` ❌ (non défini)
+  - `DEPLOY_ENV == "staging"` ❌ (non défini)
+  - `DEPLOY_ENV == "production"` ❌ (non défini)
+  
+  **Aucune condition n'est remplie**, donc Supercronic **ne démarre PAS** en développement.
+
+**Pourquoi ?** C'est normal : les tâches cron (emails automatiques, synchronisations, etc.) ne doivent pas tourner en développement pour éviter d'envoyer des emails réels ou de modifier des données de production.
+
+**Pour tester les jobs en dev** :
+- Exécuter manuellement : `bin/rails runner "EventReminderJob.perform_now"`
+- Pour InitiationParticipantsReportJob : `FORCE_INITIATION_REPORT=true bin/rails runner "InitiationParticipantsReportJob.perform_now"`
+
+**Si on veut activer Supercronic en dev** (déconseillé) :
+1. Ajouter `APP_ENV: staging` ou `DEPLOY_ENV: staging` dans `ops/dev/docker-compose.yml`
+2. Générer le crontab manuellement : `bundle exec whenever --set 'environment=development' > config/crontab`
+3. ⚠️ **Attention** : Les jobs s'exécuteront vraiment, risque d'envoyer des emails réels !
+
+---
+
 ## 📧 Tâches de Mailing Configurées
 
 ### 1. EventReminderJob - Rappels événements à 19h
@@ -434,4 +470,247 @@ Le fichier `config/crontab` est généré automatiquement lors du déploiement p
 - Script déploiement cron : `ops/lib/deployment/cron.sh`
 - Schedule source : `config/schedule.rb`
 - Crontab généré : `config/crontab`
+
+---
+
+## 🔍 Diagnostic 503 - Service Unavailable / Subdomain not configured
+
+### Commandes de Diagnostic Rapide
+
+**1. Vérifier l'état des conteneurs** :
+```bash
+docker ps -a | grep grenoble-roller-production
+```
+
+**2. Vérifier le statut de santé du conteneur web** :
+```bash
+docker inspect grenoble-roller-production --format='{{.State.Health.Status}}'
+# Doit retourner : "healthy"
+```
+
+**3. Tester le endpoint /up directement dans le conteneur** :
+```bash
+docker exec grenoble-roller-production curl -f http://localhost:3000/up
+# Doit retourner : 200 OK
+```
+
+**4. Vérifier les logs du conteneur web** :
+```bash
+docker logs --tail 50 grenoble-roller-production
+```
+
+**5. Vérifier les logs de Caddy (reverse proxy)** :
+```bash
+docker logs --tail 50 grenoble-roller-caddy-production
+```
+
+### Problème Courant : "This subdomain is not configured"
+
+**Cause** : Le domaine/sous-domaine utilisé dans l'URL ne correspond pas à la configuration Caddy.
+
+**Configuration Caddy** (`ops/production/Caddyfile` ligne 17) :
+- ✅ Configure uniquement : `grenoble-roller.org` et `www.grenoble-roller.org`
+- ❌ Tout autre sous-domaine (ex: `staging.grenoble-roller.org`, `api.grenoble-roller.org`) retournera 503
+
+**Solution** :
+1. Utiliser `grenoble-roller.org` ou `www.grenoble-roller.org`
+2. OU ajouter le sous-domaine dans le Caddyfile si nécessaire
+
+### Vérifications Complètes
+
+**État de santé détaillé** :
+```bash
+docker inspect grenoble-roller-production --format='{{json .State.Health}}' | jq
+```
+
+**Test de connexion réseau Docker** :
+```bash
+docker exec grenoble-roller-caddy-production curl -I http://web:3000/up
+```
+
+**Vérifier les variables d'environnement** :
+```bash
+docker exec grenoble-roller-production env | grep -E "RAILS_ENV|APP_ENV|MAILER_HOST|VIRTUAL_HOST"
+```
+
+**Redémarrer les conteneurs si nécessaire** :
+```bash
+cd /chemin/vers/projet
+docker compose -f ops/production/docker-compose.yml restart
+```
+
+---
+
+## 🔧 Configuration HAProxy pour Health Check
+
+### Problème : HAProxy voit le backend comme DOWN
+
+**Symptôme** : Dans l'interface HAProxy, le backend montre :
+- Status: **DOWN**
+- LastChk: **L4CON in 0ms** (erreur de connexion TCP)
+
+### Causes possibles
+
+1. **Le conteneur n'est pas démarré** :
+   ```bash
+   # Vérifier l'état du conteneur
+   docker ps -a | grep grenoble-roller-dev
+   # Si "Exited", démarrer le conteneur :
+   docker compose -f ops/dev/docker-compose.yml up -d
+   ```
+
+2. **Configuration HTTP check incorrecte dans HAProxy**
+
+### Configuration HAProxy recommandée
+
+**Endpoint de health check** : `/up`
+
+**Configuration HTTP check dans HAProxy/pfSense** :
+
+```
+Http check method: GET
+Url used by http check requests: /up
+Http check version: HTTP/1.0
+```
+
+**Alternative (si GET ne fonctionne pas)** :
+```
+Http check method: OPTIONS
+Url used by http check requests: /up
+Http check version: HTTP/1.0
+```
+
+### Vérification que l'application répond
+
+**1. Démarrer le conteneur** :
+```bash
+docker compose -f ops/dev/docker-compose.yml up -d
+```
+
+**2. Vérifier que le conteneur est UP** :
+```bash
+docker ps | grep grenoble-roller-dev
+# Doit montrer "Up X minutes"
+```
+
+**3. Tester le endpoint /up** :
+```bash
+# Depuis l'hôte (si port 3000 exposé)
+curl -I http://localhost:3000/up
+# Doit retourner : HTTP/1.1 200 OK
+
+# Depuis le conteneur (test interne)
+docker exec grenoble-roller-dev curl -I http://localhost:3000/up
+# Doit retourner : HTTP/1.1 200 OK
+```
+
+**4. Tester depuis HAProxy/pfSense** :
+```bash
+# Tester depuis le serveur HAProxy vers l'IP du conteneur
+curl -I http://<IP_CONTENEUR>:3000/up
+```
+
+### Configuration HAProxy complète (exemple)
+
+**Backend server configuration** :
+- Address: IP du serveur où tourne le conteneur
+- Port: 3000 (port exposé dans docker-compose.yml)
+- Health check: HTTP
+- HTTP check method: GET
+- HTTP check URL: /up
+- HTTP check version: HTTP/1.0
+
+**Notes importantes** :
+- Le endpoint `/up` est standard Rails et retourne 200 si l'app démarre sans erreur
+- Le endpoint est exclu du mode maintenance (voir `lib/middleware/maintenance_middleware.rb`)
+- Si HAProxy retourne L4CON, c'est une erreur de connexion TCP (conteneur arrêté ou port fermé)
+
+### Résumé : Configuration HAProxy recommandée
+
+```
+Backend Server:
+  - Address: IP du serveur où tourne le conteneur
+  - Port: 3000
+
+Health Check:
+  - Type: HTTP
+  - Method: GET (si ça ne marche pas, essayer OPTIONS)
+  - URL: /up
+  - Version: HTTP/1.0
+```
+
+### Vérification rapide
+
+```bash
+# 1. Vérifier que le conteneur est UP
+docker ps | grep grenoble-roller-dev
+
+# 2. Vérifier que le port 3000 est exposé
+# Doit montrer : 0.0.0.0:3000->3000/tcp
+
+# 3. Tester depuis l'hôte
+curl -I http://localhost:3000/up
+# Doit retourner : HTTP/1.1 200 OK
+
+# 4. Si HAProxy est sur un autre serveur, tester depuis HAProxy
+curl -I http://<IP_SERVEUR>:3000/up
+# Doit retourner : HTTP/1.1 200 OK
+```
+
+---
+
+## ⚠️ Port 59691 (ou autre port étrange) dans l'URL
+
+### D'où vient ce port ?
+
+Le port **59691** (ou tout autre port > 30000) n'est **PAS configuré** dans le projet. Il provient probablement d'un **port forwarding automatique** créé par :
+
+1. **Cursor Remote / VS Code Remote** : Port forwarding automatique quand vous travaillez en remote
+2. **SSH Tunnel** : Un tunnel SSH avec forwarding automatique
+3. **Docker Desktop Port Forwarding** : Port forwarding automatique de Docker Desktop
+
+### Configuration Production Réelle
+
+**Dans `ops/production/docker-compose.yml`** :
+- ❌ Le conteneur `web` **n'expose AUCUN port** sur l'hôte (ligne 68-70 : seulement `expose: - "3000"` qui est interne au réseau Docker)
+- ✅ Caddy expose les ports **80** et **443** sur l'hôte (lignes 16-20)
+
+### Comment accéder à l'application en Production
+
+**Méthode correcte** :
+1. ✅ Via Caddy (reverse proxy) : `http://grenoble-roller.org` ou `https://grenoble-roller.org` (port 80/443)
+2. ✅ Directement via localhost : `http://localhost:3000` (port exposé, si vous êtes sur le serveur)
+3. ✅ Localement via localhost : `http://localhost:80` (via Caddy, si vous êtes sur le serveur)
+
+**❌ NE PAS utiliser** :
+- `http://localhost:59691` → Port forwarding automatique, instable
+
+### Si vous avez besoin d'accéder directement au conteneur web
+
+**Option 1 : Créer un port forwarding manuel** :
+```bash
+# Forward le port 3000 du conteneur vers 3000 sur l'hôte (temporaire)
+docker port grenoble-roller-production 3000
+
+# OU créer un forwarding SSH si vous êtes en remote
+ssh -L 3000:localhost:3000 user@server
+```
+
+**Option 2 : Accéder via docker exec** (pour les commandes) :
+```bash
+docker exec grenoble-roller-production curl http://localhost:3000/up
+```
+
+**Option 3 : Modifier temporairement docker-compose.yml** (⚠️ déconseillé en prod) :
+```yaml
+ports:
+  - "3000:3000"  # ⚠️ Ne PAS faire en production normale
+```
+
+### Pour désactiver le port forwarding automatique
+
+Si vous utilisez **Cursor Remote** ou **VS Code Remote** :
+1. Ouvrir la palette de commandes (Cmd/Ctrl + Shift + P)
+2. Chercher "Forwarded Ports" ou "Ports"
+3. Fermer/supprimer le port 59691 (ou celui qui apparaît)
 
