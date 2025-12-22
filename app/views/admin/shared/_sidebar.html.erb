@@ -39,33 +39,43 @@
   </div>
 </aside>
 
-<!-- OFFCANVAS: Mobile only -->
+<!-- OFFCANVAS: Mobile only - Pleine largeur (100vw) -->
 <div class="offcanvas offcanvas-start bg-dark text-white" 
      tabindex="-1" 
      id="offcanvasSidebar" 
+     role="navigation"
      aria-labelledby="offcanvasSidebarLabel"
      data-bs-backdrop="true"
      data-bs-scroll="false">
   <div class="offcanvas-header border-bottom border-secondary">
     <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Menu</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    <button type="button" 
+            class="btn-close btn-close-white" 
+            data-bs-dismiss="offcanvas" 
+            aria-label="Fermer le menu"
+            style="min-width: 44px; min-height: 44px;">
+    </button>
   </div>
   <div class="offcanvas-body p-0">
-    <!-- Même menu navigation (utilise le partial réutilisable) -->
-    <nav class="py-3">
-      <ul class="nav nav-pills flex-column gap-2 px-2">
+    <!-- Navigation avec role sémantique -->
+    <nav class="w-100" role="navigation" aria-label="Menu principal">
+      <ul class="nav nav-pills flex-column w-100 m-0 p-0">
         <%= render 'admin/shared/menu_items', mobile: true %>
       </ul>
     </nav>
   </div>
 </div>
 
-<!-- Hamburger button (fixed mobile, sous la navbar) -->
-<div class="d-lg-none position-fixed start-0 p-3 admin-mobile-menu-toggle">
-  <button class="btn btn-outline-secondary"
+<!-- Hamburger button (fixed mobile, top right) -->
+<div class="d-lg-none admin-mobile-menu-toggle">
+  <button class="btn btn-outline-light btn-lg"
+          type="button"
           data-bs-toggle="offcanvas"
           data-bs-target="#offcanvasSidebar"
-          aria-label="Ouvrir le menu">
-    <i class="bi bi-list"></i>
+          aria-label="Ouvrir le menu"
+          aria-expanded="false"
+          aria-controls="offcanvasSidebar">
+    <i class="bi bi-list fs-4" aria-hidden="true"></i>
+    <span class="visually-hidden">Menu</span>
   </button>
 </div>

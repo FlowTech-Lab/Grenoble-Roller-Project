@@ -78,4 +78,5 @@ module AdminPanelHelper
       status.to_s.humanize
     end
   end
+
 end

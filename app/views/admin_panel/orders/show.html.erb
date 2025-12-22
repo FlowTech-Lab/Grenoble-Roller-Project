@@ -9,13 +9,13 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1>Commande #<%= @order.id %></h1>
-  <%= link_to "Retour", admin_panel_orders_path, class: "btn btn-outline-secondary" %>
+  <%= link_to "Retour", admin_panel_orders_path, class: "btn btn-outline-liquid-primary" %>
 </div>
 
 <div class="row">
   <div class="col-md-8">
     <!-- Informations commande -->
-    <div class="card mb-4">
+    <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
       <div class="card-header">
         <h5 class="mb-0">Informations</h5>
       </div>
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Articles -->
-    <div class="card">
+    <div class="card card-liquid rounded-liquid shadow-liquid">
       <div class="card-header">
         <h5 class="mb-0">Articles</h5>
       </div>
@@ -83,7 +83,7 @@
 
   <div class="col-md-4">
     <!-- Actions -->
-    <div class="card">
+    <div class="card card-liquid rounded-liquid shadow-liquid">
       <div class="card-header">
         <h5 class="mb-0">Actions</h5>
       </div>
@@ -100,15 +100,15 @@
                   ["Annulée", "cancelled"]
                 ], @order.status),
                 {},
-                { class: "form-select" } %>
+                { class: "form-select form-control-liquid" } %>
           </div>
-          <%= f.submit "Mettre à jour", class: "btn btn-primary w-100" %>
+          <%= f.submit "Mettre à jour", class: "btn btn-liquid-primary w-100" %>
         <% end %>
 
         <hr>
 
         <%= link_to "Exporter", admin_panel_orders_path(format: :csv, q: { id_eq: @order.id }), 
-            class: "btn btn-outline-success w-100" %>
+            class: "btn btn-outline-liquid-success w-100" %>
       </div>
     </div>
   </div>

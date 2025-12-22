@@ -5,10 +5,10 @@
     <p class="text-muted">Bienvenue, <%= current_user.first_name || current_user.email %></p>
   </div>
 
-  <!-- STATISTIQUES (4 cartes Bootstrap) -->
+  <!-- STATISTIQUES (4 cartes Liquid Glass) -->
   <div class="row g-3 mb-4">
     <div class="col-md-6 col-lg-3">
-      <div class="card">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body">
           <h5 class="card-title text-muted">Utilisateurs</h5>
           <h3 class="mb-0"><%= @stats[:total_users] %></h3>
@@ -17,7 +17,7 @@
     </div>
 
     <div class="col-md-6 col-lg-3">
-      <div class="card">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body">
           <h5 class="card-title text-muted">Produits</h5>
           <h3 class="mb-0"><%= @stats[:total_products] %></h3>
@@ -26,7 +26,7 @@
     </div>
 
     <div class="col-md-6 col-lg-3">
-      <div class="card">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body">
           <h5 class="card-title text-muted">Commandes</h5>
           <h3 class="mb-0"><%= @stats[:total_orders] %></h3>
@@ -35,7 +35,7 @@
     </div>
 
     <div class="col-md-6 col-lg-3">
-      <div class="card">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body">
           <h5 class="card-title text-muted">En attente</h5>
           <h3 class="mb-0"><%= @stats[:pending_orders] %></h3>
@@ -45,7 +45,7 @@
   </div>
 
   <!-- COMMANDES RÉCENTES -->
-  <div class="card">
+  <div class="card card-liquid rounded-liquid shadow-liquid">
     <div class="card-header">
       <h5 class="mb-0">Commandes Récentes</h5>
     </div>
@@ -68,7 +68,7 @@
                   <td>#<%= order.id %></td>
                   <td><%= order.user.email %></td>
                   <td><%= number_to_currency(order.total_cents / 100.0, unit: '€') %></td>
-                  <td><span class="badge bg-secondary"><%= order.status %></span></td>
+                  <td><span class="badge badge-liquid-secondary"><%= order.status %></span></td>
                   <td><%= order.created_at.strftime('%d/%m/%Y %H:%M') %></td>
                 </tr>
               <% end %>

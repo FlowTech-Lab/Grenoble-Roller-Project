@@ -18,6 +18,11 @@ export default class extends Controller {
     // Guard clause (Solution #6: Early return)
     if (!this.sidebarTarget) return
     
+    // Mobile: Ne rien faire, offcanvas Bootstrap gère tout
+    if (window.innerWidth < this.breakpointValue) {
+      return
+    }
+    
     // Cache des références DOM
     this.cacheRefs()
     
@@ -82,10 +87,18 @@ export default class extends Controller {
     this.mediaQueryHandler = (e) => {
       if (e.matches) {
         // Desktop: restaurer l'état sauvegardé
-        this.restoreState()
+        if (this.sidebarTarget && this.mainContent) {
+          this.restoreState()
+        }
       } else {
-        // Mobile: toujours expanded (offcanvas gère ça)
-        this.expand(false)
+        // Mobile: désactiver le controller (offcanvas Bootstrap gère)
+        if (this.sidebarTarget) {
+          this.sidebarTarget.style.width = '0'
+          this.sidebarTarget.style.display = 'none'
+        }
+        if (this.mainContent) {
+          this.mainContent.style.marginLeft = '0'
+        }
       }
     }
     

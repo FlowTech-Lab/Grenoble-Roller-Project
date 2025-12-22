@@ -9,8 +9,9 @@
     <%= link_to admin_panel_root_path, 
         class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('dashboard')}",
         title: "Tableau de bord",
+        aria: { label: "Aller au tableau de bord" },
         data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-      <i class="bi bi-speedometer2 fs-5"></i>
+      <i class="bi bi-speedometer2 fs-5" aria-hidden="true"></i>
       <span class="sidebar-label">Tableau de bord</span>
     <% end %>
   </li>
@@ -29,19 +30,22 @@
     <a class="nav-link d-flex align-items-center gap-2 <%= 'active' if boutique_active %>" 
        href="#<%= collapse_id %>" 
        data-bs-toggle="collapse" 
+       role="button"
        aria-expanded="<%= boutique_active ? 'true' : 'false' %>"
        aria-controls="<%= collapse_id %>"
+       aria-label="<%= boutique_active ? 'Fermer' : 'Ouvrir' %> le menu Boutique"
        title="Boutique"
        data: { tooltip_placement: "right" }>
-      <i class="bi bi-shop fs-5"></i>
+      <i class="bi bi-shop fs-5" aria-hidden="true"></i>
       <span class="sidebar-label">Boutique</span>
-      <i class="bi bi-chevron-<%= boutique_active ? 'down' : 'right' %> ms-auto"></i>
+      <i class="bi bi-chevron-<%= boutique_active ? 'down' : 'right' %> ms-auto" aria-hidden="true"></i>
     </a>
     <div class="collapse <%= 'show' if boutique_active %>" id="<%= collapse_id %>">
-      <ul class="nav nav-pills flex-column ms-3 gap-1 mt-2">
+      <ul class="nav nav-pills flex-column gap-1 mt-2">
         <li class="nav-item">
           <%= link_to admin_panel_products_path, 
               class: "nav-link small #{'active' if admin_panel_active?('products')}",
+              aria: { label: "Voir les produits" },
               data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
             <span class="sidebar-label">Produits</span>
           <% end %>
@@ -49,6 +53,7 @@
         <li class="nav-item">
           <%= link_to admin_panel_products_path, 
               class: "nav-link small #{'active' if false}", # TODO: Ajouter route inventaire quand disponible
+              aria: { label: "Voir l'inventaire" },
               data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
             <span class="sidebar-label">Inventaire</span>
           <% end %>
@@ -56,6 +61,7 @@
         <li class="nav-item">
           <%= link_to admin_panel_product_categories_path, 
               class: "nav-link small #{'active' if admin_panel_active?('product_categories')}",
+              aria: { label: "Voir les catégories" },
               data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
             <span class="sidebar-label">Catégories</span>
           <% end %>
@@ -71,8 +77,9 @@
     <%= link_to admin_panel_initiations_path, 
         class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('initiations')}",
         title: "Initiations",
+        aria: { label: "Voir les initiations" },
         data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-      <i class="bi bi-people fs-5"></i>
+      <i class="bi bi-people fs-5" aria-hidden="true"></i>
       <span class="sidebar-label">Initiations</span>
     <% end %>
   </li>
@@ -84,8 +91,9 @@
     <%= link_to admin_panel_orders_path, 
         class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('orders')}",
         title: "Commandes",
+        aria: { label: "Voir les commandes" },
         data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-      <i class="bi bi-box-seam fs-5"></i>
+      <i class="bi bi-box-seam fs-5" aria-hidden="true"></i>
       <span class="sidebar-label">Commandes</span>
     <% end %>
   </li>

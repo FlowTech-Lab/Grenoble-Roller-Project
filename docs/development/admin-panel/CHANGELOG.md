@@ -6,6 +6,33 @@
 
 ## ✅ Modifications Récentes
 
+### **2025-01-XX - Harmonisation Liquid Glass Design**
+
+#### **🎨 Application du Design Liquid Glass**
+- ✅ **Sidebar** : Glassmorphism avec `--liquid-glass-bg` et `backdrop-filter`
+- ✅ **Cards** : Classes `card-liquid`, `rounded-liquid`, `shadow-liquid` appliquées
+- ✅ **Buttons** : `btn-liquid-primary`, `btn-outline-liquid-primary`, etc.
+- ✅ **Badges** : `badge-liquid-primary`, `badge-liquid-success`, etc.
+- ✅ **Forms** : `form-control-liquid` pour inputs et selects
+- ✅ **Helpers mis à jour** : `status_badge()`, `active_badge()`, `stock_badge()` avec classes liquid
+- ✅ **Background** : Gradient liquid pastel pour body admin
+
+#### **📁 Fichiers Modifiés**
+- `app/assets/stylesheets/admin_panel.scss` - Styles liquid glass ajoutés
+- `app/views/layouts/admin.html.erb` - Classe `admin-panel` ajoutée
+- `app/views/admin_panel/dashboard/index.html.erb` - Cards liquid
+- `app/views/admin_panel/initiations/index.html.erb` - Cards + buttons + badges liquid
+- `app/views/admin_panel/orders/index.html.erb` - Cards + buttons liquid
+- `app/views/admin_panel/orders/show.html.erb` - Cards + buttons liquid
+- `app/views/admin_panel/products/index.html.erb` - Cards + buttons + badges liquid
+- `app/helpers/admin_panel/orders_helper.rb` - Badges liquid
+- `app/helpers/admin_panel/products_helper.rb` - Badges liquid
+
+#### **📚 Documentation**
+- `LIQUID-GLASS-HARMONISATION.md` - Guide complet d'harmonisation
+
+---
+
 ### **2025-01-XX - Optimisations Sidebar Admin Panel**
 
 #### **🎨 Refactorisation Complète**

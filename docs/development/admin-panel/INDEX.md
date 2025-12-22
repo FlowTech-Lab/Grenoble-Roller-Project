@@ -564,6 +564,7 @@ Implémenter selon les besoins urgents du moment
 - [Communication - README](./07-communication/README.md)
 - [Système - README](./08-systeme/README.md)
 - [**Permissions par Grade**](./PERMISSIONS.md) - 🔐 Documentation complète des permissions
+- [**Liquid Glass Harmonisation**](./LIQUID-GLASS-HARMONISATION.md) - 🎨 Guide d'harmonisation design
 - [**CHANGELOG**](./CHANGELOG.md) - 📝 Historique des modifications
 
 ---

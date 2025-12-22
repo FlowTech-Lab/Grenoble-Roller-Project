@@ -6,6 +6,11 @@
     <title>Admin - <%= content_for(:title) || "Grenoble Roller" %></title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <!-- Favicons -->
+    <link rel="icon" href="/icon.png" type="image/png" sizes="512x512">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png" sizes="512x512">
+    <link rel="shortcut icon" href="/icon.png" type="image/png">
     <%= stylesheet_link_tag "application.bootstrap", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <script type="module">
@@ -13,7 +18,7 @@
     </script>
   </head>
 
-  <body class="d-flex flex-column min-vh-100">
+  <body class="d-flex flex-column min-vh-100 admin-panel">
     <!-- NAVBAR PRINCIPALE (héritée) -->
     <%= render 'layouts/navbar' %>
 
@@ -22,18 +27,18 @@
       <!-- SIDEBAR ADMIN (fixed pour coller en haut après navbar) -->
       <%= render 'admin/shared/sidebar' %>
 
-      <!-- CONTENU PRINCIPAL (avec marge pour la sidebar) -->
+      <!-- CONTENU PRINCIPAL (avec marge pour la sidebar desktop) -->
       <main class="flex-grow-1 d-flex flex-column admin-main-content">
-        <div class="container-fluid p-3 p-lg-4">
+        <div class="container-fluid px-2 px-md-3 px-lg-4 py-3 py-lg-4">
           <!-- Flash messages -->
           <% if notice %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-liquid-success alert-dismissible fade show" role="alert">
               <%= notice %>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
           <% end %>
           <% if alert %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-liquid-danger alert-dismissible fade show" role="alert">
               <%= alert %>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -113,6 +118,89 @@
               : 'Basculer vers le thème sombre'
           );
         }
+      });
+
+      // Gestion offcanvas mobile - Premium 2025
+      document.addEventListener('DOMContentLoaded', function() {
+        const offcanvas = document.getElementById('offcanvasSidebar');
+        if (!offcanvas) return;
+
+        // Fermer offcanvas quand on clique sur un lien de navigation (pas les toggles)
+        offcanvas.addEventListener('click', function(e) {
+          const link = e.target.closest('a.nav-link[href]');
+          
+          // Ignorer les liens avec data-bs-toggle="collapse" (sous-menus)
+          if (link && link.hasAttribute('data-bs-toggle') && link.getAttribute('data-bs-toggle') === 'collapse') {
+            // Laisser Bootstrap gérer le toggle
+            return;
+          }
+          
+          // Fermer offcanvas pour les autres liens de navigation
+          if (link && 
+              !link.hasAttribute('target') &&
+              link.getAttribute('href') !== '#' &&
+              link.getAttribute('href') &&
+              !link.getAttribute('href').startsWith('http')) {
+            
+            // Utiliser l'API Bootstrap si disponible
+            if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+              const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+              if (offcanvasInstance) {
+                offcanvasInstance.hide();
+              }
+            } else {
+              // Fallback: utiliser data-bs-dismiss
+              const btn = document.createElement('button');
+              btn.setAttribute('data-bs-dismiss', 'offcanvas');
+              btn.style.display = 'none';
+              offcanvas.appendChild(btn);
+              btn.click();
+              offcanvas.removeChild(btn);
+            }
+          }
+        });
+
+        // Mettre à jour les chevrons quand collapse change (animation premium)
+        offcanvas.addEventListener('shown.bs.collapse', function(e) {
+          const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'true');
+            const chevron = toggle.querySelector('.bi-chevron-right');
+            if (chevron) {
+              chevron.style.transform = 'rotate(90deg)';
+            }
+          }
+        });
+
+        offcanvas.addEventListener('hidden.bs.collapse', function(e) {
+          const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+            const chevron = toggle.querySelector('.bi-chevron-right');
+            if (chevron) {
+              chevron.style.transform = 'rotate(0deg)';
+            }
+          }
+        });
+
+        // Keyboard navigation - Escape pour fermer
+        offcanvas.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+            if (offcanvasInstance) {
+              offcanvasInstance.hide();
+            }
+          }
+        });
+
+        // Empêcher scroll body quand offcanvas ouvert
+        offcanvas.addEventListener('show.bs.offcanvas', function() {
+          document.body.style.overflow = 'hidden';
+        });
+
+        offcanvas.addEventListener('hidden.bs.offcanvas', function() {
+          document.body.style.overflow = '';
+        });
       });
     </script>
   </body>
