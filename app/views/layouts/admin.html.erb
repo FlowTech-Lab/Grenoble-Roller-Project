@@ -54,247 +54,258 @@
 
     <!-- Theme toggle script -->
     <script>
-      function toggleTheme() {
-        const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-bs-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        
-        html.setAttribute('data-bs-theme', newTheme);
-        
-        // Mettre à jour les icônes
-        const sunIcon = document.getElementById('theme-icon-sun');
-        const moonIcon = document.getElementById('theme-icon-moon');
-        const toggle = document.getElementById('theme-toggle');
-        
-        if (sunIcon && moonIcon) {
-          const isDark = newTheme === 'dark';
-          sunIcon.classList.toggle('d-none', !isDark);
-          moonIcon.classList.toggle('d-none', isDark);
-        }
-        
-        // Mettre à jour ARIA
-        if (toggle) {
-          const isDark = newTheme === 'dark';
-          toggle.setAttribute('aria-pressed', isDark);
-          toggle.setAttribute('aria-label', 
-            isDark 
-              ? 'Basculer vers le thème clair' 
-              : 'Basculer vers le thème sombre'
-          );
-        }
-        
-        localStorage.setItem('theme', newTheme);
-      }
-      
-      // Initialize theme when DOM is ready
-      document.addEventListener('DOMContentLoaded', function() {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        const html = document.documentElement;
-        
-        html.setAttribute('data-bs-theme', savedTheme);
-        
-        // Initialiser les icônes
-        const sunIcon = document.getElementById('theme-icon-sun');
-        const moonIcon = document.getElementById('theme-icon-moon');
-        const toggle = document.getElementById('theme-toggle');
-        
-        if (sunIcon && moonIcon) {
-          const isDark = savedTheme === 'dark';
-          sunIcon.classList.toggle('d-none', !isDark);
-          moonIcon.classList.toggle('d-none', isDark);
-        }
-        
-        if (toggle) {
-          const isDark = savedTheme === 'dark';
-          toggle.setAttribute('aria-pressed', isDark);
-          toggle.setAttribute('aria-label', 
-            isDark 
-              ? 'Basculer vers le thème clair' 
-              : 'Basculer vers le thème sombre'
-          );
-        }
-      });
-
-      // Gestion offcanvas mobile - Premium 2025 (compatible Turbo)
-      // Stocker les handlers pour pouvoir les supprimer
-      let clickHandler = null;
-      let collapseShownHandler = null;
-      let collapseHiddenHandler = null;
-      let keydownHandler = null;
-      let showOffcanvasHandler = null;
-      let hiddenOffcanvasHandler = null;
-
-      function initOffcanvasHandlers() {
-        const offcanvas = document.getElementById('offcanvasSidebar');
-        if (!offcanvas) return;
-
-        // Supprimer les anciens listeners s'ils existent
-        if (clickHandler) {
-          offcanvas.removeEventListener('click', clickHandler, true);
-          clickHandler = null;
-        }
-        if (collapseShownHandler) {
-          offcanvas.removeEventListener('shown.bs.collapse', collapseShownHandler);
-          collapseShownHandler = null;
-        }
-        if (collapseHiddenHandler) {
-          offcanvas.removeEventListener('hidden.bs.collapse', collapseHiddenHandler);
-          collapseHiddenHandler = null;
-        }
-        if (keydownHandler) {
-          offcanvas.removeEventListener('keydown', keydownHandler);
-          keydownHandler = null;
-        }
-        if (showOffcanvasHandler) {
-          offcanvas.removeEventListener('show.bs.offcanvas', showOffcanvasHandler);
-          showOffcanvasHandler = null;
-        }
-        if (hiddenOffcanvasHandler) {
-          offcanvas.removeEventListener('hidden.bs.offcanvas', hiddenOffcanvasHandler);
-          hiddenOffcanvasHandler = null;
-        }
-
-        // Fermer offcanvas quand on clique sur un lien avec data-bs-dismiss
-        // Bootstrap ne gère pas automatiquement data-bs-dismiss sur les liens <a>
-        // Utiliser capture phase pour intercepter AVANT Turbo
-        clickHandler = function(e) {
-          const link = e.target.closest('a.nav-link');
+      // Encapsuler TOUT le JavaScript dans une IIFE pour éviter les conflits Turbo
+      (function() {
+        // Exposer toggleTheme sur window pour qu'elle soit accessible depuis onclick
+        window.toggleTheme = function() {
+          const html = document.documentElement;
+          const currentTheme = html.getAttribute('data-bs-theme');
+          const newTheme = currentTheme === 'light' ? 'dark' : 'light';
           
-          if (!link) return;
+          html.setAttribute('data-bs-theme', newTheme);
           
-          // Ignorer si c'est un toggle collapse
-          if (link.hasAttribute('data-bs-toggle') && link.getAttribute('data-bs-toggle') === 'collapse') {
-            return;
+          // Mettre à jour les icônes
+          const sunIcon = document.getElementById('theme-icon-sun');
+          const moonIcon = document.getElementById('theme-icon-moon');
+          const toggle = document.getElementById('theme-toggle');
+          
+          if (sunIcon && moonIcon) {
+            const isDark = newTheme === 'dark';
+            sunIcon.classList.toggle('d-none', !isDark);
+            moonIcon.classList.toggle('d-none', isDark);
           }
           
-          // Vérifier si le lien a data-bs-dismiss="offcanvas"
-          if (link.getAttribute('data-bs-dismiss') === 'offcanvas') {
-            // Empêcher Turbo de naviguer immédiatement
-            e.preventDefault();
-            e.stopPropagation();
+          // Mettre à jour ARIA
+          if (toggle) {
+            const isDark = newTheme === 'dark';
+            toggle.setAttribute('aria-pressed', isDark);
+            toggle.setAttribute('aria-label', 
+              isDark 
+                ? 'Basculer vers le thème clair' 
+                : 'Basculer vers le thème sombre'
+            );
+          }
+          
+          localStorage.setItem('theme', newTheme);
+        };
+        
+        // Initialize theme when DOM is ready
+        function initTheme() {
+          const savedTheme = localStorage.getItem('theme') || 'light';
+          const html = document.documentElement;
+          
+          html.setAttribute('data-bs-theme', savedTheme);
+          
+          // Initialiser les icônes
+          const sunIcon = document.getElementById('theme-icon-sun');
+          const moonIcon = document.getElementById('theme-icon-moon');
+          const toggle = document.getElementById('theme-toggle');
+          
+          if (sunIcon && moonIcon) {
+            const isDark = savedTheme === 'dark';
+            sunIcon.classList.toggle('d-none', !isDark);
+            moonIcon.classList.toggle('d-none', isDark);
+          }
+          
+          if (toggle) {
+            const isDark = savedTheme === 'dark';
+            toggle.setAttribute('aria-pressed', isDark);
+            toggle.setAttribute('aria-label', 
+              isDark 
+                ? 'Basculer vers le thème clair' 
+                : 'Basculer vers le thème sombre'
+            );
+          }
+        }
+
+        // Gestion offcanvas mobile - Premium 2025 (compatible Turbo)
+        // Utiliser un objet pour stocker les handlers (évite les conflits de redéclaration avec Turbo)
+        const handlers = {
+          clickHandler: null,
+          collapseShownHandler: null,
+          collapseHiddenHandler: null,
+          keydownHandler: null,
+          showOffcanvasHandler: null,
+          hiddenOffcanvasHandler: null
+        };
+
+        function initOffcanvasHandlers() {
+          const offcanvas = document.getElementById('offcanvasSidebar');
+          if (!offcanvas) return;
+
+          // Supprimer les anciens listeners s'ils existent
+          if (handlers.clickHandler) {
+            offcanvas.removeEventListener('click', handlers.clickHandler, true);
+            handlers.clickHandler = null;
+          }
+          if (handlers.collapseShownHandler) {
+            offcanvas.removeEventListener('shown.bs.collapse', handlers.collapseShownHandler);
+            handlers.collapseShownHandler = null;
+          }
+          if (handlers.collapseHiddenHandler) {
+            offcanvas.removeEventListener('hidden.bs.collapse', handlers.collapseHiddenHandler);
+            handlers.collapseHiddenHandler = null;
+          }
+          if (handlers.keydownHandler) {
+            offcanvas.removeEventListener('keydown', handlers.keydownHandler);
+            handlers.keydownHandler = null;
+          }
+          if (handlers.showOffcanvasHandler) {
+            offcanvas.removeEventListener('show.bs.offcanvas', handlers.showOffcanvasHandler);
+            handlers.showOffcanvasHandler = null;
+          }
+          if (handlers.hiddenOffcanvasHandler) {
+            offcanvas.removeEventListener('hidden.bs.offcanvas', handlers.hiddenOffcanvasHandler);
+            handlers.hiddenOffcanvasHandler = null;
+          }
+
+          // Fermer offcanvas quand on clique sur un lien avec data-bs-dismiss
+          // Bootstrap ne gère pas automatiquement data-bs-dismiss sur les liens <a>
+          // Utiliser capture phase pour intercepter AVANT Turbo
+          handlers.clickHandler = function(e) {
+            const link = e.target.closest('a.nav-link');
             
-            // Fermer l'offcanvas
-            if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-              const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
-              if (offcanvasInstance) {
-                const href = link.href;
-                offcanvasInstance.hide();
-                
-                // Naviguer après fermeture de l'offcanvas (une seule fois)
-                const navigateAfterClose = function() {
-                  window.location.href = href;
-                  offcanvas.removeEventListener('hidden.bs.offcanvas', navigateAfterClose);
-                };
-                offcanvas.addEventListener('hidden.bs.offcanvas', navigateAfterClose, { once: true });
+            if (!link) return;
+            
+            // Ignorer si c'est un toggle collapse
+            if (link.hasAttribute('data-bs-toggle') && link.getAttribute('data-bs-toggle') === 'collapse') {
+              return;
+            }
+            
+            // Vérifier si le lien a data-bs-dismiss="offcanvas"
+            if (link.getAttribute('data-bs-dismiss') === 'offcanvas') {
+              // Empêcher Turbo de naviguer immédiatement
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Fermer l'offcanvas
+              if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+                if (offcanvasInstance) {
+                  const href = link.href;
+                  offcanvasInstance.hide();
+                  
+                  // Naviguer après fermeture de l'offcanvas (une seule fois)
+                  const navigateAfterClose = function() {
+                    window.location.href = href;
+                    offcanvas.removeEventListener('hidden.bs.offcanvas', navigateAfterClose);
+                  };
+                  offcanvas.addEventListener('hidden.bs.offcanvas', navigateAfterClose, { once: true });
+                }
               }
             }
-          }
-        };
-        offcanvas.addEventListener('click', clickHandler, true); // Capture phase pour intercepter avant Turbo
+          };
+          offcanvas.addEventListener('click', handlers.clickHandler, true); // Capture phase pour intercepter avant Turbo
 
-        // Mettre à jour les chevrons quand collapse change (animation premium)
-        collapseShownHandler = function(e) {
-          const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
-          if (toggle) {
-            toggle.setAttribute('aria-expanded', 'true');
-            const chevron = toggle.querySelector('.bi-chevron-right');
-            if (chevron) {
-              chevron.style.transform = 'rotate(90deg)';
-            }
-          }
-        };
-        offcanvas.addEventListener('shown.bs.collapse', collapseShownHandler);
-
-        collapseHiddenHandler = function(e) {
-          const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
-          if (toggle) {
-            toggle.setAttribute('aria-expanded', 'false');
-            const chevron = toggle.querySelector('.bi-chevron-right');
-            if (chevron) {
-              chevron.style.transform = 'rotate(0deg)';
-            }
-          }
-        };
-        offcanvas.addEventListener('hidden.bs.collapse', collapseHiddenHandler);
-
-        // Keyboard navigation - Escape pour fermer
-        keydownHandler = function(e) {
-          if (e.key === 'Escape') {
-            if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-              const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
-              if (offcanvasInstance) {
-                offcanvasInstance.hide();
+          // Mettre à jour les chevrons quand collapse change (animation premium)
+          handlers.collapseShownHandler = function(e) {
+            const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
+            if (toggle) {
+              toggle.setAttribute('aria-expanded', 'true');
+              const chevron = toggle.querySelector('.bi-chevron-right');
+              if (chevron) {
+                chevron.style.transform = 'rotate(90deg)';
               }
             }
-          }
-        };
-        offcanvas.addEventListener('keydown', keydownHandler);
+          };
+          offcanvas.addEventListener('shown.bs.collapse', handlers.collapseShownHandler);
 
-        // Empêcher scroll body quand offcanvas ouvert
-        showOffcanvasHandler = function() {
-          document.body.style.overflow = 'hidden';
-        };
-        offcanvas.addEventListener('show.bs.offcanvas', showOffcanvasHandler);
+          handlers.collapseHiddenHandler = function(e) {
+            const toggle = offcanvas.querySelector(`a[aria-controls="${e.target.id}"]`);
+            if (toggle) {
+              toggle.setAttribute('aria-expanded', 'false');
+              const chevron = toggle.querySelector('.bi-chevron-right');
+              if (chevron) {
+                chevron.style.transform = 'rotate(0deg)';
+              }
+            }
+          };
+          offcanvas.addEventListener('hidden.bs.collapse', handlers.collapseHiddenHandler);
 
-        hiddenOffcanvasHandler = function() {
-          document.body.style.overflow = '';
-        };
-        offcanvas.addEventListener('hidden.bs.offcanvas', hiddenOffcanvasHandler);
-      }
+          // Keyboard navigation - Escape pour fermer
+          handlers.keydownHandler = function(e) {
+            if (e.key === 'Escape') {
+              if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
+                if (offcanvasInstance) {
+                  offcanvasInstance.hide();
+                }
+              }
+            }
+          };
+          offcanvas.addEventListener('keydown', handlers.keydownHandler);
 
-      // Attendre que Bootstrap soit chargé
-      function waitForBootstrap(callback) {
-        if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-          callback();
-        } else {
-          setTimeout(function() { waitForBootstrap(callback); }, 50);
+          // Empêcher scroll body quand offcanvas ouvert
+          handlers.showOffcanvasHandler = function() {
+            document.body.style.overflow = 'hidden';
+          };
+          offcanvas.addEventListener('show.bs.offcanvas', handlers.showOffcanvasHandler);
+
+          handlers.hiddenOffcanvasHandler = function() {
+            document.body.style.overflow = '';
+          };
+          offcanvas.addEventListener('hidden.bs.offcanvas', handlers.hiddenOffcanvasHandler);
         }
-      }
 
-      // Initialiser au chargement initial ET après chaque navigation Turbo
-      function runInit() {
-        waitForBootstrap(function() {
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initOffcanvasHandlers);
+        // Attendre que Bootstrap soit chargé
+        function waitForBootstrap(callback) {
+          if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+            callback();
           } else {
-            initOffcanvasHandlers();
+            setTimeout(function() { waitForBootstrap(callback); }, 50);
           }
+        }
+
+        // Initialiser au chargement initial ET après chaque navigation Turbo
+        function runInit() {
+          waitForBootstrap(function() {
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', initOffcanvasHandlers);
+            } else {
+              initOffcanvasHandlers();
+            }
+          });
+        }
+
+        runInit();
+        document.addEventListener('turbo:load', function() {
+          waitForBootstrap(initOffcanvasHandlers);
         });
-      }
+        document.addEventListener('turbo:frame-load', function() {
+          waitForBootstrap(initOffcanvasHandlers);
+        });
+        // Générer automatiquement les data-label pour les tableaux responsive mobile
+        function initResponsiveTables() {
+          document.querySelectorAll('.admin-panel .table').forEach(function(table) {
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            if (headers.length === 0) return;
 
-      runInit();
-      document.addEventListener('turbo:load', function() {
-        waitForBootstrap(initOffcanvasHandlers);
-      });
-      document.addEventListener('turbo:frame-load', function() {
-        waitForBootstrap(initOffcanvasHandlers);
-      });
-
-      // Générer automatiquement les data-label pour les tableaux responsive mobile
-      function initResponsiveTables() {
-        document.querySelectorAll('.admin-panel .table').forEach(function(table) {
-          const headers = Array.from(table.querySelectorAll('thead th'));
-          if (headers.length === 0) return;
-
-          table.querySelectorAll('tbody tr').forEach(function(row) {
-            const cells = Array.from(row.querySelectorAll('td'));
-            cells.forEach(function(cell, index) {
-              if (!cell.hasAttribute('data-label') && headers[index]) {
-                cell.setAttribute('data-label', headers[index].textContent.trim());
-              }
+            table.querySelectorAll('tbody tr').forEach(function(row) {
+              const cells = Array.from(row.querySelectorAll('td'));
+              cells.forEach(function(cell, index) {
+                if (!cell.hasAttribute('data-label') && headers[index]) {
+                  cell.setAttribute('data-label', headers[index].textContent.trim());
+                }
+              });
             });
           });
-        });
-      }
+        }
 
-      // Initialiser au chargement et après Turbo
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initResponsiveTables);
-      } else {
-        initResponsiveTables();
-      }
-      document.addEventListener('turbo:load', initResponsiveTables);
-      document.addEventListener('turbo:frame-load', initResponsiveTables);
+        // Initialiser au chargement et après Turbo
+        function runAllInit() {
+          initTheme();
+          initResponsiveTables();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', runAllInit);
+        } else {
+          runAllInit();
+        }
+        
+        document.addEventListener('turbo:load', runAllInit);
+        document.addEventListener('turbo:frame-load', runAllInit);
+      })(); // Fin de l'IIFE - Tout le JavaScript est maintenant encapsulé
     </script>
   </body>
 </html>
