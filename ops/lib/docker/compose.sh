@@ -115,6 +115,7 @@ force_rebuild_without_cache() {
     
     log_info "Rebuild sans cache COMPLET (--pull --no-cache --build-arg BUILD_ID)..."
     log_warning "⚠️  Ce build peut prendre 5-10 minutes (sans cache complet)..."
+    log_warning "⚠️  FORCÉ 100% DU TEMPS pour éviter problèmes de cache (Gemfile, database.yml, migrations, etc.)"
     
     # Build avec --no-cache
     if $DOCKER_CMD compose --progress=plain -f "$compose_file" build --pull --no-cache --build-arg BUILD_ID="$BUILD_ID" 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
@@ -128,13 +129,66 @@ force_rebuild_without_cache() {
     
     if [ $BUILD_EXIT_CODE -eq 0 ]; then
         log_info "Démarrage de tous les services (web, db, minio, etc.)..."
+        log_info "   ℹ️  Le docker-entrypoint appliquera automatiquement les migrations SQLite au démarrage"
         # Démarrer tous les services pour s'assurer que les nouveaux services ajoutés au docker-compose.yml sont créés
         if $DOCKER_CMD compose -f "$compose_file" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
             log_success "✅ Tous les services démarrés avec succès"
+            
+            # ⚠️  SÉCURITÉ : Vérifier que les conteneurs sont bien démarrés après le up
+            #    Si un conteneur échoue, relancer un up pour être sûr
+            log_info "🔍 Vérification que tous les conteneurs sont bien démarrés..."
+            sleep 3  # Attendre un peu que les conteneurs démarrent
+            
+            # Vérifier les conteneurs principaux (web, db, minio si présent)
+            local services_to_check=("web")
+            if $DOCKER_CMD compose -f "$compose_file" config --services 2>/dev/null | grep -q "^db$"; then
+                services_to_check+=("db")
+            fi
+            if $DOCKER_CMD compose -f "$compose_file" config --services 2>/dev/null | grep -q "^minio$"; then
+                services_to_check+=("minio")
+            fi
+            
+            local needs_retry=false
+            for service in "${services_to_check[@]}"; do
+                local service_container=$($DOCKER_CMD compose -f "$compose_file" ps -q "$service" 2>/dev/null | head -1)
+                if [ -n "$service_container" ]; then
+                    local container_status=$($DOCKER_CMD inspect --format='{{.State.Status}}' "$service_container" 2>/dev/null || echo "unknown")
+                    if [ "$container_status" != "running" ]; then
+                        log_warning "⚠️  Service ${service} n'est pas running (status: ${container_status})"
+                        needs_retry=true
+                    fi
+                else
+                    log_warning "⚠️  Service ${service} n'a pas de conteneur"
+                    needs_retry=true
+                fi
+            done
+            
+            # Si un service a échoué, relancer un up pour être sûr
+            if [ "$needs_retry" = "true" ]; then
+                log_warning "⚠️  Certains services ont échoué, relance de 'docker compose up -d' pour être sûr..."
+                if $DOCKER_CMD compose -f "$compose_file" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                    log_success "✅ Services redémarrés avec succès"
+                    sleep 3  # Attendre à nouveau
+                else
+                    log_error "❌ Échec du redémarrage des services"
+                    return 1
+                fi
+            else
+                log_success "✅ Tous les services sont running"
+            fi
+            
             return 0
         else
             log_error "❌ Échec du démarrage des services"
-            return 1
+            log_warning "⚠️  Tentative de relance de 'docker compose up -d' pour être sûr..."
+            if $DOCKER_CMD compose -f "$compose_file" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                log_success "✅ Services redémarrés avec succès après échec initial"
+                sleep 3  # Attendre que les conteneurs démarrent
+                return 0
+            else
+                log_error "❌ Échec définitif du démarrage des services"
+                return 1
+            fi
         fi
     else
         return $BUILD_EXIT_CODE
