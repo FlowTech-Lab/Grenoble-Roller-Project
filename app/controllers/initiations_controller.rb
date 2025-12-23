@@ -98,8 +98,6 @@ class InitiationsController < ApplicationController
       duration_min: 105, # 1h45
       max_participants: 30,
       location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
-      meeting_lat: 45.17323364952216,
-      meeting_lng: 5.705659385672371,
       level: "beginner",
       distance_km: 0,
       price_cents: 0,

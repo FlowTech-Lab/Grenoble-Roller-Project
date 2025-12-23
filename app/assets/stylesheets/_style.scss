@@ -2312,24 +2312,70 @@
     z-index: 10;
     font-weight: 600;
     padding: 0.5rem 0.75rem;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    /* Arrière-plan par défaut pour garantir la visibilité */
-    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    /* Arrière-plan opaque pour garantir la visibilité sur images blanches */
+    background: rgba(0, 0, 0, 0.75) !important;
     color: white !important;
     
     /* Assurer la visibilité en mode sombre */
     [data-bs-theme="dark"] & {
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.8) !important;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.85) !important;
     }
   }
   
-  /* Les classes badge-liquid-* surchargent l'arrière-plan par défaut */
-  .card-event-date.badge-liquid-primary,
+  /* Les classes badge-liquid-* gardent un fond opaque pour la lisibilité */
+  .card-event-date.badge-liquid-primary {
+    /* Fond semi-transparent avec couleur primaire pour garder le style liquid */
+    background: rgba(0, 123, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(77, 148, 255, 0.85) !important;
+    }
+  }
+  
   .card-event-date.badge-liquid-secondary {
-    background: inherit !important;
+    /* Fond semi-transparent avec couleur secondaire pour garder le style liquid */
+    background: rgba(108, 117, 125, 0.85) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(173, 181, 189, 0.85) !important;
+    }
+  }
+  
+  /* Badges de date dans les hero sections (pages show) - Fond opaque pour lisibilité */
+  .hero-image-container .badge,
+  .hero-image-container + .hero-overlay ~ * .badge,
+  .position-absolute .badge.badge-liquid-primary,
+  .position-absolute .badge.badge-liquid-secondary {
+    /* Fond opaque pour garantir la visibilité sur images blanches */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .position-absolute .badge.badge-liquid-primary {
+    background: rgba(0, 123, 255, 0.85) !important;
+    color: white !important;
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(77, 148, 255, 0.85) !important;
+    }
+  }
+  
+  .position-absolute .badge.badge-liquid-secondary {
+    background: rgba(108, 117, 125, 0.85) !important;
+    color: white !important;
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(173, 181, 189, 0.85) !important;
+    }
   }
   
   .card-event-info p {
