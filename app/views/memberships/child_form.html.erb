@@ -886,9 +886,9 @@
     const submitWithoutPaymentBtn = document.getElementById('submit_without_payment_btn');
     if (submitWithoutPaymentBtn) {
       submitWithoutPaymentBtn.addEventListener('click', function(e) {
+        e.preventDefault(); // Toujours prévenir la soumission par défaut
         const form = document.getElementById('child_membership_form');
         if (!validateForm()) {
-          e.preventDefault();
           alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.');
           const firstInvalid = form?.querySelector('.is-invalid');
           if (firstInvalid) {
@@ -898,11 +898,10 @@
         }
         if (confirm('Vous allez créer une adhésion avec le statut \'En attente\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) {
           document.getElementById('payment_method_field').value = 'cash_check';
-          return true;
-        } else {
-          e.preventDefault();
-          return false;
+          // Soumettre le formulaire manuellement après confirmation
+          form.submit();
         }
+        return false;
       });
     }
 
