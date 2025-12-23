@@ -2037,10 +2037,10 @@
   
   /* === BANNER MOLECULES === */
   
-  /* Hero Banner (Large - Homepage) */
+  /* Hero Banner (Large - Homepage) - Bonnes pratiques 2025 */
   .banner-hero {
     position: relative;
-    height: 500px;
+    min-height: 500px; /* Hauteur minimale au lieu de fixe pour éviter débordement */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2048,6 +2048,7 @@
     background-image: url('/img/Roller-Luminous2.png');
     background-size: cover;
     background-position: center;
+    padding: 2rem 0; /* Padding vertical pour éviter débordement */
   }
   
   .banner-overlay {
@@ -2065,6 +2066,7 @@
     z-index: 2;
     color: white;
     width: 100%;
+    padding: 1rem 0; /* Padding vertical supplémentaire */
   }
   
   .banner-icon {
@@ -2080,12 +2082,14 @@
     line-height: 1.2;
     color: white; /* Blanc dans les deux modes (clair et sombre) */
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem; /* Réduit de mb-4 à mb-1 pour économiser l'espace */
   }
   
   .banner-subtitle {
     font-size: 1.25rem;
-    color: var(--gr-text);
+    color: rgba(255, 255, 255, 0.95); /* Meilleur contraste */
     line-height: 1.6;
+    margin-bottom: 1.5rem; /* Réduit de mb-4 à mb-1.5 */
   }
   
   .banner-actions {
@@ -2134,34 +2138,55 @@
     color: var(--gr-text);
   }
   
-  /* Responsive */
+  /* Responsive - Bonnes pratiques 2025 pour hero banner mobile */
   @media (max-width: 768px) {
     .banner-hero {
-      height: 400px;
+      min-height: auto; /* Hauteur adaptative selon le contenu */
+      padding: 1.5rem 0; /* Padding réduit sur mobile */
+      align-items: flex-start; /* Aligner en haut pour éviter débordement */
+      padding-top: 2rem; /* Plus d'espace en haut */
+    }
+    
+    .banner-content {
+      padding: 0.5rem 0; /* Padding réduit sur mobile */
     }
     
     .banner-title {
-      font-size: 2.5rem;
+      font-size: 2rem; /* Réduit de 2.5rem à 2rem pour économiser l'espace */
+      line-height: 1.2;
+      margin-bottom: 0.75rem; /* Espacement réduit */
+      /* Supprimer les <br> sur mobile - le texte se wrap naturellement */
+      br {
+        display: none;
+      }
     }
     
     .banner-subtitle {
-      font-size: 1rem;
+      font-size: 0.95rem; /* Légèrement réduit */
+      line-height: 1.5;
+      margin-bottom: 1rem; /* Espacement réduit */
+      /* Supprimer les <br> sur mobile - le texte se wrap naturellement */
+      br {
+        display: none;
+      }
     }
     
     .banner-icon {
-      font-size: 3rem;
+      font-size: 2.5rem; /* Réduit de 3rem à 2.5rem */
+      margin-bottom: 0.75rem; /* Espacement réduit */
     }
     
     .banner-page {
-      height: 150px;
+      min-height: 150px; /* Hauteur minimale au lieu de fixe */
+      padding: 1rem 0;
     }
     
     .banner-title-page {
-      font-size: 2rem;
+      font-size: 1.75rem; /* Réduit de 2rem */
     }
     
     .banner-subtitle-page {
-      font-size: 0.9rem;
+      font-size: 0.875rem; /* Réduit de 0.9rem */
     }
     
     .banner-actions {
@@ -2169,13 +2194,15 @@
       gap: 0.75rem;
       padding: 0 0.5rem;
       align-items: stretch;
+      margin-top: 0.5rem; /* Espacement réduit avant les boutons */
     }
     
     .banner-actions .btn {
       width: 100%;
       max-width: 100%;
       font-size: 0.9rem;
-      padding: 0.65rem 0.85rem;
+      padding: 0.75rem 1rem; /* Padding adapté pour zone tactile */
+      min-height: 44px; /* Zone tactile minimale WCAG 2.5.8 */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -2188,6 +2215,39 @@
     .banner-actions .btn i {
       flex-shrink: 0;
       margin-right: 0.5rem !important;
+    }
+  }
+  
+  /* Très petits écrans (< 480px) - Optimisation supplémentaire */
+  @media (max-width: 480px) {
+    .banner-hero {
+      padding: 1rem 0;
+      padding-top: 1.5rem;
+    }
+    
+    .banner-title {
+      font-size: 1.75rem; /* Encore plus petit sur très petits écrans */
+      margin-bottom: 0.5rem;
+    }
+    
+    .banner-subtitle {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .banner-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .banner-actions {
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    
+    .banner-actions .btn {
+      font-size: 0.875rem;
+      padding: 0.625rem 0.875rem;
     }
   }
   
