@@ -86,6 +86,7 @@ Rails.application.configure do
   # Use Solid Queue as the queuing backend for Active Job (en développement aussi)
   # Solid Queue utilise SQLite séparé (configuré dans database.yml section queue)
   config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Bullet gem configuration for N+1 query detection
   config.after_initialize do
