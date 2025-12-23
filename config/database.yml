@@ -119,3 +119,36 @@ production:
     <<: *primary_production
     database: app_production_cable
     migrations_paths: db/cable_migrate
+
+# Staging utilise la même configuration que production
+# (RAILS_ENV=production en staging, mais on peut aussi utiliser RAILS_ENV=staging)
+staging:
+  primary: &primary_staging
+    <<: *default
+    <% if ENV["DATABASE_URL"] %>
+    url: <%= ENV["DATABASE_URL"] %>
+    <% else %>
+    database: <%= ENV.fetch("DATABASE_NAME") { "app_production" } %>
+    username: <%= ENV.fetch("DATABASE_USER") { "app" } %>
+    password: <%= ENV.fetch("DATABASE_PASSWORD") { ENV["APP_DATABASE_PASSWORD"] } %>
+    host: <%= ENV.fetch("DATABASE_HOST") { "localhost" } %>
+    port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
+    <% end %>
+  cache:
+    <<: *primary_staging
+    database: app_production_cache
+    migrations_paths: db/cache_migrate
+  # Solid Queue avec SQLite séparé (pour préserver les jobs lors des "clear")
+  # ⚠️  IMPORTANT : SQLite est complètement séparé de PostgreSQL
+  #    - Les jobs en queue restent intacts lors des opérations PostgreSQL
+  #    - Le fichier SQLite est dans storage/solid_queue.sqlite3
+  queue:
+    adapter: sqlite3
+    database: storage/solid_queue.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    timeout: 5000
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_staging
+    database: app_production_cable
+    migrations_paths: db/cable_migrate
