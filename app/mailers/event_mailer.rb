@@ -1,4 +1,5 @@
 class EventMailer < ApplicationMailer
+  include EventsHelper
   # Email de confirmation d'inscription à un événement
   def attendance_confirmed(attendance)
     @attendance = attendance
