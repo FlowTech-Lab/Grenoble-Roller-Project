@@ -36,7 +36,7 @@
             <i class="bi bi-signpost-2 text-liquid-primary me-2" aria-hidden="true"></i>
             <% if event.loops_count && event.loops_count > 1 %>
               <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-              <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+              <span class="badge bg-info ms-2"><%= pluralize(event.loops_count, "boucle") %></span>
             <% else %>
               <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
             <% end %>
@@ -78,7 +78,7 @@
           
           <span class="badge bg-primary">
             <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
-            <%= pluralize(event.attendances_count, "inscrit", "inscrits") %>
+            <%= pluralize(event.attendances_count, "inscrit") %>
           </span>
           
           <% unless event.unlimited? %>

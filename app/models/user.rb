@@ -82,8 +82,9 @@ class User < ApplicationRecord
 
   # Validations: prénom obligatoire (important pour personnaliser les événements)
   validates :first_name, presence: true, length: { maximum: 50 }
-  # Validation téléphone : uniquement 10 chiffres (format français)
+  # Validation téléphone : uniquement 10 chiffres (format français) et doit commencer par 0
   validates :phone, format: { with: /\A[0-9]{10}\z/, message: "doit contenir exactement 10 chiffres (ex: 0612345678)" }, allow_blank: true
+  validate :phone_must_start_with_zero, if: -> { phone.present? }
 
   # Normaliser le téléphone avant validation (enlever espaces, tirets, etc.)
   before_validation :normalize_phone, if: :phone_changed?
@@ -114,6 +115,26 @@ class User < ApplicationRecord
   # Vérifier si l'utilisateur a des adhésions enfants actives
   def has_active_children_memberships?
     active_children_memberships.exists?
+  end
+
+  # Profil parent complet pour pouvoir créer une adhésion enfant
+  # Champs requis : prénom, nom, téléphone, adresse complète (adresse, code postal, ville) + date de naissance
+  REQUIRED_CHILD_PROFILE_FIELDS = %i[
+    first_name
+    last_name
+    phone
+    address
+    postal_code
+    city
+    date_of_birth
+  ].freeze
+
+  def child_profile_complete_for_membership?
+    REQUIRED_CHILD_PROFILE_FIELDS.all? { |attr| self.send(attr).present? }
+  end
+
+  def missing_child_profile_fields_for_membership
+    REQUIRED_CHILD_PROFILE_FIELDS.select { |attr| self.send(attr).blank? }
   end
 
   # Obtenir toutes les adhésions (personnelle + enfants)
@@ -161,6 +182,15 @@ class User < ApplicationRecord
     self.phone = "0#{phone[3..-1]}" if phone.start_with?("0033") && phone.length == 12
     # Limiter à 10 chiffres maximum
     self.phone = phone[0..9] if phone.length > 10
+  end
+
+  def phone_must_start_with_zero
+    return if phone.blank?
+    
+    # Vérifier que le numéro normalisé commence par 0
+    unless phone.start_with?("0")
+      errors.add(:phone, "doit commencer par 0 (format français, ex: 0612345678)")
+    end
   end
 
   def send_welcome_email_and_confirmation

@@ -69,7 +69,7 @@
           
           <span class="badge bg-primary">
             <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
-            <%= pluralize(initiation.participants_count, "inscrit", "inscrits") %>
+            <%= pluralize(initiation.participants_count, "inscrit") %>
           </span>
           
             <% if initiation.allow_non_member_discovery? %>
