@@ -168,6 +168,12 @@ needs_rebuild() {
     local repo_dir=${REPO_DIR:-.}
     local container_name=$1
     
+    # 0. Si FORCE_REDEPLOY est activé, forcer le rebuild
+    if [ "${FORCE_REDEPLOY:-false}" = "true" ]; then
+        log_info "ℹ️  FORCE_REDEPLOY activé → rebuild forcé"
+        return 0
+    fi
+    
     # 1. Vérifier si le conteneur n'existe pas → rebuild nécessaire
     if ! container_exists "$container_name"; then
         log_info "ℹ️  Conteneur n'existe pas → rebuild nécessaire"

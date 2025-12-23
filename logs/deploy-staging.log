@@ -14352,3 +14352,78 @@ failed to solve: failed to do request: Head "https://registry-1.docker.io/v2/lib
 [1;33m[2025-12-23 04:13:45] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 [1;33m[2025-12-23 04:13:45] WARNING: ⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?[0m
 [1;33m[2025-12-23 04:13:45] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[2025-12-23 04:13:56] 💾 Commit actuel sauvegardé: 0cbe7ac
+[2025-12-23 04:13:56] 📦 Backup base de données (chiffrement: true)...
+[0;32m[2025-12-23 04:13:56] SUCCESS: ✅ Clé de chiffrement récupérée depuis master.key (host)[0m
+[2025-12-23 04:13:56] INFO:    Exécution de pg_dump sur grenoble-roller-db-staging...
+[0;32m[2025-12-23 04:13:57] SUCCESS: ✅ Backup chiffré créé: db_20251223_041356.sql.enc (128K)[0m
+[2025-12-23 04:13:57] 📥 Mise à jour du code...
+[2025-12-23 04:13:57] 💾 Vérification de l'espace disque...
+[2025-12-23 04:13:57] INFO: ✅ Espace disque OK : 51GB disponible
+[2025-12-23 04:13:57] 🔍 Vérification des fichiers de migration avant build...
+[2025-12-23 04:13:58] INFO: ✅ 66 fichier(s) de migration trouvé(s) localement
+[2025-12-23 04:13:58] 🔍 Vérification finale de la branche Git avant build...
+[2025-12-23 04:13:58] 🔍 Analyse : Rebuild nécessaire ou restart suffisant ?
+[2025-12-23 04:13:58] INFO: ℹ️  Conteneur arrêté récemment (il y a 148s)
+[2025-12-23 04:13:58] INFO: ℹ️  Restart interne détecté → pas besoin de rebuild
+[0;32m[2025-12-23 04:13:58] SUCCESS: ✅ Pas besoin de rebuild (restart interne ou pas de changements critiques)[0m
+[2025-12-23 04:13:58] INFO:    Redémarrage du conteneur existant...
+[2025-12-23 04:13:59] INFO: Attente que le conteneur grenoble-roller-staging soit running...
+[2025-12-23 04:13:59] INFO: Conteneur running, vérification stabilité... (2s/5s)
+[2025-12-23 04:14:01] INFO: Attente... (2s/120s)
+[2025-12-23 04:14:01] INFO: Conteneur running, vérification stabilité... (4s/5s)
+[2025-12-23 04:14:03] INFO: Attente... (4s/120s)
+[0;32m[2025-12-23 04:14:03] SUCCESS: Conteneur grenoble-roller-staging est running et stable (6s)[0m
+[0;32m[2025-12-23 04:14:03] SUCCESS: ✅ Conteneur redémarré avec succès[0m
+[2025-12-23 04:14:03] 🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?
+[0;32m[2025-12-23 04:14:03] SUCCESS: ✅ Migrations synchronisées (66 fichiers)[0m
+[2025-12-23 04:14:03] INFO: Pas de healthcheck configuré, attente supplémentaire...
+[2025-12-23 04:14:14] INFO: ℹ️  Conteneur arrêté récemment (il y a 8s)
+[2025-12-23 04:14:14] INFO: ℹ️  Restart interne détecté, redémarrage automatique...
+[2025-12-23 04:14:24] INFO: ℹ️  Conteneur arrêté récemment (il y a 3s)
+[2025-12-23 04:14:24] INFO: ℹ️  Restart interne détecté, redémarrage automatique...
+[2025-12-23 04:14:25] INFO: Attente que le conteneur grenoble-roller-staging soit running...
+[2025-12-23 04:14:25] INFO: Conteneur running, vérification stabilité... (2s/5s)
+[2025-12-23 04:14:27] INFO: Attente... (2s/60s)
+[2025-12-23 04:14:27] INFO: Conteneur running, vérification stabilité... (4s/5s)
+[2025-12-23 04:14:29] INFO: Attente... (4s/60s)
+[0;32m[2025-12-23 04:14:29] SUCCESS: Conteneur grenoble-roller-staging est running et stable (6s)[0m
+[2025-12-23 04:16:56] INFO: 🔐 Master key chargée depuis config/master.key (dev)
+[2025-12-23 04:16:57] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-23 04:16:57] 🚀 DEPLOYMENT START - staging - 2025-12-23 04:16:57
+[2025-12-23 04:16:57] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-23 04:16:57] 🧹 Nettoyage préventif Docker...
+[2025-12-23 04:16:57] INFO: Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...
+[2025-12-23 04:16:57] INFO: ✅ Aucun conteneur orphelin détecté (ancienne config propre)
+[2025-12-23 04:16:57] INFO: Images sans tag nettoyées
+[2025-12-23 04:16:57] INFO: Cache build nettoyé
+[2025-12-23 04:16:57] 📥 Vérification des mises à jour (branche: staging)...
+[2025-12-23 04:16:58] ✅ Déjà à jour (commit: 0cbe7ac)
+[1;33m[2025-12-23 04:16:58] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 04:16:58] WARNING: ⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?[0m
+[1;33m[2025-12-23 04:16:58] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[2025-12-23 04:17:15] 💾 Commit actuel sauvegardé: 0cbe7ac
+[2025-12-23 04:17:15] 📦 Backup base de données (chiffrement: true)...
+[0;32m[2025-12-23 04:17:15] SUCCESS: ✅ Clé de chiffrement récupérée depuis master.key (host)[0m
+[2025-12-23 04:17:15] INFO:    Exécution de pg_dump sur grenoble-roller-db-staging...
+[0;32m[2025-12-23 04:17:15] SUCCESS: ✅ Backup chiffré créé: db_20251223_041715.sql.enc (128K)[0m
+[2025-12-23 04:17:15] 📥 Mise à jour du code...
+[0;31m[2025-12-23 04:17:16] ERROR: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;31m[2025-12-23 04:17:16] ERROR: ⚠️  CONFLITS OU CHANGEMENTS NON COMMITTÉS DÉTECTÉS[0m
+[0;31m[2025-12-23 04:17:16] ERROR: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 04:17:16] WARNING: 🔄 Rollback transactionnel vers commit 0cbe7ac...[0m
+[2025-12-23 04:17:16] INFO: ✅ Espace disque OK : 51GB disponible
+[2025-12-23 04:17:16] INFO: 🔒 Activation du mode maintenance avant rollback...
+[2025-12-23 04:17:16] INFO: 🛑 Arrêt de l'application pour éviter corruption...
+[2025-12-23 04:17:16] INFO: 📦 Restauration DB depuis backup...
+[2025-12-23 04:17:16] INFO: Restauration depuis backup chiffré: db_20251223_041715.sql.enc
+[0;32m[2025-12-23 04:17:16] SUCCESS: ✅ Clé de chiffrement récupérée depuis master.key (host)[0m
+[0;32m[2025-12-23 04:17:17] SUCCESS: ✅ Base de données restaurée depuis backup chiffré[0m
+[2025-12-23 04:17:17] INFO: 📝 Restauration du code vers 0cbe7ac...
+[1;33m[2025-12-23 04:17:17] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 04:17:17] WARNING: 🔄 Le déploiement a échoué, rollback vers l'ancienne version[0m
+[1;33m[2025-12-23 04:17:17] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 04:17:17] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 04:17:17] WARNING: Voulez-vous relancer l'ancien conteneur (rollback) ?[0m
+[1;33m[2025-12-23 04:17:17] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 04:17:17] WARNING: Timeout: 120 secondes (défaut: NO)[0m
