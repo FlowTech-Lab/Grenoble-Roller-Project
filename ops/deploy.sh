@@ -323,7 +323,7 @@ main() {
                 log_info "Conteneur déjà running, restart pour appliquer les changements..."
             fi
             
-            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart "$CONTAINER_NAME" 2>&1 || {
+            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || {
                 log_error "Échec du redémarrage"
                 rollback "$CURRENT_COMMIT"
                 exit 1
@@ -410,7 +410,7 @@ main() {
                 if detect_internal_restart "$CONTAINER_NAME" 300; then
                     log_info "ℹ️  Restart interne détecté (conteneur arrêté récemment)"
                     log_info "   Redémarrage automatique du conteneur..."
-                    $DOCKER_CMD compose -f "$COMPOSE_FILE" restart "$CONTAINER_NAME" 2>&1 || true
+                    $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
                     sleep 5
                     
                     # Réessayer d'attendre que le conteneur soit healthy
@@ -483,7 +483,7 @@ main() {
             # Détecter si c'est un restart interne
             if detect_internal_restart "$CONTAINER_NAME" 300; then
                 log_info "ℹ️  Restart interne détecté, redémarrage automatique..."
-                $DOCKER_CMD compose -f "$COMPOSE_FILE" restart "$CONTAINER_NAME" 2>&1 || true
+                $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
                 sleep 10
             else
                 log_warning "⚠️  Le conteneur s'est arrêté après démarrage"
@@ -516,7 +516,7 @@ main() {
         # Détecter si c'est un restart interne récent
         if detect_internal_restart "$CONTAINER_NAME" 300; then
             log_info "ℹ️  Restart interne détecté, redémarrage automatique..."
-            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart "$CONTAINER_NAME" 2>&1 || true
+            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
             
             # Attendre que le conteneur redémarre
             if ! wait_for_container_running "$CONTAINER_NAME" 60; then
@@ -608,7 +608,7 @@ main() {
         # Détecter si c'est un restart interne récent
         if detect_internal_restart "$CONTAINER_NAME" 300; then
             log_info "ℹ️  Restart interne détecté après migrations, redémarrage automatique..."
-            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart "$CONTAINER_NAME" 2>&1 || true
+            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
         else
             log_warning "⚠️  Le conteneur s'est arrêté après les migrations"
             log_warning "   Cause probable : Solid Queue ne peut pas démarrer (tables SQLite manquantes)"
