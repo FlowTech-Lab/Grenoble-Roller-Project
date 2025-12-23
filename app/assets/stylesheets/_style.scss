@@ -1154,15 +1154,20 @@
     border: 1px solid var(--liquid-glass-border) !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
     border-radius: 0.5rem !important;
+    /* Flexbox pour meilleure organisation - Bonnes pratiques 2025 */
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
   }
   
   .navbar-grenoble-roller .dropdown-item {
     transition: var(--transition-liquid-fast) !important;
     color: var(--bs-body-color) !important;
-    min-height: 44px !important;
+    min-height: 44px !important; /* Zone tactile minimale WCAG 2.5.8 */
     display: flex !important;
     align-items: center !important;
     padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x) !important;
+    gap: 0.5rem; /* Espacement entre icône et texte */
   }
   
   .navbar-grenoble-roller .dropdown-item:hover {
@@ -1219,20 +1224,79 @@
     border-color: var(--liquid-glass-border);
   }
   
-  /* Responsive */
+  /* Responsive - Bonnes pratiques 2025 pour navbar mobile */
   @media (max-width: 991px) {
     .navbar-grenoble-roller .navbar-search {
       min-width: 100%;
       margin: 1rem 0;
     }
     
+    /* Menu burger - éléments empilés verticalement */
+    .navbar-grenoble-roller .navbar-collapse {
+      padding-top: 1rem;
+    }
+    
+    /* Container des boutons d'action (thème, panier, connexion) */
     .navbar-grenoble-roller .d-flex.gap-2 {
       width: 100%;
       margin-top: 1rem;
+      flex-direction: column; /* Empiler verticalement sur mobile */
+      gap: 0.75rem !important; /* Espacement vertical entre les boutons */
+      align-items: stretch; /* Boutons pleine largeur */
     }
     
-    .navbar-grenoble-roller .btn {
-      flex: 1;
+    /* Boutons dans le menu burger - pleine largeur */
+    .navbar-grenoble-roller .navbar-collapse .btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 44px; /* Zone tactile minimale WCAG 2.5.8 */
+      padding: 0.625rem 1rem;
+    }
+    
+    /* Dropdown dans le menu burger - pleine largeur */
+    .navbar-grenoble-roller .navbar-collapse .dropdown {
+      width: 100%;
+    }
+    
+    .navbar-grenoble-roller .navbar-collapse .dropdown > .btn {
+      width: 100%;
+      justify-content: space-between; /* Texte à gauche, flèche à droite */
+    }
+    
+    /* Dropdown menu - flexbox column pour meilleure organisation */
+    .navbar-grenoble-roller .navbar-collapse .dropdown-menu {
+      width: 100%;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      position: static !important; /* Position statique dans le menu burger */
+      transform: none !important;
+      box-shadow: none;
+      border: 1px solid var(--liquid-glass-border);
+      border-radius: 0.5rem;
+      background: var(--liquid-glass-bg);
+      padding: 0.5rem 0;
+    }
+    
+    /* Items du dropdown - meilleur espacement */
+    .navbar-grenoble-roller .navbar-collapse .dropdown-item {
+      padding: 0.75rem 1rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    /* Liens de navigation - meilleur espacement sur mobile */
+    .navbar-grenoble-roller .navbar-nav {
+      margin-bottom: 1rem;
+    }
+    
+    .navbar-grenoble-roller .nav-link {
+      padding: 0.75rem 1rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
     
     .navbar-grenoble-roller .nav-link.active::after {
