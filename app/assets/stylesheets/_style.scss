@@ -2374,6 +2374,80 @@
     }
   }
   
+  /* Images de parcours - Affichage proportionnel et scroll horizontal sur mobile */
+  .route-image-container {
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+    background: var(--liquid-glass-bg);
+    border-radius: 0.5rem 0.5rem 0 0;
+    
+    /* Desktop : hauteur proportionnelle (ratio 16:9) */
+    aspect-ratio: 16 / 9;
+    min-height: 200px;
+    max-height: 400px;
+    
+    /* Centrer l'image verticalement */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Cacher le débordement par défaut */
+  }
+  
+  .route-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Afficher l'image en entier sans crop */
+    object-position: center;
+  }
+  
+  /* Sur mobile : permettre le scroll horizontal si l'image est plus large */
+  @media (max-width: 768px) {
+    .route-image-container {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
+      /* Retirer aspect-ratio sur mobile pour permettre le scroll */
+      aspect-ratio: auto;
+      min-height: 200px;
+      max-height: 300px;
+      
+      /* Indicateur visuel pour le scroll horizontal */
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 100%;
+        background: linear-gradient(to left, rgba(0, 0, 0, 0.15), transparent);
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      /* Afficher l'indicateur seulement si on peut scroller */
+      &:hover::after,
+      &:active::after {
+        opacity: 1;
+      }
+      
+      [data-bs-theme="dark"] &::after {
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.15), transparent);
+      }
+    }
+    
+    .route-image {
+      /* Sur mobile, permettre à l'image d'être plus large que le conteneur */
+      width: auto;
+      min-width: 100%;
+      height: 100%;
+      max-height: 100%;
+      /* Si l'image est plus large que le conteneur, elle sera scrollable horizontalement */
+    }
+  }
+  
   .card-event-info p {
     font-size: 0.9rem;
   }
@@ -6361,7 +6435,7 @@
     height: 20px;
     margin-top: 0.25rem;
     cursor: pointer;
-    border: 2px solid #DDD;
+    border: 2px solid #000; /* Noir en thème clair */
     transition: var(--transition-liquid);
     
     &:checked {
@@ -6389,7 +6463,7 @@
 
   [data-bs-theme="dark"] .form-check-input {
     background-color: var(--liquid-glass-bg);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: #DDD; /* Garder #DDD en thème sombre */
     
     &:checked {
       background-color: #4d94ff;
