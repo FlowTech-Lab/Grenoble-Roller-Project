@@ -143,24 +143,41 @@ class WaitlistEntry < ApplicationRecord
   def refuse!
     return false unless notified?
 
-    # Trouver et supprimer l'inscription "pending"
-    attendance = find_pending_attendance
+    # Trouver toutes les attendances liées à cette waitlist entry (pending ET registered)
+    # Utiliser Attendance.unscoped pour éviter le cache
+    base_query = Attendance.unscoped.where(
+      event_id: event_id,
+      user_id: user_id
+    ).where.not(status: "canceled") # Exclure les attendances déjà annulées
 
-    unless attendance
-      Rails.logger.error("Pending attendance not found for WaitlistEntry #{id} (user: #{user_id}, event: #{event_id}, child_membership_id: #{child_membership_id.inspect})")
-      return false
+    if child_membership_id.nil?
+      attendances = base_query.where("child_membership_id IS NULL")
+    else
+      attendances = base_query.where(child_membership_id: child_membership_id)
     end
 
-    if attendance.destroy
-      # Remettre l'entrée en "pending" pour qu'elle puisse être notifiée à nouveau plus tard
-      update!(status: "pending", notified_at: nil)
+    # Supprimer toutes les attendances trouvées (pending et registered)
+    attendances_destroyed = attendances.destroy_all
+
+    if attendances_destroyed.any?
+      # Retirer complètement l'utilisateur de la liste d'attente (status = "cancelled")
+      update!(status: "cancelled", notified_at: nil)
+      
+      # Réorganiser les positions des autres entrées
+      WaitlistEntry.reorganize_positions(event)
+      
       # Notifier la prochaine personne en liste d'attente
       WaitlistEntry.notify_next_in_queue(event)
-      Rails.logger.info("WaitlistEntry #{id} refused, pending attendance destroyed, next person notified (user: #{user_id}, event: #{event_id})")
+      
+      Rails.logger.info("WaitlistEntry #{id} refused, #{attendances_destroyed.count} attendance(s) destroyed, user removed from waitlist, next person notified (user: #{user_id}, event: #{event_id})")
       true
     else
-      Rails.logger.error("Failed to destroy pending attendance #{attendance.id} for WaitlistEntry #{id} (user: #{user_id}, event: #{event_id})")
-      false
+      Rails.logger.error("No attendances found to destroy for WaitlistEntry #{id} (user: #{user_id}, event: #{event_id}, child_membership_id: #{child_membership_id.inspect})")
+      # Même si aucune attendance n'est trouvée, retirer de la liste d'attente
+      update!(status: "cancelled", notified_at: nil)
+      WaitlistEntry.reorganize_positions(event)
+      WaitlistEntry.notify_next_in_queue(event)
+      true
     end
   end
 

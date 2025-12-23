@@ -142,7 +142,7 @@ module Events
 
       if waitlist_entry.refuse!
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
-        redirect_to event_path(waitlist_entry.event), notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
+        redirect_to event_path(waitlist_entry.event), notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de l'événement et de la liste d'attente."
       else
         redirect_to event_path(waitlist_entry.event), alert: "Impossible de refuser la place. Veuillez réessayer."
       end

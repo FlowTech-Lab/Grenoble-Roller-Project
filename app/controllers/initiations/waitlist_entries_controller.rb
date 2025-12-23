@@ -220,7 +220,7 @@ module Initiations
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
         event = waitlist_entry.event
         redirect_path = event.is_a?(Event::Initiation) ? initiation_path(event) : event_path(event)
-        redirect_to redirect_path, notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
+        redirect_to redirect_path, notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de l'événement et de la liste d'attente."
       else
         event = waitlist_entry.event
         redirect_path = event.is_a?(Event::Initiation) ? initiation_path(event) : event_path(event)
@@ -310,7 +310,7 @@ module Initiations
           return
         end
         
-        redirect_to redirect_path, notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
+        redirect_to redirect_path, notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de l'événement et de la liste d'attente."
       else
         event = waitlist_entry.event
         redirect_path = event.is_a?(Event::Initiation) ? initiation_path(event) : event_path(event)
