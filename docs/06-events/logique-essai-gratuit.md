@@ -2690,30 +2690,28 @@ end
 - Donc il faut soit `has_active_membership = true` (parent adhérent) OU `free_trial_used = true` (essai obligatoire)
 
 **Tableau Final Corrigé v4.0 (ESSais GRATUITS NOMINATIFS)** :
-| Statut | Parent Adhérent ? | Essai Dispo | Résultat |
-|--------|-------------------|-------------|----------|
-| `pending` | ❌ Non | ❌ Non | 🔴 **BLOQUÉ** |
-| `pending` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai **obligatoire** - nominatif - Case 1.1) |
-| `pending` | ❌ Non | ✅ Utilisé | 🔴 **BLOQUÉ** (Case 1.3) |
-| `pending` | ✅ Oui | ✅ Oui | ✅ **ACCÈS** (via essai **obligatoire** - nominatif - Case 1.2) |
-| `pending` | ✅ Oui | ✅ Utilisé | 🔴 **BLOQUÉ** |
-| `trial` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai obligatoire - nominatif - Case 2.1) |
-| `trial` | ❌ Non | ✅ Utilisé | 🔴 **BLOQUÉ** (Case 2.3) |
-| `trial` | ✅ Oui | ✅ Oui | ✅ **ACCÈS** (via essai obligatoire - nominatif - Case 2.2) |
-| `trial` | ✅ Oui | ✅ Utilisé | 🔴 **BLOQUÉ** |
-| `active` | N/A | N/A | ✅ **ACCÈS COMPLET** (Case 3.X) |
+**⚠️ IMPORTANT** : Le statut du parent n'a **AUCUNE influence** sur l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
+
+| Statut Enfant | Essai Gratuit | Résultat | Case |
+|---------------|---------------|----------|------|
+| `pending` | ❌ Non disponible | 🔴 **BLOQUÉ** | - |
+| `pending` | ✅ Disponible | ✅ **ACCÈS** (via essai **obligatoire** - nominatif) | Case 1.1 |
+| `pending` | ✅ Utilisé | 🔴 **BLOQUÉ** | Case 1.3 |
+| `trial` | ✅ Disponible | ✅ **ACCÈS** (via essai obligatoire - nominatif) | Case 2.1 |
+| `trial` | ✅ Utilisé | 🔴 **BLOQUÉ** | Case 2.3 |
+| `active` | N/A | ✅ **ACCÈS COMPLET** | Case 3.X |
 
 **Cases Validées v4.0** :
-- ✅ Case 1.1 : Child pending + essai dispo → ACCÈS (essai obligatoire - nominatif)
-- ✅ Case 1.2 : Child pending + parent adhérent + essai dispo → ACCÈS (essai obligatoire - nominatif)
-- ✅ Case 1.3 : Child pending + essai consommé → BLOQUÉ
-- ✅ Case 2.1 : Child trial + essai dispo → ACCÈS (essai obligatoire - nominatif)
-- ✅ Case 2.2 : Child trial + parent adhérent + essai dispo → ACCÈS (essai obligatoire - nominatif)
-- ✅ Case 2.3 : Child trial + essai consommé → BLOQUÉ
+- ✅ Case 1.1 : Child pending + essai dispo → ACCÈS (essai obligatoire - nominatif) - **Indépendant du parent**
+- ✅ Case 1.3 : Child pending + essai consommé → BLOQUÉ - **Même si parent adhérent**
+- ✅ Case 2.1 : Child trial + essai dispo → ACCÈS (essai obligatoire - nominatif) - **Indépendant du parent**
+- ✅ Case 2.3 : Child trial + essai consommé → BLOQUÉ - **Même si parent adhérent**
 - ✅ Case 3.X : Child active → TOUJOURS ACCÈS (peu importe)
 - ✅ Case 4.2 : Parent pending + essai dispo → ACCÈS (essai obligatoire - nominatif)
 - ✅ Case 4.3 : Parent pending + essai consommé → BLOQUÉ
 - ✅ Case 6.2 : Annulation puis réinscription → ESSAI REDEVIENT DISPO
+
+**⚠️ Note importante** : Les cases 1.2 et 2.2 (parent adhérent) n'existent plus dans la logique v4.0 car le statut du parent n'a aucune influence sur l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
 
 ---
 
@@ -2772,7 +2770,115 @@ end
 
 ---
 
-## 29. Section Historique - Ancienne Logique v3.8 (OBSOLÈTE)
+## 29. Tableau Récapitulatif - Affichage des Statuts dans `_status_table.html.erb`
+
+### 29.1. Matrice Complète des Cas d'Affichage
+
+**⚠️ RÈGLE v4.0 CRITIQUE** : Les essais gratuits sont **NOMINATIFS** - chaque enfant DOIT utiliser son propre essai gratuit. **Le statut du parent n'a AUCUNE influence** sur l'affichage du statut de l'enfant. Un enfant `pending` ou `trial` sans essai gratuit disponible est **BLOQUÉ**, même si le parent est adhérent.
+
+| Statut Enfant | Essai Gratuit Enfant | Affichage | Badge | Couleur | Accès Initiation |
+|---------------|----------------------|-----------|-------|---------|------------------|
+| `active` | N/A | "Adhérent actif" | ✅ | `bg-success` (vert) | ✅ **OUI** (sans restriction) |
+| `pending` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
+| `pending` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire) |
+| `trial` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
+| `trial` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire) |
+| `expired` | N/A | "Expiré" | 📅 | `bg-secondary` (gris) | ❌ **NON** (bloqué) |
+
+**⚠️ IMPORTANT** : Le statut du parent n'apparaît PAS dans ce tableau car il n'a aucune influence sur l'affichage ou l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
+
+### 29.2. Problème Identifié dans le Code Actuel (CORRIGÉ)
+
+**Code précédent (INCORRECT selon v4.0)** :
+```ruby
+<% when 'pending' %>
+  <% if current_user.memberships.active_now.exists? %>
+    <span class="badge bg-warning">En attente</span>  # ❌ ERREUR : Cache l'état de l'essai gratuit
+  <% else %>
+    # Affiche l'état de l'essai gratuit
+  <% end %>
+
+<% when 'trial' %>
+  <% if current_user.memberships.active_now.exists? %>
+    <span class="badge bg-success">Accès parent</span>  # ❌ ERREUR : Cache l'état de l'essai gratuit
+  <% else %>
+    # Affiche l'état de l'essai gratuit
+  <% end %>
+```
+
+**Problème identifié** : Le code précédent vérifiait le statut du parent (`current_user.memberships.active_now.exists?`) pour décider de l'affichage de l'enfant. C'était **INCORRECT** car :
+- ❌ Les essais gratuits sont **nominatifs** (v4.0) - le statut du parent n'a aucune influence
+- ❌ Un enfant `pending` ou `trial` sans essai gratuit disponible est **BLOQUÉ**, même si le parent est adhérent
+- ❌ L'affichage doit être basé uniquement sur le statut de l'enfant et son essai gratuit
+
+### 29.3. Code Corrigé (IMPLÉMENTÉ)
+
+**Logique corrigée (CONFORME à v4.0 - Essais NOMINATIFS)** :
+```ruby
+<% when 'pending' %>
+  <%# v4.0 : Essais gratuits NOMINATIFS - afficher l'état de l'essai gratuit indépendamment du statut du parent %>
+  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+  <% if child_free_trial_used %>
+    <span class="badge bg-danger fs-6">
+      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+      Essai utilisé
+    </span>
+  <% else %>
+    <span class="badge bg-info fs-6">
+      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+      Essai disponible
+    </span>
+  <% end %>
+
+<% when 'trial' %>
+  <%# v4.0 : Essais gratuits NOMINATIFS - afficher l'état de l'essai gratuit indépendamment du statut du parent %>
+  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+  <% if child_free_trial_used %>
+    <span class="badge bg-danger fs-6">
+      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+      Essai utilisé
+    </span>
+  <% else %>
+    <span class="badge bg-info fs-6">
+      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+      Essai disponible
+    </span>
+  <% end %>
+```
+
+**Justification** :
+- ✅ Les essais gratuits sont **100% nominatifs** (v4.0) - chaque enfant a son propre essai, **indépendamment du parent**
+- ✅ **AUCUNE vérification du statut du parent** - le code ne vérifie que l'état de l'essai gratuit de l'enfant
+- ✅ Un enfant `pending` ou `trial` avec essai disponible peut s'inscrire (essai obligatoire)
+- ✅ Un enfant `pending` ou `trial` sans essai disponible est **BLOQUÉ**, même si le parent est adhérent
+- ✅ L'affichage est basé uniquement sur : `child.status` + `child_free_trial_used`
+
+### 29.4. Principe d'Affichage (IMPLÉMENTÉ)
+
+**Affichage simple et clair (IMPLÉMENTÉ)** :
+- ✅ Toujours afficher l'état de l'essai gratuit pour `pending` et `trial`
+- ✅ **AUCUNE référence au statut du parent** dans l'affichage des enfants
+- ✅ L'affichage est basé uniquement sur le statut de l'enfant et son essai gratuit
+
+**Logique d'affichage** :
+1. **Enfant `active`** → "Adhérent actif" (vert) - Accès complet
+2. **Enfant `pending` + essai disponible** → "Essai disponible" (bleu) - Peut s'inscrire via essai obligatoire
+3. **Enfant `pending` + essai utilisé** → "Essai utilisé" (rouge) - **BLOQUÉ** (même si parent adhérent)
+4. **Enfant `trial` + essai disponible** → "Essai disponible" (bleu) - Peut s'inscrire via essai obligatoire
+5. **Enfant `trial` + essai utilisé** → "Essai utilisé" (rouge) - **BLOQUÉ** (même si parent adhérent)
+6. **Enfant `expired`** → "Expiré" (gris) - **BLOQUÉ**
+
+### 29.5. Validation de la Logique
+
+**✅ Code validé** : Le code actuel dans `_status_table.html.erb` est conforme à la logique v4.0 :
+- ✅ Aucune vérification du statut du parent pour les enfants
+- ✅ Affichage basé uniquement sur `child.status` et `child_free_trial_used`
+- ✅ Les essais gratuits sont **100% nominatifs** - chaque enfant a son propre essai
+- ✅ Un enfant sans essai disponible est **BLOQUÉ**, indépendamment du statut du parent
+
+---
+
+## 30. Section Historique - Ancienne Logique v3.8 (OBSOLÈTE)
 
 ⚠️ **ATTENTION** : Cette section documente l'ancienne logique v3.8 qui est **OBSOLÈTE** depuis v4.0.
 
