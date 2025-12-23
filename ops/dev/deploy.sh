@@ -337,24 +337,9 @@ else
     log_success "Base de données réinitialisée avec succès (db:reset)"
 fi
 
-# Appliquer les migrations de la queue SQLite (Solid Queue)
-# ⚠️  IMPORTANT : db:reset ne touche PAS SQLite (complètement séparé)
-#    - db:reset ne fait QUE : db:drop, db:create, db:schema:load, db:seed sur PostgreSQL
-#    - La queue SQLite reste intacte même après db:reset
-#    - On doit migrer la queue séparément si nécessaire
-log "🔄 Application des migrations de la queue SQLite (Solid Queue)..."
-log_info "   ℹ️  La queue SQLite est SÉPARÉE : db:reset ne l'a pas touchée"
-log_info "   ℹ️  Les jobs en queue restent intacts"
-# S'assurer que le répertoire storage existe
-docker exec "${CONTAINER_NAME}" mkdir -p /rails/storage 2>/dev/null || true
-
-if docker exec "${CONTAINER_NAME}" bin/rails db:migrate:queue 2>&1 | tee -a "$LOG_FILE"; then
-    log_success "✅ Migrations de la queue SQLite appliquées avec succès"
-else
-    # Ne pas faire échouer si la queue n'est pas encore configurée (première installation)
-    log_warning "⚠️  Échec des migrations de la queue SQLite (non bloquant en dev)"
-    log_info "💡 La queue SQLite sera créée automatiquement au premier usage"
-fi
+# Solid Queue utilise maintenant PostgreSQL (même base que l'application)
+# Les migrations Solid Queue sont incluses dans db/migrate et gérées par db:reset ci-dessus
+log_info "ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)"
 
 # 11. Health check HTTP (double vérification)
 log "🏥 Health check HTTP (port: ${PORT})..."

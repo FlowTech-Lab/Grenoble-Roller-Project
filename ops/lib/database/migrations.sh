@@ -230,13 +230,13 @@ apply_migrations() {
         fi
     fi
     
-    # Exécuter migrations principales (PostgreSQL)
-    # ⚠️  IMPORTANT : db:migrate ne fait QUE appliquer les migrations en attente
+    # Exécuter migrations (PostgreSQL - inclut Solid Queue)
+    # ⚠️  IMPORTANT : db:migrate applique les migrations en attente
     #    - Ne supprime AUCUNE donnée existante
-    #    - Ne touche QUE la base PostgreSQL principale
-    #    - La queue SQLite reste complètement intacte
+    #    - Inclut les migrations Solid Queue (même base PostgreSQL)
     log_info "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente"
     log_info "   ℹ️  Aucune donnée existante ne sera supprimée"
+    log_info "   ℹ️  Solid Queue utilise PostgreSQL (migrations incluses)"
     local migration_output
     local migration_exit_code
     
@@ -283,64 +283,9 @@ apply_migrations() {
         return 1
     fi
     
-    # Appliquer les migrations de la queue SQLite (Solid Queue)
-    # ⚠️  IMPORTANT : db:migrate:queue est complètement SÉPARÉ de PostgreSQL
-    #    - Ne touche QUE le fichier SQLite (storage/solid_queue.sqlite3)
-    #    - Ne touche PAS la base PostgreSQL
-    #    - Les jobs en queue restent intacts
-    # ⚠️  IMPORTANT : database.yml DOIT être configuré avec SQLite pour la section queue
-    #    - La configuration SQLite doit être dans database.yml AVANT cette étape
-    #    - Rails créera automatiquement le fichier SQLite si nécessaire
-    log "🗄️ Exécution des migrations de la queue SQLite (Solid Queue)..."
-    log_info "   ℹ️  db:migrate:queue est SÉPARÉ : ne touche QUE SQLite, pas PostgreSQL"
-    log_info "   ℹ️  Les jobs en queue restent intacts"
-    log_info "   ℹ️  Vérification que database.yml est configuré pour SQLite queue..."
-    local queue_migration_start_time=$(date +%s)
-    
-    # S'assurer que le répertoire storage existe
-    $DOCKER_CMD exec "$container" mkdir -p /rails/storage 2>/dev/null || true
-    
-    # Vérifier que database.yml contient la configuration SQLite pour queue
-    if ! $DOCKER_CMD exec "$container" grep -q "adapter: sqlite3" /rails/config/database.yml 2>/dev/null || \
-       ! $DOCKER_CMD exec "$container" grep -A 5 "queue:" /rails/config/database.yml | grep -q "sqlite3" 2>/dev/null; then
-        log_warning "⚠️  Configuration SQLite pour queue non trouvée dans database.yml"
-        log_warning "   La queue SQLite doit être configurée dans database.yml avant les migrations"
-        log_warning "   Exemple: queue: { adapter: sqlite3, database: storage/solid_queue.sqlite3 }"
-        log_warning "   ⏭️  Skip des migrations queue (sera créée automatiquement au premier usage)"
-        return 0
-    fi
-    
-    # Exécuter les migrations de la queue
-    local queue_migration_output
-    local queue_migration_exit_code
-    
-    if [ -n "$timeout_cmd" ]; then
-        queue_migration_output=$($timeout_cmd 300 $DOCKER_CMD exec "$container" bin/rails db:migrate:queue 2>&1)
-        queue_migration_exit_code=$?
-    else
-        queue_migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate:queue 2>&1)
-        queue_migration_exit_code=$?
-    fi
-    
-    local queue_migration_end_time=$(date +%s)
-    local queue_migration_duration=$((queue_migration_end_time - queue_migration_start_time))
-    
-    echo "$queue_migration_output" | tee -a "${LOG_FILE:-/dev/stdout}"
-    
-    if [ $queue_migration_exit_code -eq 0 ]; then
-        log_success "✅ Migrations de la queue SQLite exécutées avec succès (durée: ${queue_migration_duration}s)"
-    else
-        # Ne pas faire échouer le déploiement si la queue n'existe pas encore (première installation)
-        if echo "$queue_migration_output" | grep -qiE "database.*does not exist|no such file|queue.*not.*configured|uninitialized constant|NameError"; then
-            log_warning "⚠️  Base de données queue SQLite non configurée ou erreur de configuration"
-            log_warning "   Sortie: ${queue_migration_output}"
-            log_info "💡 Vérifiez que database.yml contient: queue: { adapter: sqlite3, database: storage/solid_queue.sqlite3 }"
-            log_info "💡 La queue SQLite sera créée automatiquement au premier usage si configurée correctement"
-        else
-            log_warning "⚠️  Échec des migrations de la queue SQLite (non bloquant)"
-            log_warning "   Sortie: ${queue_migration_output}"
-        fi
-    fi
+    # Solid Queue utilise maintenant PostgreSQL (même base que l'application)
+    # Les migrations Solid Queue sont incluses dans db/migrate et gérées par db:migrate
+    log_info "ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)"
     
     log_success "✅ Toutes les migrations ont été appliquées correctement"
     return 0

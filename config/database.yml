@@ -32,16 +32,6 @@ development:
     host: <%= ENV.fetch("DATABASE_HOST") { "localhost" } %>
     port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
     <% end %>
-  # Solid Queue avec SQLite séparé (pour préserver les jobs lors des "clear")
-  # ⚠️  IMPORTANT : SQLite est complètement séparé de PostgreSQL
-  #    - Les jobs en queue restent intacts lors des opérations PostgreSQL
-  #    - Le fichier SQLite est dans storage/solid_queue.sqlite3
-  queue:
-    adapter: sqlite3
-    database: storage/solid_queue.sqlite3
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    timeout: 5000
-    migrations_paths: db/queue_migrate
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -58,16 +48,6 @@ test:
     host: <%= ENV.fetch("DATABASE_HOST") { ENV.fetch("TEST_DATABASE_HOST") { "localhost" } } %>
     port: <%= ENV.fetch("DATABASE_PORT") { ENV.fetch("TEST_DATABASE_PORT") { 5432 } } %>
     <% end %>
-  # Solid Queue avec SQLite séparé (pour préserver les jobs lors des "clear")
-  # ⚠️  IMPORTANT : SQLite est complètement séparé de PostgreSQL
-  #    - Les jobs en queue restent intacts lors des opérations PostgreSQL
-  #    - Le fichier SQLite est dans storage/solid_queue.sqlite3
-  queue:
-    adapter: sqlite3
-    database: storage/solid_queue_test.sqlite3
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    timeout: 5000
-    migrations_paths: db/queue_migrate
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -101,20 +81,12 @@ production:
     host: <%= ENV.fetch("DATABASE_HOST") { "localhost" } %>
     port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
     <% end %>
+  queue:
+    <<: *primary_production
   cache:
     <<: *primary_production
     database: app_production_cache
     migrations_paths: db/cache_migrate
-  # Solid Queue avec SQLite séparé (pour préserver les jobs lors des "clear")
-  # ⚠️  IMPORTANT : SQLite est complètement séparé de PostgreSQL
-  #    - Les jobs en queue restent intacts lors des opérations PostgreSQL
-  #    - Le fichier SQLite est dans storage/solid_queue.sqlite3
-  queue:
-    adapter: sqlite3
-    database: storage/solid_queue.sqlite3
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    timeout: 5000
-    migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
     database: app_production_cable
@@ -134,20 +106,12 @@ staging:
     host: <%= ENV.fetch("DATABASE_HOST") { "localhost" } %>
     port: <%= ENV.fetch("DATABASE_PORT") { 5432 } %>
     <% end %>
+  queue:
+    <<: *primary_staging
   cache:
     <<: *primary_staging
     database: app_production_cache
     migrations_paths: db/cache_migrate
-  # Solid Queue avec SQLite séparé (pour préserver les jobs lors des "clear")
-  # ⚠️  IMPORTANT : SQLite est complètement séparé de PostgreSQL
-  #    - Les jobs en queue restent intacts lors des opérations PostgreSQL
-  #    - Le fichier SQLite est dans storage/solid_queue.sqlite3
-  queue:
-    adapter: sqlite3
-    database: storage/solid_queue.sqlite3
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    timeout: 5000
-    migrations_paths: db/queue_migrate
   cable:
     <<: *primary_staging
     database: app_production_cable

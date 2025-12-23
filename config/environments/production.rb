@@ -52,15 +52,9 @@ Rails.application.configure do
   # config.cache_store = :mem_cache_store
 
   # Use Solid Queue as the queuing backend for Active Job
-  # Solid Queue utilise SQLite séparé (configuré dans database.yml section queue)
+  # Solid Queue utilise PostgreSQL (même base que l'application)
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
-  
-  # ⚠️  IMPORTANT : Forcer SolidQueue à utiliser la base "queue" (SQLite) au lieu de "primary" (PostgreSQL)
-  #    - Cela évite l'erreur "relation solid_queue_recurring_tasks does not exist" dans PostgreSQL
-  #    - Configuration basée sur la documentation SolidQueue pour multi-database
-  if ActiveRecord::Base.configurations.configurations.find { |c| c.name == "queue" }
-  end
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

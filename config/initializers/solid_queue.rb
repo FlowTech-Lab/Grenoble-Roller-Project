@@ -1,9 +1,6 @@
 # Configuration for Solid Queue
-# Solid Queue utilise SQLite séparé (configuré dans database.yml)
-# ⚠️  IMPORTANT : La queue SQLite est complètement séparée de PostgreSQL
-#    - Les jobs en queue restent intacts lors des opérations PostgreSQL
-#    - Le fichier SQLite est dans storage/solid_queue.sqlite3
-
-# Solid Queue détecte automatiquement la configuration queue dans database.yml
-# La configuration explicite se fait dans config/environments/*.rb avec :
-# config.solid_queue.connects_to = { database: { writing: :queue, reading: :queue } }
+# Solid Queue utilise PostgreSQL (même base que l'application)
+# ⚠️  IMPORTANT : Solid Queue utilise la base "primary" (PostgreSQL)
+#    - Les migrations Solid Queue sont dans db/migrate
+#    - Gérées par db:migrate normal
+#    - Pas de configuration séparée nécessaire
