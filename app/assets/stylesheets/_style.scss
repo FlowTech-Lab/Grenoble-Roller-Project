@@ -438,6 +438,24 @@
     background: rgba(255, 255, 255, 0.45);
   }
 
+  .form-select:hover {
+    border-color: var(--gr-primary-light);
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .form-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Options dans les selects - amélioration contraste */
+  .form-select option {
+    background: var(--liquid-glass-bg);
+    color: var(--bs-body-color);
+    padding: 0.5rem;
+  }
+
   /* 3. Textarea - Liquid Glass */
   textarea.form-control {
     min-height: 120px;
@@ -723,6 +741,25 @@
     .form-control:focus,
     .form-select:focus {
       background: rgba(255, 255, 255, 0.15);
+      border-color: var(--gr-primary-light);
+    }
+
+    .form-select:hover {
+      border-color: var(--gr-primary-light);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .form-select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Options dans les selects - amélioration contraste mode sombre */
+    .form-select option {
+      background: rgba(30, 30, 30, 0.95);
+      color: var(--bs-body-color);
+      padding: 0.5rem;
     }
 
     textarea.form-control:focus {
@@ -4508,6 +4545,30 @@
     min-height: 24px;
     display: inline-flex;
     align-items: center;
+    color: var(--bs-body-color);
+
+    /* Icônes dans les labels - couleur adaptée au thème (sauf si classe spécifique) */
+    i:not([class*="text-"]) {
+      color: var(--bs-body-color);
+    }
+
+    strong {
+      color: var(--bs-body-color);
+    }
+  }
+
+  /* Mode sombre - icônes blanches pour meilleure visibilité */
+  [data-bs-theme="dark"] .form-check-label {
+    color: rgba(255, 255, 255, 0.9);
+
+    /* Icônes sans classe de couleur spécifique - blanc en mode sombre */
+    i:not([class*="text-"]) {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    strong {
+      color: rgba(255, 255, 255, 0.95);
+    }
   }
   
   /* Mobile: Augmenter gap sur très petits écrans pour meilleure accessibilité */
@@ -6138,18 +6199,64 @@
       border-color: #2180A9;
     }
     
-    &:hover {
-      border-color: #2180A9;
+    &:hover:not(:disabled) {
+      border-color: var(--gr-primary);
+    }
+
+    &:focus,
+    &:focus-visible {
+      border-color: var(--gr-primary);
+      box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+      outline: 3px solid var(--gr-primary);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
   [data-bs-theme="dark"] .form-check-input {
     background-color: var(--liquid-glass-bg);
-    border-color: var(--card-border-color);
+    border-color: rgba(255, 255, 255, 0.3);
     
     &:checked {
       background-color: #4d94ff;
       border-color: #4d94ff;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--gr-primary-light);
+    }
+
+    &:focus,
+    &:focus-visible {
+      border-color: var(--gr-primary-light);
+      box-shadow: 0 0 0 4px rgba(77, 148, 255, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  /* Amélioration contraste checkboxes mode clair */
+  .form-check-input {
+    &:hover:not(:disabled) {
+      border-color: var(--gr-primary);
+    }
+
+    &:focus,
+    &:focus-visible {
+      border-color: var(--gr-primary);
+      box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
@@ -6164,6 +6271,30 @@
     cursor: pointer;
     font-size: 0.95rem;
     line-height: 1.5;
+    color: var(--bs-body-color);
+
+    /* Icônes dans les labels - couleur adaptée au thème (sauf si classe spécifique) */
+    i:not([class*="text-"]) {
+      color: var(--bs-body-color);
+    }
+
+    strong {
+      color: var(--bs-body-color);
+    }
+  }
+
+  /* Mode sombre - icônes blanches pour meilleure visibilité */
+  [data-bs-theme="dark"] .form-check-label {
+    color: rgba(255, 255, 255, 0.9);
+
+    /* Icônes sans classe de couleur spécifique - blanc en mode sombre */
+    i:not([class*="text-"]) {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    strong {
+      color: rgba(255, 255, 255, 0.95);
+    }
   }
 
   /* Health Questions */

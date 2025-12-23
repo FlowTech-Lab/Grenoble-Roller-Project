@@ -222,7 +222,7 @@
       <% end %>
       <%= select_tag :roller_size, 
           options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
-          { include_blank: "Choisir une taille", class: "form-select form-select-liquid", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}" } } %>
+          { include_blank: "Choisir une taille", class: "form-select", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}" } } %>
       <small id="roller_size_help<%= prefix_id %>" class="text-muted">
         <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
         Sous réserve de disponibilité du matériel.
