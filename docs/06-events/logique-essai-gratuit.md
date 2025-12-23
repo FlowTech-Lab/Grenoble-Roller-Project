@@ -328,7 +328,7 @@ T0: Enfant créé → pending + essai gratuit disponible (implicite)
     BD: attendances = []
 
 T1: Parent sélectionne enfant dans dropdown pour Initiation A
-    Frontend: Checkbox "Utiliser l'essai gratuit" affichée (obligatoire pour pending si parent non adhérent)
+    Frontend: Checkbox "Utiliser l'essai gratuit" affichée (obligatoire pour pending, même si parent adhérent - v4.0 nominatif)
 
 T2: Parent coche checkbox et soumet
     Frontend: Envoie params[:use_free_trial] = "1"
@@ -853,7 +853,7 @@ end.to_json  # Convertir en JSON string pour injection dans JavaScript
 **Affichage dans le dropdown** :
 ```
 Parent voit :
-[ ] Enfant A (pending) - Essai disponible (obligatoire si parent non adhérent)
+[ ] Enfant A (pending) - Essai disponible (obligatoire, même si parent adhérent - v4.0 nominatif)
 [ ] Enfant B (trial) - Essai disponible (obligatoire)
 [ ] Enfant C (pending) - Essai utilisé (déjà inscrit à Initiation 1)
 ```
@@ -912,7 +912,7 @@ Parent voit :
 
 **JavaScript qui gère l'affichage différencié** :
 ```javascript
-// Pour enfant pending : checkbox obligatoire si parent non adhérent
+// Pour enfant pending : checkbox obligatoire (même si parent adhérent - v4.0 nominatif)
 if (selectedChild.status === "pending" && !selectedChild.has_used_trial) {
   freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped;
   freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case est optionnelle.</strong> Après cet essai, une adhésion sera requise pour continuer.';
@@ -1055,7 +1055,7 @@ T2: Parent voit dropdown :
 **Quel est le flux complet pour enfant `pending` ?**
 
 ```
-T0: Enfant créé avec status: pending (essai gratuit attribué automatiquement, implicite, obligatoire si parent non adhérent)
+T0: Enfant créé avec status: pending (essai gratuit attribué automatiquement, implicite, obligatoire même si parent adhérent - v4.0 nominatif)
     BD: memberships = [membership (status: "pending", is_child_membership: true)]
     BD: attendances = []
 
@@ -1456,7 +1456,7 @@ end.to_json
 
 **Avec JavaScript activé** :
 - ✅ Checkbox cochée automatiquement pour enfants `trial` (obligatoire)
-- ✅ Checkbox affichée mais obligatoire pour enfants `pending` si parent non adhérent
+- ✅ Checkbox affichée mais obligatoire pour enfants `pending` (même si parent adhérent - v4.0 nominatif)
 - ✅ Validation avant soumission (empêche soumission si non cochée pour `trial`)
 - ✅ Mise à jour du champ caché automatique
 - ✅ Meilleure UX (feedback immédiat)
@@ -1672,7 +1672,7 @@ current_user.attendances.active.where(free_trial_used: true, child_membership_id
 - Le **parent** peut cocher une option dans le formulaire pour créer l'enfant avec le statut `trial`
 - Cette option est affichée dans le formulaire si l'enfant n'a pas encore utilisé son essai gratuit
 - Si `create_trial = "1"` : L'enfant est créé en `trial` (essai gratuit obligatoire)
-- Si `create_trial` n'est pas coché : L'enfant est créé en `pending` (essai gratuit obligatoire si parent non adhérent)
+- Si `create_trial` n'est pas coché : L'enfant est créé en `pending` (essai gratuit obligatoire, même si parent adhérent - v4.0 nominatif)
 
 **Formulaire parent pour créer enfant en trial vs pending** :
 - Route : `/memberships/new?child=true`
@@ -1958,7 +1958,7 @@ end
 
 ### 17.2. Manques Complétés
 
-✅ **Affichage checkbox pour chaque enfant** : Documenté (pending = obligatoire si parent non adhérent, trial = obligatoire si parent non adhérent)
+✅ **Affichage checkbox pour chaque enfant** : Documenté (pending = obligatoire même si parent adhérent - v4.0 nominatif, trial = obligatoire même si parent adhérent - v4.0 nominatif)
 ✅ **Timeline des cas limites** : Ajoutée pour chaque scénario (T0, T1, T2...)
 ✅ **Tests spécifiques** : Ajoutés pour création enfant, utilisation essai, réutilisation après annulation
 ✅ **Flux d'inscription** : Documenté étape par étape
@@ -2348,10 +2348,10 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 
 | Critère | Valeur | Checkbox Essai | Bouton Submit |
 |---------|--------|---------------|---------------|
-| Enfant sélectionné | Enfant `trial` ou `pending` avec `can_use_trial = true` | ✅ **VISIBLE** (pour cet enfant) | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée (sauf `pending`) |
+| Enfant sélectionné | Enfant `trial` ou `pending` avec `can_use_trial = true` | ✅ **VISIBLE** (pour cet enfant) | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée |
 | Texte checkbox | "Utiliser l'essai gratuit de [Nom Enfant]" | ✅ **VISIBLE** | - |
 | Enfant `trial` | `true` | ✅ **VISIBLE** (obligatoire, cochée par défaut) | ⚪ **GRIS** si non cochée |
-| Enfant `pending` | `true` | ✅ **VISIBLE** (obligatoire si parent non adhérent) | ⚪ **GRIS** si non cochée (si parent non adhérent) / 🔵 **BLEU** (si parent adhérent) |
+| Enfant `pending` | `true` | ✅ **VISIBLE** (obligatoire - nominatif, même si parent adhérent) | ⚪ **GRIS** si non cochée (essai obligatoire, même si parent adhérent) |
 
 **Comportement** : La checkbox s'affiche uniquement pour l'enfant sélectionné. Le texte change selon l'enfant.
 
@@ -2383,7 +2383,7 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 **Comportement** : 
 - Même si des places découverte sont disponibles, le bouton reste **GRIS** si la checkbox n'est pas cochée
 - Cela force l'utilisateur à utiliser explicitement son essai gratuit
-- Exception : Enfant `pending` → bouton gris si non cochée (si parent non adhérent, essai obligatoire)
+- Exception : Enfant `pending` → bouton gris si non cochée (essai obligatoire, même si parent adhérent - v4.0 nominatif)
 
 ---
 
@@ -2408,15 +2408,15 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 Le bouton est **BLEU** dans les cas suivants :
 1. ✅ Parent/Enfant adhérent actif (`active_now`) → Toujours bleu
 2. ✅ Checkbox essai gratuit cochée → Bouton bleu
-3. ✅ Enfant `pending` sélectionné → Gris si non cochée (si parent non adhérent, essai obligatoire) / Bleu si parent adhérent
-4. ✅ Pas de checkbox essai gratuit disponible → Toujours bleu
+3. ✅ Pas de checkbox essai gratuit disponible → Toujours bleu
 
 #### Bouton GRIS (Désactivé) ⚪
 
 Le bouton est **GRIS** dans les cas suivants :
 1. ⚪ Checkbox essai gratuit non cochée (parent ou enfant `trial`) → Bouton gris
 2. ⚪ Enfant `trial` sélectionné + checkbox non cochée → Bouton gris
-3. ⚪ Parent non adhérent + checkbox non cochée (même avec `allow_non_member_discovery`) → Bouton gris
+3. ⚪ Enfant `pending` sélectionné + checkbox non cochée → Bouton gris (essai obligatoire, même si parent adhérent - v4.0 nominatif)
+4. ⚪ Parent non adhérent + checkbox non cochée (même avec `allow_non_member_discovery`) → Bouton gris
 
 #### Bouton BLOQUÉ (Inscription Impossible) ❌
 

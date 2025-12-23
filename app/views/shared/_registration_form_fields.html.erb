@@ -430,10 +430,10 @@
     </small>
   </div>
   
-  <% if show_free_trial_children %>
+  <% if show_free_trial_parent || show_free_trial_children %>
     <script>
-      // Données des enfants avec statut trial
-      const trialChildrenData<%= prefix_id %> = <%= raw trial_children_data %>;
+      // Données des enfants avec statut trial (peut être vide si seulement parent)
+      const trialChildrenData<%= prefix_id %> = <%= show_free_trial_children ? raw(trial_children_data) : '[]' %>;
       
       // Fonction pour mettre à jour l'affichage de l'essai gratuit selon l'enfant sélectionné
       function updateFreeTrialDisplay<%= prefix_id %>() {
@@ -527,6 +527,114 @@
             }
           }
         }
+        
+        // Appeler toggleSubmitButton après chaque mise à jour de l'affichage
+        toggleSubmitButton<%= prefix_id %>();
+      }
+      
+      // Fonction pour gérer le toggle du bouton submit selon tous les cas de figure
+      // ⚠️ IMPORTANT : Cette fonction ne s'applique QUE pour les initiations (essai gratuit uniquement pour initiations)
+      // RÈGLE v4.0 : Conforme à 100% avec la documentation et le contrôleur
+      // Documentation ligne 88 : "Uniquement pour les initiations : L'essai gratuit n'est disponible que pour les initiations, pas pour les événements/randos normaux"
+      function toggleSubmitButton<%= prefix_id %>() {
+        // PROTECTION : Ne s'applique QUE si c'est une initiation ET qu'il y a une checkbox essai gratuit
+        const freeTrialContainer = document.getElementById('free_trial_container<%= prefix_id %>');
+        if (!freeTrialContainer) {
+          // Pas de container essai gratuit = événement normal (rando) → Ne rien faire, laisser le comportement par défaut
+          return;
+        }
+        
+        const prefixIdClean = '<%= prefix_id %>'.replace(/^_/, '');
+        const form = document.getElementById('attendForm<%= prefix_id %>') || 
+                     document.getElementById('attendForm' + prefixIdClean) ||
+                     document.getElementById('joinWaitlistForm<%= prefix_id %>') ||
+                     document.getElementById('joinWaitlistForm' + prefixIdClean) ||
+                     document.querySelector('form[id*="attendForm"]') ||
+                     document.querySelector('form[action*="attend"]');
+        if (!form) return;
+        
+        const submitButton = form.querySelector('input[type="submit"], button[type="submit"]');
+        const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+        const childSelect = document.getElementById('child_membership_id<%= prefix_id %>');
+        
+        if (!submitButton) return;
+        
+        // Variables de contexte
+        const noChildSelected = !childSelect || childSelect.value === '' || childSelect.value === null;
+        const selectedChildId = childSelect && childSelect.value ? parseInt(childSelect.value) : null;
+        const trialChildrenDataArray = Array.isArray(trialChildrenData<%= prefix_id %>) ? trialChildrenData<%= prefix_id %> : [];
+        const selectedChild = selectedChildId ? trialChildrenDataArray.find(c => c.id === selectedChildId) : null;
+        const parentCanUseTrial = <%= parent_has_trial ? 'true' : 'false' %>;
+        const parentHasActiveMembership = <%= parent_has_active_membership ? 'true' : 'false' %>;
+        const allowDiscovery = <%= is_initiation && event.allow_non_member_discovery? ? 'true' : 'false' %>;
+        const isCheckboxVisible = freeTrialContainer && freeTrialContainer.style.display !== 'none';
+        const isCheckboxChecked = freeTrialCheckbox && freeTrialCheckbox.checked;
+        
+        // CAS 1 : Parent adhérent actif → Toujours BLEU (documentation ligne 2184)
+        if (parentHasActiveMembership) {
+          submitButton.disabled = false;
+          submitButton.style.opacity = '1';
+          submitButton.style.cursor = 'pointer';
+          return;
+        }
+        
+        // CAS 2 : Enfant sélectionné
+        if (selectedChild) {
+          const isTrial = selectedChild.is_trial || selectedChild.status === 'trial';
+          const isPending = selectedChild.is_pending || selectedChild.status === 'pending';
+          const isActive = selectedChild.status === 'active';
+          const canUseTrial = selectedChild.can_use_trial && !selectedChild.has_used_trial;
+          
+          // CAS 2.1 : Enfant active → Toujours BLEU (documentation ligne 2302)
+          if (isActive) {
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+            submitButton.style.cursor = 'pointer';
+            return;
+          }
+          
+          // CAS 2.2 : Enfant trial/pending + essai disponible → Bouton GRIS si checkbox non cochée (documentation ligne 2273, 2242)
+          if ((isTrial || isPending) && canUseTrial) {
+            // Checkbox obligatoire → Bouton GRIS si non cochée, BLEU si cochée
+            if (isCheckboxVisible && !isCheckboxChecked) {
+              submitButton.disabled = true;
+              submitButton.style.opacity = '0.6';
+              submitButton.style.cursor = 'not-allowed';
+            } else {
+              submitButton.disabled = false;
+              submitButton.style.opacity = '1';
+              submitButton.style.cursor = 'pointer';
+            }
+            return;
+          }
+          
+          // CAS 2.3 : Enfant essai déjà utilisé → Toujours BLEU (mais bloqué côté serveur - documentation ligne 2258, 2289)
+          submitButton.disabled = false;
+          submitButton.style.opacity = '1';
+          submitButton.style.cursor = 'pointer';
+          return;
+        }
+        
+        // CAS 3 : Parent non-adhérent (aucun enfant sélectionné)
+        if (noChildSelected && parentCanUseTrial) {
+          // RÈGLE CRITIQUE : Même avec allow_non_member_discovery, le bouton reste GRIS si checkbox non cochée
+          // Cela force l'utilisation explicite de l'essai gratuit (documentation ligne 2204)
+          if (isCheckboxVisible && !isCheckboxChecked) {
+            submitButton.disabled = true;
+            submitButton.style.opacity = '0.6';
+            submitButton.style.cursor = 'not-allowed';
+          } else {
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+            submitButton.style.cursor = 'pointer';
+          }
+          return;
+        }
+        
+        // CAS 4 : Pas de checkbox visible ou autres cas → Toujours BLEU
+        submitButton.disabled = false;
+        submitButton.style.opacity = '1';
+        submitButton.style.cursor = 'pointer';
       }
       
       // Fonction d'initialisation réutilisable
@@ -542,16 +650,30 @@
         if (form) {
           const childSelect = document.getElementById('child_membership_id<%= prefix_id %>') || 
                              form.querySelector('select[name="child_membership_id"]');
+          const freeTrialCheckbox = document.getElementById('use_free_trial<%= prefix_id %>');
+          
           if (childSelect) {
             // Retirer l'ancien listener s'il existe
             childSelect.removeEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
-            childSelect.addEventListener('change', updateFreeTrialDisplay<%= prefix_id %>);
+            childSelect.addEventListener('change', function() {
+              updateFreeTrialDisplay<%= prefix_id %>();
+              toggleSubmitButton<%= prefix_id %>();
+            });
             // Appeler une première fois pour initialiser l'affichage
             updateFreeTrialDisplay<%= prefix_id %>();
           } else {
             // Pas de select enfant, vérifier si on doit afficher pour le parent
             updateFreeTrialDisplay<%= prefix_id %>();
           }
+          
+          // Ajouter listener sur la checkbox pour toggle le bouton submit
+          if (freeTrialCheckbox) {
+            freeTrialCheckbox.removeEventListener('change', toggleSubmitButton<%= prefix_id %>);
+            freeTrialCheckbox.addEventListener('change', toggleSubmitButton<%= prefix_id %>);
+          }
+          
+          // Initialiser le bouton submit au chargement
+          toggleSubmitButton<%= prefix_id %>();
         }
       }
       
@@ -610,6 +732,20 @@
           });
         }, 500);
       }
+      
+      // Initialiser au chargement si pas d'enfants (seulement parent)
+      <% unless show_free_trial_children %>
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            setupFreeTrialDisplay<%= prefix_id %>();
+          });
+        } else {
+          setupFreeTrialDisplay<%= prefix_id %>();
+        }
+        
+        // Support Turbo
+        document.addEventListener('turbo:load', setupFreeTrialDisplay<%= prefix_id %>);
+      <% end %>
     </script>
   <% end %>
 <% end %>
