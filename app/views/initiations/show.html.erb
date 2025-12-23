@@ -129,22 +129,34 @@
             <p class="detail-value mb-2">
               <strong><%= @initiation.location_text %></strong>
             </p>
-            <div class="detail-actions d-flex flex-wrap gap-2 mb-2">
-              <a href="<%= @initiation.google_maps_url %>" 
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="btn btn-sm btn-outline-primary"
-                 aria-label="Ouvrir dans Google Maps">
-                <i class="bi bi-map me-1" aria-hidden="true"></i>Google Maps
-              </a>
-              <a href="<%= @initiation.waze_url %>"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="btn btn-sm btn-outline-info"
-                 aria-label="Ouvrir dans Waze">
-                <i class="bi bi-compass me-1" aria-hidden="true"></i>Waze
-              </a>
-            </div>
+            <% if @initiation.google_maps_url.present? || @initiation.waze_url.present? %>
+              <div class="detail-actions d-flex flex-wrap gap-2 mb-2">
+                <% if @initiation.google_maps_url.present? %>
+                  <a href="<%= @initiation.google_maps_url %>" 
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-sm btn-outline-primary"
+                     aria-label="Ouvrir dans Google Maps">
+                    <i class="bi bi-map me-1" aria-hidden="true"></i>Google Maps
+                  </a>
+                <% end %>
+                <% if @initiation.waze_url.present? %>
+                  <a href="<%= @initiation.waze_url %>"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-sm btn-outline-info"
+                     aria-label="Ouvrir dans Waze">
+                    <i class="bi bi-compass me-1" aria-hidden="true"></i>Waze
+                  </a>
+                <% end %>
+              </div>
+            <% end %>
+            <% if @initiation.has_gps_coordinates? %>
+              <p class="text-muted small mb-0">
+                <i class="bi bi-pin-map me-1" aria-hidden="true"></i>
+                <%= @initiation.meeting_lat %>, <%= @initiation.meeting_lng %>
+              </p>
+            <% end %>
           </div>
         </div>
 

@@ -115,25 +115,31 @@
               <strong><%= @event.location_text %></strong>
             </p>
             
-            <% if @event.has_gps_coordinates? %>
+            <% if @event.google_maps_url.present? || @event.waze_url.present? %>
               <div class="detail-actions d-flex flex-wrap gap-2 mb-2">
-                <a href="<%= @event.google_maps_url %>" 
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="btn btn-sm btn-outline-primary"
-                   aria-label="Ouvrir dans Google Maps">
-                  <i class="bi bi-map me-1" aria-hidden="true"></i>Google Maps
-                </a>
+                <% if @event.google_maps_url.present? %>
+                  <a href="<%= @event.google_maps_url %>" 
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-sm btn-outline-primary"
+                     aria-label="Ouvrir dans Google Maps">
+                    <i class="bi bi-map me-1" aria-hidden="true"></i>Google Maps
+                  </a>
+                <% end %>
                 
-                <a href="<%= @event.waze_url %>"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="btn btn-sm btn-outline-info"
-                   aria-label="Ouvrir dans Waze">
-                  <i class="bi bi-compass me-1" aria-hidden="true"></i>Waze
-                </a>
+                <% if @event.waze_url.present? %>
+                  <a href="<%= @event.waze_url %>"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-sm btn-outline-info"
+                     aria-label="Ouvrir dans Waze">
+                    <i class="bi bi-compass me-1" aria-hidden="true"></i>Waze
+                  </a>
+                <% end %>
               </div>
-              
+            <% end %>
+            
+            <% if @event.has_gps_coordinates? %>
               <p class="text-muted small mb-0">
                 <i class="bi bi-pin-map me-1" aria-hidden="true"></i>
                 <%= @event.meeting_lat %>, <%= @event.meeting_lng %>
