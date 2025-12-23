@@ -9064,3 +9064,102 @@
   "deployment_id": "deploy-20251223-192027-24070",
   "deploy_duration_seconds": 367
 }
+{
+  "timestamp": "2025-12-23T23:42:21Z",
+  "level": "INFO",
+  "message": "🔐 Master key chargée depuis config/master.key (dev)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-23T23:42:21Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T23:42:22Z",
+  "level": "INFO",
+  "message": "🚀 DEPLOYMENT START - staging - 2025-12-24 00:42:22",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T23:42:22Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T23:42:22Z",
+  "level": "INFO",
+  "message": "🧹 Nettoyage préventif Docker...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T23:42:22Z",
+  "level": "INFO",
+  "message": "Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T23:42:22Z",
+  "level": "INFO",
+  "message": "✅ Aucun conteneur orphelin détecté (ancienne config propre)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T23:42:22Z",
+  "level": "INFO",
+  "message": "Images sans tag nettoyées",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T23:42:43Z",
+  "level": "INFO",
+  "message": "Cache build nettoyé",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 22
+}
+{
+  "timestamp": "2025-12-23T23:42:43Z",
+  "level": "INFO",
+  "message": "🔒 Activation du mode maintenance (évite downtime)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 22
+}
+{
+  "timestamp": "2025-12-23T23:42:43Z",
+  "level": "INFO",
+  "message": "🔒 Activation du mode maintenance...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251224-004221-23562",
+  "deploy_duration_seconds": 22
+}

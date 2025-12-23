@@ -2772,7 +2772,8 @@ end
 | `pending` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire) |
 | `trial` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
 | `trial` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire) |
-| `expired` | N/A | "Expiré" | 📅 | `bg-secondary` (gris) | ❌ **NON** (bloqué) |
+| `expired` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
+| `expired` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire - était pending/trial avant) |
 
 **⚠️ IMPORTANT** : Le statut du parent n'apparaît PAS dans ce tableau car il n'a aucune influence sur l'affichage ou l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
 

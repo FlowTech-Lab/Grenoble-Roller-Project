@@ -91,10 +91,21 @@
                   </span>
                 <% end %>
               <% when 'expired' %>
-                <span class="badge bg-secondary fs-6">
-                  <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>
-                  Expiré
-                </span>
+                <%# v4.0 : Essais gratuits NOMINATIFS - un enfant expired peut avoir un essai gratuit disponible s'il était pending/trial avant %>
+                <%# Documentation ligne 2314 : Un enfant expired est traité comme un non-adhérent, les règles des cas 5-8 s'appliquent %>
+                <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+                <% if child_free_trial_used %>
+                  <span class="badge bg-danger fs-6">
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                    Essai utilisé
+                  </span>
+                <% else %>
+                  <%# Essai disponible : l'enfant expired peut utiliser son essai gratuit (était pending/trial avant) %>
+                  <span class="badge bg-info fs-6">
+                    <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+                    Essai disponible
+                  </span>
+                <% end %>
               <% end %>
             </div>
           </div>

@@ -19113,3 +19113,14 @@ failed to solve: failed to do request: Head "https://registry-1.docker.io/v2/lib
 [2025-12-23 19:26:35] ✅ DEPLOYMENT SUCCESS
 [2025-12-23 19:26:35] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [2025-12-23 19:26:35] INFO: 📊 Métriques exportées: /home/flowtech/Grenoble-Roller-Project/metrics/deploy-staging.prom
+[2025-12-24 00:42:21] INFO: 🔐 Master key chargée depuis config/master.key (dev)
+[2025-12-24 00:42:21] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-24 00:42:22] 🚀 DEPLOYMENT START - staging - 2025-12-24 00:42:22
+[2025-12-24 00:42:22] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-24 00:42:22] 🧹 Nettoyage préventif Docker...
+[2025-12-24 00:42:22] INFO: Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...
+[2025-12-24 00:42:22] INFO: ✅ Aucun conteneur orphelin détecté (ancienne config propre)
+[2025-12-24 00:42:22] INFO: Images sans tag nettoyées
+[2025-12-24 00:42:43] INFO: Cache build nettoyé
+[2025-12-24 00:42:43] 🔒 Activation du mode maintenance (évite downtime)...
+[2025-12-24 00:42:43] INFO: 🔒 Activation du mode maintenance...
