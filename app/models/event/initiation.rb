@@ -109,10 +109,9 @@ class Event::Initiation < Event
         # Pour un enfant : vérifier l'adhésion enfant
         is_member = attendance.child_membership&.active?
       else
-        # Pour le parent : vérifier adhésion parent ou enfant
-        # Utiliser exists? avec includes pour éviter N+1
-        is_member = attendance.user.memberships.active_now.exists? ||
-                    attendance.user.memberships.active_now.where(is_child_membership: true).exists?
+        # Pour le parent : vérifier UNIQUEMENT l'adhésion parent (pas celle des enfants)
+        # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - pas d'adhésion "famille"
+        is_member = attendance.user.memberships.active_now.where(is_child_membership: false).exists?
       end
 
       count += 1 if is_member

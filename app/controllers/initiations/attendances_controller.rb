@@ -79,6 +79,8 @@ module Initiations
       child_membership = child_membership_id.present? ? current_user.memberships.find_by(id: child_membership_id) : nil
 
       # Vérifier si l'utilisateur est adhérent
+      # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - chaque personne doit avoir sa propre adhésion
+      # Un parent ne peut PAS utiliser l'adhésion de son enfant
       is_member = if child_membership_id.present?
         # Pour un enfant : vérifier l'adhésion enfant (active, trial ou pending)
         # pending est autorisé car l'enfant peut utiliser l'essai gratuit même si l'adhésion n'est pas encore payée
@@ -89,12 +91,9 @@ module Initiations
         # L'enfant est considéré comme membre si l'adhésion est active ou pending (pas trial)
         child_membership&.active? || child_membership&.pending?
       else
-        # Pour le parent : vérifier adhésion parent ou enfant
-        current_user.memberships.active_now.exists? ||
-          # Pour les initiations, inclure aussi trial et pending
-          current_user.memberships.where(is_child_membership: true)
-            .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
-            .exists?
+        # Pour le parent : vérifier UNIQUEMENT l'adhésion parent (pas celle des enfants)
+        # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - pas d'adhésion "famille"
+        current_user.memberships.active_now.where(is_child_membership: false).exists?
       end
 
       # Vérifier si le PARENT est adhérent (nécessaire pour les enfants trial/pending)
