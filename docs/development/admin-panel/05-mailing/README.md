@@ -11,10 +11,10 @@
 Gestion des emails automatiques envoyés par l'application. Ces emails sont déclenchés par des tâches cron (actuellement Supercronic, migration vers Solid Queue prévue).
 
 **Mailers disponibles** :
-- `EventMailer` : Emails liés aux événements et initiations
-- `MembershipMailer` : Emails liés aux adhésions
-- `UserMailer` : Emails utilisateurs (bienvenue, confirmation, etc.)
-- `OrderMailer` : Emails liés aux commandes (optionnel)
+- `EventMailer` : Emails liés aux événements et initiations (6 méthodes)
+- `MembershipMailer` : Emails liés aux adhésions (4 méthodes)
+- `UserMailer` : Emails utilisateurs (bienvenue, confirmation, etc.) (1 méthode)
+- `OrderMailer` : Emails liés aux commandes (7 méthodes)
 
 ---
 
@@ -113,6 +113,50 @@ Gestion des emails automatiques envoyés par l'application. Ces emails sont déc
    - Déclenchement : Échec de paiement (HelloAsso)
    - Sujet : "❌ Paiement adhésion Saison [X] - Échec"
 
+### UserMailer (`app/mailers/user_mailer.rb`)
+
+1. **`welcome_email(user)`**
+   - Email de bienvenue envoyé à la création du compte
+   - Déclenchement : Création de compte utilisateur
+   - Sujet : "🎉 Bienvenue chez Grenoble Roller!"
+
+### OrderMailer (`app/mailers/order_mailer.rb`)
+
+1. **`order_confirmation(order)`**
+   - Envoyé lors de la création d'une commande (pending)
+   - Déclenchement : Création de commande
+   - Sujet : "✅ Commande ##{order.id} - Confirmation de commande"
+
+2. **`order_paid(order)`**
+   - Envoyé quand une commande est payée
+   - Déclenchement : Changement de statut → "paid"
+   - Sujet : "💳 Commande ##{order.id} - Paiement confirmé"
+
+3. **`order_cancelled(order)`**
+   - Envoyé quand une commande est annulée
+   - Déclenchement : Changement de statut → "cancelled"
+   - Sujet : "❌ Commande ##{order.id} - Commande annulée"
+
+4. **`order_preparation(order)`**
+   - Envoyé quand une commande est en préparation
+   - Déclenchement : Changement de statut → "preparation"
+   - Sujet : "⚙️ Commande ##{order.id} - En préparation"
+
+5. **`order_shipped(order)`**
+   - Envoyé quand une commande est expédiée
+   - Déclenchement : Changement de statut → "shipped"
+   - Sujet : "📦 Commande ##{order.id} - Expédiée"
+
+6. **`refund_requested(order)`**
+   - Envoyé quand une demande de remboursement est créée
+   - Déclenchement : Changement de statut → "refund_requested"
+   - Sujet : "🔄 Commande ##{order.id} - Demande de remboursement en cours"
+
+7. **`refund_confirmed(order)`**
+   - Envoyé quand un remboursement est confirmé
+   - Déclenchement : Changement de statut → "refunded"
+   - Sujet : "✅ Commande ##{order.id} - Remboursement confirmé"
+
 ---
 
 ## 🔄 Migration vers Solid Queue
@@ -133,14 +177,46 @@ Lors de la migration vers Solid Queue, les tâches Rake seront remplacées par d
 
 ## 📊 Monitoring
 
-### Logs des emails
+### Logs des emails dans le Panel Admin
+
+**✅ NOUVEAU** : Page dédiée pour visualiser les logs des emails dans le panel admin.
+
+**Accès** : `/admin-panel/mail-logs` (SUPERADMIN uniquement - level >= 70)
+
+**Fonctionnalités** :
+- 📊 **Statistiques** : Total, en attente, terminés, échecs
+- 🔍 **Filtres** :
+  - Par mailer (EventMailer, MembershipMailer, UserMailer, OrderMailer)
+  - Par statut (En attente, Terminés, Échecs)
+  - Par date (depuis une date donnée)
+- 📋 **Tableau détaillé** : ID, Mailer, Méthode, Statut, Dates, Actions
+- 🔎 **Détails** : Vue détaillée de chaque email avec arguments JSON et erreurs
+
+**Mailers disponibles** :
+- `EventMailer` : 6 méthodes (attendance_confirmed, attendance_cancelled, event_reminder, event_rejected, waitlist_spot_available, initiation_participants_report)
+- `MembershipMailer` : 4 méthodes (activated, expired, renewal_reminder, payment_failed)
+- `UserMailer` : 1 méthode (welcome_email)
+- `OrderMailer` : 7 méthodes (order_confirmation, order_paid, order_cancelled, order_preparation, order_shipped, refund_requested, refund_confirmed)
+
+**Fichiers** :
+- Contrôleur : `app/controllers/admin_panel/mail_logs_controller.rb`
+- Vues : `app/views/admin_panel/mail_logs/index.html.erb`, `show.html.erb`
+- Route : `admin_panel_mail_logs_path` (GET `/admin-panel/mail-logs`)
+
+### Mission Control Jobs
+
+**Accès** : `/admin-panel/jobs` (via Mission Control)
+
+Dashboard complet pour monitoring de tous les jobs Solid Queue (pas seulement les emails).
+
+### Logs Rails et Commandes
 
 Les emails sont envoyés via Active Job (asynchrone), donc :
 - Les logs d'envoi sont dans les logs Rails standard
 - Les erreurs sont loggées avec Sentry (si configuré)
-- Les jobs échoués apparaîtront dans Mission Control après migration
+- Les jobs échoués apparaissent dans Mission Control et dans la page Logs Mails
 
-### Vérifier les emails envoyés
+**Vérifier les emails envoyés** :
 
 ```bash
 # Logs Rails (emails enqueued)
@@ -150,7 +226,7 @@ docker logs grenoble-roller-staging | grep -i "mailer"
 docker exec grenoble-roller-staging tail -f log/cron.log
 ```
 
-### Tester un email manuellement
+**Tester un email manuellement** :
 
 ```bash
 # Test EventMailer

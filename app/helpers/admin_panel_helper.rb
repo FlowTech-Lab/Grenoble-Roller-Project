@@ -79,4 +79,43 @@ module AdminPanelHelper
     end
   end
 
+  # Parse les arguments JSON d'un job ActionMailer pour extraire mailer et méthode
+  # SolidQueue peut stocker les arguments comme String JSON ou déjà désérialisés (Array/Hash)
+  # Format ActiveJob: { "arguments": ["MailerClass", "method_name", "deliver_now", {...}] }
+  # Format direct: ["MailerClass", "method_name", "deliver_now", {...}]
+  def parse_mailer_info(arguments_data)
+    return { mailer: nil, method: nil } if arguments_data.blank?
+
+    begin
+      # Parser si c'est une String JSON
+      parsed_data = if arguments_data.is_a?(String)
+        JSON.parse(arguments_data)
+      else
+        arguments_data
+      end
+      
+      # Si c'est un Hash avec la clé "arguments" (format ActiveJob)
+      if parsed_data.is_a?(Hash) && parsed_data["arguments"].is_a?(Array)
+        args = parsed_data["arguments"]
+      # Si c'est directement un Array
+      elsif parsed_data.is_a?(Array)
+        args = parsed_data
+      else
+        return { mailer: nil, method: nil }
+      end
+      
+      if args.is_a?(Array) && args.length >= 2
+        { mailer: args[0], method: args[1] }
+      else
+        { mailer: nil, method: nil }
+      end
+    rescue JSON::ParserError => e
+      Rails.logger.error("Failed to parse mailer info: #{e.message}")
+      { mailer: nil, method: nil }
+    rescue => e
+      Rails.logger.error("Error parsing mailer info: #{e.class} - #{e.message}")
+      { mailer: nil, method: nil }
+    end
+  end
+
 end

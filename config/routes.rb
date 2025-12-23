@@ -8,6 +8,9 @@ Rails.application.routes.draw do
     # Mission Control Jobs - Dashboard pour monitoring des jobs Solid Queue
     mount MissionControl::Jobs::Engine, at: "/jobs"
     
+    # Logs des emails (SUPERADMIN uniquement)
+    resources :mail_logs, path: 'mail-logs', only: [:index, :show]
+    
     resources :products do
       resources :product_variants, except: %i[index show]
       collection do

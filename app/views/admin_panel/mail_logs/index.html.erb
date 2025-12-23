@@ -1,0 +1,171 @@
+<div class="admin-mail-logs">
+  <!-- HEADER -->
+  <div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      <h1>📧 Logs des Emails</h1>
+      <p class="text-muted">Visualisation des emails envoyés via Solid Queue</p>
+    </div>
+    <div>
+      <%= link_to "/admin-panel/jobs", class: "btn btn-outline-primary" do %>
+        <i class="bi bi-speedometer2 me-2"></i>Mission Control
+      <% end %>
+    </div>
+  </div>
+
+  <!-- STATISTIQUES -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body">
+          <h5 class="card-title text-muted small">Total</h5>
+          <h3 class="mb-0"><%= @stats[:total] %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body">
+          <h5 class="card-title text-muted small">En attente</h5>
+          <h3 class="mb-0 text-warning"><%= @stats[:pending] %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body">
+          <h5 class="card-title text-muted small">Terminés</h5>
+          <h3 class="mb-0 text-success"><%= @stats[:finished] %></h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body">
+          <h5 class="card-title text-muted small">Échecs</h5>
+          <h3 class="mb-0 text-danger"><%= @stats[:failed] %></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Filtres</h5>
+    </div>
+    <div class="card-body">
+      <%= form_with url: admin_panel_mail_logs_path, method: :get, local: true, class: "row g-3" do |f| %>
+        <div class="col-md-4">
+          <%= f.label :mailer, "Mailer", class: "form-label" %>
+          <%= f.select :mailer, 
+              options_for_select([["Tous les mailers", ""]] + @available_mailers.map { |m| [m, m] }, params[:mailer]),
+              {},
+              { class: "form-select" } %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :status, "Statut", class: "form-label" %>
+          <%= f.select :status,
+              options_for_select([
+                ["Tous les statuts", ""],
+                ["En attente", "pending"],
+                ["Terminés", "finished"],
+                ["Échecs", "failed"]
+              ], params[:status]),
+              {},
+              { class: "form-select" } %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :since, "Depuis le", class: "form-label" %>
+          <%= f.date_field :since, value: params[:since], class: "form-control form-control-liquid" %>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <%= f.submit "Filtrer", class: "btn btn-primary w-100" %>
+          <% if params[:mailer].present? || params[:status].present? || params[:since].present? %>
+            <%= link_to "Réinitialiser", admin_panel_mail_logs_path, class: "btn btn-outline-secondary w-100 mt-2" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- TABLEAU DES LOGS -->
+  <div class="card card-liquid rounded-liquid shadow-liquid">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Emails</h5>
+      <div class="text-muted small">
+        <%= @pagy.from %>-<%= @pagy.to %> sur <%= @pagy.count %>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <% if @jobs.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mailer</th>
+                <th>Méthode</th>
+                <th>Statut</th>
+                <th>Créé le</th>
+                <th>Terminé le</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @jobs.each do |job| %>
+                <% mailer_info = parse_mailer_info(job.arguments) %>
+                <% failed = SolidQueue::FailedExecution.find_by(job_id: job.id) %>
+                <tr>
+                  <td><%= job.id %></td>
+                  <td>
+                    <code class="small"><%= mailer_info[:mailer] || "N/A" %></code>
+                  </td>
+                  <td>
+                    <span class="badge badge-liquid-secondary"><%= mailer_info[:method] || "N/A" %></span>
+                  </td>
+                  <td>
+                    <% if failed %>
+                      <span class="badge badge-liquid-danger">Échec</span>
+                    <% elsif job.finished_at.nil? %>
+                      <span class="badge badge-liquid-warning">En attente</span>
+                    <% else %>
+                      <span class="badge badge-liquid-success">Terminé</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <small><%= l(job.created_at, format: :short) %></small>
+                  </td>
+                  <td>
+                    <% if job.finished_at %>
+                      <small><%= l(job.finished_at, format: :short) %></small>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <%= link_to admin_panel_mail_log_path(job), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-eye"></i> Détails
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <p class="text-muted">Aucun email trouvé avec ces filtres</p>
+        </div>
+      <% end %>
+    </div>
+    <% if @pagy.pages > 1 %>
+      <div class="card-footer">
+        <div class="d-flex justify-content-center">
+          <%== pagy_bootstrap_nav(@pagy) if @pagy.pages > 1 %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+

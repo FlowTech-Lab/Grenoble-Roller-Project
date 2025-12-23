@@ -31,6 +31,20 @@
   </li>
 <% end %>
 
+<!-- LOGS EMAILS (SUPERADMIN uniquement - level >= 70) -->
+<% if can_access_admin_panel?(70) %>
+  <li class="nav-item">
+    <%= link_to admin_panel_mail_logs_path, 
+        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('mail_logs')}",
+        title: "Logs des emails",
+        aria: { label: "Voir les logs des emails" },
+        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-envelope-paper fs-5" aria-hidden="true"></i>
+      <span class="sidebar-label">Logs Mails</span>
+    <% end %>
+  </li>
+<% end %>
+
 <!-- SÉPARATEUR -->
 <li class="nav-item">
   <hr class="border-secondary my-2">

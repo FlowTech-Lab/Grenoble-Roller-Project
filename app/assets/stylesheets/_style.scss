@@ -7750,6 +7750,42 @@ body.admin-panel {
 /* === ADMIN BADGES - Réutilise badge-liquid-* existantes === */
 /* Les classes .badge-liquid-primary, .badge-liquid-success, etc. existent déjà */
 
+/* === ADMIN MAIL LOGS - Styles spécifiques === */
+.admin-mail-logs {
+  code {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+  
+  pre {
+    background: var(--liquid-glass-bg) !important;
+    border: 1px solid var(--liquid-glass-border) !important;
+    color: var(--bs-body-color) !important;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  /* Amélioration du thème sombre pour les éléments de code */
+  [data-bs-theme="dark"] {
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    pre {
+      background: rgba(0, 0, 0, 0.3) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+}
+
 /* === ADMIN TEXT COLORS - Réutilise variables === */
 .admin-panel .text-primary {
   color: var(--gr-primary) !important;
