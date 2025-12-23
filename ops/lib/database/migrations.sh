@@ -206,6 +206,7 @@ calculate_migration_timeout() {
 }
 
 # Appliquer les migrations
+# ⚠️  AMÉLIORATION : Si le conteneur n'est pas running, utiliser un conteneur temporaire
 apply_migrations() {
     local container=$1
     local migration_timeout=${2:-900}
@@ -237,16 +238,84 @@ apply_migrations() {
     log_info "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente"
     log_info "   ℹ️  Aucune donnée existante ne sera supprimée"
     log_info "   ℹ️  Solid Queue utilise PostgreSQL (migrations incluses)"
+    
     local migration_output
     local migration_exit_code
     
-    if [ -n "$timeout_cmd" ]; then
-        migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
-        migration_exit_code=$?
+    # ⚠️  CRITIQUE : Si le conteneur n'est pas running (crash Solid Queue), utiliser un conteneur temporaire
+    if ! container_is_running "$container"; then
+        log_warning "⚠️  Conteneur $container n'est pas running (probable crash Solid Queue)"
+        log_info "   Exécution des migrations via conteneur temporaire..."
+        
+        # Obtenir l'image du conteneur
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "")
+        
+        if [ -z "$image_name" ]; then
+            # Essayer de trouver l'image depuis docker-compose
+            local compose_file="${COMPOSE_FILE:-}"
+            if [ -n "$compose_file" ] && [ -f "$compose_file" ]; then
+                image_name=$(grep -A 5 "services:" "$compose_file" | grep -A 3 "web:" | grep "image:" | awk '{print $2}' | head -1 || echo "")
+            fi
+            
+            if [ -z "$image_name" ]; then
+                # Dernier recours : utiliser le nom du conteneur comme base
+                image_name="${container%-*}-web" || image_name="staging-web"
+            fi
+        fi
+        
+        log_info "   Utilisation de l'image: $image_name"
+        
+        # Obtenir le réseau Docker du conteneur
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$container" 2>/dev/null | head -1 || echo "")
+        
+        if [ -z "$network_name" ]; then
+            # Essayer de trouver le réseau depuis docker-compose
+            network_name=$(basename "$(dirname "$(readlink -f "${COMPOSE_FILE:-}")")")"_default" 2>/dev/null || echo "staging_default")
+        fi
+        
+        # Obtenir DATABASE_URL depuis le conteneur ou docker-compose
+        local db_url="${DATABASE_URL:-}"
+        if [ -z "$db_url" ]; then
+            # Construire DATABASE_URL depuis les variables d'environnement
+            local db_host="${DATABASE_HOST:-db}"
+            local db_port="${DATABASE_PORT:-5432}"
+            local db_user="${DATABASE_USER:-postgres}"
+            local db_pass="${DATABASE_PASSWORD:-postgres}"
+            local db_name="${DATABASE_NAME:-grenoble_roller_production}"
+            db_url="postgresql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}"
+        fi
+        
+        log_info "   Exécution via conteneur temporaire sur réseau: $network_name"
+        
+        # Exécuter les migrations via un conteneur temporaire
+        if [ -n "$timeout_cmd" ]; then
+            migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD run --rm \
+                --network "$network_name" \
+                -e DATABASE_URL="$db_url" \
+                -e RAILS_ENV="${RAILS_ENV:-production}" \
+                "$image_name" \
+                bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        else
+            log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
+            migration_output=$($DOCKER_CMD run --rm \
+                --network "$network_name" \
+                -e DATABASE_URL="$db_url" \
+                -e RAILS_ENV="${RAILS_ENV:-production}" \
+                "$image_name" \
+                bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        fi
     else
-        log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
-        migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
-        migration_exit_code=$?
+        # Méthode normale : conteneur running
+        if [ -n "$timeout_cmd" ]; then
+            migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        else
+            log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
+            migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        fi
     fi
     
     local migration_end_time=$(date +%s)
@@ -273,7 +342,22 @@ apply_migrations() {
     log_success "✅ Migrations principales exécutées avec succès (durée: ${migration_duration}s)"
     
     # Vérification post-migration principales
-    local post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
+    # ⚠️  Si le conteneur n'est pas running, utiliser un conteneur temporaire
+    local post_status=""
+    if container_is_running "$container"; then
+        post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
+    else
+        # Utiliser le même mécanisme que pour apply_migrations
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "staging-web")
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$container" 2>/dev/null | head -1 || echo "staging_default")
+        local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
+        
+        post_status=$($DOCKER_CMD run --rm --network "$network_name" \
+            -e DATABASE_URL="$db_url" \
+            -e RAILS_ENV="${RAILS_ENV:-production}" \
+            "$image_name" \
+            bin/rails db:migrate:status 2>&1)
+    fi
     local post_pending=$(echo "$post_status" | awk '/^\s*down/ {count++} END {print count+0}' 2>/dev/null || echo "0")
     
     if [ "$post_pending" -gt 0 ]; then

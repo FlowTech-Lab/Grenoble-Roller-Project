@@ -585,8 +585,25 @@ main() {
     fi
     
     # Calculer timeout adaptatif
-    MIGRATION_STATUS=$($DOCKER_CMD exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
-    PENDING_MIGRATIONS=$(echo "$MIGRATION_STATUS" | grep "^\s*down" || echo "")
+    # ⚠️  CRITIQUE : Si le conteneur n'est pas running, utiliser un conteneur temporaire pour vérifier les migrations
+    local migration_status=""
+    if container_is_running "$CONTAINER_NAME"; then
+        migration_status=$($DOCKER_CMD exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
+    else
+        log_warning "⚠️  Conteneur non running, vérification migrations via conteneur temporaire..."
+        # Obtenir l'image et le réseau
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$CONTAINER_NAME" 2>/dev/null || echo "staging-web")
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$CONTAINER_NAME" 2>/dev/null | head -1 || echo "staging_default")
+        local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
+        
+        migration_status=$($DOCKER_CMD run --rm --network "$network_name" \
+            -e DATABASE_URL="$db_url" \
+            -e RAILS_ENV="${RAILS_ENV:-production}" \
+            "$image_name" \
+            bin/rails db:migrate:status 2>&1)
+    fi
+    
+    PENDING_MIGRATIONS=$(echo "$migration_status" | grep "^\s*down" || echo "")
     PENDING_COUNT=$(echo "$PENDING_MIGRATIONS" | wc -l | tr -d ' ')
     MIGRATION_TIMEOUT=$(calculate_migration_timeout $PENDING_COUNT)
     
