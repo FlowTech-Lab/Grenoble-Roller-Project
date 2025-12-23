@@ -316,6 +316,30 @@ apply_migrations() {
             db_url="postgresql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}"
         fi
         
+        # ⚠️  CRITIQUE : Récupérer RAILS_MASTER_KEY pour déchiffrer les credentials
+        local rails_master_key="${RAILS_MASTER_KEY:-}"
+        if [ -z "$rails_master_key" ]; then
+            # Essayer depuis le conteneur (même s'il est arrêté, l'image contient peut-être la clé)
+            rails_master_key=$($DOCKER_CMD exec "$container" cat /rails/config/master.key 2>/dev/null | tr -d '\n\r' || echo "")
+            
+            if [ -z "$rails_master_key" ]; then
+                # Essayer depuis le fichier local
+                local master_key_path="${REPO_DIR:-.}/config/master.key"
+                if [ -f "$master_key_path" ]; then
+                    rails_master_key=$(cat "$master_key_path" | tr -d '\n\r')
+                    log_info "   Master key récupérée depuis config/master.key"
+                fi
+            else
+                log_info "   Master key récupérée depuis le conteneur"
+            fi
+        fi
+        
+        if [ -z "$rails_master_key" ]; then
+            log_error "❌ RAILS_MASTER_KEY introuvable - impossible d'exécuter les migrations"
+            log_error "   Vérifiez que config/master.key existe ou que RAILS_MASTER_KEY est défini"
+            return 1
+        fi
+        
         log_info "   Exécution via conteneur temporaire sur réseau: $network_name"
         
         # Exécuter les migrations via un conteneur temporaire
@@ -324,6 +348,7 @@ apply_migrations() {
                 --network "$network_name" \
                 -e DATABASE_URL="$db_url" \
                 -e RAILS_ENV="${RAILS_ENV:-production}" \
+                -e RAILS_MASTER_KEY="$rails_master_key" \
                 "$image_name" \
                 bin/rails db:migrate 2>&1)
             migration_exit_code=$?
@@ -333,6 +358,7 @@ apply_migrations() {
                 --network "$network_name" \
                 -e DATABASE_URL="$db_url" \
                 -e RAILS_ENV="${RAILS_ENV:-production}" \
+                -e RAILS_MASTER_KEY="$rails_master_key" \
                 "$image_name" \
                 bin/rails db:migrate 2>&1)
             migration_exit_code=$?
@@ -407,9 +433,24 @@ apply_migrations() {
         
         local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
         
+        # ⚠️  CRITIQUE : Récupérer RAILS_MASTER_KEY
+        local rails_master_key="${RAILS_MASTER_KEY:-}"
+        if [ -z "$rails_master_key" ]; then
+            local master_key_path="${REPO_DIR:-.}/config/master.key"
+            if [ -f "$master_key_path" ]; then
+                rails_master_key=$(cat "$master_key_path" | tr -d '\n\r')
+            fi
+        fi
+        
+        if [ -z "$rails_master_key" ]; then
+            log_error "❌ RAILS_MASTER_KEY introuvable - impossible de vérifier les migrations"
+            return 1
+        fi
+        
         post_status=$($DOCKER_CMD run --rm --network "$network_name" \
             -e DATABASE_URL="$db_url" \
             -e RAILS_ENV="${RAILS_ENV:-production}" \
+            -e RAILS_MASTER_KEY="$rails_master_key" \
             "$image_name" \
             bin/rails db:migrate:status 2>&1)
     fi

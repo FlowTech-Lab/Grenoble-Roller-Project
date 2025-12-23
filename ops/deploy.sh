@@ -618,9 +618,27 @@ main() {
         
         local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
         
+        # ⚠️  CRITIQUE : Récupérer RAILS_MASTER_KEY
+        local rails_master_key="${RAILS_MASTER_KEY:-}"
+        if [ -z "$rails_master_key" ]; then
+            local master_key_path="${REPO_DIR:-.}/config/master.key"
+            if [ -f "$master_key_path" ]; then
+                rails_master_key=$(cat "$master_key_path" | tr -d '\n\r')
+                log_info "   Master key récupérée depuis config/master.key"
+            fi
+        fi
+        
+        if [ -z "$rails_master_key" ]; then
+            log_error "❌ RAILS_MASTER_KEY introuvable - impossible de vérifier les migrations"
+            log_error "   Vérifiez que config/master.key existe ou que RAILS_MASTER_KEY est défini"
+            rollback "$CURRENT_COMMIT"
+            exit 1
+        fi
+        
         migration_status=$($DOCKER_CMD run --rm --network "$network_name" \
             -e DATABASE_URL="$db_url" \
             -e RAILS_ENV="${RAILS_ENV:-production}" \
+            -e RAILS_MASTER_KEY="$rails_master_key" \
             "$image_name" \
             bin/rails db:migrate:status 2>&1)
     fi

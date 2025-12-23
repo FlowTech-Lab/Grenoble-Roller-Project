@@ -7435,3 +7435,696 @@
   "deployment_id": "deploy-20251223-063741-16426",
   "deploy_duration_seconds": 9
 }
+{
+  "timestamp": "2025-12-23T05:38:32Z",
+  "level": "INFO",
+  "message": "❌ Confirmation: NON",
+  "environment": "staging",
+  "commit": "3846be069d80ad9698bea3c9df4503492ea8f87d",
+  "deployment_id": "deploy-20251223-063741-16426",
+  "deploy_duration_seconds": 51
+}
+{
+  "timestamp": "2025-12-23T05:38:32Z",
+  "level": "ERROR",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "3846be069d80ad9698bea3c9df4503492ea8f87d",
+  "deployment_id": "deploy-20251223-063741-16426",
+  "deploy_duration_seconds": 51
+}
+{
+  "timestamp": "2025-12-23T05:38:32Z",
+  "level": "ERROR",
+  "message": "❌ Rollback annulé par l'opérateur",
+  "environment": "staging",
+  "commit": "3846be069d80ad9698bea3c9df4503492ea8f87d",
+  "deployment_id": "deploy-20251223-063741-16426",
+  "deploy_duration_seconds": 51
+}
+{
+  "timestamp": "2025-12-23T05:38:32Z",
+  "level": "ERROR",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "3846be069d80ad9698bea3c9df4503492ea8f87d",
+  "deployment_id": "deploy-20251223-063741-16426",
+  "deploy_duration_seconds": 51
+}
+{
+  "timestamp": "2025-12-23T05:38:32Z",
+  "level": "WARNING",
+  "message": "💡 L'application reste arrêtée",
+  "environment": "staging",
+  "commit": "3846be069d80ad9698bea3c9df4503492ea8f87d",
+  "deployment_id": "deploy-20251223-063741-16426",
+  "deploy_duration_seconds": 51
+}
+{
+  "timestamp": "2025-12-23T05:38:32Z",
+  "level": "WARNING",
+  "message": "   Intervention manuelle requise",
+  "environment": "staging",
+  "commit": "3846be069d80ad9698bea3c9df4503492ea8f87d",
+  "deployment_id": "deploy-20251223-063741-16426",
+  "deploy_duration_seconds": 51
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "🔐 Master key chargée depuis config/master.key (dev)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": null
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "🚀 DEPLOYMENT START - staging - 2025-12-23 06:38:36",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "🧹 Nettoyage préventif Docker...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "✅ Aucun conteneur orphelin détecté (ancienne config propre)",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "Images sans tag nettoyées",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:36Z",
+  "level": "INFO",
+  "message": "Cache build nettoyé",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 0
+}
+{
+  "timestamp": "2025-12-23T05:38:37Z",
+  "level": "INFO",
+  "message": "📥 Vérification des mises à jour (branche: staging)...",
+  "environment": "staging",
+  "commit": "unknown:0:7",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T05:38:37Z",
+  "level": "INFO",
+  "message": "✅ Déjà à jour (commit: db436fc)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T05:38:37Z",
+  "level": "WARNING",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T05:38:37Z",
+  "level": "WARNING",
+  "message": "⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T05:38:37Z",
+  "level": "WARNING",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 1
+}
+{
+  "timestamp": "2025-12-23T05:38:38Z",
+  "level": "INFO",
+  "message": "💾 Commit actuel sauvegardé: db436fc",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 2
+}
+{
+  "timestamp": "2025-12-23T05:38:38Z",
+  "level": "INFO",
+  "message": "📦 Backup base de données (chiffrement: true)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 2
+}
+{
+  "timestamp": "2025-12-23T05:38:38Z",
+  "level": "SUCCESS",
+  "message": "✅ Clé de chiffrement récupérée depuis master.key (host)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 2
+}
+{
+  "timestamp": "2025-12-23T05:38:38Z",
+  "level": "INFO",
+  "message": "   Exécution de pg_dump sur grenoble-roller-db-staging...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 2
+}
+{
+  "timestamp": "2025-12-23T05:38:39Z",
+  "level": "SUCCESS",
+  "message": "✅ Backup chiffré créé: db_20251223_063838.sql.enc (128K)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 3
+}
+{
+  "timestamp": "2025-12-23T05:38:39Z",
+  "level": "INFO",
+  "message": "📥 Mise à jour du code...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 3
+}
+{
+  "timestamp": "2025-12-23T05:38:39Z",
+  "level": "INFO",
+  "message": "💾 Vérification de l'espace disque...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 3
+}
+{
+  "timestamp": "2025-12-23T05:38:39Z",
+  "level": "INFO",
+  "message": "✅ Espace disque OK : 51GB disponible",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 3
+}
+{
+  "timestamp": "2025-12-23T05:38:39Z",
+  "level": "INFO",
+  "message": "🔍 Vérification des fichiers de migration avant build...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 3
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "✅ 67 fichier(s) de migration trouvé(s) localement",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "🔍 Vérification finale de la branche Git avant build...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "🔍 Analyse : Rebuild nécessaire ou restart suffisant ?",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "ℹ️  FORCE_REDEPLOY activé → rebuild forcé",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "⚠️  Rebuild nécessaire détecté",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "   Raisons possibles :",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "   - Changements dans Gemfile, Dockerfile, database.yml",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "   - Nouvelles migrations",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "   - Image ancienne (>24h)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "   - Conteneur n'existe pas",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "🔨 Build SANS CACHE...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "⚠️  Rebuild complet sans cache (peut prendre 5-10 minutes)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "WARNING",
+  "message": "🔄 Rebuild sans cache COMPLET pour garantir l'inclusion de tous les fichiers...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "✅ Branche vérifiée : staging (commit: db436fcf)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:40Z",
+  "level": "INFO",
+  "message": "Arrêt des conteneurs...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 4
+}
+{
+  "timestamp": "2025-12-23T05:38:41Z",
+  "level": "INFO",
+  "message": "🧹 Nettoyage du volume /rails/db (suppression migrations/schémas qui écrase l'image)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 5
+}
+{
+  "timestamp": "2025-12-23T05:38:44Z",
+  "level": "WARNING",
+  "message": "⚠️  Impossible de nettoyer le volume (peut-être inexistant)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-23T05:38:44Z",
+  "level": "INFO",
+  "message": "Nettoyage du cache de build (garde cache récent pour performance)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-23T05:38:44Z",
+  "level": "INFO",
+  "message": "Nettoyage BuildKit cache (cache persistant)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-23T05:38:44Z",
+  "level": "INFO",
+  "message": "Nettoyage AGRESSIF des images (supprime TOUTES les images non utilisées, y compris intermédiaires)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 8
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "INFO",
+  "message": "Suppression de l'image actuelle (force rebuild from scratch)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "INFO",
+  "message": "Suppression des images intermédiaires du multi-stage build...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "INFO",
+  "message": "Vérification que les migrations sont dans le build context...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "INFO",
+  "message": "✅ 67 fichier(s) de migration trouvé(s) dans le build context",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "INFO",
+  "message": "🔨 BUILD_ID unique: 20251223-063847-db436fcf (force nouveau layer, évite cache trompeur)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "INFO",
+  "message": "Rebuild sans cache COMPLET (--pull --no-cache --build-arg BUILD_ID)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "WARNING",
+  "message": "⚠️  Ce build peut prendre 5-10 minutes (sans cache complet)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:38:47Z",
+  "level": "WARNING",
+  "message": "⚠️  FORCÉ 100% DU TEMPS pour éviter problèmes de cache (Gemfile, database.yml, migrations, etc.)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 11
+}
+{
+  "timestamp": "2025-12-23T05:43:04Z",
+  "level": "SUCCESS",
+  "message": "✅ Build réussi",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 268
+}
+{
+  "timestamp": "2025-12-23T05:43:04Z",
+  "level": "INFO",
+  "message": "Démarrage de tous les services (web, db, minio, etc.)...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 268
+}
+{
+  "timestamp": "2025-12-23T05:43:04Z",
+  "level": "INFO",
+  "message": "   ℹ️  Le docker-entrypoint appliquera automatiquement les migrations SQLite au démarrage",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 268
+}
+{
+  "timestamp": "2025-12-23T05:43:16Z",
+  "level": "SUCCESS",
+  "message": "✅ Tous les services démarrés avec succès",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 280
+}
+{
+  "timestamp": "2025-12-23T05:43:16Z",
+  "level": "INFO",
+  "message": "🔍 Vérification que tous les conteneurs sont bien démarrés...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 280
+}
+{
+  "timestamp": "2025-12-23T05:43:20Z",
+  "level": "SUCCESS",
+  "message": "✅ Tous les services sont running",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 284
+}
+{
+  "timestamp": "2025-12-23T05:43:20Z",
+  "level": "INFO",
+  "message": "🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 284
+}
+{
+  "timestamp": "2025-12-23T05:43:20Z",
+  "level": "SUCCESS",
+  "message": "✅ Migrations synchronisées (67 fichiers)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 284
+}
+{
+  "timestamp": "2025-12-23T05:43:20Z",
+  "level": "INFO",
+  "message": "Pas de healthcheck configuré, attente supplémentaire...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 284
+}
+{
+  "timestamp": "2025-12-23T05:43:31Z",
+  "level": "INFO",
+  "message": "ℹ️  Conteneur arrêté récemment (il y a 7s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 295
+}
+{
+  "timestamp": "2025-12-23T05:43:31Z",
+  "level": "INFO",
+  "message": "ℹ️  Restart interne détecté, redémarrage automatique...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 295
+}
+{
+  "timestamp": "2025-12-23T05:43:42Z",
+  "level": "INFO",
+  "message": "ℹ️  Conteneur arrêté récemment (il y a 3s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 306
+}
+{
+  "timestamp": "2025-12-23T05:43:42Z",
+  "level": "INFO",
+  "message": "ℹ️  Restart interne détecté, redémarrage automatique...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 306
+}
+{
+  "timestamp": "2025-12-23T05:43:42Z",
+  "level": "INFO",
+  "message": "Attente que le conteneur grenoble-roller-staging soit running...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 306
+}
+{
+  "timestamp": "2025-12-23T05:43:42Z",
+  "level": "INFO",
+  "message": "Conteneur running, vérification stabilité... (2s/5s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 306
+}
+{
+  "timestamp": "2025-12-23T05:43:44Z",
+  "level": "INFO",
+  "message": "Attente... (2s/60s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 308
+}
+{
+  "timestamp": "2025-12-23T05:43:44Z",
+  "level": "INFO",
+  "message": "Conteneur running, vérification stabilité... (4s/5s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 308
+}
+{
+  "timestamp": "2025-12-23T05:43:46Z",
+  "level": "INFO",
+  "message": "Attente... (4s/60s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 310
+}
+{
+  "timestamp": "2025-12-23T05:43:46Z",
+  "level": "SUCCESS",
+  "message": "Conteneur grenoble-roller-staging est running et stable (6s)",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 310
+}
+{
+  "timestamp": "2025-12-23T05:43:52Z",
+  "level": "WARNING",
+  "message": "⚠️  Conteneur non running, vérification migrations via conteneur temporaire...",
+  "environment": "staging",
+  "commit": "db436fcfdfc049f3c04310ebd99d3c5860013023",
+  "deployment_id": "deploy-20251223-063835-25528",
+  "deploy_duration_seconds": 316
+}
