@@ -75,12 +75,23 @@ class EventMailer < ApplicationMailer
 
   # Email de notification qu'une place est disponible en liste d'attente
   def waitlist_spot_available(waitlist_entry)
+    # IMPORTANT : Recharger l'objet pour s'assurer que notified_at est à jour
+    # (évite les problèmes si le job est exécuté avant que la transaction soit commitée)
+    waitlist_entry.reload if waitlist_entry.persisted?
+    
     @waitlist_entry = waitlist_entry
     @event = waitlist_entry.event
     @user = waitlist_entry.user
     @is_initiation = @event.is_a?(Event::Initiation)
     @participant_name = waitlist_entry.participant_name
-    @expiration_time = waitlist_entry.notified_at + 24.hours # 24 heures pour confirmer
+    
+    # Vérifier que notified_at est présent avant de calculer expiration_time
+    if waitlist_entry.notified_at.present?
+      @expiration_time = waitlist_entry.notified_at + 24.hours # 24 heures pour confirmer
+    else
+      Rails.logger.error("WaitlistEntry #{waitlist_entry.id} has nil notified_at in waitlist_spot_available mailer")
+      @expiration_time = 24.hours.from_now # Fallback si notified_at est nil
+    end
 
     subject = if @is_initiation
       "🎉 Place disponible - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"

@@ -102,71 +102,26 @@ module Initiations
       # Pour trial/pending, il faut vérifier directement l'adhésion du parent
       parent_is_member = current_user.memberships.active_now.exists?
 
-      # Pour un enfant avec statut pending : essai gratuit OBLIGATOIRE si parent non adhérent
-      # CORRECTION MAJEURE : Le modèle Attendance considère pending comme non-membre (is_member = false)
-      # Donc l'enfant pending DOIT utiliser son essai gratuit si le parent n'est pas adhérent
-      # Si le parent est adhérent, l'enfant peut s'inscrire via le parent (is_member = true dans le contrôleur)
-      if child_membership_id.present? && child_membership&.pending?
-        # Vérifier si l'essai gratuit a déjà été utilisé (attendance active uniquement)
+      # RÈGLE MÉTIER CRITIQUE : Les essais gratuits sont NOMINATIFS
+      # Chaque enfant (pending ou trial) a droit à 1 essai gratuit, indépendamment de l'adhésion du parent
+      # L'essai gratuit est OBLIGATOIRE pour les enfants pending et trial, même si le parent est adhérent
+      if child_membership_id.present? && (child_membership&.pending? || child_membership&.trial?)
+        # Vérifier si cet enfant a déjà utilisé son essai gratuit (attendance active uniquement)
         # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
         free_trial_already_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
         
         if free_trial_already_used
           # L'essai gratuit a déjà été utilisé : l'enfant ne peut plus s'inscrire sans adhésion active
-          # même si allow_non_member_discovery est activé
-          redirect_to initiation_path(@initiation), alert: "L'essai gratuit a déjà été utilisé. Une adhésion active est maintenant requise pour s'inscrire."
+          redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit. Une adhésion active est maintenant requise pour s'inscrire."
           return
         end
         
-        # Si le parent est adhérent (parent_is_member = true), l'enfant peut s'inscrire sans essai gratuit
-        # Sinon, l'essai gratuit est OBLIGATOIRE (le modèle bloquera si free_trial_used = false)
-        # CORRECTION : Utiliser parent_is_member au lieu de is_member pour vérifier l'adhésion du parent
-        if parent_is_member
-          # Parent adhérent : l'enfant peut s'inscrire sans utiliser son essai gratuit
-          # L'essai gratuit reste disponible pour une future utilisation
-          if params[:use_free_trial] == "1"
-            attendance.free_trial_used = true
-          end
-        else
-          # Parent non adhérent : l'essai gratuit est OBLIGATOIRE pour un enfant pending
-          # Vérifier que l'essai gratuit est utilisé
-          use_free_trial = params[:use_free_trial] == "1" || 
-                           params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
-          unless use_free_trial
-            redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
-            return
-          end
-          attendance.free_trial_used = true
-        end
-      elsif child_membership_id.present? && child_membership&.trial? && !parent_is_member
-        # SÉCURITÉ CRITIQUE : Gestion essai gratuit pour les enfants avec statut trial uniquement
-        # CORRECTION MAJEURE : Utiliser parent_is_member au lieu de !is_member
-        # Pour un enfant trial, is_member est TOUJOURS false (trial n'est ni active ni pending)
-        # Donc !is_member serait TOUJOURS true, forçant l'essai même si le parent est adhérent
-        # La bonne logique : vérifier si le PARENT est adhérent (parent_is_member)
-        # Si parent adhérent : l'enfant peut s'inscrire sans essai gratuit (ACCÈS via parent)
-        # Si parent non adhérent : l'enfant DOIT utiliser son essai gratuit (obligatoire)
-        # Un enfant non adhérent (statut trial) DOIT utiliser son essai gratuit et ne peut l'utiliser qu'UNE SEULE FOIS
-        # Vérifier d'abord si cet enfant a déjà utilisé son essai gratuit (attendance active uniquement)
-        # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
-        if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
-          redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise."
-          return
-        end
-        
-        # Enfant avec statut trial : l'essai gratuit est OBLIGATOIRE
-        # Vérifier dans les paramètres (checkbox ou champ caché pour tous les préfixes possibles)
-        use_free_trial = params[:use_free_trial].present? && (params[:use_free_trial] == "1" || params[:use_free_trial] == true)
-        
-        # Si la checkbox n'est pas cochée, vérifier les champs cachés (pour tous les préfixes possibles)
+        # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif), même si le parent est adhérent
+        # Vérifier que l'essai gratuit est utilisé
+        use_free_trial = params[:use_free_trial] == "1" || 
+                         params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
         unless use_free_trial
-          # Chercher tous les champs cachés use_free_trial_hidden*
-          hidden_trial_params = params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }
-          use_free_trial = hidden_trial_params.present?
-        end
-        
-        unless use_free_trial
-          redirect_to initiation_path(@initiation), alert: "Adhésion requise. L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante."
+          redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
           return
         end
         

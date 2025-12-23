@@ -15,10 +15,48 @@ module Initiations
       wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       use_free_trial = params[:use_free_trial] == "1"
 
-      # Vérifier que l'utilisateur peut utiliser l'essai gratuit si demandé
-      if use_free_trial && current_user.attendances.active.where(free_trial_used: true).exists?
-        redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
-        return
+      # Vérifier les conditions d'essai gratuit pour les enfants
+      # RÈGLE MÉTIER : Les essais gratuits sont NOMINATIFS - chaque enfant a droit à 1 essai gratuit
+      # L'essai gratuit est OBLIGATOIRE pour les enfants pending et trial, peu importe si le parent est adhérent
+      if child_membership_id.present?
+        child_membership = current_user.memberships.find_by(id: child_membership_id, is_child_membership: true)
+        
+        unless child_membership
+          redirect_to initiation_path(@initiation), alert: "Cette adhésion enfant ne vous appartient pas."
+          return
+        end
+
+        # Pour un enfant avec statut trial OU pending : essai gratuit OBLIGATOIRE (nominatif)
+        # Chaque enfant a droit à son propre essai gratuit, indépendamment de l'adhésion du parent
+        if child_membership.trial? || child_membership.pending?
+          # Essai gratuit OBLIGATOIRE pour cet enfant
+          unless use_free_trial
+            redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
+            return
+          end
+          
+          # Vérifier si cet enfant a déjà utilisé son essai gratuit (nominatif)
+          if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+            redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit."
+            return
+          end
+        end
+
+        # Si use_free_trial est coché, vérifier que l'essai gratuit n'a pas déjà été utilisé
+        if use_free_trial
+          if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
+            redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit."
+            return
+          end
+        end
+      else
+        # Pour le parent : vérifier si le PARENT a déjà utilisé son essai gratuit (nominatif)
+        if use_free_trial
+          if current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
+            redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit."
+            return
+          end
+        end
       end
 
       if needs_equipment && roller_size.blank?
@@ -32,6 +70,25 @@ module Initiations
         end
       end
 
+      # Créer l'entrée de waitlist avec gestion des erreurs
+      waitlist_entry = WaitlistEntry.new(
+        user: current_user,
+        event: @initiation,
+        child_membership_id: child_membership_id,
+        needs_equipment: needs_equipment,
+        roller_size: roller_size,
+        wants_reminder: wants_reminder,
+        use_free_trial: use_free_trial
+      )
+
+      # Valider avant d'essayer de sauvegarder
+      unless waitlist_entry.valid?
+        error_messages = waitlist_entry.errors.full_messages.join(", ")
+        redirect_to initiation_path(@initiation), alert: "Impossible d'ajouter à la liste d'attente : #{error_messages}"
+        return
+      end
+
+      # Utiliser la méthode de classe pour créer l'entrée (gère les vérifications de doublons, etc.)
       waitlist_entry = WaitlistEntry.add_to_waitlist(
         current_user,
         @initiation,
@@ -46,7 +103,24 @@ module Initiations
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
         redirect_to initiation_path(@initiation), notice: "#{participant_name} avez été ajouté(e) à la liste d'attente. Vous serez notifié(e) par email si une place se libère."
       else
-        redirect_to initiation_path(@initiation), alert: "Impossible d'ajouter à la liste d'attente. Vérifiez que l'événement est complet et que vous n'êtes pas déjà inscrit(e) ou en liste d'attente."
+        # Vérifier les raisons possibles de l'échec
+        if @initiation.has_available_spots?
+          redirect_to initiation_path(@initiation), alert: "L'événement n'est pas complet. Vous pouvez vous inscrire directement."
+        elsif WaitlistEntry.exists?(
+          user: current_user,
+          event: @initiation,
+          child_membership_id: child_membership_id,
+          status: [ "pending", "notified" ]
+        )
+          redirect_to initiation_path(@initiation), alert: "Vous êtes déjà en liste d'attente pour cet événement."
+        elsif current_user.attendances.exists?(
+          event: @initiation,
+          child_membership_id: child_membership_id
+        )
+          redirect_to initiation_path(@initiation), alert: "Vous êtes déjà inscrit(e) à cet événement."
+        else
+          redirect_to initiation_path(@initiation), alert: "Impossible d'ajouter à la liste d'attente. Vérifiez que l'événement est complet et que vous n'êtes pas déjà inscrit(e) ou en liste d'attente."
+        end
       end
     end
 

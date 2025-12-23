@@ -121,51 +121,16 @@
 
       <div class="mt-auto">
         <div class="action-row d-flex flex-wrap gap-2">
+          <!-- Bouton Découvrir en premier (action principale) -->
+          <%= link_to(initiation_path(initiation), 
+              class: "btn btn-liquid-primary btn-sm", 
+              aria: { label: "Découvrir #{initiation.title}" }) do %>
+            <i class="bi bi-compass me-1" aria-hidden="true"></i>Découvrir
+          <% end %>
+
           <% if user_signed_in? %>
             <% if current_user_has_attendance?(initiation) %>
-              <!-- Calendrier en premier (action positive) -->
-              <%= link_to initiation_path(initiation, format: :ics), 
-                  class: "btn btn-outline-primary btn-sm", 
-                  title: 'Ajouter au calendrier',
-                  aria: { label: 'Ajouter au calendrier' } do %>
-                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
-              <% end %>
-              <!-- Se désinscrire en second (action destructive) -->
-              <% user_attendances = initiation.attendances.where(user: current_user).includes(:child_membership) %>
-              <% parent_attendance = user_attendances.find_by(child_membership_id: nil) %>
-              <% child_attendances = user_attendances.where.not(child_membership_id: nil) %>
-              <% total_attendances = (parent_attendance ? 1 : 0) + child_attendances.count %>
-              
-              <% if total_attendances > 1 %>
-                <!-- Plusieurs inscriptions : ouvrir un modal -->
-                <button type="button" 
-                    class="btn btn-outline-secondary btn-sm" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#cancelAttendanceModalInitiation<%= initiation.id %>"
-                    aria-label="Se désinscrire de cette initiation">
-                  <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
-                </button>
-              <% else %>
-                <!-- Une seule inscription : confirmation directe -->
-                <%= button_to cancel_attendance_event_path_for(initiation), 
-                    method: :delete, 
-                    class: "btn btn-outline-secondary btn-sm", 
-                    params: parent_attendance ? {} : { child_membership_id: child_attendances.first&.child_membership_id },
-                    data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
-                    aria: { label: 'Se désinscrire de cette initiation' } do %>
-                  <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
-                <% end %>
-              <% end %>
-            <% elsif policy(initiation).attend? && !initiation.full? %>
-              <!-- S'inscrire -->
-              <button type="button" 
-                      class="btn btn-liquid-primary btn-sm" 
-                      data-bs-toggle="modal" 
-                      data-bs-target="#confirmAttendModalInitiation<%= initiation.id %>"
-                      aria-label="S'inscrire à cette initiation">
-                <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>S'inscrire
-              </button>
-              <!-- Calendrier après S'inscrire -->
+              <!-- Calendrier (action positive) -->
               <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
                   title: 'Ajouter au calendrier',
@@ -173,9 +138,6 @@
                 <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
               <% end %>
             <% elsif initiation.full? %>
-              <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Initiation complète">
-                <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
-              </button>
               <!-- Calendrier même si complet -->
               <%= link_to initiation_path(initiation, format: :ics), 
                   class: "btn btn-outline-primary btn-sm", 
@@ -190,12 +152,6 @@
                 aria: { label: 'Se connecter pour s\'inscrire' } do %>
               <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Connexion
             <% end %>
-          <% end %>
-
-          <%= link_to(initiation_path(initiation), 
-              class: "btn btn-outline-secondary btn-sm", 
-              aria: { label: "Voir les détails de #{initiation.title}" }) do %>
-            <i class="bi bi-eye me-1" aria-hidden="true"></i>Voir plus
           <% end %>
         </div>
       </div>

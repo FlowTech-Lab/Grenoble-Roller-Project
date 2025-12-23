@@ -714,3 +714,255 @@ Si vous utilisez **Cursor Remote** ou **VS Code Remote** :
 2. Chercher "Forwarded Ports" ou "Ports"
 3. Fermer/supprimer le port 59691 (ou celui qui apparaît)
 
+---
+
+## 🚀 RECOMMANDATION : Solid Queue avec SQLite séparé
+
+### 📊 Analyse de Faisabilité
+
+**Date d'analyse** : 2025-12-30  
+**Statut actuel** : Solid Queue utilise PostgreSQL (base `queue` dans `database.yml`)  
+**Recommandation** : ✅ **FAISABLE ET RECOMMANDÉ**
+
+### Pourquoi cette approche ?
+
+1. **Problème actuel** : Quand tu fais un `db:reset` sur PostgreSQL, **tous les jobs en queue sont perdus**
+   - Les emails en attente d'envoi sont supprimés
+   - Les jobs récurrents doivent être recréés
+   - Perte de traçabilité des jobs en cours
+
+2. **Avantages SQLite pour la queue** :
+   - ✅ **Plus rapide** : SQLite est optimisé pour les opérations de queue (lecture/écriture séquentielles)
+   - ✅ **Résilient** : Les jobs restent intacts lors des "clear" de PostgreSQL
+   - ✅ **Simple** : Un seul fichier (`storage/solid_queue.sqlite3`) à gérer
+   - ✅ **Compatible** : Solid Queue supporte nativement SQLite (c'est même la config par défaut Rails 8)
+
+3. **Architecture multi-database existante** :
+   - Tu as déjà `primary`, `cache`, `queue`, `cable` dans `database.yml`
+   - SQLite pour `queue` s'intègre parfaitement dans cette architecture
+   - PostgreSQL reste pour les données applicatives (users, events, attendances, etc.)
+
+### ✅ Faisabilité Technique
+
+**Solid Queue supporte SQLite nativement** :
+- Rails 8 utilise SQLite par défaut pour Solid Queue
+- Configuration via `config/solid_queue.yml` (à créer)
+- Base de données SQLite dans `storage/solid_queue.sqlite3` (par défaut)
+- Compatible avec `SOLID_QUEUE_IN_PUMA=true` (déjà configuré)
+
+**Configuration actuelle** :
+- ✅ `solid_queue` gem installé (Gemfile ligne 46)
+- ✅ `SOLID_QUEUE_IN_PUMA: "true"` dans docker-compose (production/staging)
+- ✅ `config/recurring.yml` existe déjà
+- ✅ `db/queue_schema.rb` existe (PostgreSQL actuellement)
+- ⚠️ `config/solid_queue.yml` **n'existe pas encore** (à créer)
+- ⚠️ `config.active_job.queue_adapter` **n'est pas défini** (utilise le défaut)
+
+### 📋 Plan de Migration
+
+#### Étape 1 : Créer `config/solid_queue.yml`
+
+```yaml
+# config/solid_queue.yml
+
+production:
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+      concurrency_maintenance_interval: 600
+
+  workers:
+    - queues: [default, mailers]
+      threads: 5
+      processes: <%= ENV.fetch('JOB_CONCURRENCY', 1) %>
+      polling_interval: 0.5
+
+  scheduler:
+    enabled: true
+
+staging:
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+
+  workers:
+    - queues: [default, mailers]
+      threads: 3
+      processes: 1
+      polling_interval: 0.5
+
+  scheduler:
+    enabled: true
+
+development:
+  dispatchers:
+    - polling_interval: 1
+
+  workers:
+    - queues: [default, mailers]
+      threads: 2
+      processes: 1
+      polling_interval: 0.5
+
+  scheduler:
+    enabled: true
+```
+
+#### Étape 2 : Configurer SQLite pour la queue
+
+**Option A : Via `database.yml` (recommandé)** :
+
+Modifier `config/database.yml` pour utiliser SQLite pour la queue :
+
+```yaml
+production:
+  primary: &primary_production
+    <<: *default
+    # ... configuration PostgreSQL existante ...
+  
+  queue:
+    adapter: sqlite3
+    database: storage/solid_queue.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    timeout: 5000
+```
+
+**Option B : Via `config/solid_queue.yml` (alternative)** :
+
+Solid Queue peut utiliser SQLite directement sans passer par `database.yml` si on configure le chemin dans `solid_queue.yml`.
+
+#### Étape 3 : Configurer `active_job.queue_adapter`
+
+Ajouter dans `config/environments/production.rb` :
+```ruby
+config.active_job.queue_adapter = :solid_queue
+```
+
+Ajouter dans `config/environments/staging.rb` :
+```ruby
+config.active_job.queue_adapter = :solid_queue
+```
+
+Ajouter dans `config/environments/development.rb` :
+```ruby
+config.active_job.queue_adapter = :solid_queue
+```
+
+#### Étape 4 : Migrer les données (si nécessaire)
+
+Si tu as des jobs en cours dans PostgreSQL :
+1. **Option 1** : Laisser les jobs se terminer naturellement
+2. **Option 2** : Forcer l'exécution de tous les jobs avant migration :
+   ```bash
+   docker exec grenoble-roller-production bin/rails runner "SolidQueue::Job.where(finished_at: nil).find_each(&:perform_now)"
+   ```
+
+#### Étape 5 : Supprimer l'ancienne configuration PostgreSQL
+
+1. Supprimer la section `queue` de `database.yml` (ou la remplacer par SQLite)
+2. Supprimer `db/queue_schema.rb` (remplacé par SQLite)
+3. Supprimer les migrations dans `db/queue_migrate/` (si elles existent)
+
+#### Étape 6 : Créer la base SQLite
+
+```bash
+# En local
+bin/rails db:create:queue  # Si la commande existe
+# OU
+bin/rails db:migrate:queue
+
+# En Docker
+docker exec grenoble-roller-production bin/rails db:migrate:queue
+```
+
+#### Étape 7 : Vérifier que ça marche
+
+```bash
+# 1. Vérifier que la base SQLite existe
+docker exec grenoble-roller-production ls -la storage/solid_queue.sqlite3
+
+# 2. Vérifier les tables sont créées
+docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.count"
+# Doit retourner: 0 (pas d'erreur)
+
+# 3. Tester un job
+docker exec grenoble-roller-production bin/rails runner "EventReminderJob.perform_later"
+
+# 4. Vérifier que le job est dans SQLite
+docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.count"
+# Doit retourner: 1
+```
+
+### 🗑️ Comportement lors d'un "Clear"
+
+**Avant (PostgreSQL)** :
+```bash
+docker exec grenoble-roller-production rails db:reset
+# ❌ Tous les jobs en queue sont supprimés
+```
+
+**Après (SQLite)** :
+```bash
+docker exec grenoble-roller-production rails db:reset
+# ✅ PostgreSQL est réinitialisé (users, events, etc.)
+# ✅ SQLite queue reste intact (jobs préservés)
+```
+
+**Si tu veux VRAIMENT tout nuker** :
+```bash
+docker exec grenoble-roller-production bash -c "
+  rails db:drop
+  rails db:create
+  rails db:migrate
+  rm -f storage/solid_queue.sqlite3
+  rails db:migrate:queue
+"
+```
+
+### 📝 Mise à jour de `config/recurring.yml`
+
+Le fichier `config/recurring.yml` existe déjà et est correct. Aucune modification nécessaire.
+
+### ⚠️ Points d'Attention
+
+1. **Backup SQLite** : Le fichier `storage/solid_queue.sqlite3` doit être sauvegardé séparément
+   - Ajouter dans les scripts de backup
+   - Inclure dans les volumes Docker si nécessaire
+
+2. **Performance** : SQLite est excellent pour les queues mais a des limites
+   - ✅ Parfait pour < 1000 jobs/second
+   - ⚠️ Considérer PostgreSQL si > 10 000 jobs/second
+   - Pour cette application, SQLite est largement suffisant
+
+3. **Concurrence** : SQLite gère bien la concurrence en lecture
+   - Les workers Solid Queue peuvent lire simultanément
+   - Les écritures sont sérialisées (normal pour une queue)
+
+4. **Volumes Docker** : S'assurer que `storage/` est dans un volume persistant
+   - Vérifier dans `docker-compose.yml`
+   - Le fichier SQLite doit persister entre les redémarrages
+
+### ✅ Checklist de Migration
+
+- [ ] Créer `config/solid_queue.yml`
+- [ ] Modifier `config/database.yml` (section `queue` → SQLite)
+- [ ] Ajouter `config.active_job.queue_adapter = :solid_queue` dans les 3 environnements
+- [ ] Supprimer `db/queue_schema.rb` (ou le garder pour référence)
+- [ ] Créer la base SQLite : `rails db:migrate:queue`
+- [ ] Tester un job : `EventReminderJob.perform_later`
+- [ ] Vérifier que les jobs sont dans SQLite
+- [ ] Tester un "clear" : `rails db:reset` (jobs doivent rester)
+- [ ] Mettre à jour les scripts de backup pour inclure `storage/solid_queue.sqlite3`
+- [ ] Documenter dans les runbooks
+
+### 📚 Références
+
+- [Solid Queue Documentation](https://github.com/rails/solid_queue)
+- [Rails 8 Multi-Database Guide](https://guides.rubyonrails.org/active_record_multiple_databases.html)
+- [SQLite vs PostgreSQL for Queues](https://www.sqlite.org/whentouse.html)
+
+---
+
+**Date de mise à jour** : 2025-12-30  
+**Statut** : ✅ Recommandation validée, migration à planifier
+

@@ -2,8 +2,16 @@
 ###############################################################################
 # Script d'initialisation de la base de données PRODUCTION
 # Usage: ./ops/production/init-db.sh
-# Effectue: db:migrate + db:seed
+# Effectue: db:migrate (PostgreSQL) + db:migrate:queue (SQLite) + db:seed
 # ⚠️  ATTENTION: Ce script est pour PRODUCTION - utilisez avec précaution
+#
+# ⚠️  SÉPARATION DES BASES DE DONNÉES :
+#    - PostgreSQL (base principale) : users, events, attendances, etc.
+#    - SQLite (queue) : jobs Solid Queue (storage/solid_queue.sqlite3)
+#    - Les deux bases sont COMPLÈTEMENT INDÉPENDANTES
+#    - db:migrate ne touche QUE PostgreSQL
+#    - db:migrate:queue ne touche QUE SQLite
+#    - Aucune opération ne peut affecter les deux bases simultanément
 ###############################################################################
 
 set -euo pipefail
@@ -98,13 +106,42 @@ if [ "$USE_SEEDS_FILE" = "seeds_production.rb" ]; then
     fi
 fi
 
-# 3. Appliquer les migrations
-log "🔄 Application des migrations..."
+# 3. Appliquer les migrations principales (PostgreSQL)
+# ⚠️  IMPORTANT : db:migrate ne fait QUE appliquer les migrations en attente
+#    - Ne supprime AUCUNE donnée existante
+#    - Ne touche QUE la base PostgreSQL principale
+#    - La queue SQLite reste complètement intacte
+log "🔄 Application des migrations principales (PostgreSQL)..."
+log_info "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente"
+log_info "   ℹ️  Aucune donnée existante ne sera supprimée"
 if docker exec "$CONTAINER_NAME" bin/rails db:migrate 2>&1 | tee -a /tmp/init-db-prod.log; then
-    log_success "✅ Migrations appliquées avec succès"
+    log_success "✅ Migrations principales appliquées avec succès"
 else
-    log_error "❌ Échec des migrations"
+    log_error "❌ Échec des migrations principales"
     exit 1
+fi
+
+# 3.1. Appliquer les migrations de la queue SQLite (Solid Queue)
+# ⚠️  IMPORTANT : db:migrate:queue est complètement SÉPARÉ de PostgreSQL
+#    - Ne touche QUE le fichier SQLite (storage/solid_queue.sqlite3)
+#    - Ne touche PAS la base PostgreSQL
+#    - Les jobs en queue restent intacts
+log "🔄 Application des migrations de la queue SQLite (Solid Queue)..."
+log_info "   ℹ️  db:migrate:queue est SÉPARÉ : ne touche QUE SQLite, pas PostgreSQL"
+log_info "   ℹ️  Les jobs en queue restent intacts"
+# S'assurer que le répertoire storage existe
+docker exec "$CONTAINER_NAME" mkdir -p /rails/storage 2>/dev/null || true
+
+if docker exec "$CONTAINER_NAME" bin/rails db:migrate:queue 2>&1 | tee -a /tmp/init-db-prod.log; then
+    log_success "✅ Migrations de la queue SQLite appliquées avec succès"
+else
+    # Ne pas faire échouer si la queue n'est pas encore configurée (première installation)
+    if docker exec "$CONTAINER_NAME" bin/rails db:migrate:queue 2>&1 | grep -qiE "database.*does not exist|no such file|queue.*not.*configured"; then
+        log_warning "⚠️  Base de données queue SQLite non configurée (normal pour première installation)"
+        log_info "💡 La queue SQLite sera créée automatiquement au premier usage"
+    else
+        log_warning "⚠️  Échec des migrations de la queue SQLite (non bloquant)"
+    fi
 fi
 
 # 4. Seed de la base de données

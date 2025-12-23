@@ -5,7 +5,6 @@
     <div class="status-table-header">
       <div class="status-col-person">Personne</div>
       <div class="status-col-status">Statut</div>
-      <div class="status-col-action">Action</div>
     </div>
 
     <!-- Contenu du tableau -->
@@ -40,14 +39,6 @@
             </span>
           <% end %>
         </div>
-        
-        <div class="status-cell status-col-action text-center">
-          <% if parent_has_active || !parent_free_trial_used %>
-            <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-          <% else %>
-            <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
-          <% end %>
-        </div>
       </div>
 
       <!-- ENFANTS -->
@@ -58,11 +49,9 @@
             <div class="status-cell status-col-person">
               <span class="status-badge-person">
                 <i class="bi bi-person text-liquid-primary me-2" aria-hidden="true"></i>
-                <div>
-                  <strong><%= child.child_first_name %></strong>
-                  <br>
-                  <small class="text-muted"><%= child.child_last_name %></small>
-                </div>
+                <span>
+                  <strong><%= child.child_first_name %></strong> <small class="text-muted"><%= child.child_last_name %></small>
+                </span>
               </span>
             </div>
             
@@ -118,23 +107,6 @@
                   <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>
                   Expiré
                 </span>
-              <% end %>
-            </div>
-            
-            <div class="status-cell status-col-action text-center">
-              <% if child.status == 'active' %>
-                <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-              <% elsif child.status == 'expired' %>
-                <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
-              <% elsif current_user.memberships.active_now.exists? %>
-                <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-              <% else %>
-                <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
-                <% if child_free_trial_used %>
-                  <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
-                <% else %>
-                  <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-                <% end %>
               <% end %>
             </div>
           </div>

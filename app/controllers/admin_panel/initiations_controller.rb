@@ -162,13 +162,35 @@ module AdminPanel
     def toggle_volunteer
       attendance = @initiation.attendances.find_by(id: params[:attendance_id])
 
-      if attendance&.update(is_volunteer: !attendance.is_volunteer)
+      unless attendance
+        redirect_to admin_panel_initiation_path(@initiation),
+                    alert: 'Inscription introuvable'
+        return
+      end
+
+      # Vérifier si l'événement était complet avant le changement
+      was_full = @initiation.full?
+      new_volunteer_status = !attendance.is_volunteer
+      is_adding_volunteer = new_volunteer_status # Si on passe de participant à bénévole, on libère une place
+
+      if attendance.update(is_volunteer: new_volunteer_status)
+        # Recharger l'événement pour avoir le bon comptage après le changement
+        @initiation.reload
+
+        # Si l'événement était complet et qu'on ajoute un bénévole (libère une place)
+        # Alors notifier la première personne en liste d'attente
+        if was_full && is_adding_volunteer && @initiation.has_available_spots?
+          # Notifier la première personne en liste d'attente
+          WaitlistEntry.notify_next_in_queue(@initiation, count: 1)
+          Rails.logger.info("Volunteer added for attendance #{attendance.id}, notifying waitlist for initiation #{@initiation.id}")
+        end
+
         status = attendance.is_volunteer? ? 'ajouté' : 'retiré'
         redirect_to admin_panel_initiation_path(@initiation),
                     notice: "Statut bénévole #{status}"
       else
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Inscription introuvable'
+                    alert: 'Impossible de modifier le statut bénévole'
       end
     end
 

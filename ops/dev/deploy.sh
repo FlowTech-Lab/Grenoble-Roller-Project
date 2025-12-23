@@ -309,8 +309,12 @@ log_info "État du conteneur avant migrations :"
 docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
 
 # En dev, utiliser db:reset pour éviter les problèmes d'ordre de migrations
-# db:reset fait : db:drop, db:create, db:schema:load, db:seed
+# ⚠️  IMPORTANT : db:reset ne touche QUE PostgreSQL (base principale)
+#    - db:reset fait : db:drop, db:create, db:schema:load, db:seed
+#    - db:reset ne touche PAS la queue SQLite (complètement séparée)
+#    - Les jobs en queue SQLite restent intacts même après db:reset
 log "🔄 Réinitialisation de la base de données (dev) avec db:reset..."
+log_info "   ℹ️  db:reset ne touche QUE PostgreSQL, pas la queue SQLite"
 if ! docker exec "${CONTAINER_NAME}" bin/rails db:reset; then
     log_error "Échec de db:reset"
     log_warning "Tentative avec db:migrate en fallback..."
@@ -331,6 +335,25 @@ if ! docker exec "${CONTAINER_NAME}" bin/rails db:reset; then
     log_success "Migrations appliquées (fallback db:migrate)"
 else
     log_success "Base de données réinitialisée avec succès (db:reset)"
+fi
+
+# Appliquer les migrations de la queue SQLite (Solid Queue)
+# ⚠️  IMPORTANT : db:reset ne touche PAS SQLite (complètement séparé)
+#    - db:reset ne fait QUE : db:drop, db:create, db:schema:load, db:seed sur PostgreSQL
+#    - La queue SQLite reste intacte même après db:reset
+#    - On doit migrer la queue séparément si nécessaire
+log "🔄 Application des migrations de la queue SQLite (Solid Queue)..."
+log_info "   ℹ️  La queue SQLite est SÉPARÉE : db:reset ne l'a pas touchée"
+log_info "   ℹ️  Les jobs en queue restent intacts"
+# S'assurer que le répertoire storage existe
+docker exec "${CONTAINER_NAME}" mkdir -p /rails/storage 2>/dev/null || true
+
+if docker exec "${CONTAINER_NAME}" bin/rails db:migrate:queue 2>&1 | tee -a "$LOG_FILE"; then
+    log_success "✅ Migrations de la queue SQLite appliquées avec succès"
+else
+    # Ne pas faire échouer si la queue n'est pas encore configurée (première installation)
+    log_warning "⚠️  Échec des migrations de la queue SQLite (non bloquant en dev)"
+    log_info "💡 La queue SQLite sera créée automatiquement au premier usage"
 fi
 
 # 11. Health check HTTP (double vérification)
