@@ -2332,10 +2332,6 @@
     background: rgba(0, 123, 255, 0.85) !important;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    
-    [data-bs-theme="dark"] & {
-      background: rgba(77, 148, 255, 0.85) !important;
-    }
   }
   
   .card-event-date.badge-liquid-secondary {
