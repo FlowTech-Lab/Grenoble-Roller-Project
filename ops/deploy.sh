@@ -305,50 +305,13 @@ main() {
         log_warning "   - Image ancienne (>24h)"
         log_warning "   - Conteneur n'existe pas"
         
-        # Demander confirmation selon l'environnement
-        # PRODUCTION : défaut OUI, timeout 120s
-        # STAGING : défaut NON, timeout 120s
-        local default_answer="yes"
-        if [ "${ENV:-}" = "staging" ]; then
-            default_answer="no"
-        fi
-        
-        if ! prompt_with_timeout "Voulez-vous effectuer un rebuild complet sans cache ?" 120 "$default_answer"; then
-            log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            log_error "❌ Rebuild annulé par l'opérateur"
-            log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            log_warning "💡 Le conteneur sera redémarré sans rebuild"
-            log_warning "   Si des problèmes persistent, relancer avec --force"
-            
-            # Redémarrer le conteneur sans rebuild
-            if container_exists "$CONTAINER_NAME"; then
-                log_info "Redémarrage du conteneur existant..."
-                $DOCKER_CMD compose -f "$COMPOSE_FILE" restart "$CONTAINER_NAME" 2>&1 || {
-                    log_error "Échec du redémarrage"
-                    rollback "$CURRENT_COMMIT"
-                    exit 1
-                }
-                
-                # Attendre que le conteneur démarre
-                if ! wait_for_container_running "$CONTAINER_NAME" 120; then
-                    log_error "❌ Le conteneur n'a pas redémarré"
-                    rollback "$CURRENT_COMMIT"
-                    exit 1
-                fi
-            else
-                log_error "❌ Conteneur n'existe pas, rebuild obligatoire"
-                rollback "$CURRENT_COMMIT"
-                exit 1
-            fi
-        else
-            # Confirmation obtenue, rebuild complet
-            log "🔨 Build SANS CACHE (confirmé par l'opérateur)..."
-            log_warning "⚠️  Rebuild complet sans cache (peut prendre 5-10 minutes)"
-            if ! force_rebuild_without_cache "$COMPOSE_FILE" "$CONTAINER_NAME"; then
-                log_error "Échec du build - Rollback"
-                rollback "$CURRENT_COMMIT"
-                exit 1
-            fi
+        # Rebuild directement sans confirmation (confirmation demandée seulement en cas de rollback)
+        log "🔨 Build SANS CACHE..."
+        log_warning "⚠️  Rebuild complet sans cache (peut prendre 5-10 minutes)"
+        if ! force_rebuild_without_cache "$COMPOSE_FILE" "$CONTAINER_NAME"; then
+            log_error "Échec du build - Rollback"
+            rollback "$CURRENT_COMMIT"
+            exit 1
         fi
     else
         log_success "✅ Pas besoin de rebuild (restart interne ou pas de changements critiques)"
