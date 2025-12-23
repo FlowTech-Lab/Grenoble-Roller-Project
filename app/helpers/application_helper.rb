@@ -1,5 +1,6 @@
 module ApplicationHelper
   include ActionView::Helpers::TextHelper
+  include Pagy::Frontend
 
   # Alias de la méthode originale pluralize avant surcharge
   alias_method :original_pluralize, :pluralize
