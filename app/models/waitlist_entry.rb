@@ -60,12 +60,18 @@ class WaitlistEntry < ApplicationRecord
     bypass_validations_if_initiation(attendance)
 
     if attendance.save(validate: false) # Sauvegarder sans validation pour éviter les erreurs d'autorisation
+      notified_time = Time.current
       update!(
         status: "notified",
-        notified_at: Time.current
+        notified_at: notified_time
       )
 
-      # Envoyer l'email immédiatement (pas en queue) pour s'assurer qu'il est envoyé
+      # IMPORTANT : Recharger l'objet pour s'assurer que notified_at est bien chargé
+      # avant d'envoyer l'email (évite les problèmes de cache/transaction)
+      reload
+
+      # Envoyer l'email via deliver_later (asynchrone via SolidQueue)
+      # Le reload ci-dessus garantit que notified_at est disponible dans le mailer
       send_notification_email
       Rails.logger.info("WaitlistEntry #{id} notified and pending attendance #{attendance.id} created for event #{event.id} (user: #{user_id})")
       true

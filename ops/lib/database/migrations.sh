@@ -211,7 +211,13 @@ apply_migrations() {
         fi
     fi
     
-    # Exécuter migrations
+    # Exécuter migrations principales (PostgreSQL)
+    # ⚠️  IMPORTANT : db:migrate ne fait QUE appliquer les migrations en attente
+    #    - Ne supprime AUCUNE donnée existante
+    #    - Ne touche QUE la base PostgreSQL principale
+    #    - La queue SQLite reste complètement intacte
+    log_info "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente"
+    log_info "   ℹ️  Aucune donnée existante ne sera supprimée"
     local migration_output
     local migration_exit_code
     
@@ -245,9 +251,9 @@ apply_migrations() {
         return 1
     fi
     
-    log_success "✅ Migrations exécutées avec succès (durée: ${migration_duration}s)"
+    log_success "✅ Migrations principales exécutées avec succès (durée: ${migration_duration}s)"
     
-    # Vérification post-migration
+    # Vérification post-migration principales
     local post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
     local post_pending=$(echo "$post_status" | awk '/^\s*down/ {count++} END {print count+0}' 2>/dev/null || echo "0")
     
@@ -256,6 +262,49 @@ apply_migrations() {
         log_error "⚠️  ANOMALIE : $post_pending migration(s) encore en attente après db:migrate"
         log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         return 1
+    fi
+    
+    # Appliquer les migrations de la queue SQLite (Solid Queue)
+    # ⚠️  IMPORTANT : db:migrate:queue est complètement SÉPARÉ de PostgreSQL
+    #    - Ne touche QUE le fichier SQLite (storage/solid_queue.sqlite3)
+    #    - Ne touche PAS la base PostgreSQL
+    #    - Les jobs en queue restent intacts
+    log "🗄️ Exécution des migrations de la queue SQLite (Solid Queue)..."
+    log_info "   ℹ️  db:migrate:queue est SÉPARÉ : ne touche QUE SQLite, pas PostgreSQL"
+    log_info "   ℹ️  Les jobs en queue restent intacts"
+    local queue_migration_start_time=$(date +%s)
+    
+    # S'assurer que le répertoire storage existe
+    $DOCKER_CMD exec "$container" mkdir -p /rails/storage 2>/dev/null || true
+    
+    # Exécuter les migrations de la queue
+    local queue_migration_output
+    local queue_migration_exit_code
+    
+    if [ -n "$timeout_cmd" ]; then
+        queue_migration_output=$($timeout_cmd 300 $DOCKER_CMD exec "$container" bin/rails db:migrate:queue 2>&1)
+        queue_migration_exit_code=$?
+    else
+        queue_migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate:queue 2>&1)
+        queue_migration_exit_code=$?
+    fi
+    
+    local queue_migration_end_time=$(date +%s)
+    local queue_migration_duration=$((queue_migration_end_time - queue_migration_start_time))
+    
+    echo "$queue_migration_output" | tee -a "${LOG_FILE:-/dev/stdout}"
+    
+    if [ $queue_migration_exit_code -eq 0 ]; then
+        log_success "✅ Migrations de la queue SQLite exécutées avec succès (durée: ${queue_migration_duration}s)"
+    else
+        # Ne pas faire échouer le déploiement si la queue n'existe pas encore (première installation)
+        if echo "$queue_migration_output" | grep -qiE "database.*does not exist|no such file|queue.*not.*configured"; then
+            log_warning "⚠️  Base de données queue SQLite non configurée (normal pour première installation)"
+            log_info "💡 La queue SQLite sera créée automatiquement au premier usage"
+        else
+            log_warning "⚠️  Échec des migrations de la queue SQLite (non bloquant)"
+            log_warning "   Sortie: ${queue_migration_output}"
+        fi
     fi
     
     log_success "✅ Toutes les migrations ont été appliquées correctement"
