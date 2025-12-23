@@ -86,6 +86,9 @@ class EventMailer < ApplicationMailer
     @is_initiation = @event.is_a?(Event::Initiation)
     @participant_name = waitlist_entry.participant_name
     
+    # Générer le token sécurisé pour les liens d'acceptation/refus (valide 24h)
+    @confirmation_token = waitlist_entry.confirmation_token
+    
     # Vérifier que notified_at est présent avant de calculer expiration_time
     if waitlist_entry.notified_at.present?
       @expiration_time = waitlist_entry.notified_at + 24.hours # 24 heures pour confirmer

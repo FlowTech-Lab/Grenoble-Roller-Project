@@ -52,6 +52,37 @@ class WaitlistEntry < ApplicationRecord
     child_membership_id.present?
   end
 
+  # Génère un token sécurisé pour l'acceptation/refus via email (valide 24h)
+  # Utilise Rails MessageVerifier avec expiration pour sécurité maximale
+  def confirmation_token
+    verifier = Rails.application.message_verifier("waitlist_entry_confirmation")
+    verifier.generate([id, notified_at.to_i], expires_in: 24.hours)
+  end
+
+  # Trouve un WaitlistEntry à partir d'un token sécurisé
+  # Retourne nil si token invalide ou expiré
+  def self.find_by_confirmation_token(token)
+    return nil if token.blank?
+    
+    begin
+      verifier = Rails.application.message_verifier("waitlist_entry_confirmation")
+      entry_id, notified_at_timestamp = verifier.verify(token)
+      
+      entry = find(entry_id)
+      # Vérifier que le notified_at correspond (évite la réutilisation d'anciens tokens)
+      return entry if entry.notified_at&.to_i == notified_at_timestamp
+      
+      nil
+    rescue ActiveSupport::MessageVerifier::InvalidSignature, ActiveRecord::RecordNotFound
+      nil
+    end
+  end
+
+  # Vérifie si le token est encore valide (pas expiré et waitlist_entry en statut notified)
+  def token_valid?
+    notified? && notified_at.present? && notified_at > 24.hours.ago
+  end
+
   def notify!
     return false unless pending?
 
