@@ -104,7 +104,8 @@ module Initiations
         redirect_to initiation_path(@initiation), notice: "#{participant_name} avez été ajouté(e) à la liste d'attente. Vous serez notifié(e) par email si une place se libère."
       else
         # Vérifier les raisons possibles de l'échec
-        if @initiation.has_available_spots?
+        # Utiliser !full? au lieu de has_available_spots? pour être cohérent avec la validation du modèle
+        if !@initiation.full?
           redirect_to initiation_path(@initiation), alert: "L'événement n'est pas complet. Vous pouvez vous inscrire directement."
         elsif WaitlistEntry.exists?(
           user: current_user,

@@ -142,7 +142,10 @@ class WaitlistEntry < ApplicationRecord
   # ==================== MÉTHODES DE CLASSE ====================
 
   def self.add_to_waitlist(user, event, child_membership_id: nil, needs_equipment: false, roller_size: nil, wants_reminder: false, use_free_trial: false)
-    return nil if event.has_available_spots?
+    # Utiliser !full? au lieu de !has_available_spots? pour être cohérent avec la validation event_is_full
+    # Pour les initiations, full? utilise available_places qui inclut les "pending" dans participants_count
+    # has_available_spots? exclut les "pending", ce qui crée une incohérence
+    return nil unless event.full?
 
     # Vérifier si déjà en liste d'attente
     existing = find_by(
