@@ -1,9 +1,9 @@
 # Configuration for Solid Queue
-# Solid Queue uses the primary database connection by default
+# Solid Queue utilise SQLite séparé (configuré dans database.yml)
+# ⚠️  IMPORTANT : La queue SQLite est complètement séparée de PostgreSQL
+#    - Les jobs en queue restent intacts lors des opérations PostgreSQL
+#    - Le fichier SQLite est dans storage/solid_queue.sqlite3
 
-# In development/test, Solid Queue is disabled or uses async adapter (no DB needed)
-# In staging/production, Solid Queue uses the primary database connection by default
-# Only configure connects_to if using a separate queue database (not used in this project)
-
-# No configuration needed - Solid Queue will use the primary database connection
-# This works for both staging and production
+# Solid Queue détecte automatiquement la configuration queue dans database.yml
+# Pas besoin de configurer connects_to manuellement si queue est défini dans database.yml
+# Rails utilisera automatiquement la base "queue" pour Solid Queue

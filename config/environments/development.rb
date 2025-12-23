@@ -83,6 +83,10 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
+  # Use Solid Queue as the queuing backend for Active Job (en développement aussi)
+  # Solid Queue utilise SQLite séparé (configuré dans database.yml section queue)
+  config.active_job.queue_adapter = :solid_queue
+
   # Bullet gem configuration for N+1 query detection
   config.after_initialize do
     require "bullet"
