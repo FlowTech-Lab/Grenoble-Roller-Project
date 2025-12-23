@@ -11,6 +11,10 @@
 #    - db:migrate ne touche QUE PostgreSQL
 #    - db:migrate:queue ne touche QUE SQLite
 #    - Aucune opération ne peut affecter les deux bases simultanément
+#
+# ⚠️  IMPORTANT : Ce script nécessite que le conteneur soit running
+#    - Si le conteneur s'arrête (Solid Queue crash), redémarrer d'abord
+#    - Le docker-entrypoint applique automatiquement les migrations SQLite au démarrage
 ###############################################################################
 
 set -euo pipefail

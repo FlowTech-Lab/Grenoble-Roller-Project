@@ -13,6 +13,19 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
     echo "Warning: db:prepare failed, trying db:migrate..."
     ./bin/rails db:migrate || echo "Warning: db:migrate also failed, continuing anyway..."
   }
+  
+  # ⚠️  IMPORTANT : Préparer la queue SQLite AVANT que Solid Queue démarre
+  #    - Solid Queue s'arrête si les tables SQLite n'existent pas
+  #    - On doit créer/migrer la queue SQLite avant le démarrage du serveur
+  #    - Cela évite que le conteneur crash au démarrage
+  echo "Preparing SQLite queue database (Solid Queue)..."
+  # S'assurer que le répertoire storage existe
+  mkdir -p storage 2>/dev/null || true
+  
+  # Migrer la queue SQLite (non bloquant si pas encore configurée)
+  ./bin/rails db:migrate:queue 2>&1 || {
+    echo "Warning: db:migrate:queue failed (queue may not be configured yet or will be created on first use)"
+  }
 fi
 
 # Force CSS rebuild in development environment on startup

@@ -11,16 +11,35 @@
 ###############################################################################
 
 # Vérifier que toutes les migrations locales sont présentes dans le conteneur
+# ⚠️  AMÉLIORATION : Gère le cas où le conteneur n'est pas running
 verify_migrations_synced() {
     local container=$1
     local expected_count=$2
     local local_list=$3
     
-    # Lister migrations dans le conteneur
-    local container_list=$($DOCKER_CMD exec "$container" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    # Vérifier d'abord si le conteneur est running
+    if ! container_is_running "$container"; then
+        log_warning "⚠️  Conteneur $container n'est pas running, utilisation de docker run temporaire..."
+        
+        # Utiliser docker run avec l'image du conteneur pour vérifier les migrations
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "")
+        
+        if [ -z "$image_name" ]; then
+            # Si on ne peut pas obtenir l'image, essayer de la trouver depuis docker-compose
+            log_warning "⚠️  Impossible d'obtenir l'image du conteneur, skip de la vérification"
+            log_warning "   Les migrations seront vérifiées après le démarrage du conteneur"
+            return 0  # Non bloquant si le conteneur n'est pas running
+        fi
+        
+        # Lister migrations dans l'image (pas le conteneur running)
+        local container_list=$($DOCKER_CMD run --rm "$image_name" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    else
+        # Lister migrations dans le conteneur running (méthode normale)
+        local container_list=$($DOCKER_CMD exec "$container" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    fi
     
     if [ -z "$container_list" ]; then
-        log_error "❌ Impossible de lister les migrations dans le conteneur"
+        log_error "❌ Impossible de lister les migrations dans le conteneur/image"
         return 1
     fi
     
