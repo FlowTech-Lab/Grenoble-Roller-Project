@@ -258,8 +258,21 @@ apply_migrations() {
             fi
             
             if [ -z "$image_name" ]; then
-                # Dernier recours : utiliser le nom du conteneur comme base
-                image_name="${container%-*}-web" || image_name="staging-web"
+                # Dernier recours : déduire depuis le nom du conteneur
+                # Format attendu: grenoble-roller-{env} -> {env}-web
+                if [[ "$container" == *"-staging"* ]]; then
+                    image_name="staging-web"
+                elif [[ "$container" == *"-production"* ]]; then
+                    image_name="production-web"
+                else
+                    # Extraire l'environnement depuis le nom du conteneur
+                    local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                    if [ -n "$env_suffix" ]; then
+                        image_name="${env_suffix}-web"
+                    else
+                        image_name="staging-web"  # Fallback par défaut
+                    fi
+                fi
             fi
         fi
         
@@ -270,7 +283,25 @@ apply_migrations() {
         
         if [ -z "$network_name" ]; then
             # Essayer de trouver le réseau depuis docker-compose
-            network_name=$(basename "$(dirname "$(readlink -f "${COMPOSE_FILE:-}")")")"_default" 2>/dev/null || echo "staging_default")
+            if [ -n "${COMPOSE_FILE:-}" ] && [ -f "${COMPOSE_FILE}" ]; then
+                local compose_dir=$(dirname "$(readlink -f "${COMPOSE_FILE}" 2>/dev/null || echo "${COMPOSE_FILE}")")
+                network_name="$(basename "$compose_dir")_default"
+            else
+                # Déduire depuis le nom du conteneur
+                if [[ "$container" == *"-staging"* ]]; then
+                    network_name="staging_default"
+                elif [[ "$container" == *"-production"* ]]; then
+                    network_name="production_default"
+                else
+                    # Extraire l'environnement depuis le nom du conteneur
+                    local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                    if [ -n "$env_suffix" ]; then
+                        network_name="${env_suffix}_default"
+                    else
+                        network_name="staging_default"  # Fallback par défaut
+                    fi
+                fi
+            fi
         fi
         
         # Obtenir DATABASE_URL depuis le conteneur ou docker-compose
@@ -348,8 +379,32 @@ apply_migrations() {
         post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
     else
         # Utiliser le même mécanisme que pour apply_migrations
-        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "staging-web")
-        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$container" 2>/dev/null | head -1 || echo "staging_default")
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "")
+        if [ -z "$image_name" ]; then
+            # Déduire depuis le nom du conteneur
+            if [[ "$container" == *"-staging"* ]]; then
+                image_name="staging-web"
+            elif [[ "$container" == *"-production"* ]]; then
+                image_name="production-web"
+            else
+                local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                image_name="${env_suffix:-staging}-web"
+            fi
+        fi
+        
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$container" 2>/dev/null | head -1 || echo "")
+        if [ -z "$network_name" ]; then
+            # Déduire depuis le nom du conteneur
+            if [[ "$container" == *"-staging"* ]]; then
+                network_name="staging_default"
+            elif [[ "$container" == *"-production"* ]]; then
+                network_name="production_default"
+            else
+                local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                network_name="${env_suffix:-staging}_default"
+            fi
+        fi
+        
         local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
         
         post_status=$($DOCKER_CMD run --rm --network "$network_name" \

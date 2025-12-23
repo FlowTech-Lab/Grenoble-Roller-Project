@@ -592,8 +592,30 @@ main() {
     else
         log_warning "⚠️  Conteneur non running, vérification migrations via conteneur temporaire..."
         # Obtenir l'image et le réseau
-        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$CONTAINER_NAME" 2>/dev/null || echo "staging-web")
-        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$CONTAINER_NAME" 2>/dev/null | head -1 || echo "staging_default")
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
+        if [ -z "$image_name" ]; then
+            # Déduire depuis l'environnement ou le nom du conteneur
+            if [[ "$CONTAINER_NAME" == *"-staging"* ]]; then
+                image_name="staging-web"
+            elif [[ "$CONTAINER_NAME" == *"-production"* ]]; then
+                image_name="production-web"
+            else
+                image_name="${ENV:-staging}-web"
+            fi
+        fi
+        
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$CONTAINER_NAME" 2>/dev/null | head -1 || echo "")
+        if [ -z "$network_name" ]; then
+            # Déduire depuis l'environnement ou le nom du conteneur
+            if [[ "$CONTAINER_NAME" == *"-staging"* ]]; then
+                network_name="staging_default"
+            elif [[ "$CONTAINER_NAME" == *"-production"* ]]; then
+                network_name="production_default"
+            else
+                network_name="${ENV:-staging}_default"
+            fi
+        fi
+        
         local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
         
         migration_status=$($DOCKER_CMD run --rm --network "$network_name" \

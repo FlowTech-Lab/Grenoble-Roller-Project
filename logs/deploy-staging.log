@@ -14427,3 +14427,42 @@ failed to solve: failed to do request: Head "https://registry-1.docker.io/v2/lib
 [1;33m[2025-12-23 04:17:17] WARNING: Voulez-vous relancer l'ancien conteneur (rollback) ?[0m
 [1;33m[2025-12-23 04:17:17] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 [1;33m[2025-12-23 04:17:17] WARNING: Timeout: 120 secondes (défaut: NO)[0m
+[2025-12-23 06:37:41] INFO: 🔐 Master key chargée depuis config/master.key (dev)
+[2025-12-23 06:37:41] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-23 06:37:41] 🚀 DEPLOYMENT START - staging - 2025-12-23 06:37:41
+[2025-12-23 06:37:41] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2025-12-23 06:37:41] 🧹 Nettoyage préventif Docker...
+[2025-12-23 06:37:41] INFO: Détection et arrêt des conteneurs orphelins (ancienne config Nginx/Certbot)...
+[2025-12-23 06:37:41] INFO: ✅ Aucun conteneur orphelin détecté (ancienne config propre)
+[2025-12-23 06:37:41] INFO: Images sans tag nettoyées
+[2025-12-23 06:37:46] INFO: Cache build nettoyé
+[2025-12-23 06:37:46] 📥 Vérification des mises à jour (branche: staging)...
+[2025-12-23 06:37:46] ✅ Déjà à jour (commit: 3846be0)
+[1;33m[2025-12-23 06:37:46] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 06:37:47] WARNING: ⚠️  Déjà à jour - Voulez-vous forcer le redéploiement ?[0m
+[1;33m[2025-12-23 06:37:47] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[2025-12-23 06:37:48] 💾 Commit actuel sauvegardé: 3846be0
+[2025-12-23 06:37:48] 📦 Backup base de données (chiffrement: true)...
+[0;32m[2025-12-23 06:37:48] SUCCESS: ✅ Clé de chiffrement récupérée depuis master.key (host)[0m
+[2025-12-23 06:37:48] INFO:    Exécution de pg_dump sur grenoble-roller-db-staging...
+[0;32m[2025-12-23 06:37:48] SUCCESS: ✅ Backup chiffré créé: db_20251223_063748.sql.enc (128K)[0m
+[2025-12-23 06:37:48] 📥 Mise à jour du code...
+[0;31m[2025-12-23 06:37:49] ERROR: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;31m[2025-12-23 06:37:49] ERROR: ⚠️  CONFLITS OU CHANGEMENTS NON COMMITTÉS DÉTECTÉS[0m
+[0;31m[2025-12-23 06:37:49] ERROR: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 06:37:49] WARNING: 🔄 Rollback transactionnel vers commit 3846be0...[0m
+[2025-12-23 06:37:49] INFO: ✅ Espace disque OK : 51GB disponible
+[2025-12-23 06:37:49] INFO: 🔒 Activation du mode maintenance avant rollback...
+[2025-12-23 06:37:49] INFO: 🛑 Arrêt de l'application pour éviter corruption...
+[2025-12-23 06:37:49] INFO: 📦 Restauration DB depuis backup...
+[2025-12-23 06:37:49] INFO: Restauration depuis backup chiffré: db_20251223_063748.sql.enc
+[0;32m[2025-12-23 06:37:50] SUCCESS: ✅ Clé de chiffrement récupérée depuis master.key (host)[0m
+[0;32m[2025-12-23 06:37:50] SUCCESS: ✅ Base de données restaurée depuis backup chiffré[0m
+[2025-12-23 06:37:50] INFO: 📝 Restauration du code vers 3846be0...
+[1;33m[2025-12-23 06:37:50] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 06:37:50] WARNING: 🔄 Le déploiement a échoué, rollback vers l'ancienne version[0m
+[1;33m[2025-12-23 06:37:50] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 06:37:50] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 06:37:50] WARNING: Voulez-vous relancer l'ancien conteneur (rollback) ?[0m
+[1;33m[2025-12-23 06:37:50] WARNING: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[1;33m[2025-12-23 06:37:50] WARNING: Timeout: 120 secondes (défaut: NO)[0m
