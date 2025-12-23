@@ -5,5 +5,5 @@
 #    - Le fichier SQLite est dans storage/solid_queue.sqlite3
 
 # Solid Queue détecte automatiquement la configuration queue dans database.yml
-# Pas besoin de configurer connects_to manuellement si queue est défini dans database.yml
-# Rails utilisera automatiquement la base "queue" pour Solid Queue
+# La configuration explicite se fait dans config/environments/*.rb avec :
+# config.solid_queue.connects_to = { database: { writing: :queue, reading: :queue } }
