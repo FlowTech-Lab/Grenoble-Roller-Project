@@ -86,6 +86,17 @@ class MembershipsController < ApplicationController
         redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement avant d'en créer une nouvelle."
         return
       end
+
+      # Vérifier adhésion expired avec paiement abandoned
+      expired_with_abandoned = existing_memberships.find do |m|
+        m.expired? && m.payment&.provider == "helloasso" && m.payment.status == "abandoned"
+      end
+      if expired_with_abandoned
+        redirect_to membership_path(expired_with_abandoned), 
+                    alert: "Vous avez une adhésion expirée avec un paiement abandonné pour cette saison. " \
+                           "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau si vous rencontrez des difficultés."
+        return
+      end
     end
 
     @type = type
@@ -777,10 +788,58 @@ class MembershipsController < ApplicationController
       redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso : #{e.message}. Veuillez réessayer ou contacter le support."
       nil
     end
+  rescue ActiveRecord::RecordNotUnique => e
+    # Gérer l'erreur de contrainte unique (adhésion déjà existante pour cette saison)
+    Rails.logger.error("[MembershipsController] Erreur de contrainte unique lors de la création de l'adhésion : #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    
+    current_season = Membership.current_season_name
+    existing_membership = current_user.memberships.personal.find_by(season: current_season)
+    
+    if existing_membership
+      if existing_membership.expired? && existing_membership.payment&.status == "abandoned"
+        redirect_to membership_path(existing_membership), 
+                    alert: "Vous avez déjà une adhésion pour cette saison avec un paiement abandonné. " \
+                           "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau pour obtenir de l'aide."
+      else
+        redirect_to membership_path(existing_membership), 
+                    alert: "Une adhésion existe déjà pour cette saison. " \
+                           "Si vous rencontrez un problème, veuillez contacter un membre du bureau."
+      end
+    else
+      redirect_to new_membership_path, 
+                  alert: "Une erreur est survenue lors de la création de l'adhésion. " \
+                         "Il semble qu'une adhésion existe déjà pour cette saison. " \
+                         "Veuillez contacter un membre du bureau si le problème persiste."
+    end
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+    
+    # Vérifier si c'est une erreur de contrainte unique PostgreSQL
+    if e.message.include?("duplicate key") || e.message.include?("UniqueViolation")
+      current_season = Membership.current_season_name
+      existing_membership = current_user.memberships.personal.find_by(season: current_season)
+      
+      if existing_membership
+        if existing_membership.expired? && existing_membership.payment&.status == "abandoned"
+          redirect_to membership_path(existing_membership), 
+                      alert: "Vous avez déjà une adhésion pour cette saison avec un paiement abandonné. " \
+                             "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau pour obtenir de l'aide."
+        else
+          redirect_to membership_path(existing_membership), 
+                      alert: "Une adhésion existe déjà pour cette saison. " \
+                             "Si vous rencontrez un problème, veuillez contacter un membre du bureau."
+        end
+      else
+        redirect_to new_membership_path, 
+                    alert: "Une erreur est survenue lors de la création de l'adhésion. " \
+                           "Il semble qu'une adhésion existe déjà pour cette saison. " \
+                           "Veuillez contacter un membre du bureau si le problème persiste."
+      end
+    else
+      redirect_to new_membership_path, alert: "Erreur lors de la création de l'adhésion : #{e.message}"
+    end
   end
 
   def create_teen_membership
@@ -808,6 +867,17 @@ class MembershipsController < ApplicationController
     pending_membership = existing_memberships.find { |m| m.status == "pending" }
     if pending_membership
       redirect_to membership_path(pending_membership), alert: "Vous avez déjà une adhésion en attente de paiement pour cette saison. Veuillez finaliser le paiement ou annuler cette adhésion avant d'en créer une nouvelle."
+      return
+    end
+
+    # Vérifier adhésion expired avec paiement abandoned
+    expired_with_abandoned = existing_memberships.find do |m|
+      m.expired? && m.payment&.provider == "helloasso" && m.payment.status == "abandoned"
+    end
+    if expired_with_abandoned
+      redirect_to membership_path(expired_with_abandoned), 
+                  alert: "Vous avez une adhésion expirée avec un paiement abandonné pour cette saison. " \
+                         "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau si vous rencontrez des difficultés."
       return
     end
 
