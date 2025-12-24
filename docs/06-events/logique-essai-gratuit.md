@@ -1,13 +1,17 @@
-# Logique d'Essai Gratuit - Documentation Complète v3.0
+# Logique d'Essai Gratuit - Documentation Complète v4.0
 
 ## Vue d'ensemble
 
 Le système d'essai gratuit permet aux utilisateurs non adhérents (adultes ou enfants) de participer à **une seule initiation** gratuitement. Après cette initiation, une adhésion est requise pour continuer.
 
+**⚠️ RÈGLE FONDAMENTALE v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque personne (adulte ou enfant) a droit à **1 essai gratuit** qui lui est propre. Chaque enfant DOIT utiliser son propre essai gratuit, même si le parent est adhérent.
+
 **RÈGLE MÉTIER CRITIQUE** : 
+- **Essais gratuits NOMINATIFS** : Chaque personne (adulte ou enfant) a droit à **1 essai gratuit** qui lui est propre
 - **Enfants** : 
-  - Par défaut, tous les enfants sont créés avec le statut `pending` (adhésion en attente de paiement) et ont **automatiquement** un essai gratuit disponible (**obligatoire** si parent non adhérent, **ACCÈS via parent** si parent adhérent)
+  - Par défaut, tous les enfants sont créés avec le statut `pending` (adhésion en attente de paiement) et ont **automatiquement** un essai gratuit disponible (**OBLIGATOIRE**, même si le parent est adhérent)
   - Exception : Si `create_trial = "1"`, l'enfant est créé avec le statut `trial` (non adhérent) et l'essai gratuit est **obligatoire**
+  - ⚠️ **IMPORTANT** : Les essais gratuits sont **nominatifs** - chaque enfant DOIT utiliser son propre essai gratuit, indépendamment de l'adhésion du parent
   - ⚠️ **IMPORTANT** : Les statuts `pending` et `trial` sont **mutuellement exclusifs** :
     - `pending` = L'enfant a une adhésion mais pas encore payée
     - `trial` = L'enfant n'a PAS d'adhésion, c'est un non-adhérent
@@ -25,8 +29,9 @@ Le système d'essai gratuit permet aux utilisateurs non adhérents (adultes ou e
 #### Pour les Enfants
 
 **Règle métier** : 
-- Par défaut, tous les enfants sont créés avec le statut `pending` et ont automatiquement un essai gratuit disponible (**obligatoire** si parent non adhérent, **ACCÈS via parent** si parent adhérent)
+- Par défaut, tous les enfants sont créés avec le statut `pending` et ont automatiquement un essai gratuit disponible (**OBLIGATOIRE**, même si le parent est adhérent)
 - Exception : Si le parent coche "Créer avec essai gratuit obligatoire" (`create_trial = "1"`), l'enfant est créé avec le statut `trial` et l'essai gratuit est obligatoire
+- ⚠️ **CRITIQUE** : Les essais gratuits sont **nominatifs** - chaque enfant DOIT utiliser son propre essai gratuit, indépendamment de l'adhésion du parent
 
 **Qui crée l'enfant ?**
 - Le **parent** crée le profil enfant via le formulaire `/memberships/new?child=true`
@@ -75,9 +80,11 @@ end
 
 ### 1.2. Restrictions
 
+- **Essais gratuits NOMINATIFS** : Chaque personne (adulte ou enfant) a droit à **1 essai gratuit** qui lui est propre
 - **Un seul essai gratuit par personne** : Un adulte ne peut utiliser son essai gratuit qu'une seule fois (attendance active)
 - **Un seul essai gratuit par enfant** : Chaque enfant ne peut utiliser son essai gratuit qu'une seule fois (attendance active)
 - **Indépendance parent/enfant** : L'essai gratuit du parent est indépendant de celui des enfants (et vice versa)
+- **Obligatoire pour les enfants** : Les enfants avec statut `pending` ou `trial` DOIVENT utiliser leur essai gratuit, même si le parent est adhérent
 - **Uniquement pour les initiations** : L'essai gratuit n'est disponible que pour les initiations, pas pour les événements/randos normaux
 
 ### 1.3. Réutilisation après annulation
@@ -104,15 +111,15 @@ T5: Enfant peut s'inscrire à Initiation B avec essai gratuit
 ### 2.1. Règle Métier Claire
 
 **Un enfant avec statut `pending` (adhésion en attente de paiement) :**
-- ⚠️ **CORRECTION MAJEURE** : La documentation précédente était INCORRECTE
-- ✅ **Peut s'inscrire si le PARENT est adhérent** (`has_active_membership = true`) → ACCÈS via parent
-- ✅ **DOIT utiliser son essai gratuit** si disponible et parent NON adhérent → Essai **OBLIGATOIRE**
-- ❌ **BLOQUÉ si essai gratuit déjà utilisé** et parent NON adhérent → BLOQUÉ
+- ⚠️ **CORRECTION MAJEURE v4.0** : Les essais gratuits sont **NOMINATIFS**
+- ✅ **DOIT utiliser son essai gratuit** (obligatoire), même si le parent est adhérent
+- ❌ **BLOQUÉ si essai gratuit déjà utilisé** → BLOQUÉ (doit avoir une adhésion active)
 - ❌ **N'est PAS considéré comme membre** dans le modèle (`is_member = false` car `active_now` exclut `pending`)
 
 **Différence avec statut `trial` :**
-- `trial` = Non adhérent, essai gratuit **OBLIGATOIRE** pour s'inscrire (si parent non adhérent)
-- `pending` = Adhésion en attente de paiement, essai gratuit **OBLIGATOIRE** si parent non adhérent, **ACCÈS via parent** si parent adhérent
+- `trial` = Non adhérent, essai gratuit **OBLIGATOIRE** (nominatif, même si parent adhérent)
+- `pending` = Adhésion en attente de paiement, essai gratuit **OBLIGATOIRE** (nominatif, même si parent adhérent)
+- ⚠️ **IMPORTANT** : Les deux statuts ont la même logique - l'essai gratuit est **toujours obligatoire** car il est **nominatif**
 
 **⚠️ CLARIFICATION CRITIQUE - Logique `is_member` (CODE RÉEL VÉRIFIÉ) :**
 
@@ -139,34 +146,40 @@ unless has_active_membership || has_child_membership || free_trial_used
 end
 ```
 
-**RÉSULTAT RÉEL** :
+**RÉSULTAT RÉEL v4.0 (ESSais GRATUITS NOMINATIFS)** :
 - Un enfant `pending` a `is_member = false` dans le modèle
 - `has_child_membership = false` (car `active_now` exclut `pending`)
-- Donc il faut soit :
-  - `has_active_membership = true` (parent adhérent) → ✅ ACCÈS via parent
-  - OU `free_trial_used = true` (essai gratuit utilisé) → ✅ ACCÈS via essai **obligatoire**
+- ⚠️ **CORRECTION v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque enfant DOIT utiliser son propre essai gratuit
+- ⚠️ **IMPORTANT v4.0** : Le statut du parent n'a **AUCUNE influence** sur l'accès de l'enfant
+- Donc il faut :
+  - `free_trial_used = true` (essai gratuit utilisé) → ✅ ACCÈS via essai **obligatoire** (nominatif)
+  - ❌ **PAS d'accès via parent** : Un parent ne peut pas utiliser l'adhésion de son enfant, et vice versa
 
-**⚠️ TABLEAU FINAL CORRIGÉ (selon code réel du modèle)** :
+**⚠️ TABLEAU FINAL CORRIGÉ v4.0 (ESSais GRATUITS NOMINATIFS)** :
 
 | Statut | Parent Adhérent ? | Essai Dispo | Résultat |
 |--------|-------------------|-------------|----------|
 | `pending` | ❌ Non | ❌ Non | 🔴 **BLOQUÉ** |
-| `pending` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai **obligatoire**) |
+| `pending` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai **obligatoire** - nominatif) |
 | `pending` | ❌ Non | ✅ Utilisé | 🔴 **BLOQUÉ** |
-| `pending` | ✅ Oui | N/A | ✅ **ACCÈS** (via parent) |
-| `trial` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai obligatoire) |
-| `trial` | ✅ Oui | N/A | ✅ **ACCÈS** (via parent) |
+| `pending` | ✅ Oui | ✅ Oui | ✅ **ACCÈS** (via essai **obligatoire** - nominatif) |
+| `pending` | ✅ Oui | ✅ Utilisé | 🔴 **BLOQUÉ** |
+| `trial` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai obligatoire - nominatif) |
+| `trial` | ❌ Non | ✅ Utilisé | 🔴 **BLOQUÉ** |
+| `trial` | ✅ Oui | ✅ Oui | ✅ **ACCÈS** (via essai obligatoire - nominatif) |
+| `trial` | ✅ Oui | ✅ Utilisé | 🔴 **BLOQUÉ** |
 | `active` | N/A | N/A | ✅ **ACCÈS COMPLET** |
 
-**Exemples concrets** :
-- **Case 1.1** : Child pending + essai dispo → ✅ ACCÈS (essai obligatoire)
+**Exemples concrets v4.0 (ESSais GRATUITS NOMINATIFS)** :
+- **Case 1.1** : Child pending + essai dispo → ✅ ACCÈS (essai obligatoire - nominatif)
+- **Case 1.2** : Child pending + parent adhérent + essai dispo → ✅ ACCÈS (essai obligatoire - nominatif)
 - **Case 1.3** : Child pending + essai consommé → 🔴 BLOQUÉ
-- **Case 2.1** : Child trial + essai dispo → ✅ ACCÈS (essai obligatoire)
+- **Case 2.1** : Child trial + essai dispo → ✅ ACCÈS (essai obligatoire - nominatif)
+- **Case 2.2** : Child trial + parent adhérent + essai dispo → ✅ ACCÈS (essai obligatoire - nominatif)
 - **Case 2.3** : Child trial + essai consommé → 🔴 BLOQUÉ
 - **Case 3.X** : Child active → ✅ TOUJOURS ACCÈS (peu importe)
-- **Case 4.2** : Parent pending + essai dispo → ✅ ACCÈS (essai obligatoire)
+- **Case 4.2** : Parent pending + essai dispo → ✅ ACCÈS (essai obligatoire - nominatif)
 - **Case 4.3** : Parent pending + essai consommé → 🔴 BLOQUÉ
-- **Case 5.1** : Child trial + parent active → ✅ ACCÈS (parent porte)
 - **Case 6.2** : Annulation puis réinscription → ✅ ESSAI REDEVIENT DISPO
 
 **Voir aussi** : [Section détaillée sur la réutilisation](docs/development/essai-gratuit/16-reutilisation-annulation.md) et [Cas limite 5.6](docs/development/essai-gratuit/05-cas-limites.md#56-réinscription-à-la-même-initiation-après-annulation)
@@ -196,12 +209,36 @@ end
   T3: Parent paie → pending → active
   ```
 
-### 2.3. Logique d'Affichage
+### 2.3. Logique d'Affichage dans les Formulaires (v4.0)
 
-Pour un enfant avec statut `pending` :
+**⚠️ RÈGLE v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque enfant DOIT utiliser son propre essai gratuit.
+
+#### Formulaire Principal (`_registration_form_fields.html.erb`)
+
+Pour un enfant avec statut `pending` ou `trial` :
 - La checkbox essai gratuit est **affichée** si l'enfant n'a pas encore utilisé son essai gratuit
-- La checkbox est **optionnelle** (pas cochée par défaut, pas obligatoire)
-- L'enfant peut s'inscrire même si la checkbox n'est pas cochée (car `pending` est considéré comme valide)
+- La checkbox est **OBLIGATOIRE** (cochée par défaut, `required = true`)
+- Le bouton submit est **désactivé** si la checkbox n'est pas cochée
+- Message affiché : "Utiliser l'essai gratuit de [Nom Enfant] (OBLIGATOIRE)"
+- Aide : "Les essais gratuits sont nominatifs - chaque enfant a droit à son propre essai gratuit. Cette case doit être cochée pour confirmer l'inscription."
+
+**Comportement JavaScript** :
+- Lors de la sélection d'un enfant `pending` ou `trial` dans le dropdown, la checkbox est automatiquement cochée
+- Le bouton submit est désactivé tant que la checkbox n'est pas cochée
+- Le message d'aide explique clairement que l'essai gratuit est nominatif et obligatoire
+
+#### Formulaire Enfant Supplémentaire (`_child_registration_form.html.erb`)
+
+Pour un enfant avec statut `pending` ou `trial` :
+- La checkbox essai gratuit est **affichée dynamiquement** selon l'enfant sélectionné
+- La checkbox est **OBLIGATOIRE** (cochée par défaut, `required = true`)
+- Le bouton submit est **désactivé** si la checkbox n'est pas cochée
+- Message affiché : "Utiliser l'essai gratuit de [Nom Enfant] (OBLIGATOIRE)"
+
+**Comportement JavaScript** :
+- Lors de la sélection d'un enfant dans le dropdown, le JavaScript vérifie le statut (`pending` ou `trial`)
+- Si l'enfant peut utiliser son essai gratuit, la checkbox est affichée et cochée automatiquement
+- Le bouton submit est désactivé tant que la checkbox n'est pas cochée pour les enfants `pending` et `trial`
 
 ---
 
@@ -291,7 +328,7 @@ T0: Enfant créé → pending + essai gratuit disponible (implicite)
     BD: attendances = []
 
 T1: Parent sélectionne enfant dans dropdown pour Initiation A
-    Frontend: Checkbox "Utiliser l'essai gratuit" affichée (obligatoire pour pending si parent non adhérent)
+    Frontend: Checkbox "Utiliser l'essai gratuit" affichée (obligatoire pour pending, même si parent adhérent - v4.0 nominatif)
 
 T2: Parent coche checkbox et soumet
     Frontend: Envoie params[:use_free_trial] = "1"
@@ -330,23 +367,18 @@ def create
   attendance.status = "registered"
   attendance.child_membership_id = child_membership_id
   
-  # Pour un enfant avec statut pending : essai gratuit OBLIGATOIRE si parent non adhérent
+  # Pour un enfant avec statut pending : essai gratuit OBLIGATOIRE (nominatif)
+  # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
   if child_membership_id.present? && child_membership&.pending?
-    # Si parent adhérent : l'enfant peut s'inscrire sans utiliser l'essai gratuit (ACCÈS via parent)
-    # Si parent non adhérent : l'enfant DOIT utiliser son essai gratuit (obligatoire)
-    if is_member
-      # Parent adhérent : essai optionnel (ACCÈS via parent, essai non requis)
-      if params[:use_free_trial] == "1"
-        attendance.free_trial_used = true
-      end
-    else
-      # Parent non adhérent : essai OBLIGATOIRE
-      unless params[:use_free_trial] == "1"
-        redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
-        return
-      end
-      attendance.free_trial_used = true
+    # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif), même si le parent est adhérent
+    # Vérifier que l'essai gratuit est utilisé
+    use_free_trial = params[:use_free_trial] == "1" || 
+                     params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
+    unless use_free_trial
+      redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
+      return
     end
+    attendance.free_trial_used = true
   end
   
   # Pour un enfant avec statut trial : essai gratuit OBLIGATOIRE
@@ -419,11 +451,10 @@ class Attendance < ApplicationRecord
     return unless event.is_a?(Event::Initiation)
     return if is_volunteer
     
-    # Pour un enfant avec statut trial : essai gratuit OBLIGATOIRE
-    # IMPORTANT : La vérification du statut de l'adhésion parent (!user.memberships.active_now.exists?)
-    # est nécessaire car si le parent est adhérent, l'enfant trial peut s'inscrire sans essai gratuit
-    # (l'adhésion parent compte pour l'enfant)
-    if for_child? && child_membership&.trial? && !user.memberships.active_now.exists?
+    # Pour un enfant avec statut trial : essai gratuit OBLIGATOIRE (nominatif)
+    # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
+    # Chaque personne doit avoir sa propre adhésion - pas d'adhésion "famille"
+    if for_child? && child_membership&.trial?
       unless free_trial_used
         errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
       end
@@ -490,13 +521,57 @@ end
 
 #### Niveau 3 : Validation JavaScript (UX uniquement)
 
+**Comportement dans les formulaires (v4.0)** :
+
+**Formulaire Principal** (`_registration_form_fields.html.erb`) :
 ```javascript
-// Validation JavaScript = UX uniquement, PAS de sécurité
-if (selectedChild && !selectedChild.has_used_trial) {
-  if (!freeTrialCheckbox.checked) {
-    e.preventDefault();
-    alert('L\'essai gratuit est obligatoire pour ' + childName + '. Veuillez cocher la case "Utiliser l\'essai gratuit" pour confirmer l\'inscription.');
-    return false;
+// RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - tous les enfants pending et trial DOIVENT utiliser leur essai gratuit
+if (isTrial) {
+  // Enfant trial : essai gratuit OBLIGATOIRE
+  freeTrialCheckbox.checked = true; // Cocher par défaut
+  freeTrialCheckbox.required = true; // Rendre obligatoire
+} else if (isPending) {
+  // RÈGLE v4.0 : Essais gratuits NOMINATIFS - l'essai gratuit est OBLIGATOIRE pour les enfants pending, même si le parent est adhérent
+  freeTrialCheckbox.checked = true; // Cocher par défaut
+  freeTrialCheckbox.required = true; // Rendre obligatoire
+}
+
+// Désactiver le bouton submit si la checkbox n'est pas cochée
+function toggleSubmitButton() {
+  if (isPending || isTrial) {
+    if (!freeTrialCheckbox.checked) {
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.6';
+      submitBtn.style.cursor = 'not-allowed';
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
+    }
+  }
+}
+```
+
+**Formulaire Enfant Supplémentaire** (`_child_registration_form.html.erb`) :
+```javascript
+// RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - chaque enfant DOIT utiliser son propre essai gratuit
+function updateFreeTrialDisplay() {
+  if (selectedChild && (selectedChild.status === 'trial' || selectedChild.status === 'pending')) {
+    if (selectedChild.can_use_trial) {
+      freeTrialContainer.style.display = 'block';
+      freeTrialCheckbox.checked = true; // Cocher par défaut
+      freeTrialCheckbox.required = true; // Rendre obligatoire
+    }
+  }
+}
+
+function toggleSubmitButton() {
+  if (selectedChild && (selectedChild.status === 'trial' || selectedChild.status === 'pending')) {
+    if (!freeTrialCheckbox.checked) {
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.6';
+      submitBtn.style.cursor = 'not-allowed';
+    }
   }
 }
 ```
@@ -505,6 +580,7 @@ if (selectedChild && !selectedChild.has_used_trial) {
 - ⚠️ **UX uniquement** : Améliore l'expérience utilisateur
 - ❌ **PAS de sécurité** : Peut être contourné (JS désactivé, modification DOM)
 - ✅ **Complémentaire** : Les validations serveur restent la source de vérité
+- ✅ **Cohérence v4.0** : Tous les formulaires appliquent la même logique (essai gratuit obligatoire et nominatif pour les enfants `pending` et `trial`)
 
 ### 4.3. Principe de Défense en Profondeur
 
@@ -611,7 +687,8 @@ T0: Enfant créé en pending, essai gratuit disponible
     BD: attendances = []
 
 T1: Enfant avec statut trial sélectionné
-    Frontend: Checkbox affichée et cochée automatiquement
+    Frontend: Checkbox "Utiliser l'essai gratuit de [Nom Enfant] (OBLIGATOIRE)" affichée et cochée automatiquement
+    JavaScript: Bouton submit activé uniquement si checkbox cochée
     Frontend: params[:use_free_trial] = "1"
 
 T2: Utilisateur modifie les paramètres HTTP (dev tools)
@@ -645,7 +722,8 @@ T0: Enfant créé en pending, essai gratuit disponible
     BD: attendances = []
 
 T1: Enfant avec statut trial sélectionné
-    Frontend: Checkbox affichée mais JS désactivé → pas de coche automatique
+    Frontend: Checkbox "Utiliser l'essai gratuit de [Nom Enfant] (OBLIGATOIRE)" affichée
+    JavaScript: Désactivé → pas de coche automatique, pas de désactivation du bouton
     Frontend: params[:use_free_trial] = nil (pas envoyé)
 
 T2: Utilisateur soumet le formulaire
@@ -775,7 +853,7 @@ end.to_json  # Convertir en JSON string pour injection dans JavaScript
 **Affichage dans le dropdown** :
 ```
 Parent voit :
-[ ] Enfant A (pending) - Essai disponible (obligatoire si parent non adhérent)
+[ ] Enfant A (pending) - Essai disponible (obligatoire, même si parent adhérent - v4.0 nominatif)
 [ ] Enfant B (trial) - Essai disponible (obligatoire)
 [ ] Enfant C (pending) - Essai utilisé (déjà inscrit à Initiation 1)
 ```
@@ -834,7 +912,7 @@ Parent voit :
 
 **JavaScript qui gère l'affichage différencié** :
 ```javascript
-// Pour enfant pending : checkbox obligatoire si parent non adhérent
+// Pour enfant pending : checkbox obligatoire (même si parent adhérent - v4.0 nominatif)
 if (selectedChild.status === "pending" && !selectedChild.has_used_trial) {
   freeTrialText.textContent = 'Utiliser l\'essai gratuit de ' + childNameEscaped;
   freeTrialHelpText.innerHTML = '<strong>Essai gratuit pour ' + childNameEscaped + ' :</strong> Cet enfant peut utiliser son essai gratuit pour cette initiation. <strong>Cette case est optionnelle.</strong> Après cet essai, une adhésion sera requise pour continuer.';
@@ -977,7 +1055,7 @@ T2: Parent voit dropdown :
 **Quel est le flux complet pour enfant `pending` ?**
 
 ```
-T0: Enfant créé avec status: pending (essai gratuit attribué automatiquement, implicite, obligatoire si parent non adhérent)
+T0: Enfant créé avec status: pending (essai gratuit attribué automatiquement, implicite, obligatoire même si parent adhérent - v4.0 nominatif)
     BD: memberships = [membership (status: "pending", is_child_membership: true)]
     BD: attendances = []
 
@@ -1378,7 +1456,7 @@ end.to_json
 
 **Avec JavaScript activé** :
 - ✅ Checkbox cochée automatiquement pour enfants `trial` (obligatoire)
-- ✅ Checkbox affichée mais obligatoire pour enfants `pending` si parent non adhérent
+- ✅ Checkbox affichée mais obligatoire pour enfants `pending` (même si parent adhérent - v4.0 nominatif)
 - ✅ Validation avant soumission (empêche soumission si non cochée pour `trial`)
 - ✅ Mise à jour du champ caché automatique
 - ✅ Meilleure UX (feedback immédiat)
@@ -1518,8 +1596,9 @@ end
 
 **Exemples corrects** :
 ```ruby
-# ✅ CORRECT : Utilise .active
-parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+# ✅ CORRECT : Utilise .personal pour vérifier UNIQUEMENT les adhésions personnelles du parent (pas celles des enfants)
+# ⚠️ IMPORTANT v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+parent_can_use_trial = !current_user.memberships.personal.active_now.exists? && 
                        !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
 
 any_child_has_trial = trial_children.any? { |child| 
@@ -1532,12 +1611,21 @@ trial_children_data = trial_children.map do |child|
     can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
   }
 end
+
+# ✅ CORRECT : Vérifier si le parent a une adhésion active PERSONNELLE (pour déterminer si l'essai est obligatoire pour les enfants pending)
+parent_has_active_membership = current_user.memberships.personal.active_now.exists?
 ```
 
 **Exemples incorrects** :
 ```ruby
 # ❌ INCORRECT : N'utilise pas .active (inclut les attendances annulées)
 parent_can_use_trial = !current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+
+# ❌ INCORRECT : N'utilise pas .personal (inclut les adhésions enfants)
+# ⚠️ BUG CRITIQUE : Si un enfant a une adhésion active, cela empêche le parent d'utiliser son essai gratuit
+# Le parent devrait pouvoir utiliser son essai gratuit même si un enfant est adhérent (essais nominatifs)
+parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+                       !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
 ```
 
 ### 12.2. Échappement JavaScript
@@ -1594,7 +1682,7 @@ current_user.attendances.active.where(free_trial_used: true, child_membership_id
 - Le **parent** peut cocher une option dans le formulaire pour créer l'enfant avec le statut `trial`
 - Cette option est affichée dans le formulaire si l'enfant n'a pas encore utilisé son essai gratuit
 - Si `create_trial = "1"` : L'enfant est créé en `trial` (essai gratuit obligatoire)
-- Si `create_trial` n'est pas coché : L'enfant est créé en `pending` (essai gratuit obligatoire si parent non adhérent)
+- Si `create_trial` n'est pas coché : L'enfant est créé en `pending` (essai gratuit obligatoire, même si parent adhérent - v4.0 nominatif)
 
 **Formulaire parent pour créer enfant en trial vs pending** :
 - Route : `/memberships/new?child=true`
@@ -1654,9 +1742,9 @@ end
 
 **Pour enfant `pending`** :
 - ✅ **Affichée** : Si l'enfant n'a pas encore utilisé son essai gratuit
-- ✅ **Cochée par défaut si parent non adhérent** : L'essai gratuit est obligatoire si parent non adhérent
-- ✅ **Obligatoire si parent non adhérent** : L'enfant DOIT utiliser son essai gratuit si parent non adhérent
-- ✅ **ACCÈS via parent si parent adhérent** : L'enfant peut s'inscrire sans essai si parent adhérent
+- ✅ **Cochée par défaut** : L'essai gratuit est obligatoire (nominatif)
+- ✅ **Obligatoire** : L'enfant DOIT utiliser son essai gratuit, même si le parent est adhérent
+- ⚠️ **v4.0** : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
 
 **Pour enfant `trial`** :
 - ✅ **Affichée** : Si l'enfant n'a pas encore utilisé son essai gratuit
@@ -1711,43 +1799,38 @@ def create
     end
     # L'enfant est considéré comme membre si l'adhésion est active ou pending (pas trial)
     # ⚠️ CLARIFICATION CRITIQUE - INCOHÉRENCE entre contrôleur et modèle :
-    # - Contrôleur : pending = is_member = true
+    # - Contrôleur : pending = is_member = true (dans le contrôleur uniquement)
     # - Modèle : pending = is_member = false (car active_now exclut pending)
-    # - Le modèle a le dernier mot (validation finale) → Essai obligatoire si parent non adhérent
-    # ✅ Si parent adhérent : pending = accès via parent (is_member = true dans contrôleur)
-    # ❌ Si parent non adhérent : pending = essai obligatoire (is_member = false dans modèle)
+    # ⚠️ **v4.0** : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
+    # ✅ pending = essai obligatoire (nominatif), même si le parent est adhérent
     # ❌ trial = "non membre" (is_member = false, doit utiliser essai gratuit obligatoire)
     # ✅ active = "membre actif" (is_member = true, accès complet)
     child_membership.active? || child_membership.pending?
   else
-    # Pour le parent : vérifier adhésion parent ou enfant
-    current_user.memberships.active_now.exists? ||
-      current_user.memberships.where(is_child_membership: true)
-        .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
-        .exists?
+    # Pour le parent : vérifier UNIQUEMENT l'adhésion parent PERSONNELLE (pas celle des enfants)
+    # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - pas d'adhésion "famille"
+    # ⚠️ CORRECTION CRITIQUE : Utiliser .personal pour exclure les adhésions enfants
+    # Si un enfant a une adhésion active, cela ne doit PAS empêcher le parent d'utiliser son essai gratuit
+    current_user.memberships.personal.active_now.exists?
   end
   
-  # Pour un enfant avec statut pending : essai gratuit OBLIGATOIRE si parent non adhérent
+  # Pour un enfant avec statut pending : essai gratuit OBLIGATOIRE (nominatif)
+  # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
   if child_membership_id.present? && child_membership&.pending?
-    # Si parent adhérent : l'enfant peut s'inscrire sans utiliser l'essai gratuit (ACCÈS via parent)
-    # Si parent non adhérent : l'enfant DOIT utiliser son essai gratuit (obligatoire)
-    if is_member
-      # Parent adhérent : essai optionnel (ACCÈS via parent, essai non requis)
-      if params[:use_free_trial] == "1"
-        attendance.free_trial_used = true
-      end
-    else
-      # Parent non adhérent : essai OBLIGATOIRE
-      unless params[:use_free_trial] == "1"
-        redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
-        return
-      end
-      attendance.free_trial_used = true
+    # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif), même si le parent est adhérent
+    # Vérifier que l'essai gratuit est utilisé
+    use_free_trial = params[:use_free_trial] == "1" || 
+                     params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
+    unless use_free_trial
+      redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
+      return
     end
+    attendance.free_trial_used = true
   end
   
-  # Pour un enfant avec statut trial : essai gratuit OBLIGATOIRE (seulement si parent non adhérent)
-  if child_membership_id.present? && child_membership&.trial? && !is_member
+  # Pour un enfant avec statut trial : essai gratuit OBLIGATOIRE (nominatif)
+  # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
+  if child_membership_id.present? && child_membership&.trial?
     # Vérifier d'abord si cet enfant a déjà utilisé son essai gratuit
     if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
       redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit. Une adhésion est maintenant requise."
@@ -1887,7 +1970,7 @@ end
 
 ### 17.2. Manques Complétés
 
-✅ **Affichage checkbox pour chaque enfant** : Documenté (pending = obligatoire si parent non adhérent, trial = obligatoire si parent non adhérent)
+✅ **Affichage checkbox pour chaque enfant** : Documenté (pending = obligatoire même si parent adhérent - v4.0 nominatif, trial = obligatoire même si parent adhérent - v4.0 nominatif)
 ✅ **Timeline des cas limites** : Ajoutée pour chaque scénario (T0, T1, T2...)
 ✅ **Tests spécifiques** : Ajoutés pour création enfant, utilisation essai, réutilisation après annulation
 ✅ **Flux d'inscription** : Documenté étape par étape
@@ -1916,10 +1999,9 @@ end
 **Code réel** :
 ```ruby
 # app/controllers/initiations/attendances_controller.rb
-is_member = current_user.memberships.active_now.exists? ||
-            current_user.memberships.where(is_child_membership: true)
-              .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
-              .exists?
+# ⚠️ CORRECTION CRITIQUE : Utiliser .personal pour vérifier UNIQUEMENT les adhésions personnelles du parent
+# Si un enfant a une adhésion active, cela ne doit PAS empêcher le parent d'utiliser son essai gratuit
+is_member = current_user.memberships.personal.active_now.exists?
 
 if is_member
   # Parent est adhérent → pas besoin d'essai gratuit
@@ -1932,39 +2014,36 @@ else
 end
 ```
 
-### 18.2. Essai Gratuit Enfant Trial Quand Parent Adhérent
+### 18.2. Essai Gratuit Enfant Trial - Logique v4.0 (NOMINATIF)
+
+**⚠️ CORRECTION MAJEURE v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque personne doit avoir sa propre adhésion.
 
 **Question** : Si le parent a une adhésion active, l'enfant avec statut `trial` doit-il quand même utiliser son essai gratuit ?
 
-**Réponse** :
-- ❌ **NON** : Si le parent a une adhésion active, l'enfant `trial` peut s'inscrire sans utiliser son essai gratuit
-- La vérification `!user.memberships.active_now.exists?` dans la validation garantit que l'essai gratuit n'est obligatoire que si le parent n'est pas adhérent
-- Si le parent est adhérent, l'adhésion parent compte pour l'enfant
+**Réponse v4.0** :
+- ✅ **OUI** : L'enfant `trial` DOIT utiliser son essai gratuit, même si le parent est adhérent
+- ⚠️ **Les essais gratuits sont NOMINATIFS** : Le statut du parent n'a **AUCUNE influence** sur l'accès de l'enfant
+- Chaque personne (adulte ou enfant) doit avoir sa propre adhésion - pas d'adhésion "famille"
 
-**Code réel côté serveur** :
+**Code réel côté serveur (v4.0)** :
 ```ruby
-# app/models/attendance.rb
-def can_register_to_initiation
-  # ...
-  # Pour un enfant avec statut trial : essai gratuit OBLIGATOIRE seulement si parent non adhérent
-  if for_child? && child_membership&.trial? && !user.memberships.active_now.exists?
-    # Essai gratuit obligatoire
-  end
-end
-
 # app/controllers/initiations/attendances_controller.rb
-# CORRECTION CRITIQUE : Utiliser parent_is_member au lieu de !is_member
-parent_is_member = current_user.memberships.active_now.exists?
-if child_membership_id.present? && child_membership&.trial? && !parent_is_member
-  # Essai gratuit obligatoire (seulement si parent non adhérent)
-  # Si parent adhérent : l'enfant peut s'inscrire sans essai gratuit (ACCÈS via parent)
+# ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
+if child_membership_id.present? && child_membership&.trial?
+  # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif), même si le parent est adhérent
+  use_free_trial = params[:use_free_trial] == "1" || 
+                   params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
+  unless use_free_trial
+    redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
+    return
+  end
+  attendance.free_trial_used = true
 end
 ```
 
 **Code JavaScript côté client** :
 ```javascript
-// Le JavaScript ne peut PAS savoir si le parent est adhérent (information serveur uniquement)
-// Le JavaScript affiche la checkbox pour tous les enfants trial, mais le serveur valide
+// Le JavaScript affiche la checkbox obligatoire pour tous les enfants trial
 if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
   // Affiche checkbox obligatoire
   freeTrialCheckbox.checked = true;
@@ -1974,10 +2053,10 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 
 **Protection multi-niveaux** :
 - ✅ **JavaScript** : Affiche la checkbox obligatoire pour tous les enfants `trial` (UX)
-- ✅ **Contrôleur** : Vérifie `!is_member` avant d'exiger l'essai gratuit (première ligne de défense)
-- ✅ **Modèle** : Vérifie `!user.memberships.active_now.exists?` avant d'exiger l'essai gratuit (source de vérité)
+- ✅ **Contrôleur** : Vérifie que `use_free_trial` est présent (première ligne de défense)
+- ✅ **Modèle** : Vérifie que `free_trial_used = true` pour enfants `trial` (source de vérité)
 
-**Résultat** : Si le parent est adhérent, l'enfant `trial` peut s'inscrire sans utiliser son essai gratuit, même si la checkbox est affichée côté JavaScript. Le serveur autorise l'inscription sans essai gratuit.
+**Résultat v4.0** : L'enfant `trial` DOIT utiliser son essai gratuit, indépendamment du statut du parent. Les essais gratuits sont **100% nominatifs**.
 
 ---
 
@@ -2171,15 +2250,15 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 
 | Critère | Valeur | Accès Initiation | Checkbox Essai | Bouton Submit |
 |---------|--------|------------------|----------------|---------------|
-| Statut enfant | `pending` | ✅ **OUI** (si parent adhérent OU essai utilisé) | ✅ **VISIBLE** (obligatoire si parent non adhérent) | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée (si parent non adhérent) |
-| Essai gratuit utilisé | `false` | ✅ **OUI** (si parent adhérent OU essai utilisé) | ✅ **VISIBLE** | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée (si parent non adhérent) |
-| Parent adhérent | `active_now` | ✅ **OUI** (ACCÈS via parent) | ❌ **MASQUÉE** (pas besoin d'essai) | 🔵 **BLEU** (toujours actif) |
-| Parent non adhérent | Pas d'adhésion `active_now` | ✅ **OUI** (via essai obligatoire - Case 1.1) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
+| Statut enfant | `pending` | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
+| Essai gratuit utilisé | `false` | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée |
+| Parent adhérent | N/A | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
+| Parent non adhérent | N/A | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
 
-**Comportement** : 
-- **Si parent adhérent** : L'enfant peut s'inscrire directement (ACCÈS via parent), checkbox masquée
-- **Si parent non adhérent (Case 1.1)** : L'enfant DOIT utiliser son essai gratuit (obligatoire), checkbox visible et obligatoire
-- Le bouton est **GRIS** si la checkbox n'est pas cochée (si parent non adhérent)
+**Comportement v4.0** : 
+- ⚠️ **Les essais gratuits sont NOMINATIFS** : Le statut du parent n'a **AUCUNE influence** sur l'accès de l'enfant
+- L'enfant `pending` DOIT utiliser son essai gratuit (obligatoire), même si le parent est adhérent
+- Le bouton est **GRIS** si la checkbox n'est pas cochée
 
 ---
 
@@ -2202,15 +2281,15 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 
 | Critère | Valeur | Accès Initiation | Checkbox Essai | Bouton Submit |
 |---------|--------|------------------|----------------|---------------|
-| Statut enfant | `trial` | ✅ **OUI** (si parent adhérent OU essai utilisé) | ✅ **VISIBLE** (obligatoire si parent non adhérent) | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée (si parent non adhérent) |
-| Essai gratuit utilisé | `false` | ✅ **OUI** (si parent adhérent OU essai utilisé) | ✅ **VISIBLE** | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée (si parent non adhérent) |
-| Parent adhérent | `active_now` | ✅ **OUI** (ACCÈS via parent - Case 5.1) | ❌ **MASQUÉE** (pas besoin d'essai) | 🔵 **BLEU** (toujours actif) |
-| Parent non adhérent | Pas d'adhésion `active_now` | ✅ **OUI** (via essai obligatoire - Case 2.1) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
+| Statut enfant | `trial` | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
+| Essai gratuit utilisé | `false` | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée |
+| Parent adhérent | N/A | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
+| Parent non adhérent | N/A | ✅ **OUI** (via essai obligatoire - nominatif) | ✅ **VISIBLE** (obligatoire) | ⚪ **GRIS** si non cochée |
 
-**Comportement** : 
-- **Si parent adhérent (Case 5.1)** : L'enfant peut s'inscrire directement (ACCÈS via parent), checkbox masquée
-- **Si parent non adhérent (Case 2.1)** : L'enfant DOIT utiliser son essai gratuit (obligatoire), checkbox visible et obligatoire
-- Le bouton est **GRIS** si la checkbox n'est pas cochée (si parent non adhérent)
+**Comportement v4.0** : 
+- ⚠️ **Les essais gratuits sont NOMINATIFS** : Le statut du parent n'a **AUCUNE influence** sur l'accès de l'enfant
+- L'enfant `trial` DOIT utiliser son essai gratuit (obligatoire), même si le parent est adhérent
+- Le bouton est **GRIS** si la checkbox n'est pas cochée
 
 ---
 
@@ -2280,10 +2359,10 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 
 | Critère | Valeur | Checkbox Essai | Bouton Submit |
 |---------|--------|---------------|---------------|
-| Enfant sélectionné | Enfant `trial` ou `pending` avec `can_use_trial = true` | ✅ **VISIBLE** (pour cet enfant) | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée (sauf `pending`) |
+| Enfant sélectionné | Enfant `trial` ou `pending` avec `can_use_trial = true` | ✅ **VISIBLE** (pour cet enfant) | 🔵 **BLEU** si cochée / ⚪ **GRIS** si non cochée |
 | Texte checkbox | "Utiliser l'essai gratuit de [Nom Enfant]" | ✅ **VISIBLE** | - |
 | Enfant `trial` | `true` | ✅ **VISIBLE** (obligatoire, cochée par défaut) | ⚪ **GRIS** si non cochée |
-| Enfant `pending` | `true` | ✅ **VISIBLE** (obligatoire si parent non adhérent) | ⚪ **GRIS** si non cochée (si parent non adhérent) / 🔵 **BLEU** (si parent adhérent) |
+| Enfant `pending` | `true` | ✅ **VISIBLE** (obligatoire - nominatif, même si parent adhérent) | ⚪ **GRIS** si non cochée (essai obligatoire, même si parent adhérent) |
 
 **Comportement** : La checkbox s'affiche uniquement pour l'enfant sélectionné. Le texte change selon l'enfant.
 
@@ -2315,7 +2394,7 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 **Comportement** : 
 - Même si des places découverte sont disponibles, le bouton reste **GRIS** si la checkbox n'est pas cochée
 - Cela force l'utilisateur à utiliser explicitement son essai gratuit
-- Exception : Enfant `pending` → bouton gris si non cochée (si parent non adhérent, essai obligatoire)
+- Exception : Enfant `pending` → bouton gris si non cochée (essai obligatoire, même si parent adhérent - v4.0 nominatif)
 
 ---
 
@@ -2340,15 +2419,15 @@ if (selectedChild.status === "trial" && !selectedChild.has_used_trial) {
 Le bouton est **BLEU** dans les cas suivants :
 1. ✅ Parent/Enfant adhérent actif (`active_now`) → Toujours bleu
 2. ✅ Checkbox essai gratuit cochée → Bouton bleu
-3. ✅ Enfant `pending` sélectionné → Gris si non cochée (si parent non adhérent, essai obligatoire) / Bleu si parent adhérent
-4. ✅ Pas de checkbox essai gratuit disponible → Toujours bleu
+3. ✅ Pas de checkbox essai gratuit disponible → Toujours bleu
 
 #### Bouton GRIS (Désactivé) ⚪
 
 Le bouton est **GRIS** dans les cas suivants :
 1. ⚪ Checkbox essai gratuit non cochée (parent ou enfant `trial`) → Bouton gris
 2. ⚪ Enfant `trial` sélectionné + checkbox non cochée → Bouton gris
-3. ⚪ Parent non adhérent + checkbox non cochée (même avec `allow_non_member_discovery`) → Bouton gris
+3. ⚪ Enfant `pending` sélectionné + checkbox non cochée → Bouton gris (essai obligatoire, même si parent adhérent - v4.0 nominatif)
+4. ⚪ Parent non adhérent + checkbox non cochée (même avec `allow_non_member_discovery`) → Bouton gris
 
 #### Bouton BLOQUÉ (Inscription Impossible) ❌
 
@@ -2493,13 +2572,34 @@ Cette documentation principale est complétée par des fichiers détaillés dans
 ---
 
 **Date de création** : 2025-01-17
-**Dernière mise à jour** : 2025-01-20
-**Version** : 3.9
+**Dernière mise à jour** : 2025-12-30
+**Version** : 4.0.1
 **Qualité** : 100/100 ✅
+
+**Note importante** : Cette documentation reflète l'état actuel du code après les modifications des formulaires et des vues pour implémenter la logique v4.0 des essais gratuits nominatifs.
+
+**Changelog v4.0.1** :
+- ✅ **CORRECTION CRITIQUE** : Utilisation de `.personal.active_now.exists?` au lieu de `.active_now.exists?` pour vérifier uniquement les adhésions personnelles du parent
+  - **Problème corrigé** : Si un enfant avait une adhésion active, le système pensait que le parent était adhérent et masquait la checkbox "Utiliser mon essai gratuit"
+  - **Solution** : Utiliser `.personal` pour exclure les adhésions enfants de la vérification
+  - **Impact** : Le parent peut maintenant utiliser son essai gratuit même si un enfant a une adhésion active
+  - **Fichiers modifiés** : `app/views/shared/_registration_form_fields.html.erb` (lignes 371 et 409)
+  - **Section documentation** : Section 30 ajoutée pour documenter cette correction critique
+
+**Changelog v4.0** :
+- ✅ **CORRECTION MAJEURE** : Les essais gratuits sont **NOMINATIFS** - chaque enfant DOIT utiliser son propre essai gratuit
+- ✅ Les enfants `pending` et `trial` DOIVENT utiliser leur essai gratuit, même si le parent est adhérent
+- ✅ Mise à jour de la logique dans les contrôleurs `attendances_controller.rb` et `waitlist_entries_controller.rb`
+- ✅ **Mise à jour des formulaires** :
+  - Formulaire principal (`_registration_form_fields.html.erb`) : Checkbox obligatoire et cochée par défaut pour enfants `pending` et `trial`
+  - Formulaire enfant supplémentaire (`_child_registration_form.html.erb`) : Ajout de la checkbox d'essai gratuit avec validation JavaScript
+  - Messages utilisateur mis à jour : "Utiliser l'essai gratuit de [Nom Enfant] (OBLIGATOIRE)"
+  - JavaScript : Bouton submit désactivé si checkbox non cochée pour enfants `pending` et `trial`
+- ✅ Documentation mise à jour pour clarifier que les essais gratuits sont nominatifs et pour documenter le comportement des formulaires
 
 **Changelog v3.9** :
 - ✅ Correction critique : Contrôleur utilise maintenant `parent_is_member` au lieu de `!is_member` pour les enfants `trial`
-- ✅ Les enfants `trial` peuvent maintenant s'inscrire sans essai gratuit si le parent est adhérent (Case 5.1)
+- ⚠️ **OBSOLÈTE** : La logique v3.9 a été remplacée par v4.0 (essais gratuits nominatifs)
 
 ---
 
@@ -2521,54 +2621,61 @@ elsif child_membership_id.present? && child_membership&.trial? && !is_member
 
 **Code corrigé** :
 ```ruby
-# LIGNE 103 (AJOUT)
-parent_is_member = current_user.memberships.active_now.exists?
-
-# LIGNE 141 (APRÈS CORRECTION)
-elsif child_membership_id.present? && child_membership&.trial? && !parent_is_member
-  # ✅ CORRECT : Vérifie directement l'adhésion du parent
-  # Si parent adhérent : l'enfant peut s'inscrire sans essai gratuit (ACCÈS via parent)
-  # Si parent non adhérent : l'enfant DOIT utiliser son essai gratuit (obligatoire)
+# ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - le statut du parent n'a AUCUNE influence
+if child_membership_id.present? && child_membership&.trial?
+  # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif), même si le parent est adhérent
+  use_free_trial = params[:use_free_trial] == "1" || 
+                   params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
+  unless use_free_trial
+    redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
+    return
+  end
+  attendance.free_trial_used = true
+end
 ```
 
-**Validation** : Le modèle `Attendance` utilise déjà la bonne logique :
+**Validation** : Le modèle `Attendance` utilise la logique v4.0 :
 ```ruby
-# app/models/attendance.rb:203
-if child_membership&.trial? && !user.memberships.active_now.exists?
-  # ✅ Vérifie le PARENT adhérent (user.memberships.active_now.exists?)
+# app/models/attendance.rb
+# ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - chaque personne doit avoir sa propre adhésion
+if child_membership_id.present? && child_membership&.trial?
+  # Essai gratuit OBLIGATOIRE (nominatif)
   # Si parent adhérent : condition = false → pas d'erreur
 end
 ```
 
 ---
 
-## 28. Résumé Final - Tableau des Cases Validées (v3.9)
+## 28. Résumé Final - Tableau des Cases Validées (v4.0 - ESSais GRATUITS NOMINATIFS)
 
-### 27.1. Cases Validées selon le Tableau Final
+### 28.1. Cases Validées selon le Tableau Final v4.0
 
 | Case | Description | Résultat |
 |------|-------------|----------|
-| **1.1** | Child pending + essai dispo | ✅ **ACCÈS** (essai obligatoire) |
+| **1.1** | Child pending + essai dispo | ✅ **ACCÈS** (essai obligatoire - nominatif) |
+| **1.2** | Child pending + parent adhérent + essai dispo | ✅ **ACCÈS** (essai obligatoire - nominatif) |
 | **1.3** | Child pending + essai consommé | 🔴 **BLOQUÉ** |
-| **2.1** | Child trial + essai dispo | ✅ **ACCÈS** (essai obligatoire) |
+| **2.1** | Child trial + essai dispo | ✅ **ACCÈS** (essai obligatoire - nominatif) |
+| **2.2** | Child trial + parent adhérent + essai dispo | ✅ **ACCÈS** (essai obligatoire - nominatif) |
 | **2.3** | Child trial + essai consommé | 🔴 **BLOQUÉ** |
 | **3.X** | Child active | ✅ **TOUJOURS ACCÈS** (peu importe) |
-| **4.2** | Parent pending + essai dispo | ✅ **ACCÈS** (essai obligatoire) |
+| **4.2** | Parent pending + essai dispo | ✅ **ACCÈS** (essai obligatoire - nominatif) |
 | **4.3** | Parent pending + essai consommé | 🔴 **BLOQUÉ** |
-| **5.1** | Child trial + parent active | ✅ **ACCÈS** (parent porte) |
 | **6.2** | Annulation puis réinscription | ✅ **ESSAI REDEVIENT DISPO** |
 
-### 27.2. Correction Majeure Appliquée
+### 28.2. Correction Majeure v4.0 - Essais Gratuits Nominatifs
 
-**Erreur corrigée** : La documentation indiquait que `pending` = essai gratuit **optionnel**, ce qui était **INCORRECT**.
+**⚠️ CORRECTION MAJEURE v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque personne (adulte ou enfant) a droit à son propre essai gratuit.
 
-**Logique réelle** :
+**Logique réelle v4.0** :
 - Le modèle `Attendance` considère `pending` comme non-membre (`is_member = false`)
-- Un enfant `pending` DOIT utiliser son essai gratuit si le parent n'est pas adhérent
-- Un enfant `pending` peut s'inscrire via le parent si le parent est adhérent
+- Un enfant `pending` DOIT utiliser son essai gratuit (obligatoire), même si le parent est adhérent
+- Un enfant `trial` DOIT utiliser son essai gratuit (obligatoire), même si le parent est adhérent
+- Les essais gratuits sont **nominatifs** : chaque enfant a son propre essai, indépendamment de l'adhésion du parent
 
-**Code corrigé** :
-- Contrôleur mis à jour pour rendre l'essai gratuit obligatoire si parent non adhérent
+**Code corrigé v4.0** :
+- Contrôleur `attendances_controller.rb` mis à jour : essai gratuit obligatoire pour enfants `pending` et `trial`, même si parent adhérent
+- Contrôleur `waitlist_entries_controller.rb` mis à jour : même logique
 - Documentation mise à jour dans toutes les sections concernées
 
 ---
@@ -2590,31 +2697,33 @@ end
 - `has_child_membership = false` (car `active_now` exclut `pending`)
 - Donc il faut soit `has_active_membership = true` (parent adhérent) OU `free_trial_used = true` (essai obligatoire)
 
-**Tableau Final Corrigé** :
-| Statut | Parent Adhérent ? | Essai Dispo | Résultat |
-|--------|-------------------|-------------|----------|
-| `pending` | ❌ Non | ❌ Non | 🔴 **BLOQUÉ** |
-| `pending` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai **obligatoire** - Case 1.1) |
-| `pending` | ❌ Non | ✅ Utilisé | 🔴 **BLOQUÉ** (Case 1.3) |
-| `pending` | ✅ Oui | N/A | ✅ **ACCÈS** (via parent) |
-| `trial` | ❌ Non | ✅ Oui | ✅ **ACCÈS** (via essai obligatoire - Case 2.1) |
-| `trial` | ✅ Oui | N/A | ✅ **ACCÈS** (via parent - Case 5.1) |
-| `active` | N/A | N/A | ✅ **ACCÈS COMPLET** (Case 3.X) |
+**Tableau Final Corrigé v4.0 (ESSais GRATUITS NOMINATIFS)** :
+**⚠️ IMPORTANT** : Le statut du parent n'a **AUCUNE influence** sur l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
 
-**Cases Validées** :
-- ✅ Case 1.1 : Child pending + essai dispo → ACCÈS (essai obligatoire)
-- ✅ Case 1.3 : Child pending + essai consommé → BLOQUÉ
-- ✅ Case 2.1 : Child trial + essai dispo → ACCÈS (essai obligatoire)
-- ✅ Case 2.3 : Child trial + essai consommé → BLOQUÉ
+| Statut Enfant | Essai Gratuit | Résultat | Case |
+|---------------|---------------|----------|------|
+| `pending` | ❌ Non disponible | 🔴 **BLOQUÉ** | - |
+| `pending` | ✅ Disponible | ✅ **ACCÈS** (via essai **obligatoire** - nominatif) | Case 1.1 |
+| `pending` | ✅ Utilisé | 🔴 **BLOQUÉ** | Case 1.3 |
+| `trial` | ✅ Disponible | ✅ **ACCÈS** (via essai obligatoire - nominatif) | Case 2.1 |
+| `trial` | ✅ Utilisé | 🔴 **BLOQUÉ** | Case 2.3 |
+| `active` | N/A | ✅ **ACCÈS COMPLET** | Case 3.X |
+
+**Cases Validées v4.0** :
+- ✅ Case 1.1 : Child pending + essai dispo → ACCÈS (essai obligatoire - nominatif) - **Indépendant du parent**
+- ✅ Case 1.3 : Child pending + essai consommé → BLOQUÉ - **Même si parent adhérent**
+- ✅ Case 2.1 : Child trial + essai dispo → ACCÈS (essai obligatoire - nominatif) - **Indépendant du parent**
+- ✅ Case 2.3 : Child trial + essai consommé → BLOQUÉ - **Même si parent adhérent**
 - ✅ Case 3.X : Child active → TOUJOURS ACCÈS (peu importe)
-- ✅ Case 4.2 : Parent pending + essai dispo → ACCÈS (essai obligatoire)
+- ✅ Case 4.2 : Parent pending + essai dispo → ACCÈS (essai obligatoire - nominatif)
 - ✅ Case 4.3 : Parent pending + essai consommé → BLOQUÉ
-- ✅ Case 5.1 : Child trial + parent active → ACCÈS (parent porte)
 - ✅ Case 6.2 : Annulation puis réinscription → ESSAI REDEVIENT DISPO
+
+**⚠️ Note importante** : Les cases 1.2 et 2.2 (parent adhérent) n'existent plus dans la logique v4.0 car le statut du parent n'a aucune influence sur l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
 
 ---
 
-## 26. Clarification Logique `is_member` (v3.8)
+## 26. Clarification Logique `is_member` (v4.0 - ESSais GRATUITS NOMINATIFS)
 
 ### 26.1. Question : "pending = a le droit d'accès ? Ou pourrait avoir accès si paie ?"
 
@@ -2625,7 +2734,7 @@ end
 child_membership&.active? || child_membership&.pending?
 ```
 
-**⚠️ CORRECTION MAJEURE** : La réponse précédente était INCORRECTE.
+**⚠️ CORRECTION MAJEURE v4.0** : Les essais gratuits sont **NOMINATIFS**.
 
 **Code réel du MODÈLE** (`app/models/attendance.rb:154-220`) :
 ```ruby
@@ -2640,18 +2749,17 @@ unless has_active_membership || has_child_membership || free_trial_used
 end
 ```
 
-**✅ Réponse CORRIGÉE** :
-- **`pending` = "non membre"** dans le modèle (`is_member = false`) → Essai **OBLIGATOIRE** si parent non adhérent
-- **`pending` = "accès via parent"** si parent adhérent (`has_active_membership = true`)
-- **`trial` = "non membre"** (`is_member = false`) → Essai **OBLIGATOIRE** si parent non adhérent
-- **`trial` = "accès via parent"** si parent adhérent (`has_active_membership = true`)
+**✅ Réponse CORRIGÉE v4.0 (ESSais GRATUITS NOMINATIFS)** :
+- **`pending` = "non membre"** dans le modèle (`is_member = false`) → Essai **OBLIGATOIRE** (nominatif, même si parent adhérent)
+- **`trial` = "non membre"** (`is_member = false`) → Essai **OBLIGATOIRE** (nominatif, même si parent adhérent)
 - **`active` = "membre actif"** (`is_member = true`) → ACCÈS COMPLET
+- ⚠️ **IMPORTANT v4.0** : Les essais gratuits sont **nominatifs** - chaque enfant DOIT utiliser son propre essai gratuit, indépendamment de l'adhésion du parent
 
-**Pourquoi cette logique ?**
+**Pourquoi cette logique v4.0 (ESSais GRATUITS NOMINATIFS) ?**
 - Un enfant `pending` a une adhésion en cours mais pas encore payée
 - Dans le modèle, `is_member = false` car `active_now` exclut `pending`
-- Donc il faut soit un parent adhérent (`has_active_membership = true`) OU utiliser l'essai gratuit (`free_trial_used = true`)
-- L'essai gratuit est **OBLIGATOIRE** si le parent n'est pas adhérent
+- ⚠️ **CORRECTION v4.0** : Les essais gratuits sont **nominatifs** - chaque enfant DOIT utiliser son propre essai gratuit
+- L'essai gratuit est **OBLIGATOIRE** pour les enfants `pending` et `trial`, même si le parent est adhérent
 
 **Code réel complet** :
 ```ruby
@@ -2670,42 +2778,196 @@ end
 
 ---
 
-## 26. Clarification Logique `is_member` (v3.8)
+## 29. Tableau Récapitulatif - Affichage des Statuts dans `_status_table.html.erb`
 
-### 26.1. Question : "pending = a le droit d'accès ? Ou pourrait avoir accès si paie ?"
+### 29.1. Matrice Complète des Cas d'Affichage
 
-**⚠️ CORRECTION MAJEURE** : La réponse précédente était INCORRECTE.
+**⚠️ RÈGLE v4.0 CRITIQUE** : Les essais gratuits sont **NOMINATIFS** - chaque enfant DOIT utiliser son propre essai gratuit. **Le statut du parent n'a AUCUNE influence** sur l'affichage du statut de l'enfant. Un enfant `pending` ou `trial` sans essai gratuit disponible est **BLOQUÉ**, même si le parent est adhérent.
 
-**Code réel du MODÈLE** (`app/models/attendance.rb:154-220`) :
+| Statut Enfant | Essai Gratuit Enfant | Affichage | Badge | Couleur | Accès Initiation |
+|---------------|----------------------|-----------|-------|---------|------------------|
+| `active` | N/A | "Adhérent actif" | ✅ | `bg-success` (vert) | ✅ **OUI** (sans restriction) |
+| `pending` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
+| `pending` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire) |
+| `trial` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
+| `trial` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire) |
+| `expired` | ❌ Utilisé | "Essai utilisé" | ❌ | `bg-danger` (rouge) | ❌ **NON** (bloqué) |
+| `expired` | ✅ Disponible | "Essai disponible" | ⚡ | `bg-info` (bleu) | ✅ **OUI** (via essai obligatoire - était pending/trial avant) |
+
+**⚠️ IMPORTANT** : Le statut du parent n'apparaît PAS dans ce tableau car il n'a aucune influence sur l'affichage ou l'accès de l'enfant. Les essais gratuits sont **100% nominatifs**.
+
+### 29.2. Problème Identifié dans le Code Actuel (CORRIGÉ)
+
+**Code précédent (INCORRECT selon v4.0)** :
 ```ruby
-# Ligne 154-156 : is_member ne compte QUE active_now (exclut pending)
-is_member = user.memberships.active_now.exists? ||
-            (child_membership_id.present? && child_membership&.active?) ||
-            (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
+<% when 'pending' %>
+  <% if current_user.memberships.active_now.exists? %>
+    <span class="badge bg-warning">En attente</span>  # ❌ ERREUR : Cache l'état de l'essai gratuit
+  <% else %>
+    # Affiche l'état de l'essai gratuit
+  <% end %>
 
-# Ligne 220 : Pour un enfant pending (is_member = false), il faut :
-unless has_active_membership || has_child_membership || free_trial_used
-  errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
-end
+<% when 'trial' %>
+  <% if current_user.memberships.active_now.exists? %>
+    <span class="badge bg-success">Accès parent</span>  # ❌ ERREUR : Cache l'état de l'essai gratuit
+  <% else %>
+    # Affiche l'état de l'essai gratuit
+  <% end %>
 ```
 
-**✅ Réponse CORRIGÉE** :
-- **`pending` = "non membre"** dans le modèle (`is_member = false`) → Essai **OBLIGATOIRE** si parent non adhérent
-- **`pending` = "accès via parent"** si parent adhérent (`has_active_membership = true`)
-- **`trial` = "non membre"** (`is_member = false`) → Essai **OBLIGATOIRE** si parent non adhérent
-- **`trial` = "accès via parent"** si parent adhérent (`has_active_membership = true`)
-- **`active` = "membre actif"** (`is_member = true`) → ACCÈS COMPLET
+**Problème identifié** : Le code précédent vérifiait le statut du parent (`current_user.memberships.active_now.exists?`) pour décider de l'affichage de l'enfant. C'était **INCORRECT** car :
+- ❌ Les essais gratuits sont **nominatifs** (v4.0) - le statut du parent n'a aucune influence
+- ❌ Un enfant `pending` ou `trial` sans essai gratuit disponible est **BLOQUÉ**, même si le parent est adhérent
+- ❌ L'affichage doit être basé uniquement sur le statut de l'enfant et son essai gratuit
 
-**INCOHÉRENCE DÉTECTÉE entre contrôleur et modèle** :
-- Le **contrôleur** considère `pending` comme membre (`is_member = true`)
-- Le **modèle** considère `pending` comme non-membre (`is_member = false`)
-- **Le modèle a le dernier mot** (validation finale) → Essai obligatoire si parent non adhérent
+### 29.3. Code Corrigé (IMPLÉMENTÉ)
 
-**Résumé corrigé** :
-- `pending` = **"non membre"** dans le modèle (`is_member = false`) → Essai **OBLIGATOIRE** si parent non adhérent
-- `pending` = **"accès via parent"** si parent adhérent (`has_active_membership = true`)
-- `trial` = **"non membre"** (`is_member = false`) → Essai **OBLIGATOIRE** si parent non adhérent
-- `trial` = **"accès via parent"** si parent adhérent (`has_active_membership = true`)
-- `active` = **"membre actif"** (`is_member = true`) → ACCÈS COMPLET
+**Logique corrigée (CONFORME à v4.0 - Essais NOMINATIFS)** :
+```ruby
+<% when 'pending' %>
+  <%# v4.0 : Essais gratuits NOMINATIFS - afficher l'état de l'essai gratuit indépendamment du statut du parent %>
+  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+  <% if child_free_trial_used %>
+    <span class="badge bg-danger fs-6">
+      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+      Essai utilisé
+    </span>
+  <% else %>
+    <span class="badge bg-info fs-6">
+      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+      Essai disponible
+    </span>
+  <% end %>
+
+<% when 'trial' %>
+  <%# v4.0 : Essais gratuits NOMINATIFS - afficher l'état de l'essai gratuit indépendamment du statut du parent %>
+  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+  <% if child_free_trial_used %>
+    <span class="badge bg-danger fs-6">
+      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+      Essai utilisé
+    </span>
+  <% else %>
+    <span class="badge bg-info fs-6">
+      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+      Essai disponible
+    </span>
+  <% end %>
+```
+
+**Justification** :
+- ✅ Les essais gratuits sont **100% nominatifs** (v4.0) - chaque enfant a son propre essai, **indépendamment du parent**
+- ✅ **AUCUNE vérification du statut du parent** - le code ne vérifie que l'état de l'essai gratuit de l'enfant
+- ✅ Un enfant `pending` ou `trial` avec essai disponible peut s'inscrire (essai obligatoire)
+- ✅ Un enfant `pending` ou `trial` sans essai disponible est **BLOQUÉ**, même si le parent est adhérent
+- ✅ L'affichage est basé uniquement sur : `child.status` + `child_free_trial_used`
+
+### 29.4. Principe d'Affichage (IMPLÉMENTÉ)
+
+**Affichage simple et clair (IMPLÉMENTÉ)** :
+- ✅ Toujours afficher l'état de l'essai gratuit pour `pending` et `trial`
+- ✅ **AUCUNE référence au statut du parent** dans l'affichage des enfants
+- ✅ L'affichage est basé uniquement sur le statut de l'enfant et son essai gratuit
+
+**Logique d'affichage** :
+1. **Enfant `active`** → "Adhérent actif" (vert) - Accès complet
+2. **Enfant `pending` + essai disponible** → "Essai disponible" (bleu) - Peut s'inscrire via essai obligatoire
+3. **Enfant `pending` + essai utilisé** → "Essai utilisé" (rouge) - **BLOQUÉ** (même si parent adhérent)
+4. **Enfant `trial` + essai disponible** → "Essai disponible" (bleu) - Peut s'inscrire via essai obligatoire
+5. **Enfant `trial` + essai utilisé** → "Essai utilisé" (rouge) - **BLOQUÉ** (même si parent adhérent)
+6. **Enfant `expired`** → "Expiré" (gris) - **BLOQUÉ**
+
+### 29.5. Validation de la Logique
+
+**✅ Code validé** : Le code actuel dans `_status_table.html.erb` est conforme à la logique v4.0 :
+- ✅ Aucune vérification du statut du parent pour les enfants
+- ✅ Affichage basé uniquement sur `child.status` et `child_free_trial_used`
+- ✅ Les essais gratuits sont **100% nominatifs** - chaque enfant a son propre essai
+- ✅ Un enfant sans essai disponible est **BLOQUÉ**, indépendamment du statut du parent
+
+---
+
+## 30. Correction Critique - Vérification Adhésions Parent (v4.0.1)
+
+### 30.1. Problème Identifié
+
+**⚠️ BUG CRITIQUE CORRIGÉ** : Le code vérifiait `current_user.memberships.active_now.exists?` au lieu de `current_user.memberships.personal.active_now.exists?` pour déterminer si le parent pouvait utiliser son essai gratuit.
+
+**Problème** :
+- Le scope `active_now` vérifie **toutes** les adhésions (personnelles ET enfants)
+- Si un enfant avait une adhésion active, `current_user.memberships.active_now.exists?` retournait `true`
+- Le système pensait alors que le parent était adhérent et masquait la checkbox "Utiliser mon essai gratuit"
+- **Résultat** : Le parent ne pouvait pas utiliser son essai gratuit même s'il n'avait pas d'adhésion personnelle active
+
+**Exemple concret** :
+```
+Situation :
+- Parent : Pas d'adhésion personnelle active
+- Enfant A : Adhésion active
+
+Code incorrect (BUG) :
+parent_can_use_trial = !current_user.memberships.active_now.exists?
+# Retourne false car l'enfant a une adhésion active
+# → parent_can_use_trial = false
+# → Checkbox "Utiliser mon essai gratuit" masquée ❌
+
+Code corrigé :
+parent_can_use_trial = !current_user.memberships.personal.active_now.exists?
+# Retourne true car le parent n'a pas d'adhésion personnelle active
+# → parent_can_use_trial = true
+# → Checkbox "Utiliser mon essai gratuit" affichée ✅
+```
+
+### 30.2. Solution Appliquée
+
+**Code corrigé** :
+```ruby
+# app/views/shared/_registration_form_fields.html.erb (ligne 371-372)
+# Pour le parent (sans enfant sélectionné)
+# Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active PERSONNELLE ET n'a pas déjà utilisé son essai
+# IMPORTANT : Utiliser .personal pour vérifier uniquement les adhésions personnelles (pas les enfants)
+# RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+parent_can_use_trial = !current_user.memberships.personal.active_now.exists? && 
+                       !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
+
+# app/views/shared/_registration_form_fields.html.erb (ligne 409)
+# Vérifier si le parent a une adhésion active PERSONNELLE (pour déterminer si l'essai est obligatoire pour les enfants pending)
+# IMPORTANT : Utiliser .personal pour vérifier uniquement les adhésions personnelles (pas les enfants)
+# RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+parent_has_active_membership = current_user.memberships.personal.active_now.exists?
+```
+
+### 30.3. Justification
+
+**Pourquoi utiliser `.personal` ?**
+- ⚠️ **RÈGLE v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque personne a son propre essai gratuit
+- Le statut des enfants n'a **AUCUNE influence** sur l'essai gratuit du parent
+- Un parent sans adhésion personnelle active peut utiliser son essai gratuit, même si un enfant est adhérent
+- Le scope `.personal` filtre uniquement les adhésions avec `is_child_membership: false`
+
+**Impact de la correction** :
+- ✅ Le parent peut maintenant utiliser son essai gratuit même si un enfant a une adhésion active
+- ✅ La checkbox "Utiliser mon essai gratuit" s'affiche correctement pour le parent
+- ✅ Conforme à la logique v4.0 (essais gratuits nominatifs)
+
+### 30.4. Fichiers Modifiés
+
+- `app/views/shared/_registration_form_fields.html.erb` :
+  - Ligne 371 : `parent_can_use_trial` utilise maintenant `.personal.active_now.exists?`
+  - Ligne 409 : `parent_has_active_membership` utilise maintenant `.personal.active_now.exists?`
+
+---
+
+## 31. Section Historique - Ancienne Logique v3.8 (OBSOLÈTE)
+
+⚠️ **ATTENTION** : Cette section documente l'ancienne logique v3.8 qui est **OBSOLÈTE** depuis v4.0.
+
+**Ancienne logique (v3.8 - OBSOLÈTE)** :
+- Les enfants `pending` pouvaient s'inscrire via le parent si le parent était adhérent
+- Les enfants `trial` pouvaient s'inscrire via le parent si le parent était adhérent
+
+**Nouvelle logique (v4.0 - ACTUELLE)** :
+- Les essais gratuits sont **nominatifs** - chaque enfant DOIT utiliser son propre essai gratuit
+- Les enfants `pending` et `trial` DOIVENT utiliser leur essai gratuit, même si le parent est adhérent
 
 ---

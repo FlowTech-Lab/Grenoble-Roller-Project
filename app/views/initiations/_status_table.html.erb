@@ -5,7 +5,6 @@
     <div class="status-table-header">
       <div class="status-col-person">Personne</div>
       <div class="status-col-status">Statut</div>
-      <div class="status-col-action">Action</div>
     </div>
 
     <!-- Contenu du tableau -->
@@ -40,14 +39,6 @@
             </span>
           <% end %>
         </div>
-        
-        <div class="status-cell status-col-action text-center">
-          <% if parent_has_active || !parent_free_trial_used %>
-            <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-          <% else %>
-            <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
-          <% end %>
-        </div>
       </div>
 
       <!-- ENFANTS -->
@@ -58,11 +49,9 @@
             <div class="status-cell status-col-person">
               <span class="status-badge-person">
                 <i class="bi bi-person text-liquid-primary me-2" aria-hidden="true"></i>
-                <div>
-                  <strong><%= child.child_first_name %></strong>
-                  <br>
-                  <small class="text-muted"><%= child.child_last_name %></small>
-                </div>
+                <span>
+                  <strong><%= child.child_first_name %></strong> <small class="text-muted"><%= child.child_last_name %></small>
+                </span>
               </span>
             </div>
             
@@ -74,66 +63,48 @@
                   Adhérent actif
                 </span>
               <% when 'pending' %>
-                <% if current_user.memberships.active_now.exists? %>
-                  <span class="badge bg-warning fs-6">
-                    <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>
-                    En attente
-                  </span>
-                <% else %>
-                  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
-                  <% if child_free_trial_used %>
-                    <span class="badge bg-danger fs-6">
-                      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
-                      Essai utilisé
-                    </span>
-                  <% else %>
-                    <span class="badge bg-info fs-6">
-                      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
-                      Essai dispo
-                    </span>
-                  <% end %>
-                <% end %>
-              <% when 'trial' %>
-                <% if current_user.memberships.active_now.exists? %>
-                  <span class="badge bg-success fs-6">
-                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                    Accès parent
-                  </span>
-                <% else %>
-                  <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
-                  <% if child_free_trial_used %>
-                    <span class="badge bg-danger fs-6">
-                      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
-                      Essai utilisé
-                    </span>
-                  <% else %>
-                    <span class="badge bg-info fs-6">
-                      <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
-                      Essai dispo
-                    </span>
-                  <% end %>
-                <% end %>
-              <% when 'expired' %>
-                <span class="badge bg-secondary fs-6">
-                  <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>
-                  Expiré
-                </span>
-              <% end %>
-            </div>
-            
-            <div class="status-cell status-col-action text-center">
-              <% if child.status == 'active' %>
-                <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-              <% elsif child.status == 'expired' %>
-                <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
-              <% elsif current_user.memberships.active_now.exists? %>
-                <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
-              <% else %>
+                <%# v4.0 : Essais gratuits NOMINATIFS - afficher l'état de l'essai gratuit indépendamment du statut du parent %>
                 <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
                 <% if child_free_trial_used %>
-                  <i class="bi bi-x-circle text-danger fs-5" title="Ne peut pas s'inscrire" aria-hidden="true"></i>
+                  <span class="badge bg-danger fs-6">
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                    Essai utilisé
+                  </span>
                 <% else %>
-                  <i class="bi bi-check-circle text-success fs-5" title="Peut s'inscrire" aria-hidden="true"></i>
+                  <span class="badge bg-info fs-6">
+                    <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+                    Essai disponible
+                  </span>
+                <% end %>
+              <% when 'trial' %>
+                <%# v4.0 : Essais gratuits NOMINATIFS - afficher l'état de l'essai gratuit indépendamment du statut du parent %>
+                <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+                <% if child_free_trial_used %>
+                  <span class="badge bg-danger fs-6">
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                    Essai utilisé
+                  </span>
+                <% else %>
+                  <span class="badge bg-info fs-6">
+                    <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+                    Essai disponible
+                  </span>
+                <% end %>
+              <% when 'expired' %>
+                <%# v4.0 : Essais gratuits NOMINATIFS - un enfant expired peut avoir un essai gratuit disponible s'il était pending/trial avant %>
+                <%# Documentation ligne 2314 : Un enfant expired est traité comme un non-adhérent, les règles des cas 5-8 s'appliquent %>
+                <% child_free_trial_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists? %>
+                <% if child_free_trial_used %>
+                  <span class="badge bg-danger fs-6">
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                    Essai utilisé
+                  </span>
+                <% else %>
+                  <%# Essai disponible : l'enfant expired peut utiliser son essai gratuit (était pending/trial avant) %>
+                  <span class="badge bg-info fs-6">
+                    <i class="bi bi-lightning-charge me-1" aria-hidden="true"></i>
+                    Essai disponible
+                  </span>
                 <% end %>
               <% end %>
             </div>

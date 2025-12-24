@@ -36,7 +36,7 @@
             <i class="bi bi-signpost-2 text-liquid-primary me-2" aria-hidden="true"></i>
             <% if event.loops_count && event.loops_count > 1 %>
               <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-              <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
+              <span class="badge bg-info ms-2"><%= pluralize(event.loops_count, "boucle") %></span>
             <% else %>
               <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
             <% end %>
@@ -78,7 +78,7 @@
           
           <span class="badge bg-primary">
             <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
-            <%= pluralize(event.attendances_count, "inscrit", "inscrits") %>
+            <%= pluralize(event.attendances_count, "inscrit") %>
           </span>
           
           <% unless event.unlimited? %>
@@ -124,98 +124,54 @@
 
       <div class="mt-auto">
         <div class="action-row d-flex flex-wrap gap-2">
-            <% if defined?(render_signup_button) && render_signup_button %>
-              <% if current_user_has_attendance?(event) %>
-                <!-- Calendrier en premier (action positive) -->
-                <% if user_signed_in? %>
-                  <%= link_to event_path(event, format: :ics), 
-                      class: "btn btn-outline-primary btn-sm", 
-                      title: 'Ajouter au calendrier',
-                      aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
-                  <% end %>
-                <% end %>
-                <!-- Se désinscrire en second (action destructive) -->
-                <% if user_signed_in? %>
-                  <% user_attendances = event.attendances.where(user: current_user).includes(:child_membership) %>
-                  <% parent_attendance = user_attendances.find_by(child_membership_id: nil) %>
-                  <% child_attendances = user_attendances.where.not(child_membership_id: nil) %>
-                  <% total_attendances = (parent_attendance ? 1 : 0) + child_attendances.count %>
-                  
-                  <% if total_attendances > 1 %>
-                    <!-- Plusieurs inscriptions : ouvrir un modal -->
-                    <button type="button" 
-                        class="btn btn-outline-secondary btn-sm" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#cancelAttendanceModal<%= event.id %>"
-                        aria-label="Se désinscrire de cet événement">
-                      <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
-                    </button>
-                  <% else %>
-                    <!-- Une seule inscription : confirmation directe -->
-                    <%= button_to cancel_attendance_event_path_for(event, parent_attendance || child_attendances.first), method: :delete, 
-                        class: "btn btn-outline-secondary btn-sm", 
-                        params: parent_attendance ? {} : { child_membership_id: child_attendances.first&.child_membership_id },
-                        data: { turbo_confirm: 'Annuler votre inscription ? Vous pouvez vous réinscrire plus tard si vous le souhaitez.' },
-                        aria: { label: 'Se désinscrire de cet événement' } do %>
-                      <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>Se désinscrire
-                    <% end %>
-                  <% end %>
-                <% end %>
-              <% elsif policy(event).can_attend? && !event.full? %>
-                <button type="button" 
-                        class="btn btn-liquid-primary btn-sm" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#confirmAttendModal<%= event.id %>"
-                        aria-label="S'inscrire à cet événement">
-                  <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>S'inscrire
-                </button>
-                <!-- Calendrier après S'inscrire -->
-                <% if user_signed_in? %>
-                  <%= link_to event_path(event, format: :ics), 
-                      class: "btn btn-outline-primary btn-sm", 
-                      title: 'Ajouter au calendrier',
-                      aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
-                  <% end %>
-                <% end %>
-              <% elsif event.full? %>
-                <button type="button" class="btn btn-outline-secondary btn-sm" disabled aria-label="Événement complet">
-                  <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Complet
-                </button>
-                <!-- Calendrier même si complet -->
-                <% if user_signed_in? %>
-                  <%= link_to event_path(event, format: :ics), 
-                      class: "btn btn-outline-primary btn-sm", 
-                      title: 'Ajouter au calendrier',
-                      aria: { label: 'Ajouter au calendrier' } do %>
-                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
-                  <% end %>
-                <% end %>
-              <% end %>
-            <% else %>
-              <!-- Si pas de bouton d'inscription, afficher Calendrier/Connexion -->
+          <!-- Bouton Découvrir en premier (action principale) -->
+          <%= link_to(event_path(event), 
+              class: "btn btn-liquid-primary btn-sm", 
+              aria: { label: "Découvrir #{event.title}" }) do %>
+            <i class="bi bi-compass me-1" aria-hidden="true"></i>Découvrir
+          <% end %>
+
+          <% if defined?(render_signup_button) && render_signup_button %>
+            <% if current_user_has_attendance?(event) %>
+              <!-- Calendrier (action positive) -->
               <% if user_signed_in? %>
                 <%= link_to event_path(event, format: :ics), 
                     class: "btn btn-outline-primary btn-sm", 
                     title: 'Ajouter au calendrier',
                     aria: { label: 'Ajouter au calendrier' } do %>
-                  <i class="bi bi-calendar-event me-1"></i>Calendrier
+                  <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
                 <% end %>
-              <% else %>
-                <%= link_to new_user_session_path, 
-                    class: "btn btn-outline-primary btn-sm",
-                    aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
-                  <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Connexion
+              <% end %>
+            <% elsif event.full? %>
+              <!-- Calendrier même si complet -->
+              <% if user_signed_in? %>
+                <%= link_to event_path(event, format: :ics), 
+                    class: "btn btn-outline-primary btn-sm", 
+                    title: 'Ajouter au calendrier',
+                    aria: { label: 'Ajouter au calendrier' } do %>
+                  <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Calendrier
                 <% end %>
               <% end %>
             <% end %>
-
-            <%= link_to(event_path(event), class: "btn btn-outline-secondary btn-sm", aria: { label: "Voir les détails de #{event.title}" }) do %>
-              <i class="bi bi-eye me-1" aria-hidden="true"></i>Voir plus
+          <% else %>
+            <!-- Si pas de bouton d'inscription, afficher Calendrier/Connexion -->
+            <% if user_signed_in? %>
+              <%= link_to event_path(event, format: :ics), 
+                  class: "btn btn-outline-primary btn-sm", 
+                  title: 'Ajouter au calendrier',
+                  aria: { label: 'Ajouter au calendrier' } do %>
+                <i class="bi bi-calendar-event me-1"></i>Calendrier
+              <% end %>
+            <% else %>
+              <%= link_to new_user_session_path, 
+                  class: "btn btn-outline-primary btn-sm",
+                  aria: { label: 'Se connecter pour accéder aux fonctionnalités' } do %>
+                <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Connexion
+              <% end %>
             <% end %>
-          </div>
+          <% end %>
         </div>
+      </div>
       </div>
   </article>
 </div>

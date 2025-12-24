@@ -24,6 +24,9 @@ services:
       MAILER_HOST: grenoble-roller.flowtech-lab.org
       MAILER_PROTOCOL: https
       PORT: 3000
+      TZ: Europe/Paris
+      # Run Solid Queue supervisor inside Puma (single-server deployment)
+      SOLID_QUEUE_IN_PUMA: "true"
     ports:
       - "3001:3000"
     depends_on:
@@ -35,6 +38,9 @@ services:
     # Si Solid Queue/Cache/Cable nécessitent SQLite, monter seulement les fichiers spécifiques
     # volumes:
     #   - grenoble-roller-staging-data:/rails/db
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
       interval: 10s

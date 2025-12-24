@@ -1,0 +1,13 @@
+<% 
+  breadcrumb_items = [
+    { label: "Produits", url: admin_panel_products_path },
+    { label: @product.name, url: admin_panel_product_path(@product) },
+    { label: "Modifier", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<h1 class="mb-4">Modifier : <%= @product.name %></h1>
+
+<%= render 'form' %>

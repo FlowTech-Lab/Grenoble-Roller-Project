@@ -309,8 +309,12 @@ log_info "État du conteneur avant migrations :"
 docker ps -a --filter "name=${CONTAINER_NAME}" --format "table {{.Names}}\t{{.Status}}\t{{.State}}" | tee -a "$LOG_FILE" || true
 
 # En dev, utiliser db:reset pour éviter les problèmes d'ordre de migrations
-# db:reset fait : db:drop, db:create, db:schema:load, db:seed
+# ⚠️  IMPORTANT : db:reset ne touche QUE PostgreSQL (base principale)
+#    - db:reset fait : db:drop, db:create, db:schema:load, db:seed
+#    - db:reset ne touche PAS la queue SQLite (complètement séparée)
+#    - Les jobs en queue SQLite restent intacts même après db:reset
 log "🔄 Réinitialisation de la base de données (dev) avec db:reset..."
+log_info "   ℹ️  db:reset ne touche QUE PostgreSQL, pas la queue SQLite"
 if ! docker exec "${CONTAINER_NAME}" bin/rails db:reset; then
     log_error "Échec de db:reset"
     log_warning "Tentative avec db:migrate en fallback..."
@@ -332,6 +336,10 @@ if ! docker exec "${CONTAINER_NAME}" bin/rails db:reset; then
 else
     log_success "Base de données réinitialisée avec succès (db:reset)"
 fi
+
+# Solid Queue utilise maintenant PostgreSQL (même base que l'application)
+# Les migrations Solid Queue sont incluses dans db/migrate et gérées par db:reset ci-dessus
+log_info "ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)"
 
 # 11. Health check HTTP (double vérification)
 log "🏥 Health check HTTP (port: ${PORT})..."

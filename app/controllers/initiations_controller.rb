@@ -3,6 +3,8 @@ class InitiationsController < ApplicationController
   before_action :authenticate_user!, except: [ :index, :show ]
   before_action :load_supporting_data, only: [ :new, :create, :edit, :update ]
 
+  rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
+
   def index
     # Utiliser policy_scope pour respecter les permissions Pundit
     # Les créateurs peuvent voir leurs initiations en draft, les autres voient seulement les publiées
@@ -96,8 +98,6 @@ class InitiationsController < ApplicationController
       duration_min: 105, # 1h45
       max_participants: 30,
       location_text: "Gymnase Ampère, 74 Rue Anatole France, 38100 Grenoble",
-      meeting_lat: 45.17323364952216,
-      meeting_lng: 5.705659385672371,
       level: "beginner",
       distance_km: 0,
       price_cents: 0,
@@ -112,12 +112,17 @@ class InitiationsController < ApplicationController
 
     initiation_params = permitted_attributes(@initiation)
     initiation_params[:currency] = "EUR"
-    initiation_params[:status] = "draft" # Toujours en draft à la création
     initiation_params[:price_cents] = 0 # Gratuit
     initiation_params[:creator_user_id] = current_user.id
 
+    # Seuls les modérateurs+ peuvent définir le statut à la création
+    unless current_user.role&.level.to_i >= 50 # MODERATOR = 50
+      initiation_params[:status] = "draft" # Toujours en draft à la création pour les non-modérateurs
+    end
+
     if @initiation.update(initiation_params)
-      redirect_to initiation_path(@initiation), notice: "Initiation créée avec succès. Elle est en attente de validation par un modérateur."
+      status_message = @initiation.published? ? "Initiation créée et publiée avec succès." : "Initiation créée avec succès. Elle est en attente de validation par un modérateur."
+      redirect_to initiation_path(@initiation), notice: status_message
     else
       render :new, status: :unprocessable_entity
     end
@@ -212,4 +217,8 @@ class InitiationsController < ApplicationController
     current_user.present? && current_user.role&.level.to_i >= 50 # MODERATOR = 50
   end
   helper_method :can_moderate?
+
+  def handle_record_not_found
+    redirect_to initiations_path, alert: "Cette initiation n'existe pas ou n'est plus disponible."
+  end
 end

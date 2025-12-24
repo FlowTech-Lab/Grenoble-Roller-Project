@@ -2,6 +2,7 @@ class MembershipsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_email_confirmed, only: [ :create ]
   before_action :set_membership, only: [ :show, :edit, :update, :destroy, :upgrade, :renew ]
+  before_action :ensure_parent_profile_complete_for_child, only: [ :new ]
 
   def index
     @memberships = current_user.memberships.includes(:payment, :tshirt_variant).order(created_at: :desc)
@@ -513,6 +514,34 @@ class MembershipsController < ApplicationController
 
   def set_membership
     @membership = current_user.memberships.find(params[:id])
+  end
+
+  # Empêcher l'accès au formulaire enfant si le profil parent n'est pas complet
+  # Règle : 7 champs obligatoires sur le parent pour créer un enfant :
+  # - first_name, last_name, phone
+  # - address, postal_code, city
+  # - date_of_birth
+  def ensure_parent_profile_complete_for_child
+    return unless params[:type] == "child"
+
+    return if current_user.child_profile_complete_for_membership?
+
+    missing_keys = current_user.missing_child_profile_fields_for_membership
+
+    labels = {
+      first_name: "prénom",
+      last_name: "nom",
+      phone: "numéro de téléphone",
+      address: "adresse postale",
+      postal_code: "code postal",
+      city: "ville",
+      date_of_birth: "date de naissance"
+    }
+
+    missing_labels = missing_keys.map { |key| labels[key] || key.to_s.humanize }.join(", ")
+
+    flash[:alert] = "Pour ajouter un enfant, veuillez d'abord compléter votre profil parent : #{missing_labels}."
+    redirect_to edit_user_registration_path
   end
 
   def get_categories

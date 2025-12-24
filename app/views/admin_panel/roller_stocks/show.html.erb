@@ -1,0 +1,98 @@
+<% 
+  breadcrumb_items = [
+    { label: "Stock Rollers", url: admin_panel_roller_stocks_path },
+    { label: "Taille #{@roller_stock.size}", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Stock Roller - Taille <%= @roller_stock.size %></h1>
+  <div class="btn-group">
+    <%= link_to "Éditer", edit_admin_panel_roller_stock_path(@roller_stock), class: "btn btn-primary" %>
+    <%= link_to "Retour", admin_panel_roller_stocks_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<!-- Détails Stock -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Détails</h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Taille (EU) :</strong> <%= @roller_stock.size %></p>
+        <p><strong>Quantité :</strong>
+          <% if @roller_stock.quantity > 0 %>
+            <span class="badge bg-success"><%= @roller_stock.quantity %></span>
+          <% else %>
+            <span class="badge bg-danger">0</span>
+          <% end %>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>Statut :</strong>
+          <% if @roller_stock.is_active? %>
+            <span class="badge bg-success">Actif</span>
+          <% else %>
+            <span class="badge bg-secondary">Inactif</span>
+          <% end %>
+        </p>
+        <p><strong>Disponible :</strong>
+          <% if @roller_stock.available? %>
+            <span class="badge bg-success">Oui</span>
+          <% else %>
+            <span class="badge bg-danger">Non</span>
+          <% end %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Historique des demandes -->
+<% if @requests.any? %>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Historique des demandes (50 dernières)</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Initiation</th>
+              <th>Date</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @requests.each do |attendance| %>
+              <tr>
+                <td><%= attendance.participant_name %></td>
+                <td><%= attendance.user.email %></td>
+                <td><%= attendance.event.title %></td>
+                <td><%= l(attendance.created_at, format: :short) %></td>
+                <td>
+                  <span class="badge bg-<%= attendance.status == 'present' ? 'success' : 'secondary' %>">
+                    <%= attendance.status.humanize %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="card">
+    <div class="card-body">
+      <p class="text-muted">Aucune demande pour cette taille.</p>
+    </div>
+  </div>
+<% end %>

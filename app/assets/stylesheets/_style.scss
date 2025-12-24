@@ -24,7 +24,8 @@
     --gr-warning: #7e4900;
     --gr-danger: #911a14;
     --gr-info: #2782bb;
-    
+    --bs-body-bg: rgba(255, 255, 255, 0.01);
+
     /* Glass/Liquid effects */
     --liquid-glass-bg:     rgba(255,255,255,0.35);
     --liquid-glass-border: rgba(255,255,255,0.2);
@@ -109,8 +110,15 @@
   /* === LIQUID BODY BACKGROUND === */
   body {
     background: var(--gradient-liquid-pastel);
-    background-attachment: fixed;
+    /* background-attachment: fixed désactivé sur mobile pour performance */
     position: relative; /* Pour le skip link */
+  }
+  
+  /* Activer background-attachment: fixed uniquement sur tablet/desktop */
+  @media (min-width: 768px) {
+    body {
+      background-attachment: fixed;
+    }
   }
   
   /* Global link styles - adaptés aux thèmes */
@@ -128,24 +136,71 @@
   
   [data-bs-theme=dark] body {
     background: linear-gradient(120deg, rgba(0, 122, 255, 0.05) 0%, rgba(92, 90, 231, 0.185) 50%, rgba(138, 5, 226, 0.05) 100%);
-    background-attachment: fixed;
+    /* background-attachment: fixed désactivé sur mobile pour performance */
+  }
+  
+  /* Activer background-attachment: fixed uniquement sur tablet/desktop */
+  @media (min-width: 768px) {
+    [data-bs-theme=dark] body {
+      background-attachment: fixed;
+    }
   }
   
   /* === LIQUID TYPOGRAPHY === */
   
   h1 {
     font-family: 'Poppins', system-ui, BlinkMacSystemFont, sans-serif;
-    font-size: 3.5rem;
+    font-size: 2.5rem; /* Mobile first */
     font-weight: 900;
     line-height: 1.1;
     letter-spacing: -0.02em;
-
     margin-bottom: 1.5rem;
   }
   
-  @media (max-width: 768px) {
+  h2 {
+    font-size: 2rem; /* Mobile first */
+  }
+  
+  h3 {
+    font-size: 1.75rem; /* Mobile first */
+  }
+  
+  h4 {
+    font-size: 1.5rem; /* Mobile first */
+  }
+  
+  h5 {
+    font-size: 1.25rem; /* Mobile first */
+  }
+  
+  h6 {
+    font-size: 1rem; /* Mobile first */
+  }
+  
+  /* Desktop: Tailles plus grandes */
+  @media (min-width: 768px) {
     h1 {
+      font-size: 3.5rem;
+    }
+    
+    h2 {
       font-size: 2.5rem;
+    }
+    
+    h3 {
+      font-size: 2rem;
+    }
+    
+    h4 {
+      font-size: 1.75rem;
+    }
+    
+    h5 {
+      font-size: 1.5rem;
+    }
+    
+    h6 {
+      font-size: 1.25rem;
     }
   }
   
@@ -299,13 +354,27 @@
   }
   
   .card-liquid .card-header {
-    background: rgba(255, 255, 255, 0.4);
-    border-bottom: 1px solid var(--card-border-color);
+    background: rgba(255, 255, 255, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border-bottom: 1px solid var(--card-border-color) !important;
+    /* Arrondis en haut seulement pour le premier card-header */
+    border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
+    color: var(--bs-card-cap-color);
   }
   
   .card-liquid-primary .card-header {
-    background: var(--gradient-liquid-primary);
-    color: white;
+    background: var(--gradient-liquid-primary) !important;
+    background-color: transparent !important;
+    color: white !important;
+    /* Arrondis en haut seulement pour le premier card-header */
+    border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
+  }
+  
+  /* S'assurer que les card-header dans les cards liquid ont les arrondis */
+  .card-liquid > .card-header:first-child {
+    border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
   }
   
   /* Liquid navbar */
@@ -329,6 +398,373 @@
   .form-control-liquid:focus {
     background: rgba(255, 255, 255, 0.35);
     box-shadow: 0 0 0 0.25rem rgba(0, 122, 255, 0.25);
+  }
+
+  /* === BOOTSTRAP ELEMENTS - LIQUID GLASS STYLING === */
+  
+  /* 1. Form Control - Liquid Glass */
+  .form-control {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid);
+  }
+
+  .form-control:focus {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: var(--gr-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 122, 255, 0.25);
+    outline: 3px solid var(--gr-primary);
+    outline-offset: 2px;
+  }
+
+  /* 2. Form Select - Liquid Glass */
+  .form-select {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid);
+    padding-right: 4.125rem;
+  }
+
+  .form-select:focus {
+    border-color: var(--gr-primary);
+    outline: 3px solid var(--gr-primary);
+    outline-offset: 2px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  .form-select:hover {
+    border-color: var(--gr-primary-light);
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .form-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Options dans les selects - amélioration contraste */
+  .form-select option {
+    background: var(--liquid-glass-bg);
+    color: var(--bs-body-color);
+    padding: 0.5rem;
+  }
+
+  /* 3. Textarea - Liquid Glass */
+  textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    font-family: var(--bs-body-font-family);
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+  }
+
+  textarea.form-control:focus {
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  /* 4. Buttons Primary & Secondary - Override */
+  .btn-primary {
+    background: var(--gr-primary);
+    border-color: var(--gr-primary);
+    color: white;
+    transition: var(--transition-liquid);
+  }
+
+  .btn-primary:hover {
+    background: var(--gr-primary-light);
+    border-color: var(--gr-primary-light);
+  }
+
+  .btn-secondary {
+    background: var(--gr-muted);
+    border-color: var(--gr-muted);
+    color: white;
+    transition: var(--transition-liquid);
+  }
+
+  .btn-secondary:hover {
+    background: #6c757d;
+  }
+
+  /* 5. Modal Content - Glassmorphism */
+  .modal-content {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 1rem;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--liquid-glass-border);
+    background: rgba(0, 123, 255, 0.08);
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* 6. Table - Liquid Styling */
+  .table {
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    --bs-table-bg: transparent;
+  }
+
+  .table th {
+    background: rgba(0, 123, 255, 0.08);
+    border-bottom: 2px solid var(--liquid-glass-border);
+    font-weight: 600;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+  }
+
+  /* 7. Dropdown Menu - Glassmorphism */
+  .dropdown-menu {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .dropdown-item {
+    transition: var(--transition-liquid-fast);
+    color: var(--bs-body-color);
+  }
+
+  .dropdown-item:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--gr-primary);
+  }
+
+  /* 8. List Group - Liquid Glass */
+  .list-group {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .list-group-item {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--liquid-glass-border);
+    transition: var(--transition-liquid-fast);
+    color: var(--bs-body-color);
+  }
+
+  .list-group-item:hover {
+    background: rgba(0, 123, 255, 0.08);
+  }
+
+  .list-group-item:last-child {
+    border-bottom: none;
+  }
+
+  /* 9. Input Group Text - Integration */
+  .input-group-text {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    transition: var(--transition-liquid);
+  }
+
+  /* 10. Range Input - Custom Slider */
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, var(--gr-primary), var(--gr-primary-light));
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid var(--gr-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--gr-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+
+  /* 11. Pagination - Liquid */
+  .pagination .page-link {
+    color: var(--gr-primary);
+    border: 1px solid var(--liquid-glass-border);
+    background: var(--liquid-glass-bg);
+    transition: var(--transition-liquid-fast);
+  }
+
+  .pagination .page-link:hover {
+    background: rgba(0, 123, 255, 0.1);
+  }
+
+  .pagination .page-item.active .page-link {
+    background: var(--gr-primary);
+    border-color: var(--gr-primary);
+    color: white;
+  }
+
+  /* 12. Fieldset & Legend - Styling */
+  fieldset {
+    border: 1px solid var(--liquid-glass-border);
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  legend {
+    font-weight: 600;
+    color: var(--gr-primary);
+    padding: 0 0.5rem;
+  }
+
+  /* 13. Label (Global) - Styling */
+  label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--bs-body-color);
+  }
+
+  /* 14. HR - Gradient */
+  hr {
+    border: none;
+    border-top: 1px solid var(--liquid-glass-border);
+    opacity: 0.5;
+    margin: 2rem 0;
+  }
+
+  /* 15. Breadcrumb - Liquid */
+  .breadcrumb {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+  }
+
+  .breadcrumb-item a {
+    color: var(--gr-primary);
+    transition: var(--transition-liquid-fast);
+  }
+
+  .breadcrumb-item a:hover {
+    color: var(--gr-primary-light);
+  }
+
+  /* Dark Mode pour tous les éléments Bootstrap */
+  [data-bs-theme="dark"] {
+    .form-control,
+    .form-select,
+    textarea.form-control,
+    .modal-content,
+    .table,
+    .dropdown-menu,
+    .list-group,
+    .input-group-text,
+    fieldset,
+    .pagination .page-link,
+    .breadcrumb {
+      background: rgba(30, 30, 30, 0.85);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--bs-body-color);
+    }
+
+    .table th {
+      background: rgba(0, 123, 255, 0.15);
+    }
+
+    .dropdown-item:hover {
+      background: rgba(0, 123, 255, 0.15) !important;
+    }
+    
+    .navbar-grenoble-roller .dropdown-item {
+      color: var(--bs-body-color) !important;
+    }
+    
+    .navbar-grenoble-roller .dropdown-item:hover {
+      background: rgba(0, 123, 255, 0.15) !important;
+      color: var(--gr-primary-light) !important;
+    }
+
+    .list-group-item:hover {
+      background: rgba(0, 123, 255, 0.12);
+    }
+
+    .modal-header {
+      background: rgba(0, 123, 255, 0.15);
+    }
+
+    .breadcrumb-item a {
+      color: var(--gr-primary-light);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--gr-primary-light);
+    }
+
+    .form-select:hover {
+      border-color: var(--gr-primary-light);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .form-select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Options dans les selects - amélioration contraste mode sombre */
+    .form-select option {
+      background: rgba(30, 30, 30, 0.95);
+      color: var(--bs-body-color);
+      padding: 0.5rem;
+    }
+
+    textarea.form-control:focus {
+      background: rgba(255, 255, 255, 0.15);
+    }
   }
 
   /* Input number compact - réutilisable */
@@ -643,14 +1079,41 @@
   }
   
   /* Mobile : Hamburger menu button */
-  .navbar-toggler:focus-visible {
+  .navbar-grenoble-roller .navbar-toggler {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    transition: var(--transition-liquid);
+  }
+  
+  .navbar-grenoble-roller .navbar-toggler:hover {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: var(--gr-primary);
+  }
+  
+  .navbar-grenoble-roller .navbar-toggler:focus-visible {
     outline: 2px solid var(--gr-primary);
     outline-offset: 2px;
     box-shadow: none; /* Retire le box-shadow Bootstrap par défaut */
+    background: rgba(255, 255, 255, 0.45);
   }
   
-  [data-bs-theme="dark"] .navbar-toggler:focus-visible {
+  [data-bs-theme="dark"] .navbar-grenoble-roller .navbar-toggler {
+    background: rgba(30, 30, 30, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .navbar-toggler:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--gr-primary-light);
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .navbar-toggler:focus-visible {
     outline-color: var(--gr-primary-dark);
+    background: rgba(255, 255, 255, 0.15);
   }
   
   .navbar-grenoble-roller .nav-link.active {
@@ -685,39 +1148,159 @@
   
   /* Dropdown menus */
   .navbar-grenoble-roller .dropdown-menu {
-    border: 1px solid var(--liquid-glass-border);
-    box-shadow: var(--bs-box-shadow-lg);
-    border-radius: 0.5rem;
+    background: var(--liquid-glass-bg) !important;
+    backdrop-filter: var(--liquid-blur) !important;
+    -webkit-backdrop-filter: var(--liquid-blur) !important;
+    border: 1px solid var(--liquid-glass-border) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 0;
+    /* Ne pas forcer display: flex ici - Bootstrap gère l'affichage avec .show */
+  }
+  
+  /* Flexbox pour meilleure organisation - seulement quand le dropdown est ouvert */
+  .navbar-grenoble-roller .dropdown-menu.show {
+    display: flex !important;
+    flex-direction: column;
   }
   
   .navbar-grenoble-roller .dropdown-item {
-    transition: var(--transition-liquid-fast);
+    transition: var(--transition-liquid-fast) !important;
+    color: var(--bs-body-color) !important;
+    min-height: 44px !important; /* Zone tactile minimale WCAG 2.5.8 */
+    display: flex !important;
+    align-items: center !important;
+    padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x) !important;
+    gap: 0.5rem; /* Espacement entre icône et texte */
   }
   
   .navbar-grenoble-roller .dropdown-item:hover {
-    background: var(--liquid-glass-bg);
-    color: var(--gr-primary);
+    background: rgba(0, 123, 255, 0.1) !important;
+    color: var(--gr-primary) !important;
     transform: translateX(5px);
+  }
+  
+  .navbar-grenoble-roller .dropdown-item:focus,
+  .navbar-grenoble-roller .dropdown-item:focus-visible {
+    background: rgba(0, 123, 255, 0.1) !important;
+    color: var(--gr-primary) !important;
+    outline: none !important;
+  }
+  
+  /* Bouton déconnexion - force couleur rouge */
+  .navbar-grenoble-roller .dropdown-item.text-danger {
+    color: var(--bs-danger) !important;
+  }
+  
+  .navbar-grenoble-roller .dropdown-item.text-danger:hover,
+  .navbar-grenoble-roller .dropdown-item.text-danger:focus {
+    color: var(--bs-danger) !important;
+    background: rgba(220, 53, 69, 0.1) !important;
+  }
+  
+  /* Dark mode pour dropdown navbar */
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-menu {
+    background: rgba(30, 30, 30, 1) !important;
+    border-color: rgba(255, 255, 255, 0.445) !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item.text-danger {
+    color: #dc3545 !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item.text-danger:hover,
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item.text-danger:focus {
+    color: #ff6b7a !important;
+    background: rgba(220, 53, 69, 0.15) !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item {
+    color: var(--bs-body-color) !important;
+  }
+  
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item:hover,
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-item:focus {
+    background: rgba(0, 123, 255, 0.15) !important;
+    color: var(--gr-primary-light) !important;
   }
   
   .navbar-grenoble-roller .dropdown-divider {
     border-color: var(--liquid-glass-border);
   }
   
-  /* Responsive */
+  /* Responsive - Bonnes pratiques 2025 pour navbar mobile */
   @media (max-width: 991px) {
     .navbar-grenoble-roller .navbar-search {
       min-width: 100%;
       margin: 1rem 0;
     }
     
+    /* Menu burger - éléments empilés verticalement */
+    .navbar-grenoble-roller .navbar-collapse {
+      padding-top: 1rem;
+    }
+    
+    /* Container des boutons d'action (thème, panier, connexion) */
     .navbar-grenoble-roller .d-flex.gap-2 {
       width: 100%;
       margin-top: 1rem;
+      flex-direction: column; /* Empiler verticalement sur mobile */
+      gap: 0.75rem !important; /* Espacement vertical entre les boutons */
+      align-items: stretch; /* Boutons pleine largeur */
     }
     
-    .navbar-grenoble-roller .btn {
-      flex: 1;
+    /* Boutons dans le menu burger - pleine largeur */
+    .navbar-grenoble-roller .navbar-collapse .btn {
+      width: 100%;
+      justify-content: center;
+      min-height: 44px; /* Zone tactile minimale WCAG 2.5.8 */
+      padding: 0.625rem 1rem;
+    }
+    
+    /* Dropdown dans le menu burger - pleine largeur */
+    .navbar-grenoble-roller .navbar-collapse .dropdown {
+      width: 100%;
+    }
+    
+    .navbar-grenoble-roller .navbar-collapse .dropdown > .btn {
+      width: 100%;
+      justify-content: space-between; /* Texte à gauche, flèche à droite */
+    }
+    
+    /* Dropdown menu - flexbox column pour meilleure organisation */
+    .navbar-grenoble-roller .navbar-collapse .dropdown-menu {
+      width: 100%;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      position: static !important; /* Position statique dans le menu burger */
+      transform: none !important;
+      box-shadow: none;
+      border: 1px solid var(--liquid-glass-border);
+      border-radius: 0.5rem;
+      background: var(--liquid-glass-bg);
+      padding: 0.5rem 0;
+    }
+    
+    /* Items du dropdown - meilleur espacement */
+    .navbar-grenoble-roller .navbar-collapse .dropdown-item {
+      padding: 0.75rem 1rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    /* Liens de navigation - meilleur espacement sur mobile */
+    .navbar-grenoble-roller .navbar-nav {
+      margin-bottom: 1rem;
+    }
+    
+    .navbar-grenoble-roller .nav-link {
+      padding: 0.75rem 1rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
     
     .navbar-grenoble-roller .nav-link.active::after {
@@ -1458,10 +2041,10 @@
   
   /* === BANNER MOLECULES === */
   
-  /* Hero Banner (Large - Homepage) */
+  /* Hero Banner (Large - Homepage) - Bonnes pratiques 2025 */
   .banner-hero {
     position: relative;
-    height: 500px;
+    min-height: 500px; /* Hauteur minimale au lieu de fixe pour éviter débordement */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1469,6 +2052,7 @@
     background-image: url('/img/Roller-Luminous2.png');
     background-size: cover;
     background-position: center;
+    padding: 2rem 0; /* Padding vertical pour éviter débordement */
   }
   
   .banner-overlay {
@@ -1486,6 +2070,7 @@
     z-index: 2;
     color: white;
     width: 100%;
+    padding: 1rem 0; /* Padding vertical supplémentaire */
   }
   
   .banner-icon {
@@ -1501,12 +2086,14 @@
     line-height: 1.2;
     color: white; /* Blanc dans les deux modes (clair et sombre) */
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem; /* Réduit de mb-4 à mb-1 pour économiser l'espace */
   }
   
   .banner-subtitle {
     font-size: 1.25rem;
-    color: var(--gr-text);
+    color: rgba(255, 255, 255, 0.95); /* Meilleur contraste */
     line-height: 1.6;
+    margin-bottom: 1.5rem; /* Réduit de mb-4 à mb-1.5 */
   }
   
   .banner-actions {
@@ -1555,34 +2142,55 @@
     color: var(--gr-text);
   }
   
-  /* Responsive */
+  /* Responsive - Bonnes pratiques 2025 pour hero banner mobile */
   @media (max-width: 768px) {
     .banner-hero {
-      height: 400px;
+      min-height: auto; /* Hauteur adaptative selon le contenu */
+      padding: 1.5rem 0; /* Padding réduit sur mobile */
+      align-items: flex-start; /* Aligner en haut pour éviter débordement */
+      padding-top: 2rem; /* Plus d'espace en haut */
+    }
+    
+    .banner-content {
+      padding: 0.5rem 0; /* Padding réduit sur mobile */
     }
     
     .banner-title {
-      font-size: 2.5rem;
+      font-size: 2rem; /* Réduit de 2.5rem à 2rem pour économiser l'espace */
+      line-height: 1.2;
+      margin-bottom: 0.75rem; /* Espacement réduit */
+      /* Supprimer les <br> sur mobile - le texte se wrap naturellement */
+      br {
+        display: none;
+      }
     }
     
     .banner-subtitle {
-      font-size: 1rem;
+      font-size: 0.95rem; /* Légèrement réduit */
+      line-height: 1.5;
+      margin-bottom: 1rem; /* Espacement réduit */
+      /* Supprimer les <br> sur mobile - le texte se wrap naturellement */
+      br {
+        display: none;
+      }
     }
     
     .banner-icon {
-      font-size: 3rem;
+      font-size: 2.5rem; /* Réduit de 3rem à 2.5rem */
+      margin-bottom: 0.75rem; /* Espacement réduit */
     }
     
     .banner-page {
-      height: 150px;
+      min-height: 150px; /* Hauteur minimale au lieu de fixe */
+      padding: 1rem 0;
     }
     
     .banner-title-page {
-      font-size: 2rem;
+      font-size: 1.75rem; /* Réduit de 2rem */
     }
     
     .banner-subtitle-page {
-      font-size: 0.9rem;
+      font-size: 0.875rem; /* Réduit de 0.9rem */
     }
     
     .banner-actions {
@@ -1590,13 +2198,15 @@
       gap: 0.75rem;
       padding: 0 0.5rem;
       align-items: stretch;
+      margin-top: 0.5rem; /* Espacement réduit avant les boutons */
     }
     
     .banner-actions .btn {
       width: 100%;
       max-width: 100%;
       font-size: 0.9rem;
-      padding: 0.65rem 0.85rem;
+      padding: 0.75rem 1rem; /* Padding adapté pour zone tactile */
+      min-height: 44px; /* Zone tactile minimale WCAG 2.5.8 */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1609,6 +2219,39 @@
     .banner-actions .btn i {
       flex-shrink: 0;
       margin-right: 0.5rem !important;
+    }
+  }
+  
+  /* Très petits écrans (< 480px) - Optimisation supplémentaire */
+  @media (max-width: 480px) {
+    .banner-hero {
+      padding: 1rem 0;
+      padding-top: 1.5rem;
+    }
+    
+    .banner-title {
+      font-size: 1.75rem; /* Encore plus petit sur très petits écrans */
+      margin-bottom: 0.5rem;
+    }
+    
+    .banner-subtitle {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .banner-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .banner-actions {
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    
+    .banner-actions .btn {
+      font-size: 0.875rem;
+      padding: 0.625rem 0.875rem;
     }
   }
   
@@ -1669,24 +2312,140 @@
     z-index: 10;
     font-weight: 600;
     padding: 0.5rem 0.75rem;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    /* Arrière-plan par défaut pour garantir la visibilité */
-    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    /* Arrière-plan opaque pour garantir la visibilité sur images blanches */
+    background: rgba(0, 0, 0, 0.75) !important;
     color: white !important;
     
     /* Assurer la visibilité en mode sombre */
     [data-bs-theme="dark"] & {
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.8) !important;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.85) !important;
     }
   }
   
-  /* Les classes badge-liquid-* surchargent l'arrière-plan par défaut */
-  .card-event-date.badge-liquid-primary,
+  /* Les classes badge-liquid-* gardent un fond opaque pour la lisibilité */
+  .card-event-date.badge-liquid-primary {
+    /* Fond semi-transparent avec couleur primaire pour garder le style liquid */
+    background: rgba(0, 123, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
   .card-event-date.badge-liquid-secondary {
-    background: inherit !important;
+    /* Fond semi-transparent avec couleur secondaire pour garder le style liquid */
+    background: rgba(108, 117, 125, 0.85) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(173, 181, 189, 0.85) !important;
+    }
+  }
+  
+  /* Badges de date dans les hero sections (pages show) - Fond opaque pour lisibilité */
+  .hero-image-container .badge,
+  .hero-image-container + .hero-overlay ~ * .badge,
+  .position-absolute .badge.badge-liquid-primary,
+  .position-absolute .badge.badge-liquid-secondary {
+    /* Fond opaque pour garantir la visibilité sur images blanches */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .position-absolute .badge.badge-liquid-primary {
+    background: rgba(0, 123, 255, 0.85) !important;
+    color: white !important;
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(77, 148, 255, 0.85) !important;
+    }
+  }
+  
+  .position-absolute .badge.badge-liquid-secondary {
+    background: rgba(108, 117, 125, 0.85) !important;
+    color: white !important;
+    
+    [data-bs-theme="dark"] & {
+      background: rgba(173, 181, 189, 0.85) !important;
+    }
+  }
+  
+  /* Images de parcours - Affichage proportionnel et scroll horizontal sur mobile */
+  .route-image-container {
+    position: relative;
+    width: 100%;
+    cursor: pointer;
+    background: var(--liquid-glass-bg);
+    border-radius: 0.5rem 0.5rem 0 0;
+    
+    /* Desktop : hauteur proportionnelle (ratio 16:9) */
+    aspect-ratio: 16 / 9;
+    min-height: 200px;
+    max-height: 400px;
+    
+    /* Centrer l'image verticalement */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Cacher le débordement par défaut */
+  }
+  
+  .route-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Afficher l'image en entier sans crop */
+    object-position: center;
+  }
+  
+  /* Sur mobile : permettre le scroll horizontal si l'image est plus large */
+  @media (max-width: 768px) {
+    .route-image-container {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
+      /* Retirer aspect-ratio sur mobile pour permettre le scroll */
+      aspect-ratio: auto;
+      min-height: 200px;
+      max-height: 300px;
+      
+      /* Indicateur visuel pour le scroll horizontal */
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 100%;
+        background: linear-gradient(to left, rgba(0, 0, 0, 0.15), transparent);
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      /* Afficher l'indicateur seulement si on peut scroller */
+      &:hover::after,
+      &:active::after {
+        opacity: 1;
+      }
+      
+      [data-bs-theme="dark"] &::after {
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.15), transparent);
+      }
+    }
+    
+    .route-image {
+      /* Sur mobile, permettre à l'image d'être plus large que le conteneur */
+      width: auto;
+      min-width: 100%;
+      height: 100%;
+      max-height: 100%;
+      /* Si l'image est plus large que le conteneur, elle sera scrollable horizontalement */
+    }
   }
   
   .card-event-info p {
@@ -3938,10 +4697,18 @@
   }
   
   .password-strength-meter {
-    height: 100%;
+    height: 4px; /* Hauteur fixe mobile */
+    min-height: 4px;
     width: 0%;
     transition: width 0.3s ease, background-color 0.3s ease;
     border-radius: 2px;
+  }
+  
+  /* Desktop: Hauteur légèrement plus grande */
+  @media (min-width: 768px) {
+    .password-strength-meter {
+      height: 6px;
+    }
   }
   
   .password-strength-weak {
@@ -4022,6 +4789,41 @@
     min-height: 24px;
     display: inline-flex;
     align-items: center;
+    color: var(--bs-body-color);
+
+    /* Icônes dans les labels - couleur adaptée au thème (sauf si classe spécifique) */
+    i:not([class*="text-"]) {
+      color: var(--bs-body-color);
+    }
+
+    strong {
+      color: var(--bs-body-color);
+    }
+  }
+
+  /* Mode sombre - icônes blanches pour meilleure visibilité */
+  [data-bs-theme="dark"] .form-check-label {
+    color: rgba(255, 255, 255, 0.9);
+
+    /* Icônes sans classe de couleur spécifique - blanc en mode sombre */
+    i:not([class*="text-"]) {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    strong {
+      color: rgba(255, 255, 255, 0.95);
+    }
+  }
+  
+  /* Mobile: Augmenter gap sur très petits écrans pour meilleure accessibilité */
+  @media (max-width: 480px) {
+    .form-check {
+      gap: 1rem; /* 16px au lieu de 12px pour meilleur espacement tactile */
+    }
+    
+    .btn {
+      padding: 0.625rem 1.25rem; /* Plus de padding sur mobile */
+    }
   }
   
   /* 2.4.11 - Focus clairement visible (outline ≥ 3px, contraste ≥ 3:1) */
@@ -4038,6 +4840,17 @@
     outline: 3px solid var(--gr-primary);
     outline-offset: 2px;
     box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Mobile: Réduire outline-offset pour éviter débordement */
+  @media (max-width: 480px) {
+    .form-control:focus-visible,
+    .btn:focus-visible,
+    button:focus-visible,
+    .form-check-input:focus-visible {
+      outline-offset: 0;
+      outline-width: 2px;
+    }
   }
   
   /* Mode sombre - Focus plus visible */
@@ -4089,7 +4902,9 @@
   }
   
   /* Input-group avec erreur : contour rouge sur tout le groupe */
-  .input-group:has(.form-control.is-invalid) {
+  /* Utilise :has() avec fallback pour navigateurs anciens */
+  .input-group:has(.form-control.is-invalid),
+  .input-group.has-error {
     .form-control {
       border-color: #dc3545;
     }
@@ -4100,7 +4915,8 @@
   }
   
   /* Input-group avec succès : contour vert sur tout le groupe */
-  .input-group:has(.form-control.is-valid) {
+  .input-group:has(.form-control.is-valid),
+  .input-group.has-success {
     .form-control {
       border-color: #198754;
     }
@@ -4128,6 +4944,16 @@
     background-repeat: no-repeat;
     background-position: right calc(0.375em + 0.1875rem) center;
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+  }
+  
+  /* Mobile: Ajuster taille des icônes de validation sur petits écrans */
+  @media (max-width: 480px) {
+    .form-control.is-invalid,
+    .form-control.is-valid {
+      padding-right: calc(1.25em + 0.5rem); /* Moins d'espace sur mobile */
+      background-size: 1.2em 1.2em; /* Icône plus grande pour meilleure visibilité */
+      background-position: right calc(0.25em + 0.125rem) center;
+    }
   }
   
   .valid-feedback {
@@ -5511,6 +6337,26 @@
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     padding-right: calc(1.5em + 0.75rem);
   }
+  
+  /* Mobile: Ajuster taille des icônes de validation sur petits écrans (formulaires membreships) */
+  @media (max-width: 480px) {
+    .form-control.is-invalid,
+    .form-control.is-valid {
+      padding-right: calc(1.25em + 0.5rem);
+      background-size: 1.2em 1.2em;
+      background-position: right calc(0.25em + 0.125rem) center;
+    }
+  }
+  
+  /* Mobile: Ajuster taille des icônes de validation sur petits écrans (formulaires membreships) */
+  @media (max-width: 480px) {
+    .form-control.is-invalid,
+    .form-control.is-valid {
+      padding-right: calc(1.25em + 0.5rem);
+      background-size: 1.2em 1.2em;
+      background-position: right calc(0.25em + 0.125rem) center;
+    }
+  }
 
   .invalid-feedback {
     display: block;
@@ -5589,7 +6435,7 @@
     height: 20px;
     margin-top: 0.25rem;
     cursor: pointer;
-    border: 2px solid #DDD;
+    border: 2px solid #000; /* Noir en thème clair */
     transition: var(--transition-liquid);
     
     &:checked {
@@ -5597,18 +6443,64 @@
       border-color: #2180A9;
     }
     
-    &:hover {
-      border-color: #2180A9;
+    &:hover:not(:disabled) {
+      border-color: var(--gr-primary);
+    }
+
+    &:focus,
+    &:focus-visible {
+      border-color: var(--gr-primary);
+      box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+      outline: 3px solid var(--gr-primary);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
   [data-bs-theme="dark"] .form-check-input {
     background-color: var(--liquid-glass-bg);
-    border-color: var(--card-border-color);
+    border-color: #DDD; /* Garder #DDD en thème sombre */
     
     &:checked {
       background-color: #4d94ff;
       border-color: #4d94ff;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--gr-primary-light);
+    }
+
+    &:focus,
+    &:focus-visible {
+      border-color: var(--gr-primary-light);
+      box-shadow: 0 0 0 4px rgba(77, 148, 255, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  /* Amélioration contraste checkboxes mode clair */
+  .form-check-input {
+    &:hover:not(:disabled) {
+      border-color: var(--gr-primary);
+    }
+
+    &:focus,
+    &:focus-visible {
+      border-color: var(--gr-primary);
+      box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
@@ -5623,6 +6515,30 @@
     cursor: pointer;
     font-size: 0.95rem;
     line-height: 1.5;
+    color: var(--bs-body-color);
+
+    /* Icônes dans les labels - couleur adaptée au thème (sauf si classe spécifique) */
+    i:not([class*="text-"]) {
+      color: var(--bs-body-color);
+    }
+
+    strong {
+      color: var(--bs-body-color);
+    }
+  }
+
+  /* Mode sombre - icônes blanches pour meilleure visibilité */
+  [data-bs-theme="dark"] .form-check-label {
+    color: rgba(255, 255, 255, 0.9);
+
+    /* Icônes sans classe de couleur spécifique - blanc en mode sombre */
+    i:not([class*="text-"]) {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    strong {
+      color: rgba(255, 255, 255, 0.95);
+    }
   }
 
   /* Health Questions */
@@ -5815,14 +6731,14 @@
 /* En-tête du tableau */
 .status-table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.75fr;
-  gap: 1.5rem;
-  padding: 1.25rem 1.5rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   background: rgba(0, 123, 255, 0.08);
   border-bottom: 1px solid var(--liquid-glass-border);
   font-weight: 600;
   color: var(--gr-primary);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -5836,9 +6752,9 @@
 /* Ligne du tableau */
 .status-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.75fr;
-  gap: 1.5rem;
-  padding: 1.25rem 1.5rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--liquid-glass-border);
   align-items: center;
   transition: var(--transition-liquid-fast);
@@ -5859,46 +6775,50 @@
   gap: 0.75rem;
 }
 
-.status-cell.status-col-action {
-  justify-content: center;
-}
 
 /* Badge personne */
 .status-badge-person {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.95rem;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  min-width: 0; /* Permet le truncate */
+  flex: 1;
 }
 
 .status-badge-person i {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .status-badge-person strong {
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .status-badge-person small {
-  display: block;
+  display: inline;
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
+  margin-left: 0.25rem;
+  white-space: nowrap;
 }
 
 /* Badges statut */
 .status-row .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  font-size: 0.85rem;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
+  flex-shrink: 0;
 }
 
 .status-row .badge i {
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 /* Légende */
@@ -5912,31 +6832,44 @@
   flex-wrap: wrap;
 }
 
-/* Responsive - Mobile */
-@media (max-width: 768px) {
+/* Responsive - Mobile First (2 colonnes optimisées) */
+@media (max-width: 576px) {
   .status-table-header {
-    grid-template-columns: 1fr;
     gap: 0.5rem;
-    padding: 1rem;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
   }
 
   .status-row {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
   }
 
-  .status-cell {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--liquid-glass-border);
+  .status-badge-person {
+    font-size: 0.8125rem;
+    gap: 0.375rem;
   }
 
-  .status-cell:last-child {
-    border-bottom: none;
+  .status-badge-person i {
+    font-size: 1.125rem;
   }
 
-  .status-cell.status-col-action {
-    justify-content: flex-end;
+  .status-badge-person strong {
+    font-size: 0.875rem;
+  }
+
+  .status-badge-person small {
+    font-size: 0.75rem;
+  }
+
+  .status-row .badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+  }
+
+  .status-row .badge i {
+    font-size: 0.8125rem;
   }
 }
 
@@ -6103,5 +7036,933 @@
 
   .initiation-card-modern-title {
     font-size: 1rem;
+  }
+}
+
+/* ========================================
+   ADMIN PANEL - Mobile-First Design 2025
+   ======================================== */
+
+/* Variables CSS Admin Panel */
+:root {
+  --navbar-height: 76px;
+}
+
+/* === ADMIN PANEL BODY === */
+body.admin-panel {
+  background: var(--gradient-liquid-pastel);
+  background-attachment: fixed;
+}
+
+[data-bs-theme="dark"] body.admin-panel {
+  background: linear-gradient(120deg, rgba(0, 122, 255, 0.05) 0%, rgba(92, 90, 231, 0.185) 50%, rgba(138, 5, 226, 0.05) 100%);
+  background-attachment: fixed;
+}
+
+/* === ADMIN SIDEBAR - Mobile-First === */
+/* Mobile: Sidebar complètement cachée, offcanvas uniquement */
+@media (max-width: 991px) {
+  /* Sidebar desktop cachée - ne prend AUCUN espace */
+  .admin-sidebar {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* S'assurer que le controller Stimulus ne modifie rien */
+  #sidebar.collapsed,
+  #sidebar:not(.collapsed) {
+    width: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Contenu principal prend 100% de la largeur */
+  .admin-main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Conteneur admin prend toute la largeur */
+  .admin-container {
+    width: 100% !important;
+  }
+
+  /* Bouton hamburger bien positionné - Top Right */
+  .admin-mobile-menu-toggle {
+    position: fixed;
+    top: calc(var(--navbar-height, 76px) + 0.5rem);
+    right: 0.75rem;
+    left: auto;
+    z-index: 1040;
+    padding: 0;
+  }
+
+  .admin-mobile-menu-toggle .btn {
+    min-height: 44px;
+    min-width: 44px;
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-hover);
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+  }
+
+  .admin-mobile-menu-toggle .btn:hover,
+  .admin-mobile-menu-toggle .btn:focus {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-hover-lg);
+    transform: scale(1.05);
+  }
+}
+
+/* Desktop: Sidebar fixe */
+@media (min-width: 992px) {
+  .admin-sidebar {
+    position: fixed;
+    width: 280px;
+    height: calc(100vh - var(--navbar-height, 76px));
+    top: var(--navbar-height, 76px);
+    left: 0;
+    z-index: 1000;
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border-right: 1px solid var(--liquid-glass-border);
+    box-shadow: var(--shadow-liquid);
+    transition: width var(--transition-liquid);
+  }
+
+  #sidebar {
+    top: var(--navbar-height, 76px) !important;
+    height: calc(100vh - var(--navbar-height, 76px)) !important;
+  }
+
+  #sidebar.collapsed {
+    width: 64px;
+    box-shadow: var(--bs-box-shadow);
+  }
+
+  /* Contenu principal avec marge */
+  .admin-main-content {
+    margin-left: 280px;
+    transition: margin-left var(--transition-liquid);
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  #sidebar.collapsed ~ * .admin-main-content,
+  #sidebar.collapsed + main.admin-main-content {
+    margin-left: 64px;
+  }
+
+  /* Cacher le bouton hamburger mobile sur desktop */
+  .admin-mobile-menu-toggle {
+    display: none !important;
+  }
+}
+
+/* Transitions labels/chevrons */
+.sidebar-label,
+.bi-chevron-right,
+.bi-chevron-down {
+  transition: opacity var(--transition-liquid-fast), visibility var(--transition-liquid-fast);
+}
+
+#sidebar.collapsed .sidebar-label,
+#sidebar.collapsed .bi-chevron-right,
+#sidebar.collapsed .bi-chevron-down {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Bouton toggle sidebar */
+.admin-sidebar-toggle {
+  transition: var(--transition-liquid-fast);
+}
+
+.admin-sidebar-toggle:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* Mobile menu toggle - défini dans media query mobile */
+
+/* Conteneur admin */
+.admin-container {
+  overflow: hidden;
+}
+
+/* === ADMIN SIDEBAR LOGO TEXT - Adaptatif thème clair/sombre === */
+/* Forcer la couleur même si parent a text-white */
+.admin-sidebar .admin-sidebar-logo-text,
+#offcanvasSidebar .admin-sidebar-logo-text,
+.admin-sidebar-logo-text {
+  color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="dark"] .admin-sidebar .admin-sidebar-logo-text,
+[data-bs-theme="dark"] #offcanvasSidebar .admin-sidebar-logo-text,
+[data-bs-theme="dark"] .admin-sidebar-logo-text {
+  color: white !important;
+}
+
+/* === ADMIN ACTIVEADMIN LINK - Visible en mode clair et sombre === */
+.admin-activeadmin-link {
+  color: #ff9800 !important; /* Orange visible en clair et sombre */
+}
+
+.admin-activeadmin-link:hover {
+  color: #f57c00 !important; /* Orange plus foncé au hover */
+}
+
+[data-bs-theme="dark"] .admin-activeadmin-link {
+  color: #ffb74d !important; /* Orange plus clair en mode sombre */
+}
+
+[data-bs-theme="dark"] .admin-activeadmin-link:hover {
+  color: #ffa726 !important; /* Orange hover en mode sombre */
+}
+
+/* === ADMIN SIDEBAR LINKS - Couleur adaptative === */
+.admin-sidebar-link {
+  color: var(--bs-body-color) !important;
+  opacity: 0.7;
+}
+
+.admin-sidebar-link:hover {
+  opacity: 1;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-link:hover {
+  color: white !important;
+}
+
+/* === ADMIN NAV LINKS - Touch-Friendly === */
+.admin-sidebar .nav-link {
+  transition: var(--transition-liquid-fast);
+  border-radius: var(--bs-border-radius);
+  min-height: 44px; /* Touch target mobile-first */
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.admin-sidebar .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-hover);
+}
+
+.admin-sidebar .nav-link.active {
+  background: var(--gradient-liquid-primary);
+  color: white;
+  box-shadow: var(--shadow-hover);
+}
+
+/* Mobile: Sidebar pleine largeur - Layout vertical optimisé WCAG 2025 */
+@media (max-width: 991px) {
+  /* Offcanvas body prend toute la largeur */
+  #offcanvasSidebar .offcanvas-body {
+    width: 100%;
+    padding: 0;
+  }
+
+  /* Navigation pleine largeur */
+  #offcanvasSidebar .nav {
+    width: 100%;
+    flex-direction: column;
+    gap: 4px; /* Gap entre items 4px (respiration légère) */
+    padding: 0;
+  }
+
+  /* Items de menu pleine largeur */
+  #offcanvasSidebar .nav-item {
+    width: 100%;
+    margin: 0;
+    display: block;
+  }
+
+  /* Liens pleine largeur - Espacements WCAG 2025 Premium */
+  #offcanvasSidebar .nav-link {
+    width: 100%;
+    min-height: 48px; /* Standard WCAG 2025 (confortable pour doigt) */
+    padding: 12px 16px; /* Vertical 12px, Horizontal 16px */
+    font-size: 1.05rem;
+    color: #f5f5f5; /* WCAG AAA contrast (14:1 ratio) */
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px; /* Gap icon-text 12px */
+    border-radius: 0;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box;
+  }
+
+  #offcanvasSidebar .nav-item:last-child .nav-link {
+    border-bottom: none;
+  }
+
+  /* Hover et focus states - Premium 2025 */
+  #offcanvasSidebar .nav-link:hover,
+  #offcanvasSidebar .nav-link:focus {
+    background: rgba(255, 255, 255, 0.1); /* Subtle glow */
+    color: #ffffff;
+    outline: none;
+  }
+
+  #offcanvasSidebar .nav-link:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  #offcanvasSidebar .nav-link.active {
+    background: var(--gradient-liquid-primary);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* Liens avec toggle collapse - Style distinct */
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"] {
+    background: rgba(255, 255, 255, 0.08);
+    font-weight: 500;
+  }
+
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"]:hover,
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"]:focus,
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"][aria-expanded="true"] {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Sous-menus dans offcanvas - Collapse premium 2025 */
+  #offcanvasSidebar .collapse {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.25);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    /* Animation slide-down fluide */
+    transition: height 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  #offcanvasSidebar .collapse .nav {
+    width: 100%;
+    padding: 0.5rem 0;
+    gap: 4px; /* Gap entre items 4px */
+  }
+
+  #offcanvasSidebar .collapse .nav-item {
+    width: 100%;
+    margin: 0;
+  }
+
+  #offcanvasSidebar .collapse .nav-link {
+    width: 100%;
+    padding: 10px 16px 10px 3.5rem; /* Indentation 3.5rem comme recommandé */
+    font-size: 0.95rem; /* -10% de la taille principale */
+    min-height: 44px; /* Touch target minimum WCAG */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: transparent;
+    border-left: 2px solid transparent;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.9; /* Légère opacity pour hiérarchie */
+    color: #f5f5f5; /* WCAG AAA contrast */
+  }
+
+  #offcanvasSidebar .collapse .nav-link:hover,
+  #offcanvasSidebar .collapse .nav-link:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--gr-primary); /* Border-left color transition */
+    opacity: 1;
+    outline: none;
+  }
+
+  #offcanvasSidebar .collapse .nav-link:focus-visible {
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 2px;
+  }
+
+  /* Chevron pour indicateur de sous-menu - Animation premium */
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"] .bi-chevron-right,
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"] .bi-chevron-down {
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1rem;
+    margin-left: auto;
+    width: 20px; /* Largeur fixe pour alignment */
+    text-align: center;
+  }
+
+  #offcanvasSidebar .nav-link[data-bs-toggle="collapse"][aria-expanded="true"] .bi-chevron-right {
+    transform: rotate(90deg); /* Chevron rotate 90° quand open */
+  }
+
+  /* Header offcanvas optimisé */
+  #offcanvasSidebar .offcanvas-header {
+    padding: 1.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  }
+
+  #offcanvasSidebar .offcanvas-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f5f5f5; /* WCAG AAA */
+  }
+
+  /* Icons dans menu - Alignment fixe */
+  #offcanvasSidebar .nav-link i {
+    width: 20px; /* Largeur fixe pour alignment */
+    font-size: 1.25rem; /* 20-24px comme recommandé */
+    text-align: center;
+    flex-shrink: 0;
+  }
+}
+
+/* === ADMIN CARDS - Réutilise card-liquid existante === */
+/* Les classes .card-liquid, .rounded-liquid, .shadow-liquid existent déjà */
+/* Pas besoin de redéfinir, juste s'assurer qu'elles sont utilisées */
+
+/* === ADMIN TABLES - Mobile-First === */
+/* Forcer background transparent - Bootstrap utilise --bs-table-bg qui n'existe pas */
+.admin-panel .card .table,
+.admin-dashboard .card .table,
+.admin-panel .table,
+.admin-dashboard .table {
+  background: transparent !important;
+  background-color: transparent !important;
+  --bs-table-bg: transparent !important;
+}
+
+/* Forcer .bg-dark dans admin à ne pas utiliser --bs-bg-opacity */
+.admin-panel .bg-dark,
+.admin-dashboard .bg-dark,
+.admin-sidebar.bg-dark,
+#offcanvasSidebar.bg-dark {
+  --bs-bg-opacity: 0 !important;
+  opacity: 1 !important;
+}
+
+.admin-panel .card .table thead,
+.admin-panel .table thead {
+  background: rgba(255, 255, 255, 0.3) !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  --bs-table-bg: rgba(255, 255, 255, 0.3) !important;
+  border-bottom: 1px solid var(--liquid-glass-border);
+}
+
+.admin-panel .card .table tbody tr,
+.admin-panel .table tbody tr {
+  background: transparent !important;
+  background-color: transparent !important;
+  --bs-table-bg: transparent !important;
+  transition: var(--transition-liquid-fast);
+}
+
+.admin-panel .card .table tbody tr:hover,
+.admin-panel .table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  --bs-table-bg: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* === ADMIN TABLES - Mobile-First Responsive (2025) === */
+/* Mobile: Transformer les tableaux en cards avec labels */
+@media (max-width: 767px) {
+  .admin-panel .table-responsive {
+    overflow-x: visible; /* Pas de scroll horizontal */
+    border-radius: var(--bs-border-radius);
+  }
+
+  .admin-panel .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: auto !important; /* Pas de largeur minimale forcée */
+  }
+
+  /* Cacher le header sur mobile */
+  .admin-panel .table thead {
+    display: none;
+  }
+
+  /* Transformer les lignes en cards avec style liquid glass */
+  .admin-panel .table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    /* Utiliser les mêmes styles que .card-liquid */
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 1.6rem; /* rounded-liquid */
+    box-shadow: var(--bs-box-shadow);
+    padding: 1rem;
+    transition: var(--transition-liquid);
+  }
+
+  .admin-panel .table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: var(--bs-box-shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  /* Transformer les cellules en lignes avec labels */
+  .admin-panel .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .admin-panel .table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* Label avant chaque valeur (utilise data-label ou génère depuis th) */
+  .admin-panel .table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gr-muted);
+    margin-right: 1rem;
+    flex-shrink: 0;
+    min-width: 100px;
+    text-align: left;
+  }
+
+  /* Si pas de data-label, utiliser le texte du th correspondant via JS ou CSS */
+  /* Pour l'instant, on utilise data-label dans les vues */
+
+  /* Actions en colonne */
+  .admin-panel .table tbody td:last-child {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .admin-panel .table tbody td:last-child::before {
+    content: "Actions";
+  }
+
+  .admin-panel .table tbody td .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .admin-panel .table tbody td .btn-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Badges et spans dans les cellules */
+  .admin-panel .table tbody td .badge,
+  .admin-panel .table tbody td span {
+    display: inline-block;
+    margin-left: auto;
+    text-align: right;
+  }
+
+  /* Titres plus petits sur mobile */
+  .admin-panel h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Cards avec padding réduit */
+  .admin-panel .card-body {
+    padding: 1rem;
+  }
+
+  /* Éviter les débordements */
+  .admin-panel .table tbody td,
+  .admin-panel .table tbody td * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Éviter les débordements horizontaux */
+  .admin-panel .card-body {
+    overflow-x: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Padding top pour éviter débordement en haut */
+  .admin-panel .container-fluid {
+    padding-top: 1rem;
+  }
+
+  /* Tables dans cards - éviter débordement */
+  .admin-panel .card .table-responsive {
+    margin: -1rem;
+    padding: 1rem;
+    overflow-x: visible;
+  }
+
+  /* Améliorer l'affichage des selects dans les tableaux mobiles */
+  .admin-panel .table tbody td select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Améliorer l'affichage des checkboxes */
+  .admin-panel .table tbody td input[type="checkbox"] {
+    margin: 0 auto;
+    display: block;
+  }
+}
+
+/* Tablet: Scroll horizontal avec meilleur style */
+@media (min-width: 768px) and (max-width: 991px) {
+  .admin-panel .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--bs-border-radius);
+    overflow-x: auto;
+  }
+
+  .admin-panel .table {
+    font-size: 0.9rem;
+    min-width: 700px;
+  }
+
+  .admin-panel .table th,
+  .admin-panel .table td {
+    padding: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+/* Desktop: Tableau normal */
+@media (min-width: 992px) {
+  .admin-panel .table-responsive {
+    overflow-x: auto;
+  }
+
+  .admin-panel .table th,
+  .admin-panel .table td {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* === ADMIN DROPDOWN - Réutilise liquid glass === */
+.admin-panel .dropdown-menu {
+  background: var(--liquid-glass-bg);
+  backdrop-filter: var(--liquid-blur);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: var(--shadow-liquid-lg);
+}
+
+.admin-panel .dropdown-menu .dropdown-item {
+  transition: var(--transition-liquid-fast);
+  min-height: 44px; /* Touch target */
+  display: flex;
+  align-items: center;
+}
+
+.admin-panel .dropdown-menu .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* === ADMIN OFFCANVAS MOBILE - PLEINE LARGEUR (100vw) === */
+/* Mobile: Sidebar pleine largeur - Standard 2025 */
+@media (max-width: 991px) {
+  #offcanvasSidebar {
+    /* Pleine largeur écran */
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 100vw !important;
+    
+    /* Glassmorphism premium 2025 - Adaptatif selon thème */
+    background: var(--liquid-glass-bg) !important;
+    background-color: var(--liquid-glass-bg) !important;
+    /* Forcer --bs-bg-opacity à 0 pour éviter les problèmes avec .bg-dark */
+    --bs-bg-opacity: 0 !important;
+    backdrop-filter: blur(10px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(1.2) !important;
+    border-right: 1px solid var(--liquid-glass-border) !important;
+    color: var(--bs-body-color) !important;
+    
+    /* Shadow premium */
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.24) !important;
+    inset: 1px 0 0 rgba(255, 255, 255, 0.05) !important;
+    
+    z-index: 1050 !important;
+    
+    /* Animation premium 2025 */
+    transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+  
+  /* En mode sombre, offcanvas avec fond plus sombre et texte blanc */
+  [data-bs-theme="dark"] #offcanvasSidebar {
+    background: rgba(17, 24, 39, 0.95) !important;
+    background-color: rgba(17, 24, 39, 0.95) !important;
+    color: white !important;
+  }
+  
+  /* Forcer les nav-links dans offcanvas à utiliser la couleur du thème */
+  [data-bs-theme="dark"] #offcanvasSidebar .nav-link {
+    color: white !important;
+  }
+  
+  #offcanvasSidebar .nav-link {
+    color: var(--bs-body-color) !important;
+  }
+
+  /* Backdrop avec opacity - Premium 2025 */
+  .offcanvas-backdrop {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    opacity: 0.5 !important;
+    transition: opacity 300ms ease !important;
+  }
+
+  .offcanvas-backdrop.show {
+    opacity: 0.5 !important;
+  }
+
+  /* Header pleine largeur */
+  #offcanvasSidebar .offcanvas-header {
+    width: 100% !important;
+    padding: 1.5rem !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Body pleine largeur */
+  #offcanvasSidebar .offcanvas-body {
+    width: 100% !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Navigation pleine largeur */
+  #offcanvasSidebar nav {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #offcanvasSidebar nav .nav {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 4px !important; /* Gap entre items 4px comme recommandé */
+    box-sizing: border-box !important;
+  }
+}
+
+/* Desktop: Largeur normale (280px) */
+@media (min-width: 992px) {
+  #offcanvasSidebar {
+    width: 280px !important;
+    max-width: 85vw !important;
+  }
+}
+
+/* Styles communs offcanvas (desktop + mobile) */
+#offcanvasSidebar .offcanvas-title {
+  font-weight: 600;
+  color: white;
+}
+
+#offcanvasSidebar .nav-link {
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+
+#offcanvasSidebar .nav-link.active {
+  background: var(--gradient-liquid-primary);
+  color: white;
+}
+
+#offcanvasSidebar .collapse {
+  pointer-events: auto;
+  transition: height var(--transition-liquid);
+}
+
+#offcanvasSidebar .collapse.show {
+  display: block;
+}
+
+/* === ADMIN BUTTONS - Réutilise btn-liquid-* existantes === */
+/* Les classes .btn-liquid-primary, .btn-outline-liquid-primary existent déjà */
+/* Pas besoin de redéfinir */
+
+/* Mobile: Buttons plus grands pour touch */
+@media (max-width: 767px) {
+  .admin-panel .btn {
+    min-height: 44px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .admin-panel .btn-group-sm .btn {
+    min-height: 44px;
+    padding: 0.625rem 1rem;
+  }
+
+  /* Espacement amélioré sur mobile */
+  .admin-panel .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .admin-panel .card {
+    margin-bottom: 1rem;
+  }
+
+  /* Padding contenu principal réduit sur très petit écran */
+  .admin-main-content .container-fluid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+/* === ADMIN FORMS - Réutilise form-control-liquid existante === */
+/* La classe .form-control-liquid existe déjà */
+/* Mobile: Inputs plus grands pour touch */
+@media (max-width: 767px) {
+  .admin-panel .form-control,
+  .admin-panel .form-select {
+    min-height: 44px;
+    font-size: 16px; /* Évite zoom iOS */
+    padding: 0.75rem;
+  }
+
+  /* Labels plus espacés */
+  .admin-panel .form-label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  /* Espacement entre champs */
+  .admin-panel .mb-3 {
+    margin-bottom: 1.25rem !important;
+  }
+}
+
+/* === ADMIN BADGES - Réutilise badge-liquid-* existantes === */
+/* Les classes .badge-liquid-primary, .badge-liquid-success, etc. existent déjà */
+
+/* === ADMIN MAIL LOGS - Styles spécifiques === */
+.admin-mail-logs {
+  code {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--liquid-glass-border);
+    color: var(--bs-body-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+  
+  pre {
+    background: var(--liquid-glass-bg) !important;
+    border: 1px solid var(--liquid-glass-border) !important;
+    color: var(--bs-body-color) !important;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  /* Amélioration du thème sombre pour les éléments de code */
+  [data-bs-theme="dark"] {
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    pre {
+      background: rgba(0, 0, 0, 0.3) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+}
+
+/* === ADMIN TEXT COLORS - Réutilise variables === */
+.admin-panel .text-primary {
+  color: var(--gr-primary) !important;
+}
+
+.admin-panel .text-success {
+  color: var(--gr-success) !important;
+}
+
+.admin-panel .text-danger {
+  color: var(--gr-danger) !important;
+}
+
+/* === ACCESSIBILITY - WCAG 2.1 AA === */
+/* Focus visible pour navigation clavier */
+.admin-sidebar .nav-link:focus-visible,
+.admin-panel .btn:focus-visible,
+#offcanvasSidebar .nav-link:focus-visible {
+  outline: 2px solid var(--gr-primary);
+  outline-offset: 2px;
+  border-radius: var(--bs-border-radius);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .admin-main-content,
+  .sidebar-label,
+  #offcanvasSidebar {
+    transition: none !important;
+  }
+}
+
+/* === MOBILE SPECIFIC FIXES === */
+/* S'assurer que le contenu ne déborde jamais */
+@media (max-width: 991px) {
+  .admin-panel * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Empêcher le texte de déborder */
+  .admin-panel h1,
+  .admin-panel h2,
+  .admin-panel h3,
+  .admin-panel h4,
+  .admin-panel h5,
+  .admin-panel h6 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  /* Cards responsive */
+  .admin-panel .row {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+  }
+
+  .admin-panel .row > * {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }

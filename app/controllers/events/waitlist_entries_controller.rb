@@ -142,56 +142,89 @@ module Events
 
       if waitlist_entry.refuse!
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
-        redirect_to event_path(waitlist_entry.event), notice: "Vous avez refusé la place pour #{participant_name}. Vous restez en liste d'attente et serez notifié(e) si une autre place se libère."
+        redirect_to event_path(waitlist_entry.event), notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de l'événement et de la liste d'attente."
       else
         redirect_to event_path(waitlist_entry.event), alert: "Impossible de refuser la place. Veuillez réessayer."
       end
     end
 
     # GET /waitlist_entries/:id/confirm (shallow route)
+    # Accepte soit un token (via email) soit une authentification classique
     def confirm
-      authenticate_user!
+      waitlist_entry = find_waitlist_entry_for_action
 
-      waitlist_entry_id = params[:id] || params[:waitlist_entry_id]
-      waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
-
-      unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
-        event = waitlist_entry&.event || @event
-        redirect_to event_path(event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+      unless waitlist_entry
+        redirect_to root_path, alert: "Lien invalide ou expiré. Veuillez vous connecter pour confirmer votre place."
         return
       end
 
-      # Autoriser l'action sur l'événement
-      authorize waitlist_entry.event, :convert_waitlist_to_attendance?
+      # Vérifier que l'entrée est bien notifiée et le token valide
+      unless waitlist_entry.notified? && waitlist_entry.token_valid?
+        event = waitlist_entry.event
+        redirect_to event_path(event), alert: "Ce lien n'est plus valide. La place a peut-être déjà été confirmée ou le délai de 24h est expiré."
+        return
+      end
 
-      # Appeler la méthode POST via convert_to_attendance!
+      # Autoriser l'action sur l'événement (skip Pundit si token valide)
+      unless skip_authorization_for_token? || (user_signed_in? && can?(:convert_waitlist_to_attendance?, waitlist_entry.event))
+        redirect_to root_path, alert: "Vous n'êtes pas autorisé à effectuer cette action."
+        return
+      end
+
+      # Effectuer l'action
       if waitlist_entry.convert_to_attendance!
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
-        redirect_to event_path(waitlist_entry.event), notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
+        event = waitlist_entry.event
+        
+        # Si non connecté, rediriger vers connexion avec message
+        unless user_signed_in?
+          store_location_for(:user, event_path(event))
+          redirect_to new_user_session_path, notice: "Inscription confirmée pour #{participant_name} ! Veuillez vous connecter pour voir les détails."
+          return
+        end
+        
+        redirect_to event_path(event), notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
       else
         redirect_to event_path(waitlist_entry.event), alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
       end
     end
 
     # GET /waitlist_entries/:id/decline (shallow route)
+    # Accepte soit un token (via email) soit une authentification classique
     def decline
-      authenticate_user!
+      waitlist_entry = find_waitlist_entry_for_action
 
-      waitlist_entry_id = params[:id] || params[:waitlist_entry_id]
-      waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
-
-      unless waitlist_entry && waitlist_entry.user == current_user && waitlist_entry.notified?
-        event = waitlist_entry&.event || @event
-        redirect_to event_path(event), alert: "Entrée de liste d'attente introuvable ou non notifiée."
+      unless waitlist_entry
+        redirect_to root_path, alert: "Lien invalide ou expiré. Veuillez vous connecter pour refuser la place."
         return
       end
 
-      # Autoriser l'action sur l'événement
-      authorize waitlist_entry.event, :refuse_waitlist?
+      # Vérifier que l'entrée est bien notifiée et le token valide
+      unless waitlist_entry.notified? && waitlist_entry.token_valid?
+        event = waitlist_entry.event
+        redirect_to event_path(event), alert: "Ce lien n'est plus valide. La place a peut-être déjà été confirmée ou le délai de 24h est expiré."
+        return
+      end
 
+      # Autoriser l'action sur l'événement (skip Pundit si token valide)
+      unless skip_authorization_for_token? || (user_signed_in? && can?(:refuse_waitlist?, waitlist_entry.event))
+        redirect_to root_path, alert: "Vous n'êtes pas autorisé à effectuer cette action."
+        return
+      end
+
+      # Effectuer l'action
       if waitlist_entry.refuse!
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
-        redirect_to event_path(waitlist_entry.event), notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de la liste d'attente."
+        event = waitlist_entry.event
+        
+        # Si non connecté, rediriger vers connexion avec message
+        unless user_signed_in?
+          store_location_for(:user, event_path(event))
+          redirect_to new_user_session_path, notice: "Vous avez refusé la place pour #{participant_name}. Veuillez vous connecter pour voir les détails."
+          return
+        end
+        
+        redirect_to event_path(event), notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de la liste d'attente."
       else
         redirect_to event_path(waitlist_entry.event), alert: "Impossible de refuser la place. Veuillez réessayer."
       end
@@ -203,6 +236,33 @@ module Events
       @event = Event.find_by_hashid(params[:event_id]) || Event.find(params[:event_id])
     rescue ActiveRecord::RecordNotFound
       redirect_to events_path, alert: "Événement introuvable."
+    end
+
+    # Trouve le waitlist_entry soit via token (email) soit via hashid (authentifié)
+    def find_waitlist_entry_for_action
+      # Priorité 1 : Token depuis email (sécurisé avec expiration)
+      if params[:token].present?
+        waitlist_entry = WaitlistEntry.find_by_confirmation_token(params[:token])
+        return waitlist_entry if waitlist_entry&.token_valid?
+      end
+
+      # Priorité 2 : Hashid si utilisateur authentifié
+      if user_signed_in?
+        waitlist_entry_id = params[:id] || params[:waitlist_entry_id]
+        waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
+        
+        # Vérifier que c'est bien l'utilisateur connecté
+        if waitlist_entry && waitlist_entry.user == current_user
+          return waitlist_entry
+        end
+      end
+
+      nil
+    end
+
+    # Skip authorization si on utilise un token valide (le token garantit l'authenticité)
+    def skip_authorization_for_token?
+      params[:token].present? && WaitlistEntry.find_by_confirmation_token(params[:token])&.token_valid?
     end
   end
 end

@@ -1,9 +1,52 @@
 Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
+  # ===== NOUVEAU PANEL ADMIN =====
+  namespace :admin_panel, path: 'admin-panel' do
+    root 'dashboard#index'
+    
+    # Mission Control Jobs - Dashboard pour monitoring des jobs Solid Queue
+    mount MissionControl::Jobs::Engine, at: "/jobs"
+    
+    # Logs des emails (SUPERADMIN uniquement)
+    resources :mail_logs, path: 'mail-logs', only: [:index, :show]
+    
+    resources :products do
+      resources :product_variants, except: %i[index show]
+      collection do
+        get :check_sku
+        post :import
+        get :export
+        post :preview_variants
+        patch :bulk_update_variants
+      end
+    end
+    
+    resources :product_categories
+    
+    resources :orders do
+      member { patch :change_status }
+      collection { get :export }
+    end
+    
+    # Initiations
+    resources :initiations do
+      member do
+        get :presences
+        patch :update_presences
+        post :convert_waitlist
+        post :notify_waitlist
+        patch :toggle_volunteer
+      end
+    end
+    
+    # Roller Stock
+    resources :roller_stocks, path: 'roller-stocks'
+  end
+
   # Ressource REST pour le mode maintenance
   namespace :activeadmin do
-    resource :maintenance, only: [ :update ], controller: "/admin/maintenance_toggle" do
+    resource :maintenance, only: [ :update ], controller: "/admin_legacy/maintenance_toggle" do
       member do
         patch :toggle
       end

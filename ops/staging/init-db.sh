@@ -2,7 +2,16 @@
 ###############################################################################
 # Script d'initialisation de la base de données STAGING
 # Usage: ./ops/staging/init-db.sh
-# Effectue: db:migrate + db:seed
+# Effectue: db:migrate (PostgreSQL - inclut Solid Queue) + db:seed
+#
+# ⚠️  SOLID QUEUE :
+#    - Solid Queue utilise PostgreSQL (même base que l'application)
+#    - Les migrations Solid Queue sont dans db/migrate
+#    - Gérées par db:migrate normal
+#
+# ⚠️  IMPORTANT : Ce script nécessite que le conteneur soit running
+#    - Si le conteneur s'arrête (Solid Queue crash), redémarrer d'abord
+#    - Le docker-entrypoint applique automatiquement les migrations SQLite au démarrage
 ###############################################################################
 
 set -euo pipefail
@@ -58,14 +67,24 @@ else
     exit 1
 fi
 
-# 2. Appliquer les migrations
-log "🔄 Application des migrations..."
+# 2. Appliquer les migrations principales (PostgreSQL)
+# ⚠️  IMPORTANT : db:migrate ne fait QUE appliquer les migrations en attente
+#    - Ne supprime AUCUNE donnée existante
+#    - Ne touche QUE la base PostgreSQL principale
+#    - La queue SQLite reste complètement intacte
+log "🔄 Application des migrations principales (PostgreSQL)..."
+log_info "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente"
+log_info "   ℹ️  Aucune donnée existante ne sera supprimée"
 if docker exec "$CONTAINER_NAME" bin/rails db:migrate 2>&1 | tee -a /tmp/init-db.log; then
-    log_success "✅ Migrations appliquées avec succès"
+    log_success "✅ Migrations principales appliquées avec succès"
 else
-    log_error "❌ Échec des migrations"
+    log_error "❌ Échec des migrations principales"
     exit 1
 fi
+
+# Solid Queue utilise maintenant PostgreSQL (même base que l'application)
+# Les migrations Solid Queue sont incluses dans db/migrate et gérées par db:migrate ci-dessus
+log_info "ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)"
 
 # 3. Seed de la base de données
 log "🌱 Exécution du seed..."

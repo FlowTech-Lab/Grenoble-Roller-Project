@@ -12,11 +12,10 @@
 
     <%= yield :head %>
 
-    <!-- Favicons from assets pipeline (best practice) -->
-    <link rel="icon" href="<%= image_path('favicon-512.png') %>" type="image/png" sizes="512x512">
-    <link rel="icon" href="<%= image_path('logo/logo_grenobleroller_color.png') %>" type="image/png" sizes="512x512">
-    <link rel="apple-touch-icon" href="<%= image_path('favicon-512.png') %>" sizes="512x512">
-    <link rel="apple-touch-icon" href="<%= image_path('logo/logo_grenobleroller_color.png') %>" sizes="512x512">
+    <!-- Favicons -->
+    <%= favicon_link_tag asset_path('favicon-512.png'), type: 'image/png', sizes: '512x512' %>
+    <link rel="apple-touch-icon" href="<%= asset_path('favicon-512.png') %>" sizes="512x512">
+    <link rel="shortcut icon" href="<%= asset_path('favicon-512.png') %>" type="image/png">
 
     <%= stylesheet_link_tag "application.bootstrap", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>

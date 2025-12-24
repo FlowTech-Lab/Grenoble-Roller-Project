@@ -1,0 +1,109 @@
+<% 
+  breadcrumb_items = [
+    { label: "Produits", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Produits</h1>
+  <%= link_to "Nouveau produit", new_admin_panel_product_path, class: "btn btn-liquid-primary" %>
+</div>
+
+<!-- Filtres et recherche -->
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <%= search_form_for @q, url: admin_panel_products_path, method: :get, class: "row g-3" do |f| %>
+      <div class="col-md-4">
+        <%= f.label :name_cont, "Nom", class: "form-label" %>
+        <%= f.search_field :name_cont, class: "form-control form-control-liquid", placeholder: "Rechercher..." %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :category_id_eq, "Catégorie", class: "form-label" %>
+        <%= f.select :category_id_eq, 
+            options_from_collection_for_select(ProductCategory.order(:name), :id, :name, params.dig(:q, :category_id_eq)),
+            { include_blank: "Toutes" },
+            { class: "form-select form-control-liquid" } %>
+      </div>
+      <div class="col-md-2">
+        <%= f.label :is_active_eq, "Statut", class: "form-label" %>
+        <%= f.select :is_active_eq,
+            options_for_select([["Actifs", true], ["Inactifs", false]], params.dig(:q, :is_active_eq)),
+            { include_blank: "Tous" },
+            { class: "form-select form-control-liquid" } %>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <%= f.submit "Filtrer", class: "btn btn-outline-liquid-primary" %>
+        <%= link_to "Réinitialiser", admin_panel_products_path, class: "btn btn-outline-secondary" %>
+        <%= link_to "Exporter CSV", admin_panel_products_path(format: :csv, q: params[:q]&.to_unsafe_h), class: "btn btn-outline-liquid-success" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Tableau des produits -->
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-body">
+    <% if @products.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th>Prix</th>
+              <th>Stock</th>
+              <th>Variantes</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @products.each do |product| %>
+              <tr>
+                <td data-label="ID"><%= product.id %></td>
+                <td data-label="Nom">
+                  <strong><%= product.name %></strong>
+                  <br>
+                  <small class="text-muted" title="Référence URL"><%= product.slug %></small>
+                </td>
+                <td data-label="Catégorie"><%= product.category&.name || "-" %></td>
+                <td data-label="Prix"><%= price_display(product.price_cents, product.currency) %></td>
+                <td data-label="Stock">
+                  <% if product.in_stock? %>
+                    <span class="badge badge-liquid-success"><%= product.total_stock %> unités</span>
+                  <% else %>
+                    <span class="badge bg-danger">Rupture</span>
+                  <% end %>
+                </td>
+                <td data-label="Variantes">
+                  <span class="badge bg-info"><%= product.product_variants.count %></span>
+                </td>
+                <td data-label="Statut"><%= active_badge(product.is_active) %></td>
+                <td data-label="Actions">
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "Voir", admin_panel_product_path(product), class: "btn btn-outline-primary" %>
+                    <%= link_to "Modifier", edit_admin_panel_product_path(product), class: "btn btn-outline-secondary" %>
+                    <%= link_to "Supprimer", admin_panel_product_path(product), 
+                        method: :delete, 
+                        class: "btn btn-outline-danger",
+                        data: { confirm: "Êtes-vous sûr de vouloir supprimer ce produit ?" } %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <%= render 'admin_panel/shared/pagination' %>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted">Aucun produit trouvé</p>
+        <%= link_to "Créer le premier produit", new_admin_panel_product_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

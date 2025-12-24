@@ -293,64 +293,213 @@ main() {
         fi
     fi
     
-    # Décider du type de build
-    NEED_NO_CACHE_BUILD=false
-    if container_is_running "$CONTAINER_NAME"; then
-        CURRENT_CONTAINER_MIGRATIONS=$($DOCKER_CMD exec "$CONTAINER_NAME" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
-        if [ -n "$CURRENT_CONTAINER_MIGRATIONS" ]; then
-            CURRENT_COUNT=$(echo "$CURRENT_CONTAINER_MIGRATIONS" | wc -l | tr -d ' ')
-            NEW_IN_LOCAL=$(comm -23 <(echo "$LOCAL_MIGRATIONS_LIST") <(echo "$CURRENT_CONTAINER_MIGRATIONS") || echo "")
-            
-            if [ -n "$NEW_IN_LOCAL" ] || [ "$MIGRATION_FILES_COUNT" -ne "$CURRENT_COUNT" ]; then
-                log_warning "⚠️  Nouvelles migrations détectées - Rebuild sans cache OBLIGATOIRE"
-                NEED_NO_CACHE_BUILD=true
-            fi
-        fi
-    fi
+    # 6. Décision intelligente : Rebuild ou restart ?
+    # ⚠️  Détection robuste pour éviter rebuild inutile
+    log "🔍 Analyse : Rebuild nécessaire ou restart suffisant ?"
     
-    if [ "$NEED_NO_CACHE_BUILD" = true ] || needs_no_cache_build; then
-        log "🔨 Build SANS CACHE (nouvelles migrations ou changements critiques)..."
+    if needs_rebuild "$CONTAINER_NAME"; then
+        log_warning "⚠️  Rebuild nécessaire détecté"
+        log_warning "   Raisons possibles :"
+        log_warning "   - Changements dans Gemfile, Dockerfile, database.yml"
+        log_warning "   - Nouvelles migrations"
+        log_warning "   - Image ancienne (>24h)"
+        log_warning "   - Conteneur n'existe pas"
+        
+        # Rebuild directement sans confirmation (confirmation demandée seulement en cas de rollback)
+        log "🔨 Build SANS CACHE..."
+        log_warning "⚠️  Rebuild complet sans cache (peut prendre 5-10 minutes)"
         if ! force_rebuild_without_cache "$COMPOSE_FILE" "$CONTAINER_NAME"; then
             log_error "Échec du build - Rollback"
             rollback "$CURRENT_COMMIT"
             exit 1
         fi
     else
-        log "🔨 Build et redémarrage (cache activé)..."
-        if ! docker_compose_build "$COMPOSE_FILE"; then
-            log_error "Échec du build - Rollback"
-            rollback "$CURRENT_COMMIT"
-            exit 1
+        log_success "✅ Pas besoin de rebuild (restart interne ou pas de changements critiques)"
+        log_info "   Redémarrage du conteneur existant..."
+        
+        # Redémarrer le conteneur sans rebuild
+        if container_exists "$CONTAINER_NAME"; then
+            if container_is_running "$CONTAINER_NAME"; then
+                log_info "Conteneur déjà running, restart pour appliquer les changements..."
+            fi
+            
+            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || {
+                log_error "Échec du redémarrage"
+                rollback "$CURRENT_COMMIT"
+                exit 1
+            }
+            
+            # Attendre que le conteneur démarre
+            if ! wait_for_container_running "$CONTAINER_NAME" 120; then
+                log_error "❌ Le conteneur n'a pas redémarré"
+                log_warning "   Tentative de rebuild complet..."
+                if ! force_rebuild_without_cache "$COMPOSE_FILE" "$CONTAINER_NAME"; then
+                    log_error "Échec du build - Rollback"
+                    rollback "$CURRENT_COMMIT"
+                    exit 1
+                fi
+            else
+                log_success "✅ Conteneur redémarré avec succès"
+            fi
+        else
+            log_warning "⚠️  Conteneur n'existe pas, rebuild obligatoire..."
+            if ! force_rebuild_without_cache "$COMPOSE_FILE" "$CONTAINER_NAME"; then
+                log_error "Échec du build - Rollback"
+                rollback "$CURRENT_COMMIT"
+                exit 1
+            fi
         fi
     fi
     
     # 7. Vérification POST-BUILD : migrations dans le conteneur
+    # ⚠️  IMPORTANT : Le conteneur peut s'arrêter si Solid Queue ne peut pas démarrer
+    #    (tables SQLite n'existent pas encore). On vérifie d'abord l'image, puis le conteneur.
     log "🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?"
-    if ! wait_for_container_running "$CONTAINER_NAME" 60; then
-        log_error "❌ Le conteneur n'est pas stable"
-        rollback "$CURRENT_COMMIT"
-        exit 1
-    fi
     
-    sleep 3
-    
+    # Essayer de vérifier même si le conteneur n'est pas running (utilise l'image)
     if ! verify_migrations_synced "$CONTAINER_NAME" "$MIGRATION_FILES_COUNT" "$LOCAL_MIGRATIONS_LIST"; then
-        log_error "❌ ERREUR CRITIQUE : Migrations locales ABSENTES du conteneur"
-        log_error "Rollback en cours..."
-        rollback "$CURRENT_COMMIT"
-        exit 1
+        log_warning "⚠️  Vérification échouée, attente que le conteneur démarre..."
+        
+        # Attendre que le conteneur démarre (peut prendre du temps si Solid Queue bloque)
+        if ! wait_for_container_running "$CONTAINER_NAME" 120; then
+            log_error "❌ Le conteneur n'est pas stable après 120s"
+            log_error "   Cause probable : Solid Queue ne peut pas démarrer (tables SQLite manquantes)"
+            log_warning "   ⚠️  Relance de 'docker compose up -d' pour être sûr..."
+            
+            # Relancer un compose up pour être sûr
+            if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                log_info "✅ Services redémarrés, nouvelle attente..."
+                sleep 5
+                
+                # Réessayer d'attendre que le conteneur démarre
+                if ! wait_for_container_running "$CONTAINER_NAME" 120; then
+                    log_error "❌ Le conteneur n'est toujours pas stable après relance"
+                    log_error "   Solution : Les migrations SQLite seront appliquées après le démarrage"
+                    log_warning "   Continuation du déploiement (migrations SQLite seront appliquées ensuite)..."
+                else
+                    log_success "✅ Conteneur stable après relance"
+                fi
+            else
+                log_error "❌ Échec du redémarrage des services"
+                log_error "   Solution : Les migrations SQLite seront appliquées après le démarrage"
+                log_warning "   Continuation du déploiement (migrations SQLite seront appliquées ensuite)..."
+            fi
+        else
+            # Réessayer la vérification maintenant que le conteneur est running
+            sleep 3
+            if ! verify_migrations_synced "$CONTAINER_NAME" "$MIGRATION_FILES_COUNT" "$LOCAL_MIGRATIONS_LIST"; then
+                log_error "❌ ERREUR CRITIQUE : Migrations locales ABSENTES du conteneur"
+                log_error "Rollback en cours..."
+                rollback "$CURRENT_COMMIT"
+                exit 1
+            fi
+        fi
     fi
     
     # 8. Attendre que le conteneur soit healthy
+    # ⚠️  IMPORTANT : Le conteneur peut s'arrêter si Solid Queue ne peut pas démarrer
+    #    (tables SQLite manquantes). Le docker-entrypoint gère maintenant cela automatiquement.
+    #    Si le conteneur s'arrête, on détecte si c'est un restart interne ou un vrai problème.
     if $DOCKER_CMD inspect --format='{{.State.Health}}' "$CONTAINER_NAME" 2>/dev/null | grep -q "Status"; then
         if ! wait_for_container_healthy "$CONTAINER_NAME" ${CONTAINER_HEALTHY_WAIT:-120}; then
-            log_error "Le conteneur web n'est pas devenu healthy"
-            rollback "$CURRENT_COMMIT"
-            exit 1
+            log_warning "⚠️  Le conteneur n'est pas devenu healthy dans les temps"
+            log_warning "   Vérification si le conteneur est running..."
+            
+            if ! container_is_running "$CONTAINER_NAME"; then
+                # Détecter si c'est un restart interne récent
+                if detect_internal_restart "$CONTAINER_NAME" 300; then
+                    log_info "ℹ️  Restart interne détecté (conteneur arrêté récemment)"
+                    log_info "   Redémarrage automatique du conteneur..."
+                    $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
+                    sleep 5
+                    
+                    # Réessayer d'attendre que le conteneur soit healthy
+                    if ! wait_for_container_healthy "$CONTAINER_NAME" 60; then
+                        log_warning "⚠️  Le conteneur n'est toujours pas healthy après restart"
+                        log_warning "   ⚠️  Relance de 'docker compose up -d' pour être sûr..."
+                        
+                        # Relancer un compose up pour être sûr
+                        if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                            log_info "✅ Services redémarrés, nouvelle attente..."
+                            sleep 5
+                            
+                            # Réessayer d'attendre que le conteneur soit healthy
+                            if ! wait_for_container_healthy "$CONTAINER_NAME" 60; then
+                                log_error "❌ Le conteneur n'est toujours pas healthy après relance"
+                                log_error "   Vérification des logs..."
+                                $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | grep -i -E "error|solid.*queue|sqlite|migration" || true
+                                rollback "$CURRENT_COMMIT"
+                                exit 1
+                            else
+                                log_success "✅ Conteneur healthy après relance"
+                            fi
+                        else
+                            log_error "❌ Échec du redémarrage des services"
+                            log_error "   Vérification des logs..."
+                            $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | grep -i -E "error|solid.*queue|sqlite|migration" || true
+                            rollback "$CURRENT_COMMIT"
+                            exit 1
+                        fi
+                    fi
+                else
+                    log_error "❌ Le conteneur s'est arrêté (pas un restart interne récent)"
+                    log_error "   Cause probable : Solid Queue ne peut pas démarrer (tables SQLite manquantes)"
+                    log_error "   Vérification des logs..."
+                    $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | grep -i -E "error|solid.*queue|sqlite|migration" || true
+                    log_warning "   Les migrations SQLite seront appliquées dans la prochaine étape..."
+                    log_warning "   ⚠️  Relance de 'docker compose up -d' pour être sûr..."
+                    
+                    # Relancer un compose up pour être sûr
+                    if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                        log_info "✅ Services redémarrés, nouvelle attente..."
+                        sleep 5
+                        
+                        # Réessayer d'attendre que le conteneur soit healthy
+                        if ! wait_for_container_healthy "$CONTAINER_NAME" 60; then
+                            log_error "❌ Le conteneur n'est toujours pas healthy après relance"
+                            rollback "$CURRENT_COMMIT"
+                            exit 1
+                        else
+                            log_success "✅ Conteneur healthy après relance"
+                        fi
+                    else
+                        log_error "❌ Échec du redémarrage des services"
+                        rollback "$CURRENT_COMMIT"
+                        exit 1
+                    fi
+                fi
+            else
+                log_error "Le conteneur web n'est pas devenu healthy (mais est running)"
+                rollback "$CURRENT_COMMIT"
+                exit 1
+            fi
         fi
     else
         log_info "Pas de healthcheck configuré, attente supplémentaire..."
         sleep 10
+        
+        # Vérifier que le conteneur est toujours running
+        if ! container_is_running "$CONTAINER_NAME"; then
+            # Détecter si c'est un restart interne
+            if detect_internal_restart "$CONTAINER_NAME" 300; then
+                log_info "ℹ️  Restart interne détecté, redémarrage automatique..."
+                $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
+                sleep 10
+            else
+                log_warning "⚠️  Le conteneur s'est arrêté après démarrage"
+                log_warning "   Cause probable : Solid Queue ne peut pas démarrer (tables SQLite manquantes)"
+                log_warning "   ⚠️  Relance de 'docker compose up -d' pour être sûr..."
+                
+                # Relancer un compose up pour être sûr
+                if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                    log_info "✅ Services redémarrés, nouvelle attente..."
+                    sleep 10
+                else
+                    log_error "❌ Échec du redémarrage des services"
+                    log_warning "   Continuation du déploiement (migrations SQLite seront appliquées)..."
+                fi
+            fi
+        fi
     fi
     
     # 9. Analyser et appliquer les migrations
@@ -360,9 +509,141 @@ main() {
         exit 1
     fi
     
+    # 9. Analyser et appliquer les migrations
+    # ⚠️  IMPORTANT : Vérifier que le conteneur est running avant d'essayer les migrations
+    #    Si le conteneur n'est pas running, détecter si c'est un restart interne
+    if ! container_is_running "$CONTAINER_NAME"; then
+        # Détecter si c'est un restart interne récent
+        if detect_internal_restart "$CONTAINER_NAME" 300; then
+            log_info "ℹ️  Restart interne détecté, redémarrage automatique..."
+            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
+            
+            # Attendre que le conteneur redémarre
+            if ! wait_for_container_running "$CONTAINER_NAME" 60; then
+                log_warning "⚠️  Le conteneur n'a pas redémarré avec restart"
+                log_warning "   ⚠️  Relance de 'docker compose up -d' pour être sûr..."
+                
+                # Relancer un compose up pour être sûr
+                if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                    log_info "✅ Services redémarrés, nouvelle attente..."
+                    sleep 5
+                    
+                    # Réessayer d'attendre que le conteneur redémarre
+                    if ! wait_for_container_running "$CONTAINER_NAME" 60; then
+                        log_error "❌ Le conteneur n'a toujours pas redémarré après relance"
+                        log_error "   Vérification des logs..."
+                        $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | tail -20 || true
+                        rollback "$CURRENT_COMMIT"
+                        exit 1
+                    else
+                        log_success "✅ Conteneur running après relance"
+                    fi
+                else
+                    log_error "❌ Échec du redémarrage des services"
+                    log_error "   Vérification des logs..."
+                    $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | tail -20 || true
+                    rollback "$CURRENT_COMMIT"
+                    exit 1
+                fi
+            fi
+            sleep 5
+        else
+            log_error "❌ Le conteneur n'est pas running, impossible d'appliquer les migrations"
+            log_warning "   ⚠️  Tentative de relance de 'docker compose up -d' pour être sûr..."
+            
+            # Relancer un compose up pour être sûr
+            if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                log_info "✅ Services redémarrés, nouvelle attente..."
+                sleep 5
+                
+                # Réessayer de vérifier que le conteneur est running
+                if ! container_is_running "$CONTAINER_NAME"; then
+                    log_error "❌ Le conteneur n'est toujours pas running après relance"
+                    log_error "   Vérification des logs..."
+                    $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | tail -20 || true
+                    log_error "   Rollback en cours..."
+                    rollback "$CURRENT_COMMIT"
+                    exit 1
+                else
+                    log_success "✅ Conteneur running après relance"
+                fi
+            else
+                log_error "❌ Échec du redémarrage des services"
+                log_error "   Vérification des logs..."
+                $DOCKER_CMD logs --tail 50 "$CONTAINER_NAME" 2>&1 | tail -20 || true
+                log_error "   Rollback en cours..."
+                rollback "$CURRENT_COMMIT"
+                exit 1
+            fi
+        fi
+    fi
+    
+    if ! analyze_destructive_migrations "$CONTAINER_NAME"; then
+        log_error "Migrations destructives détectées - Rollback"
+        rollback "$CURRENT_COMMIT"
+        exit 1
+    fi
+    
     # Calculer timeout adaptatif
-    MIGRATION_STATUS=$($DOCKER_CMD exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
-    PENDING_MIGRATIONS=$(echo "$MIGRATION_STATUS" | grep "^\s*down" || echo "")
+    # ⚠️  CRITIQUE : Si le conteneur n'est pas running, utiliser un conteneur temporaire pour vérifier les migrations
+    local migration_status=""
+    if container_is_running "$CONTAINER_NAME"; then
+        migration_status=$($DOCKER_CMD exec "$CONTAINER_NAME" bin/rails db:migrate:status 2>&1)
+    else
+        log_warning "⚠️  Conteneur non running, vérification migrations via conteneur temporaire..."
+        # Obtenir l'image et le réseau
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
+        if [ -z "$image_name" ]; then
+            # Déduire depuis l'environnement ou le nom du conteneur
+            if [[ "$CONTAINER_NAME" == *"-staging"* ]]; then
+                image_name="staging-web"
+            elif [[ "$CONTAINER_NAME" == *"-production"* ]]; then
+                image_name="production-web"
+            else
+                image_name="${ENV:-staging}-web"
+            fi
+        fi
+        
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$CONTAINER_NAME" 2>/dev/null | head -1 || echo "")
+        if [ -z "$network_name" ]; then
+            # Déduire depuis l'environnement ou le nom du conteneur
+            if [[ "$CONTAINER_NAME" == *"-staging"* ]]; then
+                network_name="staging_default"
+            elif [[ "$CONTAINER_NAME" == *"-production"* ]]; then
+                network_name="production_default"
+            else
+                network_name="${ENV:-staging}_default"
+            fi
+        fi
+        
+        local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
+        
+        # ⚠️  CRITIQUE : Récupérer RAILS_MASTER_KEY
+        local rails_master_key="${RAILS_MASTER_KEY:-}"
+        if [ -z "$rails_master_key" ]; then
+            local master_key_path="${REPO_DIR:-.}/config/master.key"
+            if [ -f "$master_key_path" ]; then
+                rails_master_key=$(cat "$master_key_path" | tr -d '\n\r')
+                log_info "   Master key récupérée depuis config/master.key"
+            fi
+        fi
+        
+        if [ -z "$rails_master_key" ]; then
+            log_error "❌ RAILS_MASTER_KEY introuvable - impossible de vérifier les migrations"
+            log_error "   Vérifiez que config/master.key existe ou que RAILS_MASTER_KEY est défini"
+            rollback "$CURRENT_COMMIT"
+            exit 1
+        fi
+        
+        migration_status=$($DOCKER_CMD run --rm --network "$network_name" \
+            -e DATABASE_URL="$db_url" \
+            -e RAILS_ENV="${RAILS_ENV:-production}" \
+            -e RAILS_MASTER_KEY="$rails_master_key" \
+            "$image_name" \
+            bin/rails db:migrate:status 2>&1)
+    fi
+    
+    PENDING_MIGRATIONS=$(echo "$migration_status" | grep "^\s*down" || echo "")
     PENDING_COUNT=$(echo "$PENDING_MIGRATIONS" | wc -l | tr -d ' ')
     MIGRATION_TIMEOUT=$(calculate_migration_timeout $PENDING_COUNT)
     
@@ -375,6 +656,52 @@ main() {
         fi
     else
         log_success "✅ Aucune migration en attente"
+    fi
+    
+    # ⚠️  IMPORTANT : Vérifier que le conteneur est toujours running après les migrations
+    #    (Solid Queue peut avoir crashé si les tables SQLite n'existent pas)
+    #    Détecter si c'est un restart interne ou un vrai problème
+    if ! container_is_running "$CONTAINER_NAME"; then
+        # Détecter si c'est un restart interne récent
+        if detect_internal_restart "$CONTAINER_NAME" 300; then
+            log_info "ℹ️  Restart interne détecté après migrations, redémarrage automatique..."
+            $DOCKER_CMD compose -f "$COMPOSE_FILE" restart web 2>&1 || true
+        else
+            log_warning "⚠️  Le conteneur s'est arrêté après les migrations"
+            log_warning "   Cause probable : Solid Queue ne peut pas démarrer (tables SQLite manquantes)"
+            log_warning "   ⚠️  Relance de 'docker compose up -d' pour être sûr..."
+            
+            # Relancer un compose up pour être sûr
+            if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                log_info "✅ Services redémarrés, nouvelle attente..."
+            else
+                log_warning "⚠️  Échec du redémarrage, continuation..."
+            fi
+        fi
+        
+        # Attendre que le conteneur redémarre
+        if ! wait_for_container_running "$CONTAINER_NAME" 60; then
+            log_warning "⚠️  Le conteneur n'a pas redémarré avec restart/up"
+            log_warning "   ⚠️  Dernière tentative avec 'docker compose up -d'..."
+            
+            # Dernière tentative avec compose up
+            if $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "${LOG_FILE:-/dev/stdout}"; then
+                sleep 5
+                if ! wait_for_container_running "$CONTAINER_NAME" 60; then
+                    log_error "❌ Le conteneur n'a toujours pas redémarré après toutes les tentatives"
+                    rollback "$CURRENT_COMMIT"
+                    exit 1
+                else
+                    log_success "✅ Conteneur running après dernière tentative"
+                fi
+            else
+                log_error "❌ Échec définitif du redémarrage"
+                rollback "$CURRENT_COMMIT"
+                exit 1
+            fi
+        fi
+        
+        sleep 5
     fi
     
     # 10. Installation/mise à jour du crontab

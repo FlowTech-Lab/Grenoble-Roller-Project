@@ -4,10 +4,22 @@ FactoryBot.define do
     sequence(:code) { |n| "ROLE_#{n}" }
     level { 10 }
 
+    trait :initiation do
+      code { 'INITIATION' }
+      name { 'Initiation' }
+      level { 30 }
+    end
+
     trait :organizer do
       code { 'ORGANIZER' }
       name { 'Organisateur' }
       level { 40 }
+    end
+
+    trait :moderator do
+      code { 'MODERATOR' }
+      name { 'Modérateur' }
+      level { 50 }
     end
 
     trait :admin do

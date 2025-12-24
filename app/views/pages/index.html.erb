@@ -9,11 +9,10 @@
                 <div class="col-12 col-lg-8 text-center">
                     <i class="bi bi-roller-skate banner-icon mb-3"></i>
                     <h1 class="banner-title mb-4">
-                        La communauté<br>Roller Grenobloise !
+                        La communauté <br>Roller Grenobloise !
                     </h1>
                     <p class="banner-subtitle mb-4">
-                        Découvrez nos événements, partagez vos sorties et connectez-vous<br>
-                        avec d'autres riders à Grenoble
+                        Découvrez nos événements, partagez vos sorties et connectez-vous avec d'autres riders à Grenoble
                     </p>
                     <div class="banner-actions">
                         <%= link_to events_path, class: "btn btn-liquid-primary btn-lg" do %>
@@ -130,7 +129,7 @@
                 <div class="d-flex flex-wrap gap-2 mb-4">
                   <span class="badge bg-primary">
                     <i class="bi bi-people-fill me-1"></i>
-                    <%= pluralize(attendance_count, "inscrit", "inscrits") %>
+                    <%= pluralize(attendance_count, "inscrit") %>
                   </span>
                   
                   <% unless is_unlimited %>

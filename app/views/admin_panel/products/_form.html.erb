@@ -1,0 +1,279 @@
+<%= form_with model: [:admin_panel, @product], local: true, multipart: true, class: "needs-validation", novalidate: true do |f| %>
+  <% if @product.errors.any? %>
+    <div class="alert alert-danger">
+      <h5>Erreurs à corriger :</h5>
+      <ul class="mb-0">
+        <% @product.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="row">
+    <div class="col-md-8">
+      <!-- Informations de base -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">Informations de base</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <%= f.label :name, "Nom *", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control", required: true, maxlength: 140 %>
+            <div class="form-text">Maximum 140 caractères</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :slug, "Référence URL *", class: "form-label" %>
+            <%= f.text_field :slug, class: "form-control", required: true, maxlength: 160 %>
+            <div class="form-text">Identifiant pour l'URL (ex: casque-led-rouge)</div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :category_id, "Catégorie *", class: "form-label" %>
+            <%= f.select :category_id,
+                options_from_collection_for_select(@categories, :id, :name, @product.category_id),
+                { include_blank: "Sélectionner une catégorie" },
+                { class: "form-select", required: true } %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :description, "Description", class: "form-label" %>
+            <%= f.text_area :description, class: "form-control", rows: 4 %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prix et stock -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">Prix et stock</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :price_cents, "Prix de base (en centimes) *", class: "form-label" %>
+              <%= f.number_field :price_cents, class: "form-control", required: true, min: 0, step: 1 %>
+              <div class="form-text">Ex: 4000 = 40,00 €</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :currency, "Devise *", class: "form-label" %>
+              <%= f.select :currency, [["EUR", "EUR"], ["USD", "USD"]], {}, { class: "form-select", required: true } %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :stock_qty, "Stock initial", class: "form-label" %>
+            <%= f.number_field :stock_qty, class: "form-control", min: 0, step: 1, value: @product.stock_qty || 0 %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">Image</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <%= f.label :image, "Upload image", class: "form-label" %>
+            <%= f.file_field :image, accept: "image/*", class: "form-control" %>
+            <% if @product.image.attached? %>
+              <div class="mt-2">
+                <%= image_tag @product.image, class: "img-thumbnail", style: "max-height: 150px;" %>
+                <p class="text-muted small">Image actuelle</p>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :image_url, "OU URL image", class: "form-label" %>
+            <%= f.url_field :image_url, class: "form-control", placeholder: "https://..." %>
+            <% if @product.image_url.present? && !@product.image.attached? %>
+              <div class="mt-2">
+                <%= image_tag @product.image_url, class: "img-thumbnail", style: "max-height: 150px;", onerror: "this.style.display='none';" %>
+                <p class="text-muted small">Image actuelle (URL)</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <!-- Options et statut -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">Options</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <%= f.label :is_active, class: "form-check-label" do %>
+              <%= f.check_box :is_active, class: "form-check-input" %>
+              Produit actif
+            <% end %>
+          </div>
+
+          <!-- SECTION 2 : VARIANTES (MODE RADIO) -->
+          <% if @product.new_record? && @option_types.any? %>
+            <hr>
+            <h6>Stratégie Variantes</h6>
+            <div class="form-check mb-3">
+              <input type="radio" class="form-check-input" name="variant_mode" id="mode_auto" value="auto" checked>
+              <label class="form-check-label" for="mode_auto">
+                <strong>Générer automatiquement</strong> (recommandé)
+              </label>
+            </div>
+
+            <div class="form-check mb-3">
+              <input type="radio" class="form-check-input" name="variant_mode" id="mode_manual" value="manual">
+              <label class="form-check-label" for="mode_manual">
+                <strong>Créer manuellement</strong> après création
+              </label>
+            </div>
+
+            <!-- MODE AUTO : Sélection options + preview -->
+            <div id="auto_section" class="mt-4">
+              <div class="mb-3">
+                <label class="form-label"><strong>Sélectionner les options à combiner</strong></label>
+                <% @option_types.each do |option_type| %>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" 
+                           name="option_ids[]" value="<%= option_type.id %>"
+                           id="option_<%= option_type.id %>"
+                           data-option-name="<%= option_type.presentation || option_type.name %>"
+                           onchange="previewVariants()">
+                    <label class="form-check-label" for="option_<%= option_type.id %>">
+                      <strong><%= option_type.presentation || option_type.name %></strong>
+                      (<%= option_type.option_values.count %> valeurs)
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- PREVIEW VARIANTES -->
+              <div id="preview_box" class="alert alert-info" style="display: none;">
+                <p><strong>Aperçu :</strong> <span id="variant_count">0</span> variantes seront créées</p>
+                <p id="preview_skus" class="small"></p>
+                <p id="preview_warning" class="small text-warning" style="display: none;">
+                  ⚠️ Beaucoup de variantes ! Vérifiez avant de confirmer.
+                </p>
+              </div>
+
+              <div class="mb-3">
+                <input type="hidden" name="generate_variants" value="false">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" 
+                         name="generate_variants" id="generate_check" value="true" checked>
+                  <label class="form-check-label" for="generate_check">
+                    Générer automatiquement à la création
+                  </label>
+                </div>
+                <small class="text-muted d-block mt-2">
+                  Les variantes hériteront le prix du produit (modifiable ensuite)
+                </small>
+              </div>
+            </div>
+          <% elsif !@product.new_record? %>
+            <!-- EN ÉDITION : Ajouter options manquantes -->
+            <hr>
+            <h6>Variantes Actuelles (<%= @product.product_variants.count %>)</h6>
+            <div class="mb-3">
+              <%= link_to '+ Ajouter variante manuellement', 
+                  new_admin_panel_product_product_variant_path(@product),
+                  class: 'btn btn-sm btn-outline-primary mb-3' %>
+              
+              <div class="alert alert-info">
+                <strong>Ajouter options manquantes ?</strong>
+                <p class="small mb-2">Si vous avez ajouté de nouveaux types d'options après création du produit :</p>
+                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#generate_missing">
+                  Générer variantes manquantes
+                </button>
+              </div>
+
+              <div class="collapse" id="generate_missing">
+                <div class="card card-body">
+                  <label>Sélectionner les options manquantes :</label>
+                  <% @option_types.each do |option_type| %>
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input" 
+                             name="option_ids[]" value="<%= option_type.id %>"
+                             id="option_missing_<%= option_type.id %>">
+                      <label class="form-check-label" for="option_missing_<%= option_type.id %>">
+                        <%= option_type.presentation || option_type.name %>
+                      </label>
+                    </div>
+                  <% end %>
+                  <input type="hidden" name="generate_missing" value="true">
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mt-4">
+    <%= link_to "Annuler", @product.persisted? ? admin_panel_product_path(@product) : admin_panel_products_path, 
+        class: "btn btn-outline-secondary" %>
+    <%= f.submit @product.persisted? ? "Mettre à jour" : "Créer le produit", class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<!-- SCRIPT PREVIEW -->
+<script>
+function previewVariants() {
+  const options = Array.from(document.querySelectorAll('input[name="option_ids[]"]:checked'))
+    .map(el => el.value);
+  
+  if (options.length === 0) {
+    document.getElementById('preview_box').style.display = 'none';
+    return;
+  }
+  
+  // Appel AJAX pour preview
+  fetch('<%= preview_variants_admin_panel_products_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+    },
+    body: JSON.stringify({ option_ids: options })
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('variant_count').textContent = data.count;
+    document.getElementById('preview_skus').innerHTML = 
+      'Exemples SKU : ' + (data.preview_skus && data.preview_skus.length > 0 ? data.preview_skus.join(', ') : 'N/A');
+    document.getElementById('preview_warning').style.display = 
+      data.warning ? 'block' : 'none';
+    if (data.warning) {
+      document.getElementById('preview_warning').textContent = data.warning;
+    }
+    document.getElementById('preview_box').style.display = 'block';
+  })
+  .catch(error => {
+    console.error('Erreur preview:', error);
+  });
+}
+
+// Gérer le changement de mode (auto/manual)
+document.addEventListener('DOMContentLoaded', function() {
+  const modeAuto = document.getElementById('mode_auto');
+  const modeManual = document.getElementById('mode_manual');
+  const autoSection = document.getElementById('auto_section');
+  
+  if (modeAuto && modeManual && autoSection) {
+    modeAuto.addEventListener('change', function() {
+      autoSection.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    modeManual.addEventListener('change', function() {
+      autoSection.style.display = this.checked ? 'none' : 'block';
+    });
+  }
+});
+</script>

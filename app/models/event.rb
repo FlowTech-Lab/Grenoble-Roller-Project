@@ -249,16 +249,30 @@ class Event < ApplicationRecord
     meeting_lat.present? && meeting_lng.present?
   end
 
-  # Retourne l'URL Google Maps pour les coordonnées GPS
+  # Retourne l'URL Google Maps (utilise les coordonnées GPS si disponibles, sinon l'adresse textuelle)
   def google_maps_url
-    return nil unless has_gps_coordinates?
-    "https://www.google.com/maps?q=#{meeting_lat},#{meeting_lng}"
+    if has_gps_coordinates?
+      "https://www.google.com/maps?q=#{meeting_lat},#{meeting_lng}"
+    elsif location_text.present?
+      # Utiliser l'adresse textuelle si pas de coordonnées GPS
+      encoded_address = URI.encode_www_form_component(location_text)
+      "https://www.google.com/maps/search/?api=1&query=#{encoded_address}"
+    else
+      nil
+    end
   end
 
-  # Retourne l'URL Waze pour les coordonnées GPS
+  # Retourne l'URL Waze (utilise les coordonnées GPS si disponibles, sinon l'adresse textuelle)
   def waze_url
-    return nil unless has_gps_coordinates?
-    "https://www.waze.com/ul?ll=#{meeting_lat},#{meeting_lng}&navigate=yes"
+    if has_gps_coordinates?
+      "https://www.waze.com/ul?ll=#{meeting_lat},#{meeting_lng}&navigate=yes"
+    elsif location_text.present?
+      # Utiliser l'adresse textuelle si pas de coordonnées GPS
+      encoded_address = URI.encode_www_form_component(location_text)
+      "https://www.waze.com/ul?q=#{encoded_address}&navigate=yes"
+    else
+      nil
+    end
   end
 
   private

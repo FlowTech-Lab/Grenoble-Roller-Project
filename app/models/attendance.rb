@@ -96,10 +96,15 @@ class Attendance < ApplicationRecord
     return if is_volunteer
 
     # Pour les initiations avec limitation des non-adhérents
+    # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - chaque personne doit avoir sa propre adhésion
     if event.is_a?(Event::Initiation) && event.allow_non_member_discovery?
-      is_member = user.memberships.active_now.exists? ||
-                  (child_membership_id.present? && child_membership&.active?) ||
-                  (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
+      is_member = if child_membership_id.present?
+        # Pour un enfant : vérifier UNIQUEMENT l'adhésion de cet enfant
+        child_membership&.active?
+      else
+        # Pour le parent : vérifier UNIQUEMENT l'adhésion parent (pas celle des enfants)
+        user.memberships.active_now.where(is_child_membership: false).exists?
+      end
 
       if is_member
         # Vérifier places pour adhérents
@@ -151,9 +156,15 @@ class Attendance < ApplicationRecord
     return if is_volunteer # Bénévoles bypassent les validations
 
     # Vérifier places disponibles selon le type (adhérent/non-adhérent)
-    is_member = user.memberships.active_now.exists? ||
-                (child_membership_id.present? && child_membership&.active?) ||
-                (!child_membership_id.present? && user.memberships.active_now.where(is_child_membership: true).exists?)
+    # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - chaque personne doit avoir sa propre adhésion
+    # Un parent ne peut PAS utiliser l'adhésion de son enfant
+    is_member = if child_membership_id.present?
+      # Pour un enfant : vérifier UNIQUEMENT l'adhésion de cet enfant
+      child_membership&.active?
+    else
+      # Pour le parent : vérifier UNIQUEMENT l'adhésion parent (pas celle des enfants)
+      user.memberships.active_now.where(is_child_membership: false).exists?
+    end
 
     if event.allow_non_member_discovery?
       if is_member
@@ -198,12 +209,12 @@ class Attendance < ApplicationRecord
           errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
         end
         
-        # SÉCURITÉ CRITIQUE : Si l'enfant a un statut trial (non adhérent), l'essai gratuit est OBLIGATOIRE
-        # et ne peut être utilisé qu'UNE SEULE FOIS
-        if child_membership&.trial? && !user.memberships.active_now.exists?
-          # Vérifier que l'essai gratuit est utilisé
+        # RÈGLE MÉTIER CRITIQUE v4.0 : Les essais gratuits sont NOMINATIFS
+        # Chaque enfant (pending ou trial) DOIT utiliser son propre essai gratuit, même si le parent est adhérent
+        if (child_membership&.trial? || child_membership&.pending?)
+          # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif)
           unless free_trial_used
-            errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
+            errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante.")
           end
           
           # Vérifier que cet enfant n'a pas déjà utilisé son essai gratuit (attendance active uniquement)
@@ -213,11 +224,17 @@ class Attendance < ApplicationRecord
           end
         end
       elsif !event.allow_non_member_discovery?
-        # Si l'option n'est pas activée, vérifier adhésion active (parent OU enfant) ou essai gratuit
-        has_active_membership = user.memberships.active_now.exists?
-        has_child_membership = user.memberships.active_now.where(is_child_membership: true).exists?
+        # Si l'option n'est pas activée, vérifier adhésion active ou essai gratuit
+        # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - chaque personne doit avoir sa propre adhésion
+        has_active_membership = if child_membership_id.present?
+          # Pour un enfant : vérifier UNIQUEMENT l'adhésion de cet enfant
+          child_membership&.active?
+        else
+          # Pour le parent : vérifier UNIQUEMENT l'adhésion parent (pas celle des enfants)
+          user.memberships.active_now.where(is_child_membership: false).exists?
+        end
 
-        unless has_active_membership || has_child_membership || free_trial_used
+        unless has_active_membership || free_trial_used
           errors.add(:base, "Adhésion requise. Utilisez votre essai gratuit ou adhérez à l'association.")
         end
       else

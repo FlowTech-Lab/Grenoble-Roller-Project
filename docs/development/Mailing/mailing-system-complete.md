@@ -40,7 +40,7 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 | **HelloAsso Sync** | Toutes les 5 min | Paiements | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
 | **Memberships Expired** | Quotidien (00h) | Adhésions expirées | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
 | **Renewal Reminders** | Quotidien (09h) | Rappels renouvellement | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
-| **Initiation Participants Report** | Quotidien (07h) | Rapport participants | Supercronic | 📝 **À IMPLÉMENTER** (voir Section 7.5) |
+| **Initiation Participants Report** | Quotidien (07h) | Rapport participants | Supercronic | ✅ **IMPLÉMENTÉ** (voir Section 7.5) |
 
 **✅ SYSTÈME VÉRIFIÉ** : Tous les points "À VÉRIFIER" ont été vérifiés avec tous les liens vers fichiers, variables et logiques.
 
@@ -269,20 +269,20 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 
 ---
 
-#### 📝 `initiation_participants_report(initiation)` - À IMPLÉMENTER
+#### ✅ `initiation_participants_report(initiation)` - IMPLÉMENTÉ
 
 **Sujet** : `Rapport participants - Initiation [Date]`
 
-**Fichier mailer** : [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) (méthode à ajouter)
+**Fichier mailer** : [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) (lignes 97-115) ✅ **IMPLÉMENTÉ**
 
 **Déclencheur** :
 - **Job automatique** : [`InitiationParticipantsReportJob`](../app/jobs/initiation_participants_report_job.rb) (tous les jours à 7h, uniquement en production)
-- **Appel dans le code** : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) (à créer) - `EventMailer.initiation_participants_report(initiation).deliver_later`
+- **Appel dans le code** : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) (ligne 31) ✅ **IMPLÉMENTÉ** - `EventMailer.initiation_participants_report(initiation).deliver_later`
 - Envoie un rapport le matin à 7h pour chaque initiation du jour
 
 **Templates** :
-- HTML : [`app/views/event_mailer/initiation_participants_report.html.erb`](../app/views/event_mailer/initiation_participants_report.html.erb) (à créer)
-- Text : [`app/views/event_mailer/initiation_participants_report.text.erb`](../app/views/event_mailer/initiation_participants_report.text.erb) (à créer)
+- HTML : [`app/views/event_mailer/initiation_participants_report.html.erb`](../app/views/event_mailer/initiation_participants_report.html.erb) ✅ **CRÉÉ**
+- Text : [`app/views/event_mailer/initiation_participants_report.text.erb`](../app/views/event_mailer/initiation_participants_report.text.erb) ✅ **CRÉÉ**
 
 **Variables disponibles** :
 - `@initiation` : Objet [`Event::Initiation`](../app/models/event/initiation.rb) (paramètre `initiation`)
@@ -301,7 +301,8 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 - Résumé du matériel demandé par pointure
 
 **Références** :
-- Job : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) (à créer)
+- Job : [`app/jobs/initiation_participants_report_job.rb`](../app/jobs/initiation_participants_report_job.rb) ✅ **IMPLÉMENTÉ**
+- Mailer : [`app/mailers/event_mailer.rb`](../app/mailers/event_mailer.rb) (méthode `initiation_participants_report` lignes 97-115) ✅ **IMPLÉMENTÉ**
 - Voir Section 7.5 pour détails complets de l'implémentation
 
 ---
@@ -413,7 +414,7 @@ tail -f logs/deploy-production.log | grep -i cron
 ```
 
 **Références** :
-- Documentation cron : [`ops/CRON.md`](../../ops/CRON.md)
+- Documentation cron : [`docs/development/cron/CRON.md`](../cron/CRON.md)
 - Script installation : [`ops/lib/deployment/cron.sh`](../../ops/lib/deployment/cron.sh)
 - Docker entrypoint : [`bin/docker-entrypoint`](../../bin/docker-entrypoint)
 - Documentation déploiement : [`docs/09-product/deployment-cron.md`](../../09-product/deployment-cron.md)
@@ -1686,7 +1687,7 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 - Queue config : [`config/queue.yml`](../config/queue.yml) (✅ Utilisé par SolidQueue pour deliver_later)
 - Puma config : [`config/puma.rb`](../config/puma.rb) (ligne 38 - plugin SolidQueue)
 - Deploy config : [`config/deploy.yml`](../config/deploy.yml) (ligne 41 - SOLID_QUEUE_IN_PUMA: true)
-- Documentation cron : [`ops/CRON.md`](../ops/CRON.md) (documentation Supercronic)
+- Documentation cron : [`docs/development/cron/CRON.md`](../cron/CRON.md) (documentation Supercronic)
 
 ---
 
@@ -2808,4 +2809,21 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 - [`docs/06-events/event-reminder-job.md`](../06-events/event-reminder-job.md) - Documentation EventReminderJob
 - [`docs/09-product/orders-workflow-emails.md`](../09-product/orders-workflow-emails.md) - Documentation emails commandes
 - [`docs/09-product/membership-mailer-emails.md`](../09-product/membership-mailer-emails.md) - Documentation emails adhésions
-- [`ops/CRON.md`](../ops/CRON.md) - Documentation cron/Supercronic
+- [`docs/development/cron/CRON.md`](../cron/CRON.md) - Documentation complète système cron/Supercronic et migration Solid Queue
+
+---
+
+## 🔗 Référence système cron
+
+**Documentation complète** : Voir [`docs/development/cron/CRON.md`](../cron/CRON.md) pour la documentation complète du système cron (Supercronic actuel et migration vers Solid Queue).
+
+### Résumé des tâches cron liées aux emails
+
+| Tâche | Fréquence | Job/Task | Mailer utilisé | Status |
+|-------|-----------|----------|----------------|--------|
+| Rappels événements | Quotidien 19h | `EventReminderJob` | `EventMailer.event_reminder` | ✅ Actif |
+| Rapport initiation | Quotidien 7h (prod) | `InitiationParticipantsReportJob` | `EventMailer.initiation_participants_report` | ✅ Actif |
+| Adhésions expirées | Quotidien 00:00 | `memberships:update_expired` | `MembershipMailer.expired` | ✅ Actif |
+| Rappels renouvellement | Quotidien 9h | `memberships:send_renewal_reminders` | `MembershipMailer.renewal_reminder` | ✅ Actif |
+
+**Note** : Toutes les tâches cron sont documentées dans [`docs/development/cron/CRON.md`](../cron/CRON.md) avec détails complets, configuration, dépannage et plan de migration vers Solid Queue.

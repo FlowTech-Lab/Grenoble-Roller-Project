@@ -1,6 +1,6 @@
-# app/controllers/admin/maintenance_toggle_controller.rb
+# app/controllers/admin_legacy/maintenance_toggle_controller.rb
 # Controller personnalisé pour gérer le toggle du mode maintenance
-module Admin
+module AdminLegacy
   class MaintenanceToggleController < ApplicationController
     before_action :authenticate_user!
 

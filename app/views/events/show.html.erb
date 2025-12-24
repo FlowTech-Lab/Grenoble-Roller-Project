@@ -55,7 +55,7 @@
             
             <span class="badge bg-primary">
               <i class="bi bi-people-fill me-1" aria-hidden="true"></i>
-              <%= pluralize(@event.attendances_count, "inscrit", "inscrits") %>
+              <%= pluralize(@event.attendances_count, "inscrit") %>
             </span>
             
             <% unless @event.unlimited? %>
@@ -115,25 +115,31 @@
               <strong><%= @event.location_text %></strong>
             </p>
             
-            <% if @event.has_gps_coordinates? %>
+            <% if @event.google_maps_url.present? || @event.waze_url.present? %>
               <div class="detail-actions d-flex flex-wrap gap-2 mb-2">
-                <a href="<%= @event.google_maps_url %>" 
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="btn btn-sm btn-outline-primary"
-                   aria-label="Ouvrir dans Google Maps">
-                  <i class="bi bi-map me-1" aria-hidden="true"></i>Google Maps
-                </a>
+                <% if @event.google_maps_url.present? %>
+                  <a href="<%= @event.google_maps_url %>" 
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-sm btn-outline-primary"
+                     aria-label="Ouvrir dans Google Maps">
+                    <i class="bi bi-map me-1" aria-hidden="true"></i>Google Maps
+                  </a>
+                <% end %>
                 
-                <a href="<%= @event.waze_url %>"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="btn btn-sm btn-outline-info"
-                   aria-label="Ouvrir dans Waze">
-                  <i class="bi bi-compass me-1" aria-hidden="true"></i>Waze
-                </a>
+                <% if @event.waze_url.present? %>
+                  <a href="<%= @event.waze_url %>"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="btn btn-sm btn-outline-info"
+                     aria-label="Ouvrir dans Waze">
+                    <i class="bi bi-compass me-1" aria-hidden="true"></i>Waze
+                  </a>
+                <% end %>
               </div>
-              
+            <% end %>
+            
+            <% if @event.has_gps_coordinates? %>
               <p class="text-muted small mb-0">
                 <i class="bi bi-pin-map me-1" aria-hidden="true"></i>
                 <%= @event.meeting_lat %>, <%= @event.meeting_lng %>
@@ -178,14 +184,13 @@
               <div class="col-12 <%= @event.loops_count == 2 ? 'col-md-6' : 'col-md-4' %>">
                 <div class="card card-liquid border-liquid h-100">
                   <% if loop_data[:route]&.map_image&.attached? %>
-                    <div class="card-img-top" 
-                         style="height: 200px; overflow: hidden; cursor: pointer;"
+                    <div class="card-img-top route-image-container" 
                          data-bs-toggle="modal" 
                          data-bs-target="#routeImageModal<%= loop_data[:loop_number] %>"
                          aria-label="Agrandir l'image du parcours <%= loop_data[:route].name %>">
                       <%= image_tag(rails_representation_path(loop_data[:route].map_image.variant(resize_to_limit: [800, 400])), 
                           alt: loop_data[:route].name, 
-                          class: "w-100 h-100 object-fit-cover") %>
+                          class: "route-image") %>
                     </div>
                   <% end %>
                   <div class="card-body">
@@ -247,14 +252,13 @@
           </h2>
           <div class="card card-liquid border-liquid">
             <% if @event.route.map_image.attached? %>
-              <div class="card-img-top" 
-                   style="height: 300px; overflow: hidden; cursor: pointer;"
+              <div class="card-img-top route-image-container" 
                    data-bs-toggle="modal" 
                    data-bs-target="#routeImageModalSingle"
                    aria-label="Agrandir l'image du parcours <%= @event.route.name %>">
                 <%= image_tag(rails_representation_path(@event.route.map_image.variant(resize_to_limit: [1200, 600])), 
                     alt: @event.route.name, 
-                    class: "w-100 h-100 object-fit-cover") %>
+                    class: "route-image") %>
               </div>
             <% end %>
             <div class="card-body">
@@ -343,6 +347,77 @@
               <% end %>
             <% end %>
 
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Zone liste d'attente (affichée indépendamment des inscriptions confirmées) -->
+      <% if user_signed_in? && (@user_waitlist_entry || @child_waitlist_entries&.any?) %>
+        <div class="card card-liquid shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 mb-3">
+              <i class="bi bi-hourglass-split text-warning me-2" aria-hidden="true"></i>
+              En liste d'attente
+            </h3>
+            
+            <!-- Parent en liste d'attente -->
+            <% if @user_waitlist_entry %>
+              <div class="alert alert-warning mb-3" role="alert">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <i class="bi bi-person-fill me-2" aria-hidden="true"></i>
+                    <strong>Vous êtes en liste d'attente</strong>
+                    <% if @user_waitlist_entry.notified? %>
+                      <span class="badge bg-info ms-2">
+                        <i class="bi bi-bell-fill me-1" aria-hidden="true"></i>Place disponible
+                      </span>
+                    <% else %>
+                      <span class="badge bg-secondary ms-2">
+                        Position #<%= @user_waitlist_entry.position + 1 %>
+                      </span>
+                    <% end %>
+                  </div>
+                  <%= button_to waitlist_entry_path(@user_waitlist_entry), 
+                      method: :delete, 
+                      class: "btn btn-outline-danger btn-sm", 
+                      data: { turbo_confirm: 'Quitter la liste d\'attente ?' },
+                      aria: { label: 'Quitter la liste d\'attente' } do %>
+                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Quitter la file
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <!-- Enfants en liste d'attente -->
+            <% if @child_waitlist_entries&.any? %>
+              <% @child_waitlist_entries.each do |waitlist_entry| %>
+                <div class="alert alert-warning mb-3" role="alert">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                      <i class="bi bi-person-heart me-2" aria-hidden="true"></i>
+                      <strong><%= waitlist_entry.participant_name %> est en liste d'attente</strong>
+                      <% if waitlist_entry.notified? %>
+                        <span class="badge bg-info ms-2">
+                          <i class="bi bi-bell-fill me-1" aria-hidden="true"></i>Place disponible
+                        </span>
+                      <% else %>
+                        <span class="badge bg-secondary ms-2">
+                          Position #<%= waitlist_entry.position + 1 %>
+                        </span>
+                      <% end %>
+                    </div>
+                    <%= button_to waitlist_entry_path(waitlist_entry), 
+                        method: :delete, 
+                        params: { child_membership_id: waitlist_entry.child_membership_id },
+                        class: "btn btn-outline-danger btn-sm", 
+                        data: { turbo_confirm: "Quitter la liste d'attente pour #{waitlist_entry.participant_name} ?" },
+                        aria: { label: "Quitter la liste d'attente pour #{waitlist_entry.participant_name}" } do %>
+                      <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Quitter la file
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
           </div>
         </div>
       <% end %>

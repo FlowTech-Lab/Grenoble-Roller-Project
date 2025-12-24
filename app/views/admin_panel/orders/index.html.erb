@@ -1,0 +1,88 @@
+<% 
+  breadcrumb_items = [
+    { label: "Commandes", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Commandes</h1>
+  <%= link_to "Exporter CSV", admin_panel_orders_path(format: :csv, q: params[:q]&.to_unsafe_h), class: "btn btn-outline-liquid-success" %>
+</div>
+
+<!-- Filtres et recherche -->
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <%= search_form_for @q, url: admin_panel_orders_path, method: :get, class: "row g-3" do |f| %>
+      <div class="col-md-4">
+        <%= f.label :user_email_cont, "Email client", class: "form-label" %>
+        <%= f.search_field :user_email_cont, class: "form-control form-control-liquid", placeholder: "Rechercher par email..." %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :status_eq, "Statut", class: "form-label" %>
+        <%= f.select :status_eq,
+            options_for_select([
+              ["Tous", ""],
+              ["En attente", "pending"],
+              ["Payée", "paid"],
+              ["En préparation", "preparation"],
+              ["Expédiée", "shipped"],
+              ["Annulée", "cancelled"]
+            ], params.dig(:q, :status_eq)),
+            {},
+            { class: "form-select form-control-liquid" } %>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <%= f.submit "Filtrer", class: "btn btn-outline-liquid-primary" %>
+        <%= link_to "Réinitialiser", admin_panel_orders_path, class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Tableau des commandes -->
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-body">
+    <% if @orders.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Client</th>
+              <th>Email</th>
+              <th>Total</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @orders.each do |order| %>
+              <tr>
+                <td data-label="ID">#<%= order.id %></td>
+                <td data-label="Client">
+                  <%= order.user&.first_name || order.user&.email || "N/A" %>
+                </td>
+                <td data-label="Email"><%= order.user&.email || "N/A" %></td>
+                <td data-label="Total"><%= number_to_currency(order.total_cents / 100.0, unit: '€') %></td>
+                <td data-label="Statut"><%= status_badge(order.status) %></td>
+                <td data-label="Date"><%= order.created_at.strftime('%d/%m/%Y %H:%M') %></td>
+                <td data-label="Actions">
+                  <%= link_to "Voir", admin_panel_order_path(order), class: "btn btn-sm btn-outline-primary" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <%= render 'admin_panel/shared/pagination' %>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted">Aucune commande trouvée</p>
+      </div>
+    <% end %>
+  </div>
+</div>

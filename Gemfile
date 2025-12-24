@@ -29,6 +29,11 @@ gem "rack-cors" # CORS pour applications mobiles
 
 gem "table_print"
 
+# Pagination
+gem "pagy", "~> 8.0"
+
+# Excel export (XLSX)
+gem "rubyXL", "~> 3.4"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -40,6 +45,7 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
+gem "mission_control-jobs"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false

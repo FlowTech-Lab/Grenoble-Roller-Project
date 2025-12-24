@@ -1,4 +1,10 @@
 module ApplicationHelper
+  include ActionView::Helpers::TextHelper
+  include Pagy::Frontend
+
+  # Alias de la méthode originale pluralize avant surcharge
+  alias_method :original_pluralize, :pluralize
+
   def cart_items_count
     return 0 unless session[:cart]
     session[:cart].values.sum(&:to_i)
@@ -32,4 +38,36 @@ module ApplicationHelper
   end
 
   # Helper supprimé : plus d'image par défaut, l'image est obligatoire
+
+  # Surcharge de pluralize pour gérer correctement le français
+  # Gère les expressions composées comme "place disponible" → "places disponibles"
+  # Règle : 0 et 1 = singulier, 2+ = pluriel
+  def pluralize(count, singular, plural = nil)
+    # Si plural est fourni explicitement, utiliser la méthode originale de Rails
+    if plural.present?
+      return original_pluralize(count, singular, plural)
+    end
+
+    # Gérer le français : 0 et 1 = singulier, 2+ = pluriel
+    return "#{count} #{singular}" if count == 0 || count == 1
+
+    # Règles de pluralisation françaises pour les expressions courantes
+    plural_rules = {
+      "inscrit" => "inscrits",
+      "place disponible" => "places disponibles",
+      "place adhérent" => "places adhérents",
+      "place découverte" => "places découvertes",
+      "boucle" => "boucles"
+    }
+
+    # Si on a une règle spécifique, l'utiliser
+    if plural_rules.key?(singular)
+      pluralized = plural_rules[singular]
+    else
+      # Sinon, utiliser la méthode originale de Rails (ajoute "s" à la fin)
+      pluralized = singular.pluralize
+    end
+
+    "#{count} #{pluralized}"
+  end
 end

@@ -11,16 +11,35 @@
 ###############################################################################
 
 # Vérifier que toutes les migrations locales sont présentes dans le conteneur
+# ⚠️  AMÉLIORATION : Gère le cas où le conteneur n'est pas running
 verify_migrations_synced() {
     local container=$1
     local expected_count=$2
     local local_list=$3
     
-    # Lister migrations dans le conteneur
-    local container_list=$($DOCKER_CMD exec "$container" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    # Vérifier d'abord si le conteneur est running
+    if ! container_is_running "$container"; then
+        log_warning "⚠️  Conteneur $container n'est pas running, utilisation de docker run temporaire..."
+        
+        # Utiliser docker run avec l'image du conteneur pour vérifier les migrations
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "")
+        
+        if [ -z "$image_name" ]; then
+            # Si on ne peut pas obtenir l'image, essayer de la trouver depuis docker-compose
+            log_warning "⚠️  Impossible d'obtenir l'image du conteneur, skip de la vérification"
+            log_warning "   Les migrations seront vérifiées après le démarrage du conteneur"
+            return 0  # Non bloquant si le conteneur n'est pas running
+        fi
+        
+        # Lister migrations dans l'image (pas le conteneur running)
+        local container_list=$($DOCKER_CMD run --rm "$image_name" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    else
+        # Lister migrations dans le conteneur running (méthode normale)
+        local container_list=$($DOCKER_CMD exec "$container" find /rails/db/migrate -name "*.rb" -type f -exec basename {} \; 2>/dev/null | sort || echo "")
+    fi
     
     if [ -z "$container_list" ]; then
-        log_error "❌ Impossible de lister les migrations dans le conteneur"
+        log_error "❌ Impossible de lister les migrations dans le conteneur/image"
         return 1
     fi
     
@@ -187,6 +206,7 @@ calculate_migration_timeout() {
 }
 
 # Appliquer les migrations
+# ⚠️  AMÉLIORATION : Si le conteneur n'est pas running, utiliser un conteneur temporaire
 apply_migrations() {
     local container=$1
     local migration_timeout=${2:-900}
@@ -211,17 +231,148 @@ apply_migrations() {
         fi
     fi
     
-    # Exécuter migrations
+    # Exécuter migrations (PostgreSQL - inclut Solid Queue)
+    # ⚠️  IMPORTANT : db:migrate applique les migrations en attente
+    #    - Ne supprime AUCUNE donnée existante
+    #    - Inclut les migrations Solid Queue (même base PostgreSQL)
+    log_info "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente"
+    log_info "   ℹ️  Aucune donnée existante ne sera supprimée"
+    log_info "   ℹ️  Solid Queue utilise PostgreSQL (migrations incluses)"
+    
     local migration_output
     local migration_exit_code
     
-    if [ -n "$timeout_cmd" ]; then
-        migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
-        migration_exit_code=$?
+    # ⚠️  CRITIQUE : Si le conteneur n'est pas running (crash Solid Queue), utiliser un conteneur temporaire
+    if ! container_is_running "$container"; then
+        log_warning "⚠️  Conteneur $container n'est pas running (probable crash Solid Queue)"
+        log_info "   Exécution des migrations via conteneur temporaire..."
+        
+        # Obtenir l'image du conteneur
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "")
+        
+        if [ -z "$image_name" ]; then
+            # Essayer de trouver l'image depuis docker-compose
+            local compose_file="${COMPOSE_FILE:-}"
+            if [ -n "$compose_file" ] && [ -f "$compose_file" ]; then
+                image_name=$(grep -A 5 "services:" "$compose_file" | grep -A 3 "web:" | grep "image:" | awk '{print $2}' | head -1 || echo "")
+            fi
+            
+            if [ -z "$image_name" ]; then
+                # Dernier recours : déduire depuis le nom du conteneur
+                # Format attendu: grenoble-roller-{env} -> {env}-web
+                if [[ "$container" == *"-staging"* ]]; then
+                    image_name="staging-web"
+                elif [[ "$container" == *"-production"* ]]; then
+                    image_name="production-web"
+                else
+                    # Extraire l'environnement depuis le nom du conteneur
+                    local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                    if [ -n "$env_suffix" ]; then
+                        image_name="${env_suffix}-web"
+                    else
+                        image_name="staging-web"  # Fallback par défaut
+                    fi
+                fi
+            fi
+        fi
+        
+        log_info "   Utilisation de l'image: $image_name"
+        
+        # Obtenir le réseau Docker du conteneur
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$container" 2>/dev/null | head -1 || echo "")
+        
+        if [ -z "$network_name" ]; then
+            # Essayer de trouver le réseau depuis docker-compose
+            if [ -n "${COMPOSE_FILE:-}" ] && [ -f "${COMPOSE_FILE}" ]; then
+                local compose_dir=$(dirname "$(readlink -f "${COMPOSE_FILE}" 2>/dev/null || echo "${COMPOSE_FILE}")")
+                network_name="$(basename "$compose_dir")_default"
+            else
+                # Déduire depuis le nom du conteneur
+                if [[ "$container" == *"-staging"* ]]; then
+                    network_name="staging_default"
+                elif [[ "$container" == *"-production"* ]]; then
+                    network_name="production_default"
+                else
+                    # Extraire l'environnement depuis le nom du conteneur
+                    local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                    if [ -n "$env_suffix" ]; then
+                        network_name="${env_suffix}_default"
+                    else
+                        network_name="staging_default"  # Fallback par défaut
+                    fi
+                fi
+            fi
+        fi
+        
+        # Obtenir DATABASE_URL depuis le conteneur ou docker-compose
+        local db_url="${DATABASE_URL:-}"
+        if [ -z "$db_url" ]; then
+            # Construire DATABASE_URL depuis les variables d'environnement
+            local db_host="${DATABASE_HOST:-db}"
+            local db_port="${DATABASE_PORT:-5432}"
+            local db_user="${DATABASE_USER:-postgres}"
+            local db_pass="${DATABASE_PASSWORD:-postgres}"
+            local db_name="${DATABASE_NAME:-grenoble_roller_production}"
+            db_url="postgresql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}"
+        fi
+        
+        # ⚠️  CRITIQUE : Récupérer RAILS_MASTER_KEY pour déchiffrer les credentials
+        local rails_master_key="${RAILS_MASTER_KEY:-}"
+        if [ -z "$rails_master_key" ]; then
+            # Essayer depuis le conteneur (même s'il est arrêté, l'image contient peut-être la clé)
+            rails_master_key=$($DOCKER_CMD exec "$container" cat /rails/config/master.key 2>/dev/null | tr -d '\n\r' || echo "")
+            
+            if [ -z "$rails_master_key" ]; then
+                # Essayer depuis le fichier local
+                local master_key_path="${REPO_DIR:-.}/config/master.key"
+                if [ -f "$master_key_path" ]; then
+                    rails_master_key=$(cat "$master_key_path" | tr -d '\n\r')
+                    log_info "   Master key récupérée depuis config/master.key"
+                fi
+            else
+                log_info "   Master key récupérée depuis le conteneur"
+            fi
+        fi
+        
+        if [ -z "$rails_master_key" ]; then
+            log_error "❌ RAILS_MASTER_KEY introuvable - impossible d'exécuter les migrations"
+            log_error "   Vérifiez que config/master.key existe ou que RAILS_MASTER_KEY est défini"
+            return 1
+        fi
+        
+        log_info "   Exécution via conteneur temporaire sur réseau: $network_name"
+        
+        # Exécuter les migrations via un conteneur temporaire
+        if [ -n "$timeout_cmd" ]; then
+            migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD run --rm \
+                --network "$network_name" \
+                -e DATABASE_URL="$db_url" \
+                -e RAILS_ENV="${RAILS_ENV:-production}" \
+                -e RAILS_MASTER_KEY="$rails_master_key" \
+                "$image_name" \
+                bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        else
+            log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
+            migration_output=$($DOCKER_CMD run --rm \
+                --network "$network_name" \
+                -e DATABASE_URL="$db_url" \
+                -e RAILS_ENV="${RAILS_ENV:-production}" \
+                -e RAILS_MASTER_KEY="$rails_master_key" \
+                "$image_name" \
+                bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        fi
     else
-        log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
-        migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
-        migration_exit_code=$?
+        # Méthode normale : conteneur running
+        if [ -n "$timeout_cmd" ]; then
+            migration_output=$($timeout_cmd ${migration_timeout} $DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        else
+            log_warning "⚠️  Commande 'timeout' non disponible, exécution sans timeout"
+            migration_output=$($DOCKER_CMD exec "$container" bin/rails db:migrate 2>&1)
+            migration_exit_code=$?
+        fi
     fi
     
     local migration_end_time=$(date +%s)
@@ -245,10 +396,64 @@ apply_migrations() {
         return 1
     fi
     
-    log_success "✅ Migrations exécutées avec succès (durée: ${migration_duration}s)"
+    log_success "✅ Migrations principales exécutées avec succès (durée: ${migration_duration}s)"
     
-    # Vérification post-migration
-    local post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
+    # Vérification post-migration principales
+    # ⚠️  Si le conteneur n'est pas running, utiliser un conteneur temporaire
+    local post_status=""
+    if container_is_running "$container"; then
+        post_status=$($DOCKER_CMD exec "$container" bin/rails db:migrate:status 2>&1)
+    else
+        # Utiliser le même mécanisme que pour apply_migrations
+        local image_name=$($DOCKER_CMD inspect --format='{{.Config.Image}}' "$container" 2>/dev/null || echo "")
+        if [ -z "$image_name" ]; then
+            # Déduire depuis le nom du conteneur
+            if [[ "$container" == *"-staging"* ]]; then
+                image_name="staging-web"
+            elif [[ "$container" == *"-production"* ]]; then
+                image_name="production-web"
+            else
+                local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                image_name="${env_suffix:-staging}-web"
+            fi
+        fi
+        
+        local network_name=$($DOCKER_CMD inspect --format='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' "$container" 2>/dev/null | head -1 || echo "")
+        if [ -z "$network_name" ]; then
+            # Déduire depuis le nom du conteneur
+            if [[ "$container" == *"-staging"* ]]; then
+                network_name="staging_default"
+            elif [[ "$container" == *"-production"* ]]; then
+                network_name="production_default"
+            else
+                local env_suffix=$(echo "$container" | sed -n 's/.*-\(staging\|production\)$/\1/p')
+                network_name="${env_suffix:-staging}_default"
+            fi
+        fi
+        
+        local db_url="${DATABASE_URL:-postgresql://postgres:postgres@db:5432/grenoble_roller_production}"
+        
+        # ⚠️  CRITIQUE : Récupérer RAILS_MASTER_KEY
+        local rails_master_key="${RAILS_MASTER_KEY:-}"
+        if [ -z "$rails_master_key" ]; then
+            local master_key_path="${REPO_DIR:-.}/config/master.key"
+            if [ -f "$master_key_path" ]; then
+                rails_master_key=$(cat "$master_key_path" | tr -d '\n\r')
+            fi
+        fi
+        
+        if [ -z "$rails_master_key" ]; then
+            log_error "❌ RAILS_MASTER_KEY introuvable - impossible de vérifier les migrations"
+            return 1
+        fi
+        
+        post_status=$($DOCKER_CMD run --rm --network "$network_name" \
+            -e DATABASE_URL="$db_url" \
+            -e RAILS_ENV="${RAILS_ENV:-production}" \
+            -e RAILS_MASTER_KEY="$rails_master_key" \
+            "$image_name" \
+            bin/rails db:migrate:status 2>&1)
+    fi
     local post_pending=$(echo "$post_status" | awk '/^\s*down/ {count++} END {print count+0}' 2>/dev/null || echo "0")
     
     if [ "$post_pending" -gt 0 ]; then
@@ -257,6 +462,10 @@ apply_migrations() {
         log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         return 1
     fi
+    
+    # Solid Queue utilise maintenant PostgreSQL (même base que l'application)
+    # Les migrations Solid Queue sont incluses dans db/migrate et gérées par db:migrate
+    log_info "ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)"
     
     log_success "✅ Toutes les migrations ont été appliquées correctement"
     return 0

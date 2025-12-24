@@ -42,20 +42,6 @@
             <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
           <% end %>
         </li>
-        <% if user_signed_in? && policy(Event.new).create? %>
-          <li class="nav-item">
-            <%= link_to new_event_path, class: "nav-link fw-semibold text-liquid-primary" do %>
-              <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Créer un événement
-            <% end %>
-          </li>
-        <% end %>
-        <% if user_signed_in? && policy(Event::Initiation.new).create? %>
-          <li class="nav-item">
-            <%= link_to new_initiation_path, class: "nav-link fw-semibold text-liquid-primary" do %>
-              <i class="bi bi-book me-1" aria-hidden="true"></i>Créer une initiation
-            <% end %>
-          </li>
-        <% end %>
       </ul>
       <div class="d-flex align-items-center gap-2">
         <!-- Theme toggle -->
@@ -118,16 +104,29 @@
                   <% end %>
                 <% end %>
               </li>
+              <% if policy(Event.new).create? || policy(Event::Initiation.new).create? %>
+                <li><hr class="dropdown-divider"></li>
+                <% if policy(Event.new).create? %>
+                  <li>
+                    <%= link_to new_event_path, class: "dropdown-item" do %>
+                      <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Créer un événement
+                    <% end %>
+                  </li>
+                <% end %>
+                <% if policy(Event::Initiation.new).create? %>
+                  <li>
+                    <%= link_to new_initiation_path, class: "dropdown-item" do %>
+                      <i class="bi bi-book me-2" aria-hidden="true"></i>Créer une initiation
+                    <% end %>
+                  </li>
+                <% end %>
+              <% end %>
               <% if current_user.role&.code.in?(%w[ADMIN SUPERADMIN]) %>
                 <li><hr class="dropdown-divider"></li>
+                <!-- NOUVEAU PANEL ADMIN -->
                 <li>
-                  <%= link_to Rails.application.routes.url_helpers.activeadmin_root_path, class: "dropdown-item" do %>
+                  <%= link_to admin_panel_root_path, class: "dropdown-item" do %>
                     <i class="bi bi-shield-check me-2" aria-hidden="true"></i>Administration
-                  <% end %>
-                </li>
-                <li>
-                  <%= link_to Rails.application.routes.url_helpers.activeadmin_root_path, class: "dropdown-item" do %>
-                    <i class="bi bi-gear me-2" aria-hidden="true"></i>Active Admin
                   <% end %>
                 </li>
               <% end %>

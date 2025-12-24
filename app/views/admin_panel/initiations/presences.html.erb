@@ -1,0 +1,175 @@
+<% 
+  breadcrumb_items = [
+    { label: "Initiations", url: admin_panel_initiations_path },
+    { label: @initiation.title, url: admin_panel_initiation_path(@initiation) },
+    { label: "Présences", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Présences - <%= @initiation.title %></h1>
+  <%= link_to "Retour", admin_panel_initiation_path(@initiation), class: "btn btn-outline-secondary" %>
+</div>
+
+<!-- En-tête -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Date :</strong> <%= l(@initiation.start_at, format: :long) if @initiation.start_at %></p>
+        <p><strong>Heure :</strong> 10h15-12h00</p>
+        <p><strong>Lieu :</strong> <%= @initiation.location_text %></p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>Places :</strong>
+          <span class="badge bg-<%= @initiation.full? ? 'danger' : 'success' %>">
+            <%= @initiation.participants_count %>/<%= @initiation.max_participants %>
+          </span>
+        </p>
+        <p><strong>Bénévoles :</strong> <%= @initiation.volunteers_count %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= form_with url: update_presences_admin_panel_initiation_path(@initiation), method: :patch, local: true do |f| %>
+  <!-- Tableau Bénévoles -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Bénévoles (<%= @volunteers.count %>)</h5>
+    </div>
+    <div class="card-body">
+      <% if @volunteers.any? %>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Matériel</th>
+                <th>Présence</th>
+                <th>Bénévole</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @volunteers.each do |attendance| %>
+                <%= f.hidden_field "attendance_ids[]", value: attendance.id %>
+                <tr>
+                  <td data-label="Nom"><%= attendance.participant_name %></td>
+                  <td data-label="Email"><%= attendance.user.email %></td>
+                  <td data-label="Matériel">
+                    <% if attendance.needs_equipment? %>
+                      <% if attendance.roller_size.present? %>
+                        <span class="badge bg-info">Taille: <%= attendance.roller_size %></span>
+                      <% end %>
+                      <% if attendance.equipment_note.present? %>
+                        <br><small class="text-muted"><%= attendance.equipment_note %></small>
+                      <% end %>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  </td>
+                  <td data-label="Présence">
+                    <%= f.select "presences[#{attendance.id}]",
+                        options_for_select([
+                          ["Inscrit", "registered"],
+                          ["Présent", "present"],
+                          ["Absent", "absent"],
+                          ["No-show", "no_show"]
+                        ], attendance.status),
+                        {},
+                        { class: "form-select form-select-sm" } %>
+                  </td>
+                  <td data-label="Bénévole">
+                    <%= f.check_box "is_volunteer[#{attendance.id}]", { checked: attendance.is_volunteer? }, "1", "0" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted">Aucun bénévole inscrit.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Tableau Participants -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Participants (<%= @participants.count %>)</h5>
+    </div>
+    <div class="card-body">
+      <% if @participants.any? %>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Matériel</th>
+                <th>Essai gratuit</th>
+                <th>Présence</th>
+                <th>Bénévole</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @participants.each do |attendance| %>
+                <%= f.hidden_field "attendance_ids[]", value: attendance.id %>
+                <tr>
+                  <td data-label="Nom"><%= attendance.participant_name %></td>
+                  <td data-label="Email"><%= attendance.user.email %></td>
+                  <td data-label="Matériel">
+                    <% if attendance.needs_equipment? %>
+                      <% if attendance.roller_size.present? %>
+                        <span class="badge bg-info">Taille: <%= attendance.roller_size %></span>
+                      <% end %>
+                      <% if attendance.equipment_note.present? %>
+                        <br><small class="text-muted"><%= attendance.equipment_note %></small>
+                      <% end %>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  </td>
+                  <td data-label="Essai gratuit">
+                    <% if attendance.free_trial_used? %>
+                      <span class="badge bg-danger">Oui</span>
+                    <% else %>
+                      <span class="text-muted">Non</span>
+                    <% end %>
+                  </td>
+                  <td data-label="Présence">
+                    <%= f.select "presences[#{attendance.id}]",
+                        options_for_select([
+                          ["Inscrit", "registered"],
+                          ["Présent", "present"],
+                          ["Absent", "absent"],
+                          ["No-show", "no_show"]
+                        ], attendance.status),
+                        {},
+                        { class: "form-select form-select-sm" } %>
+                  </td>
+                  <td data-label="Bénévole">
+                    <%= f.check_box "is_volunteer[#{attendance.id}]", { checked: attendance.is_volunteer? }, "1", "0" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted">Aucun participant inscrit.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="card">
+    <div class="card-body">
+      <%= f.submit "Sauvegarder présences", class: "btn btn-primary btn-lg" %>
+      <%= link_to "Annuler", admin_panel_initiation_path(@initiation), class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+<% end %>

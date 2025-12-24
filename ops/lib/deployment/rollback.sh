@@ -4,12 +4,12 @@
 # Description: Rollback transactionnel (code + DB) vers un commit précédent
 # Dependencies: 
 #   - core/logging.sh
-#   - core/utils.sh (check_disk_space)
+#   - core/utils.sh (check_disk_space, prompt_with_timeout)
 #   - docker/containers.sh (container_is_running_stable)
 #   - docker/images.sh (cleanup_docker)
 #   - database/restore.sh (restore_database_from_backup)
 #   - health/checks.sh (health_check_comprehensive)
-#   - Variables: DB_BACKUP, BLUE_GREEN_ENABLED, COMPOSE_FILE, BLUE_GREEN_COMPOSE_FILE, CONTAINER_NAME, PORT, REPO_DIR
+#   - Variables: DB_BACKUP, BLUE_GREEN_ENABLED, COMPOSE_FILE, BLUE_GREEN_COMPOSE_FILE, CONTAINER_NAME, PORT, REPO_DIR, ENV
 # Author: FlowTech Lab
 # Version: 1.0.0
 ###############################################################################
@@ -71,7 +71,29 @@ rollback() {
         fi
     fi
     
-    # 5. Rebuild et démarrage
+    # 5. Demander confirmation avant de relancer l'ancien conteneur
+    # ⚠️  IMPORTANT : Confirmation demandée ici, pas au début du déploiement
+    #    - Staging : défaut NON, timeout 120s
+    #    - Production : défaut OUI, timeout 120s
+    log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_warning "🔄 Le déploiement a échoué, rollback vers l'ancienne version"
+    log_warning "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    local default_answer="yes"
+    if [ "${ENV:-}" = "staging" ]; then
+        default_answer="no"
+    fi
+    
+    if ! prompt_with_timeout "Voulez-vous relancer l'ancien conteneur (rollback) ?" 120 "$default_answer"; then
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_error "❌ Rollback annulé par l'opérateur"
+        log_error "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        log_warning "💡 L'application reste arrêtée"
+        log_warning "   Intervention manuelle requise"
+        return 1
+    fi
+    
+    # 6. Rebuild et démarrage avec l'ancienne version
     log_info "🔨 Rebuild et démarrage avec l'ancienne version..."
     local build_output
     local build_exit_code
@@ -98,7 +120,7 @@ rollback() {
         return 1
     fi
     
-    # 6. Désactiver le mode maintenance après rollback réussi
+    # 7. Désactiver le mode maintenance après rollback réussi
     log_info "🔓 Désactivation du mode maintenance..."
     if container_is_running_stable "$container_to_check"; then
         if command -v disable_maintenance_mode > /dev/null 2>&1; then
@@ -106,7 +128,7 @@ rollback() {
         fi
     fi
     
-    # 7. Vérification sanity (health check)
+    # 8. Vérification sanity (health check)
     log_info "🔍 Vérification de l'état après rollback..."
     sleep 5  # Attendre le démarrage
     

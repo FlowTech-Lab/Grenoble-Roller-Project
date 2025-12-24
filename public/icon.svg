@@ -1,3 +1,36 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="256" cy="256" r="256" fill="red"/>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#007AFF"/>
+  
+  <!-- Roller skater silhouette (simplified based on logo) -->
+  <g transform="translate(256, 200)">
+    <!-- Head/Helmet -->
+    <circle cx="0" cy="-60" r="22" fill="white" opacity="0.95"/>
+    
+    <!-- Body -->
+    <ellipse cx="0" cy="-5" rx="18" ry="45" fill="white" opacity="0.95"/>
+    
+    <!-- Left arm (forward) -->
+    <ellipse cx="-22" cy="-15" rx="7" ry="30" fill="white" opacity="0.95" transform="rotate(-25)"/>
+    
+    <!-- Right arm (back) -->
+    <ellipse cx="22" cy="-15" rx="7" ry="30" fill="white" opacity="0.95" transform="rotate(25)"/>
+    
+    <!-- Left leg -->
+    <ellipse cx="-12" cy="35" rx="9" ry="45" fill="white" opacity="0.95" transform="rotate(-8)"/>
+    
+    <!-- Right leg -->
+    <ellipse cx="12" cy="35" rx="9" ry="45" fill="white" opacity="0.95" transform="rotate(8)"/>
+    
+    <!-- Roller skates -->
+    <ellipse cx="-12" cy="80" rx="16" ry="7" fill="white" opacity="0.95"/>
+    <ellipse cx="12" cy="80" rx="16" ry="7" fill="white" opacity="0.95"/>
+  </g>
+  
+  <!-- Mountain silhouette (simplified) -->
+  <path d="M 200 320 L 240 280 L 280 300 L 320 260 L 360 280 L 400 240 L 400 380 L 200 380 Z" 
+        fill="white" opacity="0.85"/>
+  
+  <!-- Text "GR" (simplified) -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="white" text-anchor="middle" opacity="0.95">GR</text>
 </svg>

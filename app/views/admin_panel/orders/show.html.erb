@@ -1,0 +1,115 @@
+<% 
+  breadcrumb_items = [
+    { label: "Commandes", url: admin_panel_orders_path },
+    { label: "Commande ##{@order.id}", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Commande #<%= @order.id %></h1>
+  <%= link_to "Retour", admin_panel_orders_path, class: "btn btn-outline-liquid-primary" %>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <!-- Informations commande -->
+    <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Informations</h5>
+      </div>
+      <div class="card-body">
+        <dl class="row">
+          <dt class="col-sm-3">ID</dt>
+          <dd class="col-sm-9">#<%= @order.id %></dd>
+
+          <dt class="col-sm-3">Client</dt>
+          <dd class="col-sm-9">
+            <%= @order.user&.first_name || @order.user&.email || "N/A" %>
+            <br>
+            <small class="text-muted"><%= @order.user&.email %></small>
+          </dd>
+
+          <dt class="col-sm-3">Total</dt>
+          <dd class="col-sm-9"><strong><%= number_to_currency(@order.total_cents / 100.0, unit: '€') %></strong></dd>
+
+          <dt class="col-sm-3">Statut</dt>
+          <dd class="col-sm-9"><%= status_badge(@order.status) %></dd>
+
+          <dt class="col-sm-3">Date création</dt>
+          <dd class="col-sm-9"><%= @order.created_at.strftime("%d/%m/%Y à %H:%M") %></dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Articles -->
+    <div class="card card-liquid rounded-liquid shadow-liquid">
+      <div class="card-header">
+        <h5 class="mb-0">Articles</h5>
+      </div>
+      <div class="card-body">
+        <% if @order.order_items.any? %>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Variante</th>
+                  <th>Quantité</th>
+                  <th>Prix unitaire</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @order.order_items.each do |item| %>
+                  <tr>
+                    <td data-label="Produit"><%= item.variant&.product&.name || "N/A" %></td>
+                    <td data-label="Variante"><code><%= item.variant&.sku || "N/A" %></code></td>
+                    <td data-label="Quantité"><%= item.quantity %></td>
+                    <td data-label="Prix unitaire"><%= number_to_currency(item.unit_price_cents / 100.0, unit: '€') %></td>
+                    <td data-label="Total"><%= number_to_currency(item.unit_price_cents * item.quantity / 100.0, unit: '€') %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted">Aucun article</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <!-- Actions -->
+    <div class="card card-liquid rounded-liquid shadow-liquid">
+      <div class="card-header">
+        <h5 class="mb-0">Actions</h5>
+      </div>
+      <div class="card-body">
+        <%= form_with url: change_status_admin_panel_order_path(@order), method: :patch, class: "mb-3" do |f| %>
+          <div class="mb-3">
+            <%= f.label :status, "Changer le statut", class: "form-label" %>
+            <%= f.select :status,
+                options_for_select([
+                  ["En attente", "pending"],
+                  ["Payée", "paid"],
+                  ["En préparation", "preparation"],
+                  ["Expédiée", "shipped"],
+                  ["Annulée", "cancelled"]
+                ], @order.status),
+                {},
+                { class: "form-select form-control-liquid" } %>
+          </div>
+          <%= f.submit "Mettre à jour", class: "btn btn-liquid-primary w-100" %>
+        <% end %>
+
+        <hr>
+
+        <%= link_to "Exporter", admin_panel_orders_path(format: :csv, q: { id_eq: @order.id }), 
+            class: "btn btn-outline-liquid-success w-100" %>
+      </div>
+    </div>
+  </div>
+</div>

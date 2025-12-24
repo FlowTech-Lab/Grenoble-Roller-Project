@@ -1,6 +1,11 @@
 FactoryBot.define do
   factory :user do
-    association :role
+    after(:build) do |user|
+      user.role ||= Role.find_or_create_by!(code: 'USER') do |r|
+        r.name = 'Utilisateur'
+        r.level = 10
+      end
+    end
     sequence(:first_name) { |n| "User#{n}" }
     sequence(:last_name) { |n| "Tester#{n}" }
     sequence(:email) { |n| "user#{n}@example.com" }
@@ -9,11 +14,29 @@ FactoryBot.define do
     skill_level { 'intermediate' }
     confirmed_at { Time.current } # Par défaut, utilisateur confirmé
 
+    trait :initiation do
+      after(:build) do |user|
+        user.role = Role.find_or_create_by!(code: 'INITIATION') do |role|
+          role.name = 'Initiation'
+          role.level = 30
+        end
+      end
+    end
+
     trait :organizer do
       after(:build) do |user|
         user.role = Role.find_or_create_by!(code: 'ORGANIZER') do |role|
           role.name = 'Organisateur'
           role.level = 40
+        end
+      end
+    end
+
+    trait :moderator do
+      after(:build) do |user|
+        user.role = Role.find_or_create_by!(code: 'MODERATOR') do |role|
+          role.name = 'Modérateur'
+          role.level = 50
         end
       end
     end
