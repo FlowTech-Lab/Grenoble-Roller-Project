@@ -1596,8 +1596,9 @@ end
 
 **Exemples corrects** :
 ```ruby
-# ✅ CORRECT : Utilise .active
-parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+# ✅ CORRECT : Utilise .personal pour vérifier UNIQUEMENT les adhésions personnelles du parent (pas celles des enfants)
+# ⚠️ IMPORTANT v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+parent_can_use_trial = !current_user.memberships.personal.active_now.exists? && 
                        !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
 
 any_child_has_trial = trial_children.any? { |child| 
@@ -1610,12 +1611,21 @@ trial_children_data = trial_children.map do |child|
     can_use_trial: !current_user.attendances.active.where(free_trial_used: true, child_membership_id: child.id).exists?
   }
 end
+
+# ✅ CORRECT : Vérifier si le parent a une adhésion active PERSONNELLE (pour déterminer si l'essai est obligatoire pour les enfants pending)
+parent_has_active_membership = current_user.memberships.personal.active_now.exists?
 ```
 
 **Exemples incorrects** :
 ```ruby
 # ❌ INCORRECT : N'utilise pas .active (inclut les attendances annulées)
 parent_can_use_trial = !current_user.attendances.where(free_trial_used: true, child_membership_id: nil).exists?
+
+# ❌ INCORRECT : N'utilise pas .personal (inclut les adhésions enfants)
+# ⚠️ BUG CRITIQUE : Si un enfant a une adhésion active, cela empêche le parent d'utiliser son essai gratuit
+# Le parent devrait pouvoir utiliser son essai gratuit même si un enfant est adhérent (essais nominatifs)
+parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+                       !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
 ```
 
 ### 12.2. Échappement JavaScript
@@ -1797,9 +1807,11 @@ def create
     # ✅ active = "membre actif" (is_member = true, accès complet)
     child_membership.active? || child_membership.pending?
   else
-    # Pour le parent : vérifier UNIQUEMENT l'adhésion parent (pas celle des enfants)
+    # Pour le parent : vérifier UNIQUEMENT l'adhésion parent PERSONNELLE (pas celle des enfants)
     # ⚠️ v4.0 : Les essais gratuits sont NOMINATIFS - pas d'adhésion "famille"
-    current_user.memberships.active_now.where(is_child_membership: false).exists?
+    # ⚠️ CORRECTION CRITIQUE : Utiliser .personal pour exclure les adhésions enfants
+    # Si un enfant a une adhésion active, cela ne doit PAS empêcher le parent d'utiliser son essai gratuit
+    current_user.memberships.personal.active_now.exists?
   end
   
   # Pour un enfant avec statut pending : essai gratuit OBLIGATOIRE (nominatif)
@@ -1987,10 +1999,9 @@ end
 **Code réel** :
 ```ruby
 # app/controllers/initiations/attendances_controller.rb
-is_member = current_user.memberships.active_now.exists? ||
-            current_user.memberships.where(is_child_membership: true)
-              .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
-              .exists?
+# ⚠️ CORRECTION CRITIQUE : Utiliser .personal pour vérifier UNIQUEMENT les adhésions personnelles du parent
+# Si un enfant a une adhésion active, cela ne doit PAS empêcher le parent d'utiliser son essai gratuit
+is_member = current_user.memberships.personal.active_now.exists?
 
 if is_member
   # Parent est adhérent → pas besoin d'essai gratuit
@@ -2562,10 +2573,18 @@ Cette documentation principale est complétée par des fichiers détaillés dans
 
 **Date de création** : 2025-01-17
 **Dernière mise à jour** : 2025-12-30
-**Version** : 4.0
+**Version** : 4.0.1
 **Qualité** : 100/100 ✅
 
 **Note importante** : Cette documentation reflète l'état actuel du code après les modifications des formulaires et des vues pour implémenter la logique v4.0 des essais gratuits nominatifs.
+
+**Changelog v4.0.1** :
+- ✅ **CORRECTION CRITIQUE** : Utilisation de `.personal.active_now.exists?` au lieu de `.active_now.exists?` pour vérifier uniquement les adhésions personnelles du parent
+  - **Problème corrigé** : Si un enfant avait une adhésion active, le système pensait que le parent était adhérent et masquait la checkbox "Utiliser mon essai gratuit"
+  - **Solution** : Utiliser `.personal` pour exclure les adhésions enfants de la vérification
+  - **Impact** : Le parent peut maintenant utiliser son essai gratuit même si un enfant a une adhésion active
+  - **Fichiers modifiés** : `app/views/shared/_registration_form_fields.html.erb` (lignes 371 et 409)
+  - **Section documentation** : Section 30 ajoutée pour documenter cette correction critique
 
 **Changelog v4.0** :
 - ✅ **CORRECTION MAJEURE** : Les essais gratuits sont **NOMINATIFS** - chaque enfant DOIT utiliser son propre essai gratuit
@@ -2868,7 +2887,78 @@ end
 
 ---
 
-## 30. Section Historique - Ancienne Logique v3.8 (OBSOLÈTE)
+## 30. Correction Critique - Vérification Adhésions Parent (v4.0.1)
+
+### 30.1. Problème Identifié
+
+**⚠️ BUG CRITIQUE CORRIGÉ** : Le code vérifiait `current_user.memberships.active_now.exists?` au lieu de `current_user.memberships.personal.active_now.exists?` pour déterminer si le parent pouvait utiliser son essai gratuit.
+
+**Problème** :
+- Le scope `active_now` vérifie **toutes** les adhésions (personnelles ET enfants)
+- Si un enfant avait une adhésion active, `current_user.memberships.active_now.exists?` retournait `true`
+- Le système pensait alors que le parent était adhérent et masquait la checkbox "Utiliser mon essai gratuit"
+- **Résultat** : Le parent ne pouvait pas utiliser son essai gratuit même s'il n'avait pas d'adhésion personnelle active
+
+**Exemple concret** :
+```
+Situation :
+- Parent : Pas d'adhésion personnelle active
+- Enfant A : Adhésion active
+
+Code incorrect (BUG) :
+parent_can_use_trial = !current_user.memberships.active_now.exists?
+# Retourne false car l'enfant a une adhésion active
+# → parent_can_use_trial = false
+# → Checkbox "Utiliser mon essai gratuit" masquée ❌
+
+Code corrigé :
+parent_can_use_trial = !current_user.memberships.personal.active_now.exists?
+# Retourne true car le parent n'a pas d'adhésion personnelle active
+# → parent_can_use_trial = true
+# → Checkbox "Utiliser mon essai gratuit" affichée ✅
+```
+
+### 30.2. Solution Appliquée
+
+**Code corrigé** :
+```ruby
+# app/views/shared/_registration_form_fields.html.erb (ligne 371-372)
+# Pour le parent (sans enfant sélectionné)
+# Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active PERSONNELLE ET n'a pas déjà utilisé son essai
+# IMPORTANT : Utiliser .personal pour vérifier uniquement les adhésions personnelles (pas les enfants)
+# RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+parent_can_use_trial = !current_user.memberships.personal.active_now.exists? && 
+                       !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
+
+# app/views/shared/_registration_form_fields.html.erb (ligne 409)
+# Vérifier si le parent a une adhésion active PERSONNELLE (pour déterminer si l'essai est obligatoire pour les enfants pending)
+# IMPORTANT : Utiliser .personal pour vérifier uniquement les adhésions personnelles (pas les enfants)
+# RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+parent_has_active_membership = current_user.memberships.personal.active_now.exists?
+```
+
+### 30.3. Justification
+
+**Pourquoi utiliser `.personal` ?**
+- ⚠️ **RÈGLE v4.0** : Les essais gratuits sont **NOMINATIFS** - chaque personne a son propre essai gratuit
+- Le statut des enfants n'a **AUCUNE influence** sur l'essai gratuit du parent
+- Un parent sans adhésion personnelle active peut utiliser son essai gratuit, même si un enfant est adhérent
+- Le scope `.personal` filtre uniquement les adhésions avec `is_child_membership: false`
+
+**Impact de la correction** :
+- ✅ Le parent peut maintenant utiliser son essai gratuit même si un enfant a une adhésion active
+- ✅ La checkbox "Utiliser mon essai gratuit" s'affiche correctement pour le parent
+- ✅ Conforme à la logique v4.0 (essais gratuits nominatifs)
+
+### 30.4. Fichiers Modifiés
+
+- `app/views/shared/_registration_form_fields.html.erb` :
+  - Ligne 371 : `parent_can_use_trial` utilise maintenant `.personal.active_now.exists?`
+  - Ligne 409 : `parent_has_active_membership` utilise maintenant `.personal.active_now.exists?`
+
+---
+
+## 31. Section Historique - Ancienne Logique v3.8 (OBSOLÈTE)
 
 ⚠️ **ATTENTION** : Cette section documente l'ancienne logique v3.8 qui est **OBSOLÈTE** depuis v4.0.
 

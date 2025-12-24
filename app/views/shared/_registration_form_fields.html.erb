@@ -366,9 +366,11 @@
   has_pending_children = pending_children.any?
   
   # Pour le parent (sans enfant sélectionné)
-  # Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active ET n'a pas déjà utilisé son essai
+  # Le parent peut utiliser son essai gratuit s'il n'a pas d'adhésion active PERSONNELLE ET n'a pas déjà utilisé son essai
+  # IMPORTANT : Utiliser .personal pour vérifier uniquement les adhésions personnelles (pas les enfants)
   # IMPORTANT : Utiliser .active pour exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
-  parent_can_use_trial = !current_user.memberships.active_now.exists? && 
+  # RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+  parent_can_use_trial = !current_user.memberships.personal.active_now.exists? && 
                          !current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
   
   # NOUVELLE LOGIQUE : Si le parent n'a plus d'essai gratuit mais qu'un enfant en a un, on permet quand même
@@ -405,11 +407,15 @@
   # Variable combinée : afficher si parent OU enfant peut utiliser (même si l'autre ne peut plus)
   show_free_trial = is_initiation && !user_already_registered && (parent_has_trial || any_child_has_trial)
   
-  # Vérifier si le parent a une adhésion active (pour déterminer si l'essai est obligatoire pour les enfants pending)
-  parent_has_active_membership = current_user.memberships.active_now.exists?
+  # Vérifier si le parent a une adhésion active PERSONNELLE (pour déterminer si l'essai est obligatoire pour les enfants pending)
+  # IMPORTANT : Utiliser .personal pour vérifier uniquement les adhésions personnelles (pas les enfants)
+  # RÈGLE v4.0 : Les essais gratuits sont NOMINATIFS - le statut des enfants n'a AUCUNE influence sur l'essai gratuit du parent
+  parent_has_active_membership = current_user.memberships.personal.active_now.exists?
 %>
 <% if show_free_trial_parent || show_free_trial_children %>
-  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= show_free_trial_parent || (show_free_trial_children && (child_memberships.any? { |m| m.trial? } || child_memberships.any? { |m| m.pending? })) ? '' : 'display: none;' %>">
+  <%# Style initial : afficher si parent peut utiliser OU si enfant trial/pending disponible %>
+  <% initial_display = show_free_trial_parent || (show_free_trial_children && (child_memberships.any? { |m| m.trial? } || child_memberships.any? { |m| m.pending? })) %>
+  <div class="mb-3 form-check" id="free_trial_container<%= prefix_id %>" style="<%= initial_display ? '' : 'display: none;' %>">
     <%= check_box_tag :use_free_trial, "1", false, { 
         class: "form-check-input", 
         id: "use_free_trial#{prefix_id}",
