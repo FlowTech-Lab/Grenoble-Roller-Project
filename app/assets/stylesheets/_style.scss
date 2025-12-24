@@ -7095,10 +7095,10 @@ body.admin-panel {
   --admin-menu-item-height: 48px;
   --admin-menu-icon-size: 1.25rem;
   --admin-transition: cubic-bezier(0.4, 0, 0.2, 1);
-}
+  }
 
 /* === CONTENEUR ADMIN === */
-.admin-container {
+  .admin-container {
   overflow: hidden;
   position: relative;
 }
@@ -7151,19 +7151,19 @@ body.admin-panel {
     color: var(--bs-body-color);
     white-space: nowrap;
     transition: opacity 200ms var(--admin-transition);
-  }
+}
 
   [data-bs-theme="dark"] .admin-sidebar-logo-text {
     color: rgba(255, 255, 255, 0.95);
   }
 
   #sidebar.collapsed .admin-sidebar-logo-text {
-    opacity: 0;
-    visibility: hidden;
-  }
+  opacity: 0;
+  visibility: hidden;
+}
 
   /* Bouton toggle */
-  .admin-sidebar-toggle {
+.admin-sidebar-toggle {
     width: 32px;
     height: 32px;
     display: flex;
@@ -7176,9 +7176,9 @@ body.admin-panel {
     cursor: pointer;
     transition: all 200ms var(--admin-transition);
     flex-shrink: 0;
-  }
+}
 
-  .admin-sidebar-toggle:hover {
+.admin-sidebar-toggle:hover {
     background: rgba(0, 0, 0, 0.05);
   }
 
@@ -7188,7 +7188,7 @@ body.admin-panel {
 
   [data-bs-theme="dark"] .admin-sidebar-toggle:hover {
     background: rgba(255, 255, 255, 0.1);
-  }
+}
 
   .admin-sidebar-toggle i {
     font-size: 1rem;
@@ -7236,7 +7236,7 @@ body.admin-panel {
     font-weight: 500;
     transition: all 200ms var(--admin-transition);
     position: relative;
-  }
+}
 
   [data-bs-theme="dark"] .admin-menu-link {
     color: rgba(255, 255, 255, 0.85);
@@ -7251,7 +7251,7 @@ body.admin-panel {
   [data-bs-theme="dark"] .admin-menu-link:hover {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 1);
-  }
+}
 
   .admin-menu-link.active {
     background: var(--gradient-liquid-primary);
@@ -7298,19 +7298,19 @@ body.admin-panel {
   #sidebar.collapsed .admin-menu-label {
     opacity: 0;
     visibility: hidden;
-  }
+}
 
   /* Icône externe */
   .admin-menu-external-icon {
     font-size: 0.75rem;
     opacity: 0.6;
     flex-shrink: 0;
-  }
+}
 
   /* Lien externe (ActiveAdmin) */
   .admin-menu-link-external {
     color: #ff9800 !important;
-  }
+}
 
   [data-bs-theme="dark"] .admin-menu-link-external {
     color: #ffb74d !important;
@@ -7318,11 +7318,11 @@ body.admin-panel {
 
   .admin-menu-link-external:hover {
     color: #f57c00 !important;
-  }
+}
 
   [data-bs-theme="dark"] .admin-menu-link-external:hover {
     color: #ffa726 !important;
-  }
+}
 
   /* Divider */
   .admin-menu-divider {
@@ -7338,12 +7338,12 @@ body.admin-panel {
     transition: margin-left 300ms var(--admin-transition);
     padding-left: 2rem;
     padding-right: 2rem;
-  }
+}
 
   #sidebar.collapsed ~ * .admin-main-content,
   #sidebar.collapsed + main.admin-main-content {
     margin-left: var(--admin-sidebar-width-collapsed);
-  }
+}
 
   /* Cacher le bouton mobile */
   .admin-mobile-menu-toggle {
