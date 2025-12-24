@@ -161,6 +161,17 @@
         function unlockBodyScroll() {
           if (!isScrollLocked) return;
           
+          // Vérifier si le collapse (menu burger) est toujours ouvert
+          const navbarCollapse = document.getElementById('navbarComponent');
+          const isCollapseOpen = navbarCollapse && navbarCollapse.classList.contains('show');
+          
+          // Vérifier si un dropdown est toujours ouvert
+          const openDropdowns = document.querySelectorAll('.navbar .dropdown .dropdown-menu.show');
+          const hasOpenDropdown = openDropdowns.length > 0;
+          
+          // Ne pas débloquer si le collapse ou un dropdown est encore ouvert
+          if (isCollapseOpen || hasOpenDropdown) return;
+          
           // Restaurer le scroll du body
           document.body.style.overflow = '';
           document.body.style.position = '';
@@ -191,18 +202,52 @@
           });
         }
 
+        function initCollapseScrollLock() {
+          // Trouver le menu burger (collapse) dans la navbar
+          const navbarCollapse = document.getElementById('navbarComponent');
+          if (!navbarCollapse) return;
+
+          // Quand le collapse s'ouvre (menu burger ouvert)
+          navbarCollapse.addEventListener('show.bs.collapse', function() {
+            lockBodyScroll();
+          });
+          
+          navbarCollapse.addEventListener('shown.bs.collapse', function() {
+            // S'assurer que le scroll est bien bloqué après l'animation
+            if (isMobile() && !isScrollLocked) {
+              lockBodyScroll();
+            }
+          });
+
+          // Quand le collapse se ferme (menu burger fermé)
+          navbarCollapse.addEventListener('hide.bs.collapse', function() {
+            // Ne pas débloquer immédiatement, attendre que l'animation soit terminée
+            // pour éviter que le scroll se débloque pendant l'animation
+          });
+          
+          navbarCollapse.addEventListener('hidden.bs.collapse', function() {
+            // Débloquer le scroll après que l'animation soit complètement terminée
+            unlockBodyScroll();
+          });
+        }
+
+        function initAllScrollLocks() {
+          initDropdownScrollLock();
+          initCollapseScrollLock();
+        }
+
         // Initialiser au chargement de la page
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initDropdownScrollLock);
+          document.addEventListener('DOMContentLoaded', initAllScrollLocks);
         } else {
-          initDropdownScrollLock();
+          initAllScrollLocks();
         }
 
         // Réinitialiser après navigation Turbo (si utilisé)
         if (typeof Turbo !== 'undefined') {
           document.addEventListener('turbo:load', function() {
             unlockBodyScroll(); // S'assurer que le scroll est débloqué après navigation
-            initDropdownScrollLock();
+            initAllScrollLocks();
           });
         }
 

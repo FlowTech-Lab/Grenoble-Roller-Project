@@ -1238,6 +1238,12 @@
     /* Menu burger - éléments empilés verticalement */
     .navbar-grenoble-roller .navbar-collapse {
       padding-top: 1rem;
+      /* Permettre le scroll interne du menu burger si le contenu dépasse la hauteur de l'écran */
+      max-height: calc(100vh - 80px); /* Hauteur de l'écran moins la navbar */
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* Améliorer le scroll sur mobile */
+      -webkit-overflow-scrolling: touch;
     }
     
     /* Container des boutons d'action (thème, panier, connexion) */
