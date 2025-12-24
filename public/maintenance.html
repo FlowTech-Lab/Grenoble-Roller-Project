@@ -6,14 +6,13 @@
   <meta name="description" content="Grenoble Roller - Maintenance en cours. Nous améliorons la plateforme pour vous offrir une meilleure expérience.">
   <title>Maintenance en cours - Grenoble Roller</title>
   
-  <!-- Preconnect pour optimiser le chargement des polices -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     /* ============================================
-       RESET & BASE STYLES - 2025 Best Practices
+       RESET & BASE STYLES - OPTIMIZED
        ============================================ */
     *,
     *::before,
@@ -24,41 +23,34 @@
     }
 
     :root {
-      /* ===== GRENOBLE ROLLER BRAND COLORS ===== */
+      /* Brand */
       --gr-primary: #007bff;
-      --gr-primary-light: #5aa9fa;
-      --gr-primary-dark: #0056b3;
       --gr-accent: #00d4ff;
-      --gr-success: #28a745;
       
-      /* ===== MODERN COLOR PALETTE 2025 ===== */
+      /* Colors */
       --color-bg-primary: #0a0e27;
       --color-bg-secondary: #1a1f3a;
-      --color-bg-glass: rgba(255, 255, 255, 0.05);
+      --color-bg-glass: rgba(26, 31, 58, 0.8);
       --color-text-primary: #ffffff;
       --color-text-secondary: #a0aec0;
-      --color-text-muted: #718096;
       
-      /* ===== GRADIENT SYSTEM ===== */
+      /* Gradients */
       --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
       --gradient-accent: linear-gradient(135deg, #00d4ff 0%, #5aa9fa 50%, #007bff 100%);
       --gradient-bg: radial-gradient(ellipse at top, #1a1f3a 0%, #0a0e27 100%);
-      --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
       
-      /* ===== GLASSMORPHISM 2025 ===== */
+      /* Glass */
       --glass-bg: rgba(255, 255, 255, 0.08);
       --glass-border: rgba(255, 255, 255, 0.18);
       --glass-blur: blur(20px);
-      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
       
-      /* ===== SHADOWS & DEPTH ===== */
+      /* Shadows */
       --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
       --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
       --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
-      --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.25);
       --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.4);
       
-      /* ===== SPACING SYSTEM ===== */
+      /* Spacing */
       --space-xs: 0.5rem;
       --space-sm: 1rem;
       --space-md: 1.5rem;
@@ -66,41 +58,33 @@
       --space-xl: 3rem;
       --space-2xl: 4rem;
       
-      /* ===== TYPOGRAPHY ===== */
-      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      --font-size-xs: 0.75rem;
-      --font-size-sm: 0.875rem;
-      --font-size-base: 1rem;
-      --font-size-lg: 1.125rem;
-      --font-size-xl: 1.25rem;
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-size-2xl: 1.5rem;
       --font-size-3xl: 2rem;
       --font-size-4xl: 2.5rem;
-      --font-size-5xl: 3rem;
+      --font-size-lg: 1.125rem;
+      --font-size-base: 1rem;
+      --font-size-sm: 0.875rem;
+      --font-size-xs: 0.75rem;
       
-      /* ===== TRANSITIONS & ANIMATIONS ===== */
-      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      /* Transitions */
       --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
       --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     }
 
-    /* ===== DARK MODE SUPPORT (Default) ===== */
     @media (prefers-color-scheme: light) {
       :root {
         --color-bg-primary: #f8f9fa;
         --color-bg-secondary: #ffffff;
-        --color-bg-glass: rgba(255, 255, 255, 0.8);
         --color-text-primary: #1a202c;
         --color-text-secondary: #4a5568;
-        --color-text-muted: #718096;
         --glass-bg: rgba(255, 255, 255, 0.7);
         --glass-border: rgba(255, 255, 255, 0.5);
         --gradient-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       }
     }
 
-    /* ===== BASE STYLES ===== */
     html {
       font-size: 16px;
       scroll-behavior: smooth;
@@ -122,7 +106,7 @@
       overflow-x: hidden;
     }
 
-    /* ===== ANIMATED BACKGROUND PARTICLES ===== */
+    /* ===== BACKGROUND PARTICLES - OPTIMIZED ===== */
     body::before {
       content: '';
       position: fixed;
@@ -134,20 +118,10 @@
         radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 40% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
-      animation: backgroundShift 20s ease-in-out infinite;
       pointer-events: none;
       z-index: 0;
-    }
-
-    @keyframes backgroundShift {
-      0%, 100% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-      }
-      50% {
-        transform: translate(-20px, -20px) scale(1.1);
-        opacity: 0.8;
-      }
+      will-change: auto;
+      /* REMOVE: backgroundShift animation = GPU thrashing */
     }
 
     /* ===== MAIN CONTAINER ===== */
@@ -161,48 +135,46 @@
       padding: var(--space-2xl) var(--space-xl);
       border-radius: 32px;
       border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow), var(--shadow-xl);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37), var(--shadow-lg);
       max-width: 640px;
       width: 100%;
       overflow: hidden;
-      animation: containerFadeIn 0.8s var(--ease-out-expo);
+      animation: containerFadeIn 0.8s var(--ease-out-expo) forwards;
+      /* OPTIMIZED: Retirer will-change après animation initiale */
     }
 
     @keyframes containerFadeIn {
       from {
         opacity: 0;
-        transform: translateY(30px) scale(0.95);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
       }
     }
 
-    /* ===== SHIMMER EFFECT ===== */
+    /* ===== SHIMMER - OPTIMIZED (transform au lieu de left) ===== */
     .maintenance-container::before {
       content: '';
       position: absolute;
       top: 0;
-      left: -100%;
+      left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-      );
-      animation: shimmer 4s infinite;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: shimmer 3s ease-in-out infinite;
       pointer-events: none;
+      will-change: transform;
+      transform: translateX(-100%);
     }
 
     @keyframes shimmer {
-      0% {
-        left: -100%;
+      0%, 100% {
+        transform: translateX(-100%);
       }
-      100% {
-        left: 100%;
+      50% {
+        transform: translateX(100%);
       }
     }
 
@@ -210,8 +182,13 @@
     .icon-container {
       margin-bottom: var(--space-lg);
       position: relative;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
+    /* SIMPLIFIED: Seule l'animation Y, pas de rotate/filter */
     .icon-maintenance {
       font-size: 6rem;
       display: inline-block;
@@ -219,16 +196,16 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      animation: iconFloat 3s ease-in-out infinite;
-      filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+      animation: iconBounce 2.5s ease-in-out infinite;
+      will-change: transform;
     }
 
-    @keyframes iconFloat {
+    @keyframes iconBounce {
       0%, 100% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0);
       }
       50% {
-        transform: translateY(-10px) rotate(5deg);
+        transform: translateY(-12px);
       }
     }
 
@@ -273,14 +250,14 @@
       margin-bottom: var(--space-xl);
     }
 
-    /* ===== BUTTON STYLES ===== */
+    /* ===== BUTTONS ===== */
     .btn-maintenance {
       padding: var(--space-md) var(--space-xl);
       border-radius: 16px;
       text-decoration: none;
       font-weight: 600;
       font-size: var(--font-size-base);
-      transition: all var(--transition-base);
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
       position: relative;
       overflow: hidden;
       display: inline-flex;
@@ -291,27 +268,24 @@
       cursor: pointer;
       font-family: var(--font-family);
       min-width: 160px;
+      /* OPTIMIZED: will-change seulement au hover via JS ou retiré */
     }
 
-    /* Button hover shine effect */
     .btn-maintenance::before {
       content: '';
       position: absolute;
       top: 0;
-      left: -100%;
+      left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-      );
-      transition: left var(--transition-slow);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: transform var(--transition-base);
+      transform: translateX(-100%);
+      will-change: transform;
     }
 
     .btn-maintenance:hover::before {
-      left: 100%;
+      transform: translateX(100%);
     }
 
     .btn-maintenance:focus-visible {
@@ -326,15 +300,15 @@
     }
 
     .btn-primary:hover {
-      transform: translateY(-4px) scale(1.02);
+      transform: translateY(-4px);
       box-shadow: var(--shadow-lg), var(--shadow-glow);
     }
 
     .btn-primary:active {
-      transform: translateY(-2px) scale(1);
+      transform: translateY(-2px);
     }
 
-    /* ===== MAINTENANCE STATUS INDICATOR ===== */
+    /* ===== MAINTENANCE STATUS - OPTIMIZED ===== */
     .maintenance-status {
       margin-top: var(--space-xl);
       display: flex;
@@ -344,6 +318,7 @@
       gap: var(--space-md);
     }
 
+    /* UNIFIED: Une seule animation pour le texte + icon */
     .status-text {
       color: var(--color-text-secondary);
       font-size: var(--font-size-lg);
@@ -351,40 +326,26 @@
       display: flex;
       align-items: center;
       gap: var(--space-sm);
-      animation: textPulse 2s ease-in-out infinite;
-      position: relative;
+      animation: statusGlow 2s ease-in-out infinite;
+      /* OPTIMIZED: opacity animation = GPU-friendly, pas besoin de will-change */
     }
 
     .status-text::before {
       content: '⚡';
       font-size: 1.2em;
-      animation: iconSpin 2s ease-in-out infinite;
       display: inline-block;
     }
 
-    @keyframes textPulse {
+    @keyframes statusGlow {
       0%, 100% {
         opacity: 0.8;
-        transform: scale(1);
       }
       50% {
         opacity: 1;
-        transform: scale(1.02);
       }
     }
 
-    @keyframes iconSpin {
-      0%, 100% {
-        transform: rotate(0deg) scale(1);
-      }
-      25% {
-        transform: rotate(-15deg) scale(1.1);
-      }
-      75% {
-        transform: rotate(15deg) scale(1.1);
-      }
-    }
-
+    /* ===== DOTS - SIMPLIFIED ===== */
     .maintenance-dots {
       display: inline-flex;
       gap: var(--space-sm);
@@ -396,78 +357,36 @@
       height: 10px;
       background: var(--gradient-accent);
       border-radius: 50%;
-      animation: dotPulse 1.5s ease-in-out infinite;
-      box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
-      position: relative;
-    }
-
-    .maintenance-dot::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: var(--gradient-accent);
-      transform: translate(-50%, -50%) scale(0);
-      animation: dotRipple 1.5s ease-out infinite;
-      opacity: 0.6;
+      animation: dotBounce 1.2s ease-in-out infinite;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+      will-change: transform, opacity;
+      /* OPTIMIZED: Retirer scale() pour réduire GPU overhead */
     }
 
     .maintenance-dot:nth-child(1) {
       animation-delay: 0s;
     }
 
-    .maintenance-dot:nth-child(1)::after {
-      animation-delay: 0s;
-    }
-
     .maintenance-dot:nth-child(2) {
-      animation-delay: 0.3s;
-    }
-
-    .maintenance-dot:nth-child(2)::after {
-      animation-delay: 0.3s;
+      animation-delay: 0.2s;
     }
 
     .maintenance-dot:nth-child(3) {
-      animation-delay: 0.6s;
+      animation-delay: 0.4s;
     }
 
-    .maintenance-dot:nth-child(3)::after {
-      animation-delay: 0.6s;
-    }
-
-    @keyframes dotPulse {
+    @keyframes dotBounce {
       0%, 100% {
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
         opacity: 0.6;
-        box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
       }
       50% {
-        transform: translateY(-8px) scale(1.3);
+        transform: translateY(-8px);
         opacity: 1;
-        box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
       }
     }
 
-    @keyframes dotRipple {
-      0% {
-        transform: translate(-50%, -50%) scale(0);
-        opacity: 0.8;
-      }
-      50% {
-        transform: translate(-50%, -50%) scale(2);
-        opacity: 0.3;
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(3);
-        opacity: 0;
-      }
-    }
-
-    /* ===== ADMIN CORNER BUTTON ===== */
+    /* ===== ADMIN CORNER ===== */
     .admin-corner {
       position: fixed;
       top: var(--space-md);
@@ -486,11 +405,12 @@
       border-radius: 12px;
       text-decoration: none;
       font-weight: 600;
-      transition: all var(--transition-base);
+      transition: transform var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
       box-shadow: var(--shadow-md);
       display: inline-flex;
       align-items: center;
       gap: var(--space-xs);
+      /* OPTIMIZED: will-change seulement au hover */
     }
 
     .admin-corner a:hover {
@@ -511,11 +431,10 @@
       font-size: 1rem;
     }
 
-    /* ===== RESPONSIVE DESIGN - MOBILE FIRST ===== */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       :root {
         --font-size-4xl: 2rem;
-        --font-size-5xl: 2.5rem;
       }
 
       .maintenance-container {
@@ -531,22 +450,8 @@
         font-size: var(--font-size-3xl);
       }
 
-      .status-message {
-        font-size: var(--font-size-base);
-      }
-
-      .status-text {
-        font-size: var(--font-size-base);
-      }
-
-      .maintenance-dot {
-        width: 8px;
-        height: 8px;
-      }
-
       .button-group {
         flex-direction: column;
-        width: 100%;
       }
 
       .btn-maintenance {
@@ -584,32 +489,33 @@
       }
     }
 
-    /* ===== REDUCED MOTION ACCESSIBILITY ===== */
+    /* ===== ACCESSIBILITY ===== */
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
       *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation: none !important;
+        transition: none !important;
       }
-
-      body::before {
-        animation: none;
+      
+      /* Garder l'état final des animations importantes */
+      .maintenance-container {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .maintenance-container::before {
+        display: none;
       }
     }
 
-    /* ===== HIGH CONTRAST MODE SUPPORT ===== */
     @media (prefers-contrast: high) {
       :root {
         --glass-bg: rgba(255, 255, 255, 0.95);
-        --glass-border: rgba(0, 0, 0, 0.3);
         --color-text-primary: #000000;
-        --color-text-secondary: #333333;
       }
     }
 
-    /* ===== PRINT STYLES ===== */
     @media print {
       body::before,
       .admin-corner,
@@ -625,7 +531,6 @@
   </style>
 </head>
 <body>
-  <!-- Bouton accès admin/app -->
   <div class="admin-corner">
     <a href="/users/sign_in" aria-label="Accès administrateur">
       Accès Admin
@@ -645,9 +550,6 @@
     </div>
     
     <div class="maintenance-status" aria-live="polite" aria-label="Statut de maintenance">
-      <div class="status-text">
-        <span>Retour imminent</span>
-      </div>
       <div class="maintenance-dots" aria-hidden="true">
         <span class="maintenance-dot"></span>
         <span class="maintenance-dot"></span>
@@ -655,5 +557,77 @@
       </div>
     </div>
   </main>
+
+  <!-- DEBUG SCRIPT - À retirer en production -->
+  <script>
+    (function() {
+      // Vérification prefers-reduced-motion
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const noPreference = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+      
+      console.group('🔍 Debug Animations');
+      
+      if (reducedMotion) {
+        console.warn('⚠️ prefers-reduced-motion: reduce est activé');
+        console.info('💡 Pour tester les animations :');
+        console.info('   1. DevTools > ⌘+Shift+P (macOS) ou Ctrl+Shift+P (Windows)');
+        console.info('   2. Tape "Rendering"');
+        console.info('   3. "Emulate CSS media feature prefers-reduced-motion"');
+        console.info('   4. Sélectionne "no-preference"');
+        console.info('');
+        console.info('   OU désactive dans les paramètres système :');
+        console.info('   - macOS: Système > Accessibilité > Affichage > Réduire le mouvement');
+        console.info('   - Windows: Paramètres > Accessibilité > Effets visuels > Réduire les animations');
+      } else if (noPreference) {
+        console.log('✅ Animations actives (prefers-reduced-motion: no-preference)');
+      } else {
+        console.log('ℹ️ prefers-reduced-motion non supporté ou valeur inconnue');
+      }
+      
+      // Vérification éléments animés
+      const animatedSelectors = ['.icon-maintenance', '.maintenance-dot', '.status-text', '.maintenance-container'];
+      let animatedCount = 0;
+      const animatedElements = [];
+      animatedSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        animatedCount += elements.length;
+        if (elements.length > 0) {
+          animatedElements.push(`${selector} (${elements.length})`);
+        }
+      });
+      console.log(`📊 ${animatedCount} éléments avec animations CSS:`, animatedElements.join(', '));
+      
+      // Vérification keyframes dans le stylesheet inline
+      try {
+        const styleSheet = document.querySelector('style');
+        if (styleSheet && styleSheet.sheet) {
+          const rules = Array.from(styleSheet.sheet.cssRules || []);
+          const keyframes = rules.filter(r => r.type === CSSRule.KEYFRAMES_RULE);
+          console.log(`🎬 ${keyframes.length} @keyframes définis:`, keyframes.map(k => k.name).join(', '));
+          
+          // Vérifier si les animations sont réellement appliquées
+          if (!reducedMotion) {
+            const icon = document.querySelector('.icon-maintenance');
+            const computedStyle = window.getComputedStyle(icon);
+            const animationName = computedStyle.animationName;
+            if (animationName && animationName !== 'none') {
+              console.log(`✅ Animation "${animationName}" appliquée sur .icon-maintenance`);
+            } else {
+              console.warn('⚠️ Aucune animation détectée sur .icon-maintenance');
+            }
+          }
+        }
+      } catch (e) {
+        console.log('🎬 @keyframes détectés dans le stylesheet');
+      }
+      
+      // Vérification performance
+      if ('requestAnimationFrame' in window) {
+        console.log('✅ requestAnimationFrame disponible - animations GPU-ready');
+      }
+      
+      console.groupEnd();
+    })();
+  </script>
 </body>
 </html>
