@@ -43,34 +43,35 @@
     </div>
   </div>
 
-  <!--<% if user_signed_in? %>
+  <%# Tableau de statut désactivé temporairement %>
+  <% if false && user_signed_in? %>
     <%= render 'initiations/status_table' %>
-  <% end %> -->
+  <% end %>
 
-          <!-- Liste des prochaines initiations -->
-          <div id="initiations-upcoming">
-            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
-              <div>
-                <h2 class="h2 fw-bold mb-1">
-                  <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
-                  Prochaines séances
-                </h2>
-                <p class="text-body-secondary mb-0">
-                  Les prochaines initiations disponibles.
-                </p>
-              </div>
-              <div class="d-flex align-items-center gap-3">
-                <% if user_signed_in? && policy(Event::Initiation.new).create? %>
-                  <%= link_to new_initiation_path, class: "btn btn-liquid-primary" do %>
-                    <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>
-                    Créer une initiation
-                  <% end %>
-                <% end %>
-                <span class="badge badge-liquid-primary fs-6">
-                  <%= pluralize(@initiations.size, "séance", "séances") %>
-                </span>
-              </div>
-            </div>
+  <!-- Liste des prochaines initiations -->
+  <div id="initiations-upcoming">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-3">
+      <div>
+        <h2 class="h2 fw-bold mb-1">
+          <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+          Prochaines séances
+        </h2>
+        <p class="text-body-secondary mb-0">
+          Les prochaines initiations disponibles.
+        </p>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <% if user_signed_in? && policy(Event::Initiation.new).create? %>
+          <%= link_to new_initiation_path, class: "btn btn-liquid-primary" do %>
+            <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>
+            Créer une initiation
+          <% end %>
+        <% end %>
+        <span class="badge badge-liquid-primary fs-6">
+          <%= pluralize(@initiations.size, "séance", "séances") %>
+        </span>
+      </div>
+    </div>
 
     <% if @initiations.any? %>
       <div class="event-grid">

@@ -46,3 +46,6 @@ ops/logs/
 
 # Métriques Prometheus (générées automatiquement à chaque déploiement)
 /metrics/
+
+# Cursor debug logs
+.cursor/debug.log

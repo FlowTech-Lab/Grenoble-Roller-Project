@@ -127,6 +127,92 @@
       
       // Expose function globally for use in other scripts
       window.updateCartCount = updateCartCount;
+
+      // Empêcher le scroll du body quand le dropdown menu utilisateur est ouvert (mobile)
+      // Solution pour le problème où la page derrière défile au lieu du menu
+      (function() {
+        let scrollPosition = 0;
+        let isScrollLocked = false;
+
+        // Vérifier si on est sur mobile (viewport < 992px, breakpoint Bootstrap lg)
+        function isMobile() {
+          return window.innerWidth < 992;
+        }
+
+        function lockBodyScroll() {
+          // Ne bloquer le scroll que sur mobile
+          if (!isMobile() || isScrollLocked) return;
+          
+          // Sauvegarder la position de scroll actuelle
+          scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+          
+          // Bloquer le scroll du body (méthode compatible mobile)
+          document.body.style.overflow = 'hidden';
+          document.body.style.position = 'fixed';
+          document.body.style.top = `-${scrollPosition}px`;
+          document.body.style.width = '100%';
+          
+          // Prévenir le scroll sur iOS/Safari mobile
+          document.body.style.touchAction = 'none';
+          
+          isScrollLocked = true;
+        }
+
+        function unlockBodyScroll() {
+          if (!isScrollLocked) return;
+          
+          // Restaurer le scroll du body
+          document.body.style.overflow = '';
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.width = '';
+          document.body.style.touchAction = '';
+          
+          // Restaurer la position de scroll
+          window.scrollTo(0, scrollPosition);
+          
+          isScrollLocked = false;
+        }
+
+        function initDropdownScrollLock() {
+          // Trouver tous les dropdowns dans la navbar
+          const dropdowns = document.querySelectorAll('.navbar .dropdown');
+          
+          dropdowns.forEach(function(dropdown) {
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            if (!dropdownMenu) return;
+
+            // Quand le dropdown s'ouvre
+            dropdown.addEventListener('show.bs.dropdown', lockBodyScroll);
+
+            // Quand le dropdown se ferme (tous les cas)
+            dropdown.addEventListener('hide.bs.dropdown', unlockBodyScroll);
+            dropdown.addEventListener('hidden.bs.dropdown', unlockBodyScroll);
+          });
+        }
+
+        // Initialiser au chargement de la page
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initDropdownScrollLock);
+        } else {
+          initDropdownScrollLock();
+        }
+
+        // Réinitialiser après navigation Turbo (si utilisé)
+        if (typeof Turbo !== 'undefined') {
+          document.addEventListener('turbo:load', function() {
+            unlockBodyScroll(); // S'assurer que le scroll est débloqué après navigation
+            initDropdownScrollLock();
+          });
+        }
+
+        // Gérer le redimensionnement de la fenêtre (si on passe de mobile à desktop)
+        window.addEventListener('resize', function() {
+          if (!isMobile() && isScrollLocked) {
+            unlockBodyScroll();
+          }
+        });
+      })();
     </script>
   </body>
 </html>

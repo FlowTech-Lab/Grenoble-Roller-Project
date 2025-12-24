@@ -247,7 +247,7 @@ module Initiations
       end
 
       # Autoriser l'action sur l'événement (skip Pundit si token valide)
-      unless skip_authorization_for_token? || (user_signed_in? && can?(:convert_waitlist_to_attendance?, waitlist_entry.event))
+      unless skip_authorization_for_token? || (user_signed_in? && policy(waitlist_entry.event).convert_waitlist_to_attendance?)
         redirect_to root_path, alert: "Vous n'êtes pas autorisé à effectuer cette action."
         return
       end
@@ -292,7 +292,7 @@ module Initiations
       end
 
       # Autoriser l'action sur l'événement (skip Pundit si token valide)
-      unless skip_authorization_for_token? || (user_signed_in? && can?(:refuse_waitlist?, waitlist_entry.event))
+      unless skip_authorization_for_token? || (user_signed_in? && policy(waitlist_entry.event).refuse_waitlist?)
         redirect_to root_path, alert: "Vous n'êtes pas autorisé à effectuer cette action."
         return
       end
