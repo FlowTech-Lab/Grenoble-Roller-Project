@@ -129,7 +129,7 @@ class EventPolicy < ApplicationPolicy
     private
 
     def organizer?
-      user.present? && user.role&.level.to_i >= 40
+      user.present? && user.role&.level.to_i >= 30 # ORGANIZER (30) ou plus
     end
 
     def admin?
@@ -148,7 +148,7 @@ class EventPolicy < ApplicationPolicy
   end
 
   def organizer?
-    user.present? && user.role&.level.to_i >= 40
+    user.present? && user.role&.level.to_i >= 30 # ORGANIZER (30) ou plus
   end
 
   def admin?

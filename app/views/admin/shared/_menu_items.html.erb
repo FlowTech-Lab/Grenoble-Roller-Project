@@ -1,64 +1,62 @@
 <% 
-  # Partial réutilisable pour les items de menu
-  # Utilisé à la fois pour desktop et mobile
+  # Menu items modernes 2025 - Design épuré avec hiérarchie claire
 %>
 
-<!-- INITIATIONS (level >= 30 : INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN) -->
+<!-- INITIATIONS (level >= 40 : INITIATION, MODERATOR, ADMIN, SUPERADMIN) -->
 <% if can_view_initiations? %>
-  <li class="nav-item">
+  <li class="admin-menu-item">
     <%= link_to admin_panel_initiations_path, 
-        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('initiations')}",
+        class: "admin-menu-link #{'active' if admin_panel_active?('initiations')}",
         title: "Initiations",
-        aria: { label: "Voir les initiations" },
-        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-      <i class="bi bi-people fs-5" aria-hidden="true"></i>
-      <span class="sidebar-label">Initiations</span>
+        aria: { label: "Voir les initiations", current: admin_panel_active?('initiations') ? 'page' : nil },
+        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-people admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Initiations</span>
     <% end %>
   </li>
 <% end %>
 
 <!-- COMMANDES (level >= 60 uniquement) -->
 <% if can_access_admin_panel?(60) %>
-  <li class="nav-item">
+  <li class="admin-menu-item">
     <%= link_to admin_panel_orders_path, 
-        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('orders')}",
+        class: "admin-menu-link #{'active' if admin_panel_active?('orders')}",
         title: "Commandes",
-        aria: { label: "Voir les commandes" },
-        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-      <i class="bi bi-box-seam fs-5" aria-hidden="true"></i>
-      <span class="sidebar-label">Commandes</span>
+        aria: { label: "Voir les commandes", current: admin_panel_active?('orders') ? 'page' : nil },
+        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-box-seam admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Commandes</span>
     <% end %>
   </li>
 <% end %>
 
 <!-- LOGS EMAILS (SUPERADMIN uniquement - level >= 70) -->
 <% if can_access_admin_panel?(70) %>
-  <li class="nav-item">
+  <li class="admin-menu-item">
     <%= link_to admin_panel_mail_logs_path, 
-        class: "nav-link d-flex align-items-center gap-2 #{'active' if admin_panel_active?('mail_logs')}",
+        class: "admin-menu-link #{'active' if admin_panel_active?('mail_logs')}",
         title: "Logs des emails",
-        aria: { label: "Voir les logs des emails" },
-        data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-      <i class="bi bi-envelope-paper fs-5" aria-hidden="true"></i>
-      <span class="sidebar-label">Logs Mails</span>
+        aria: { label: "Voir les logs des emails", current: admin_panel_active?('mail_logs') ? 'page' : nil },
+        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-envelope-paper admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Logs Mails</span>
     <% end %>
   </li>
 <% end %>
 
 <!-- SÉPARATEUR -->
-<li class="nav-item">
-  <hr class="border-secondary my-2">
-</li>
+<li class="admin-menu-divider" role="separator"></li>
 
 <!-- ACTIVEADMIN (Lien vers l'ancien admin) -->
-<li class="nav-item">
+<li class="admin-menu-item">
   <%= link_to "/activeadmin", 
-      class: "nav-link d-flex align-items-center gap-2 admin-activeadmin-link",
+      class: "admin-menu-link admin-menu-link-external",
       title: "ActiveAdmin (Ancien panel)",
       target: "_blank",
-      data: { tooltip_placement: "right", bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
-    <i class="bi bi-gear fs-5"></i>
-    <span class="sidebar-label">ActiveAdmin</span>
-    <i class="bi bi-box-arrow-up-right ms-auto small"></i>
+      rel: "noopener noreferrer",
+      data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+    <i class="bi bi-gear admin-menu-icon" aria-hidden="true"></i>
+    <span class="admin-menu-label">ActiveAdmin</span>
+    <i class="bi bi-box-arrow-up-right admin-menu-external-icon" aria-hidden="true"></i>
   <% end %>
 </li>

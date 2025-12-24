@@ -68,7 +68,7 @@ module AdminPanel
 
     def ensure_superadmin
       unless current_user&.role&.level.to_i >= 70
-        redirect_to admin_panel_root_path, alert: 'Accès réservé aux super-administrateurs'
+        redirect_to admin_panel_initiations_path, alert: 'Accès réservé aux super-administrateurs'
       end
     end
 

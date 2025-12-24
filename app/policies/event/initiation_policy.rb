@@ -140,7 +140,7 @@ class Event::InitiationPolicy < ApplicationPolicy
   end
 
   def manage?
-    user&.role&.level.to_i >= 30 # INSTRUCTOR+
+    user&.role&.level.to_i >= 40 # INITIATION (40) ou plus - forcément membre Grenoble Roller
   end
 
   def create?
@@ -207,7 +207,7 @@ class Event::InitiationPolicy < ApplicationPolicy
     private
 
     def instructor?
-      user.present? && user.role&.level.to_i >= 30
+      user.present? && user.role&.level.to_i >= 40 # INITIATION (40) ou plus - forcément membre Grenoble Roller
     end
 
     def admin?

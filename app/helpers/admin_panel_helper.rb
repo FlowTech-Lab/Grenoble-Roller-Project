@@ -20,9 +20,11 @@ module AdminPanelHelper
     current_user.role.level.to_i >= min_level
   end
 
-  # Helper pour vérifier si on peut voir les initiations (level >= 30)
+  # Helper pour vérifier si on peut voir les initiations (level >= 40)
+  # INITIATION (40) est forcément membre Grenoble Roller
+  # ORGANIZER (30) peut être n'importe qui, donc pas accès aux initiations
   def can_view_initiations?
-    can_access_admin_panel?(30)
+    can_access_admin_panel?(40)
   end
 
   # Helper pour vérifier si on peut voir la boutique (level >= 60)

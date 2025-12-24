@@ -1,53 +1,54 @@
 <% 
-  # Structure du menu hiérarchique selon guide-ux-ui.md et inventaire-active-admin.md
-  # Menu items avec structure complète
+  # Sidebar moderne 2025 - Design épuré et mobile-first
 %>
 
 <!-- SIDEBAR: Desktop/Tablet (hidden on mobile) -->
-<aside class="d-none d-lg-flex flex-column border-end position-fixed admin-sidebar" 
+<aside class="d-none d-lg-flex flex-column position-fixed admin-sidebar" 
        id="sidebar" 
        data-admin--admin-sidebar-target="sidebar"
        data-controller="admin--admin-sidebar">
   
   <!-- Header avec logo/titre -->
-  <div class="p-3 border-bottom border-secondary d-flex align-items-center justify-content-between position-relative">
-    <span class="d-inline fw-bold sidebar-label admin-sidebar-logo-text" id="sidebar-logo-text">Grenoble Roller</span>
-    <button class="btn btn-sm btn-outline-light d-none d-lg-block position-absolute end-0 me-3 admin-sidebar-toggle"
+  <div class="admin-sidebar-header">
+    <div class="admin-sidebar-brand">
+      <span class="admin-sidebar-logo-text" id="sidebar-logo-text">Grenoble Roller</span>
+    </div>
+    <button class="admin-sidebar-toggle"
             data-action="click->admin--admin-sidebar#toggle"
-            aria-label="Réduire la sidebar">
-      <i class="bi bi-chevron-left"></i>
+            aria-label="Réduire la sidebar"
+            type="button">
+      <i class="bi bi-chevron-left" aria-hidden="true"></i>
     </button>
   </div>
 
   <!-- Navigation menu -->
-  <nav class="flex-grow-1 overflow-y-auto px-2 py-3">
-    <ul class="nav nav-pills flex-column gap-2">
+  <nav class="admin-sidebar-nav" role="navigation" aria-label="Menu principal">
+    <ul class="admin-sidebar-menu">
       <%= render 'admin/shared/menu_items', mobile: false %>
     </ul>
   </nav>
 </aside>
 
-<!-- OFFCANVAS: Mobile only - Pleine largeur (100vw) -->
-<div class="offcanvas offcanvas-start" 
+<!-- OFFCANVAS: Mobile only - Design moderne 2025 -->
+<div class="offcanvas offcanvas-start admin-offcanvas" 
      tabindex="-1" 
      id="offcanvasSidebar" 
      role="navigation"
      aria-labelledby="offcanvasSidebarLabel"
      data-bs-backdrop="true"
      data-bs-scroll="false">
-  <div class="offcanvas-header border-bottom border-secondary">
-    <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Menu</h5>
+  <div class="admin-offcanvas-header">
+    <h5 class="admin-offcanvas-title" id="offcanvasSidebarLabel">Menu</h5>
     <button type="button" 
-            class="btn-close btn-close-white" 
+            class="admin-offcanvas-close" 
             data-bs-dismiss="offcanvas" 
-            aria-label="Fermer le menu"
-            style="min-width: 44px; min-height: 44px;">
+            aria-label="Fermer le menu">
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
   </div>
-  <div class="offcanvas-body p-0">
-    <!-- Navigation avec role sémantique -->
-    <nav class="w-100" role="navigation" aria-label="Menu principal">
-      <ul class="nav nav-pills flex-column w-100 m-0 p-0">
+  <div class="admin-offcanvas-body">
+    <nav class="admin-offcanvas-nav" role="navigation" aria-label="Menu principal">
+      <ul class="admin-offcanvas-menu">
         <%= render 'admin/shared/menu_items', mobile: true %>
       </ul>
     </nav>
@@ -56,14 +57,14 @@
 
 <!-- Hamburger button (fixed mobile, top right) -->
 <div class="d-lg-none admin-mobile-menu-toggle">
-  <button class="btn btn-outline-light btn-lg"
+  <button class="admin-mobile-toggle-btn"
           type="button"
           data-bs-toggle="offcanvas"
           data-bs-target="#offcanvasSidebar"
           aria-label="Ouvrir le menu"
           aria-expanded="false"
           aria-controls="offcanvasSidebar">
-    <i class="bi bi-list fs-4" aria-hidden="true"></i>
+    <i class="bi bi-list" aria-hidden="true"></i>
     <span class="visually-hidden">Menu</span>
   </button>
 </div>
