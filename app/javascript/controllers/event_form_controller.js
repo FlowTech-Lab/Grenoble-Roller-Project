@@ -16,6 +16,7 @@ export default class extends Controller {
     
     // Initialiser les données des parcours par boucle
     this.existingLoopRoutesData = {}
+    this.loopRoutesLoaded = false // Flag pour indiquer si les données sont chargées
     
     // Restaurer les données sauvegardées au chargement
     this.restoreDraft()
@@ -33,7 +34,9 @@ export default class extends Controller {
     this.setupRouteCreation()
     
     // Charger les parcours existants si on est en mode édition
+    // IMPORTANT: Charger d'abord les données, puis initialiser les champs
     this.loadExistingLoopRoutes().then(() => {
+      this.loopRoutesLoaded = true
       // Initialiser les champs de parcours par boucle (après chargement des données)
       this.updateLoopRoutesFields()
     })
@@ -83,7 +86,16 @@ export default class extends Controller {
   // Calculer et afficher la distance totale (boucles × distance par boucle)
   loopsCountChanged() {
     this.updateTotalDistance()
-    this.updateLoopRoutesFields()
+    // Attendre que les données soient chargées avant de mettre à jour les champs
+    if (this.loopRoutesLoaded) {
+      this.updateLoopRoutesFields()
+    } else {
+      // Si les données ne sont pas encore chargées, attendre qu'elles le soient
+      this.loadExistingLoopRoutes().then(() => {
+        this.loopRoutesLoaded = true
+        this.updateLoopRoutesFields()
+      })
+    }
     this.saveDraft()
   }
 
@@ -117,7 +129,8 @@ export default class extends Controller {
     // Commencer à partir de la boucle 2 (la boucle 1 utilise le parcours principal)
     for (let i = 2; i <= loopsCount; i++) {
       const existingLoopRoute = existingLoopRoutes[i] || this.getExistingLoopRoute(i)
-      const selectedRouteId = existingLoopRoute ? existingLoopRoute.route_id : ''
+      // Convertir en nombre pour la comparaison stricte
+      const selectedRouteId = existingLoopRoute ? parseInt(existingLoopRoute.route_id) : null
       const distanceKm = existingLoopRoute ? existingLoopRoute.distance_km : ''
       
       html += `
@@ -134,24 +147,31 @@ export default class extends Controller {
                     data-loop-number="${i}"
                     data-action="change->event-form#loopRouteChanged">
               <option value="">Sans parcours</option>
-              ${routes.map(route => `
-                <option value="${route.id}" ${route.id == selectedRouteId ? 'selected' : ''}>
+              ${routes.map(route => {
+                const routeId = parseInt(route.id)
+                const isSelected = selectedRouteId && routeId === selectedRouteId
+                return `
+                <option value="${route.id}" ${isSelected ? 'selected' : ''}>
                   ${route.name}
                 </option>
-              `).join('')}
+              `
+              }).join('')}
             </select>
           </div>
           <div class="col-md-6">
             <label class="form-label">Distance (km)</label>
-            <input type="number" 
-                   name="event_loop_routes[${i}][distance_km]" 
-                   class="form-control form-control-liquid loop-route-distance"
-                   data-loop-number="${i}"
-                   min="0.1" 
-                   step="0.1" 
-                   value="${distanceKm}"
-                   placeholder="Ex: 15.5"
-                   data-action="input->event-form#loopRouteDistanceChanged">
+            <div class="input-group">
+              <input type="number" 
+                     name="event_loop_routes[${i}][distance_km]" 
+                     class="form-control form-control-liquid loop-route-distance"
+                     data-loop-number="${i}"
+                     min="0.1" 
+                     step="0.5" 
+                     value="${distanceKm || ''}"
+                     placeholder="Ex: 15.5"
+                     data-action="input->event-form#loopRouteDistanceChanged">
+              <span class="input-group-text">km</span>
+            </div>
           </div>
         </div>
       `
@@ -240,7 +260,10 @@ export default class extends Controller {
             }
           }
         })
+        // Debug: afficher les données chargées
+        console.log('Parcours par boucle chargés:', this.existingLoopRoutesData)
       } else {
+        console.warn('Erreur lors du chargement des parcours par boucle:', response.status)
         this.existingLoopRoutesData = {}
       }
     } catch (error) {
