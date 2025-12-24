@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_23_062000) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_24_032423) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -154,6 +154,29 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_062000) do
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
     t.index ["type", "season"], name: "index_events_on_type_and_season"
     t.index ["type"], name: "index_events_on_type"
+  end
+
+  create_table "inventories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "product_variant_id", null: false
+    t.integer "reserved_qty", default: 0, null: false
+    t.integer "stock_qty", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_variant_id"], name: "index_inventories_on_product_variant_id", unique: true
+  end
+
+  create_table "inventory_movements", force: :cascade do |t|
+    t.integer "before_qty", null: false
+    t.datetime "created_at", null: false
+    t.bigint "inventory_id", null: false
+    t.integer "quantity", null: false
+    t.string "reason", null: false
+    t.string "reference"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["created_at"], name: "index_inventory_movements_on_created_at"
+    t.index ["inventory_id"], name: "index_inventory_movements_on_inventory_id"
+    t.index ["user_id"], name: "index_inventory_movements_on_user_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -559,6 +582,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_062000) do
   add_foreign_key "event_loop_routes", "routes"
   add_foreign_key "events", "routes"
   add_foreign_key "events", "users", column: "creator_user_id"
+  add_foreign_key "inventories", "product_variants"
+  add_foreign_key "inventory_movements", "inventories"
+  add_foreign_key "inventory_movements", "users"
   add_foreign_key "memberships", "payments"
   add_foreign_key "memberships", "product_variants", column: "tshirt_variant_id"
   add_foreign_key "memberships", "users"

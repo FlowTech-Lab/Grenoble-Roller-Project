@@ -1,12 +1,15 @@
 # 🎨 VUES - Boutique
 
-**Priorité** : 🔴 HAUTE | **Phase** : 3 | **Semaine** : 3-4
+**Priorité** : 🔴 HAUTE | **Phase** : 3 | **Semaine** : 3-4  
+**Version** : 2.0 | **Dernière mise à jour** : 2025-12-24
 
 ---
 
 ## 📋 Description
 
 Vues ERB pour produits, variantes (GRID) et inventaire.
+
+**🎨 Design & UX** : Voir [DESIGN-GUIDELINES.md](./DESIGN-GUIDELINES.md) pour toutes les spécifications de design, structure des formulaires, composants, responsive, accessibilité, etc.
 
 ---
 
@@ -322,15 +325,37 @@ Vues ERB pour produits, variantes (GRID) et inventaire.
 
 ---
 
+## ✅ Vue 5 : Formulaire Produits avec Tabs - NOUVEAU (2025-12-24)
+
+**Fichier** : `app/views/admin_panel/products/_form.html.erb`
+
+**Structure** : Formulaire refactorisé avec structure en **5 tabs** (Produit, Prix, Inventaire, Variantes, SEO)
+
+**Fonctionnalités** :
+- ✅ Header avec actions (Enregistrer, Publier, Aperçu)
+- ✅ Navigation par tabs (desktop) et accordion (mobile)
+- ✅ Validation en temps réel avec feedback visuel
+- ✅ Auto-save avec barre de statut
+- ✅ Compteurs de caractères
+- ✅ Génération automatique du slug
+
+**Partials associés** :
+- `_image_upload.html.erb` - Upload drag & drop avec preview
+- `_variants_section.html.erb` - Gestion variantes avec preview
+
+---
+
 ## ✅ Checklist Globale
 
-### **Phase 3 (Semaine 3-4)**
-- [ ] Créer vue ProductVariants Index (GRID)
-- [ ] Créer partial `_grid_row.html.erb`
-- [ ] Créer vue Bulk Edit
-- [ ] Créer vue Inventory Index
-- [ ] Adapter formulaires pour `images: []` (has_many_attached)
-- [ ] Tester toutes les vues
+### **Phase 3 (Semaine 3-4)** ✅
+- [x] Créer vue ProductVariants Index (GRID)
+- [x] Créer partial `_grid_row.html.erb`
+- [x] Créer vue Bulk Edit (route créée)
+- [x] Créer vue Inventory Index
+- [x] Adapter formulaires pour `images: []` (has_many_attached)
+- [x] Refactoriser formulaire produits avec tabs
+- [x] Créer partials `_image_upload.html.erb` et `_variants_section.html.erb`
+- [x] Tester toutes les vues
 
 ---
 

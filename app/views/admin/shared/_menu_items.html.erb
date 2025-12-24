@@ -16,6 +16,42 @@
   </li>
 <% end %>
 
+<!-- BOUTIQUE (level >= 60 uniquement) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="admin-menu-item">
+    <a href="#boutique-submenu" 
+       class="admin-menu-link <%= 'active' if admin_panel_active?('products') || admin_panel_active?('product_variants') || admin_panel_active?('inventory') %>"
+       data-bs-toggle="collapse"
+       aria-expanded="<%= admin_panel_active?('products') || admin_panel_active?('product_variants') || admin_panel_active?('inventory') ? 'true' : 'false' %>"
+       aria-controls="boutique-submenu"
+       title="Boutique">
+      <i class="bi bi-shop admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Boutique</span>
+      <i class="bi bi-chevron-down admin-menu-chevron ms-auto" aria-hidden="true"></i>
+    </a>
+    <ul class="collapse <%= 'show' if admin_panel_active?('products') || admin_panel_active?('product_variants') || admin_panel_active?('inventory') %>" id="boutique-submenu">
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_products_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('products')}",
+            title: "Produits",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-box admin-menu-subicon" aria-hidden="true"></i>
+          <span>Produits</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_inventory_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('inventory')}",
+            title: "Inventaire",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-clipboard-data admin-menu-subicon" aria-hidden="true"></i>
+          <span>Inventaire</span>
+        <% end %>
+      </li>
+    </ul>
+  </li>
+<% end %>
+
 <!-- COMMANDES (level >= 60 uniquement) -->
 <% if can_access_admin_panel?(60) %>
   <li class="admin-menu-item">

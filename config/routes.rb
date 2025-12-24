@@ -12,7 +12,19 @@ Rails.application.routes.draw do
     resources :mail_logs, path: 'mail-logs', only: [:index, :show]
     
     resources :products do
-      resources :product_variants, except: %i[index show]
+      member do
+        post :publish
+        post :unpublish
+      end
+      resources :product_variants do
+        collection do
+          get :bulk_edit
+          patch :bulk_update
+        end
+        member do
+          patch :toggle_status
+        end
+      end
       collection do
         get :check_sku
         post :import
@@ -21,6 +33,11 @@ Rails.application.routes.draw do
         patch :bulk_update_variants
       end
     end
+    
+    # Inventory
+    get 'inventory', to: 'inventory#index'
+    get 'inventory/transfers', to: 'inventory#transfers'
+    patch 'inventory/adjust_stock', to: 'inventory#adjust_stock'
     
     resources :product_categories
     

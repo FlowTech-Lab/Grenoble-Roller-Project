@@ -74,9 +74,9 @@ scope :with_associations, -> {
 ```
 
 **Checklist** :
-- [ ] Ajouter actions `publish` / `unpublish`
-- [ ] Modifier scope `with_associations` pour inclure `inventory`
-- [ ] Tester publication/dépublication
+- [x] Ajouter actions `publish` / `unpublish`
+- [x] Modifier scope `with_associations` pour inclure `inventory`
+- [x] Tester publication/dépublication
 
 ---
 
@@ -173,11 +173,11 @@ end
 ```
 
 **Checklist** :
-- [ ] Ajouter action `index` (GRID)
-- [ ] Ajouter actions `bulk_edit` / `bulk_update`
-- [ ] Ajouter action `toggle_status`
-- [ ] Modifier `variant_params` pour `images: []`
-- [ ] Tester toutes les actions
+- [x] Ajouter action `index` (GRID)
+- [x] Ajouter actions `bulk_edit` / `bulk_update`
+- [x] Ajouter action `toggle_status`
+- [x] Modifier `variant_params` pour `images: []`
+- [x] Tester toutes les actions
 
 ---
 
@@ -256,24 +256,27 @@ end
 ```
 
 **Checklist** :
-- [ ] Créer fichier `app/controllers/admin_panel/inventory_controller.rb`
-- [ ] Tester action `index`
-- [ ] Tester action `transfers`
-- [ ] Tester action `adjust_stock`
+- [x] Créer fichier `app/controllers/admin_panel/inventory_controller.rb`
+- [x] Tester action `index`
+- [x] Tester action `transfers`
+- [x] Tester action `adjust_stock`
+- [x] Corriger requêtes SQL pour utiliser `(stock_qty - reserved_qty)` au lieu de `available_qty`
+- [x] Utiliser `Arel.sql()` pour les expressions SQL dans `order()`
 
 ---
 
 ## ✅ Checklist Globale
 
-### **Phase 2 (Semaine 2)**
-- [ ] Modifier ProductsController (publish/unpublish)
-- [ ] Modifier ProductVariantsController (index, bulk_edit, bulk_update, toggle_status)
-- [ ] Créer InventoryController
+### **Phase 2 (Semaine 2)** ✅
+- [x] Modifier ProductsController (publish/unpublish)
+- [x] Modifier ProductVariantsController (index, bulk_edit, bulk_update, toggle_status)
+- [x] Créer InventoryController
 
-### **Phase 3 (Semaine 3)**
-- [ ] Tester tous les controllers
-- [ ] Vérifier autorisations Pundit
-- [ ] Vérifier pagination
+### **Phase 3 (Semaine 3)** ✅
+- [x] Tester tous les controllers
+- [x] Vérifier autorisations Pundit
+- [x] Vérifier pagination
+- [x] Corriger erreurs SQL (available_qty, Arel.sql)
 
 ---
 

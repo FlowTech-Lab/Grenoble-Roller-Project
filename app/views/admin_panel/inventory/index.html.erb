@@ -1,0 +1,135 @@
+<div class="mb-4">
+  <h1 class="h3 mb-2">Inventaire - Dashboard</h1>
+  <p class="text-muted mb-0">Vue d'ensemble du stock</p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card card-liquid border-warning">
+      <div class="card-body">
+        <h5 class="card-title text-warning">
+          <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+          Stock Faible
+        </h5>
+        <h2 class="text-warning mb-0"><%= @low_stock.count %></h2>
+        <small class="text-muted">&lt; 10 unités disponibles</small>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card card-liquid border-danger">
+      <div class="card-body">
+        <h5 class="card-title text-danger">
+          <i class="bi bi-x-circle me-2" aria-hidden="true"></i>
+          Rupture
+        </h5>
+        <h2 class="text-danger mb-0"><%= @out_of_stock.count %></h2>
+        <small class="text-muted">0 unité disponible</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-liquid mb-4">
+  <div class="card-header card-liquid-primary">
+    <h5 class="mb-0">
+      <i class="bi bi-box-seam me-2" aria-hidden="true"></i>
+      Stock Faible
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>SKU</th>
+            <th>Disponible</th>
+            <th>Total</th>
+            <th>Réservé</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if @low_stock.any? %>
+            <% @low_stock.each do |variant| %>
+              <tr>
+                <td><%= variant.product.name %></td>
+                <td><code><%= variant.sku %></code></td>
+                <td>
+                  <span class="badge badge-liquid-warning">
+                    <%= variant.inventory&.available_qty || 0 %>
+                  </span>
+                </td>
+                <td><%= variant.inventory&.stock_qty || 0 %></td>
+                <td><%= variant.inventory&.reserved_qty || 0 %></td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+                Aucun stock faible
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card card-liquid">
+  <div class="card-header card-liquid-primary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-clock-history me-2" aria-hidden="true"></i>
+      Mouvements Récents
+    </h5>
+    <%= link_to admin_panel_inventory_transfers_path, class: 'btn btn-sm btn-outline-liquid-primary' do %>
+      <i class="bi bi-arrow-right me-1" aria-hidden="true"></i>
+      Voir tous
+    <% end %>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Raison</th>
+            <th>Quantité</th>
+            <th>Avant</th>
+            <th>Date</th>
+            <th>Par</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if @movements.any? %>
+            <% @movements.each do |movement| %>
+              <tr>
+                <td><%= movement.inventory.product_variant.product.name %></td>
+                <td>
+                  <span class="badge badge-liquid-info">
+                    <%= movement.reason %>
+                  </span>
+                </td>
+                <td><%= number_with_precision(movement.quantity, precision: 0) %></td>
+                <td><%= movement.before_qty %></td>
+                <td><%= l(movement.created_at, format: :short) rescue movement.created_at.strftime('%d/%m/%Y %H:%M') %></td>
+                <td><%= movement.user&.email || 'Système' %></td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">
+                <i class="bi bi-inbox me-2" aria-hidden="true"></i>
+                Aucun mouvement récent
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

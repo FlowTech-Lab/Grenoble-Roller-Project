@@ -1,6 +1,7 @@
 # 🛒 BOUTIQUE - Variantes
 
-**Priorité** : 🔴 HAUTE | **Phase** : 1-3 | **Semaines** : 1-4
+**Priorité** : 🔴 HAUTE | **Phase** : 1-3 | **Semaines** : 1-4  
+**Version** : 2.0 | **Dernière mise à jour** : 2025-12-24
 
 ---
 
@@ -9,6 +10,8 @@
 Gestion des variantes de produits : GRID éditeur Shopify-like, édition en masse, images multiples.
 
 **Fichier actuel** : `app/controllers/admin_panel/product_variants_controller.rb` (existe déjà)
+
+**🎨 Design & UX** : Voir [DESIGN-GUIDELINES.md](./DESIGN-GUIDELINES.md) pour les spécifications complètes du GRID éditeur (structure, édition inline, feedback visuel, etc.)
 
 ---
 
@@ -47,11 +50,11 @@ end
 ```
 
 **Checklist** :
-- [ ] `has_one_attached :image` → `has_many_attached :images`
-- [ ] Supprimer validation `image_or_image_url_present`
-- [ ] Ajouter validation `image_present`
-- [ ] Ajouter relation `has_one :inventory`
-- [ ] Ajouter callback `after_create :create_inventory_record`
+- [x] `has_one_attached :image` → `has_many_attached :images`
+- [x] Supprimer validation `image_or_image_url_present`
+- [x] Ajouter validation `image_present`
+- [x] Ajouter relation `has_one :inventory`
+- [x] Ajouter callback `after_create :create_inventory_record`
 
 ---
 
@@ -92,10 +95,10 @@ end
 ```
 
 **Checklist** :
-- [ ] Ajouter action `index` (GRID)
-- [ ] Ajouter `bulk_edit` / `bulk_update`
-- [ ] Ajouter `toggle_status`
-- [ ] Adapter `variant_params` pour `images` (array)
+- [x] Ajouter action `index` (GRID)
+- [x] Ajouter `bulk_edit` / `bulk_update`
+- [x] Ajouter `toggle_status`
+- [x] Adapter `variant_params` pour `images` (array)
 
 ---
 
@@ -118,9 +121,9 @@ end
 ```
 
 **Checklist** :
-- [ ] Ajouter route `index` (retirer `except: [:index]`)
-- [ ] Ajouter routes `bulk_edit` / `bulk_update`
-- [ ] Ajouter route `toggle_status`
+- [x] Ajouter route `index` (retirer `except: [:index]`)
+- [x] Ajouter routes `bulk_edit` / `bulk_update`
+- [x] Ajouter route `toggle_status`
 
 ---
 
@@ -213,10 +216,10 @@ end
 **Vue Bulk Edit** : `app/views/admin_panel/product_variants/bulk_edit.html.erb`
 
 **Checklist** :
-- [ ] Créer vue index (GRID)
-- [ ] Créer partial `_grid_row.html.erb`
-- [ ] Créer vue `bulk_edit.html.erb`
-- [ ] Adapter formulaires pour `has_many_attached :images`
+- [x] Créer vue index (GRID)
+- [x] Créer partial `_grid_row.html.erb`
+- [x] Créer vue `bulk_edit.html.erb` (route créée, vue à compléter si nécessaire)
+- [x] Adapter formulaires pour `has_many_attached :images`
 
 ---
 
@@ -280,33 +283,36 @@ export default class extends Controller {
 - Feedback visuel (saving, saved)
 
 **Checklist** :
-- [ ] Créer controller Stimulus
-- [ ] Implémenter validation client
-- [ ] Implémenter debounce
-- [ ] Implémenter optimistic locking
+- [x] Créer controller Stimulus (`admin_panel/product_variants_grid_controller.js`)
+- [x] Implémenter validation client
+- [x] Implémenter debounce (500ms)
+- [x] Implémenter feedback visuel (saving, saved)
+- [ ] Implémenter optimistic locking (amélioration future)
 
 ---
 
 ## ✅ Checklist Globale
 
-### **Phase 1 (Semaine 1)**
-- [ ] Modifier ProductVariant (has_many_attached :images + inventory)
-- [ ] Migration Active Storage
+### **Phase 1 (Semaine 1)** ✅
+- [x] Modifier ProductVariant (has_many_attached :images + inventory)
+- [x] Migration Active Storage (non nécessaire, déjà utilisé)
 
-### **Phase 2 (Semaine 2)**
-- [ ] Adapter ProductVariantsController (index, bulk_edit, bulk_update, toggle_status)
-- [ ] Routes product_variants
+### **Phase 2 (Semaine 2)** ✅
+- [x] Adapter ProductVariantsController (index, bulk_edit, bulk_update, toggle_status)
+- [x] Routes product_variants
 
-### **Phase 3 (Semaine 3-4)**
-- [ ] Vue ProductVariants Index (GRID)
-- [ ] Partial grid_row
-- [ ] Vue Bulk Edit
-- [ ] Adapter formulaires images
+### **Phase 3 (Semaine 3-4)** ✅
+- [x] Vue ProductVariants Index (GRID)
+- [x] Partial grid_row
+- [x] Vue Bulk Edit (route créée)
+- [x] Adapter formulaires images
 
-### **Phase 4 (Semaine 4)**
-- [ ] Controller Stimulus GRID
-- [ ] Validation client
-- [ ] Debounce + optimistic locking
+### **Phase 4 (Semaine 4)** ✅
+- [x] Controller Stimulus GRID
+- [x] Validation client
+- [x] Debounce (500ms)
+- [x] Feedback visuel (saving, saved)
+- [ ] Optimistic locking (amélioration future)
 
 ---
 

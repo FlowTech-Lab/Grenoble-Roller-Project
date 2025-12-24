@@ -1,0 +1,157 @@
+<% if product.new_record? && option_types.any? %>
+  <!-- Mode création : Stratégie variantes -->
+  <div class="mb-4">
+    <h6 class="fw-semibold mb-3">Stratégie de création des variantes</h6>
+    
+    <div class="form-check mb-3">
+      <input type="radio" 
+             class="form-check-input" 
+             name="variant_mode" 
+             id="mode_auto" 
+             value="auto" 
+             checked
+             data-action="change->product-form#toggleVariantMode">
+      <label class="form-check-label" for="mode_auto">
+        <strong>Générer automatiquement</strong> (recommandé)
+      </label>
+      <div class="form-text ms-4">
+        Crée toutes les combinaisons d'options sélectionnées
+      </div>
+    </div>
+
+    <div class="form-check mb-3">
+      <input type="radio" 
+             class="form-check-input" 
+             name="variant_mode" 
+             id="mode_manual" 
+             value="manual"
+             data-action="change->product-form#toggleVariantMode">
+      <label class="form-check-label" for="mode_manual">
+        <strong>Créer manuellement</strong> après création
+      </label>
+      <div class="form-text ms-4">
+        Vous créerez les variantes une par une après la création du produit
+      </div>
+    </div>
+  </div>
+
+  <!-- MODE AUTO : Sélection options + preview -->
+  <div id="auto_section" class="mt-4" data-product-form-target="autoSection">
+    <div class="mb-4">
+      <label class="form-label fw-semibold">
+        <strong>Sélectionner les options à combiner</strong>
+      </label>
+      <div class="border rounded p-3 bg-light">
+        <% option_types.each do |option_type| %>
+          <div class="form-check mb-2">
+            <input type="checkbox" 
+                   class="form-check-input" 
+                   name="option_ids[]" 
+                   value="<%= option_type.id %>"
+                   id="option_<%= option_type.id %>"
+                   data-option-name="<%= option_type.presentation || option_type.name %>"
+                   data-action="change->product-form#previewVariants">
+            <label class="form-check-label" for="option_<%= option_type.id %>">
+              <strong><%= option_type.presentation || option_type.name %></strong>
+              <span class="text-muted">(<%= option_type.option_values.count %> valeurs)</span>
+            </label>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- PREVIEW VARIANTES -->
+    <div id="preview_box" 
+         class="alert alert-info" 
+         style="display: none;"
+         data-product-form-target="previewBox">
+      <p class="mb-2">
+        <strong>Aperçu :</strong> 
+        <span id="variant_count" data-product-form-target="variantCount">0</span> variantes seront créées
+      </p>
+      <p id="preview_skus" class="small mb-2" data-product-form-target="previewSkus"></p>
+      <p id="preview_warning" 
+         class="small text-warning mb-0" 
+         style="display: none;"
+         data-product-form-target="previewWarning">
+        ⚠️ Beaucoup de variantes ! Vérifiez avant de confirmer.
+      </p>
+    </div>
+
+    <div class="mb-3">
+      <input type="hidden" name="generate_variants" value="false">
+      <div class="form-check">
+        <input type="checkbox" 
+               class="form-check-input" 
+               name="generate_variants" 
+               id="generate_check" 
+               value="true" 
+               checked>
+        <label class="form-check-label" for="generate_check">
+          Générer automatiquement à la création
+        </label>
+      </div>
+      <small class="text-muted d-block mt-2">
+        Les variantes hériteront le prix du produit (modifiable ensuite)
+      </small>
+    </div>
+  </div>
+
+<% elsif !product.new_record? %>
+  <!-- Mode édition : Gestion variantes existantes -->
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-semibold mb-0">
+        Variantes actuelles (<%= product.product_variants.count %>)
+      </h6>
+      <%= link_to '+ Ajouter variante manuellement', 
+          new_admin_panel_product_product_variant_path(product),
+          class: 'btn btn-sm btn-liquid-primary' %>
+    </div>
+
+    <% if product.product_variants.any? %>
+      <div class="alert alert-success">
+        <i class="bi bi-check-circle me-2"></i>
+        <%= product.product_variants.count %> variante(s) configurée(s). 
+        <%= link_to "Gérer les variantes", admin_panel_product_product_variants_path(product), class: "alert-link" %>
+      </div>
+    <% else %>
+      <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Aucune variante. Créez-en une pour permettre la vente de ce produit.
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Ajouter options manquantes -->
+  <div class="alert alert-info">
+    <strong>Ajouter options manquantes ?</strong>
+    <p class="small mb-2">Si vous avez ajouté de nouveaux types d'options après création du produit :</p>
+    <button type="button" 
+            class="btn btn-sm btn-outline-info" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#generate_missing">
+      Générer variantes manquantes
+    </button>
+  </div>
+
+  <div class="collapse" id="generate_missing">
+    <div class="card card-body bg-light">
+      <label class="form-label fw-semibold mb-3">Sélectionner les options manquantes :</label>
+      <% option_types.each do |option_type| %>
+        <div class="form-check">
+          <input type="checkbox" 
+                 class="form-check-input" 
+                 name="option_ids[]" 
+                 value="<%= option_type.id %>"
+                 id="option_missing_<%= option_type.id %>">
+          <label class="form-check-label" for="option_missing_<%= option_type.id %>">
+            <%= option_type.presentation || option_type.name %>
+          </label>
+        </div>
+      <% end %>
+      <input type="hidden" name="generate_missing" value="true">
+    </div>
+  </div>
+<% end %>
+

@@ -1,6 +1,6 @@
 # 🎨 SIDEBAR ADMIN PANEL - Documentation Technique
 
-**Date** : 2025-12-22 | **Version** : 2.0 | **Status** : ✅ **IMPLÉMENTÉ**
+**Date** : 2025-12-24 | **Version** : 2.1 | **Status** : ✅ **IMPLÉMENTÉ**
 
 ---
 
@@ -8,12 +8,12 @@
 
 Sidebar responsive avec collapse/expand, permissions par grade, et optimisations performance.
 
-**Menu Actuel (2025-12-22)** :
-- ✅ Initiations (level >= 30)
+**Menu Actuel (2025-12-24)** :
+- ✅ Initiations (level >= 40)
+- ✅ Boutique (level >= 60) - Produits, Inventaire
 - ✅ Commandes (level >= 60)
 - ✅ ActiveAdmin (lien externe)
 - ❌ Tableau de bord (retiré - non conforme)
-- ❌ Boutique (retiré - non conforme)
 
 **Fichiers principaux** :
 - `app/views/admin/shared/_sidebar.html.erb` - Template principal
@@ -59,49 +59,69 @@ app/
 
 ## 🎯 Fonctionnalités
 
-### ✅ **1. Menu Actuel (2025-12-22)**
+### ✅ **1. Menu Actuel (2025-12-24)**
 
 **Structure du menu sidebar** :
-1. **Initiations** (level >= 30)
+1. **Initiations** (level >= 40)
    - Icône : `bi-people`
    - Route : `admin_panel_initiations_path`
-   - Permissions : Lecture (level >= 30), Écriture (level >= 60)
+   - Permissions : Lecture (level >= 40), Écriture (level >= 60)
 
-2. **Commandes** (level >= 60)
+2. **Boutique** (level >= 60) - Menu avec sous-menus
+   - Icône : `bi-shop`
+   - Sous-menu : Produits (`admin_panel_products_path`), Inventaire (`admin_panel_inventory_path`)
+   - Permissions : Accès complet (level >= 60)
+   - Design : Collapse/expand avec chevron
+
+3. **Commandes** (level >= 60)
    - Icône : `bi-box-seam`
    - Route : `admin_panel_orders_path`
    - Permissions : Accès complet (level >= 60)
 
-3. **Séparateur** (`<hr>`)
+4. **Séparateur** (`<hr>`)
 
-4. **ActiveAdmin** (lien externe)
+5. **ActiveAdmin** (lien externe)
    - Icône : `bi-gear`
    - Route : `/activeadmin`
    - Accessible à tous (ouvre dans un nouvel onglet)
 
 **Modules retirés** (non conformes) :
 - ❌ **Tableau de bord** - Retiré le 2025-12-22 (non conforme)
-- ❌ **Boutique** - Retiré le 2025-12-22 avec ses sous-menus (non conforme)
 
 **Code actuel** :
 ```erb
 <!-- Initiations -->
 <% if can_view_initiations? %>
-  <li class="nav-item">
-    <%= link_to admin_panel_initiations_path, class: "nav-link..." %>
+  <li class="admin-menu-item">
+    <%= link_to admin_panel_initiations_path, class: "admin-menu-link..." %>
+  </li>
+<% end %>
+
+<!-- Boutique (avec sous-menu) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="admin-menu-item">
+    <a href="#boutique-submenu" class="admin-menu-link" data-bs-toggle="collapse">
+      <i class="bi bi-shop"></i>
+      <span>Boutique</span>
+      <i class="bi bi-chevron-down"></i>
+    </a>
+    <ul class="collapse" id="boutique-submenu">
+      <li><%= link_to admin_panel_products_path, class: "admin-menu-sublink" %></li>
+      <li><%= link_to admin_panel_inventory_path, class: "admin-menu-sublink" %></li>
+    </ul>
   </li>
 <% end %>
 
 <!-- Commandes -->
 <% if can_access_admin_panel?(60) %>
-  <li class="nav-item">
-    <%= link_to admin_panel_orders_path, class: "nav-link..." %>
+  <li class="admin-menu-item">
+    <%= link_to admin_panel_orders_path, class: "admin-menu-link..." %>
   </li>
 <% end %>
 
 <!-- ActiveAdmin -->
-<li class="nav-item">
-  <%= link_to "/activeadmin", target: "_blank", class: "nav-link..." %>
+<li class="admin-menu-item">
+  <%= link_to "/activeadmin", target: "_blank", class: "admin-menu-link..." %>
 </li>
 ```
 
@@ -126,22 +146,6 @@ app/
 
 ---
 
-### ✅ **2. Menu Actuel (2025-12-22)**
-
-**Structure du menu** :
-- ✅ **Initiations** (level >= 30) → `admin_panel_initiations_path`
-- ✅ **Commandes** (level >= 60) → `admin_panel_orders_path`
-- ✅ **Séparateur**
-- ✅ **ActiveAdmin** (lien externe) → `/activeadmin`
-
-**Modules retirés** (non conformes) :
-- ❌ **Tableau de bord** - Retiré (non conforme)
-- ❌ **Boutique** - Retiré avec ses sous-menus (non conforme)
-
-**Raison** : Focus sur les modules réellement implémentés et fonctionnels.
-
----
-
 ### ✅ **3. Helpers Permissions**
 
 **Fichier** : `app/helpers/admin_panel_helper.rb`
@@ -152,7 +156,7 @@ app/
 can_access_admin_panel?(min_level = 60)
 
 # Helpers spécifiques
-can_view_initiations?  # level >= 30
+can_view_initiations?  # level >= 40
 can_view_boutique?     # level >= 60
 
 # Détection état actif
@@ -166,7 +170,7 @@ admin_panel_active?(controller_name, action_name = nil)
 
 ---
 
-### ✅ **5. Controller Stimulus Optimisé**
+### ✅ **4. Controller Stimulus Optimisé**
 
 **Fichier** : `app/javascript/controllers/admin/admin_sidebar_controller.js`
 
@@ -194,180 +198,61 @@ static values = {
 
 **Méthodes Principales** :
 - `connect()` - Initialisation + cache refs + restore state
-- `disconnect()` - Cleanup complet (listeners + refs)
-- `toggle()` - Collapse/expand avec sauvegarde
-- `collapse()` / `expand()` - Actions avec transitions
-- `setupMediaQueryObserver()` - Responsive sync
-- `setupResizeHandler()` - Debounce resize
+- `toggle()` - Collapse/expand sidebar
+- `handleResize()` - Debounced resize handler
+- `disconnect()` - Cleanup listeners
 
 ---
 
-### ✅ **5. CSS Organisé**
+## 🎨 Design & Responsive
 
-**Fichier** : `app/assets/stylesheets/admin_panel.scss`
-
-**Classes CSS Sémantiques** :
-```scss
-.admin-sidebar              // Sidebar principale
-.admin-sidebar-toggle       // Bouton toggle
-.admin-main-content         // Contenu principal
-.admin-container            // Conteneur admin
-.admin-mobile-menu-toggle   // Bouton hamburger mobile
-```
-
-**Variables CSS** :
-```scss
-:root {
-  --navbar-height: 76px; // Calculé dynamiquement
-}
-```
-
-**Transitions Fluides** :
-- Sidebar width : `300ms cubic-bezier(0.4, 0, 0.2, 1)`
-- Main content margin : `300ms cubic-bezier(0.4, 0, 0.2, 1)`
-- Labels/chevrons : `200ms ease` (opacity + visibility)
-
-**Import** : Ajouté dans `application.bootstrap.scss` :
-```scss
-@use "admin_panel" as *;
-```
-
----
-
-### ✅ **7. JavaScript Séparé**
-
-**Fichier** : `app/javascript/admin_panel_navbar.js`
-
-**Fonctionnalité** : Calcul dynamique de la hauteur de la navbar
-
-**Code** :
-```javascript
-document.addEventListener('DOMContentLoaded', function() {
-  const navbar = document.querySelector('.navbar');
-  if (navbar) {
-    const navbarHeight = navbar.offsetHeight;
-    document.documentElement.style.setProperty('--navbar-height', navbarHeight + 'px');
-    
-    // Mettre à jour la sidebar
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-      sidebar.style.top = navbarHeight + 'px';
-      sidebar.style.height = `calc(100vh - ${navbarHeight}px)`;
-    }
-  }
-});
-```
-
-**Import** : Ajouté dans `config/importmap.rb` et chargé dans le layout :
-```ruby
-pin "admin_panel_navbar", to: "admin_panel_navbar.js"
-```
-
-```erb
-<script type="module">
-  import "admin_panel_navbar";
-</script>
-```
-
----
-
-## 🔐 Permissions par Grade
-
-### **Tableau des Accès (État Actuel - 2025-12-22)**
-
-| Grade | Level | Initiations | Commandes | ActiveAdmin |
-|-------|-------|-------------|-----------|------------|
-| INITIATION | 30 | ✅ Lecture | ❌ | ✅ (lien externe) |
-| ORGANIZER | 40 | ✅ Lecture | ❌ | ✅ (lien externe) |
-| MODERATOR | 50 | ✅ Lecture | ❌ | ✅ (lien externe) |
-| ADMIN | 60 | ✅ Complet | ✅ Complet | ✅ (lien externe) |
-| SUPERADMIN | 70 | ✅ Complet | ✅ Complet | ✅ (lien externe) |
-
-### **Implémentation dans la Sidebar**
-
-```erb
-<!-- Initiations : level >= 30 -->
-<% if can_view_initiations? %>
-  <li class="nav-item">...</li>
-<% end %>
-
-<!-- Commandes : level >= 60 -->
-<% if can_access_admin_panel?(60) %>
-  <li class="nav-item">...</li>
-<% end %>
-
-<!-- ActiveAdmin : Accessible à tous (lien externe) -->
-<li class="nav-item">...</li>
-```
-
-**Voir** : [`../PERMISSIONS.md`](../PERMISSIONS.md) pour la documentation complète.
-
----
-
-## 📱 Responsive
-
-### **Desktop (≥ 992px)**
-- ✅ Sidebar fixe à gauche
-- ✅ Collapse/expand fonctionnel
-- ✅ Sous-menus avec collapse
-- ✅ Bouton toggle visible
+### **Desktop/Tablet (≥ 992px)**
+- ✅ Sidebar fixe à gauche (collapsible)
+- ✅ Largeur : 280px (expanded) / 64px (collapsed)
+- ✅ Transition smooth avec CSS
+- ✅ Chevron rotate sur collapse
 
 ### **Mobile (< 992px)**
-- ✅ Sidebar masquée (offcanvas)
-- ✅ Bouton hamburger visible
-- ✅ Menu dans offcanvas
-- ✅ Même partial `_menu_items.html.erb`
+- ✅ Offcanvas Bootstrap (slide depuis gauche)
+- ✅ Backdrop overlay
+- ✅ Auto-dismiss sur navigation
+- ✅ Touch-friendly (targets ≥ 44px)
+
+### **Design Liquid Glass**
+- ✅ Background glassmorphism (`--liquid-glass-bg`)
+- ✅ Backdrop filter blur
+- ✅ Border subtil (`--liquid-glass-border`)
+- ✅ Shadow doux (`shadow-liquid`)
 
 ---
 
-## 🎨 États Visuels
+## 📊 Performance
 
-### **Sidebar Expanded (280px)**
-- ✅ Labels visibles
-- ✅ Icônes visibles
-- ✅ Contenu principal : `margin-left: 280px`
-- ✅ Transitions fluides (300ms cubic-bezier)
-
-### **Sidebar Collapsed (64px)**
-- ✅ Labels masqués (`.d-none`)
-- ✅ Icônes visibles (centrées)
-- ✅ Contenu principal : `margin-left: 64px`
-- ✅ Transitions fluides (300ms cubic-bezier)
+### **Optimisations Appliquées**
+1. ✅ **Debounce resize** : 250ms (évite CPU spike)
+2. ✅ **Cache DOM refs** : Pas de requêtes répétées
+3. ✅ **Media query observer** : Sync breakpoint automatique
+4. ✅ **Cleanup listeners** : Pas de memory leak
+5. ✅ **CSS classes** : Pas de style inline
 
 ---
 
-## 💾 Persistance
+## ✅ Checklist Globale
 
-**LocalStorage** : État collapsed/expanded sauvegardé
-- Clé : `admin:sidebar:collapsed`
-- Valeurs : `'true'` ou `'false'`
-- Restauration automatique au chargement
+### **Implémentation**
+- [x] Template sidebar (desktop + mobile)
+- [x] Partial menu réutilisable
+- [x] Controller Stimulus optimisé
+- [x] Helpers permissions
+- [x] Styles CSS organisés
+- [x] Menu Boutique avec sous-menus
+- [x] Design Liquid Glass appliqué
+- [x] Responsive mobile-first
 
----
-
-## ✅ Checklist Implémentation
-
-- [x] Partial réutilisable `_menu_items.html.erb`
-- [x] Helpers permissions (`can_access_admin_panel?`, etc.)
-- [x] Controller Stimulus optimisé (7 problèmes corrigés)
-- [x] CSS organisé dans `_style.scss` (liquid glass)
-- [x] JavaScript séparé (`admin_panel_navbar.js`)
-- [x] Suppression styles inline
-- [x] Transitions fluides
-- [x] Responsive desktop/mobile
-- [x] Persistance LocalStorage
-- [x] Footer sidebar supprimé (redondant avec navbar)
-- [x] Menu épuré (Tableau de bord et Boutique retirés)
+### **Tests**
+- [ ] Tests RSpec sidebar (à créer)
+- [ ] Tests JavaScript (à créer)
 
 ---
 
-## 🚀 Prochaines Améliorations (Optionnel)
-
-- [ ] Tooltips au rétrécissement (sidebar collapsed)
-- [ ] Animation plus sophistiquée (slide)
-- [ ] Thème dark/light adaptatif
-- [ ] Ajout de nouveaux modules conformes dans la sidebar
-
----
-
-**Retour** : [Dashboard README](./README.md) | [INDEX principal](../INDEX.md)
+**Retour** : [INDEX principal](../INDEX.md) | [Dashboard README](./README.md)

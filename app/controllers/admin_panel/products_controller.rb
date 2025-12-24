@@ -4,8 +4,8 @@ module AdminPanel
   class ProductsController < BaseController
     include Pagy::Backend
 
-    before_action :set_product, only: %i[show edit update destroy]
-    before_action :authorize_product, only: %i[show edit update destroy]
+    before_action :set_product, only: %i[show edit update destroy publish unpublish]
+    before_action :authorize_product, only: %i[show edit update destroy publish unpublish]
 
     # GET /admin-panel/products
     def index
@@ -116,6 +116,28 @@ module AdminPanel
       end
 
       redirect_to admin_panel_products_path
+    end
+
+    # POST /admin-panel/products/:id/publish
+    def publish
+      if @product.update(is_active: true)
+        flash[:notice] = 'Produit publié avec succès'
+      else
+        flash[:alert] = "Erreur : #{@product.errors.full_messages.join(', ')}"
+      end
+      
+      redirect_to admin_panel_product_path(@product)
+    end
+
+    # POST /admin-panel/products/:id/unpublish
+    def unpublish
+      if @product.update(is_active: false)
+        flash[:notice] = 'Produit dépublié avec succès'
+      else
+        flash[:alert] = "Erreur : #{@product.errors.full_messages.join(', ')}"
+      end
+      
+      redirect_to admin_panel_product_path(@product)
     end
 
     # GET /admin-panel/products/check_sku

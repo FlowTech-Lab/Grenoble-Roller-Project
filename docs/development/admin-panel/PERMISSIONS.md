@@ -10,8 +10,8 @@
 |-------|------|-----|-------|------------------|
 | 10 | USER | Utilisateur | 10 | ❌ Aucun accès |
 | 20 | REGISTERED | Inscrit | 20 | ❌ Aucun accès |
-| 30 | INITIATION | Initiation | 30 | ✅ Initiations (lecture seule) |
-| 40 | ORGANIZER | Organisateur | 40 | ✅ Initiations (lecture seule) |
+| 30 | ORGANIZER | Organisateur | 30 | ❌ Aucun accès |
+| 40 | INITIATION | Initiation | 40 | ✅ Initiations (lecture seule) |
 | 50 | MODERATOR | Modérateur | 50 | ✅ Initiations (lecture seule) |
 | 60 | ADMIN | Admin | 60 | ✅ Accès complet |
 | 70 | SUPERADMIN | Super Admin | 70 | ✅ Accès complet |
@@ -22,7 +22,7 @@
 
 ### ✅ **INITIATIONS** (`/admin-panel/initiations`)
 
-#### **Grade 30+ (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)**
+#### **Grade 40+ (INITIATION, MODERATOR, ADMIN, SUPERADMIN)**
 - ✅ **Lecture** : `index?`, `show?`
   - Voir la liste des initiations
   - Voir les détails d'une initiation
@@ -44,8 +44,11 @@
 - ✅ **Actions spéciales** : `presences?`, `update_presences?`, `convert_waitlist?`, `notify_waitlist?`, `toggle_volunteer?`
 
 **Boutons visibles dans les vues** :
-- Grade 30-50 : Aucun bouton de création/modification
+- Grade 40-50 : Aucun bouton de création/modification
 - Grade 60+ : Bouton "Créer une initiation" (index), Bouton "Éditer" (show)
+
+#### **Grade 30 (ORGANIZER)**
+- ❌ **Aucun accès** : Accès refusé (redirection vers root_path)
 
 ---
 
@@ -112,10 +115,12 @@ def authenticate_admin_user!
   
   user_level = current_user&.role&.level.to_i
   
-  # Les initiations sont accessibles pour level >= 30 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
+  # Les initiations sont accessibles pour level >= 40 (INITIATION, MODERATOR, ADMIN, SUPERADMIN)
+  # INITIATION (40) est forcément membre Grenoble Roller
+  # ORGANIZER (30) peut être n'importe qui, donc pas accès aux initiations
   # Toutes les autres ressources nécessitent level >= 60 (ADMIN, SUPERADMIN)
   if controller_name == 'initiations'
-    unless user_level >= 30
+    unless user_level >= 40
       redirect_to root_path, alert: 'Accès non autorisé'
     end
   else
@@ -130,11 +135,11 @@ end
 
 ```ruby
 def index?
-  can_view_initiations? # level >= 30
+  can_view_initiations? # level >= 40
 end
 
 def show?
-  can_view_initiations? # level >= 30
+  can_view_initiations? # level >= 40
 end
 
 def create?
@@ -170,16 +175,13 @@ end
 
 ## 📋 Checklist de Vérification
 
-### ✅ **Grade 30 (INITIATION)**
-- [x] Peut accéder à `/admin-panel/initiations`
-- [x] Peut voir la liste des initiations
-- [x] Peut voir les détails d'une initiation
-- [x] Ne peut pas créer d'initiation (bouton masqué)
-- [x] Ne peut pas éditer d'initiation (bouton masqué)
+### ✅ **Grade 30 (ORGANIZER)**
+- [x] Ne peut pas accéder à `/admin-panel/initiations` (accès refusé)
 - [x] Ne peut pas accéder au dashboard (lien masqué)
 - [x] Ne peut pas accéder aux commandes (lien masqué)
+- [x] Ne peut accéder à AUCUNE ressource AdminPanel
 
-### ✅ **Grade 40 (ORGANIZER)**
+### ✅ **Grade 40 (INITIATION)**
 - [x] Peut accéder à `/admin-panel/initiations`
 - [x] Peut voir la liste des initiations
 - [x] Peut voir les détails d'une initiation
@@ -213,8 +215,8 @@ Les liens de la sidebar sont conditionnels selon le grade :
   <li class="nav-item">...</li>
 <% end %>
 
-<!-- Initiations : level >= 30 -->
-<% if current_user&.role&.level.to_i >= 30 %>
+<!-- Initiations : level >= 40 -->
+<% if current_user&.role&.level.to_i >= 40 %>
   <li class="nav-item">...</li>
 <% end %>
 
@@ -237,9 +239,9 @@ Les liens de la sidebar sont conditionnels selon le grade :
 
 ## ⚠️ Notes Importantes
 
-1. **Grade 40 (ORGANIZER)** : Ne peut voir QUE les initiations. Toutes les autres ressources sont bloquées par `BaseController`.
+1. **Grade 30 (ORGANIZER)** : Aucun accès au panel admin. Les organisateurs peuvent créer des événements mais n'ont pas accès au panel d'administration.
 
-2. **Grade 30 (INITIATION)** : Même permissions que grade 40 pour les initiations (lecture seule).
+2. **Grade 40 (INITIATION)** : Peut voir uniquement les initiations (lecture seule). Toutes les autres ressources sont bloquées par `BaseController`. INITIATION (40) est forcément membre Grenoble Roller.
 
 3. **Cohérence** : Toutes les vérifications utilisent `role&.level.to_i >= X` et non `role&.code.in?(%w[...])` pour plus de flexibilité.
 

@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-12-22 | **Version** : 2.0 | **État** : 60% complété | **Dernière mise à jour** : 2025-12-22
+**Date** : 2025-12-24 | **Version** : 2.1 | **État** : 70% complété | **Dernière mise à jour** : 2025-12-24
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -106,8 +106,9 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 **Status** : ✅ **IMPLÉMENTÉ** - Module complet fonctionnel avec permissions par grade
 
 **Permissions** : 
-- Grade 30+ (INITIATION, ORGANIZER, MODERATOR) : Lecture seule
+- Grade 40+ (INITIATION, MODERATOR) : Lecture seule
 - Grade 60+ (ADMIN, SUPERADMIN) : Accès complet
+- Grade 30 (ORGANIZER) : Aucun accès
 
 ---
 
@@ -228,7 +229,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 |-------|----------|-------|----------|------------|----------------|
 | **Sidebar** | 🔴 HAUTE | 0 | 1 | ✅ **100%** | ✅ Implémenté |
 | **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% | ❌ Retiré (non conforme) |
-| **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ~40% | ❌ Retiré (non conforme) |
+| **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
 | **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
@@ -333,14 +334,15 @@ Système (indépendant)
 - [ ] Intégrer avec Initiations (à venir)
 
 ### 🛒 Boutique
-- [ ] Migrations (3)
-- [ ] Modèles (2 nouveaux + 1 modification)
-- [ ] Services (1)
-- [ ] Controllers (3)
-- [ ] Policies (2)
-- [ ] Routes
-- [ ] Vues (5+)
-- [ ] JavaScript (1)
+- [x] Migrations (2 : inventories, inventory_movements)
+- [x] Modèles (2 nouveaux + 1 modification)
+- [x] Services (1 : InventoryService)
+- [x] Controllers (3 : InventoryController, modifications ProductsController et ProductVariantsController)
+- [x] Policies (2 : InventoryPolicy, ProductVariantPolicy)
+- [x] Routes (inventory + product_variants avec bulk actions)
+- [x] Vues (Dashboard inventaire, GRID variantes, partials)
+- [x] JavaScript (1 : Stimulus GRID controller)
+- [x] Sidebar (Menu Boutique réactivé avec sous-menus)
 
 ### 📦 Commandes
 - [ ] Modifications Order
@@ -589,4 +591,4 @@ bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel
 
 ---
 
-**Créé le** : 2025-12-21 | **Version** : 2.0 | **Dernière mise à jour** : 2025-12-22
+**Créé le** : 2025-12-21 | **Version** : 2.1 | **Dernière mise à jour** : 2025-12-24

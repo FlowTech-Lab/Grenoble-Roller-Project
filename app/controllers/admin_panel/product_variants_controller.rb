@@ -2,9 +2,66 @@
 
 module AdminPanel
   class ProductVariantsController < BaseController
+    include Pagy::Backend
+    
     before_action :set_product
-    before_action :set_variant, only: %i[edit update destroy]
+    before_action :set_variant, only: %i[edit update destroy toggle_status]
     before_action :authorize_product
+
+    # GET /admin-panel/products/:product_id/product_variants
+    def index
+      @variants = @product.product_variants
+        .includes(:inventory, :option_values)
+        .order(sku: :asc)
+      
+      @pagy, @variants = pagy(@variants, items: 50)
+    end
+
+    # GET /admin-panel/products/:product_id/product_variants/bulk_edit
+    def bulk_edit
+      @variant_ids = params[:variant_ids] || []
+      @variants = @product.product_variants.where(id: @variant_ids)
+      
+      if @variants.empty?
+        redirect_to admin_panel_product_product_variants_path(@product),
+                    alert: 'Aucune variante sélectionnée'
+      end
+    end
+
+    # PATCH /admin-panel/products/:product_id/product_variants/bulk_update
+    def bulk_update
+      variant_ids = params[:variant_ids] || []
+      updates = params[:variants] || {}
+      
+      updated_count = 0
+      variant_ids.each do |id|
+        variant = @product.product_variants.find_by(id: id)
+        next unless variant
+        
+        if updates[id.to_s].present?
+          variant.update(updates[id.to_s].permit(:price_cents, :stock_qty, :is_active))
+          updated_count += 1
+        end
+      end
+      
+      flash[:notice] = "#{updated_count} variante(s) mise(s) à jour"
+      redirect_to admin_panel_product_product_variants_path(@product)
+    end
+
+    # PATCH /admin-panel/products/:product_id/product_variants/:id/toggle_status
+    def toggle_status
+      @variant.update(is_active: !@variant.is_active)
+      
+      respond_to do |format|
+        format.html do
+          redirect_back(
+            fallback_location: admin_panel_product_product_variants_path(@product),
+            notice: "Variante #{@variant.is_active ? 'activée' : 'désactivée'}"
+          )
+        end
+        format.json { render json: { is_active: @variant.is_active } }
+      end
+    end
 
     # GET /admin-panel/products/:product_id/product_variants/new
     def new
@@ -91,8 +148,7 @@ module AdminPanel
         :currency,
         :stock_qty,
         :is_active,
-        :image_url,
-        :image
+        images: []  # Images multiples
       )
     end
   end

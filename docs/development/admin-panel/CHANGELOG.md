@@ -1,10 +1,85 @@
 # 📝 CHANGELOG - Admin Panel
 
-**Dernière mise à jour** : 2025-12-22
+**Dernière mise à jour** : 2025-12-24
 
 ---
 
 ## ✅ Modifications Récentes
+
+### **2025-12-24 - Module Boutique Complet**
+
+#### **🛒 Implémentation Complète du Module Boutique**
+- ✅ **Migrations** : Tables `inventories` et `inventory_movements` créées avec succès
+- ✅ **Modèles** : `Inventory`, `InventoryMovement`, modifications `ProductVariant` (has_many_attached :images)
+- ✅ **Services** : `InventoryService` pour gestion stock, réservations, mouvements
+- ✅ **Controllers** : `InventoryController`, modifications `ProductsController` et `ProductVariantsController`
+- ✅ **Policies** : `InventoryPolicy` et `ProductVariantPolicy` créées
+- ✅ **Routes** : Routes inventory et product_variants (index, bulk_edit, bulk_update, toggle_status)
+- ✅ **Vues** : Dashboard inventaire, GRID variantes, vues transfers
+- ✅ **JavaScript** : Controller Stimulus GRID pour édition inline
+- ✅ **Sidebar** : Menu Boutique réactivé avec sous-menus (Produits, Inventaire)
+
+#### **🎨 Design & UX**
+- ✅ **Design Liquid Glass** : Toutes les vues utilisent le design système
+- ✅ **Responsive** : Mobile-first avec tables adaptatives
+- ✅ **Sous-menu moderne** : Collapse/expand avec icônes Bootstrap Icons
+
+#### **📁 Fichiers Créés/Modifiés**
+- `db/migrate/20251224032419_create_inventories.rb` - Migration inventaires
+- `db/migrate/20251224032423_create_inventory_movements.rb` - Migration mouvements
+- `app/models/inventory.rb` - Modèle inventaire
+- `app/models/inventory_movement.rb` - Modèle mouvement
+- `app/models/product_variant.rb` - Modifié (images multiples + inventory)
+- `app/services/inventory_service.rb` - Service gestion stock
+- `app/controllers/admin_panel/inventory_controller.rb` - Controller inventaire
+- `app/controllers/admin_panel/products_controller.rb` - Actions publish/unpublish ajoutées
+- `app/controllers/admin_panel/product_variants_controller.rb` - Actions GRID ajoutées
+- `app/policies/admin_panel/inventory_policy.rb` - Policy inventaire
+- `app/policies/admin_panel/product_variant_policy.rb` - Policy variantes
+- `app/views/admin_panel/inventory/index.html.erb` - Dashboard inventaire
+- `app/views/admin_panel/product_variants/index.html.erb` - Vue GRID variantes
+- `app/views/admin_panel/product_variants/_grid_row.html.erb` - Partial ligne GRID
+- `app/javascript/controllers/admin_panel/product_variants_grid_controller.js` - JS GRID
+- `app/views/admin/shared/_menu_items.html.erb` - Menu Boutique réactivé
+- `config/routes.rb` - Routes inventory et product_variants
+
+#### **📚 Documentation**
+- `CHANGELOG.md` - Entrée ajoutée
+- `01-boutique/README.md` - Checklist mise à jour
+- `INDEX.md` - Statut Boutique mis à jour (100%)
+
+#### **🔧 Corrections Techniques**
+- ✅ **Migration corrigée** : Utilisation de `index: { unique: true }` dans `t.references` pour éviter double index
+- ✅ **Index optimisé** : Suppression index redondant dans `CreateInventoryMovements`
+
+---
+
+### **2025-01-XX - Correction Permissions par Grade**
+
+#### **🔐 Correction Hiérarchie des Grades**
+- ✅ **Tableau des grades corrigé** : Level 30 = ORGANIZER (aucun accès), Level 40 = INITIATION (accès initiations)
+- ✅ **BaseController mis à jour** : Accès initiations pour `level >= 40` au lieu de `level >= 30`
+- ✅ **InitiationPolicy corrigé** : `can_view_initiations?` vérifie maintenant `level >= 40`
+- ✅ **Sidebar mise à jour** : Liens initiations visibles uniquement pour `level >= 40`
+- ✅ **Documentation PERMISSIONS.md** : Tableau et toutes les références corrigées
+
+#### **📋 Changements Clés**
+- **Avant** : Level 30 (INITIATION) avait accès aux initiations
+- **Après** : Level 30 (ORGANIZER) = aucun accès, Level 40 (INITIATION) = accès initiations
+- **Raison** : ORGANIZER peut être n'importe qui, INITIATION est forcément membre Grenoble Roller
+
+#### **📁 Fichiers Modifiés**
+- `app/controllers/admin_panel/base_controller.rb` - Seuil initiations changé de 30 à 40
+- `app/policies/admin_panel/event/initiation_policy.rb` - `can_view_initiations?` changé de 30 à 40
+- `app/helpers/admin_panel_helper.rb` - `can_view_initiations?` changé de 30 à 40
+- `app/views/admin/shared/_sidebar.html.erb` - Condition sidebar changée de 30 à 40
+- `docs/development/admin-panel/PERMISSIONS.md` - Documentation complète corrigée
+
+#### **📚 Documentation**
+- `PERMISSIONS.md` - Tableau des grades, sections permissions, checklist, notes importantes mis à jour
+- `CHANGELOG.md` - Entrée ajoutée
+
+---
 
 ### **2025-12-22 - Nettoyage Sidebar et Favicon**
 
@@ -120,8 +195,8 @@
 ### **2025-01-XX - Module Initiations Complet**
 
 #### **🔐 Permissions par Grade**
-- ✅ **BaseController** : Accès initiations pour level >= 30, reste pour level >= 60
-- ✅ **InitiationPolicy** : Lecture (level >= 30), Écriture (level >= 60)
+- ✅ **BaseController** : Accès initiations pour level >= 40, reste pour level >= 60
+- ✅ **InitiationPolicy** : Lecture (level >= 40), Écriture (level >= 60)
 - ✅ **Utilisation niveaux numériques** : `role&.level.to_i >= X` au lieu de codes
 - ✅ **Sidebar conditionnelle** : Liens masqués selon le grade
 - ✅ **Boutons conditionnels** : Création/édition uniquement pour level >= 60
@@ -148,22 +223,22 @@
 
 ---
 
-## 📊 État d'Avancement (2025-12-22)
+## 📊 État d'Avancement (2025-12-24)
 
 | Module | Status | Tests | Documentation | Sidebar |
 |--------|--------|-------|---------------|---------|
 | **Sidebar** | ✅ 100% | ✅ Optimisée | ✅ Complète | ✅ Implémenté |
+| **Boutique** | ✅ 100% | ⚠️ À créer | ✅ Complète | ✅ Dans sidebar |
 | **Initiations** | ✅ 100% | ✅ 109 exemples | ✅ Complète | ✅ Dans sidebar |
 | **Commandes** | 🟡 60% | ⚠️ À créer | ✅ Partielle | ✅ Dans sidebar |
 | **Dashboard** | 🟡 30% | ⚠️ À créer | ✅ Partielle | ❌ Retiré (non conforme) |
-| **Boutique** | 🟡 40% | ⚠️ À créer | ✅ Partielle | ❌ Retiré (non conforme) |
 
 **Menu Sidebar Actuel** :
-- ✅ Initiations (level >= 30)
+- ✅ Initiations (level >= 40)
+- ✅ Boutique (level >= 60) - Produits, Inventaire
 - ✅ Commandes (level >= 60)
 - ✅ ActiveAdmin (lien externe)
 - ❌ Tableau de bord (retiré - non conforme)
-- ❌ Boutique (retiré - non conforme)
 
 ---
 

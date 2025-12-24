@@ -1,0 +1,76 @@
+<tr class="variant-row" 
+    data-variant-id="<%= variant.id %>"
+    data-admin-panel--product-variants-grid-target="row">
+  <td>
+    <input type="checkbox" 
+           name="variant_ids[]" 
+           value="<%= variant.id %>" 
+           class="form-check-input variant-checkbox"
+           data-admin-panel--product-variants-grid-target="checkbox"
+           data-action="change->admin-panel--product-variants-grid#updateBulkEditButton">
+  </td>
+  <td>
+    <code><%= variant.sku %></code>
+  </td>
+  <td>
+    <% if variant.option_values.any? %>
+      <% variant.option_values.each do |ov| %>
+        <span class="badge badge-liquid-secondary me-1">
+          <%= "#{ov.option_type.name}: #{ov.value}" %>
+        </span>
+      <% end %>
+    <% else %>
+      <span class="text-muted">—</span>
+    <% end %>
+  </td>
+  <td>
+    <input type="number" 
+           class="form-control form-control-liquid form-control-sm" 
+           style="width: 100px;"
+           value="<%= variant.price_cents / 100.0 %>" 
+           step="0.01"
+           data-field="price_cents"
+           data-variant-id="<%= variant.id %>"
+           data-admin-panel--product-variants-grid-target="priceInput"
+           data-action="change->admin-panel--product-variants-grid#savePrice">
+  </td>
+  <td class="text-center">
+    <% inventory = variant.inventory %>
+    <% available = inventory&.available_qty || 0 %>
+    <% total = inventory&.stock_qty || 0 %>
+    <span class="badge <%= available > 0 ? 'badge-liquid-success' : 'badge-liquid-danger' %>">
+      <%= available %> / <%= total %>
+    </span>
+  </td>
+  <td>
+    <% if variant.is_active %>
+      <span class="badge badge-liquid-success">Actif</span>
+    <% else %>
+      <span class="badge badge-liquid-secondary">Inactif</span>
+    <% end %>
+  </td>
+  <td>
+    <div class="btn-group btn-group-sm">
+      <%= link_to edit_admin_panel_product_product_variant_path(product, variant),
+          class: 'btn btn-outline-liquid-warning',
+          title: 'Modifier' do %>
+        <i class="bi bi-pencil" aria-hidden="true"></i>
+      <% end %>
+      <%= link_to toggle_status_admin_panel_product_product_variant_path(product, variant),
+          method: :patch,
+          class: 'btn btn-outline-liquid-info',
+          title: variant.is_active ? 'Désactiver' : 'Activer',
+          data: { confirm: "Confirmer #{variant.is_active ? 'désactivation' : 'activation'} ?" } do %>
+        <i class="bi bi-<%= variant.is_active ? 'eye-slash' : 'eye' %>" aria-hidden="true"></i>
+      <% end %>
+      <%= link_to admin_panel_product_product_variant_path(product, variant),
+          method: :delete,
+          data: { confirm: 'Confirmer suppression ?' },
+          class: 'btn btn-outline-liquid-danger',
+          title: 'Supprimer' do %>
+        <i class="bi bi-trash" aria-hidden="true"></i>
+      <% end %>
+    </div>
+  </td>
+</tr>
+

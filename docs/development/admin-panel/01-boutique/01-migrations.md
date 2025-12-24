@@ -12,34 +12,33 @@ Migrations nécessaires pour le système d'inventaire et la gestion des images v
 
 ## ✅ Migration 1 : Table Inventories
 
-**Fichier** : `db/migrate/YYYYMMDDHHMMSS_create_inventories.rb`
+**Fichier** : `db/migrate/20251224032419_create_inventories.rb`
 
 **Code exact** :
 ```ruby
 class CreateInventories < ActiveRecord::Migration[8.1]
   def change
     create_table :inventories do |t|
-      t.references :product_variant, null: false, foreign_key: true
+      t.references :product_variant, null: false, foreign_key: true, index: { unique: true }
       t.integer :stock_qty, default: 0, null: false
       t.integer :reserved_qty, default: 0, null: false
       t.timestamps
     end
-    
-    add_index :inventories, :product_variant_id, unique: true
   end
 end
 ```
 
 **Checklist** :
-- [ ] Créer fichier migration
-- [ ] Exécuter `rails db:migrate`
-- [ ] Vérifier table créée dans schema.rb
+- [x] Créer fichier migration
+- [x] Exécuter `rails db:migrate`
+- [x] Vérifier table créée dans schema.rb
+- [x] Corriger index unique (utiliser `index: { unique: true }` dans `t.references`)
 
 ---
 
 ## ✅ Migration 2 : Table InventoryMovements
 
-**Fichier** : `db/migrate/YYYYMMDDHHMMSS_create_inventory_movements.rb`
+**Fichier** : `db/migrate/20251224032423_create_inventory_movements.rb`
 
 **Code exact** :
 ```ruby
@@ -55,16 +54,18 @@ class CreateInventoryMovements < ActiveRecord::Migration[8.1]
       t.timestamps
     end
     
-    add_index :inventory_movements, :inventory_id
     add_index :inventory_movements, :created_at
   end
 end
 ```
 
+**Note** : L'index sur `inventory_id` est créé automatiquement par `t.references`, donc pas besoin de `add_index` explicite.
+
 **Checklist** :
-- [ ] Créer fichier migration
-- [ ] Exécuter `rails db:migrate`
-- [ ] Vérifier table créée dans schema.rb
+- [x] Créer fichier migration (`20251224032423_create_inventory_movements.rb`)
+- [x] Exécuter `rails db:migrate`
+- [x] Vérifier table créée dans schema.rb
+- [x] Corriger index (retirer `add_index` redondant car `t.references` crée déjà l'index)
 
 ---
 
@@ -146,11 +147,11 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 1 (Semaine 1)**
-- [ ] Migration 1 : Inventories
-- [ ] Migration 2 : InventoryMovements
-- [ ] Migration 3 : Migration images (staging d'abord)
-- [ ] Migration 4 : Categories parent_id (si nécessaire)
+### **Phase 1 (Semaine 1)** ✅
+- [x] Migration 1 : Inventories (avec correction index unique)
+- [x] Migration 2 : InventoryMovements (avec correction index)
+- [ ] Migration 3 : Migration images (optionnel, à faire si nécessaire)
+- [ ] Migration 4 : Categories parent_id (optionnel, si hiérarchie nécessaire)
 
 ---
 
