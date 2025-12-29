@@ -1162,7 +1162,7 @@
     box-shadow: 0 0 0 0.25rem rgba(0, 122, 255, 0.25);
   }
   
-  /* Dropdown menus */
+  /* Dropdown menus - Laisser Bootstrap gérer la hauteur naturelle */
   .navbar-grenoble-roller .dropdown-menu {
     background: var(--liquid-glass-bg) !important;
     backdrop-filter: var(--liquid-blur) !important;
@@ -1171,13 +1171,13 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
     border-radius: 0.5rem !important;
     padding: 0.5rem 0;
-    /* Ne pas forcer display: flex ici - Bootstrap gère l'affichage avec .show */
+    /* Bootstrap 5 gère la hauteur naturelle - meilleur en 2025 */
   }
   
-  /* Flexbox pour meilleure organisation - seulement quand le dropdown est ouvert */
-  .navbar-grenoble-roller .dropdown-menu.show {
-    display: flex !important;
-    flex-direction: column;
+  /* Mobile : Dropdown intégré dans collapse (monobloc) */
+  @media (max-width: 991px) {
+    /* Desktop garde le comportement normal, mobile = monobloc dans collapse */
+    /* Pas de règles spéciales ici - géré par .navbar-collapse .dropdown-menu */
   }
   
   .navbar-grenoble-roller .dropdown-item {
@@ -1190,6 +1190,11 @@
     gap: 0.5rem; /* Espacement entre icône et texte */
   }
   
+  /* Les icônes ne doivent pas être tronquées */
+  .navbar-grenoble-roller .dropdown-item > i {
+    flex-shrink: 0;
+  }
+  
   .navbar-grenoble-roller .dropdown-item:hover {
     background: rgba(0, 123, 255, 0.1) !important;
     color: var(--gr-primary) !important;
@@ -1200,7 +1205,17 @@
   .navbar-grenoble-roller .dropdown-item:focus-visible {
     background: rgba(0, 123, 255, 0.1) !important;
     color: var(--gr-primary) !important;
-    outline: none !important;
+    outline: 2px solid var(--gr-primary);
+    outline-offset: 1px; /* Réduit de 2px à 1px pour mobile */
+  }
+  
+  /* Focus mobile - utiliser box-shadow au lieu d'outline si débordement */
+  @media (max-width: 991px) {
+    .navbar-grenoble-roller .dropdown-item:focus,
+    .navbar-grenoble-roller .dropdown-item:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--gr-primary);
+    }
   }
   
   /* Bouton déconnexion - force couleur rouge */
@@ -1240,6 +1255,11 @@
     color: var(--gr-primary-light) !important;
   }
   
+  /* Chevron dropdown-toggle en mode sombre */
+  [data-bs-theme="dark"] .navbar-grenoble-roller .dropdown-toggle::before {
+    border-top-color: rgba(255, 255, 255, 0.85);
+  }
+  
   .navbar-grenoble-roller .dropdown-divider {
     border-color: var(--liquid-glass-border);
   }
@@ -1251,32 +1271,55 @@
       margin: 1rem 0;
     }
     
-    /* Menu burger - éléments empilés verticalement */
+    /* Menu burger - Monobloc scrollable (menu + dropdown ensemble) */
     .navbar-grenoble-roller .navbar-collapse {
       padding-top: 1rem;
-      /* Permettre le scroll interne du menu burger si le contenu dépasse la hauteur de l'écran */
-      max-height: calc(100vh - 80px); /* Hauteur de l'écran moins la navbar */
+      max-height: calc(100vh - 80px);
       overflow-y: auto;
-      overflow-x: hidden;
-      /* Améliorer le scroll sur mobile */
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
     
-    /* Container des boutons d'action (thème, panier, connexion) */
-    .navbar-grenoble-roller .d-flex.gap-2 {
+    /* Container des boutons d'action - Layout mobile moderne */
+    .navbar-grenoble-roller .navbar-actions {
       width: 100%;
       margin-top: 1rem;
-      flex-direction: column; /* Empiler verticalement sur mobile */
-      gap: 0.75rem !important; /* Espacement vertical entre les boutons */
-      align-items: stretch; /* Boutons pleine largeur */
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
     }
     
-    /* Boutons dans le menu burger - pleine largeur */
-    .navbar-grenoble-roller .navbar-collapse .btn {
+    /* Ligne 1 : Boutons icônes (thème, panier) sur même ligne */
+    .navbar-grenoble-roller .navbar-icons {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap; /* Éviter wrap inutile */
+      gap: 0.5rem; /* Réduit de 0.75rem à 0.5rem */
+      align-items: center;
+    }
+    
+    /* Boutons icônes - taille compacte */
+    .navbar-grenoble-roller .navbar-icon-btn {
+      min-width: 44px; /* Zone tactile minimale WCAG 2.5.8 */
+      min-height: 44px;
+      padding: 0.5rem;
+      flex-shrink: 0;
+    }
+    
+    /* Menu utilisateur ou boutons auth - pleine largeur */
+    .navbar-grenoble-roller .navbar-user-menu,
+    .navbar-grenoble-roller .navbar-auth-buttons {
       width: 100%;
-      justify-content: center;
-      min-height: 44px; /* Zone tactile minimale WCAG 2.5.8 */
-      padding: 0.625rem 1rem;
+    }
+    
+    .navbar-grenoble-roller .navbar-user-menu .dropdown-toggle {
+      /* Ne pas forcer width: 100% - utiliser min-width pour éviter étirement */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-width: 150px;
+      width: auto;
+      max-width: 100%;
     }
     
     /* Dropdown dans le menu burger - pleine largeur */
@@ -1289,17 +1332,16 @@
       justify-content: space-between; /* Texte à gauche, flèche à droite */
     }
     
-    /* Dropdown menu - flexbox column pour meilleure organisation */
+    /* Dropdown menu - Monobloc intégré dans le collapse */
     .navbar-grenoble-roller .navbar-collapse .dropdown-menu {
-      width: 100%;
-      margin-top: 0.5rem;
-      display: flex;
-      flex-direction: column;
-      position: static !important; /* Position statique dans le menu burger */
+      width: 100% !important;
+      margin: 0 !important;
+      margin-top: 0.5rem !important;
+      position: static !important;
       transform: none !important;
       box-shadow: none;
       border: 1px solid var(--liquid-glass-border);
-      border-radius: 0.5rem;
+      border-radius: 0 !important;
       background: var(--liquid-glass-bg);
       padding: 0.5rem 0;
     }
@@ -1328,6 +1370,12 @@
     .navbar-grenoble-roller .nav-link.active::after {
       display: none;
     }
+  }
+  
+  /* Body scroll lock quand navbar ouverte (mobile) */
+  body.navbar-open {
+    overflow: hidden;
+    overscroll-behavior: none;
   }
   
   /* === FOOTER GRENOBLE ROLLER ORGANISM === */
