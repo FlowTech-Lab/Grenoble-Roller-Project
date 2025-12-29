@@ -9,6 +9,9 @@ class InitiationsController < ApplicationController
     # Utiliser policy_scope pour respecter les permissions Pundit
     # Les créateurs peuvent voir leurs initiations en draft, les autres voient seulement les publiées
     scoped_initiations = policy_scope(Event::Initiation.includes(:creator_user, :attendances))
+    # Exclure les initiations rejetées de toutes les listes publiques (même pour modos/admins)
+    # Les rejetées restent en BDD mais ne sont pas affichées dans les listes publiques
+    scoped_initiations = scoped_initiations.where.not(status: "rejected")
     @initiations = scoped_initiations
       .upcoming_initiations
       .limit(12) # 3 mois

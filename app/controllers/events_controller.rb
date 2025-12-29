@@ -8,11 +8,12 @@ class EventsController < ApplicationController
   def index
     # Exclure les initiations (qui ont leur propre contrôleur)
     scoped_events = policy_scope(Event.not_initiations.includes(:route, :creator_user))
-    # Les admins/moderateurs voient tous les événements via policy_scope
-    # Pour les autres, policy_scope filtre déjà pour ne montrer que les visibles
-    # On applique .visible seulement si l'utilisateur n'est pas admin/modo pour éviter de cacher les non publiés aux admins
+    # Exclure les événements rejetés de toutes les listes publiques (même pour modos/admins)
+    # Les rejetés restent en BDD mais ne sont pas affichés dans les listes publiques
+    scoped_events = scoped_events.where.not(status: "rejected")
+    
     if can_moderate?
-      # Admins/moderateurs voient tout (y compris les non publiés)
+      # Admins/moderateurs voient les événements non publiés (draft) mais pas les rejetés
       @upcoming_events = scoped_events.upcoming.order(:start_at)
       @past_events_total = scoped_events.past.count
       if params[:show_all_past] == "true"
