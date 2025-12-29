@@ -1274,8 +1274,10 @@
     /* Menu burger - Monobloc scrollable (menu + dropdown ensemble) */
     .navbar-grenoble-roller .navbar-collapse {
       padding-top: 1rem;
-      max-height: calc(100vh - 80px);
+      padding-bottom: 3rem; /* Espace en bas pour permettre le scroll jusqu'au dernier item */
+      max-height: 85vh;
       overflow-y: auto;
+      overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
     }
@@ -1335,6 +1337,7 @@
     /* Dropdown menu - Monobloc intégré dans le collapse */
     .navbar-grenoble-roller .navbar-collapse .dropdown-menu {
       width: 100% !important;
+      max-width: 100% !important;
       margin: 0 !important;
       margin-top: 0.5rem !important;
       position: static !important;
