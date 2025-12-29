@@ -138,13 +138,13 @@
             <% end %>
             <div class="input-group">
               <%= f.number_field :distance_km, 
-                  class: "form-control form-control-liquid", 
-                  min: 0.1, 
-                  step: 0.5,
+                  class: "form-control form-control-liquid distance-input", 
+                  min: 0, 
+                  step: "any",
                   placeholder: "Ex: 15.5",
                   data: { 
                     event_form_target: "distanceInput",
-                    action: "input->event-form#distanceChanged"
+                    action: "input->event-form#distanceChanged keydown->event-form#handleDistanceKeydown"
                   },
                   required: true,
                   onblur: "validateField(this)" %>
@@ -152,7 +152,7 @@
             </div>
             <small class="form-text text-muted">
               <i class="bi bi-info-circle me-1"></i>
-              Utilisez les flèches pour incrémenter de 0,5 km. Vous pouvez saisir manuellement avec une précision de 0,1 km.
+              Saisissez la distance en km (n'importe quelle valeur). Les flèches incrémentent/décrémentent de 0,5 km.
             </small>
             <div class="invalid-feedback"></div>
             <div id="total-distance-display" class="alert alert-info mt-2" style="display: none;">
@@ -335,7 +335,7 @@
               <div class="col-md-6">
                 <%= f.label :distance_km, "Distance (km)", class: "form-label" %>
                 <div class="input-group">
-                  <%= f.number_field :distance_km, class: "form-control", min: 0.1, step: 0.5, placeholder: "Ex: 15.5" %>
+                  <%= f.number_field :distance_km, class: "form-control distance-input", min: 0, step: "any", placeholder: "Ex: 15.5" %>
                   <span class="input-group-text">km</span>
                 </div>
               </div>

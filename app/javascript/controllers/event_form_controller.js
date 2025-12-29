@@ -163,13 +163,13 @@ export default class extends Controller {
             <div class="input-group">
               <input type="number" 
                      name="event_loop_routes[${i}][distance_km]" 
-                     class="form-control form-control-liquid loop-route-distance"
+                     class="form-control form-control-liquid loop-route-distance distance-input"
                      data-loop-number="${i}"
-                     min="0.1" 
-                     step="0.5" 
+                     min="0" 
+                     step="any" 
                      value="${distanceKm || ''}"
                      placeholder="Ex: 15.5"
-                     data-action="input->event-form#loopRouteDistanceChanged">
+                     data-action="input->event-form#loopRouteDistanceChanged keydown->event-form#handleDistanceKeydown">
               <span class="input-group-text">km</span>
             </div>
           </div>
@@ -310,6 +310,33 @@ export default class extends Controller {
   distanceChanged() {
     this.updateTotalDistance()
     this.saveDraft()
+  }
+
+  // Gérer les flèches pour incrémenter/décrémenter de 0.5
+  handleDistanceKeydown(event) {
+    // Vérifier si c'est une flèche haut ou bas
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      const input = event.target
+      const currentValue = parseFloat(input.value) || 0
+      const step = 0.5
+      
+      // Empêcher le comportement par défaut
+      event.preventDefault()
+      
+      // Calculer la nouvelle valeur
+      let newValue
+      if (event.key === 'ArrowUp') {
+        newValue = currentValue + step
+      } else {
+        newValue = Math.max(0, currentValue - step) // Ne pas aller en dessous de 0
+      }
+      
+      // Mettre à jour la valeur
+      input.value = newValue.toFixed(1)
+      
+      // Déclencher l'événement input pour mettre à jour la distance totale
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    }
   }
 
   updateTotalDistance() {
