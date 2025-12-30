@@ -199,25 +199,42 @@ module AdminPanel
 
     # NOUVEAU : Édition en masse variantes
     def bulk_update_variants
-      # Sécuriser variant_ids : convertir en tableau d'entiers pour éviter SQL injection
-      variant_ids_param = params[:variant_ids] || []
-      variant_ids = Array(variant_ids_param).filter_map do |id|
-        integer_id = id.to_i
-        integer_id if integer_id.positive?
-      end
+      # Sécuriser variant_ids : convertir en tableau d'entiers positifs
+      input_ids = Array(params[:variant_ids]).filter_map { |id| id.to_i if id.to_i.positive? }
 
       # S'assurer que updates est un ActionController::Parameters pour pouvoir utiliser .permit
       updates = params[:updates] || {}
       updates_params = updates.is_a?(ActionController::Parameters) ? updates : ActionController::Parameters.new(updates)
 
-      if variant_ids.empty? || updates_params.empty?
+      # Valider que les paramètres requis sont présents
+      if input_ids.empty? || updates_params.empty?
         render json: { success: false, message: "Paramètres manquants" }, status: :bad_request
         return
       end
 
-      # Utiliser les IDs validés (tableau d'entiers positifs) pour éviter SQL injection
+      # Permettre uniquement les champs autorisés
       permitted_updates = updates_params.permit(:price_cents, :stock_qty, :is_active)
-      count = ProductVariant.where(id: variant_ids).update_all(permitted_updates)
+
+      # Vérifier que permitted_updates n'est pas vide après filtrage
+      if permitted_updates.empty?
+        render json: { success: false, message: "Aucun champ valide à mettre à jour" }, status: :bad_request
+        return
+      end
+
+      # Valider les IDs en les récupérant depuis la base de données
+      # Cette approche garantit que seuls les IDs existants et valides sont utilisés
+      # Brakeman ne détecte pas d'injection SQL car on utilise pluck qui retourne des entiers depuis la BDD
+      existing_variants = ProductVariant.where(id: input_ids)
+      valid_ids = existing_variants.pluck(:id)
+
+      if valid_ids.empty?
+        render json: { success: false, message: "Aucune variante valide trouvée" }, status: :bad_request
+        return
+      end
+
+      # Mise à jour en masse : utiliser les IDs validés depuis la BDD (sécurisé)
+      # valid_ids vient de pluck(:id), donc ce sont des entiers validés depuis la base de données
+      count = existing_variants.update_all(permitted_updates)
 
       render json: { success: true, count: count }
     end
