@@ -9,7 +9,7 @@ module AdminPanel
 
     # GET /admin-panel/orders
     def index
-      authorize [:admin_panel, Order]
+      authorize [ :admin_panel, Order ]
 
       # Recherche et filtres
       @q = Order.ransack(params[:q])
@@ -33,13 +33,13 @@ module AdminPanel
     # GET /admin-panel/orders/new
     def new
       @order = Order.new
-      authorize [:admin_panel, @order]
+      authorize [ :admin_panel, @order ]
     end
 
     # POST /admin-panel/orders
     def create
       @order = Order.new(order_params)
-      authorize [:admin_panel, @order]
+      authorize [ :admin_panel, @order ]
 
       if @order.save
         flash[:notice] = "Commande créée avec succès"
@@ -97,7 +97,7 @@ module AdminPanel
 
     # GET /admin-panel/orders/export
     def export
-      authorize [:admin_panel, Order]
+      authorize [ :admin_panel, Order ]
 
       @q = Order.ransack(params[:q])
       @orders = @q.result.includes(:user, :payment, order_items: { variant: :product })
@@ -120,7 +120,7 @@ module AdminPanel
     end
 
     def authorize_order
-      authorize [:admin_panel, @order]
+      authorize [ :admin_panel, @order ]
     end
 
     def order_params

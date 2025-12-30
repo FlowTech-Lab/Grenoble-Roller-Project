@@ -1,0 +1,26 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "b505f0d0438612627f257085b58d396b8b808dbd9e54d04e352d552bb304a682",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/admin_panel/products_controller.rb",
+      "line": 235,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "ProductVariant.where(:id => validate_variant_ids(params[:variant_ids])).update_all(((params[:updates] or {}) or ActionController::Parameters.new((params[:updates] or {}))).permit(:price_cents, :stock_qty, :is_active).to_h)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "AdminPanel::ProductsController",
+        "method": "bulk_update_variants"
+      },
+      "user_input": "params[:variant_ids]",
+      "confidence": "High",
+      "note": "False positive: params[:variant_ids] est validé via validate_variant_ids() qui garantit uniquement des integers positifs avec filter_map { |id| id.to_i if id.to_i.positive? }. Rails sécurise automatiquement where(id: [1,2,3]) avec des paramètres bindés. Les updates sont également sécurisés via strong parameters avec .permit(:price_cents, :stock_qty, :is_active). Le code est sécurisé contre l'injection SQL."
+    }
+  ],
+  "updated": "2025-12-30",
+  "brakeman_version": "7.1.2"
+}

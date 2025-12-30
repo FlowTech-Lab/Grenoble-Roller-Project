@@ -1,6 +1,6 @@
 # 📋 Admin Panel - Documentation
 
-**Date** : 2025-12-22 | **Version** : 2.0 | **État** : 60% complété
+**Date** : 2025-12-24 | **Version** : 2.1 | **État** : 70% complété
 
 > 📖 **Point d'entrée principal** : Ce README sert d'index pour toute la documentation du plan d'implémentation de l'Admin Panel.
 
@@ -29,18 +29,20 @@ Dashboard principal avec KPIs, statistiques et vue d'ensemble.
 - [`dashboard.md`](./00-dashboard/dashboard.md) - Implémentation complète
 - [`sidebar.md`](./00-dashboard/sidebar.md) - 🎨 **Sidebar Admin Panel** (structure, optimisations)
 
-**Menu Sidebar Actuel (2025-12-22)** :
-- ✅ Initiations (level >= 30)
+**Menu Sidebar Actuel (2025-12-24)** :
+- ✅ Initiations (level >= 40)
+- ✅ Boutique (level >= 60) - Produits, Inventaire
 - ✅ Commandes (level >= 60)
 - ✅ ActiveAdmin (lien externe)
 - ❌ Tableau de bord (retiré - non conforme)
-- ❌ Boutique (retiré - non conforme)
 
 ---
 
 ### 🛒 [01 - BOUTIQUE](./01-boutique/README.md)
 
 **Priorité** : 🔴 HAUTE | **Phase** : 1-3 | **Semaines** : 1-4
+
+**Status** : ✅ **IMPLÉMENTÉ** - Module complet fonctionnel (2025-12-24)
 
 Gestion des produits, variantes, inventaire et catégories.
 

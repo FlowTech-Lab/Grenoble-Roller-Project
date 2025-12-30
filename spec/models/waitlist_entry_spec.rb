@@ -18,7 +18,7 @@ RSpec.describe WaitlistEntry, type: :model do
       it 'creates attendance with free_trial_used when use_free_trial is true' do
         # Remplir l'initiation
         fill_event_to_capacity(initiation, 2)
-        
+
         waitlist_entry = create(:waitlist_entry,
           user: user,
           event: initiation,
@@ -50,7 +50,7 @@ RSpec.describe WaitlistEntry, type: :model do
 
         # Remplir l'initiation
         fill_event_to_capacity(initiation, 2)
-        
+
         waitlist_entry = create(:waitlist_entry,
           user: user,
           event: initiation,
@@ -62,7 +62,7 @@ RSpec.describe WaitlistEntry, type: :model do
         # (mais la vérification se fait dans le contrôleur, pas dans le modèle)
         # Le modèle crée quand même l'attendance pending, mais elle échouera à la validation
         result = waitlist_entry.notify!
-        
+
         # Le résultat dépend de si la validation échoue ou non
         # Si la validation échoue, notify! retourne false
         if result
@@ -86,7 +86,7 @@ RSpec.describe WaitlistEntry, type: :model do
 
         # Remplir l'initiation
         fill_event_to_capacity(initiation, 2)
-        
+
         waitlist_entry = create(:waitlist_entry,
           user: user,
           event: initiation,
@@ -111,7 +111,7 @@ RSpec.describe WaitlistEntry, type: :model do
     it 'converts pending attendance to registered when child uses free trial' do
       # Remplir l'initiation
       fill_event_to_capacity(initiation, 2)
-      
+
       waitlist_entry = create(:waitlist_entry,
         user: user,
         event: initiation,
@@ -137,7 +137,7 @@ RSpec.describe WaitlistEntry, type: :model do
   describe 'validations' do
     it 'validates uniqueness of user, event, and child_membership_id' do
       fill_event_to_capacity(initiation, 2)
-      
+
       create(:waitlist_entry,
         user: user,
         event: initiation,
@@ -158,7 +158,7 @@ RSpec.describe WaitlistEntry, type: :model do
 
     it 'allows same user to have multiple waitlist entries for different children' do
       fill_event_to_capacity(initiation, 2)
-      
+
       child1 = create(:membership, :child, :trial, :with_health_questionnaire,
         user: user,
         season: '2025-2026',

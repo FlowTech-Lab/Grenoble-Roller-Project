@@ -186,7 +186,7 @@ class User < ApplicationRecord
 
   def phone_must_start_with_zero
     return if phone.blank?
-    
+
     # Vérifier que le numéro normalisé commence par 0
     unless phone.start_with?("0")
       errors.add(:phone, "doit commencer par 0 (format français, ex: 0612345678)")

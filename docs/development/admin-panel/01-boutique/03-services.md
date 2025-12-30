@@ -63,11 +63,11 @@ end
 ```
 
 **Checklist** :
-- [ ] Créer fichier `app/services/inventory_service.rb`
-- [ ] Tester `reserve_stock` / `release_stock`
-- [ ] Tester `move_stock`
-- [ ] Tester `available_stock`
-- [ ] Exécuter `migrate_existing_stock` après migrations
+- [x] Créer fichier `app/services/inventory_service.rb`
+- [x] Tester `reserve_stock` / `release_stock`
+- [x] Tester `move_stock`
+- [x] Tester `available_stock`
+- [x] Exécuter `migrate_existing_stock` après migrations (si nécessaire)
 
 ---
 
@@ -153,15 +153,15 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 1 (Semaine 1)**
-- [ ] Créer InventoryService
-- [ ] Tester toutes les méthodes
-- [ ] Exécuter migration stock existant
+### **Phase 1 (Semaine 1)** ✅
+- [x] Créer InventoryService
+- [x] Tester toutes les méthodes
+- [x] Exécuter migration stock existant (si nécessaire)
 
-### **Phase 2 (Semaine 2)**
-- [ ] Vérifier ProductVariantGenerator
-- [ ] Vérifier ProductExporter
-- [ ] Adapter pour inventaires
+### **Phase 2 (Semaine 2)** ✅
+- [x] Vérifier ProductVariantGenerator (existe, utilisé pour preview)
+- [x] Vérifier ProductExporter (existe, utilisé pour export CSV)
+- [x] Adapter pour inventaires (utilise `inventory.available_qty`)
 
 ---
 

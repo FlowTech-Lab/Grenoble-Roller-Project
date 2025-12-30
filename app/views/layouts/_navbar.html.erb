@@ -43,11 +43,13 @@
           <% end %>
         </li>
       </ul>
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2 navbar-actions">
+        <!-- Ligne 1 : Boutons icônes (thème, panier) sur même ligne -->
+        <div class="d-flex gap-2 navbar-icons">
         <!-- Theme toggle -->
         <button 
           type="button"
-          class="btn btn-outline-primary theme-toggle" 
+            class="btn btn-outline-primary theme-toggle navbar-icon-btn" 
           id="theme-toggle"
           aria-label="Basculer entre thème clair et thème sombre"
           aria-pressed="false"
@@ -57,7 +59,7 @@
           <span class="visually-hidden">Changer le thème</span>
         </button>
         
-        <%= link_to cart_path, class: "btn btn-outline-primary cart-button", id: "cart-button", "aria-label" => "Voir le panier" do %>
+          <%= link_to cart_path, class: "btn btn-outline-primary cart-button navbar-icon-btn", id: "cart-button", "aria-label" => "Voir le panier" do %>
           <i class="bi bi-basket" aria-hidden="true"></i>
           <% if cart_items_count > 0 %>
             <span class="badge text-bg-danger cart-badge" id="cartCount" data-cart-count="<%= cart_items_count %>"><%= cart_items_count %></span>
@@ -65,10 +67,11 @@
             <span class="badge text-bg-danger cart-badge" id="cartCount" data-cart-count="0" style="display: none;">0</span>
           <% end %>
         <% end %>
+        </div>
 
-        <!-- User menu -->
+        <!-- Ligne 2 : Menu utilisateur ou boutons connexion (pleine largeur) -->
         <% if user_signed_in? %>
-          <div class="dropdown">
+          <div class="dropdown navbar-user-menu">
             <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu utilisateur">
               <i class="bi bi-person-circle me-2" aria-hidden="true"></i>
               <%= current_user.first_name.presence || current_user.email %>
@@ -125,7 +128,7 @@
                 <li><hr class="dropdown-divider"></li>
                 <!-- NOUVEAU PANEL ADMIN -->
                 <li>
-                  <%= link_to admin_panel_root_path, class: "dropdown-item" do %>
+                  <%= link_to admin_panel_initiations_path, class: "dropdown-item" do %>
                     <i class="bi bi-shield-check me-2" aria-hidden="true"></i>Administration
                   <% end %>
                 </li>
@@ -141,12 +144,14 @@
             </ul>
           </div>
         <% else %>
-          <%= link_to new_user_registration_path, class: "btn btn-outline-primary" do %>
+          <div class="navbar-auth-buttons w-100">
+            <%= link_to new_user_registration_path, class: "btn btn-outline-primary w-100" do %>
             <i class="bi bi-person-plus me-2" aria-hidden="true"></i>S'inscrire
           <% end %>
-          <%= link_to new_user_session_path, class: "btn btn-liquid-primary" do %>
+            <%= link_to new_user_session_path, class: "btn btn-liquid-primary w-100 mt-2" do %>
             <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Connexion
           <% end %>
+          </div>
         <% end %>
       </div>
     </div>

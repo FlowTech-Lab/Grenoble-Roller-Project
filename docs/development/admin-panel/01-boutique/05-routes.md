@@ -93,13 +93,13 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 2 (Semaine 2)**
-- [ ] Ajouter routes `publish` / `unpublish` pour products
-- [ ] Retirer `except: [:index]` pour product_variants
-- [ ] Ajouter routes `bulk_edit` / `bulk_update` pour variants
-- [ ] Ajouter route `toggle_status` pour variants
-- [ ] Ajouter routes inventory (3 routes)
-- [ ] Tester toutes les routes avec `rails routes | grep admin_panel`
+### **Phase 2 (Semaine 2)** ✅
+- [x] Ajouter routes `publish` / `unpublish` pour products
+- [x] Retirer `except: [:index]` pour product_variants
+- [x] Ajouter routes `bulk_edit` / `bulk_update` pour variants
+- [x] Ajouter route `toggle_status` pour variants
+- [x] Ajouter routes inventory (3 routes)
+- [x] Tester toutes les routes avec `rails routes | grep admin_panel`
 
 ---
 

@@ -1,12 +1,15 @@
 # ⚡ JAVASCRIPT - Boutique
 
-**Priorité** : 🔴 HAUTE | **Phase** : 4 | **Semaine** : 4
+**Priorité** : 🔴 HAUTE | **Phase** : 4 | **Semaine** : 4  
+**Version** : 2.0 | **Dernière mise à jour** : 2025-12-24
 
 ---
 
 ## 📋 Description
 
-Controller Stimulus pour l'édition inline dans le GRID des variantes.
+Controller Stimulus pour l'édition inline dans le GRID des variantes, validation en temps réel, auto-save, et autres interactions avancées.
+
+**🎨 Design & UX** : Voir [DESIGN-GUIDELINES.md](./DESIGN-GUIDELINES.md) pour les spécifications complètes des interactions JavaScript (validation, debounce, feedback, etc.)
 
 ---
 
@@ -226,17 +229,49 @@ export default class extends Controller {
 
 ---
 
+## ✅ Controller Stimulus : ProductForm (NOUVEAU - 2025-12-24)
+
+**Fichier** : `app/javascript/controllers/product_form_controller.js`
+
+**Fonctionnalités** :
+- ✅ Validation en temps réel (nom, slug, catégorie, prix)
+- ✅ Compteurs de caractères (nom, meta title, meta description)
+- ✅ Auto-save avec debounce (2s) et sauvegarde périodique (30s)
+- ✅ Génération automatique du slug depuis le nom
+- ✅ Preview variants avant génération
+- ✅ Barre de statut avec indicateurs visuels
+- ✅ Toggle mode variantes (auto/manual)
+
+---
+
+## ✅ Controller Stimulus : ImageUpload (NOUVEAU - 2025-12-24)
+
+**Fichier** : `app/javascript/controllers/image_upload_controller.js`
+
+**Fonctionnalités** :
+- ✅ Drag & drop pour upload images
+- ✅ Preview des images avant upload
+- ✅ Validation des fichiers (type, taille)
+- ✅ Suppression d'images (actuelles et preview)
+- ✅ Formatage de la taille des fichiers
+
+---
+
 ## ✅ Checklist Globale
 
-### **Phase 4 (Semaine 4)**
-- [ ] Créer controller Stimulus `product_variants_grid_controller.js`
-- [ ] Implémenter gestion checkboxes (select all)
-- [ ] Implémenter édition inline prix avec debounce
-- [ ] Implémenter validation client
-- [ ] Implémenter feedback visuel (saving, saved)
-- [ ] Ajouter styles CSS (optionnel)
-- [ ] Tester édition inline
-- [ ] Tester sélection multiple
+### **Phase 4 (Semaine 4)** ✅
+- [x] Créer controller Stimulus `product_variants_grid_controller.js`
+- [x] Créer controller Stimulus `product_form_controller.js`
+- [x] Créer controller Stimulus `image_upload_controller.js`
+- [x] Implémenter gestion checkboxes (select all)
+- [x] Implémenter édition inline prix avec debounce (500ms)
+- [x] Implémenter validation client en temps réel
+- [x] Implémenter feedback visuel (saving, saved)
+- [x] Implémenter auto-save avec indicateurs
+- [x] Implémenter drag & drop pour images
+- [x] Ajouter styles CSS (optionnel)
+- [x] Tester édition inline
+- [x] Tester sélection multiple
 
 ---
 

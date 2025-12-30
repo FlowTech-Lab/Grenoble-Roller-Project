@@ -83,7 +83,7 @@ module EventsHelper
     # Formater la durée (ex: 60 min = 1h, 105 min = 1h45)
     hours = event.duration_min / 60
     minutes = event.duration_min % 60
-    
+
     duration_text = if hours > 0 && minutes > 0
       "#{hours}h#{minutes.to_s.rjust(2, '0')}"
     elsif hours > 0

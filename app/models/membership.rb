@@ -29,13 +29,13 @@ class Membership < ApplicationRecord
   # Mais peut avoir plusieurs adhésions enfants
   validate :unique_personal_membership_per_season
   # Pour les essais gratuits (trial), on n'exige pas les dates et montants
-  validates :start_date, :end_date, :amount_cents, :category, presence: true, unless: -> { status == 'trial' }
+  validates :start_date, :end_date, :amount_cents, :category, presence: true, unless: -> { status == "trial" }
   validates :start_date, comparison: { less_than: :end_date }, if: -> { start_date.present? && end_date.present? }
 
   # Validations pour adhésions enfants
   validates :child_first_name, :child_last_name, :child_date_of_birth, presence: true, if: :is_child_membership?
   validates :parent_authorization, inclusion: { in: [ true ] }, if: -> { is_child_membership? && child_age < 16 }
-  
+
   # Validation : trial uniquement pour les enfants
   validate :trial_only_for_children
 
@@ -153,14 +153,14 @@ class Membership < ApplicationRecord
   private
 
   def trial_only_for_children
-    if status == 'trial' && !is_child_membership?
+    if status == "trial" && !is_child_membership?
       errors.add(:status, "Le statut 'trial' est uniquement disponible pour les adhésions enfants")
     end
   end
 
   def unique_personal_membership_per_season
     return if is_child_membership? # Pas de validation pour les enfants
-    return if status == 'trial' # Les essais gratuits ne sont pas concernés par cette validation
+    return if status == "trial" # Les essais gratuits ne sont pas concernés par cette validation
 
     existing = Membership.where(
       user_id: user_id,

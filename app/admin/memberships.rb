@@ -205,7 +205,7 @@ ActiveAdmin.register Membership do
   controller do
     def destroy
       @membership = resource
-      
+
       # Active Admin gère déjà l'autorisation via PunditAdapter avant d'appeler cette méthode
       # Si on arrive ici, l'autorisation a passé
       if @membership.destroy

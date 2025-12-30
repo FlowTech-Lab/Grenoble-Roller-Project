@@ -136,17 +136,24 @@
             <%= f.label :distance_km, "Distance par boucle (km)", class: "form-label" do %>
               Distance par boucle (km) <span class="text-danger">*</span>
             <% end %>
-            <%= f.number_field :distance_km, 
-                class: "form-control form-control-liquid", 
-                min: 0.1, 
-                step: 0.1,
-                placeholder: "Ex: 15.5",
-                data: { 
-                  event_form_target: "distanceInput",
-                  action: "input->event-form#distanceChanged"
-                },
-                required: true,
-                onblur: "validateField(this)" %>
+            <div class="input-group">
+              <%= f.number_field :distance_km, 
+                  class: "form-control form-control-liquid distance-input", 
+                  min: 0, 
+                  step: "any",
+                  placeholder: "Ex: 15.5",
+                  data: { 
+                    event_form_target: "distanceInput",
+                    action: "input->event-form#distanceChanged keydown->event-form#handleDistanceKeydown"
+                  },
+                  required: true,
+                  onblur: "validateField(this)" %>
+              <span class="input-group-text">km</span>
+            </div>
+            <small class="form-text text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Saisissez la distance en km (n'importe quelle valeur). Les flèches incrémentent/décrémentent de 0,5 km.
+            </small>
             <div class="invalid-feedback"></div>
             <div id="total-distance-display" class="alert alert-info mt-2" style="display: none;">
               <i class="bi bi-calculator me-2"></i>
@@ -180,14 +187,21 @@
             <%= f.label :price_euros, "Prix (€)", class: "form-label" do %>
               Prix (€) <span class="text-danger">*</span>
             <% end %>
-            <%= number_field_tag :price_euros, 
-                (event.price_cents / 100.0 if event.price_cents.present?),
-                class: "form-control form-control-liquid", 
-                min: 0, 
-                step: 0.01,
-                placeholder: "Ex: 5.00",
-                required: true,
-                onblur: "validateField(this)" %>
+            <div class="input-group">
+              <%= number_field_tag :price_euros, 
+                  (event.price_cents / 100.0 if event.price_cents.present?),
+                  class: "form-control form-control-liquid", 
+                  min: 0, 
+                  step: 1,
+                  placeholder: "Ex: 5.00",
+                  required: true,
+                  onblur: "validateField(this)" %>
+              <span class="input-group-text">€</span>
+            </div>
+            <small class="form-text text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Utilisez les flèches pour incrémenter de 1€. Vous pouvez saisir manuellement avec une précision de 0,01€ (centimes).
+            </small>
             <div class="invalid-feedback"></div>
             <%= f.hidden_field :currency, value: "EUR" %>
           </div>
@@ -320,7 +334,10 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <%= f.label :distance_km, "Distance (km)", class: "form-label" %>
-                <%= f.number_field :distance_km, class: "form-control", min: 0.1, step: 0.1, placeholder: "Ex: 15.5" %>
+                <div class="input-group">
+                  <%= f.number_field :distance_km, class: "form-control distance-input", min: 0, step: "any", placeholder: "Ex: 15.5" %>
+                  <span class="input-group-text">km</span>
+                </div>
               </div>
               
               <div class="col-md-6">

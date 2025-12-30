@@ -154,7 +154,7 @@ RSpec.describe 'AdminPanel::Initiations', type: :request do
 
       it 'updates presences' do
         patch update_presences_admin_panel_initiation_path(initiation), params: {
-          attendance_ids: [attendance.id],
+          attendance_ids: [ attendance.id ],
           presences: { attendance.id.to_s => 'present' }
         }
         expect(response).to redirect_to(presences_admin_panel_initiation_path(initiation))
@@ -169,7 +169,7 @@ RSpec.describe 'AdminPanel::Initiations', type: :request do
 
       it 'redirects with not authorized' do
         patch update_presences_admin_panel_initiation_path(initiation), params: {
-          attendance_ids: [attendance.id],
+          attendance_ids: [ attendance.id ],
           presences: { attendance.id.to_s => 'present' }
         }
         expect(response).to redirect_to(admin_panel_root_path)

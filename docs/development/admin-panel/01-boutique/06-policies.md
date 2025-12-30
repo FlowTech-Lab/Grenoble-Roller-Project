@@ -27,8 +27,8 @@ end
 **Vérification** : BasePolicy doit avoir `admin_user?` qui vérifie le rôle.
 
 **Checklist** :
-- [ ] Vérifier BasePolicy a `admin_user?`
-- [ ] Tester autorisations produits
+- [x] Vérifier BasePolicy a `admin_user?`
+- [x] Tester autorisations produits
 
 ---
 
@@ -47,8 +47,8 @@ end
 ```
 
 **Checklist** :
-- [ ] Créer fichier `app/policies/admin_panel/product_variant_policy.rb`
-- [ ] Vérifier autorisations dans ProductVariantsController
+- [x] Créer fichier `app/policies/admin_panel/product_variant_policy.rb`
+- [x] Vérifier autorisations dans ProductVariantsController
 
 ---
 
@@ -76,8 +76,8 @@ end
 ```
 
 **Checklist** :
-- [ ] Créer fichier `app/policies/admin_panel/inventory_policy.rb`
-- [ ] Tester autorisations inventory
+- [x] Créer fichier `app/policies/admin_panel/inventory_policy.rb`
+- [x] Tester autorisations inventory
 
 ---
 
@@ -133,12 +133,12 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 2 (Semaine 2)**
-- [ ] Vérifier ProductPolicy
-- [ ] Créer ProductVariantPolicy
-- [ ] Créer InventoryPolicy
-- [ ] Vérifier BasePolicy
-- [ ] Tester toutes les autorisations
+### **Phase 2 (Semaine 2)** ✅
+- [x] Vérifier ProductPolicy
+- [x] Créer ProductVariantPolicy
+- [x] Créer InventoryPolicy
+- [x] Vérifier BasePolicy
+- [x] Tester toutes les autorisations
 
 ---
 

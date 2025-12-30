@@ -56,22 +56,22 @@ class WaitlistEntry < ApplicationRecord
   # Utilise Rails MessageVerifier avec expiration pour sécurité maximale
   def confirmation_token
     verifier = Rails.application.message_verifier("waitlist_entry_confirmation")
-    verifier.generate([id, notified_at.to_i], expires_in: 24.hours)
+    verifier.generate([ id, notified_at.to_i ], expires_in: 24.hours)
   end
 
   # Trouve un WaitlistEntry à partir d'un token sécurisé
   # Retourne nil si token invalide ou expiré
   def self.find_by_confirmation_token(token)
     return nil if token.blank?
-    
+
     begin
       verifier = Rails.application.message_verifier("waitlist_entry_confirmation")
       entry_id, notified_at_timestamp = verifier.verify(token)
-      
+
       entry = find(entry_id)
       # Vérifier que le notified_at correspond (évite la réutilisation d'anciens tokens)
       return entry if entry.notified_at&.to_i == notified_at_timestamp
-      
+
       nil
     rescue ActiveSupport::MessageVerifier::InvalidSignature, ActiveRecord::RecordNotFound
       nil
@@ -162,13 +162,13 @@ class WaitlistEntry < ApplicationRecord
     if attendances_destroyed.any?
       # Retirer complètement l'utilisateur de la liste d'attente (status = "cancelled")
       update!(status: "cancelled", notified_at: nil)
-      
+
       # Réorganiser les positions des autres entrées
       WaitlistEntry.reorganize_positions(event)
-      
+
       # Notifier la prochaine personne en liste d'attente
       WaitlistEntry.notify_next_in_queue(event)
-      
+
       Rails.logger.info("WaitlistEntry #{id} refused, #{attendances_destroyed.count} attendance(s) destroyed, user removed from waitlist, next person notified (user: #{user_id}, event: #{event_id})")
       true
     else

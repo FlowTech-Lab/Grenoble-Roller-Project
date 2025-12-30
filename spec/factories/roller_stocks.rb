@@ -3,7 +3,7 @@ FactoryBot.define do
     transient do
       size_index { 0 }
     end
-    
+
     size do
       available_sizes = RollerStock::SIZES - RollerStock.pluck(:size)
       if available_sizes.any?

@@ -6,9 +6,9 @@ module AdminPanel
         total_users: User.count,
         total_products: Product.count,
         total_orders: Order.count,
-        pending_orders: Order.where(status: 'pending').count
+        pending_orders: Order.where(status: "pending").count
       }
-      
+
       # Commandes récentes (5 dernières)
       @recent_orders = Order.includes(:user).order(created_at: :desc).limit(5)
     end

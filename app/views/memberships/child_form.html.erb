@@ -885,8 +885,23 @@
 
     const submitWithoutPaymentBtn = document.getElementById('submit_without_payment_btn');
     if (submitWithoutPaymentBtn) {
-      submitWithoutPaymentBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // Toujours prévenir la soumission par défaut
+      // Supprimer les anciens listeners pour éviter les doubles déclenchements
+      const newBtn = submitWithoutPaymentBtn.cloneNode(true);
+      submitWithoutPaymentBtn.parentNode.replaceChild(newBtn, submitWithoutPaymentBtn);
+      
+      // Ajouter le listener sur le nouveau bouton
+      const btn = document.getElementById('submit_without_payment_btn');
+      let isSubmitting = false; // Flag pour éviter les doubles soumissions
+      
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Empêcher la propagation de l'événement
+        
+        // Éviter les doubles soumissions
+        if (isSubmitting) {
+          return false;
+        }
+        
         const form = document.getElementById('child_membership_form');
         if (!validateForm()) {
           alert('Veuillez compléter tous les champs obligatoires, notamment le questionnaire de santé.');
@@ -896,7 +911,10 @@
           }
           return false;
         }
+        
         if (confirm('Vous allez créer une adhésion avec le statut \'En attente\'. Un bénévole validera votre paiement en espèces/chèque prochainement. Continuer ?')) {
+          isSubmitting = true; // Marquer comme en cours de soumission
+          btn.disabled = true; // Désactiver le bouton pour éviter les clics multiples
           document.getElementById('payment_method_field').value = 'cash_check';
           // Soumettre le formulaire manuellement après confirmation
           form.submit();

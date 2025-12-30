@@ -3,22 +3,26 @@ class ProductVariant < ApplicationRecord
   has_many :variant_option_values, foreign_key: :variant_id, dependent: :destroy
   has_many :option_values, through: :variant_option_values
 
-  # Active Storage attachments
-  has_one_attached :image
+  # Active Storage attachments - Images multiples
+  has_many_attached :images
+
+  # Relation avec inventaire
+  has_one :inventory, dependent: :destroy
 
   # VALIDATIONS
   validates :sku, presence: true, uniqueness: true,
-            format: { with: /\A[A-Z0-9-]+\z/, message: 'format invalide' }
+            format: { with: /\A[A-Z0-9-]+\z/, message: "format invalide" }
   validates :price_cents, numericality: { greater_than: 0 }
   validates :stock_qty, numericality: { greater_than_or_equal_to: 0 }
   validates :currency, length: { is: 3 }
-  validate :image_or_image_url_present
+  validate :image_present
   validate :has_required_option_values
 
   # NOUVEAU : Héritage prix/stock
   attr_accessor :inherit_price, :inherit_stock
 
   before_save :apply_inheritance
+  after_create :create_inventory_record
 
   # SCOPES
   scope :active, -> { where(is_active: true) }
@@ -41,7 +45,7 @@ class ProductVariant < ApplicationRecord
   def has_required_option_values
     # Si le produit a plusieurs variantes, celle-ci doit avoir des options
     return if variant_option_values.any? || product.product_variants.count <= 1
-    errors.add(:base, 'Les variantes doivent avoir des options de catégorisation')
+    errors.add(:base, "Les variantes doivent avoir des options de catégorisation")
   end
 
   def apply_inheritance
@@ -49,8 +53,16 @@ class ProductVariant < ApplicationRecord
     self.stock_qty = 0 if inherit_stock.present?
   end
 
-  def image_or_image_url_present
-    return if image.attached? || image_url.present?
-    errors.add(:base, "Une image (upload ou URL) est requise")
+  def image_present
+    return if images.attached?
+    errors.add(:base, "Une image (upload fichier) est requise")
+  end
+
+  def create_inventory_record
+    Inventory.create!(
+      product_variant: self,
+      stock_qty: stock_qty || 0,
+      reserved_qty: 0
+    )
   end
 end

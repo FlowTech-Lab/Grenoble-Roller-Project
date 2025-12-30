@@ -59,7 +59,7 @@ class Event::InitiationPolicy < ApplicationPolicy
         registered_child_ids = user.attendances.where(event: record).where.not(child_membership_id: nil, status: "canceled").pluck(:child_membership_id).compact
         # Inclure les adhésions active, trial et pending pour les initiations
         available_children = user.memberships.where(is_child_membership: true)
-          .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+          .where(status: [ Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending] ])
           .where.not(id: registered_child_ids)
         return available_children.exists?
       end
@@ -140,7 +140,7 @@ class Event::InitiationPolicy < ApplicationPolicy
   end
 
   def manage?
-    user&.role&.level.to_i >= 30 # INSTRUCTOR+
+    user&.role&.level.to_i >= 40 # INITIATION (40) ou plus - forcément membre Grenoble Roller
   end
 
   def create?
@@ -207,7 +207,7 @@ class Event::InitiationPolicy < ApplicationPolicy
     private
 
     def instructor?
-      user.present? && user.role&.level.to_i >= 30
+      user.present? && user.role&.level.to_i >= 40 # INITIATION (40) ou plus - forcément membre Grenoble Roller
     end
 
     def admin?

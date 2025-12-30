@@ -138,7 +138,7 @@ RSpec.describe Event::Initiation, type: :model do
   describe '#available_non_member_places' do
     context 'when allow_non_member_discovery is false' do
       it 'returns 0' do
-        initiation = create(:event_initiation, 
+        initiation = create(:event_initiation,
           creator_user: creator,
           allow_non_member_discovery: false,
           non_member_discovery_slots: nil

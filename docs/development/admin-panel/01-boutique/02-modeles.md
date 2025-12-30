@@ -68,9 +68,10 @@ end
 ```
 
 **Checklist** :
-- [ ] Créer fichier `app/models/inventory.rb`
-- [ ] Tester méthodes `available_qty`, `move_stock`, `reserve_stock`, `release_stock`
-- [ ] Vérifier validations
+- [x] Créer fichier `app/models/inventory.rb`
+- [x] Tester méthodes `available_qty`, `move_stock`, `reserve_stock`, `release_stock`
+- [x] Vérifier validations
+- [x] Ajouter scopes Ransack pour recherche
 
 ---
 
@@ -113,9 +114,10 @@ end
 ```
 
 **Checklist** :
-- [ ] Créer fichier `app/models/inventory_movement.rb`
-- [ ] Vérifier constantes REASONS
-- [ ] Tester scopes
+- [x] Créer fichier `app/models/inventory_movement.rb`
+- [x] Vérifier constantes REASONS
+- [x] Tester scopes (`recent`, `by_reason`)
+- [x] Ajouter scopes Ransack pour recherche
 
 ---
 
@@ -169,13 +171,14 @@ end
 ```
 
 **Checklist** :
-- [ ] Remplacer `has_one_attached :image` par `has_many_attached :images`
-- [ ] Supprimer validation `image_or_image_url_present`
-- [ ] Ajouter validation `image_present`
-- [ ] Ajouter relation `has_one :inventory`
-- [ ] Ajouter callback `after_create :create_inventory_record`
-- [ ] Tester création variant avec images multiples
-- [ ] Vérifier inventaire créé automatiquement
+- [x] Remplacer `has_one_attached :image` par `has_many_attached :images`
+- [x] Supprimer validation `image_or_image_url_present`
+- [x] Ajouter validation `image_present`
+- [x] Ajouter relation `has_one :inventory`
+- [x] Ajouter callback `after_create :create_inventory_record`
+- [x] Tester création variant avec images multiples
+- [x] Vérifier inventaire créé automatiquement
+- [x] Ajouter scopes Ransack pour recherche
 
 ---
 
@@ -209,8 +212,10 @@ end
 ```
 
 **Checklist** :
-- [ ] Ajouter scope `with_associations`
-- [ ] Vérifier utilisation dans ProductsController
+- [x] Ajouter scope `with_associations` (incluant inventory et images)
+- [x] Vérifier utilisation dans ProductsController
+- [x] Ajouter scopes `in_stock`, `out_of_stock`, `by_stock_status`
+- [x] Ajouter méthode `total_stock` et `in_stock?`
 
 ---
 
@@ -251,12 +256,12 @@ Product
 
 ## ✅ Checklist Globale
 
-### **Phase 1 (Semaine 1)**
-- [ ] Créer modèle Inventory
-- [ ] Créer modèle InventoryMovement
-- [ ] Modifier ProductVariant (images + inventory)
-- [ ] Modifier Product (scope with_associations)
-- [ ] Optionnel : Modifier ProductCategory (parent_id)
+### **Phase 1 (Semaine 1)** ✅
+- [x] Créer modèle Inventory
+- [x] Créer modèle InventoryMovement
+- [x] Modifier ProductVariant (images + inventory)
+- [x] Modifier Product (scope with_associations + méthodes stock)
+- [ ] Optionnel : Modifier ProductCategory (parent_id) - Si hiérarchie nécessaire
 
 ---
 

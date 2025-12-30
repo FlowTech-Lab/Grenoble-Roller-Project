@@ -191,13 +191,13 @@ module AdminPanel
     def index
       @low_stock = ProductVariant
         .joins(:inventory)
-        .where('inventories.available_qty <= ?', 10)
+        .where('(inventories.stock_qty - inventories.reserved_qty) <= ?', 10)
         .where(is_active: true)
-        .order('inventories.available_qty ASC')
+        .order(Arel.sql('(inventories.stock_qty - inventories.reserved_qty) ASC'))
       
       @out_of_stock = ProductVariant
         .joins(:inventory)
-        .where('inventories.available_qty <= 0')
+        .where('(inventories.stock_qty - inventories.reserved_qty) <= 0')
         .where(is_active: true)
       
       @movements = InventoryMovement
@@ -348,19 +348,21 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 1 (Semaine 1)**
-- [ ] Migration inventories table
-- [ ] Migration inventory_movements table
-- [ ] Modèle Inventory
-- [ ] Modèle InventoryMovement
-- [ ] Service InventoryService
+### **Phase 1 (Semaine 1)** ✅
+- [x] Migration inventories table
+- [x] Migration inventory_movements table
+- [x] Modèle Inventory
+- [x] Modèle InventoryMovement
+- [x] Service InventoryService
 
-### **Phase 2 (Semaine 2)**
-- [ ] Controller InventoryController
-- [ ] Policy InventoryPolicy
-- [ ] Routes inventory (3 routes)
-- [ ] Vue Inventory Index
-- [ ] Vue Inventory Transfers
+### **Phase 2 (Semaine 2)** ✅
+- [x] Controller InventoryController
+- [x] Policy InventoryPolicy
+- [x] Routes inventory (3 routes)
+- [x] Vue Inventory Index
+- [x] Vue Inventory Transfers (route créée)
+- [x] Corriger requêtes SQL : utiliser `(stock_qty - reserved_qty)` au lieu de `available_qty`
+- [x] Utiliser `Arel.sql()` pour expressions SQL dans `order()`
 
 ---
 

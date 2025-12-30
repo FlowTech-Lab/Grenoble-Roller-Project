@@ -17,7 +17,7 @@ module AdminPanel
 
       # Filtres
       base_scope = base_scope.where(status: params[:status]) if params[:status].present?
-      base_scope = base_scope.where(status: 'published') if params[:scope] == 'published'
+      base_scope = base_scope.where(status: "published") if params[:scope] == "published"
 
       # Recherche Ransack
       @q = base_scope.ransack(params[:q])
@@ -25,9 +25,9 @@ module AdminPanel
 
       # Séparer initiations à venir et passées
       now = Time.current
-      
+
       # Si filtre "upcoming", ne garder que les à venir
-      if params[:scope] == 'upcoming'
+      if params[:scope] == "upcoming"
         @upcoming_initiations = base_scope
           .where("start_at > ?", now)
           .order(start_at: :asc) # Prochaines d'abord, triées par date croissante
@@ -104,12 +104,12 @@ module AdminPanel
         end
 
         if is_volunteer_changes[attendance_id.to_s].present?
-          attendance.update(is_volunteer: is_volunteer_changes[attendance_id.to_s] == '1')
+          attendance.update(is_volunteer: is_volunteer_changes[attendance_id.to_s] == "1")
         end
       end
 
       redirect_to presences_admin_panel_initiation_path(@initiation),
-                  notice: 'Présences mises à jour avec succès'
+                  notice: "Présences mises à jour avec succès"
     end
 
     # POST /admin-panel/initiations/:id/convert_waitlist
@@ -118,24 +118,24 @@ module AdminPanel
 
       unless waitlist_entry&.notified?
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Entrée de liste d\'attente non notifiée'
+                    alert: "Entrée de liste d'attente non notifiée"
         return
       end
 
       pending_attendance = @initiation.attendances.find_by(
         user: waitlist_entry.user,
         child_membership_id: waitlist_entry.child_membership_id,
-        status: 'pending'
+        status: "pending"
       )
 
-      if pending_attendance&.update(status: 'registered')
-        waitlist_entry.update!(status: 'converted')
+      if pending_attendance&.update(status: "registered")
+        waitlist_entry.update!(status: "converted")
         WaitlistEntry.notify_next_in_queue(@initiation) if @initiation.has_available_spots?
         redirect_to admin_panel_initiation_path(@initiation),
-                    notice: 'Entrée convertie en inscription'
+                    notice: "Entrée convertie en inscription"
       else
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Impossible de convertir l\'entrée'
+                    alert: "Impossible de convertir l'entrée"
       end
     end
 
@@ -145,16 +145,16 @@ module AdminPanel
 
       unless waitlist_entry&.pending?
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Entrée non en attente'
+                    alert: "Entrée non en attente"
         return
       end
 
       if waitlist_entry.notify!
         redirect_to admin_panel_initiation_path(@initiation),
-                    notice: 'Personne notifiée avec succès'
+                    notice: "Personne notifiée avec succès"
       else
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Impossible de notifier'
+                    alert: "Impossible de notifier"
       end
     end
 
@@ -164,7 +164,7 @@ module AdminPanel
 
       unless attendance
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Inscription introuvable'
+                    alert: "Inscription introuvable"
         return
       end
 
@@ -185,12 +185,12 @@ module AdminPanel
           Rails.logger.info("Volunteer added for attendance #{attendance.id}, notifying waitlist for initiation #{@initiation.id}")
         end
 
-        status = attendance.is_volunteer? ? 'ajouté' : 'retiré'
+        status = attendance.is_volunteer? ? "ajouté" : "retiré"
         redirect_to admin_panel_initiation_path(@initiation),
                     notice: "Statut bénévole #{status}"
       else
         redirect_to admin_panel_initiation_path(@initiation),
-                    alert: 'Impossible de modifier le statut bénévole'
+                    alert: "Impossible de modifier le statut bénévole"
       end
     end
 

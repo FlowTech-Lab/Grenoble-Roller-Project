@@ -7,7 +7,7 @@ module AdminPanel
 
     def index
       # Base query : uniquement les jobs ActionMailer
-      @jobs = SolidQueue::Job.where(class_name: 'ActionMailer::MailDeliveryJob')
+      @jobs = SolidQueue::Job.where(class_name: "ActionMailer::MailDeliveryJob")
                              .order(created_at: :desc)
 
       # Filtre par mailer (EventMailer, MembershipMailer, etc.)
@@ -17,11 +17,11 @@ module AdminPanel
 
       # Filtre par statut
       case params[:status]
-      when 'pending'
+      when "pending"
         @jobs = @jobs.where(finished_at: nil)
-      when 'finished'
+      when "finished"
         @jobs = @jobs.where.not(finished_at: nil)
-      when 'failed'
+      when "failed"
         @jobs = @jobs.joins("INNER JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
                      .distinct
       end
@@ -29,14 +29,14 @@ module AdminPanel
       # Filtre par date (depuis)
       if params[:since].present?
         since_date = Date.parse(params[:since]) rescue nil
-        @jobs = @jobs.where('created_at >= ?', since_date.beginning_of_day) if since_date
+        @jobs = @jobs.where("created_at >= ?", since_date.beginning_of_day) if since_date
       end
 
       # Pagination avec Pagy
       @pagy, @jobs = pagy(@jobs, items: 50)
 
       # Statistiques pour le header
-      base_query = SolidQueue::Job.where(class_name: 'ActionMailer::MailDeliveryJob')
+      base_query = SolidQueue::Job.where(class_name: "ActionMailer::MailDeliveryJob")
       @stats = {
         total: base_query.count,
         pending: base_query.where(finished_at: nil).count,
@@ -50,10 +50,10 @@ module AdminPanel
 
     def show
       @job = SolidQueue::Job.find(params[:id])
-      
+
       # Vérifier que c'est bien un job ActionMailer
-      unless @job.class_name == 'ActionMailer::MailDeliveryJob'
-        redirect_to admin_panel_mail_logs_path, alert: 'Ce job n\'est pas un email'
+      unless @job.class_name == "ActionMailer::MailDeliveryJob"
+        redirect_to admin_panel_mail_logs_path, alert: "Ce job n'est pas un email"
         return
       end
 
@@ -68,21 +68,21 @@ module AdminPanel
 
     def ensure_superadmin
       unless current_user&.role&.level.to_i >= 70
-        redirect_to admin_panel_root_path, alert: 'Accès réservé aux super-administrateurs'
+        redirect_to admin_panel_initiations_path, alert: "Accès réservé aux super-administrateurs"
       end
     end
 
     # Extraire la liste des mailers uniques depuis les jobs
     def extract_mailers_from_jobs
-      jobs = SolidQueue::Job.where(class_name: 'ActionMailer::MailDeliveryJob')
+      jobs = SolidQueue::Job.where(class_name: "ActionMailer::MailDeliveryJob")
                            .limit(1000) # Limiter pour performance
-      
+
       mailers = Set.new
       jobs.find_each do |job|
         mailer_info = parse_mailer_arguments(job.arguments)
         mailers.add(mailer_info[:mailer]) if mailer_info[:mailer]
       end
-      
+
       mailers.sort
     end
 
@@ -100,7 +100,7 @@ module AdminPanel
         else
           arguments_data
         end
-        
+
         # Si c'est un Hash avec la clé "arguments" (format ActiveJob)
         if parsed_data.is_a?(Hash) && parsed_data["arguments"].is_a?(Array)
           args = parsed_data["arguments"]
@@ -110,14 +110,14 @@ module AdminPanel
         else
           return { mailer: nil, method: nil, args: [] }
         end
-        
+
         # Format ActionMailer::MailDeliveryJob arguments:
         # ["MailerClass", "method_name", "deliver_now", {...}]
         # ou ["MailerClass", "method_name", "deliver_later", {...}]
         if args.is_a?(Array) && args.length >= 2
           mailer_class = args[0]
           method_name = args[1]
-          
+
           return {
             mailer: mailer_class,
             method: method_name,
@@ -135,4 +135,3 @@ module AdminPanel
     end
   end
 end
-

@@ -108,36 +108,36 @@ module Initiations
         # Vérifier si cet enfant a déjà utilisé son essai gratuit (attendance active uniquement)
         # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
         free_trial_already_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
-        
+
         if free_trial_already_used
           # L'essai gratuit a déjà été utilisé : l'enfant ne peut plus s'inscrire sans adhésion active
           redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit. Une adhésion active est maintenant requise pour s'inscrire."
           return
         end
-        
+
         # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif), même si le parent est adhérent
         # Vérifier que l'essai gratuit est utilisé
-        use_free_trial = params[:use_free_trial] == "1" || 
-                         params.select { |k, v| k.to_s.start_with?('use_free_trial_hidden') && v == "1" }.present?
+        use_free_trial = params[:use_free_trial] == "1" ||
+                         params.select { |k, v| k.to_s.start_with?("use_free_trial_hidden") && v == "1" }.present?
         unless use_free_trial
           redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
           return
         end
-        
+
         attendance.free_trial_used = true
       elsif child_membership_id.nil? && !is_member
         # Non-adhérent parent : vérifier si l'essai gratuit a déjà été utilisé
         # IMPORTANT : Cette vérification doit être faite AVANT de permettre l'inscription
         # même si allow_non_member_discovery est activé
         free_trial_already_used = current_user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?
-        
+
         if free_trial_already_used
           # L'essai gratuit a déjà été utilisé : l'utilisateur ne peut plus s'inscrire sans adhésion
           # même si allow_non_member_discovery est activé
           redirect_to initiation_path(@initiation), alert: "Vous avez déjà utilisé votre essai gratuit. Une adhésion est maintenant requise pour continuer."
           return
         end
-        
+
         # Vérifier si l'option de découverte est activée
         if @initiation.allow_non_member_discovery?
           # Option activée : vérifier qu'il reste des places découverte

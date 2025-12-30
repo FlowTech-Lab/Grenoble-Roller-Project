@@ -51,7 +51,7 @@ module AdminPanel
       private
 
       def can_view_initiations?
-        user.present? && user.role&.level.to_i >= 30 # INITIATION (30), ORGANIZER (40), MODERATOR (50), ADMIN (60), SUPERADMIN (70)
+        user.present? && user.role&.level.to_i >= 40 # INITIATION (40) ou plus - forcément membre Grenoble Roller
       end
 
       def admin_user?

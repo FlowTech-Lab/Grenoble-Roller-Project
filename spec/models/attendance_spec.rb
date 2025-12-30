@@ -242,31 +242,31 @@ RSpec.describe Attendance, type: :model do
         # - Seules les attendances avec status = 'canceled' sont exclues des vérifications"
         # Timeline : T0: Enfant créé → T1: Inscription Initiation A (essai utilisé) → T2: Essai bloqué
         # → T3: Annulation Initiation A → T4: Essai redevient disponible → T5: Inscription Initiation B (essai utilisé)
-        
+
         user = create_user
         first_initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
-        
+
         # T1: S'inscrire à Initiation A avec essai gratuit
         first_attendance = create_attendance(user: user, free_trial_used: true, event: first_initiation)
         expect(first_attendance.free_trial_used).to be true
         expect(first_attendance.status).to eq('registered')
-        
+
         # T2: Vérifier que l'essai gratuit est maintenant "utilisé" (bloqué)
         expect(user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?).to be true
-        
+
         # T3: Annuler l'inscription (destroy)
         first_attendance.destroy
         expect(first_attendance.destroyed?).to be true
-        
+
         # T4: Vérifier que l'essai gratuit redevient disponible
         # Le scope .active exclut les attendances annulées (destroyed)
         # Donc la requête ne trouve plus l'attendance annulée
         expect(user.attendances.active.where(free_trial_used: true, child_membership_id: nil).exists?).to be false
-        
+
         # T5: S'inscrire à Initiation B avec essai gratuit (devrait fonctionner)
         second_initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
         second_attendance = build_attendance(user: user, free_trial_used: true, event: second_initiation)
-        
+
         # La validation devrait passer car l'essai gratuit est redevenu disponible
         expect(second_attendance).to be_valid
         expect(second_attendance.errors[:free_trial_used]).to be_empty
@@ -277,9 +277,9 @@ RSpec.describe Attendance, type: :model do
         user = create_user
         # Utiliser la factory pour créer un membership trial (qui gère les validations)
         child_membership = create(:membership, :child, :trial, user: user, season: '2025-2026')
-        
+
         first_initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
-        
+
         # T1: S'inscrire à Initiation A avec essai gratuit
         first_attendance = create_attendance(
           user: user,
@@ -289,17 +289,17 @@ RSpec.describe Attendance, type: :model do
         )
         expect(first_attendance.free_trial_used).to be true
         expect(first_attendance.child_membership_id).to eq(child_membership.id)
-        
+
         # T2: Vérifier que l'essai gratuit est maintenant "utilisé" (bloqué)
         expect(user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be true
-        
+
         # T3: Annuler l'inscription
         first_attendance.destroy
         expect(first_attendance.destroyed?).to be true
-        
+
         # T4: Vérifier que l'essai gratuit redevient disponible
         expect(user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be false
-        
+
         # T5: S'inscrire à Initiation B avec essai gratuit (devrait fonctionner)
         second_initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
         second_attendance = build_attendance(
@@ -308,7 +308,7 @@ RSpec.describe Attendance, type: :model do
           event: second_initiation,
           child_membership_id: child_membership.id
         )
-        
+
         # La validation devrait passer car l'essai gratuit est redevenu disponible
         expect(second_attendance).to be_valid
         expect(second_attendance.errors[:free_trial_used]).to be_empty
@@ -316,17 +316,17 @@ RSpec.describe Attendance, type: :model do
 
       # Cas limite 5.1 et 5.2 : Double inscription avant annulation / Essai réutilisé avant première annulation
       # (Déjà testé par "prevents using free trial twice" ligne 219-228)
-      
+
       # Cas limite 5.4 : Tentative de contournement (modification paramètres)
       it 'prevents bypassing free trial requirement for trial child by modifying params' do
         # Selon la documentation 05-cas-limites.md (section 5.4) :
         # "Utilisateur modifie les paramètres HTTP pour ne pas envoyer use_free_trial"
         # Protection : Validation modèle vérifie l'état (free_trial_used), pas les paramètres
-        
+
         user = create_user
         child_membership = create(:membership, :child, :trial, user: user, season: '2025-2026')
         initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
-        
+
         # Tentative de contournement : créer une attendance avec free_trial_used = false
         # pour un enfant trial (devrait être bloqué par la validation modèle)
         attendance = build_attendance(
@@ -335,7 +335,7 @@ RSpec.describe Attendance, type: :model do
           child_membership_id: child_membership.id,
           free_trial_used: false # Tentative de contournement
         )
-        
+
         # La validation modèle devrait bloquer car pour trial, free_trial_used DOIT être true
         expect(attendance).to be_invalid
         expect(attendance.errors[:free_trial_used]).to include("L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
@@ -346,11 +346,11 @@ RSpec.describe Attendance, type: :model do
         # Selon la documentation 05-cas-limites.md (section 5.5) :
         # "Utilisateur désactive JavaScript et essaie de soumettre sans cocher la checkbox"
         # Protection : Validation contrôleur ET modèle
-        
+
         user = create_user
         child_membership = create(:membership, :child, :trial, user: user, season: '2025-2026')
         initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
-        
+
         # Simuler JavaScript désactivé : params[:use_free_trial] = nil
         # La validation modèle devrait bloquer même si le contrôleur est contourné
         attendance = build_attendance(
@@ -359,7 +359,7 @@ RSpec.describe Attendance, type: :model do
           child_membership_id: child_membership.id,
           free_trial_used: false # JavaScript désactivé, checkbox non cochée
         )
-        
+
         # La validation modèle devrait bloquer
         expect(attendance).to be_invalid
         expect(attendance.errors[:free_trial_used]).to include("L'essai gratuit est obligatoire pour les enfants non adhérents. Veuillez cocher la case correspondante.")
@@ -371,11 +371,11 @@ RSpec.describe Attendance, type: :model do
         # "Enfant annule puis essaie de s'inscrire à nouveau à la même initiation"
         # Protection : Contrainte unicité autorise réinscription après annulation
         # Essai gratuit redevient disponible (scope .active exclut canceled)
-        
+
         user = create_user
         child_membership = create(:membership, :child, :trial, user: user, season: '2025-2026')
         initiation = create_event(type: 'Event::Initiation', max_participants: 30, allow_non_member_discovery: false)
-        
+
         # T1: S'inscrire à Initiation A avec essai gratuit
         first_attendance = create_attendance(
           user: user,
@@ -385,14 +385,14 @@ RSpec.describe Attendance, type: :model do
         )
         expect(first_attendance.free_trial_used).to be true
         expect(first_attendance.status).to eq('registered')
-        
+
         # T2: Annuler l'inscription
         first_attendance.destroy
         expect(first_attendance.destroyed?).to be true
-        
+
         # T3: Vérifier que l'essai gratuit redevient disponible
         expect(user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership.id).exists?).to be false
-        
+
         # T4: S'inscrire à nouveau à la MÊME initiation avec essai gratuit (devrait fonctionner)
         # La contrainte unicité autorise la réinscription car l'ancienne attendance est destroyed
         second_attendance = build_attendance(
@@ -401,7 +401,7 @@ RSpec.describe Attendance, type: :model do
           child_membership_id: child_membership.id,
           free_trial_used: true
         )
-        
+
         # La validation devrait passer car :
         # 1. L'essai gratuit est redevenu disponible (scope .active exclut destroyed)
         # 2. La contrainte unicité autorise la réinscription (ancienne attendance destroyed)

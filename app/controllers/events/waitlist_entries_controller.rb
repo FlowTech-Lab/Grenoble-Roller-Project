@@ -166,7 +166,7 @@ module Events
       end
 
       # Autoriser l'action sur l'événement (skip Pundit si token valide)
-      unless skip_authorization_for_token? || (user_signed_in? && can?(:convert_waitlist_to_attendance?, waitlist_entry.event))
+      unless skip_authorization_for_token? || (user_signed_in? && policy(waitlist_entry.event).convert_waitlist_to_attendance?)
         redirect_to root_path, alert: "Vous n'êtes pas autorisé à effectuer cette action."
         return
       end
@@ -175,14 +175,14 @@ module Events
       if waitlist_entry.convert_to_attendance!
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
         event = waitlist_entry.event
-        
+
         # Si non connecté, rediriger vers connexion avec message
         unless user_signed_in?
           store_location_for(:user, event_path(event))
           redirect_to new_user_session_path, notice: "Inscription confirmée pour #{participant_name} ! Veuillez vous connecter pour voir les détails."
           return
         end
-        
+
         redirect_to event_path(event), notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
       else
         redirect_to event_path(waitlist_entry.event), alert: "Impossible de confirmer votre inscription. Veuillez réessayer."
@@ -207,7 +207,7 @@ module Events
       end
 
       # Autoriser l'action sur l'événement (skip Pundit si token valide)
-      unless skip_authorization_for_token? || (user_signed_in? && can?(:refuse_waitlist?, waitlist_entry.event))
+      unless skip_authorization_for_token? || (user_signed_in? && policy(waitlist_entry.event).refuse_waitlist?)
         redirect_to root_path, alert: "Vous n'êtes pas autorisé à effectuer cette action."
         return
       end
@@ -216,14 +216,14 @@ module Events
       if waitlist_entry.refuse!
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
         event = waitlist_entry.event
-        
+
         # Si non connecté, rediriger vers connexion avec message
         unless user_signed_in?
           store_location_for(:user, event_path(event))
           redirect_to new_user_session_path, notice: "Vous avez refusé la place pour #{participant_name}. Veuillez vous connecter pour voir les détails."
           return
         end
-        
+
         redirect_to event_path(event), notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de la liste d'attente."
       else
         redirect_to event_path(waitlist_entry.event), alert: "Impossible de refuser la place. Veuillez réessayer."
@@ -250,7 +250,7 @@ module Events
       if user_signed_in?
         waitlist_entry_id = params[:id] || params[:waitlist_entry_id]
         waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
-        
+
         # Vérifier que c'est bien l'utilisateur connecté
         if waitlist_entry && waitlist_entry.user == current_user
           return waitlist_entry

@@ -127,6 +127,29 @@
       
       // Expose function globally for use in other scripts
       window.updateCartCount = updateCartCount;
+
+      // Gestion simple du scroll body avec classe CSS
+      (function() {
+        const navbarCollapse = document.getElementById('navbarComponent');
+        if (!navbarCollapse) return;
+
+        // Quand le collapse s'ouvre : ajouter classe navbar-open au body
+        navbarCollapse.addEventListener('show.bs.collapse', function() {
+          document.body.classList.add('navbar-open');
+        });
+
+        // Quand le collapse se ferme : retirer classe navbar-open du body
+        navbarCollapse.addEventListener('hidden.bs.collapse', function() {
+          document.body.classList.remove('navbar-open');
+        });
+
+        // Réinitialiser après navigation Turbo
+        if (typeof Turbo !== 'undefined') {
+          document.addEventListener('turbo:load', function() {
+            document.body.classList.remove('navbar-open');
+          });
+        }
+      })();
     </script>
   </body>
 </html>

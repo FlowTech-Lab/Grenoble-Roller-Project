@@ -99,9 +99,22 @@ fr:
               blank: "doit être renseigné"
             parent_authorization:
               inclusion: "doit être acceptée"
+        event:
+          attributes:
+            description:
+              too_short: "doit contenir au moins %{count} caractères"
+              too_long: "ne peut pas dépasser %{count} caractères"
+            title:
+              too_short: "doit contenir au moins %{count} caractères"
+              too_long: "ne peut pas dépasser %{count} caractères"
+            location_text:
+              too_short: "doit contenir au moins %{count} caractères"
+              too_long: "ne peut pas dépasser %{count} caractères"
       messages:
         record_invalid: "La validation a échoué : %{errors}"
         blank: "doit être renseigné"
+        too_short: "doit contenir au moins %{count} caractères"
+        too_long: "ne peut pas dépasser %{count} caractères"
   
   errors:
     messages:

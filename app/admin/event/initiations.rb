@@ -133,7 +133,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         table_for volunteers do
           column "Bénévole" do |attendance|
             if attendance.child_membership_id.present?
-              "#{attendance.participant_name} (enfant de #{attendance.user.to_s})"
+              "#{attendance.participant_name} (enfant de #{attendance.user})"
             else
               attendance.user.to_s
             end
@@ -166,7 +166,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         table_for participants do
           column "Participant" do |attendance|
             if attendance.child_membership_id.present?
-              "#{attendance.participant_name} (enfant de #{attendance.user.to_s})"
+              "#{attendance.participant_name} (enfant de #{attendance.user})"
             else
               attendance.user.to_s
             end
@@ -207,7 +207,7 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
           end
           column "Personne" do |entry|
             if entry.child_membership_id.present?
-              "#{entry.participant_name} (enfant de #{entry.user.to_s})"
+              "#{entry.participant_name} (enfant de #{entry.user})"
             else
               entry.user.to_s
             end
@@ -280,8 +280,8 @@ ActiveAdmin.register Event::Initiation, as: "Initiation" do
         label_method: :to_s,
         value_method: :id
       f.input :start_at, as: :datetime_select, hint: "Doit être un samedi à 10h15"
-      f.input :duration_min, 
-        input_html: { value: f.object.duration_min.present? ? f.object.duration_min : 105 }, 
+      f.input :duration_min,
+        input_html: { value: f.object.duration_min.present? ? f.object.duration_min : 105 },
         hint: "Durée en minutes (105 = 1h45)",
         required: true
       f.input :max_participants, label: "Nombre maximum de participants", input_html: { value: f.object.max_participants || 30 }

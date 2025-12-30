@@ -946,13 +946,13 @@ if florian || admin_user
   # Inscriptions aux initiations (avec enfants)
   published_initiations = Event::Initiation.where(status: "published")
   published_initiations.each do |initiation|
-    num_subscribers = [rand(5..15), initiation.max_participants].min
+    num_subscribers = [ rand(5..15), initiation.max_participants ].min
     subscribers = regular_users.sample(num_subscribers)
-    
+
     subscribers.each do |user|
       # Inscription adulte ou enfant selon le hasard
       if rand > 0.6 # 40% d'inscriptions enfants
-        child_membership = user.memberships.children.where(status: [:active, :pending, :trial]).sample
+        child_membership = user.memberships.children.where(status: [ :active, :pending, :trial ]).sample
         if child_membership
           Attendance.create!(
             user: user,
@@ -1255,7 +1255,7 @@ if regular_users_for_memberships.any?
   pending_adults = regular_users_for_memberships[13..15] || []
   pending_adults.each do |user|
     category = [ :standard, :with_ffrs ].sample
-    
+
     Membership.create!(
       user: user,
       payment: nil,
@@ -1366,7 +1366,7 @@ if regular_users_for_memberships.any?
     child_birth_month = rand(1..12)
     child_birth_day = rand(1..28)
     category = [ :standard, :with_ffrs ].sample
-    
+
     Membership.create!(
       user: user,
       payment: nil,
@@ -1405,7 +1405,7 @@ if regular_users_for_memberships.any?
     child_birth_month = rand(1..12)
     child_birth_day = rand(1..28)
     category = [ :standard, :with_ffrs ].sample
-    
+
     Membership.create!(
       user: user,
       payment: nil,

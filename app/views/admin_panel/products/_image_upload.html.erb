@@ -1,0 +1,86 @@
+<div class="image-upload-zone" 
+     data-controller="image-upload"
+     data-image-upload-max-size-value="5242880"
+     data-image-upload-accepted-types-value="image/jpeg,image/png,image/webp">
+  
+  <!-- Zone de drop -->
+  <div class="drop-zone border-2 border-dashed rounded p-5 text-center mb-4"
+       data-image-upload-target="dropZone"
+       data-action="dragover->image-upload#handleDragOver 
+                    drop->image-upload#handleDrop 
+                    dragleave->image-upload#handleDragLeave
+                    click->image-upload#triggerFileInput">
+    <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+    <p class="mb-2">
+      <strong>Glissez-déposez vos images ici</strong>
+    </p>
+    <p class="text-muted small mb-3">
+      ou cliquez pour sélectionner
+    </p>
+    <%= form.file_field :image, 
+        multiple: false,
+        accept: "image/jpeg,image/png,image/webp",
+        class: "d-none",
+        data: { 
+          image_upload_target: "fileInput",
+          action: "change->image-upload#handleFiles"
+        } %>
+    <button type="button" 
+            class="btn btn-outline-primary"
+            data-action="click->image-upload#triggerFileInput">
+      <i class="bi bi-upload me-2"></i>Sélectionner un fichier
+    </button>
+    <p class="text-muted small mt-3 mb-0">
+      Formats acceptés : JPG, PNG, WebP (max 5MB)
+    </p>
+  </div>
+
+  <!-- Preview de l'image actuelle -->
+  <% if product&.image&.attached? %>
+    <div class="image-preview-current mb-4">
+      <h6 class="mb-3">Image actuelle</h6>
+      <div class="position-relative d-inline-block">
+        <%= image_tag product.image, 
+            class: "img-thumbnail",
+            style: "max-height: 200px; max-width: 200px; object-fit: cover;" %>
+        <button type="button" 
+                class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
+                data-action="click->image-upload#removeCurrentImage"
+                title="Supprimer l'image">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- OU URL image -->
+  <div class="mb-4">
+    <hr class="my-4">
+    <p class="text-muted text-center mb-3">OU</p>
+    <%= form.label :image_url, "URL de l'image", class: "form-label fw-semibold" %>
+    <%= form.url_field :image_url, 
+        class: "form-control form-control-liquid",
+        placeholder: "https://example.com/image.jpg" %>
+    <div class="form-text">
+      <i class="bi bi-info-circle me-1"></i>
+      Si vous préférez utiliser une URL plutôt qu'un upload.
+    </div>
+    <% if product&.image_url.present? && !product&.image&.attached? %>
+      <div class="mt-3">
+        <%= image_tag product.image_url, 
+            class: "img-thumbnail",
+            style: "max-height: 200px;",
+            onerror: "this.style.display='none';" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Preview des nouvelles images uploadées -->
+  <div class="image-preview-grid mt-4" data-image-upload-target="previewGrid" style="display: none;">
+    <h6 class="mb-3">Nouvelles images</h6>
+    <div class="row g-3" data-image-upload-target="previewContainer">
+      <!-- Images seront ajoutées ici dynamiquement -->
+    </div>
+  </div>
+</div>
+
