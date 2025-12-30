@@ -199,15 +199,25 @@ module AdminPanel
 
     # NOUVEAU : Édition en masse variantes
     def bulk_update_variants
-      variant_ids = params[:variant_ids] || []
-      updates = params[:updates] || {}
+      # Sécuriser variant_ids : convertir en tableau d'entiers pour éviter SQL injection
+      variant_ids_param = params[:variant_ids] || []
+      variant_ids = Array(variant_ids_param).filter_map do |id|
+        integer_id = id.to_i
+        integer_id if integer_id.positive?
+      end
 
-      if variant_ids.empty? || updates.empty?
+      # S'assurer que updates est un ActionController::Parameters pour pouvoir utiliser .permit
+      updates = params[:updates] || {}
+      updates_params = updates.is_a?(ActionController::Parameters) ? updates : ActionController::Parameters.new(updates)
+
+      if variant_ids.empty? || updates_params.empty?
         render json: { success: false, message: "Paramètres manquants" }, status: :bad_request
         return
       end
 
-      count = ProductVariant.where(id: variant_ids).update_all(updates.permit(:price_cents, :stock_qty, :is_active))
+      # Utiliser les IDs validés (tableau d'entiers positifs) pour éviter SQL injection
+      permitted_updates = updates_params.permit(:price_cents, :stock_qty, :is_active)
+      count = ProductVariant.where(id: variant_ids).update_all(permitted_updates)
 
       render json: { success: true, count: count }
     end
