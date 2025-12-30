@@ -3,7 +3,7 @@
 module Memberships
   class PaymentsController < ApplicationController
     before_action :authenticate_user!
-    before_action :set_membership, except: [:create_multiple]
+    before_action :set_membership, except: [ :create_multiple ]
 
     # POST /memberships/:membership_id/payments
     def create

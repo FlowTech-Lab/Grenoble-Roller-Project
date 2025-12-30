@@ -37,7 +37,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
 
         # La policy empêche l'inscription si l'utilisateur est déjà inscrit, ce qui redirige vers root
         # ou vers l'initiation si la validation échoue
-        expect([:redirect, :found].include?(response.status / 100) || response.status == 302).to be true
+        expect([ :redirect, :found ].include?(response.status / 100) || response.status == 302).to be true
         # Vérifier que le nombre d'attendances n'a pas changé
         expect(Attendance.where(user: user, event: initiation, status: 'registered').count).to eq(1)
       end
@@ -138,7 +138,7 @@ RSpec.describe 'Initiation Registration - 16 Tests', type: :request do
 
         # La policy empêche l'inscription si l'initiation est complète, ce qui redirige vers root
         # ou vers l'initiation si la validation échoue
-        expect([:redirect, :found].include?(response.status / 100) || response.status == 302).to be true
+        expect([ :redirect, :found ].include?(response.status / 100) || response.status == 302).to be true
         # Vérifier que le nombre d'attendances n'a pas changé
         expect(Attendance.where(event: initiation, status: 'registered').count).to eq(2)
       end

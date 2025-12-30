@@ -92,7 +92,7 @@ class MembershipsController < ApplicationController
         m.expired? && m.payment&.provider == "helloasso" && m.payment.status == "abandoned"
       end
       if expired_with_abandoned
-        redirect_to membership_path(expired_with_abandoned), 
+        redirect_to membership_path(expired_with_abandoned),
                     alert: "Vous avez une adhésion expirée avec un paiement abandonné pour cette saison. " \
                            "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau si vous rencontrez des difficultés."
         return
@@ -102,14 +102,14 @@ class MembershipsController < ApplicationController
     @type = type
     @season = Membership.current_season_name
     @start_date, @end_date = Membership.current_season_dates
-    
+
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless @start_date.present? && @end_date.present?
       Rails.logger.error("[MembershipsController#new] Erreur: start_date ou end_date est nil. start_date=#{@start_date.inspect}, end_date=#{@end_date.inspect}")
       redirect_to memberships_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
       return
     end
-    
+
     @categories = get_categories
     @user = current_user
 
@@ -133,14 +133,14 @@ class MembershipsController < ApplicationController
       # Formulaire pour un seul enfant (simplifié)
       @season = Membership.current_season_name
       @start_date, @end_date = Membership.current_season_dates
-      
+
       # S'assurer que les dates sont valides (protection contre les valeurs nil)
       unless @start_date.present? && @end_date.present?
         Rails.logger.error("[MembershipsController#new] Erreur: start_date ou end_date est nil pour child. start_date=#{@start_date.inspect}, end_date=#{@end_date.inspect}")
         redirect_to memberships_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
         return
       end
-      
+
       @categories = {
         standard: {
           name: "Cotisation Adhérent Grenoble Roller",
@@ -154,7 +154,7 @@ class MembershipsController < ApplicationController
         }
       }
       @user = current_user
-      
+
       # Vérifier si l'enfant a déjà utilisé son essai gratuit (pour le renouvellement ou si l'enfant existe déjà)
       @child_has_used_trial = false
       if @old_membership
@@ -186,7 +186,7 @@ class MembershipsController < ApplicationController
           ).exists?
         end
       end
-      
+
       render :child_form
     end
   end
@@ -458,7 +458,7 @@ class MembershipsController < ApplicationController
 
     # Vérifier si l'adhésion est référencée par des participations (attendances)
     if Attendance.where(child_membership_id: @membership.id).exists?
-      redirect_to membership_path(@membership), 
+      redirect_to membership_path(@membership),
         alert: "Cette adhésion ne peut pas être supprimée car #{child_name} a déjà participé à des événements ou initiations. Veuillez contacter le support si vous souhaitez la supprimer."
       return
     end
@@ -511,14 +511,14 @@ class MembershipsController < ApplicationController
   # Renouvellement d'une adhésion enfant expirée (avec formulaire pour choisir la catégorie)
   def renew
     old_membership = @membership
-    
+
     unless old_membership.is_child_membership? && old_membership.expired?
       redirect_to membership_path(old_membership), alert: "Cette adhésion ne peut pas être renouvelée."
       return
     end
-    
+
     # Rediriger vers le formulaire de création avec renew_from
-    redirect_to new_membership_path(type: 'child', renew_from: old_membership.id)
+    redirect_to new_membership_path(type: "child", renew_from: old_membership.id)
   end
 
   private
@@ -600,14 +600,14 @@ class MembershipsController < ApplicationController
     end
 
     start_date, end_date = Membership.current_season_dates
-    
+
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless start_date.present? && end_date.present?
       Rails.logger.error("[MembershipsController] Erreur: start_date ou end_date est nil. start_date=#{start_date.inspect}, end_date=#{end_date.inspect}")
       redirect_to new_membership_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
       return
     end
-    
+
     amount_cents = Membership.price_for_category(category)
 
     # Mettre à jour les informations User (même si certains champs sont vides, on met à jour ceux qui sont fournis)
@@ -792,22 +792,22 @@ class MembershipsController < ApplicationController
     # Gérer l'erreur de contrainte unique (adhésion déjà existante pour cette saison)
     Rails.logger.error("[MembershipsController] Erreur de contrainte unique lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    
+
     current_season = Membership.current_season_name
     existing_membership = current_user.memberships.personal.find_by(season: current_season)
-    
+
     if existing_membership
       if existing_membership.expired? && existing_membership.payment&.status == "abandoned"
-        redirect_to membership_path(existing_membership), 
+        redirect_to membership_path(existing_membership),
                     alert: "Vous avez déjà une adhésion pour cette saison avec un paiement abandonné. " \
                            "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau pour obtenir de l'aide."
       else
-        redirect_to membership_path(existing_membership), 
+        redirect_to membership_path(existing_membership),
                     alert: "Une adhésion existe déjà pour cette saison. " \
                            "Si vous rencontrez un problème, veuillez contacter un membre du bureau."
       end
     else
-      redirect_to new_membership_path, 
+      redirect_to new_membership_path,
                   alert: "Une erreur est survenue lors de la création de l'adhésion. " \
                          "Il semble qu'une adhésion existe déjà pour cette saison. " \
                          "Veuillez contacter un membre du bureau si le problème persiste."
@@ -815,24 +815,24 @@ class MembershipsController < ApplicationController
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    
+
     # Vérifier si c'est une erreur de contrainte unique PostgreSQL
     if e.message.include?("duplicate key") || e.message.include?("UniqueViolation")
       current_season = Membership.current_season_name
       existing_membership = current_user.memberships.personal.find_by(season: current_season)
-      
+
       if existing_membership
         if existing_membership.expired? && existing_membership.payment&.status == "abandoned"
-          redirect_to membership_path(existing_membership), 
+          redirect_to membership_path(existing_membership),
                       alert: "Vous avez déjà une adhésion pour cette saison avec un paiement abandonné. " \
                              "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau pour obtenir de l'aide."
         else
-          redirect_to membership_path(existing_membership), 
+          redirect_to membership_path(existing_membership),
                       alert: "Une adhésion existe déjà pour cette saison. " \
                              "Si vous rencontrez un problème, veuillez contacter un membre du bureau."
         end
       else
-        redirect_to new_membership_path, 
+        redirect_to new_membership_path,
                     alert: "Une erreur est survenue lors de la création de l'adhésion. " \
                            "Il semble qu'une adhésion existe déjà pour cette saison. " \
                            "Veuillez contacter un membre du bureau si le problème persiste."
@@ -875,21 +875,21 @@ class MembershipsController < ApplicationController
       m.expired? && m.payment&.provider == "helloasso" && m.payment.status == "abandoned"
     end
     if expired_with_abandoned
-      redirect_to membership_path(expired_with_abandoned), 
+      redirect_to membership_path(expired_with_abandoned),
                   alert: "Vous avez une adhésion expirée avec un paiement abandonné pour cette saison. " \
                          "Vous pouvez réessayer le paiement depuis la page de l'adhésion, ou contacter un membre du bureau si vous rencontrez des difficultés."
       return
     end
 
     start_date, end_date = Membership.current_season_dates
-    
+
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless start_date.present? && end_date.present?
       Rails.logger.error("[MembershipsController] Erreur: start_date ou end_date est nil. start_date=#{start_date.inspect}, end_date=#{end_date.inspect}")
       redirect_to new_membership_path, alert: "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support."
       return
     end
-    
+
     amount_cents = Membership.price_for_category(category)
 
     # Mettre à jour les informations User (même si certains champs sont vides, on met à jour ceux qui sont fournis)
@@ -1016,15 +1016,15 @@ class MembershipsController < ApplicationController
   def renew_child_membership_from_form(old_membership, membership_params)
     # Récupérer la catégorie depuis le formulaire (peut être différente de l'ancienne)
     category = membership_params[:category]
-    
+
     unless Membership.categories.key?(category)
-      redirect_to new_membership_path(type: 'child', renew_from: old_membership.id), alert: "Catégorie d'adhésion invalide."
+      redirect_to new_membership_path(type: "child", renew_from: old_membership.id), alert: "Catégorie d'adhésion invalide."
       return
     end
 
     # Vérifier l'âge de l'enfant
     child_age = old_membership.child_age
-    
+
     if child_age >= 18
       redirect_to memberships_path, alert: "L'enfant a maintenant 18 ans ou plus, il doit adhérer avec son propre compte."
       return
@@ -1044,15 +1044,15 @@ class MembershipsController < ApplicationController
     # Récupérer toutes les adhésions enfants pour cette saison avec les statuts actifs
     current_season_memberships = current_user.memberships.children
       .where(season: current_season)
-      .where(status: [Membership.statuses[:active], Membership.statuses[:pending], Membership.statuses[:trial]])
+      .where(status: [ Membership.statuses[:active], Membership.statuses[:pending], Membership.statuses[:trial] ])
       .to_a
-    
+
     existing_membership = current_season_memberships.find do |m|
       m.child_first_name == old_membership.child_first_name &&
       m.child_last_name == old_membership.child_last_name &&
       m.child_date_of_birth == old_membership.child_date_of_birth
     end
-    
+
     if existing_membership
       redirect_to membership_path(existing_membership), notice: "Une adhésion existe déjà pour #{old_membership.child_full_name} pour cette saison."
       return
@@ -1111,7 +1111,7 @@ class MembershipsController < ApplicationController
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors du renouvellement : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to new_membership_path(type: 'child', renew_from: old_membership.id), alert: "Erreur lors du renouvellement : #{e.message}"
+    redirect_to new_membership_path(type: "child", renew_from: old_membership.id), alert: "Erreur lors du renouvellement : #{e.message}"
   end
 
   def create_child_membership_single
@@ -1136,7 +1136,7 @@ class MembershipsController < ApplicationController
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(', ') : e.message
+    error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(", ") : e.message
     redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{error_message}"
   end
 
@@ -1191,21 +1191,21 @@ class MembershipsController < ApplicationController
 
     # Vérifier si c'est un essai gratuit (statut trial)
     create_trial = params[:create_trial] == "1" || child_params[:create_trial] == "1"
-    
+
     # Toujours calculer les dates de saison (même pour les essais gratuits, car la DB exige end_date NOT NULL)
     start_date, end_date = Membership.current_season_dates
-    
+
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless start_date.present? && end_date.present?
       Rails.logger.error("[MembershipsController] Erreur dans create_child_membership_from_params: start_date ou end_date est nil. start_date=#{start_date.inspect}, end_date=#{end_date.inspect}")
       return Membership.new.tap { |m| m.errors.add(:base, "Erreur lors du calcul des dates de saison. Veuillez réessayer ou contacter le support.") }
     end
-    
+
     # Pour les essais gratuits, on stocke le montant correspondant à la catégorie choisie
     # (même si le paiement n'est pas encore effectué, l'essai gratuit permet juste de s'inscrire aux initiations)
     amount_cents = Membership.price_for_category(category)
     current_season = Membership.current_season_name
-    
+
     if create_trial
       membership_status = :trial
     else
@@ -1535,7 +1535,7 @@ class MembershipsController < ApplicationController
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion enfant sans paiement : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(', ') : e.message
+    error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(", ") : e.message
     redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{error_message}"
   end
 end

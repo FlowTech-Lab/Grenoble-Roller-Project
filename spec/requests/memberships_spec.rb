@@ -167,7 +167,7 @@ RSpec.describe "Memberships", type: :request do
     context "when creating without payment (cash/check)" do
       it "blocks creation if questionnaire is empty for adult" do
         login_user(user_with_dob)
-        
+
         # Compter les adhésions avant la tentative
         initial_count = Membership.count
 
@@ -191,7 +191,7 @@ RSpec.describe "Memberships", type: :request do
 
       it "blocks creation if questionnaire is empty for child" do
         login_user(user_with_dob)
-        
+
         # Compter les adhésions avant la tentative
         initial_count = Membership.count
 
@@ -253,8 +253,8 @@ RSpec.describe "Memberships", type: :request do
 
     context "avec adhésion enfant expirée" do
       let(:expired_child_membership) do
-        create(:membership, 
-          :child, 
+        create(:membership,
+          :child,
           :with_health_questionnaire,
           user: user,
           status: :expired,
@@ -292,10 +292,10 @@ RSpec.describe "Memberships", type: :request do
 
         it "bloque le renouvellement et redirige vers l'adhésion existante" do
           login_user(user)
-          
+
           # Compter les adhésions avant la tentative
           initial_count = Membership.count
-          
+
           post memberships_path, params: {
             renew_from: expired_child_membership.id,
             membership: {
@@ -328,7 +328,7 @@ RSpec.describe "Memberships", type: :request do
             rgpd_consent: '1',
             legal_notices_accepted: '1'
           }
-          
+
           # Ajouter les réponses du questionnaire de santé
           (1..9).each do |i|
             membership_params["health_question_#{i}"] = "no"
@@ -362,7 +362,7 @@ RSpec.describe "Memberships", type: :request do
             legal_notices_accepted: '1',
             ffrs_data_sharing_consent: '1'
           }
-          
+
           (1..9).each do |i|
             membership_params["health_question_#{i}"] = "no"
           end
@@ -397,10 +397,10 @@ RSpec.describe "Memberships", type: :request do
 
         it "bloque le renouvellement et affiche un message d'erreur" do
           login_user(user)
-          
+
           # S'assurer que l'enfant a bien 18 ans ou plus
           expect(expired_child_membership_18.child_age).to be >= 18
-          
+
           expect do
             post memberships_path, params: {
               renew_from: expired_child_membership_18.id,
@@ -449,7 +449,7 @@ RSpec.describe "Memberships", type: :request do
 
     it "convertit l'essai gratuit en adhésion pending" do
       login_user(user)
-      
+
       patch upgrade_membership_path(trial_membership)
 
       trial_membership.reload
@@ -471,7 +471,7 @@ RSpec.describe "Memberships", type: :request do
 
       it "bloque la conversion" do
         login_user(user)
-        
+
         patch upgrade_membership_path(active_membership)
 
         expect(response).to redirect_to(memberships_path)

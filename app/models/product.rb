@@ -19,29 +19,29 @@ class Product < ApplicationRecord
   scope :active, -> { where(is_active: true) }
   scope :inactive, -> { where(is_active: false) }
   scope :by_category, ->(id) { where(category_id: id) }
-  scope :by_status, ->(status) { where(is_active: status == 'active') }
-  scope :search_by_name, ->(term) { where('name ILIKE ?', "%#{term}%") }
+  scope :by_status, ->(status) { where(is_active: status == "active") }
+  scope :search_by_name, ->(term) { where("name ILIKE ?", "%#{term}%") }
 
   scope :in_stock, -> {
     joins(:product_variants)
       .where(product_variants: { is_active: true })
-      .group('products.id')
-      .having('SUM(product_variants.stock_qty) > 0')
+      .group("products.id")
+      .having("SUM(product_variants.stock_qty) > 0")
   }
 
   scope :out_of_stock, -> {
     left_joins(:product_variants)
-      .group('products.id')
-      .having('SUM(product_variants.stock_qty) IS NULL OR SUM(product_variants.stock_qty) = 0')
+      .group("products.id")
+      .having("SUM(product_variants.stock_qty) IS NULL OR SUM(product_variants.stock_qty) = 0")
   }
 
   scope :by_stock_status, ->(status) {
-    status == 'in_stock' ? in_stock : out_of_stock
+    status == "in_stock" ? in_stock : out_of_stock
   }
 
   # NOUVEAU : Eager loading + pagination support
   scope :with_associations, -> {
-    includes(:category, :image_attachment, product_variants: [:variant_option_values, :option_values])
+    includes(:category, :image_attachment, product_variants: [ :variant_option_values, :option_values ])
   }
 
   # CALLBACKS
@@ -70,7 +70,7 @@ class Product < ApplicationRecord
     product_variants
       .joins(variant_option_values: :option_value)
       .where(option_values: { option_type_id: option_type.id })
-      .group('option_values.presentation')
+      .group("option_values.presentation")
       .sum(:stock_qty)
   end
 
@@ -95,6 +95,6 @@ class Product < ApplicationRecord
 
   def has_at_least_one_active_variant
     return if product_variants.exists?(is_active: true)
-    errors.add(:base, 'Au moins une variante active requise')
+    errors.add(:base, "Au moins une variante active requise")
   end
 end

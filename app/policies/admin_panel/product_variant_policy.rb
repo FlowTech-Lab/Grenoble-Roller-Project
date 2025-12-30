@@ -6,4 +6,3 @@ module AdminPanel
     # Pas besoin de redéfinir les méthodes si logique identique
   end
 end
-

@@ -9,7 +9,7 @@ class CreateInventoryMovements < ActiveRecord::Migration[8.1]
       t.integer :before_qty, null: false
       t.timestamps
     end
-    
+
     add_index :inventory_movements, :created_at
   end
 end

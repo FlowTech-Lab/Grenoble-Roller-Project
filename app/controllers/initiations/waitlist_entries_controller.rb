@@ -20,7 +20,7 @@ module Initiations
       # L'essai gratuit est OBLIGATOIRE pour les enfants pending et trial, peu importe si le parent est adhérent
       if child_membership_id.present?
         child_membership = current_user.memberships.find_by(id: child_membership_id, is_child_membership: true)
-        
+
         unless child_membership
           redirect_to initiation_path(@initiation), alert: "Cette adhésion enfant ne vous appartient pas."
           return
@@ -34,7 +34,7 @@ module Initiations
             redirect_to initiation_path(@initiation), alert: "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante."
             return
           end
-          
+
           # Vérifier si cet enfant a déjà utilisé son essai gratuit (nominatif)
           if current_user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).exists?
             redirect_to initiation_path(@initiation), alert: "Cet enfant a déjà utilisé son essai gratuit."
@@ -257,14 +257,14 @@ module Initiations
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
         event = waitlist_entry.event
         redirect_path = event.is_a?(Event::Initiation) ? initiation_path(event) : event_path(event)
-        
+
         # Si non connecté, rediriger vers connexion avec message
         unless user_signed_in?
           store_location_for(:user, redirect_path)
           redirect_to new_user_session_path, notice: "Inscription confirmée pour #{participant_name} ! Veuillez vous connecter pour voir les détails."
           return
         end
-        
+
         redirect_to redirect_path, notice: "Inscription confirmée pour #{participant_name} ! Vous avez été retiré(e) de la liste d'attente."
       else
         event = waitlist_entry.event
@@ -302,14 +302,14 @@ module Initiations
         participant_name = waitlist_entry.for_child? ? waitlist_entry.participant_name : "Vous"
         event = waitlist_entry.event
         redirect_path = event.is_a?(Event::Initiation) ? initiation_path(event) : event_path(event)
-        
+
         # Si non connecté, rediriger vers connexion avec message
         unless user_signed_in?
           store_location_for(:user, redirect_path)
           redirect_to new_user_session_path, notice: "Vous avez refusé la place pour #{participant_name}. Veuillez vous connecter pour voir les détails."
           return
         end
-        
+
         redirect_to redirect_path, notice: "Vous avez refusé la place pour #{participant_name}. Vous avez été retiré(e) de l'événement et de la liste d'attente."
       else
         event = waitlist_entry.event
@@ -338,7 +338,7 @@ module Initiations
       if user_signed_in?
         waitlist_entry_id = params[:id] || params[:waitlist_entry_id]
         waitlist_entry = WaitlistEntry.find_by_hashid(waitlist_entry_id)
-        
+
         # Vérifier que c'est bien l'utilisateur connecté
         if waitlist_entry && waitlist_entry.user == current_user
           return waitlist_entry

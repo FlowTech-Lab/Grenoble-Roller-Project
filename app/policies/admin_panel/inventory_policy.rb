@@ -5,14 +5,13 @@ module AdminPanel
     def index?
       admin_user?
     end
-    
+
     def transfers?
       admin_user?
     end
-    
+
     def adjust_stock?
       admin_user?
     end
   end
 end
-

@@ -9,7 +9,7 @@ module AdminPanel
 
     # GET /admin-panel/products
     def index
-      authorize [:admin_panel, Product]
+      authorize [ :admin_panel, Product ]
 
       # Recherche et filtres
       @q = Product.ransack(params[:q])
@@ -24,7 +24,7 @@ module AdminPanel
 
       respond_to do |format|
         format.html
-        format.csv { send_data ProductExporter.to_csv(@products), filename: csv_filename, type: 'text/csv' }
+        format.csv { send_data ProductExporter.to_csv(@products), filename: csv_filename, type: "text/csv" }
       end
     end
 
@@ -40,7 +40,7 @@ module AdminPanel
       @product.price_cents = 0
       @product.currency = "EUR"
       @product.is_active = true
-      authorize [:admin_panel, @product]
+      authorize [ :admin_panel, @product ]
 
       @categories = ProductCategory.order(:name)
       @option_types = OptionType.includes(:option_values).order(:name)
@@ -55,14 +55,14 @@ module AdminPanel
     # POST /admin-panel/products
     def create
       @product = Product.new(product_params)
-      authorize [:admin_panel, @product]
+      authorize [ :admin_panel, @product ]
 
       @categories = ProductCategory.order(:name)
       @option_types = OptionType.includes(:option_values).order(:name)
 
       if @product.save
         # NOUVEAU : Génération auto si options sélectionnées
-        if params[:generate_variants] == 'true' && params[:option_ids].present?
+        if params[:generate_variants] == "true" && params[:option_ids].present?
           count = ProductVariantGenerator.generate_combinations(@product, params[:option_ids])
           flash[:notice] = "Produit créé avec #{count} variante(s) générée(s)"
         elsif params[:option_type_ids].present?
@@ -93,7 +93,7 @@ module AdminPanel
     def update
       if @product.update(product_params)
         # NOUVEAU : Générer options manquantes si ajoutées après création
-        if params[:generate_missing] == 'true' && params[:option_ids].present?
+        if params[:generate_missing] == "true" && params[:option_ids].present?
           count = ProductVariantGenerator.generate_missing_combinations(@product, params[:option_ids])
           flash[:notice] = "Produit mis à jour avec #{count} nouvelle(s) variante(s) générée(s)"
         else
@@ -121,22 +121,22 @@ module AdminPanel
     # POST /admin-panel/products/:id/publish
     def publish
       if @product.update(is_active: true)
-        flash[:notice] = 'Produit publié avec succès'
+        flash[:notice] = "Produit publié avec succès"
       else
         flash[:alert] = "Erreur : #{@product.errors.full_messages.join(', ')}"
       end
-      
+
       redirect_to admin_panel_product_path(@product)
     end
 
     # POST /admin-panel/products/:id/unpublish
     def unpublish
       if @product.update(is_active: false)
-        flash[:notice] = 'Produit dépublié avec succès'
+        flash[:notice] = "Produit dépublié avec succès"
       else
         flash[:alert] = "Erreur : #{@product.errors.full_messages.join(', ')}"
       end
-      
+
       redirect_to admin_panel_product_path(@product)
     end
 
@@ -178,7 +178,7 @@ module AdminPanel
 
     # GET /admin-panel/products/export
     def export
-      authorize [:admin_panel, Product]
+      authorize [ :admin_panel, Product ]
 
       @q = Product.ransack(params[:q])
       @products = @q.result.with_associations
@@ -201,14 +201,14 @@ module AdminPanel
     def bulk_update_variants
       variant_ids = params[:variant_ids] || []
       updates = params[:updates] || {}
-      
+
       if variant_ids.empty? || updates.empty?
         render json: { success: false, message: "Paramètres manquants" }, status: :bad_request
         return
       end
 
       count = ProductVariant.where(id: variant_ids).update_all(updates.permit(:price_cents, :stock_qty, :is_active))
-      
+
       render json: { success: true, count: count }
     end
 
@@ -219,7 +219,7 @@ module AdminPanel
     end
 
     def authorize_product
-      authorize [:admin_panel, @product]
+      authorize [ :admin_panel, @product ]
     end
 
     def product_params

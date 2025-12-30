@@ -208,15 +208,15 @@ class Attendance < ApplicationRecord
         unless child_membership&.active? || child_membership&.trial? || child_membership&.pending?
           errors.add(:child_membership_id, "L'adhésion de cet enfant n'est pas active")
         end
-        
+
         # RÈGLE MÉTIER CRITIQUE v4.0 : Les essais gratuits sont NOMINATIFS
         # Chaque enfant (pending ou trial) DOIT utiliser son propre essai gratuit, même si le parent est adhérent
-        if (child_membership&.trial? || child_membership&.pending?)
+        if child_membership&.trial? || child_membership&.pending?
           # Essai gratuit OBLIGATOIRE pour cet enfant (nominatif)
           unless free_trial_used
             errors.add(:free_trial_used, "L'essai gratuit est obligatoire pour cet enfant. Veuillez cocher la case correspondante.")
           end
-          
+
           # Vérifier que cet enfant n'a pas déjà utilisé son essai gratuit (attendance active uniquement)
           # IMPORTANT : Exclure les attendances annulées (si annulation, l'essai gratuit redevient disponible)
           if user.attendances.active.where(free_trial_used: true, child_membership_id: child_membership_id).where.not(id: id).exists?

@@ -78,7 +78,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
           login_user(user)
 
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               use_free_trial: '1',
               wants_reminder: false
             }
@@ -94,9 +94,9 @@ RSpec.describe 'Waitlist Entries', type: :request do
         it 'prevents parent from joining waitlist if free trial already used' do
           # Créer une attendance avec essai gratuit utilisé pour le parent
           other_initiation = create(:event_initiation, :published, :upcoming, max_participants: 10)
-          create(:attendance, 
-            user: user, 
-            event: other_initiation, 
+          create(:attendance,
+            user: user,
+            event: other_initiation,
             status: 'registered',
             free_trial_used: true,
             child_membership_id: nil
@@ -105,7 +105,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
           login_user(user)
 
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               use_free_trial: '1',
               wants_reminder: false
             }
@@ -128,7 +128,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
           login_user(user)
 
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               child_membership_id: child_membership.id,
               use_free_trial: '1',
               wants_reminder: false
@@ -145,9 +145,9 @@ RSpec.describe 'Waitlist Entries', type: :request do
         it 'prevents child from joining waitlist if free trial already used for this child' do
           # Créer une attendance avec essai gratuit utilisé pour CET ENFANT
           other_initiation = create(:event_initiation, :published, :upcoming, max_participants: 10)
-          create(:attendance, 
-            user: user, 
-            event: other_initiation, 
+          create(:attendance,
+            user: user,
+            event: other_initiation,
             status: 'registered',
             free_trial_used: true,
             child_membership_id: child_membership.id
@@ -156,7 +156,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
           login_user(user)
 
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               child_membership_id: child_membership.id,
               use_free_trial: '1',
               wants_reminder: false
@@ -170,9 +170,9 @@ RSpec.describe 'Waitlist Entries', type: :request do
         it 'allows child to join waitlist even if parent has used free trial' do
           # Créer une attendance avec essai gratuit utilisé pour le PARENT (pas l'enfant)
           other_initiation = create(:event_initiation, :published, :upcoming, max_participants: 10)
-          create(:attendance, 
-            user: user, 
-            event: other_initiation, 
+          create(:attendance,
+            user: user,
+            event: other_initiation,
             status: 'registered',
             free_trial_used: true,
             child_membership_id: nil  # Essai utilisé par le parent
@@ -182,7 +182,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
 
           # L'enfant devrait pouvoir utiliser son essai gratuit même si le parent a utilisé le sien
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               child_membership_id: child_membership.id,
               use_free_trial: '1',
               wants_reminder: false
@@ -214,7 +214,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
 
           # Premier enfant
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               child_membership_id: child_membership1.id,
               use_free_trial: '1',
               wants_reminder: false
@@ -223,7 +223,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
 
           # Deuxième enfant (devrait pouvoir utiliser son propre essai gratuit)
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               child_membership_id: child_membership2.id,
               use_free_trial: '1',
               wants_reminder: false
@@ -251,7 +251,7 @@ RSpec.describe 'Waitlist Entries', type: :request do
           login_user(user)
 
           expect {
-            post initiation_waitlist_entries_path(initiation), params: { 
+            post initiation_waitlist_entries_path(initiation), params: {
               child_membership_id: child_membership.id,
               use_free_trial: '1',
               wants_reminder: false

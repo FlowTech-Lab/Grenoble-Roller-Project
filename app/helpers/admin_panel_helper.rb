@@ -3,7 +3,7 @@
 module AdminPanelHelper
   # Afficher le breadcrumb sauf sur le dashboard
   def show_breadcrumb?
-    !(controller_name == 'dashboard' && action_name == 'index')
+    !(controller_name == "dashboard" && action_name == "index")
   end
 
   # Vérifier si l'utilisateur est admin
@@ -34,7 +34,7 @@ module AdminPanelHelper
 
   # Helper pour vérifier si un controller est actif dans AdminPanel
   def admin_panel_active?(controller_name, action_name = nil)
-    return false unless controller.class.name.start_with?('AdminPanel::')
+    return false unless controller.class.name.start_with?("AdminPanel::")
 
     if action_name
       controller_name.to_s == controller.controller_name && action_name.to_s == controller.action_name
@@ -46,20 +46,20 @@ module AdminPanelHelper
   # Traduit les statuts d'attendance en français
   def attendance_status_fr(status)
     case status.to_s
-    when 'pending'
-      'En attente'
-    when 'registered'
-      'Inscrit'
-    when 'paid'
-      'Payé'
-    when 'present'
-      'Présent'
-    when 'absent'
-      'Absent'
-    when 'no_show'
-      'No-show'
-    when 'canceled'
-      'Annulé'
+    when "pending"
+      "En attente"
+    when "registered"
+      "Inscrit"
+    when "paid"
+      "Payé"
+    when "present"
+      "Présent"
+    when "absent"
+      "Absent"
+    when "no_show"
+      "No-show"
+    when "canceled"
+      "Annulé"
     else
       status.to_s.humanize
     end
@@ -68,14 +68,14 @@ module AdminPanelHelper
   # Traduit les statuts de waitlist en français
   def waitlist_status_fr(status)
     case status.to_s
-    when 'pending'
-      'En attente'
-    when 'notified'
-      'Notifié'
-    when 'converted'
-      'Converti'
-    when 'cancelled'
-      'Annulé'
+    when "pending"
+      "En attente"
+    when "notified"
+      "Notifié"
+    when "converted"
+      "Converti"
+    when "cancelled"
+      "Annulé"
     else
       status.to_s.humanize
     end
@@ -95,7 +95,7 @@ module AdminPanelHelper
       else
         arguments_data
       end
-      
+
       # Si c'est un Hash avec la clé "arguments" (format ActiveJob)
       if parsed_data.is_a?(Hash) && parsed_data["arguments"].is_a?(Array)
         args = parsed_data["arguments"]
@@ -105,7 +105,7 @@ module AdminPanelHelper
       else
         return { mailer: nil, method: nil }
       end
-      
+
       if args.is_a?(Array) && args.length >= 2
         { mailer: args[0], method: args[1] }
       else
@@ -119,5 +119,4 @@ module AdminPanelHelper
       { mailer: nil, method: nil }
     end
   end
-
 end

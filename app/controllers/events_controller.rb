@@ -11,7 +11,7 @@ class EventsController < ApplicationController
     # Exclure les événements rejetés de toutes les listes publiques (même pour modos/admins)
     # Les rejetés restent en BDD mais ne sont pas affichés dans les listes publiques
     scoped_events = scoped_events.where.not(status: "rejected")
-    
+
     if can_moderate?
       # Admins/moderateurs voient les événements non publiés (draft) mais pas les rejetés
       @upcoming_events = scoped_events.upcoming.order(:start_at)

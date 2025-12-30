@@ -7,7 +7,7 @@ class ProductVariantGenerator
 
   def initialize(product, option_types: [])
     @product = product
-    @option_types = option_types.is_a?(Array) ? option_types : [option_types].compact
+    @option_types = option_types.is_a?(Array) ? option_types : [ option_types ].compact
     @errors = []
   end
 
@@ -51,7 +51,7 @@ class ProductVariantGenerator
   def self.generate_sku(product, option_values)
     base = product.slug&.upcase || product.name&.parameterize&.upcase || "PROD"
     parts = option_values.map { |ov| ov.value.upcase.gsub(/\s+/, "-") }
-    [base, *parts].join("-")
+    [ base, *parts ].join("-")
   end
 
   # NOUVEAU : Preview avant création
@@ -120,7 +120,7 @@ class ProductVariantGenerator
 
     existing_options = product.product_variants
       .joins(variant_option_values: :option_value)
-      .pluck('option_values.option_type_id')
+      .pluck("option_values.option_type_id")
       .uniq
 
     new_option_ids = option_ids.map(&:to_i) - existing_options

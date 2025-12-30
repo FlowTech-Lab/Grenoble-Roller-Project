@@ -44,7 +44,7 @@ FactoryBot.define do
     end
 
     trait :for_child do
-      association :child_membership, factory: :membership, traits: [:child, :trial, :with_health_questionnaire]
+      association :child_membership, factory: :membership, traits: [ :child, :trial, :with_health_questionnaire ]
     end
   end
 end

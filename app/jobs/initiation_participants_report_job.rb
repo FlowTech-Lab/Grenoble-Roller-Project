@@ -7,7 +7,7 @@ class InitiationParticipantsReportJob < ApplicationJob
   # Exécuté chaque jour à 7h00, uniquement en production
   def perform
     # Ne s'exécute qu'en production (ou si FORCE_INITIATION_REPORT=true pour tests)
-    return unless Rails.env.production? || ENV['FORCE_INITIATION_REPORT'] == 'true'
+    return unless Rails.env.production? || ENV["FORCE_INITIATION_REPORT"] == "true"
 
     # Trouver toutes les initiations du jour (aujourd'hui entre 00:00 et 23:59:59)
     # qui n'ont pas encore reçu de rapport aujourd'hui (prévention doublons)

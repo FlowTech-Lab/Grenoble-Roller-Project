@@ -59,7 +59,7 @@ class Event::InitiationPolicy < ApplicationPolicy
         registered_child_ids = user.attendances.where(event: record).where.not(child_membership_id: nil, status: "canceled").pluck(:child_membership_id).compact
         # Inclure les adhésions active, trial et pending pour les initiations
         available_children = user.memberships.where(is_child_membership: true)
-          .where(status: [Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending]])
+          .where(status: [ Membership.statuses[:active], Membership.statuses[:trial], Membership.statuses[:pending] ])
           .where.not(id: registered_child_ids)
         return available_children.exists?
       end

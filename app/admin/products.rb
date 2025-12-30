@@ -67,7 +67,7 @@ ActiveAdmin.register Product do
       end
       row :image do |product|
         if product.image.attached?
-          image_tag(product.image.variant(resize_to_limit: [300, 300]), style: "border-radius: 8px; max-width: 300px;")
+          image_tag(product.image.variant(resize_to_limit: [ 300, 300 ]), style: "border-radius: 8px; max-width: 300px;")
         elsif product.image_url.present?
           image_tag(product.image_url, height: 150, style: "border-radius: 8px;")
         else

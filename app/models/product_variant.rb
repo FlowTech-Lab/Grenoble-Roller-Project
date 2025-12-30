@@ -11,7 +11,7 @@ class ProductVariant < ApplicationRecord
 
   # VALIDATIONS
   validates :sku, presence: true, uniqueness: true,
-            format: { with: /\A[A-Z0-9-]+\z/, message: 'format invalide' }
+            format: { with: /\A[A-Z0-9-]+\z/, message: "format invalide" }
   validates :price_cents, numericality: { greater_than: 0 }
   validates :stock_qty, numericality: { greater_than_or_equal_to: 0 }
   validates :currency, length: { is: 3 }
@@ -45,7 +45,7 @@ class ProductVariant < ApplicationRecord
   def has_required_option_values
     # Si le produit a plusieurs variantes, celle-ci doit avoir des options
     return if variant_option_values.any? || product.product_variants.count <= 1
-    errors.add(:base, 'Les variantes doivent avoir des options de catégorisation')
+    errors.add(:base, "Les variantes doivent avoir des options de catégorisation")
   end
 
   def apply_inheritance
