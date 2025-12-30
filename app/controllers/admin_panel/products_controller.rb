@@ -202,22 +202,30 @@ module AdminPanel
       # Sécuriser variant_ids : convertir en tableau d'entiers positifs
       input_ids = Array(params[:variant_ids]).filter_map { |id| id.to_i if id.to_i.positive? }
 
-      # S'assurer que updates est un ActionController::Parameters pour pouvoir utiliser .permit
-      updates = params[:updates] || {}
-      updates_params = updates.is_a?(ActionController::Parameters) ? updates : ActionController::Parameters.new(updates)
-
-      # Valider que les paramètres requis sont présents
-      if input_ids.empty? || updates_params.empty?
-        render json: { success: false, message: "Paramètres manquants" }, status: :bad_request
+      # Valider que variant_ids contient au moins un ID valide
+      if input_ids.empty?
+        render json: { success: false, message: "Aucun ID de variante valide fourni" }, status: :bad_request
         return
       end
+
+      # S'assurer que updates est un ActionController::Parameters pour pouvoir utiliser .permit
+      updates = params[:updates] || {}
+
+      # Valider que updates n'est pas vide avant conversion
+      if updates.empty?
+        render json: { success: false, message: "Aucune donnée de mise à jour fournie" }, status: :bad_request
+        return
+      end
+
+      updates_params = updates.is_a?(ActionController::Parameters) ? updates : ActionController::Parameters.new(updates)
 
       # Permettre uniquement les champs autorisés
       permitted_updates = updates_params.permit(:price_cents, :stock_qty, :is_active)
 
       # Vérifier que permitted_updates n'est pas vide après filtrage
-      if permitted_updates.empty?
-        render json: { success: false, message: "Aucun champ valide à mettre à jour" }, status: :bad_request
+      # et qu'il contient au moins une clé avec une valeur non nulle
+      if permitted_updates.empty? || permitted_updates.values.all?(&:nil?)
+        render json: { success: false, message: "Aucun champ valide à mettre à jour. Champs autorisés: price_cents, stock_qty, is_active" }, status: :bad_request
         return
       end
 
@@ -228,16 +236,20 @@ module AdminPanel
 
       # Vérifier qu'au moins une variante existe
       if existing_variants_relation.empty?
-        render json: { success: false, message: "Aucune variante valide trouvée" }, status: :bad_request
+        render json: { success: false, message: "Aucune variante valide trouvée pour les IDs fournis" }, status: :bad_request
         return
       end
 
       # Mise à jour en masse directement sur la relation ActiveRecord existante
       # Cette approche est sécurisée car existing_variants_relation est une relation ActiveRecord
       # qui a déjà été construite avec des entiers validés
-      count = existing_variants_relation.update_all(permitted_updates)
-
-      render json: { success: true, count: count }
+      begin
+        count = existing_variants_relation.update_all(permitted_updates.to_h)
+        render json: { success: true, count: count }
+      rescue StandardError => e
+        Rails.logger.error("Erreur lors de la mise à jour en masse: #{e.message}")
+        render json: { success: false, message: "Erreur lors de la mise à jour: #{e.message}" }, status: :unprocessable_entity
+      end
     end
 
     private
