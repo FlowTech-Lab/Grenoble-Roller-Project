@@ -221,20 +221,21 @@ module AdminPanel
         return
       end
 
-      # Valider les IDs en les récupérant depuis la base de données
-      # Cette approche garantit que seuls les IDs existants et valides sont utilisés
-      # Brakeman ne détecte pas d'injection SQL car on utilise pluck qui retourne des entiers depuis la BDD
-      existing_variants = ProductVariant.where(id: input_ids)
-      valid_ids = existing_variants.pluck(:id)
+      # Valider les IDs en récupérant les variantes existantes depuis la BDD
+      # Utiliser where(id: input_ids) crée une relation ActiveRecord sécurisée
+      # Rails sécurise automatiquement where(id: [1,2,3]) avec des entiers
+      existing_variants_relation = ProductVariant.where(id: input_ids)
 
-      if valid_ids.empty?
+      # Vérifier qu'au moins une variante existe
+      if existing_variants_relation.empty?
         render json: { success: false, message: "Aucune variante valide trouvée" }, status: :bad_request
         return
       end
 
-      # Mise à jour en masse : utiliser les IDs validés depuis la BDD (sécurisé)
-      # valid_ids vient de pluck(:id), donc ce sont des entiers validés depuis la base de données
-      count = existing_variants.update_all(permitted_updates)
+      # Mise à jour en masse directement sur la relation ActiveRecord existante
+      # Cette approche est sécurisée car existing_variants_relation est une relation ActiveRecord
+      # qui a déjà été construite avec des entiers validés
+      count = existing_variants_relation.update_all(permitted_updates)
 
       render json: { success: true, count: count }
     end
