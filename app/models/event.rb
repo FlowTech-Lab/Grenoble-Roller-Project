@@ -275,6 +275,9 @@ class Event < ApplicationRecord
     end
   end
 
+  # Callback pour notifier tous les inscrits et bénévoles quand l'événement est annulé
+  after_commit :notify_attendees_on_cancellation, on: [ :update ], if: -> { saved_change_to_status? && canceled? }
+
   private
 
   def duration_multiple_of_five
@@ -285,5 +288,42 @@ class Event < ApplicationRecord
 
   def cover_image_must_be_present
     errors.add(:cover_image, "doit être présente") unless cover_image.attached?
+  end
+
+  # Notifie tous les inscrits et bénévoles quand l'événement est annulé
+  def notify_attendees_on_cancellation
+    # Ne notifier que si l'événement était publié avant (pas si c'était déjà annulé ou en draft)
+    previous_status = status_before_last_save
+    return unless previous_status == "published"
+
+    is_initiation = is_a?(Event::Initiation)
+
+    # Récupérer toutes les attendances actives (inscrits et bénévoles)
+    active_attendances = attendances.active.includes(:user, :child_membership)
+
+    # Grouper les attendances par utilisateur (parent)
+    # Un parent peut avoir plusieurs attendances pour le même événement (lui-même + enfants)
+    attendances_by_user = active_attendances.group_by(&:user_id)
+
+    attendances_by_user.each do |user_id, user_attendances|
+      user = user_attendances.first.user
+      next unless user&.email.present?
+
+      # Vérifier les préférences utilisateur
+      if is_initiation
+        next unless user.wants_initiation_mail?
+      else
+        next unless user.wants_events_mail?
+      end
+
+      # Envoyer UN SEUL email avec toutes les attendances de cet utilisateur pour cet événement
+      EventMailer.event_cancelled(user, self, user_attendances).deliver_later
+    end
+
+    Rails.logger.info("[Event] #{attendances_by_user.count} email(s) d'annulation envoyé(s) pour événement ##{id}")
+  rescue StandardError => e
+    Rails.logger.error("[Event] Erreur lors de l'envoi des emails d'annulation pour événement ##{id}: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    Sentry.capture_exception(e, extra: { event_id: id, event_title: title }) if defined?(Sentry)
   end
 end

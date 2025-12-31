@@ -19,6 +19,10 @@
 - `event_reminder(user, event, attendances)` : Email de rappel 24h avant (✅ **IMPLÉMENTÉ**)
   - Accepte plusieurs attendances pour grouper les emails (parent + enfants)
   - Un seul email par utilisateur/événement même avec plusieurs participants
+- `event_cancelled(user, event, attendances)` : Email de notification d'annulation d'événement (✅ **IMPLÉMENTÉ**)
+  - Accepte plusieurs attendances pour grouper les emails (parent + enfants)
+  - Envoyé automatiquement à tous les inscrits et bénévoles quand l'événement est annulé
+  - Un seul email par utilisateur/événement même avec plusieurs participants
 
 **Méthodes supplémentaires** :
 - `event_rejected(event)` : Email de notification de refus d'événement au créateur
@@ -31,6 +35,7 @@
 - `app/views/event_mailer/attendance_confirmed.html.erb`
 - `app/views/event_mailer/attendance_cancelled.html.erb`
 - `app/views/event_mailer/event_reminder.html.erb`
+- `app/views/event_mailer/event_cancelled.html.erb`
 - `app/views/event_mailer/event_rejected.html.erb`
 - `app/views/event_mailer/waitlist_spot_available.html.erb`
 - `app/views/event_mailer/initiation_participants_report.html.erb`
@@ -39,6 +44,7 @@
 - `app/views/event_mailer/attendance_confirmed.text.erb`
 - `app/views/event_mailer/attendance_cancelled.text.erb`
 - `app/views/event_mailer/event_reminder.text.erb`
+- `app/views/event_mailer/event_cancelled.text.erb`
 - `app/views/event_mailer/event_rejected.text.erb`
 - `app/views/event_mailer/waitlist_spot_available.text.erb`
 - `app/views/event_mailer/initiation_participants_report.text.erb`
@@ -87,6 +93,12 @@
 **`app/models/waitlist_entry.rb`** :
 - `send_notification_email` : Envoie `waitlist_spot_available` avec `deliver_now` (time-sensitive, 24h pour confirmer)
 
+**`app/models/event.rb`** :
+- Callback `notify_attendees_on_cancellation` : Envoie automatiquement un email à tous les inscrits et bénévoles quand l'événement est annulé
+  - Se déclenche uniquement si le statut passe de `published` à `canceled`
+  - Groupe les attendances par utilisateur (un seul email par utilisateur/événement)
+  - Respecte les préférences utilisateur (`wants_events_mail?`, `wants_initiation_mail?`)
+
 **`app/models/event/initiation.rb`** :
 - Callback `schedule_participants_report` : Crée automatiquement le job lors de la publication
 - Callback `cancel_scheduled_report` : Annule le job si l'initiation est annulée/rejetée
@@ -118,6 +130,7 @@
 
 **Tests manquants** :
 - ⚠️ `event_rejected` : Pas de tests
+- ⚠️ `event_cancelled` : Pas de tests
 - ⚠️ `waitlist_spot_available` : Pas de tests
 - ⚠️ `initiation_participants_report` : Pas de tests
 
@@ -215,6 +228,29 @@
 **Appel** : `app/models/waitlist_entry.rb` ligne 290 (via `send_notification_email`)  
 **⚠️ Important** : Utilise `deliver_now` (pas `deliver_later`) car notification time-sensitive (24h pour confirmer)  
 **Contenu** : Lien de confirmation avec token sécurisé, délai de 24h
+
+### Email d'Annulation d'Événement (`event_cancelled`)
+
+**Sujet** :
+- Événement normal : `⚠️ Événement annulé : [Titre]`
+- Initiation : `⚠️ Événement annulé - Initiation roller samedi [Date]`
+- Si plusieurs participants : `⚠️ Événement annulé : [Titre] ([N] participants)`
+
+**Déclencheur** : Annulation d'un événement (statut passe de `published` à `canceled`)  
+**Destinataires** : Tous les inscrits et bénévoles actifs de l'événement  
+**Appel** : Callback automatique `notify_attendees_on_cancellation` dans `app/models/event.rb`  
+**⚠️ Important** : 
+- Envoyé automatiquement via callback `after_commit` quand le statut passe à `canceled`
+- Groupe les attendances par utilisateur (un seul email par utilisateur/événement même avec plusieurs participants)
+- Respecte les préférences utilisateur (`wants_events_mail?`, `wants_initiation_mail?`)
+- Ne s'envoie que si l'événement était `published` avant (pas si c'était déjà `canceled` ou `draft`)
+
+**Contenu** :
+- Notification d'annulation
+- Liste des participants concernés (si plusieurs)
+- Détails de l'événement annulé (lieu, date, durée, prix)
+- Information sur le remboursement (si événement payant)
+- Lien vers les autres événements
 
 ### Email de Rapport Participants (`initiation_participants_report`)
 
@@ -367,6 +403,8 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 - `app/views/event_mailer/attendance_cancelled.text.erb`
 - `app/views/event_mailer/event_reminder.html.erb`
 - `app/views/event_mailer/event_reminder.text.erb`
+- `app/views/event_mailer/event_cancelled.html.erb`
+- `app/views/event_mailer/event_cancelled.text.erb`
 - `app/views/event_mailer/event_rejected.html.erb`
 - `app/views/event_mailer/event_rejected.text.erb`
 - `app/views/event_mailer/waitlist_spot_available.html.erb`
@@ -379,7 +417,8 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 
 **Modifiés** :
 - `app/mailers/application_mailer.rb` (email expéditeur)
-- `app/mailers/event_mailer.rb` (méthode `event_reminder` modifiée pour accepter plusieurs attendances)
+- `app/mailers/event_mailer.rb` (méthodes `event_reminder` et `event_cancelled` modifiées pour accepter plusieurs attendances)
+- `app/models/event.rb` (callback `notify_attendees_on_cancellation` pour notification automatique)
 - `app/controllers/events_controller.rb` (intégration mailer)
 - `app/controllers/events/attendances_controller.rb` (emails avec préférences)
 - `app/controllers/initiations/attendances_controller.rb` (emails avec préférences)
@@ -413,8 +452,8 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 
 ### Implémentation de Base
 - [x] Mailer créé (`EventMailer`)
-- [x] Templates HTML créés (6 méthodes)
-- [x] Templates texte créés (6 méthodes)
+- [x] Templates HTML créés (7 méthodes)
+- [x] Templates texte créés (7 méthodes)
 - [x] Layout mailer amélioré
 - [x] Configuration ActionMailer (dev/staging/production)
 - [x] Intégration dans contrôleurs (5 contrôleurs)
@@ -426,6 +465,10 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 - [x] Job de rappel 24h avant (`EventReminderJob`) ✅
 - [x] Préférences utilisateur (`wants_events_mail?`, `wants_initiation_mail?`, `wants_reminder?`) ✅
 - [x] Email de refus (`event_rejected`) ✅
+- [x] Email d'annulation (`event_cancelled`) ✅ **NOUVEAU**
+  - Envoi automatique à tous les inscrits et bénévoles
+  - Regroupement par utilisateur (un seul email pour parent + enfants)
+  - Respecte les préférences utilisateur
 - [x] Email liste d'attente (`waitlist_spot_available`) ✅
 - [x] Email rapport participants (`initiation_participants_report`) ✅
 - [x] Planification jobs (Solid Queue `config/recurring.yml`) ✅
@@ -437,6 +480,7 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 ### À Améliorer
 - [ ] Tests d'intégration Capybara - À faire
 - [ ] Tests RSpec pour `event_rejected` - À faire
+- [ ] Tests RSpec pour `event_cancelled` - À faire
 - [ ] Tests RSpec pour `waitlist_spot_available` - À faire
 - [ ] Tests RSpec pour `initiation_participants_report` - À faire
 - [ ] Email à l'organisateur (inscription/désinscription) - Optionnel
@@ -488,9 +532,34 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 - `app/jobs/initiation_participants_report_job.rb` : Modifié pour accepter un ID, vérifier le statut
 - `config/recurring.yml` : Job récurrent supprimé (création à la demande)
 
+### 3. Email Automatique d'Annulation d'Événement
+
+**Problème** : Aucun email n'était envoyé aux inscrits et bénévoles quand un événement était annulé.
+
+**Solution** : Notification automatique via callback dans le modèle `Event`
+- Callback `notify_attendees_on_cancellation` se déclenche quand le statut passe de `published` à `canceled`
+- Envoie un email à tous les inscrits et bénévoles actifs
+- Groupe les attendances par utilisateur (un seul email par utilisateur/événement même avec plusieurs participants)
+- Respecte les préférences utilisateur (`wants_events_mail?`, `wants_initiation_mail?`)
+
+**Fichiers créés** :
+- `app/mailers/event_mailer.rb` : Méthode `event_cancelled(user, event, attendances)`
+- `app/views/event_mailer/event_cancelled.html.erb` : Template HTML
+- `app/views/event_mailer/event_cancelled.text.erb` : Template texte
+
+**Fichiers modifiés** :
+- `app/models/event.rb` : Callback `notify_attendees_on_cancellation`
+
+**Contenu de l'email** :
+- Notification d'annulation
+- Liste des participants concernés (si plusieurs)
+- Détails de l'événement annulé
+- Information sur le remboursement (si événement payant)
+- Lien vers les autres événements
+
 ---
 
 **Document créé le** : Novembre 2025  
 **Dernière mise à jour** : Décembre 2025  
-**Version** : 2.1
+**Version** : 2.2
 

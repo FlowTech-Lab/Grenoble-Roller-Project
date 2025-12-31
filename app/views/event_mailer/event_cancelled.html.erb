@@ -1,0 +1,71 @@
+<h1 style="color: #dc3545; margin-top: 0;">⚠️ Événement annulé</h1>
+
+<p>Bonjour <%= @user.first_name %>,</p>
+
+<p>Nous vous informons que l'événement <strong><%= @event.title %></strong> auquel vous êtes inscrit(e) a été <strong>annulé</strong>.</p>
+
+<% if @attendances.count > 1 %>
+  <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107;">
+    <h3 style="margin-top: 0; color: #333; font-size: 18px;">👥 Participants concernés</h3>
+    <ul style="margin: 10px 0; padding-left: 20px;">
+      <% @attendances.each do |attendance| %>
+        <li style="margin: 8px 0;">
+          <strong><%= attendance.participant_name %></strong>
+          <% if attendance.is_volunteer? %>
+            <span style="color: #6c757d; font-size: 14px;">(Bénévole)</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #dc3545;">
+  <h3 style="margin-top: 0; color: #333; font-size: 18px;">📅 Détails de l'événement annulé</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #666; width: 120px;">📍 Lieu :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.location_text %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">🕐 Date prévue :</td>
+      <td style="padding: 8px 0;"><strong><%= l @event.start_at, format: :event_long, locale: :fr %></strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #666;">⏱️ Durée :</td>
+      <td style="padding: 8px 0;"><strong><%= @event.duration_min %> minutes</strong></td>
+    </tr>
+    <% if @event.price_cents > 0 %>
+      <tr>
+        <td style="padding: 8px 0; color: #666;">💰 Prix :</td>
+        <td style="padding: 8px 0;"><strong><%= number_to_currency(@event.price_cents / 100.0, unit: '€') %></strong></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
+
+<div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107;">
+  <h3 style="margin-top: 0; color: #856404; font-size: 18px;">ℹ️ Informations importantes</h3>
+  <p style="color: #856404; margin: 10px 0;">
+    <% if @event.price_cents > 0 %>
+      <strong>💳 Remboursement :</strong> Si vous aviez payé pour cet événement, vous serez automatiquement remboursé(e) dans les prochains jours.
+      <br><br>
+    <% end %>
+    Nous nous excusons pour la gêne occasionnée. Nous espérons vous revoir bientôt sur une autre sortie !
+  </p>
+</div>
+
+<div style="margin: 30px 0; text-align: center;">
+  <%= link_to 'Voir les autres événements', @is_initiation ? initiations_url : events_url, 
+      style: 'display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;' %>
+</div>
+
+<p style="color: #6c757d; font-size: 14px; margin-top: 30px;">
+  Cordialement,<br>
+  L'équipe Grenoble Roller
+</p>
+
+<p style="color: #6c757d; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+  <strong>💡 Note :</strong> Si vous avez des questions concernant cette annulation, n'hésitez pas à nous contacter à <%= ENV.fetch('CONTACT_EMAIL', 'contact@grenoble-roller.org') %>.
+</p>
+
