@@ -2,7 +2,21 @@
 
 Bonjour <%= @user.first_name %>,
 
+<% if @attendances.count > 1 %>
+Nous vous rappelons que <%= @attendances.count %> participants sont inscrits à l'événement <%= @event.title %> qui aura lieu demain !
+
+👥 PARTICIPANTS INSCRITS
+─────────────────────────
+<% @attendances.each do |attendance| %>
+- <%= attendance.participant_name %>
+<% if attendance.equipment_note.present? %>
+  📦 Matériel : <%= attendance.equipment_note %>
+<% end %>
+<% end %>
+─────────────────────────
+<% else %>
 Nous vous rappelons que vous êtes inscrit(e) à l'événement <%= @event.title %> qui aura lieu demain !
+<% end %>
 
 📅 DÉTAILS DE L'ÉVÉNEMENT
 ─────────────────────────
@@ -21,8 +35,11 @@ Nous vous rappelons que vous êtes inscrit(e) à l'événement <%= @event.title 
 ─────────────────────────
 🎓 RAPPEL INITIATION
 ─────────────────────────
-<% if @attendance.equipment_note.present? %>
-📦 Matériel demandé : <%= @attendance.equipment_note %>
+<% if @attendances.any? { |a| a.equipment_note.present? } %>
+📦 Matériel demandé :
+<% @attendances.select { |a| a.equipment_note.present? }.each do |attendance| %>
+- <%= attendance.participant_name %> : <%= attendance.equipment_note %>
+<% end %>
 (N'oubliez pas votre matériel demandé !)
 <% end %>
 

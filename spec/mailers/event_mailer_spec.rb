@@ -132,7 +132,8 @@ RSpec.describe EventMailer, type: :mailer do
     let!(:user_membership) { create(:membership, user: user, status: :active, season: '2025-2026') }
     let(:event) { create_event(status: 'published', title: 'Sortie Roller', location_text: 'Parc Paul Mistral', creator_user: organizer, start_at: 3.days.from_now) }
     let(:attendance) { create_attendance(user: user, event: event) }
-    let(:mail) { EventMailer.event_reminder(attendance) }
+    let(:attendances) { [attendance] }
+    let(:mail) { EventMailer.event_reminder(user, event, attendances) }
 
     it 'sends to user email' do
       expect(mail.to).to eq([ user.email ])
@@ -150,6 +151,31 @@ RSpec.describe EventMailer, type: :mailer do
 
     it 'includes user first name in body' do
       expect(mail.body.encoded).to include(user.first_name)
+    end
+
+    context 'with multiple attendances (parent + children)' do
+      let(:child_membership1) { create(:membership, :child, user: user, status: :active, season: '2025-2026', child_first_name: 'Enfant1') }
+      let(:child_membership2) { create(:membership, :child, user: user, status: :active, season: '2025-2026', child_first_name: 'Enfant2') }
+      let(:attendance_parent) { create_attendance(user: user, event: event) }
+      let(:attendance_child1) { create_attendance(user: user, event: event, child_membership: child_membership1) }
+      let(:attendance_child2) { create_attendance(user: user, event: event, child_membership: child_membership2) }
+      let(:attendances) { [attendance_parent, attendance_child1, attendance_child2] }
+      let(:mail) { EventMailer.event_reminder(user, event, attendances) }
+
+      it 'sends one email with multiple participants' do
+        expect(mail.to).to eq([ user.email ])
+      end
+
+      it 'includes participant count in subject when multiple' do
+        expect(mail.subject).to include('3 participants')
+      end
+
+      it 'includes all participant names in body' do
+        body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+        expect(body).to include(attendance_parent.participant_name)
+        expect(body).to include(attendance_child1.participant_name)
+        expect(body).to include(attendance_child2.participant_name)
+      end
     end
   end
 end

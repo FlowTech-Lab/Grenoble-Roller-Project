@@ -37,15 +37,25 @@ class EventMailer < ApplicationMailer
     )
   end
 
-  # Email de rappel 24h avant l'événement (optionnel, pour plus tard)
-  def event_reminder(attendance)
-    @attendance = attendance
-    @event = attendance.event
-    @user = attendance.user
+  # Email de rappel 24h avant l'événement
+  # Accepte plusieurs attendances pour le même utilisateur et événement (cas des initiations avec enfants)
+  # @param user [User] L'utilisateur (parent) qui recevra l'email
+  # @param event [Event] L'événement concerné
+  # @param attendances [Array<Attendance>] Liste des attendances de cet utilisateur pour cet événement
+  def event_reminder(user, event, attendances)
+    @user = user
+    @event = event
+    @attendances = Array(attendances) # S'assurer que c'est un tableau
     @is_initiation = @event.is_a?(Event::Initiation)
 
+    # Si plusieurs participants (parent + enfants), adapter le sujet
+    participant_count = @attendances.count
     subject = if @is_initiation
-      "📅 Rappel : Initiation roller demain samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+      if participant_count > 1
+        "📅 Rappel : Initiation roller demain samedi #{l(@event.start_at, format: :day_month, locale: :fr)} (#{participant_count} participants)"
+      else
+        "📅 Rappel : Initiation roller demain samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+      end
     else
       "📅 Rappel : #{@event.title} demain !"
     end
