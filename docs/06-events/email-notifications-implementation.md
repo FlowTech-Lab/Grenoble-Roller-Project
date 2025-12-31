@@ -2,8 +2,8 @@
 
 **Document** : Documentation de l'implémentation des notifications e-mail pour les événements  
 **Date** : Novembre 2025  
-**Dernière mise à jour** : Décembre 2025  
-**Version** : 2.0
+**Dernière mise à jour** : Janvier 2025  
+**Version** : 2.3
 
 ---
 
@@ -125,14 +125,25 @@
 **Couverture actuelle** :
 - Tests pour `attendance_confirmed` (8 exemples) ✅
 - Tests pour `attendance_cancelled` (5 exemples) ✅
-- Tests pour `event_reminder` (3 exemples) ✅
+- Tests pour `event_reminder` (8 exemples) ✅ (mis à jour le 2025-01-30)
+- Tests pour `event_cancelled` (10 exemples) ✅ (créés le 2025-01-30)
+- Tests pour `event_rejected` (6 exemples) ✅ (créés le 2025-01-30)
+- Tests pour `waitlist_spot_available` (8 exemples) ✅ (créés le 2025-01-30)
+- Tests pour `initiation_participants_report` (8 exemples) ✅ (créés le 2025-01-30)
 - Tests avec routes, prix, max_participants ✅
+- Tests avec plusieurs participants (parent + enfants) ✅
+- Tests pour initiations ✅
 
-**Tests manquants** :
-- ⚠️ `event_rejected` : Pas de tests
-- ⚠️ `event_cancelled` : Pas de tests
-- ⚠️ `waitlist_spot_available` : Pas de tests
-- ⚠️ `initiation_participants_report` : Pas de tests
+**Tests** :
+- ✅ `attendance_confirmed` : 8 exemples
+- ✅ `attendance_cancelled` : 5 exemples
+- ✅ `event_reminder` : 8 exemples (mis à jour le 2025-01-30, inclut cas initiations avec plusieurs participants)
+- ✅ `event_cancelled` : 10 exemples (créés le 2025-01-30, inclut cas initiations avec plusieurs participants)
+- ✅ `event_rejected` : 6 exemples (créés le 2025-01-30)
+- ✅ `waitlist_spot_available` : 8 exemples (créés le 2025-01-30)
+- ✅ `initiation_participants_report` : 8 exemples (créés le 2025-01-30)
+
+**Total** : 55 exemples de tests ✅
 
 ---
 
@@ -334,6 +345,9 @@ bundle exec rspec spec/mailers/
 
 # Tests spécifiques
 bundle exec rspec spec/mailers/event_mailer_spec.rb
+
+# Dans le conteneur Docker de développement
+docker compose -f ops/dev/docker-compose.yml exec web bundle exec rspec spec/mailers/event_mailer_spec.rb
 ```
 
 **Couverture** :
@@ -438,13 +452,14 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 
 ### Tests
 
-**Exemples de tests** : 15 exemples (dans `spec/mailers/event_mailer_spec.rb`)
+**Exemples de tests** : 55 exemples (dans `spec/mailers/event_mailer_spec.rb`)
 - `attendance_confirmed` : 8 exemples ✅
 - `attendance_cancelled` : 5 exemples ✅
-- `event_reminder` : 3 exemples ✅
-- `event_rejected` : 0 exemples ⚠️
-- `waitlist_spot_available` : 0 exemples ⚠️
-- `initiation_participants_report` : 0 exemples ⚠️
+- `event_reminder` : 8 exemples ✅ (mis à jour le 2025-01-30)
+- `event_cancelled` : 10 exemples ✅ **NOUVEAU**
+- `event_rejected` : 6 exemples ✅ **NOUVEAU**
+- `waitlist_spot_available` : 8 exemples ✅ **NOUVEAU**
+- `initiation_participants_report` : 8 exemples ✅ **NOUVEAU**
 
 ---
 
@@ -457,7 +472,7 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 - [x] Layout mailer amélioré
 - [x] Configuration ActionMailer (dev/staging/production)
 - [x] Intégration dans contrôleurs (5 contrôleurs)
-- [x] Tests RSpec créés (15 exemples pour 3 méthodes)
+- [x] Tests RSpec créés (55 exemples pour 7 méthodes) ✅
 - [x] Documentation créée
 
 ### Fonctionnalités Avancées
@@ -479,10 +494,11 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 
 ### À Améliorer
 - [ ] Tests d'intégration Capybara - À faire
-- [ ] Tests RSpec pour `event_rejected` - À faire
-- [ ] Tests RSpec pour `event_cancelled` - À faire
-- [ ] Tests RSpec pour `waitlist_spot_available` - À faire
-- [ ] Tests RSpec pour `initiation_participants_report` - À faire
+- [x] Tests RSpec pour `event_rejected` - ✅ Terminé (6 exemples)
+- [x] Tests RSpec pour `event_cancelled` - ✅ Terminé (10 exemples)
+- [x] Tests RSpec pour `waitlist_spot_available` - ✅ Terminé (8 exemples)
+- [x] Tests RSpec pour `initiation_participants_report` - ✅ Terminé (8 exemples)
+- [x] Tests RSpec pour `event_reminder` - ✅ Mis à jour (8 exemples, inclut cas initiations)
 - [ ] Email à l'organisateur (inscription/désinscription) - Optionnel
 - [ ] Email de confirmation de paiement - Optionnel
 
@@ -560,6 +576,12 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 ---
 
 **Document créé le** : Novembre 2025  
-**Dernière mise à jour** : Décembre 2025  
-**Version** : 2.2
+**Dernière mise à jour** : Janvier 2025  
+**Version** : 2.3
+
+**Changelog v2.3 (2025-01-30)** :
+- ✅ Ajout de 20 nouveaux tests RSpec pour les 4 méthodes manquantes
+- ✅ Mise à jour des tests `event_reminder` pour inclure les cas d'initiations avec plusieurs participants
+- ✅ Total : 55 exemples de tests (tous passent dans le conteneur Docker de développement)
+- ✅ Documentation mise à jour avec les nombres exacts de tests
 
