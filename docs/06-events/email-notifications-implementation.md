@@ -16,7 +16,9 @@
 **Méthodes principales** :
 - `attendance_confirmed(attendance)` : Email de confirmation d'inscription
 - `attendance_cancelled(user, event)` : Email de confirmation de désinscription
-- `event_reminder(attendance)` : Email de rappel 24h avant (✅ **IMPLÉMENTÉ**)
+- `event_reminder(user, event, attendances)` : Email de rappel 24h avant (✅ **IMPLÉMENTÉ**)
+  - Accepte plusieurs attendances pour grouper les emails (parent + enfants)
+  - Un seul email par utilisateur/événement même avec plusieurs participants
 
 **Méthodes supplémentaires** :
 - `event_rejected(event)` : Email de notification de refus d'événement au créateur
@@ -85,8 +87,14 @@
 **`app/models/waitlist_entry.rb`** :
 - `send_notification_email` : Envoie `waitlist_spot_available` avec `deliver_now` (time-sensitive, 24h pour confirmer)
 
+**`app/models/event/initiation.rb`** :
+- Callback `schedule_participants_report` : Crée automatiquement le job lors de la publication
+- Callback `cancel_scheduled_report` : Annule le job si l'initiation est annulée/rejetée
+
 **`app/jobs/initiation_participants_report_job.rb`** :
-- Envoie `initiation_participants_report` à 7h le jour de l'initiation
+- Job créé automatiquement lors de la publication d'une initiation
+- Planifié pour s'exécuter le jour de l'initiation à 7h00
+- Vérifie le statut : n'envoie que si `published?` (ignore `canceled`, `rejected`, `draft`)
 
 **Utilisation de `deliver_later`** :
 - Les emails sont envoyés de manière asynchrone via Active Job (Solid Queue)
@@ -212,9 +220,26 @@
 
 **Sujet** : `📋 Rapport participants - Initiation [Date]`
 
-**Déclencheur** : Job `InitiationParticipantsReportJob` exécuté à 7h le jour de l'initiation  
+**Déclencheur** : Job `InitiationParticipantsReportJob` créé automatiquement lors de la publication d'une initiation  
+**Planification** : Job planifié pour s'exécuter le jour de l'initiation à 7h00  
 **Destinataire** : `contact@grenoble-roller.org`  
 **Contenu** : Liste des participants actifs avec matériel demandé (taille de rollers)
+
+**Logique de création** :
+- ✅ Job créé automatiquement via callback `schedule_participants_report` dans `Event::Initiation`
+- ✅ Se déclenche uniquement si l'initiation est publiée (`status: "published"`)
+- ✅ Se déclenche uniquement si `start_at` est dans le futur
+- ✅ Planifié pour le jour de l'initiation à 7h00 (via `perform_at`)
+
+**Vérifications dans le job** :
+- ✅ Vérifie que l'initiation existe toujours
+- ✅ Vérifie que le statut est toujours `published?` (ignore `canceled`, `rejected`, `draft`)
+- ✅ Vérifie que l'initiation a bien lieu aujourd'hui
+- ✅ Vérifie qu'on n'a pas déjà envoyé le rapport aujourd'hui (`participants_report_sent_at`)
+
+**Annulation automatique** :
+- ✅ Si l'initiation est annulée/rejetée après publication, le job planifié est automatiquement annulé
+- ✅ Callback `cancel_scheduled_report` trouve et annule les jobs dans Solid Queue
 
 ---
 
@@ -299,6 +324,14 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
    - Planifié via `config/recurring.yml` (Solid Queue) - Tous les jours à 19h
    - Template `event_reminder.html.erb` créé
    - Respecte les préférences utilisateur (`wants_reminder?`, `wants_initiation_mail?`)
+   - **Regroupement intelligent** : Un seul email par utilisateur/événement même avec plusieurs participants (parent + enfants)
+   - Affiche la liste complète des participants dans un seul email
+
+2. **Email de rapport participants initiation** : ✅ **IMPLÉMENTÉ ET OPTIMISÉ**
+   - Job `InitiationParticipantsReportJob` créé automatiquement lors de la publication
+   - Planifié pour le jour de l'initiation à 7h00 (au lieu d'un scan quotidien)
+   - Vérifie le statut : n'envoie que si `published?` (ignore les autres statuts)
+   - Annulation automatique si l'initiation est annulée/rejetée
 
 2. **Préférences utilisateur** : ✅ **IMPLÉMENTÉ**
    - `wants_events_mail?` : Contrôle emails événements normaux
@@ -346,17 +379,23 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 
 **Modifiés** :
 - `app/mailers/application_mailer.rb` (email expéditeur)
+- `app/mailers/event_mailer.rb` (méthode `event_reminder` modifiée pour accepter plusieurs attendances)
 - `app/controllers/events_controller.rb` (intégration mailer)
 - `app/controllers/events/attendances_controller.rb` (emails avec préférences)
 - `app/controllers/initiations/attendances_controller.rb` (emails avec préférences)
 - `app/controllers/events/waitlist_entries_controller.rb` (emails avec préférences)
 - `app/controllers/initiations/waitlist_entries_controller.rb` (emails avec préférences)
 - `app/models/waitlist_entry.rb` (notification place disponible)
+- `app/models/event/initiation.rb` (callbacks pour planifier/annuler le rapport participants)
+- `app/jobs/event_reminder_job.rb` (regroupement des attendances par utilisateur)
+- `app/jobs/initiation_participants_report_job.rb` (modifié pour accepter un ID, vérifier le statut)
+- `app/views/event_mailer/event_reminder.html.erb` (affichage liste participants si plusieurs)
+- `app/views/event_mailer/event_reminder.text.erb` (affichage liste participants si plusieurs)
 - `app/views/layouts/mailer.html.erb` (design amélioré)
 - `config/environments/development.rb` (configuration ActionMailer SMTP)
 - `config/environments/production.rb` (configuration ActionMailer SMTP)
 - `config/environments/staging.rb` (configuration ActionMailer SMTP)
-- `config/recurring.yml` (planification EventReminderJob)
+- `config/recurring.yml` (planification EventReminderJob uniquement, InitiationParticipantsReportJob supprimé)
 
 ### Tests
 
@@ -390,6 +429,10 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 - [x] Email liste d'attente (`waitlist_spot_available`) ✅
 - [x] Email rapport participants (`initiation_participants_report`) ✅
 - [x] Planification jobs (Solid Queue `config/recurring.yml`) ✅
+- [x] Regroupement emails rappel (un seul email pour parent + enfants) ✅
+- [x] Création automatique job rapport (lors de la publication) ✅
+- [x] Vérification statut dans jobs (seulement `published?`) ✅
+- [x] Annulation automatique jobs si initiation annulée/rejetée ✅
 
 ### À Améliorer
 - [ ] Tests d'intégration Capybara - À faire
@@ -401,7 +444,53 @@ bundle exec rspec spec/mailers/event_mailer_spec.rb
 
 ---
 
+---
+
+## 🔄 Optimisations Récentes (Décembre 2025)
+
+### 1. Regroupement des Emails de Rappel
+
+**Problème** : Un parent avec plusieurs enfants inscrits recevait plusieurs emails séparés (un par enfant).
+
+**Solution** : Regroupement intelligent dans `EventReminderJob`
+- Les attendances sont groupées par `user_id` et `event_id`
+- Un seul email est envoyé par utilisateur/événement
+- L'email affiche la liste complète des participants (parent + enfants)
+- Le sujet indique le nombre de participants si > 1
+
+**Fichiers modifiés** :
+- `app/jobs/event_reminder_job.rb` : Groupement par utilisateur
+- `app/mailers/event_mailer.rb` : Signature modifiée `event_reminder(user, event, attendances)`
+- `app/views/event_mailer/event_reminder.html.erb` : Affichage liste participants
+- `app/views/event_mailer/event_reminder.text.erb` : Affichage liste participants
+
+### 2. Création Automatique du Job de Rapport Participants
+
+**Problème** : Job récurrent qui scannait toutes les initiations tous les matins à 7h, même s'il n'y avait pas d'initiation.
+
+**Solution** : Création du job à la demande lors de la publication
+- Job créé automatiquement via callback `schedule_participants_report` dans `Event::Initiation`
+- Planifié pour le jour de l'initiation à 7h00 (via `perform_at`)
+- Plus efficace : pas de scan quotidien inutile
+- Plus fiable : job créé au bon moment
+
+**Vérifications ajoutées** :
+- ✅ Vérifie que le statut est `published?` (ignore `canceled`, `rejected`, `draft`)
+- ✅ Vérifie que l'initiation a bien lieu aujourd'hui
+- ✅ Vérifie qu'on n'a pas déjà envoyé le rapport (`participants_report_sent_at`)
+
+**Annulation automatique** :
+- Si l'initiation est annulée/rejetée après publication, le job planifié est automatiquement annulé
+- Callback `cancel_scheduled_report` trouve et annule les jobs dans Solid Queue
+
+**Fichiers modifiés** :
+- `app/models/event/initiation.rb` : Callbacks `schedule_participants_report` et `cancel_scheduled_report`
+- `app/jobs/initiation_participants_report_job.rb` : Modifié pour accepter un ID, vérifier le statut
+- `config/recurring.yml` : Job récurrent supprimé (création à la demande)
+
+---
+
 **Document créé le** : Novembre 2025  
 **Dernière mise à jour** : Décembre 2025  
-**Version** : 2.0
+**Version** : 2.1
 
