@@ -179,6 +179,58 @@ class Event < ApplicationRecord
     start_at <= Time.current
   end
 
+  # Calcule la date de fin de l'événement (start_at + duration_min)
+  def end_at
+    return nil unless start_at && duration_min
+    start_at + duration_min.minutes
+  end
+
+  # Vérifie si l'événement est terminé (après sa date de fin)
+  def finished?
+    return false unless end_at
+    end_at <= Time.current
+  end
+
+  # Remet en stock tous les rollers prêtés pour cet événement
+  # Cette méthode doit être appelée après qu'un événement soit terminé
+  # Retourne le nombre de rollers remis en stock, ou nil si déjà traité
+  def return_roller_stock
+    return unless is_a?(Event::Initiation) # Seulement pour les initiations
+    
+    # Sécurité : éviter de remettre le stock plusieurs fois
+    if stock_returned_at.present?
+      Rails.logger.info("Stock déjà remis en place pour initiation ##{id} le #{stock_returned_at}")
+      return nil
+    end
+
+    attendances_to_process = attendances
+      .where(needs_equipment: true)
+      .where.not(roller_size: nil)
+      .where.not(status: "canceled") # Ne pas traiter les annulées (déjà remises en stock)
+
+    count = 0
+    attendances_to_process.find_each do |attendance|
+      next unless attendance.roller_size.present?
+
+      roller_stock = RollerStock.find_by(size: attendance.roller_size)
+      if roller_stock
+        roller_stock.increment!(:quantity)
+        count += 1
+        Rails.logger.info("Stock remis en place pour taille #{attendance.roller_size} (initiation ##{id}, attendance ##{attendance.id})")
+      else
+        Rails.logger.warn("Taille de roller #{attendance.roller_size} non trouvée dans le stock lors de la remise en stock pour initiation ##{id}")
+      end
+    end
+
+    # Marquer que le stock a été remis en place (même si count = 0, pour éviter de retraiter)
+    if count > 0 || attendances_to_process.exists?
+      update_column(:stock_returned_at, Time.current)
+      Rails.logger.info("Remise en stock terminée pour initiation ##{id}: #{count} roller(s) remis en stock")
+    end
+
+    count
+  end
+
   # Calculer la distance totale si plusieurs boucles
   def total_distance_km
     # Si on utilise le nouveau système avec event_loop_routes
