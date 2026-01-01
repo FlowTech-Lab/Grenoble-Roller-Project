@@ -48,6 +48,10 @@ module AdminPanel
         admin_user? # level >= 60
       end
 
+      def return_material?
+        can_view_initiations? # level >= 40 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
+      end
+
       private
 
       def can_view_initiations?

@@ -24,6 +24,7 @@ module AdminPanel
       # - Lecture (index?, show?) : level >= 30 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
       # - Écriture (create?, update?, destroy?) : level >= 60 (ADMIN, SUPERADMIN)
       # - Actions spéciales (presences, waitlist, etc.) : level >= 60 (ADMIN, SUPERADMIN)
+      # - Retour matériel (return_material?) : level >= 40 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
 
       def index?
         can_view_initiations?
@@ -63,6 +64,10 @@ module AdminPanel
 
       def toggle_volunteer?
         admin_user? # level >= 60
+      end
+
+      def return_material?
+        can_view_initiations? # level >= 40 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
       end
 
       private
@@ -116,6 +121,7 @@ end
 | `convert_waitlist?` | ✅ `admin_user?` | Level >= 60 | ADMIN, SUPERADMIN |
 | `notify_waitlist?` | ✅ `admin_user?` | Level >= 60 | ADMIN, SUPERADMIN |
 | `toggle_volunteer?` | ✅ `admin_user?` | Level >= 60 | ADMIN, SUPERADMIN |
+| `return_material?` | ✅ `can_view_initiations?` | Level >= 40 | INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN |
 
 **Note** : Utilise `role&.level.to_i >= X` au lieu de `role&.code.in?(%w[...])` pour plus de flexibilité.
 

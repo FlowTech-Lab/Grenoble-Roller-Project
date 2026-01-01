@@ -54,6 +54,7 @@ Rails.application.routes.draw do
         post :convert_waitlist
         post :notify_waitlist
         patch :toggle_volunteer
+        post :return_material
       end
     end
 

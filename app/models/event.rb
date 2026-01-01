@@ -192,6 +192,17 @@ class Event < ApplicationRecord
   end
 
   # Remet en stock tous les rollers prêtés pour cet événement
+  # Vérifie si l'événement a du matériel prêté
+  def has_equipment_loaned?
+    return false unless is_a?(Event::Initiation)
+    
+    attendances
+      .where(needs_equipment: true)
+      .where.not(roller_size: nil)
+      .where.not(status: "canceled")
+      .exists?
+  end
+
   # Cette méthode doit être appelée après qu'un événement soit terminé
   # Retourne le nombre de rollers remis en stock, ou nil si déjà traité
   def return_roller_stock

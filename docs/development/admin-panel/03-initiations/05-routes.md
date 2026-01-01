@@ -28,6 +28,7 @@ namespace :admin_panel, path: 'admin-panel' do
       post :convert_waitlist
       post :notify_waitlist
       patch :toggle_volunteer
+      post :return_material
     end
   end
 
@@ -51,6 +52,7 @@ end
 | POST | `/admin-panel/initiations/:id/convert_waitlist` | `convert_waitlist` | Convertir waitlist |
 | POST | `/admin-panel/initiations/:id/notify_waitlist` | `notify_waitlist` | Notifier waitlist |
 | PATCH | `/admin-panel/initiations/:id/toggle_volunteer` | `toggle_volunteer` | Toggle bénévole |
+| POST | `/admin-panel/initiations/:id/return_material` | `return_material` | Marquer matériel comme rendu (remet les rollers en stock) |
 
 ### **Roller Stocks**
 
@@ -78,6 +80,7 @@ Les helpers suivants seront disponibles :
 - `convert_waitlist_admin_panel_initiation_path(@initiation)` → `/admin-panel/initiations/:id/convert_waitlist`
 - `notify_waitlist_admin_panel_initiation_path(@initiation)` → `/admin-panel/initiations/:id/notify_waitlist`
 - `toggle_volunteer_admin_panel_initiation_path(@initiation)` → `/admin-panel/initiations/:id/toggle_volunteer`
+- `return_material_admin_panel_initiation_path(@initiation)` → `/admin-panel/initiations/:id/return_material`
 
 **Roller Stocks** :
 - `admin_panel_roller_stocks_path` → `/admin-panel/roller-stocks`
