@@ -62,9 +62,15 @@ module AdminPanel
 
       if @product.save
         # NOUVEAU : Génération auto si options sélectionnées
-        if params[:generate_variants] == "true" && params[:option_ids].present?
-          count = ProductVariantGenerator.generate_combinations(@product, params[:option_ids])
-          flash[:notice] = "Produit créé avec #{count} variante(s) générée(s)"
+        if params[:generate_variants] == "true"
+          # Accepter soit option_value_ids (nouveau) soit option_ids (ancien pour compatibilité)
+          if params[:option_value_ids].present?
+            count = ProductVariantGenerator.generate_combinations_from_values(@product, params[:option_value_ids])
+            flash[:notice] = "Produit créé avec #{count} variante(s) générée(s)"
+          elsif params[:option_ids].present?
+            count = ProductVariantGenerator.generate_combinations(@product, params[:option_ids])
+            flash[:notice] = "Produit créé avec #{count} variante(s) générée(s)"
+          end
         elsif params[:option_type_ids].present?
           # Ancien système de compatibilité
           option_types = OptionType.where(id: params[:option_type_ids])
@@ -91,15 +97,69 @@ module AdminPanel
 
     # PATCH/PUT /admin-panel/products/:id
     def update
+      # Gérer l'auto-save (save_draft) : ignorer la validation des variantes
+      if params[:save_draft] == "true"
+        @product.assign_attributes(product_params)
+        @product.instance_variable_set(:@save_draft, true)
+        # Sauvegarder sans valider les variantes (pour l'auto-save)
+        if @product.save(validate: false)
+          render json: { success: true, message: "Brouillon enregistré" }, status: :ok
+        else
+          render json: { success: false, errors: @product.errors.full_messages }, status: :unprocessable_entity
+        end
+        return
+      end
+      
+      # Si génération de variantes manquantes, ignorer la validation des variantes
+      if params[:generate_missing] == "true"
+        @product.instance_variable_set(:@generate_missing, true)
+      end
+      
       if @product.update(product_params)
         # NOUVEAU : Générer options manquantes si ajoutées après création
-        if params[:generate_missing] == "true" && params[:option_ids].present?
-          count = ProductVariantGenerator.generate_missing_combinations(@product, params[:option_ids])
-          flash[:notice] = "Produit mis à jour avec #{count} nouvelle(s) variante(s) générée(s)"
+        if params[:generate_missing] == "true"
+          # Accepter soit option_value_ids (nouveau) soit option_ids (ancien pour compatibilité)
+          if params[:option_value_ids].present?
+            option_value_ids = Array(params[:option_value_ids]).map(&:to_i).reject(&:zero?)
+            if option_value_ids.empty?
+              flash[:alert] = "Aucune valeur d'option sélectionnée."
+              redirect_to edit_admin_panel_product_path(@product)
+              return
+            end
+            
+            count = ProductVariantGenerator.generate_missing_combinations_from_values(@product, option_value_ids)
+            if count > 0
+              flash[:notice] = "Produit mis à jour avec #{count} nouvelle(s) variante(s) générée(s)"
+              # Recharger le produit pour avoir les nouvelles variantes
+              @product.reload
+            else
+              flash[:alert] = "Aucune nouvelle variante générée. Les combinaisons sélectionnées existent peut-être déjà."
+            end
+          elsif params[:option_ids].present?
+            option_ids = Array(params[:option_ids]).map(&:to_i).reject(&:zero?)
+            if option_ids.empty?
+              flash[:alert] = "Aucun type d'option sélectionné."
+              redirect_to edit_admin_panel_product_path(@product)
+              return
+            end
+            
+            count = ProductVariantGenerator.generate_missing_combinations(@product, option_ids)
+            if count > 0
+              flash[:notice] = "Produit mis à jour avec #{count} nouvelle(s) variante(s) générée(s)"
+              # Recharger le produit pour avoir les nouvelles variantes
+              @product.reload
+            else
+              flash[:alert] = "Aucune nouvelle variante générée. Les combinaisons sélectionnées existent peut-être déjà."
+            end
+          else
+            flash[:alert] = "Aucune option sélectionnée pour générer les variantes."
+          end
+          # Rediriger vers edit pour voir les nouvelles variantes
+          redirect_to edit_admin_panel_product_path(@product)
         else
           flash[:notice] = "Produit mis à jour avec succès"
+          redirect_to admin_panel_product_path(@product)
         end
-        redirect_to admin_panel_product_path(@product)
       else
         @categories = ProductCategory.order(:name)
         @option_types = OptionType.includes(:option_values).order(:name)
@@ -192,8 +252,20 @@ module AdminPanel
 
     # NOUVEAU : Preview variantes avant génération
     def preview_variants
-      option_ids = params[:option_ids] || []
-      preview = ProductVariantGenerator.preview(nil, option_ids)
+      # Accepter soit option_value_ids (nouveau) soit option_ids (ancien pour compatibilité)
+      option_value_ids = Array(params[:option_value_ids] || []).map(&:to_i).reject(&:zero?)
+      option_ids = Array(params[:option_ids] || []).map(&:to_i).reject(&:zero?)
+      
+      if option_value_ids.present?
+        # Nouveau mode : valeurs individuelles sélectionnées
+        preview = ProductVariantGenerator.preview_from_values(nil, option_value_ids)
+      elsif option_ids.present?
+        # Ancien mode : types d'options entiers (compatibilité)
+        preview = ProductVariantGenerator.preview(nil, option_ids)
+      else
+        preview = { count: 0, preview_skus: [], estimated_time: 0, warning: nil }
+      end
+      
       render json: preview
     end
 
@@ -266,7 +338,6 @@ module AdminPanel
         :currency,
         :stock_qty,
         :is_active,
-        :image_url,
         :image
       )
     end

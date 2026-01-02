@@ -31,20 +31,42 @@ module AdminPanel
     # PATCH /admin-panel/products/:product_id/product_variants/bulk_update
     def bulk_update
       variant_ids = params[:variant_ids] || []
-      updates = params[:variants] || {}
+      
+      if variant_ids.empty?
+        flash[:alert] = "Aucune variante sélectionnée"
+        redirect_to admin_panel_product_product_variants_path(@product)
+        return
+      end
 
+      # Récupérer les champs globaux à appliquer
+      updates = {}
+      updates[:price_cents] = (params[:price_cents].to_f * 100).to_i if params[:price_cents].present?
+      updates[:stock_qty] = params[:stock_qty].to_i if params[:stock_qty].present?
+      updates[:is_active] = params[:is_active] == "1" if params[:is_active].present? && params[:is_active] != ""
+
+      if updates.empty?
+        flash[:alert] = "Aucune modification à appliquer"
+        redirect_to bulk_edit_admin_panel_product_product_variants_path(@product, variant_ids: variant_ids)
+        return
+      end
+
+      # Appliquer les modifications à toutes les variantes sélectionnées
       updated_count = 0
       variant_ids.each do |id|
         variant = @product.product_variants.find_by(id: id)
         next unless variant
 
-        if updates[id.to_s].present?
-          variant.update(updates[id.to_s].permit(:price_cents, :stock_qty, :is_active))
+        if variant.update(updates)
           updated_count += 1
         end
       end
 
-      flash[:notice] = "#{updated_count} variante(s) mise(s) à jour"
+      if updated_count > 0
+        flash[:notice] = "#{updated_count} variante(s) mise(s) à jour avec succès"
+      else
+        flash[:alert] = "Aucune variante n'a pu être mise à jour"
+      end
+
       redirect_to admin_panel_product_product_variants_path(@product)
     end
 

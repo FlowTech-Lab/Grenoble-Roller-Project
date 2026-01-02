@@ -17,6 +17,7 @@ class ProductVariant < ApplicationRecord
   validates :currency, length: { is: 3 }
   validate :image_present
   validate :has_required_option_values
+  validate :image_required_if_active
 
   # NOUVEAU : Héritage prix/stock
   attr_accessor :inherit_price, :inherit_stock
@@ -44,6 +45,7 @@ class ProductVariant < ApplicationRecord
 
   def has_required_option_values
     # Si le produit a plusieurs variantes, celle-ci doit avoir des options
+    return unless product
     return if variant_option_values.any? || product.product_variants.count <= 1
     errors.add(:base, "Les variantes doivent avoir des options de catégorisation")
   end
@@ -54,8 +56,23 @@ class ProductVariant < ApplicationRecord
   end
 
   def image_present
+    # Permettre la création sans image si la variante est inactive
+    return unless is_active?
     return if images.attached?
+    # Permettre la création sans image si le produit parent a une image (héritage)
+    return if product&.image&.attached?
+    # Permettre la création sans image lors de la génération automatique (skip_validation)
+    return if @skip_image_validation
     errors.add(:base, "Une image (upload fichier) est requise")
+  end
+
+  def image_required_if_active
+    # Si la variante est active, elle doit avoir une image
+    return unless is_active?
+    return if images.attached?
+    # Permettre si le produit parent a une image (héritage)
+    return if product&.image&.attached?
+    errors.add(:base, "Une image est requise pour activer la variante")
   end
 
   def create_inventory_record

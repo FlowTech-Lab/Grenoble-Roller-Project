@@ -40,7 +40,7 @@
       </div>
       <div class="btn-group">
         <% if @product.persisted? %>
-          <%= link_to "Aperçu", admin_panel_product_path(@product), 
+          <%= link_to admin_panel_product_path(@product), 
               class: "btn btn-outline-secondary",
               target: "_blank" do %>
             <i class="bi bi-eye me-1"></i>Aperçu
