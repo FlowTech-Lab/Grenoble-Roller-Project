@@ -2,6 +2,20 @@
   # Menu items modernes 2025 - Design épuré avec hiérarchie claire
 %>
 
+<!-- DASHBOARD (level >= 40 : INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN) -->
+<% if can_view_initiations? %>
+  <li class="admin-menu-item">
+    <%= link_to admin_panel_root_path, 
+        class: "admin-menu-link #{'active' if admin_panel_active?('dashboard')}",
+        title: "Dashboard",
+        aria: { label: "Voir le dashboard", current: admin_panel_active?('dashboard') ? 'page' : nil },
+        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-speedometer2 admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Dashboard</span>
+    <% end %>
+  </li>
+<% end %>
+
 <!-- INITIATIONS (level >= 40 : INITIATION, MODERATOR, ADMIN, SUPERADMIN) -->
 <% if can_view_initiations? %>
   <li class="admin-menu-item">
