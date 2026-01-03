@@ -131,20 +131,22 @@
                   <%= l payment.created_at, format: :short %>
                 </td>
                 <td>
-                  <%= link_to "Voir", admin_panel_payment_path(payment), class: "btn btn-sm btn-outline-liquid-primary" %>
-                  <% if policy([:admin_panel, payment]).destroy? %>
-                    <%= button_to "Supprimer", admin_panel_payment_path(payment), 
-                        method: :delete,
-                        data: { 
-                          turbo_confirm: "⚠️ ATTENTION : Vous êtes sur le point de supprimer définitivement une entrée de paiement.\n\n" \
-                                        "Cette action est IRRÉVERSIBLE et peut avoir des conséquences sur :\n" \
-                                        "- Les commandes associées\n" \
-                                        "- Les adhésions associées\n" \
-                                        "- Les participations associées\n\n" \
-                                        "Êtes-vous ABSOLUMENT certain de vouloir continuer ?"
-                        },
-                        class: "btn btn-sm btn-outline-liquid-danger" %>
-                  <% end %>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "Voir", admin_panel_payment_path(payment), class: "btn btn-outline-liquid-primary" %>
+                    <% if policy([:admin_panel, payment]).destroy? %>
+                      <%= button_to "Supprimer", admin_panel_payment_path(payment), 
+                          method: :delete,
+                          data: { 
+                            turbo_confirm: "⚠️ ATTENTION : Vous êtes sur le point de supprimer définitivement une entrée de paiement.\n\n" \
+                                          "Cette action est IRRÉVERSIBLE et peut avoir des conséquences sur :\n" \
+                                          "- Les commandes associées\n" \
+                                          "- Les adhésions associées\n" \
+                                          "- Les participations associées\n\n" \
+                                          "Êtes-vous ABSOLUMENT certain de vouloir continuer ?"
+                          },
+                          class: "btn btn-danger" %>
+                    <% end %>
+                  </div>
                 </td>
               </tr>
             <% end %>
