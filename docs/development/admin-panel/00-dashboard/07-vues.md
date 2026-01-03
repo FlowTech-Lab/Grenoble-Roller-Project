@@ -61,13 +61,21 @@ Vues ERB pour le dashboard et la maintenance.
 
 ---
 
-## ✅ Vue 2 : Maintenance Show (OPTIONNEL)
+## ✅ Vue 2 : Mode Maintenance intégré dans Dashboard ✅
 
-**Fichier** : `app/views/admin_panel/maintenance/show.html.erb`
+**Fichier** : `app/views/admin_panel/dashboard/index.html.erb` (section intégrée)
 
-**Status** : ⏸️ **EN ATTENTE** (non prioritaire)
+**Status** : ✅ **INTÉGRÉE DANS DASHBOARD** (2025-01-13)
 
-**Note** : Le mode maintenance peut être géré via ActiveAdmin pour l'instant.
+**Fonctionnalités** :
+- ✅ Affichage conditionnel (seulement pour admins level >= 60)
+- ✅ Statut visuel avec bordures colorées (danger si actif, warning si inactif)
+- ✅ Alertes informatives sur les conséquences
+- ✅ Boutons avec confirmation JavaScript
+- ✅ Style Liquid Glass cohérent
+- ✅ Logging des actions (qui a activé/désactiver)
+
+**Note** : Le mode maintenance est maintenant intégré directement dans le Dashboard, pas besoin de vue séparée.
 
 ---
 
@@ -75,7 +83,7 @@ Vues ERB pour le dashboard et la maintenance.
 
 ### **Phase 0-1 (Semaine 1)** ✅ COMPLÉTÉ
 - [x] Améliorer vue Dashboard Index ✅
-- [ ] Créer vue Maintenance Show - **OPTIONNEL**
+- [x] Intégrer Mode Maintenance dans Dashboard ✅
 - [x] Tester toutes les vues ✅
 
 ---

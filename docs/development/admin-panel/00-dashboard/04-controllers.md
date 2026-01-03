@@ -64,13 +64,54 @@ end
 
 ---
 
-## ✅ Controller 2 : MaintenanceController (OPTIONNEL)
+## ✅ Controller 2 : MaintenanceController ✅ CRÉÉ
 
 **Fichier** : `app/controllers/admin_panel/maintenance_controller.rb`
 
-**Status** : ⏸️ **EN ATTENTE** (non prioritaire)
+**Status** : ✅ **CRÉÉ ET FONCTIONNEL** (2025-01-13)
 
-**Note** : Le mode maintenance peut être géré via ActiveAdmin pour l'instant.
+**Code implémenté** :
+```ruby
+# frozen_string_literal: true
+
+module AdminPanel
+  class MaintenanceController < BaseController
+    before_action :authorize_maintenance, only: [:toggle]
+
+    # PATCH /admin-panel/maintenance/toggle
+    def toggle
+      user_email = current_user.email
+
+      if MaintenanceMode.enabled?
+        MaintenanceMode.disable!
+        message = "Mode maintenance DÉSACTIVÉ"
+        Rails.logger.info("🔓 MAINTENANCE DÉSACTIVÉE par #{user_email}")
+        flash[:notice] = message
+      else
+        MaintenanceMode.enable!
+        message = "Mode maintenance ACTIVÉ"
+        Rails.logger.warn("🔒 MAINTENANCE ACTIVÉE par #{user_email}")
+        flash[:notice] = message
+      end
+
+      redirect_to admin_panel_root_path
+    end
+
+    private
+
+    def authorize_maintenance
+      # Utiliser un objet symbolique pour Pundit (MaintenanceMode n'est pas un modèle ActiveRecord)
+      authorize :maintenance, policy_class: AdminPanel::MaintenancePolicy
+    end
+  end
+end
+```
+
+### **Sécurité** :
+- ✅ Vérification via `BaseController` (level >= 60)
+- ✅ Policy `AdminPanel::MaintenancePolicy` pour double vérification
+- ✅ Logging des actions (qui a activé/désactivé)
+- ✅ Redirection avec messages flash
 
 ---
 
@@ -78,7 +119,9 @@ end
 
 ### **Phase 0-1 (Semaine 1)** ✅ COMPLÉTÉ
 - [x] Améliorer DashboardController ✅
-- [ ] Créer MaintenanceController - **OPTIONNEL**
+- [x] Créer MaintenanceController ✅
+- [x] Créer MaintenancePolicy ✅
+- [x] Intégrer dans Dashboard ✅
 - [x] Tester toutes les actions ✅
 
 ---

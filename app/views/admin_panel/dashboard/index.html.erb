@@ -5,6 +5,112 @@
     <p class="text-muted">Bienvenue, <%= current_user.first_name || current_user.email %></p>
   </div>
 
+  <!-- MODE MAINTENANCE (Admin uniquement - en haut pour visibilité) -->
+  <% if @can_toggle_maintenance %>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card card-liquid rounded-liquid shadow-liquid <%= @maintenance_enabled ? 'border-danger' : 'border-warning' %>">
+          <div class="card-body py-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fs-5"><%= @maintenance_enabled ? '🔒' : '⚙️' %></span>
+                <div>
+                  <strong class="<%= @maintenance_enabled ? 'text-danger' : 'text-warning' %>">
+                    Mode Maintenance <%= @maintenance_enabled ? 'ACTIF' : 'INACTIF' %>
+                  </strong>
+                  <small class="text-muted d-block">
+                    <%= @maintenance_enabled ? 'Les visiteurs non connectés voient la page de maintenance' : 'Tous les utilisateurs peuvent accéder au site' %>
+                  </small>
+                </div>
+              </div>
+              <% if @maintenance_enabled %>
+                <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDisableMaintenanceModal">
+                  Désactiver ✓
+                </button>
+              <% else %>
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmEnableMaintenanceModal">
+                  Activer 🔒
+                </button>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmation pour activer le mode maintenance -->
+    <div class="modal fade" id="confirmEnableMaintenanceModal" tabindex="-1" aria-labelledby="confirmEnableMaintenanceModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h2 class="modal-title h5" id="confirmEnableMaintenanceModalLabel">
+              <i class="bi bi-exclamation-triangle me-2"></i>Activer le mode maintenance
+            </h2>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning mb-3">
+              <strong>⚠️ Attention :</strong> Cette action va bloquer l'accès au site pour tous les utilisateurs non administrateurs.
+            </div>
+            <p class="mb-2">
+              En activant le mode maintenance :
+            </p>
+            <ul class="mb-0">
+              <li>Tous les visiteurs non connectés verront la page de maintenance</li>
+              <li>Seuls les administrateurs (ADMIN/SUPERADMIN, level >= 60) pourront accéder au site</li>
+              <li>Les utilisateurs non administrateurs seront bloqués</li>
+            </ul>
+            <p class="mt-3 mb-0 text-muted">
+              <strong>Êtes-vous sûr de vouloir activer le mode maintenance ?</strong>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= form_with url: toggle_admin_panel_maintenance_path, method: :patch, local: true, class: "d-inline" do |f| %>
+              <%= f.submit "Oui, activer le mode maintenance", class: "btn btn-danger" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmation pour désactiver le mode maintenance -->
+    <div class="modal fade" id="confirmDisableMaintenanceModal" tabindex="-1" aria-labelledby="confirmDisableMaintenanceModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h2 class="modal-title h5" id="confirmDisableMaintenanceModalLabel">
+              <i class="bi bi-check-circle me-2"></i>Désactiver le mode maintenance
+            </h2>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info mb-3">
+              <strong>ℹ️ Information :</strong> Cette action va rétablir l'accès normal au site pour tous les utilisateurs.
+            </div>
+            <p class="mb-2">
+              En désactivant le mode maintenance :
+            </p>
+            <ul class="mb-0">
+              <li>Tous les utilisateurs pourront à nouveau accéder au site</li>
+              <li>La page de maintenance ne sera plus affichée</li>
+              <li>Le site fonctionnera normalement</li>
+            </ul>
+            <p class="mt-3 mb-0 text-muted">
+              <strong>Êtes-vous sûr de vouloir désactiver le mode maintenance ?</strong>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <%= form_with url: toggle_admin_panel_maintenance_path, method: :patch, local: true, class: "d-inline" do |f| %>
+              <%= f.submit "Oui, désactiver le mode maintenance", class: "btn btn-success" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
   <!-- KPIs PRINCIPAUX (8 cartes Liquid Glass) -->
   <div class="row g-3 mb-4">
     <!-- Utilisateurs -->
@@ -236,3 +342,4 @@
     </div>
   </div>
 </div>
+

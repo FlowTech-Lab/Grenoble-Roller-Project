@@ -55,11 +55,13 @@ Tableau de bord principal de l'Admin Panel : KPIs, statistiques, vue d'ensemble 
 - Liste initiations à venir (5 prochaines)
 - Section actions rapides
 
-### ✅ Mode Maintenance
-- Page dédiée pour activer/désactiver maintenance
-- Toggle via controller personnalisé
-- Affichage statut actuel
-- Informations techniques
+### ✅ Mode Maintenance ✅ INTÉGRÉ DANS DASHBOARD
+- Section dans le Dashboard pour activer/désactiver maintenance ✅
+- Controller `AdminPanel::MaintenanceController` ✅
+- Policy `AdminPanel::MaintenancePolicy` (restriction level >= 60) ✅
+- Affichage statut actuel avec alertes visuelles ✅
+- Confirmation avant activation/désactivation ✅
+- Logging des actions (qui a activé/désactivé) ✅
 
 ### ✅ Sidebar Admin Panel
 - **Partial réutilisable** : Desktop + Mobile (DRY)
@@ -78,6 +80,7 @@ Tableau de bord principal de l'Admin Panel : KPIs, statistiques, vue d'ensemble 
 - ✅ Graphiques (ventes 7 derniers jours)
 - ✅ Actions rapides (liens vers principales fonctionnalités)
 - ✅ Intégration complète avec Inventories, Orders, Initiations
+- ✅ Mode Maintenance intégré dans Dashboard (toggle avec restrictions admin)
 
 ---
 
@@ -90,7 +93,7 @@ Tableau de bord principal de l'Admin Panel : KPIs, statistiques, vue d'ensemble 
 - [x] Intégrer avec Inventories (stock faible) ✅
 - [x] Intégrer avec Orders (CA, tendances) ✅
 - [x] Intégrer avec Initiations (à venir) ✅
-- [ ] Migrer Mode Maintenance (controller + vue) - **OPTIONNEL**
+- [x] Intégrer Mode Maintenance dans Dashboard ✅
 
 ---
 

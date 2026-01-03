@@ -475,6 +475,11 @@ end
    - Commandes ✅
    - Initiations ✅
 
+6. **Mode Maintenance** (Admin uniquement) ✅
+   - Affichage statut actuel ✅
+   - Toggle avec confirmation ✅
+   - Restrictions admin (level >= 60) ✅
+
 ---
 
 **Retour** : [README Dashboard](./README.md) | [INDEX principal](../INDEX.md)

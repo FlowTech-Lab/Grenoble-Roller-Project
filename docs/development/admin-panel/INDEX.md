@@ -233,7 +233,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | Thème | Priorité | Phase | Semaines | % Complété | Status Sidebar |
 |-------|----------|-------|----------|------------|----------------|
 | **Sidebar** | 🔴 HAUTE | 0 | 1 | ✅ **100%** | ✅ Implémenté |
-| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ✅ **90%** | ✅ Amélioré (KPIs, graphiques, intégrations) |
+| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ✅ **100%** | ✅ Amélioré (KPIs, graphiques, intégrations, maintenance) |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** (38/38 tests) | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
@@ -337,6 +337,7 @@ Système (indépendant)
 - [x] Intégrer avec Inventories (stock faible) ✅
 - [x] Intégrer avec Orders (CA, tendances) ✅
 - [x] Intégrer avec Initiations (à venir) ✅
+- [x] Intégrer Mode Maintenance dans Dashboard ✅
 
 ### 🛒 Boutique
 - [x] Migrations (2 : inventories, inventory_movements)

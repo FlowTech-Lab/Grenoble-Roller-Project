@@ -60,6 +60,13 @@ Rails.application.routes.draw do
 
     # Roller Stock
     resources :roller_stocks, path: "roller-stocks"
+
+    # Maintenance Mode (admin uniquement)
+    resource :maintenance, only: [], controller: "maintenance" do
+      member do
+        patch :toggle
+      end
+    end
   end
 
   # Ressource REST pour le mode maintenance

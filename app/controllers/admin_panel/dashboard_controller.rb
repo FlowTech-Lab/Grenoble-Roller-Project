@@ -28,6 +28,12 @@ module AdminPanel
 
       # Ventes par jour (7 derniers jours, via service)
       @sales_by_day = AdminDashboardService.sales_by_day(7)
+
+      # Mode Maintenance (statut uniquement, pour affichage)
+      # Accessible pour ADMIN (level 60) et SUPERADMIN (level 70)
+      @maintenance_enabled = MaintenanceMode.enabled?
+      user_level = current_user&.role&.level.to_i
+      @can_toggle_maintenance = user_level >= 60 # ADMIN (60) ou SUPERADMIN (70)
     end
   end
 end
