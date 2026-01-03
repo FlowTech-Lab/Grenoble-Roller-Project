@@ -89,9 +89,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 ---
 
 ### 🎓 03 - INITIATIONS
-
 **Description** : Gestion des initiations, participants, bénévoles, liste d'attente
-
 **Fichiers** :
 - [`03-initiations/README.md`](./03-initiations/README.md) - Vue d'ensemble initiations
 - [`03-initiations/gestion-initiations.md`](./03-initiations/gestion-initiations.md) - Workflow complet
@@ -237,10 +235,10 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** (38/38 tests) | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
-| **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
-| **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 0% | ⏸️ En attente |
-| **Communication** | 🟢 BASSE | 7 | 7+ | 0% | ⏸️ En attente |
-| **Système** | 🟡 MOYENNE | 8 | 8+ | 0% | ⏸️ En attente |
+| **Événements** | 🟡 MOYENNE | 4 | 6+ | 30% | ⏸️ En cours (Semaine 6+) |
+| **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 30% | ⏸️ En cours (Semaine 6+) |
+| **Communication** | 🟢 BASSE | 7 | 7+ | 30% | ⏸️ En cours (Semaine 6+) |
+| **Système** | 🟡 MOYENNE | 8 | 8+ | 30% | ⏸️ En cours (Semaine 6+) |
 | **Mailing** | 🟢 BASSE | Future | 6+ | - | ⏸️ En attente |
 
 ---
