@@ -49,6 +49,10 @@ Rails.application.routes.draw do
     # Paiements
     resources :payments, only: [:index, :show, :destroy]
 
+    # Communication
+    resources :contact_messages, path: "contact-messages", only: [:index, :show, :destroy]
+    resources :partners
+
     # Initiations
     resources :initiations do
       member do
@@ -262,7 +266,9 @@ Rails.application.routes.draw do
   get "/conditions-generales-vente", to: "legal_pages#cgv" # Alias pour CGV
   get "/cgu", to: "legal_pages#cgu", as: "cgu"
   get "/conditions-generales-utilisation", to: "legal_pages#cgu" # Alias pour CGU
-  get "/contact", to: "legal_pages#contact", as: "contact"
+  # Formulaire de contact public
+  get "/contact", to: "contact_messages#new", as: "contact"
+  post "/contact", to: "contact_messages#create"
   get "/faq", to: "legal_pages#faq", as: "faq"
   get "/questions-frequentes", to: "legal_pages#faq" # Alias pour FAQ
 

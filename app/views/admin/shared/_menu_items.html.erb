@@ -204,6 +204,42 @@
   </li>
 <% end %>
 
+<!-- COMMUNICATION (level >= 60 uniquement) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="admin-menu-item">
+    <a href="#communication-submenu" 
+       class="admin-menu-link <%= 'active' if admin_panel_active?('contact_messages') || admin_panel_active?('partners') %>"
+       data-bs-toggle="collapse"
+       aria-expanded="<%= admin_panel_active?('contact_messages') || admin_panel_active?('partners') ? 'true' : 'false' %>"
+       aria-controls="communication-submenu"
+       title="Communication">
+      <i class="bi bi-chat-dots admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Communication</span>
+      <i class="bi bi-chevron-down admin-menu-chevron ms-auto" aria-hidden="true"></i>
+    </a>
+    <ul class="collapse <%= 'show' if admin_panel_active?('contact_messages') || admin_panel_active?('partners') %>" id="communication-submenu">
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_contact_messages_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('contact_messages')}",
+            title: "Messages de contact",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-envelope admin-menu-subicon" aria-hidden="true"></i>
+          <span>Messages de contact</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_partners_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('partners')}",
+            title: "Partenaires",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-handshake admin-menu-subicon" aria-hidden="true"></i>
+          <span>Partenaires</span>
+        <% end %>
+      </li>
+    </ul>
+  </li>
+<% end %>
+
 <!-- LOGS EMAILS (SUPERADMIN uniquement - level >= 70) -->
 <% if can_access_admin_panel?(70) %>
   <li class="admin-menu-item">

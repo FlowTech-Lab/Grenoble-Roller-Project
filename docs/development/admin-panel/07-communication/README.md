@@ -52,12 +52,14 @@ Gestion des messages de contact et partenaires.
 ## ✅ Checklist Globale
 
 ### **Phase 7 (Semaine 7+)**
-- [ ] **CRÉER** : Formulaire de contact public (controller + vue publique)
-- [ ] Controller ContactMessages (AdminPanel)
-- [ ] Controller Partners
-- [ ] Policies (ContactMessages, Partners)
-- [ ] Routes (publique + admin)
-- [ ] Vues (formulaire public + admin index/show)
+- [x] **CRÉER** : Formulaire de contact public ✅ **IMPLÉMENTÉ** (controller + vue publique)
+- [x] Controller ContactMessages (AdminPanel) ✅ **IMPLÉMENTÉ** (index, show, destroy)
+- [x] Controller Partners ✅ **IMPLÉMENTÉ** (CRUD complet)
+- [x] Policies (ContactMessages, Partners) ✅ **IMPLÉMENTÉES** (level >= 60)
+- [x] Routes (publique + admin) ✅ **IMPLÉMENTÉES** (RESTful)
+- [x] Vues (formulaire public + admin index/show) ✅ **IMPLÉMENTÉES**
+- [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Communication)
+- [x] Tests RSpec ✅ **36 exemples, 0 échecs**
 
 ---
 

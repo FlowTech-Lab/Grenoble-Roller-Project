@@ -23,7 +23,10 @@
 - `routes_spec.rb` - Tests du controller RoutesController (18 exemples)
 - `attendances_spec.rb` - Tests du controller AttendancesController (18 exemples)
 - `organizer_applications_spec.rb` - Tests du controller OrganizerApplicationsController (20 exemples)
-- `payments_spec.rb` - Tests du controller PaymentsController (20 exemples)
+- `payments_spec.rb` - Tests du controller PaymentsController (22 exemples)
+- `contact_messages_spec.rb` - Tests du controller ContactMessagesController (14 exemples)
+- `partners_spec.rb` - Tests du controller PartnersController (16 exemples)
+- `events_spec.rb` - Tests du controller EventsController (21 exemples)
 
 ## 🎯 Permissions Testées
 
@@ -54,6 +57,9 @@
 - ✅ Peut gérer les participations (CRUD complet)
 - ✅ Peut gérer les candidatures organisateur (index, show, approve, reject, destroy)
 - ✅ Peut gérer les paiements (index, show, destroy)
+- ✅ Peut gérer les messages de contact (index, show, destroy)
+- ✅ Peut gérer les partenaires (CRUD complet)
+- ✅ Peut gérer les événements (index, show, destroy, convert_waitlist, notify_waitlist)
 
 ### **Grade 70 (SUPERADMIN)**
 - ✅ Accès complet (identique à ADMIN)
