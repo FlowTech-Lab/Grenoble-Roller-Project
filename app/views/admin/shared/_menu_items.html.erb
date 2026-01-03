@@ -30,6 +30,60 @@
   </li>
 <% end %>
 
+<!-- ÉVÉNEMENTS (level >= 60 : ADMIN, SUPERADMIN) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="admin-menu-item">
+    <a href="#evenements-submenu" 
+       class="admin-menu-link <%= 'active' if admin_panel_active?('events') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') %>"
+       data-bs-toggle="collapse"
+       aria-expanded="<%= admin_panel_active?('events') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') ? 'true' : 'false' %>"
+       aria-controls="evenements-submenu"
+       title="Événements">
+      <i class="bi bi-calendar-event admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Événements</span>
+      <i class="bi bi-chevron-down admin-menu-chevron ms-auto" aria-hidden="true"></i>
+    </a>
+    <ul class="collapse <%= 'show' if admin_panel_active?('events') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') %>" id="evenements-submenu">
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_events_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('events')}",
+            title: "Événements",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-calendar-event admin-menu-subicon" aria-hidden="true"></i>
+          <span>Événements</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_routes_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('routes')}",
+            title: "Routes",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-signpost admin-menu-subicon" aria-hidden="true"></i>
+          <span>Routes</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_attendances_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('attendances')}",
+            title: "Participations",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-person-check admin-menu-subicon" aria-hidden="true"></i>
+          <span>Participations</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_organizer_applications_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('organizer_applications')}",
+            title: "Candidatures Organisateur",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-person-badge admin-menu-subicon" aria-hidden="true"></i>
+          <span>Candidatures Organisateur</span>
+        <% end %>
+      </li>
+    </ul>
+  </li>
+<% end %>
+
 <!-- BOUTIQUE (level >= 60 uniquement) -->
 <% if can_access_admin_panel?(60) %>
   <li class="admin-menu-item">

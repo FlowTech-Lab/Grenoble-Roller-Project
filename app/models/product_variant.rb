@@ -46,6 +46,7 @@ class ProductVariant < ApplicationRecord
   def has_required_option_values
     # Si le produit a plusieurs variantes, celle-ci doit avoir des options
     return unless product
+    return if @skip_option_validation # Permettre de contourner la validation (ex: seed)
     return if variant_option_values.any? || product.product_variants.count <= 1
     errors.add(:base, "Les variantes doivent avoir des options de catégorisation")
   end

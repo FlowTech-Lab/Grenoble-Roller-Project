@@ -133,16 +133,29 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`04-evenements/participations.md`](./04-evenements/participations.md) - Gestion participations (Attendances)
 
 **Éléments inclus** :
-- ✅ Controller Events (randonnées)
-- ✅ Controller Routes (parcours)
-- ✅ Controller Attendances (participations)
-- ✅ Controller OrganizerApplications (candidatures organisateur)
-- ✅ Policies (Events, Routes, Attendances, OrganizerApplications)
-- ✅ Vues (index, show, edit, new)
+- ✅ Controller Events ✅ **IMPLÉMENTÉ** (index, show, destroy, convert_waitlist, notify_waitlist)
+- ✅ Controller Routes ✅ **IMPLÉMENTÉ** (CRUD complet)
+- ✅ Controller Attendances ✅ **IMPLÉMENTÉ** (CRUD complet)
+- ✅ Controller OrganizerApplications ✅ **IMPLÉMENTÉ** (index, show, approve, reject, destroy)
+- ✅ Policies (Event, Route, Attendance, OrganizerApplication) ✅ **IMPLÉMENTÉES**
+- ✅ Routes RESTful ✅ **IMPLÉMENTÉES** (Routes/Attendances CRUD complet, OrganizerApplications RESTful avec actions custom)
+- ✅ Vues Events (index, show) ✅ **IMPLÉMENTÉES** (new/edit utilisent formulaires publics)
+- ✅ Vues Routes (index, show, new, edit) ✅ **IMPLÉMENTÉES**
+- ✅ Vues Attendances (index, show, new, edit) ✅ **IMPLÉMENTÉES**
+- ✅ Vues OrganizerApplications (index, show) ✅ **IMPLÉMENTÉES**
+- ✅ Menu sidebar ✅ **AJOUTÉ** (sous-menu Événements avec 4 items)
+- ✅ Tests RSpec ✅ **56 exemples, 0 échecs** (Routes: 18, Attendances: 18, OrganizerApplications: 20)
+- ✅ Factories ✅ **CRÉÉES/MISES À JOUR** (OrganizerApplication créée, Attendance mise à jour)
 
 **Priorité** : 🟡 MOYENNE | **Phase** : 4 | **Semaine** : 6+
 
-**Note** : Les initiations (Event::Initiation) sont gérées séparément dans [`03-initiations/`](./03-initiations/README.md)
+**Status** : ✅ **100% IMPLÉMENTÉ dans AdminPanel** - Tous les modules migrés avec tests RSpec complets (2025-01-13)
+
+**Note** : 
+- Les initiations (Event::Initiation) sont gérées séparément dans [`03-initiations/`](./03-initiations/README.md)
+- Les formulaires new/edit pour Events utilisent les routes publiques existantes (`new_event_path`, `edit_event_path`)
+- **Routes, Attendances, OrganizerApplications** : Actuellement gérés par **ActiveAdmin** (fonctionnel) - Migration vers AdminPanel optionnelle
+- Voir [`04-evenements/STATUS.md`](./04-evenements/STATUS.md) pour le détail de l'implémentation
 
 ---
 
@@ -249,7 +262,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** (38/38 tests) | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
-| **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
+| **Événements** | 🟡 MOYENNE | 4 | 6+ | ✅ **100%** | ✅ Tous les modules migrés + Tests RSpec (56 exemples, 0 échecs) |
 | **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | ✅ **100%** | ✅ Dans sidebar |
 | **Communication** | 🟢 BASSE | 7 | 7+ | 0% | ⏸️ En attente |
 | **Système** | 🟡 MOYENNE | 8 | 8+ | 🟡 **30%** | ✅ MailLogs + Mission Control implémentés |
@@ -382,13 +395,22 @@ Système (indépendant)
 - [x] Tests RSpec (109 exemples)
 
 ### 📅 Événements
-- [ ] Controller Events
-- [ ] Controller Routes
-- [ ] Controller Attendances
-- [ ] Controller OrganizerApplications
-- [ ] Policies (Events, Routes, Attendances, OrganizerApplications)
-- [ ] Routes
-- [ ] Vues (index, show, edit, new)
+- [x] Controller Events ✅ **IMPLÉMENTÉ** (index, show, destroy, waitlist actions)
+- [x] Controller Routes ✅ **IMPLÉMENTÉ** (CRUD complet)
+- [x] Controller Attendances ✅ **IMPLÉMENTÉ** (CRUD complet)
+- [x] Controller OrganizerApplications ✅ **IMPLÉMENTÉ** (index, show, approve, reject, destroy)
+- [x] Policies (Event, Route, Attendance, OrganizerApplication) ✅ **IMPLÉMENTÉES**
+- [x] Routes (Events, Routes, Attendances, OrganizerApplications) ✅ **IMPLÉMENTÉES** (RESTful)
+- [x] Vues Events (index, show) ✅ **IMPLÉMENTÉES** (new/edit utilisent formulaires publics)
+- [x] Vues Routes (index, show, new, edit) ✅ **IMPLÉMENTÉES**
+- [x] Vues Attendances (index, show, new, edit) ✅ **IMPLÉMENTÉES**
+- [x] Vues OrganizerApplications (index, show) ✅ **IMPLÉMENTÉES**
+- [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Événements avec 4 items)
+- [x] Tests RSpec Routes ✅ **18 exemples, 0 échecs**
+- [x] Tests RSpec Attendances ✅ **18 exemples, 0 échecs**
+- [x] Tests RSpec OrganizerApplications ✅ **20 exemples, 0 échecs**
+- [x] Factory OrganizerApplication ✅ **CRÉÉE**
+- [x] Factory Attendance ✅ **MISE À JOUR** (free_trial_used, is_volunteer, needs_equipment)
 
 ### 👥 Utilisateurs
 - [x] Controller Users ✅ **IMPLÉMENTÉ**

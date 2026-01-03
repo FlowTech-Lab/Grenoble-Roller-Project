@@ -20,6 +20,9 @@
 - `users_spec.rb` - Tests du controller UsersController
 - `roles_spec.rb` - Tests du controller RolesController
 - `memberships_spec.rb` - Tests du controller MembershipsController
+- `routes_spec.rb` - Tests du controller RoutesController (18 exemples)
+- `attendances_spec.rb` - Tests du controller AttendancesController (18 exemples)
+- `organizer_applications_spec.rb` - Tests du controller OrganizerApplicationsController (20 exemples)
 
 ## 🎯 Permissions Testées
 
@@ -45,6 +48,10 @@
 - ✅ Peut gérer les utilisateurs (CRUD complet)
 - ✅ Peut gérer les rôles (CRUD complet)
 - ✅ Peut gérer les adhésions (CRUD complet, activer)
+- ✅ Peut gérer les événements (index, show, destroy + waitlist actions)
+- ✅ Peut gérer les routes (CRUD complet)
+- ✅ Peut gérer les participations (CRUD complet)
+- ✅ Peut gérer les candidatures organisateur (index, show, approve, reject, destroy)
 
 ### **Grade 70 (SUPERADMIN)**
 - ✅ Accès complet (identique à ADMIN)

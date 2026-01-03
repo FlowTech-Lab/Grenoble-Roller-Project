@@ -58,6 +58,30 @@ Rails.application.routes.draw do
       end
     end
 
+    # Événements (Randonnées)
+    # Note: new/create/edit/update sont gérés par le controller public EventsController
+    resources :events, only: [:index, :show, :destroy] do
+      member do
+        post :convert_waitlist
+        post :notify_waitlist
+      end
+    end
+
+    # Routes (Parcours)
+    resources :routes
+
+    # Participations (Attendances)
+    resources :attendances
+
+    # Candidatures Organisateur
+    # Note: new/create/edit/update ne sont pas nécessaires (candidatures créées par les utilisateurs)
+    resources :organizer_applications, only: [:index, :show, :destroy] do
+      member do
+        patch :approve
+        patch :reject
+      end
+    end
+
     # Roller Stock
     resources :roller_stocks, path: "roller-stocks"
 
