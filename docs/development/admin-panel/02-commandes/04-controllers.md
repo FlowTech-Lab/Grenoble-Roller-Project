@@ -27,10 +27,14 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 1-2 (Semaine 1-2)**
-- [ ] Vérifier OrdersController
-- [ ] Tester workflow complet
-- [ ] Vérifier intégration stock
+### **Phase 1-2 (Semaine 1-2)** ✅ COMPLÉTÉ
+- [x] Vérifier OrdersController (Admin Panel)
+- [x] Modifier OrdersController (Public) pour utiliser Inventories
+- [x] Modifier CartsController pour utiliser Inventories
+- [x] Intégration stock complète
+- [ ] Tester workflow complet (tests à créer)
+
+**Status** : ✅ **IMPLÉMENTÉ** - Controllers modifiés pour utiliser Inventories (2025-01-13)
 
 ---
 

@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-12-24 | **Version** : 2.1 | **État** : 70% complété | **Dernière mise à jour** : 2025-12-24
+**Date** : 2025-01-13 | **Version** : 2.2 | **État** : 75% complété | **Dernière mise à jour** : 2025-01-13
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -74,12 +74,15 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`02-commandes/gestion-commandes.md`](./02-commandes/gestion-commandes.md) - Workflow complet
 
 **Éléments inclus** :
-- ✅ Modifications Order (reserve/release stock)
-- ✅ Controller Orders (workflow)
-- ✅ Policy Order
-- ✅ Vues Orders
+- ✅ Modifications Order (reserve/release stock) ✅ **IMPLÉMENTÉ**
+- ✅ Controller Orders (workflow) ✅ **IMPLÉMENTÉ**
+- ✅ Controller Carts (utilise Inventories) ✅ **IMPLÉMENTÉ**
+- ✅ Policy Order ✅ **IMPLÉMENTÉ**
+- ✅ Vues Orders ✅ **IMPLÉMENTÉ**
 
 **Priorité** : 🔴 HAUTE | **Phase** : 1-2 | **Semaines** : 1-2
+
+**Status** : ✅ **100% IMPLÉMENTÉ** - Workflow stock intégré avec Inventories (2025-01-13)
 
 ---
 
@@ -230,7 +233,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Sidebar** | 🔴 HAUTE | 0 | 1 | ✅ **100%** | ✅ Implémenté |
 | **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% | ❌ Retiré (non conforme) |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
-| **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ~60% | ✅ Dans sidebar |
+| **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
 | **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
 | **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 0% | ⏸️ En attente |

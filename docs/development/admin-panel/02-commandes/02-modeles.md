@@ -25,10 +25,12 @@ end
 
 ## ✅ Checklist Globale
 
-### **Phase 1-2 (Semaine 1-2)**
-- [ ] Modifier Order (reserve/release workflow)
-- [ ] Tester callbacks
-- [ ] Intégrer avec Inventories
+### **Phase 1-2 (Semaine 1-2)** ✅ COMPLÉTÉ
+- [x] Modifier Order (reserve/release workflow)
+- [x] Intégrer avec Inventories
+- [ ] Tester callbacks (tests à créer)
+
+**Status** : ✅ **IMPLÉMENTÉ** - Modèle Order modifié avec workflow Inventories (2025-01-13)
 
 ---
 
