@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-01-13 | **Version** : 2.2 | **État** : 75% complété | **Dernière mise à jour** : 2025-01-13
+**Date** : 2025-01-13 | **Version** : 2.5 | **État** : 85% complété | **Dernière mise à jour** : 2025-01-13
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -32,13 +32,18 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - ✅ KPIs avancés ✅ **IMPLÉMENTÉS** (CA, stock, initiations)
 - ✅ Graphiques ventes ✅ **IMPLÉMENTÉ** (7 derniers jours)
 - ✅ Actions rapides ✅ **IMPLÉMENTÉES**
-- ⏸️ Mode Maintenance (toggle activation/désactivation) - **OPTIONNEL**
+- ✅ Mode Maintenance ✅ **IMPLÉMENTÉ** (controller, route, toggle activation/désactivation)
+- ✅ Mission Control Jobs ✅ **INTÉGRÉ** (monitoring des jobs Solid Queue)
 - ✅ **Sidebar Admin Panel** (partial réutilisable, sous-menus, optimisations)
 
 **Priorité** : 🔴 HAUTE | **Phase** : 0-1 | **Semaine** : 1  
 **Version** : 1.1 | **Dernière mise à jour** : 2025-01-13
 
 **Note** : Point d'entrée principal de l'Admin Panel - ✅ **AMÉLIORÉ ET FONCTIONNEL**
+
+**Éléments système intégrés** :
+- ✅ Mission Control Jobs (monitoring Solid Queue) - Monté à `/admin-panel/jobs`
+- ✅ Mail Logs (logs emails) - Accessible via routes `/admin-panel/mail-logs` (SUPERADMIN uniquement)
 
 ---
 
@@ -89,7 +94,9 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 ---
 
 ### 🎓 03 - INITIATIONS
+
 **Description** : Gestion des initiations, participants, bénévoles, liste d'attente
+
 **Fichiers** :
 - [`03-initiations/README.md`](./03-initiations/README.md) - Vue d'ensemble initiations
 - [`03-initiations/gestion-initiations.md`](./03-initiations/gestion-initiations.md) - Workflow complet
@@ -164,17 +171,19 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`06-utilisateurs/candidatures-organisateur.md`](./06-utilisateurs/candidatures-organisateur.md) - Candidatures organisateur
 
 **Éléments inclus** :
-- ✅ Controller Users
-- ✅ Controller Roles
-- ✅ Controller Memberships
-- ✅ Policies (Users, Roles, Memberships)
-- ✅ Vues (index, show, edit, new)
+- ✅ Controller Users ✅ **IMPLÉMENTÉ** (CRUD complet, filtres Ransack, gestion password)
+- ✅ Controller Roles ✅ **IMPLÉMENTÉ** (CRUD complet, filtres par level)
+- ✅ Controller Memberships ✅ **IMPLÉMENTÉ** (CRUD complet, scopes, action activate)
+- ✅ Policies (Users, Roles, Memberships) ✅ **IMPLÉMENTÉES** (héritent de BasePolicy)
+- ✅ Routes ✅ **IMPLÉMENTÉES** (users, roles, memberships avec activate)
+- ✅ Vues (index, show, edit, new) ✅ **IMPLÉMENTÉES** (12 vues au total)
+- ✅ Sidebar ✅ **AJOUTÉE** (menu Utilisateurs avec sous-menu)
 
 **Note** : OrganizerApplications est géré dans [`04-evenements/`](./04-evenements/README.md)
 
 **Priorité** : 🟡 MOYENNE | **Phase** : 6 | **Semaine** : 6+
 
-**Note** : Actuellement géré via ActiveAdmin, à migrer vers AdminPanel
+**Status** : ✅ **100% IMPLÉMENTÉ** - Module complet fonctionnel avec CRUD complet pour Users, Roles et Memberships (2025-01-13)
 
 ---
 
@@ -214,9 +223,14 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - ✅ Controller Payments
 - ✅ Policy Payments
 - ✅ Vues (index, show)
+- ✅ Controller MailLogs ✅ **IMPLÉMENTÉ** (logs emails, SUPERADMIN uniquement)
+- ✅ Routes MailLogs ✅ **IMPLÉMENTÉES** (index, show)
+- ✅ Mission Control Jobs ✅ **INTÉGRÉ** (monitoring Solid Queue, monté dans routes)
 
 **Note** : 
-- **Maintenance** → Géré dans [`00-dashboard/`](./00-dashboard/README.md)
+- **Maintenance** → Géré dans [`00-dashboard/`](./00-dashboard/README.md) ✅ **IMPLÉMENTÉ**
+- **MailLogs** → ✅ **IMPLÉMENTÉ** (accès SUPERADMIN uniquement, level >= 70)
+- **Mission Control Jobs** → ✅ **INTÉGRÉ** (dashboard monitoring jobs, utilise BaseController pour auth)
 - **AuditLogs** → Non prioritaire (peu utilisé)
 
 **Priorité** : 🟡 MOYENNE | **Phase** : 8 | **Semaine** : 8+
@@ -235,10 +249,10 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** (38/38 tests) | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
-| **Événements** | 🟡 MOYENNE | 4 | 6+ | 30% | ⏸️ En cours (Semaine 6+) |
-| **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 30% | ⏸️ En cours (Semaine 6+) |
-| **Communication** | 🟢 BASSE | 7 | 7+ | 30% | ⏸️ En cours (Semaine 6+) |
-| **Système** | 🟡 MOYENNE | 8 | 8+ | 30% | ⏸️ En cours (Semaine 6+) |
+| **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
+| **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | ✅ **100%** | ✅ Dans sidebar |
+| **Communication** | 🟢 BASSE | 7 | 7+ | 0% | ⏸️ En attente |
+| **Système** | 🟡 MOYENNE | 8 | 8+ | 🟡 **30%** | ✅ MailLogs + Mission Control implémentés |
 | **Mailing** | 🟢 BASSE | Future | 6+ | - | ⏸️ En attente |
 
 ---
@@ -272,7 +286,7 @@ Chaque thème contient **tous les fichiers nécessaires** (migrations, modèles,
 
 5. **Utilisateurs** 🟡 MOYENNE
    - ✅ Aucune dépendance
-   - ✅ Controllers, routes, policies, vues
+   - ✅ Controllers, routes, policies, vues ✅ **IMPLÉMENTÉ ET COMPLET**
 
 ### **Phase 3 : Fonctionnalités Avancées (Semaine 6+)**
 6. **Événements** 🟡 MOYENNE
@@ -377,12 +391,13 @@ Système (indépendant)
 - [ ] Vues (index, show, edit, new)
 
 ### 👥 Utilisateurs
-- [ ] Controller Users
-- [ ] Controller Roles
-- [ ] Controller Memberships
-- [ ] Policies (Users, Roles, Memberships)
-- [ ] Routes
-- [ ] Vues (index, show, edit, new)
+- [x] Controller Users ✅ **IMPLÉMENTÉ**
+- [x] Controller Roles ✅ **IMPLÉMENTÉ**
+- [x] Controller Memberships ✅ **IMPLÉMENTÉ**
+- [x] Policies (Users, Roles, Memberships) ✅ **IMPLÉMENTÉES**
+- [x] Routes ✅ **IMPLÉMENTÉES**
+- [x] Vues (index, show, edit, new) ✅ **IMPLÉMENTÉES** (12 vues)
+- [x] Sidebar ✅ **AJOUTÉE** (menu avec sous-menu)
 
 ### 📢 Communication
 - [ ] **CRÉER** : Formulaire de contact public
@@ -397,9 +412,12 @@ Système (indépendant)
 - [ ] Policy Payments
 - [ ] Routes
 - [ ] Vues (index, show)
+- [x] Controller MailLogs ✅ **IMPLÉMENTÉ**
+- [x] Routes MailLogs ✅ **IMPLÉMENTÉES**
+- [x] Mission Control Jobs ✅ **INTÉGRÉ** (monté dans routes)
 
 ### 📊 Dashboard
-- [ ] Migrer Mode Maintenance (controller + vue)
+- [x] Mode Maintenance ✅ **IMPLÉMENTÉ** (controller + route + toggle)
 
 ---
 
@@ -583,18 +601,27 @@ Implémenter selon les besoins urgents du moment
 **Status** : ✅ Tests complets pour AdminPanel
 
 **Couverture** :
-- ✅ Policies (BasePolicy, InitiationPolicy, OrderPolicy, ProductPolicy, RollerStockPolicy)
-- ✅ Controllers (BaseController, InitiationsController, DashboardController, OrdersController)
+- ✅ Policies (BasePolicy, InitiationPolicy, OrderPolicy, ProductPolicy, RollerStockPolicy, UserPolicy, RolePolicy, MembershipPolicy)
+- ✅ Controllers (BaseController, InitiationsController, DashboardController, OrdersController, UsersController, RolesController, MembershipsController)
 - ✅ Permissions par grade (30, 40, 60, 70)
-- ✅ 109 exemples, 0 échecs
+- ✅ Tests Utilisateurs ✅ **CRÉÉS** (3 policies + 3 controllers)
+- ✅ 109+ exemples (à exécuter pour vérifier le nombre exact)
 
 **Exécution** :
 ```bash
-bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel
+# Dans Docker (recommandé)
+docker compose -f ops/dev/docker-compose.yml run --rm \
+  -e BUNDLE_PATH=/rails/vendor/bundle \
+  -e DATABASE_URL=postgresql://postgres:postgres@db:5432/app_test \
+  -e RAILS_ENV=test \
+  web bundle exec rspec spec/policies/admin_panel spec/requests/admin_panel \
+  --format progress --order defined
 ```
 
-**Documentation** : Voir [`spec/requests/admin_panel/README.md`](../../../spec/requests/admin_panel/README.md)
+**Documentation** :
+- Configuration générale : [`spec/README.md`](../../../spec/README.md) - Configuration DatabaseCleaner, bonnes pratiques, debugging
+- Tests AdminPanel : [`spec/requests/admin_panel/README.md`](../../../spec/requests/admin_panel/README.md) - Structure des tests, permissions, exécution
 
 ---
 
-**Créé le** : 2025-12-21 | **Version** : 2.1 | **Dernière mise à jour** : 2025-12-24
+**Créé le** : 2025-12-21 | **Version** : 2.5 | **Dernière mise à jour** : 2025-01-13

@@ -19,7 +19,11 @@ _Aucun JavaScript spécifique nécessaire pour l'instant._
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Vérifier si JavaScript nécessaire
+- [x] Vérifier si JavaScript nécessaire ✅ **IMPLÉMENTÉ** - JavaScript ajouté pour champs conditionnels
+
+**JavaScript implémenté** :
+- ✅ Toggle champs enfants dans formulaires Memberships (`new.html.erb` et `edit.html.erb`)
+- ✅ Affichage/masquage conditionnel des champs selon checkbox `is_child_membership`
 
 ---
 

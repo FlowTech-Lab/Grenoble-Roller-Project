@@ -80,6 +80,54 @@
   </li>
 <% end %>
 
+<!-- UTILISATEURS (level >= 60 uniquement) -->
+<% if can_access_admin_panel?(60) %>
+  <li class="admin-menu-item">
+    <a href="#utilisateurs-submenu" 
+       class="admin-menu-link <%= 'active' if admin_panel_active?('users') || admin_panel_active?('roles') || admin_panel_active?('memberships') %>"
+       data-bs-toggle="collapse"
+       aria-expanded="<%= admin_panel_active?('users') || admin_panel_active?('roles') || admin_panel_active?('memberships') ? 'true' : 'false' %>"
+       aria-controls="utilisateurs-submenu"
+       title="Utilisateurs">
+      <i class="bi bi-people-fill admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Utilisateurs</span>
+      <i class="bi bi-chevron-down admin-menu-chevron ms-auto" aria-hidden="true"></i>
+    </a>
+    <ul class="collapse <%= 'show' if admin_panel_active?('users') || admin_panel_active?('roles') || admin_panel_active?('memberships') %>" id="utilisateurs-submenu">
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_users_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('users')}",
+            title: "Utilisateurs",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-person admin-menu-subicon" aria-hidden="true"></i>
+          <span>Utilisateurs</span>
+        <% end %>
+      </li>
+      <!-- Rôles : SUPERADMIN uniquement (level >= 70) -->
+      <% if can_access_admin_panel?(70) %>
+        <li class="admin-menu-subitem">
+          <%= link_to admin_panel_roles_path, 
+              class: "admin-menu-sublink #{'active' if admin_panel_active?('roles')}",
+              title: "Rôles",
+              data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+            <i class="bi bi-shield-check admin-menu-subicon" aria-hidden="true"></i>
+            <span>Rôles</span>
+          <% end %>
+        </li>
+      <% end %>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_memberships_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('memberships')}",
+            title: "Adhésions",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-card-checklist admin-menu-subicon" aria-hidden="true"></i>
+          <span>Adhésions</span>
+        <% end %>
+      </li>
+    </ul>
+  </li>
+<% end %>
+
 <!-- LOGS EMAILS (SUPERADMIN uniquement - level >= 70) -->
 <% if can_access_admin_panel?(70) %>
   <li class="admin-menu-item">

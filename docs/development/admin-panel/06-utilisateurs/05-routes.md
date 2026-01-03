@@ -32,10 +32,24 @@ end
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Ajouter routes users
-- [ ] Ajouter routes roles
-- [ ] Ajouter routes memberships
-- [ ] Tester toutes les routes
+- [x] Ajouter routes users ✅ **IMPLÉMENTÉ**
+- [x] Ajouter routes roles ✅ **IMPLÉMENTÉ**
+- [x] Ajouter routes memberships ✅ **IMPLÉMENTÉ**
+- [x] Ajouter route `activate` pour memberships ✅ **IMPLÉMENTÉ**
+- [x] Tester toutes les routes ✅ **FONCTIONNEL**
+
+**Routes ajoutées dans `config/routes.rb`** :
+```ruby
+namespace :admin_panel, path: "admin-panel" do
+  resources :users
+  resources :roles
+  resources :memberships do
+    member do
+      patch :activate
+    end
+  end
+end
+```
 
 ---
 

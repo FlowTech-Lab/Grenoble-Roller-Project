@@ -4,9 +4,10 @@ module AdminPanel
   module Event
     class InitiationPolicy < AdminPanel::BasePolicy
       # Permissions pour les initiations :
-      # - Lecture (index?, show?) : level >= 30 (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)
-      # - Écriture (create?, update?, destroy?) : level >= 60 (ADMIN, SUPERADMIN)
-      # - Actions spéciales (presences, waitlist, etc.) : level >= 60 (ADMIN, SUPERADMIN)
+      # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
+      # - Lecture (index?, show?) : level >= 40
+      # - Écriture (create?, update?, destroy?) : level >= 60
+      # - Actions spéciales (presences, waitlist, etc.) : level >= 60
 
       def index?
         can_view_initiations?
@@ -55,11 +56,15 @@ module AdminPanel
       private
 
       def can_view_initiations?
-        user.present? && user.role&.level.to_i >= 40 # INITIATION (40) ou plus - forcément membre Grenoble Roller
+        # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
+        # Level >= 40 permet la lecture des initiations
+        user.present? && user.role&.level.to_i >= 40
       end
 
       def admin_user?
-        user.present? && user.role&.level.to_i >= 60 # ADMIN (60) ou SUPERADMIN (70)
+        # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
+        # Level >= 60 permet l'écriture et les actions spéciales
+        user.present? && user.role&.level.to_i >= 60
       end
     end
   end

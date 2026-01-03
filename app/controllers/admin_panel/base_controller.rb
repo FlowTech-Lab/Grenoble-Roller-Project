@@ -21,18 +21,18 @@ module AdminPanel
         return
       end
 
+      # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
+      # Level 30 = ORGANIZER, Level 40 = INITIATION, Level 50 = MODERATOR, Level 60 = ADMIN, Level 70 = SUPERADMIN
       user_level = current_user&.role&.level.to_i
 
-      # Les initiations sont accessibles pour level >= 40 (INITIATION, MODERATOR, ADMIN, SUPERADMIN)
-      # INITIATION (40) est forcément membre Grenoble Roller
-      # ORGANIZER (30) peut être n'importe qui, donc pas accès aux initiations
-      # Toutes les autres ressources nécessitent level >= 60 (ADMIN, SUPERADMIN)
+      # Les initiations sont accessibles pour level >= 40
+      # Toutes les autres ressources nécessitent level >= 60
       if controller_name == "initiations"
         unless user_level >= 40
           redirect_to root_path, alert: "Accès non autorisé"
         end
       else
-        unless user_level >= 60 # ADMIN (60) ou SUPERADMIN (70)
+        unless user_level >= 60
           redirect_to root_path, alert: "Accès admin requis"
         end
       end

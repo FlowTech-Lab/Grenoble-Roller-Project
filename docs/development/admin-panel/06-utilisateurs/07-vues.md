@@ -58,10 +58,25 @@ Vues ERB pour utilisateurs, rôles et adhésions.
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Créer vues Users (index, show, edit, new)
-- [ ] Créer vues Roles (index, show, edit, new)
-- [ ] Créer vues Memberships (index, show, edit, new)
-- [ ] Tester toutes les vues
+- [x] Créer vues Users (index, show, edit, new) ✅ **IMPLÉMENTÉES** (4 vues)
+- [x] Créer vues Roles (index, show, edit, new) ✅ **IMPLÉMENTÉES** (4 vues)
+- [x] Créer vues Memberships (index, show, edit, new) ✅ **IMPLÉMENTÉES** (4 vues)
+- [x] Tester toutes les vues ✅ **FONCTIONNEL**
+
+**Vues créées** :
+- ✅ `app/views/admin_panel/users/` : index, show, edit, new
+- ✅ `app/views/admin_panel/roles/` : index, show, edit, new
+- ✅ `app/views/admin_panel/memberships/` : index, show, edit, new
+
+**Fonctionnalités des vues** :
+- ✅ Design Liquid Glass cohérent
+- ✅ Breadcrumbs
+- ✅ Filtres et recherche (Ransack)
+- ✅ Pagination
+- ✅ Scopes pour Memberships
+- ✅ Champs conditionnels pour adhésions enfants (JavaScript)
+- ✅ Affichage des attendances dans show User
+- ✅ Panel utilisateurs associés dans show Role
 
 ---
 

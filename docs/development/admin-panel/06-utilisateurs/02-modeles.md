@@ -26,9 +26,14 @@ Modèles utilisés pour les utilisateurs (existent déjà, à vérifier).
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Vérifier User
-- [ ] Vérifier Role
-- [ ] Vérifier Membership
+- [x] Vérifier User ✅ **VÉRIFIÉ** - Modèle existe avec toutes les associations nécessaires
+- [x] Vérifier Role ✅ **VÉRIFIÉ** - Modèle existe avec level et code
+- [x] Vérifier Membership ✅ **VÉRIFIÉ** - Modèle existe avec scopes et méthodes nécessaires
+
+**Modèles utilisés** :
+- ✅ `User` : Devise, associations (orders, memberships, attendances, etc.)
+- ✅ `Role` : Système de permissions par level (10-70)
+- ✅ `Membership` : Scopes (active_now, pending, expired, personal, children), méthodes helper
 
 ---
 

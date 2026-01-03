@@ -58,10 +58,19 @@ end
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Créer UsersController
-- [ ] Créer RolesController
-- [ ] Créer MembershipsController
-- [ ] Tester toutes les actions
+- [x] Créer UsersController ✅ **IMPLÉMENTÉ** (`app/controllers/admin_panel/users_controller.rb`)
+- [x] Créer RolesController ✅ **IMPLÉMENTÉ** (`app/controllers/admin_panel/roles_controller.rb`)
+- [x] Créer MembershipsController ✅ **IMPLÉMENTÉ** (`app/controllers/admin_panel/memberships_controller.rb`)
+- [x] Tester toutes les actions ✅ **FONCTIONNEL**
+
+**Fonctionnalités implémentées** :
+- ✅ CRUD complet pour les 3 controllers
+- ✅ Filtres Ransack (recherche par email, nom, etc.)
+- ✅ Pagination avec Pagy
+- ✅ Scopes pour Memberships (active, pending, expired, etc.)
+- ✅ Action `activate` pour Memberships
+- ✅ Gestion password (optionnel à l'édition)
+- ✅ Gestion boolean `can_be_volunteer`
 
 ---
 

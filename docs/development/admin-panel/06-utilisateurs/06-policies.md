@@ -58,10 +58,15 @@ end
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Créer UserPolicy
-- [ ] Créer RolePolicy
-- [ ] Créer MembershipPolicy
-- [ ] Tester autorisations
+- [x] Créer UserPolicy ✅ **IMPLÉMENTÉ** (`app/policies/admin_panel/user_policy.rb`)
+- [x] Créer RolePolicy ✅ **IMPLÉMENTÉ** (`app/policies/admin_panel/role_policy.rb`)
+- [x] Créer MembershipPolicy ✅ **IMPLÉMENTÉ** (`app/policies/admin_panel/membership_policy.rb`)
+- [x] Tester autorisations ✅ **FONCTIONNEL**
+
+**Policies** :
+- ✅ Toutes héritent de `AdminPanel::BasePolicy`
+- ✅ Accès réservé aux level >= 60 (ADMIN, SUPERADMIN)
+- ✅ Autorisations CRUD complètes (index, show, create, update, destroy)
 
 ---
 

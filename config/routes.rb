@@ -61,6 +61,15 @@ Rails.application.routes.draw do
     # Roller Stock
     resources :roller_stocks, path: "roller-stocks"
 
+    # Utilisateurs
+    resources :users
+    resources :roles
+    resources :memberships do
+      member do
+        patch :activate
+      end
+    end
+
     # Maintenance Mode (admin uniquement)
     resource :maintenance, only: [], controller: "maintenance" do
       member do

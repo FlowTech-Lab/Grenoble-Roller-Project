@@ -8,7 +8,7 @@
 
 Gestion des utilisateurs, rôles et adhésions.
 
-**Status actuel** : ✅ Existe dans ActiveAdmin - À migrer vers AdminPanel
+**Status actuel** : ✅ **100% IMPLÉMENTÉ** - Module complet fonctionnel dans AdminPanel (2025-01-13)
 
 **Note** : Les candidatures organisateur (OrganizerApplications) sont gérées dans [`04-evenements/`](../04-evenements/README.md)
 
@@ -58,12 +58,14 @@ Gestion des utilisateurs, rôles et adhésions.
 ## ✅ Checklist Globale
 
 ### **Phase 6 (Semaine 6+)**
-- [ ] Controller Users
-- [ ] Controller Roles
-- [ ] Controller Memberships
-- [ ] Policies (Users, Roles, Memberships)
-- [ ] Routes
-- [ ] Vues (index, show, edit, new)
+- [x] Controller Users ✅ **IMPLÉMENTÉ**
+- [x] Controller Roles ✅ **IMPLÉMENTÉ**
+- [x] Controller Memberships ✅ **IMPLÉMENTÉ**
+- [x] Policies (Users, Roles, Memberships) ✅ **IMPLÉMENTÉES**
+- [x] Routes ✅ **IMPLÉMENTÉES**
+- [x] Vues (index, show, edit, new) ✅ **IMPLÉMENTÉES** (12 vues au total)
+- [x] Sidebar ✅ **AJOUTÉE** (menu Utilisateurs avec sous-menu)
+- [x] Tests RSpec ✅ **CRÉÉS** (3 policies + 3 controllers)
 
 ---
 

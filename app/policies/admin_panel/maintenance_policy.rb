@@ -4,9 +4,10 @@ module AdminPanel
   # Policy pour le mode maintenance
   # MaintenanceMode n'est pas un modèle ActiveRecord, donc on utilise une classe wrapper
   class MaintenancePolicy < BasePolicy
-    # Seuls les admins/superadmins peuvent activer/désactiver le mode maintenance
+    # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
+    # Level >= 60 permet d'activer/désactiver le mode maintenance
     def toggle?
-      admin_user? # level >= 60 (ADMIN ou SUPERADMIN)
+      admin_user? # Vérifie user.role.level.to_i >= 60
     end
   end
 end
