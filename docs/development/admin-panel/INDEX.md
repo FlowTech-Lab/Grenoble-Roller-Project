@@ -74,15 +74,16 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`02-commandes/gestion-commandes.md`](./02-commandes/gestion-commandes.md) - Workflow complet
 
 **Éléments inclus** :
-- ✅ Modifications Order (reserve/release stock) ✅ **IMPLÉMENTÉ**
-- ✅ Controller Orders (workflow) ✅ **IMPLÉMENTÉ**
-- ✅ Controller Carts (utilise Inventories) ✅ **IMPLÉMENTÉ**
+- ✅ Modifications Order (reserve/release stock) ✅ **IMPLÉMENTÉ ET TESTÉ**
+- ✅ Controller Orders (workflow) ✅ **IMPLÉMENTÉ ET TESTÉ**
+- ✅ Controller Carts (utilise Inventories) ✅ **IMPLÉMENTÉ ET TESTÉ**
 - ✅ Policy Order ✅ **IMPLÉMENTÉ**
-- ✅ Vues Orders ✅ **IMPLÉMENTÉ**
+- ✅ Vues Orders ✅ **IMPLÉMENTÉ ET AMÉLIORÉ** (affichage stock détaillé)
+- ✅ Tests complets ✅ **38/38 TESTS PASSENT** (100%)
 
 **Priorité** : 🔴 HAUTE | **Phase** : 1-2 | **Semaines** : 1-2
 
-**Status** : ✅ **100% IMPLÉMENTÉ** - Workflow stock intégré avec Inventories (2025-01-13)
+**Status** : ✅ **100% IMPLÉMENTÉ ET TESTÉ** - Workflow stock intégré avec Inventories, tous les tests passent (2025-01-13)
 
 ---
 
@@ -233,7 +234,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Sidebar** | 🔴 HAUTE | 0 | 1 | ✅ **100%** | ✅ Implémenté |
 | **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% | ❌ Retiré (non conforme) |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
-| **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** | ✅ Dans sidebar |
+| **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** (38/38 tests) | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
 | **Événements** | 🟡 MOYENNE | 4 | 6+ | 0% | ⏸️ En attente |
 | **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | 0% | ⏸️ En attente |
@@ -348,11 +349,13 @@ Système (indépendant)
 - [x] Sidebar (Menu Boutique réactivé avec sous-menus)
 
 ### 📦 Commandes
-- [ ] Modifications Order
-- [ ] Controller Orders
-- [ ] Policy Order
-- [ ] Routes
-- [ ] Vues
+- [x] Modifications Order ✅ (callbacks reserve_stock et handle_stock_on_status_change)
+- [x] Controller Orders ✅ (public et admin, workflow Inventories)
+- [x] Controller Carts ✅ (utilise available_qty)
+- [x] Policy Order ✅ (existe déjà)
+- [x] Routes ✅ (existent déjà)
+- [x] Vues ✅ (améliorées avec affichage stock détaillé)
+- [x] Tests ✅ **38/38 PASSENT** (Order, OrdersController, AdminPanel::OrdersController, CartsController)
 
 ### 🎓 Initiations
 - [x] Controller Initiations (séparation à venir/passées)

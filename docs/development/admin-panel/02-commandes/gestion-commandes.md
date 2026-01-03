@@ -1,8 +1,8 @@
 # 📦 COMMANDES - Gestion Commandes
 
 **Priorité** : 🔴 HAUTE | **Phase** : 1-2 | **Semaines** : 1-2  
-**Version** : 1.0 | **Dernière mise à jour** : 2025-01-13  
-**Statut** : ✅ **100% IMPLÉMENTÉ**
+**Version** : 1.1 | **Dernière mise à jour** : 2025-01-13  
+**Statut** : ✅ **100% IMPLÉMENTÉ ET TESTÉ** (38/38 tests passent)
 
 ---
 
@@ -34,8 +34,8 @@ class Order < ApplicationRecord
   has_many :order_items, dependent: :destroy
 
   # Callbacks pour gérer le stock et les notifications
-  after_create :reserve_stock  # NOUVEAU
-  after_update :handle_stock_on_status_change, if: :saved_change_to_status?
+  after_commit :reserve_stock, on: :create  # NOUVEAU (after_commit pour avoir les order_items)
+  before_update :handle_stock_on_status_change, if: :will_save_change_to_status?
   after_update :notify_status_change, if: :saved_change_to_status?
 
   private
@@ -54,18 +54,22 @@ class Order < ApplicationRecord
 
   # AMÉLIORÉ : Gérer stock selon changement de statut
   def handle_stock_on_status_change
-    previous_status = attribute_was(:status) || status_before_last_save
+    previous_status = status_was || attribute_was(:status)
     current_status = status
     
     return unless previous_status.present? && previous_status != current_status
+    
+    # Précharger les order_items avec leurs variants et inventaires
+    items = order_items.includes(variant: :inventory).to_a
 
     case current_status
     when 'paid', 'preparation'
       # Stock déjà réservé, rien à faire
-      
+      # Le stock reste réservé jusqu'à l'expédition
+
     when 'shipped'
       # Déduire définitivement du stock et libérer la réservation
-      order_items.includes(variant: :inventory).each do |item|
+      items.each do |item|
         variant = item.variant
         next unless variant&.inventory
 
@@ -77,7 +81,7 @@ class Order < ApplicationRecord
 
     when 'cancelled', 'refunded'
       # Libérer le stock réservé (sans déduire du stock réel car pas encore expédié)
-      order_items.includes(variant: :inventory).each do |item|
+      items.each do |item|
         variant = item.variant
         next unless variant&.inventory
 

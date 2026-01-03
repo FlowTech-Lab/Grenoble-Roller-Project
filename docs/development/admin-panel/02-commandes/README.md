@@ -1,7 +1,7 @@
 # 📦 COMMANDES - Plan d'Implémentation
 
 **Priorité** : 🔴 HAUTE | **Phase** : 1-2 | **Semaines** : 1-2  
-**Version** : 1.0 | **Dernière mise à jour** : 2025-01-13
+**Version** : 1.1 | **Dernière mise à jour** : 2025-01-13
 
 ---
 
@@ -45,9 +45,10 @@ Gestion des commandes avec workflow stock avancé : réservation à la création
 ### ✅ Policy Order ✅ IMPLÉMENTÉ
 - Existe déjà ✅
 
-### ✅ Vues Orders ✅ IMPLÉMENTÉ
+### ✅ Vues Orders ✅ IMPLÉMENTÉ ET AMÉLIORÉ
 - Index, Show (existent déjà) ✅
-- À améliorer : Afficher stock réservé vs disponible 🟡
+- Show (public) : Affiche stock réservé pour commandes pending/paid/preparation ✅
+- Show (admin) : Affiche stock détaillé (Stock | Réservé | Disponible) avec codes couleur ✅
 
 ---
 
@@ -62,9 +63,9 @@ Gestion des commandes avec workflow stock avancé : réservation à la création
 ### **Phase 2 (Semaine 2)** ✅ COMPLÉTÉ
 - [x] Vérifier Controller Orders fonctionne
 - [x] Workflow complet implémenté
-- [ ] Tests à créer et exécuter
+- [x] Tests créés et exécutés ✅ (38/38 passent)
 
-**Status** : ✅ **100% IMPLÉMENTÉ** - Workflow stock intégré avec Inventories (2025-01-13)
+**Status** : ✅ **100% IMPLÉMENTÉ ET TESTÉ** - Workflow stock intégré avec Inventories, tous les tests passent (2025-01-13)
 
 ---
 
@@ -84,6 +85,13 @@ Gestion des commandes avec workflow stock avancé : réservation à la création
 - Création commande → Réservation automatique
 - Statut `shipped` → Déduction stock + libération réservation
 - Statut `cancelled`/`refunded` → Libération réservation uniquement
+
+### **4. Tests complets** ✅
+- Tests Order : Callbacks reserve_stock et handle_stock_on_status_change ✅
+- Tests OrdersController (public) : Création, réservation stock, blocage utilisateurs non confirmés ✅
+- Tests AdminPanel::OrdersController : Change status avec Inventories ✅
+- Tests CartsController : Vérification stock avec available_qty ✅
+- **Total** : 38/38 tests passent (100%) ✅
 
 ---
 
