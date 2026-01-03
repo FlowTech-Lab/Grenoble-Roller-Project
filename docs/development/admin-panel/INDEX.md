@@ -26,18 +26,19 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`00-dashboard/sidebar.md`](./00-dashboard/sidebar.md) - 🎨 **Sidebar Admin Panel** (structure, optimisations)
 
 **Éléments inclus** :
-- ✅ Controller Dashboard (existe déjà, à améliorer)
-- ✅ Vue Dashboard (existe déjà, à améliorer)
-- ✅ Service AdminDashboardService (à créer)
-- ✅ KPIs avancés (CA, stock, initiations)
-- ✅ Graphiques ventes
-- ✅ Widgets personnalisables
-- ✅ Mode Maintenance (toggle activation/désactivation)
+- ✅ Controller Dashboard ✅ **AMÉLIORÉ** (utilise AdminDashboardService)
+- ✅ Vue Dashboard ✅ **AMÉLIORÉE** (8 KPIs, graphique, initiations)
+- ✅ Service AdminDashboardService ✅ **CRÉÉ** (KPIs, ventes, initiations)
+- ✅ KPIs avancés ✅ **IMPLÉMENTÉS** (CA, stock, initiations)
+- ✅ Graphiques ventes ✅ **IMPLÉMENTÉ** (7 derniers jours)
+- ✅ Actions rapides ✅ **IMPLÉMENTÉES**
+- ⏸️ Mode Maintenance (toggle activation/désactivation) - **OPTIONNEL**
 - ✅ **Sidebar Admin Panel** (partial réutilisable, sous-menus, optimisations)
 
-**Priorité** : 🔴 HAUTE | **Phase** : 0-1 | **Semaine** : 1
+**Priorité** : 🔴 HAUTE | **Phase** : 0-1 | **Semaine** : 1  
+**Version** : 1.1 | **Dernière mise à jour** : 2025-01-13
 
-**Note** : Point d'entrée principal de l'Admin Panel
+**Note** : Point d'entrée principal de l'Admin Panel - ✅ **AMÉLIORÉ ET FONCTIONNEL**
 
 ---
 
@@ -232,7 +233,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | Thème | Priorité | Phase | Semaines | % Complété | Status Sidebar |
 |-------|----------|-------|----------|------------|----------------|
 | **Sidebar** | 🔴 HAUTE | 0 | 1 | ✅ **100%** | ✅ Implémenté |
-| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ~30% | ❌ Retiré (non conforme) |
+| **Dashboard** | 🔴 HAUTE | 0-1 | 1 | ✅ **90%** | ✅ Amélioré (KPIs, graphiques, intégrations) |
 | **Boutique** | 🔴 HAUTE | 1-3 | 1-4 | ✅ **100%** | ✅ Dans sidebar |
 | **Commandes** | 🔴 HAUTE | 1-2 | 1-2 | ✅ **100%** (38/38 tests) | ✅ Dans sidebar |
 | **Initiations** | 🟡 MOYENNE | 5 | 5 | ✅ **100%** | ✅ Dans sidebar |
@@ -330,12 +331,12 @@ Système (indépendant)
 ## 📋 Checklist Globale par Thème
 
 ### 📊 Dashboard
-- [ ] Améliorer DashboardController (KPIs avancés)
-- [ ] Créer service AdminDashboardService
-- [ ] Améliorer vue Dashboard (widgets, graphiques)
-- [ ] Intégrer avec Inventories (stock faible)
-- [ ] Intégrer avec Orders (CA, tendances)
-- [ ] Intégrer avec Initiations (à venir)
+- [x] Améliorer DashboardController (KPIs avancés) ✅
+- [x] Créer service AdminDashboardService ✅
+- [x] Améliorer vue Dashboard (widgets, graphiques) ✅
+- [x] Intégrer avec Inventories (stock faible) ✅
+- [x] Intégrer avec Orders (CA, tendances) ✅
+- [x] Intégrer avec Initiations (à venir) ✅
 
 ### 🛒 Boutique
 - [x] Migrations (2 : inventories, inventory_movements)
