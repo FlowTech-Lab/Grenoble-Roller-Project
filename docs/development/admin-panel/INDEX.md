@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-01-13 | **Version** : 2.6 | **État** : 90% complété | **Dernière mise à jour** : 2025-01-13
+**Date** : 2025-01-13 | **Version** : 2.7 | **État** : 90% complété | **Dernière mise à jour** : 2025-01-13
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -261,18 +261,20 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 
 **Fichiers** :
 - [`08-systeme/README.md`](./08-systeme/README.md) - Vue d'ensemble système
+- [`08-systeme/STATUS.md`](./08-systeme/STATUS.md) - État d'implémentation
 - [`08-systeme/audit-logs.md`](./08-systeme/audit-logs.md) - Logs d'audit
 - [`08-systeme/maintenance.md`](./08-systeme/maintenance.md) - Mode maintenance
 - [`08-systeme/paiements.md`](./08-systeme/paiements.md) - Gestion paiements
 
 **Éléments inclus** :
 - ✅ Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
-- ✅ Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- ✅ Policy Payments ✅ **IMPLÉMENTÉE** (index/show: level >= 60, destroy: level >= 70 ⚠️ SUPERADMIN uniquement)
 - ✅ Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
-- ✅ Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels Orders/Memberships/Attendances)
+- ✅ Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels Orders/Memberships/Attendances, boutons groupés)
 - ✅ Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
-- ✅ Tests RSpec ✅ **20 exemples, 0 échecs**
+- ✅ Tests RSpec ✅ **22 exemples, 0 échecs**
 - ✅ Factory Payment ✅ **CRÉÉE**
+- ✅ Sécurité ✅ **RENFORCÉE** (suppression SUPERADMIN uniquement + disclaimer explicite + bouton rouge)
 - ✅ Controller MailLogs ✅ **IMPLÉMENTÉ** (logs emails, SUPERADMIN uniquement)
 - ✅ Routes MailLogs ✅ **IMPLÉMENTÉES** (index, show)
 - ✅ Mission Control Jobs ✅ **INTÉGRÉ** (monitoring Solid Queue, monté dans routes)
@@ -285,7 +287,9 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 
 **Priorité** : 🟡 MOYENNE | **Phase** : 8 | **Semaine** : 8+
 
-**Note** : Actuellement géré via ActiveAdmin, à migrer vers AdminPanel
+**Status** : ✅ **100% IMPLÉMENTÉ** - Module Payments complet et opérationnel dans AdminPanel (2025-01-13)
+
+**Note** : Payments migré vers AdminPanel. ActiveAdmin reste disponible en parallèle.
 
 ---
 
@@ -477,12 +481,13 @@ Système (indépendant)
 
 ### ⚙️ Système
 - [x] Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
-- [x] Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- [x] Policy Payments ✅ **IMPLÉMENTÉE** (index/show: level >= 60, destroy: level >= 70 ⚠️)
 - [x] Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
-- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres, show avec panels)
+- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres, show avec panels, boutons groupés)
 - [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
-- [x] Tests RSpec ✅ **20 exemples, 0 échecs**
+- [x] Tests RSpec ✅ **22 exemples, 0 échecs**
 - [x] Factory Payment ✅ **CRÉÉE**
+- [x] Sécurité ✅ **RENFORCÉE** (suppression SUPERADMIN uniquement + disclaimer explicite)
 - [x] Controller MailLogs ✅ **IMPLÉMENTÉ**
 - [x] Routes MailLogs ✅ **IMPLÉMENTÉES**
 - [x] Mission Control Jobs ✅ **INTÉGRÉ** (monté dans routes)
@@ -678,7 +683,7 @@ Implémenter selon les besoins urgents du moment
 - ✅ Tests Utilisateurs ✅ **CRÉÉS** (3 policies + 3 controllers)
 - ✅ Tests Événements ✅ **CRÉÉS** (Routes, Attendances, OrganizerApplications - 56 exemples)
 - ✅ Tests Système ✅ **CRÉÉS** (Payments - 20 exemples)
-- ✅ 185+ exemples (109 Initiations + 56 Événements + 20 Payments)
+- ✅ 187+ exemples (109 Initiations + 56 Événements + 22 Payments)
 
 **Exécution** :
 ```bash

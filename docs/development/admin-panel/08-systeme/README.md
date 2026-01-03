@@ -46,12 +46,13 @@ Gestion système : paiements.
 
 ### **Phase 8 (Semaine 8+)**
 - [x] Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
-- [x] Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- [x] Policy Payments ✅ **IMPLÉMENTÉE** (index/show: level >= 60, destroy: level >= 70 ⚠️)
 - [x] Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
-- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels)
+- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels, boutons groupés)
 - [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
-- [x] Tests RSpec ✅ **20 exemples, 0 échecs**
+- [x] Tests RSpec ✅ **22 exemples, 0 échecs**
 - [x] Factory Payment ✅ **CRÉÉE**
+- [x] Sécurité ✅ **RENFORCÉE** (suppression SUPERADMIN uniquement + disclaimer explicite)
 
 ---
 
