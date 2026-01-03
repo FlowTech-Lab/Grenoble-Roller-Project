@@ -1,6 +1,6 @@
 # 📋 INDEX - Plan d'Implémentation Admin Panel
 
-**Date** : 2025-01-13 | **Version** : 2.5 | **État** : 85% complété | **Dernière mise à jour** : 2025-01-13
+**Date** : 2025-01-13 | **Version** : 2.6 | **État** : 90% complété | **Dernière mise à jour** : 2025-01-13
 
 > 📖 **Index principal** : Ce fichier recense tous les blocs indépendants organisés par thème métier et contient le guide complet d'implémentation.
 
@@ -200,6 +200,39 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 
 ---
 
+### ⚙️ 08 - SYSTÈME
+
+**Description** : Gestion système : paiements, logs emails, monitoring jobs
+
+**Fichiers** :
+- [`08-systeme/README.md`](./08-systeme/README.md) - Vue d'ensemble système
+- [`08-systeme/STATUS.md`](./08-systeme/STATUS.md) - État d'implémentation
+- [`08-systeme/paiements.md`](./08-systeme/paiements.md) - Gestion paiements
+
+**Éléments inclus** :
+- ✅ Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
+- ✅ Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- ✅ Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
+- ✅ Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels Orders/Memberships/Attendances)
+- ✅ Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
+- ✅ Tests RSpec ✅ **20 exemples, 0 échecs**
+- ✅ Factory Payment ✅ **CRÉÉE**
+- ✅ Controller MailLogs ✅ **IMPLÉMENTÉ** (logs emails, SUPERADMIN uniquement)
+- ✅ Routes MailLogs ✅ **IMPLÉMENTÉES** (index, show)
+- ✅ Mission Control Jobs ✅ **INTÉGRÉ** (monitoring Solid Queue, monté dans routes)
+
+**Priorité** : 🟡 MOYENNE | **Phase** : 8 | **Semaine** : 8+
+
+**Status** : ✅ **100% IMPLÉMENTÉ** - Module Payments complet et opérationnel dans AdminPanel (2025-01-13)
+
+**Note** : 
+- **Maintenance** → Géré dans [`00-dashboard/`](./00-dashboard/README.md) ✅ **IMPLÉMENTÉ**
+- **MailLogs** → ✅ **IMPLÉMENTÉ** (accès SUPERADMIN uniquement, level >= 70)
+- **Mission Control Jobs** → ✅ **INTÉGRÉ** (dashboard monitoring jobs, utilise BaseController pour auth)
+- **AuditLogs** → Non prioritaire (peu utilisé)
+
+---
+
 ### 📢 07 - COMMUNICATION
 
 **Description** : Gestion des messages de contact et partenaires
@@ -233,9 +266,13 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 - [`08-systeme/paiements.md`](./08-systeme/paiements.md) - Gestion paiements
 
 **Éléments inclus** :
-- ✅ Controller Payments
-- ✅ Policy Payments
-- ✅ Vues (index, show)
+- ✅ Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
+- ✅ Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- ✅ Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
+- ✅ Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels Orders/Memberships/Attendances)
+- ✅ Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
+- ✅ Tests RSpec ✅ **20 exemples, 0 échecs**
+- ✅ Factory Payment ✅ **CRÉÉE**
 - ✅ Controller MailLogs ✅ **IMPLÉMENTÉ** (logs emails, SUPERADMIN uniquement)
 - ✅ Routes MailLogs ✅ **IMPLÉMENTÉES** (index, show)
 - ✅ Mission Control Jobs ✅ **INTÉGRÉ** (monitoring Solid Queue, monté dans routes)
@@ -265,7 +302,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 | **Événements** | 🟡 MOYENNE | 4 | 6+ | ✅ **100%** | ✅ Tous les modules migrés + Tests RSpec (56 exemples, 0 échecs) |
 | **Utilisateurs** | 🟡 MOYENNE | 6 | 6+ | ✅ **100%** | ✅ Dans sidebar |
 | **Communication** | 🟢 BASSE | 7 | 7+ | 0% | ⏸️ En attente |
-| **Système** | 🟡 MOYENNE | 8 | 8+ | 🟡 **30%** | ✅ MailLogs + Mission Control implémentés |
+| **Système** | 🟡 MOYENNE | 8 | 8+ | ✅ **100%** | ✅ Payments migré + Tests RSpec (20 exemples, 0 échecs) + MailLogs + Mission Control |
 | **Mailing** | 🟢 BASSE | Future | 6+ | - | ⏸️ En attente |
 
 ---
@@ -412,6 +449,15 @@ Système (indépendant)
 - [x] Factory OrganizerApplication ✅ **CRÉÉE**
 - [x] Factory Attendance ✅ **MISE À JOUR** (free_trial_used, is_volunteer, needs_equipment)
 
+### ⚙️ Système
+- [x] Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
+- [x] Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- [x] Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
+- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels)
+- [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
+- [x] Tests RSpec Payments ✅ **20 exemples, 0 échecs**
+- [x] Factory Payment ✅ **CRÉÉE**
+
 ### 👥 Utilisateurs
 - [x] Controller Users ✅ **IMPLÉMENTÉ**
 - [x] Controller Roles ✅ **IMPLÉMENTÉ**
@@ -430,10 +476,13 @@ Système (indépendant)
 - [ ] Vues (formulaire public + admin index/show)
 
 ### ⚙️ Système
-- [ ] Controller Payments
-- [ ] Policy Payments
-- [ ] Routes
-- [ ] Vues (index, show)
+- [x] Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
+- [x] Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- [x] Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
+- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres, show avec panels)
+- [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
+- [x] Tests RSpec ✅ **20 exemples, 0 échecs**
+- [x] Factory Payment ✅ **CRÉÉE**
 - [x] Controller MailLogs ✅ **IMPLÉMENTÉ**
 - [x] Routes MailLogs ✅ **IMPLÉMENTÉES**
 - [x] Mission Control Jobs ✅ **INTÉGRÉ** (monté dans routes)
@@ -623,11 +672,13 @@ Implémenter selon les besoins urgents du moment
 **Status** : ✅ Tests complets pour AdminPanel
 
 **Couverture** :
-- ✅ Policies (BasePolicy, InitiationPolicy, OrderPolicy, ProductPolicy, RollerStockPolicy, UserPolicy, RolePolicy, MembershipPolicy)
-- ✅ Controllers (BaseController, InitiationsController, DashboardController, OrdersController, UsersController, RolesController, MembershipsController)
+- ✅ Policies (BasePolicy, InitiationPolicy, OrderPolicy, ProductPolicy, RollerStockPolicy, UserPolicy, RolePolicy, MembershipPolicy, PaymentPolicy)
+- ✅ Controllers (BaseController, InitiationsController, DashboardController, OrdersController, UsersController, RolesController, MembershipsController, PaymentsController, RoutesController, AttendancesController, OrganizerApplicationsController)
 - ✅ Permissions par grade (30, 40, 60, 70)
 - ✅ Tests Utilisateurs ✅ **CRÉÉS** (3 policies + 3 controllers)
-- ✅ 109+ exemples (à exécuter pour vérifier le nombre exact)
+- ✅ Tests Événements ✅ **CRÉÉS** (Routes, Attendances, OrganizerApplications - 56 exemples)
+- ✅ Tests Système ✅ **CRÉÉS** (Payments - 20 exemples)
+- ✅ 185+ exemples (109 Initiations + 56 Événements + 20 Payments)
 
 **Exécution** :
 ```bash

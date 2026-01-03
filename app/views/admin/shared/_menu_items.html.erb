@@ -123,14 +123,36 @@
 <!-- COMMANDES (level >= 60 uniquement) -->
 <% if can_access_admin_panel?(60) %>
   <li class="admin-menu-item">
-    <%= link_to admin_panel_orders_path, 
-        class: "admin-menu-link #{'active' if admin_panel_active?('orders')}",
-        title: "Commandes",
-        aria: { label: "Voir les commandes", current: admin_panel_active?('orders') ? 'page' : nil },
-        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+    <a href="#commandes-submenu" 
+       class="admin-menu-link <%= 'active' if admin_panel_active?('orders') || admin_panel_active?('payments') %>"
+       data-bs-toggle="collapse"
+       aria-expanded="<%= admin_panel_active?('orders') || admin_panel_active?('payments') ? 'true' : 'false' %>"
+       aria-controls="commandes-submenu"
+       title="Commandes">
       <i class="bi bi-box-seam admin-menu-icon" aria-hidden="true"></i>
       <span class="admin-menu-label">Commandes</span>
-    <% end %>
+      <i class="bi bi-chevron-down admin-menu-chevron ms-auto" aria-hidden="true"></i>
+    </a>
+    <ul class="collapse <%= 'show' if admin_panel_active?('orders') || admin_panel_active?('payments') %>" id="commandes-submenu">
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_orders_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('orders')}",
+            title: "Commandes",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-box-seam admin-menu-subicon" aria-hidden="true"></i>
+          <span>Commandes</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_payments_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('payments')}",
+            title: "Paiements",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-credit-card admin-menu-subicon" aria-hidden="true"></i>
+          <span>Paiements</span>
+        <% end %>
+      </li>
+    </ul>
   </li>
 <% end %>
 

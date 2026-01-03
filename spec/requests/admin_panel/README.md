@@ -23,6 +23,7 @@
 - `routes_spec.rb` - Tests du controller RoutesController (18 exemples)
 - `attendances_spec.rb` - Tests du controller AttendancesController (18 exemples)
 - `organizer_applications_spec.rb` - Tests du controller OrganizerApplicationsController (20 exemples)
+- `payments_spec.rb` - Tests du controller PaymentsController (20 exemples)
 
 ## 🎯 Permissions Testées
 
@@ -52,6 +53,7 @@
 - ✅ Peut gérer les routes (CRUD complet)
 - ✅ Peut gérer les participations (CRUD complet)
 - ✅ Peut gérer les candidatures organisateur (index, show, approve, reject, destroy)
+- ✅ Peut gérer les paiements (index, show, destroy)
 
 ### **Grade 70 (SUPERADMIN)**
 - ✅ Accès complet (identique à ADMIN)

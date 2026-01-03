@@ -46,6 +46,9 @@ Rails.application.routes.draw do
       collection { get :export }
     end
 
+    # Paiements
+    resources :payments, only: [:index, :show, :destroy]
+
     # Initiations
     resources :initiations do
       member do

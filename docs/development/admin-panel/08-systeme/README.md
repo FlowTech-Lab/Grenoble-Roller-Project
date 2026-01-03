@@ -45,10 +45,13 @@ Gestion système : paiements.
 ## ✅ Checklist Globale
 
 ### **Phase 8 (Semaine 8+)**
-- [ ] Controller Payments
-- [ ] Policy Payments
-- [ ] Routes
-- [ ] Vues (index, show)
+- [x] Controller Payments ✅ **IMPLÉMENTÉ** (index, show, destroy)
+- [x] Policy Payments ✅ **IMPLÉMENTÉE** (level >= 60)
+- [x] Routes Payments ✅ **IMPLÉMENTÉES** (RESTful)
+- [x] Vues Payments ✅ **IMPLÉMENTÉES** (index avec filtres Ransack, show avec panels)
+- [x] Menu sidebar ✅ **AJOUTÉ** (sous-menu Commandes)
+- [x] Tests RSpec ✅ **20 exemples, 0 échecs**
+- [x] Factory Payment ✅ **CRÉÉE**
 
 ---
 
