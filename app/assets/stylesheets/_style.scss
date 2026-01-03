@@ -7390,21 +7390,30 @@ body.admin-panel {
     opacity: 1;
   }
 
-  /* Sous-menu (collapse) */
+  /* Sous-menu (collapse) - Design Liquid Glass amélioré */
   .admin-menu-item > ul {
     list-style: none;
     margin: 0;
-    padding: 0.5rem 0 0.5rem calc(var(--admin-sidebar-spacing) + 1rem);
-    background: rgba(0, 0, 0, 0.02);
-    border-left: 2px solid rgba(0, 123, 255, 0.15);
-    margin-left: calc(var(--admin-sidebar-spacing) + 24px + 0.75rem);
+    padding: 0.375rem 0;
+    /* Alignement propre : padding-left réduit pour moins de décalage inutile */
+    padding-left: calc(var(--admin-sidebar-spacing) + var(--admin-menu-icon-size) + 0.25rem);
+    /* Background Liquid Glass */
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border-left: 2px solid rgba(0, 123, 255, 0.2);
+    margin-left: 0;
     margin-top: 0.25rem;
-    border-radius: 0 8px 8px 0;
+    margin-bottom: 0.25rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    /* Effet glassmorphism */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
   [data-bs-theme="dark"] .admin-menu-item > ul {
-    background: rgba(255, 255, 255, 0.03);
-    border-left-color: rgba(77, 148, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+    border-left-color: rgba(77, 148, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   /* Items de sous-menu */
@@ -7413,21 +7422,24 @@ body.admin-panel {
     padding: 0;
   }
 
-  /* Liens de sous-menu */
+  /* Liens de sous-menu - Alignement parfait avec Bootstrap 5 */
   .admin-menu-sublink {
     display: flex;
     align-items: center;
     gap: 0.625rem;
-    padding: 0.625rem 1rem;
+    /* Padding réduit pour meilleur alignement */
+    padding: 0.5rem 1rem 0.5rem 0.75rem;
     min-height: 40px;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     color: var(--bs-body-color);
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 200ms var(--admin-transition);
     position: relative;
-    margin-left: 0.5rem;
+    /* Pas de margin-left, l'alignement vient du padding du parent ul */
+    margin-left: 0;
+    margin-right: 0.5rem;
   }
 
   [data-bs-theme="dark"] .admin-menu-sublink {
@@ -7435,37 +7447,44 @@ body.admin-panel {
   }
 
   .admin-menu-sublink:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--bs-body-color);
-    transform: translateX(4px);
+    /* Effet Liquid Glass au survol */
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--gr-primary);
+    transform: translateX(2px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
   }
 
   [data-bs-theme="dark"] .admin-menu-sublink:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(77, 148, 255, 0.12);
     color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 4px rgba(77, 148, 255, 0.15);
   }
 
   .admin-menu-sublink.active {
-    background: rgba(0, 123, 255, 0.12);
+    /* Style Liquid Glass actif */
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.15) 0%, rgba(0, 123, 255, 0.08) 100%);
     color: var(--gr-primary);
     font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.15);
   }
 
   [data-bs-theme="dark"] .admin-menu-sublink.active {
-    background: rgba(77, 148, 255, 0.15);
+    background: linear-gradient(135deg, rgba(77, 148, 255, 0.2) 0%, rgba(77, 148, 255, 0.1) 100%);
     color: var(--gr-primary-dark);
+    box-shadow: 0 2px 6px rgba(77, 148, 255, 0.2);
   }
 
   .admin-menu-sublink.active::before {
     content: '';
     position: absolute;
-    left: -0.5rem;
+    left: -0.75rem;
     top: 50%;
     transform: translateY(-50%);
     width: 3px;
-    height: 60%;
-    background: var(--gr-primary);
+    height: 70%;
+    background: linear-gradient(180deg, var(--gr-primary) 0%, rgba(0, 123, 255, 0.6) 100%);
     border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
   }
 
   /* Icônes de sous-menu */
@@ -7734,18 +7753,27 @@ body.admin-panel {
     opacity: 1;
   }
 
-  /* Sous-menu mobile (collapse) */
+  /* Sous-menu mobile (collapse) - Design Liquid Glass amélioré */
   .admin-menu-item > ul {
     list-style: none;
     margin: 0;
-    padding: 0;
-    background: rgba(0, 0, 0, 0.03);
+    padding: 0.375rem 0;
+    padding-left: 2.5rem; /* Alignement cohérent avec icône parent */
+    /* Background Liquid Glass */
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
     border-top: 1px solid var(--liquid-glass-border);
+    border-left: 2px solid rgba(0, 123, 255, 0.2);
+    border-radius: 0 0 0.5rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
   [data-bs-theme="dark"] .admin-menu-item > ul {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     border-top-color: rgba(255, 255, 255, 0.1);
+    border-left-color: rgba(77, 148, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   /* Items de sous-menu mobile */
@@ -7754,20 +7782,22 @@ body.admin-panel {
     padding: 0;
   }
 
-  /* Liens de sous-menu mobile */
+  /* Liens de sous-menu mobile - Alignement propre */
   .admin-menu-sublink {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.875rem 1.5rem 0.875rem 3rem;
-    min-height: 48px;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem 0.75rem 0.5rem;
+    min-height: 44px;
     color: var(--bs-body-color);
     text-decoration: none;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
     border-bottom: 1px solid var(--liquid-glass-border);
     transition: all 200ms var(--admin-transition);
     position: relative;
+    margin-left: 0;
+    margin-right: 0.5rem;
   }
 
   [data-bs-theme="dark"] .admin-menu-sublink {
@@ -7796,11 +7826,23 @@ body.admin-panel {
 
   /* Icônes de sous-menu mobile */
   .admin-menu-subicon {
-    font-size: 1.125rem;
-    width: 24px;
+    font-size: 1rem;
+    width: 20px;
     text-align: center;
     flex-shrink: 0;
-    opacity: 0.8;
+    opacity: 0.7;
+    transition: transform 200ms var(--admin-transition), opacity 200ms var(--admin-transition);
+  }
+
+  .admin-menu-sublink:hover .admin-menu-subicon,
+  .admin-menu-sublink:focus .admin-menu-subicon {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  .admin-menu-sublink.active .admin-menu-subicon {
+    color: var(--gr-primary);
+    opacity: 1;
   }
 
   .admin-menu-sublink.active .admin-menu-subicon {
