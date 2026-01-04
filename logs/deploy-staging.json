@@ -11053,3 +11053,426 @@
   "deployment_id": "deploy-20251224-010252-19957",
   "deploy_duration_seconds": 364
 }
+{
+  "timestamp": "2026-01-04T02:51:06Z",
+  "level": "SUCCESS",
+  "message": "✅ Build réussi",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 301
+}
+{
+  "timestamp": "2026-01-04T02:51:06Z",
+  "level": "INFO",
+  "message": "Démarrage de tous les services (web, db, minio, etc.)...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 301
+}
+{
+  "timestamp": "2026-01-04T02:51:06Z",
+  "level": "INFO",
+  "message": "   ℹ️  Le docker-entrypoint appliquera automatiquement les migrations SQLite au démarrage",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 301
+}
+{
+  "timestamp": "2026-01-04T02:51:27Z",
+  "level": "SUCCESS",
+  "message": "✅ Tous les services démarrés avec succès",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 322
+}
+{
+  "timestamp": "2026-01-04T02:51:27Z",
+  "level": "INFO",
+  "message": "🔍 Vérification que tous les conteneurs sont bien démarrés...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 322
+}
+{
+  "timestamp": "2026-01-04T02:51:32Z",
+  "level": "SUCCESS",
+  "message": "✅ Tous les services sont running",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 327
+}
+{
+  "timestamp": "2026-01-04T02:51:32Z",
+  "level": "INFO",
+  "message": "🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 327
+}
+{
+  "timestamp": "2026-01-04T02:51:32Z",
+  "level": "SUCCESS",
+  "message": "✅ Migrations synchronisées (70 fichiers)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 327
+}
+{
+  "timestamp": "2026-01-04T02:51:32Z",
+  "level": "INFO",
+  "message": "Pas de healthcheck configuré, attente supplémentaire...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 327
+}
+{
+  "timestamp": "2026-01-04T02:51:50Z",
+  "level": "INFO",
+  "message": "🕐 Timeout migration adaptatif : 90s pour 1 migration(s)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 345
+}
+{
+  "timestamp": "2026-01-04T02:51:50Z",
+  "level": "INFO",
+  "message": "🗄️ Exécution des migrations (timeout: 90s)...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 345
+}
+{
+  "timestamp": "2026-01-04T02:51:50Z",
+  "level": "INFO",
+  "message": "   ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 345
+}
+{
+  "timestamp": "2026-01-04T02:51:50Z",
+  "level": "INFO",
+  "message": "   ℹ️  Aucune donnée existante ne sera supprimée",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 345
+}
+{
+  "timestamp": "2026-01-04T02:51:50Z",
+  "level": "INFO",
+  "message": "   ℹ️  Solid Queue utilise PostgreSQL (migrations incluses)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 345
+}
+{
+  "timestamp": "2026-01-04T02:51:53Z",
+  "level": "SUCCESS",
+  "message": "✅ Migrations principales exécutées avec succès (durée: 3s)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 348
+}
+{
+  "timestamp": "2026-01-04T02:51:55Z",
+  "level": "INFO",
+  "message": "ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 350
+}
+{
+  "timestamp": "2026-01-04T02:51:55Z",
+  "level": "SUCCESS",
+  "message": "✅ Toutes les migrations ont été appliquées correctement",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 350
+}
+{
+  "timestamp": "2026-01-04T02:51:55Z",
+  "level": "INFO",
+  "message": "⏰ Installation/mise à jour du crontab...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 350
+}
+{
+  "timestamp": "2026-01-04T02:51:55Z",
+  "level": "INFO",
+  "message": "🔄 Installation/mise à jour du crontab pour staging...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 350
+}
+{
+  "timestamp": "2026-01-04T02:51:56Z",
+  "level": "INFO",
+  "message": "   Génération du crontab depuis config/schedule.rb...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 351
+}
+{
+  "timestamp": "2026-01-04T02:51:56Z",
+  "level": "INFO",
+  "message": "   Écriture du crontab dans /rails/config/crontab...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 351
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "SUCCESS",
+  "message": "✅ Crontab généré et écrit dans /rails/config/crontab",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "SUCCESS",
+  "message": "✅ Vérification : 5 entrée(s) cron dans le fichier",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "📋 Entrées cron générées:",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "   0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rails.application.load_tasks; Rake::Task[\"helloasso:sync_payments\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "   0 19 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''EventReminderJob.perform_now'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "   0 7 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''InitiationParticipantsReportJob.perform_now'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "   0 0 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rails.application.load_tasks; Rake::Task[\"memberships:update_expired\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "   0 9 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\\''Rails.application.load_tasks; Rake::Task[\"memberships:send_renewal_reminders\"].invoke'\\'' >> log/cron.log 2>&1'",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "🔓 Désactivation du mode maintenance...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:51:57Z",
+  "level": "INFO",
+  "message": "✅ Désactivation du mode maintenance...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 352
+}
+{
+  "timestamp": "2026-01-04T02:52:00Z",
+  "level": "SUCCESS",
+  "message": "✅ Mode maintenance désactivé",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 355
+}
+{
+  "timestamp": "2026-01-04T02:52:00Z",
+  "level": "INFO",
+  "message": "🏥 Health check complet avec retry...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 355
+}
+{
+  "timestamp": "2026-01-04T02:52:11Z",
+  "level": "INFO",
+  "message": "🏥 Health check complet (DB, Redis, Migrations, HTTP)...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 366
+}
+{
+  "timestamp": "2026-01-04T02:52:11Z",
+  "level": "INFO",
+  "message": "  → Vérification DB...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 366
+}
+{
+  "timestamp": "2026-01-04T02:52:14Z",
+  "level": "SUCCESS",
+  "message": "  ✅ DB accessible",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 369
+}
+{
+  "timestamp": "2026-01-04T02:52:14Z",
+  "level": "INFO",
+  "message": "  → Vérification Redis...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 369
+}
+{
+  "timestamp": "2026-01-04T02:52:20Z",
+  "level": "WARNING",
+  "message": "  ⚠️  Redis non configuré (non bloquant)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 375
+}
+{
+  "timestamp": "2026-01-04T02:52:20Z",
+  "level": "INFO",
+  "message": "  → Vérification migrations...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 375
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "SUCCESS",
+  "message": "  ✅ Toutes les migrations appliquées",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "INFO",
+  "message": "  → Vérification HTTP (port externe: 3001, port interne: 3000)...",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "SUCCESS",
+  "message": "  ✅ HTTP endpoint OK (200)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "SUCCESS",
+  "message": "✅ Déploiement staging terminé avec succès (commit: 5a819ee)",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "INFO",
+  "message": "✅ DEPLOYMENT SUCCESS",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "INFO",
+  "message": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}
+{
+  "timestamp": "2026-01-04T02:52:23Z",
+  "level": "INFO",
+  "message": "📊 Métriques exportées: /home/flowtech/Grenoble-Roller-Project/metrics/deploy-staging.prom",
+  "environment": "staging",
+  "commit": "5a819ee6b3a6e2a70c2d5c236dd06f2c5b9e184d",
+  "deployment_id": "deploy-20260104-034605-616",
+  "deploy_duration_seconds": 378
+}

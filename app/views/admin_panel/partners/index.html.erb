@@ -83,7 +83,16 @@
                 <td><%= partner.id %></td>
                 <td>
                   <% if partner.logo_url.present? %>
-                    <%= image_tag partner.logo_url, height: 50, style: "border-radius: 8px;", alt: partner.name %>
+                    <% if partner.logo_url.start_with?('http://', 'https://') %>
+                      <%= image_tag partner.logo_url, height: 50, style: "border-radius: 8px;", alt: partner.name, onerror: "this.style.display='none'; this.nextElementSibling.style.display='inline';" %>
+                      <span class="text-muted" style="display: none;">-</span>
+                    <% else %>
+                      <% begin %>
+                        <%= image_tag partner.logo_url, height: 50, style: "border-radius: 8px;", alt: partner.name %>
+                      <% rescue Propshaft::MissingAssetError, Sprockets::Rails::Helper::AssetNotFound => e %>
+                        <span class="text-muted" title="Image non trouvée: <%= partner.logo_url %>">-</span>
+                      <% end %>
+                    <% end %>
                   <% else %>
                     <span class="text-muted">-</span>
                   <% end %>

@@ -23811,3 +23811,202 @@ failed to solve: failed to do request: Head "https://registry-1.docker.io/v2/lib
 [2025-12-24 01:08:57] ✅ DEPLOYMENT SUCCESS
 [2025-12-24 01:08:57] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [2025-12-24 01:08:57] INFO: 📊 Métriques exportées: /home/flowtech/Grenoble-Roller-Project/metrics/deploy-staging.prom
+[0;32m[2026-01-04 03:51:06] SUCCESS: ✅ Build réussi[0m
+[2026-01-04 03:51:06] INFO: Démarrage de tous les services (web, db, minio, etc.)...
+[2026-01-04 03:51:06] INFO:    ℹ️  Le docker-entrypoint appliquera automatiquement les migrations SQLite au démarrage
+ db Pulling 
+ 1074353eec0d Pulling fs layer 
+ d2e5feb410e8 Pulling fs layer 
+ 3048a283a433 Pulling fs layer 
+ 6fe79fe4410f Pulling fs layer 
+ 137ed19c6b80 Pulling fs layer 
+ 97b8e529965a Pulling fs layer 
+ 6bfb940eb824 Pulling fs layer 
+ e76f2995a422 Pulling fs layer 
+ 9582264a43c0 Pulling fs layer 
+ d3a0dfeb7e38 Pulling fs layer 
+ feb143896d95 Pulling fs layer 
+ 6bfb940eb824 Waiting 
+ e76f2995a422 Waiting 
+ 6fe79fe4410f Waiting 
+ 9582264a43c0 Waiting 
+ 137ed19c6b80 Waiting 
+ d3a0dfeb7e38 Waiting 
+ 97b8e529965a Waiting 
+ feb143896d95 Waiting 
+ 1074353eec0d Downloading [>                                                  ]   39.7kB/3.86MB
+ 3048a283a433 Downloading [>                                                  ]  10.53kB/922.9kB
+ d2e5feb410e8 Downloading [==================================================>]     971B/971B
+ d2e5feb410e8 Verifying Checksum 
+ d2e5feb410e8 Download complete 
+ 3048a283a433 Verifying Checksum 
+ 3048a283a433 Download complete 
+ 1074353eec0d Verifying Checksum 
+ 1074353eec0d Download complete 
+ 1074353eec0d Extracting [>                                                  ]  65.54kB/3.86MB
+ 1074353eec0d Extracting [==================>                                ]  1.442MB/3.86MB
+ 1074353eec0d Extracting [==================================================>]   3.86MB/3.86MB
+ 1074353eec0d Extracting [==================================================>]   3.86MB/3.86MB
+ 1074353eec0d Pull complete 
+ d2e5feb410e8 Extracting [==================================================>]     971B/971B
+ d2e5feb410e8 Extracting [==================================================>]     971B/971B
+ d2e5feb410e8 Pull complete 
+ 3048a283a433 Extracting [=>                                                 ]  32.77kB/922.9kB
+ 6fe79fe4410f Download complete 
+ 137ed19c6b80 Downloading [==================================================>]     116B/116B
+ 137ed19c6b80 Downloading [==================================================>]     116B/116B
+ 137ed19c6b80 Verifying Checksum 
+ 137ed19c6b80 Download complete 
+ 3048a283a433 Extracting [==================================================>]  922.9kB/922.9kB
+ 97b8e529965a Downloading [>                                                  ]  540.7kB/105.2MB
+ 3048a283a433 Pull complete 
+ 6fe79fe4410f Extracting [==================================================>]     172B/172B
+ 6fe79fe4410f Extracting [==================================================>]     172B/172B
+ 6fe79fe4410f Pull complete 
+ 137ed19c6b80 Extracting [==================================================>]     116B/116B
+ 137ed19c6b80 Extracting [==================================================>]     116B/116B
+ 97b8e529965a Downloading [===>                                               ]  7.508MB/105.2MB
+ 137ed19c6b80 Pull complete 
+ 97b8e529965a Downloading [========>                                          ]  18.71MB/105.2MB
+ 97b8e529965a Downloading [=============>                                     ]   29.4MB/105.2MB
+ 97b8e529965a Downloading [===================>                               ]  40.11MB/105.2MB
+ 6bfb940eb824 Downloading [====>                                              ]     953B/9.56kB
+ 6bfb940eb824 Download complete 
+ e76f2995a422 Downloading [==================================================>]     128B/128B
+ e76f2995a422 Verifying Checksum 
+ e76f2995a422 Download complete 
+ 97b8e529965a Downloading [========================>                          ]  50.77MB/105.2MB
+ 97b8e529965a Downloading [============================>                      ]  59.85MB/105.2MB
+ 97b8e529965a Downloading [=================================>                 ]  71.15MB/105.2MB
+ 97b8e529965a Downloading [=====================================>             ]  79.77MB/105.2MB
+ 9582264a43c0 Verifying Checksum 
+ 9582264a43c0 Download complete 
+ 97b8e529965a Downloading [==========================================>        ]  88.92MB/105.2MB
+ d3a0dfeb7e38 Downloading [========>                                          ]     953B/5.838kB
+ d3a0dfeb7e38 Downloading [==================================================>]  5.838kB/5.838kB
+ d3a0dfeb7e38 Verifying Checksum 
+ d3a0dfeb7e38 Download complete 
+ 97b8e529965a Downloading [===============================================>   ]  100.2MB/105.2MB
+ 97b8e529965a Verifying Checksum 
+ 97b8e529965a Download complete 
+ 97b8e529965a Extracting [>                                                  ]  557.1kB/105.2MB
+ 97b8e529965a Extracting [=>                                                 ]  2.228MB/105.2MB
+ 97b8e529965a Extracting [==>                                                ]  6.128MB/105.2MB
+ feb143896d95 Downloading [==================================================>]     182B/182B
+ feb143896d95 Verifying Checksum 
+ feb143896d95 Download complete 
+ 97b8e529965a Extracting [====>                                              ]  10.03MB/105.2MB
+ 97b8e529965a Extracting [======>                                            ]  13.93MB/105.2MB
+ 97b8e529965a Extracting [========>                                          ]  17.83MB/105.2MB
+ 97b8e529965a Extracting [==========>                                        ]  21.73MB/105.2MB
+ 97b8e529965a Extracting [============>                                      ]  25.62MB/105.2MB
+ 97b8e529965a Extracting [=============>                                     ]  28.97MB/105.2MB
+ 97b8e529965a Extracting [===============>                                   ]  32.87MB/105.2MB
+ 97b8e529965a Extracting [=================>                                 ]  36.21MB/105.2MB
+ 97b8e529965a Extracting [==================>                                ]  39.55MB/105.2MB
+ 97b8e529965a Extracting [====================>                              ]  44.01MB/105.2MB
+ 97b8e529965a Extracting [=======================>                           ]  49.02MB/105.2MB
+ 97b8e529965a Extracting [========================>                          ]  51.25MB/105.2MB
+ 97b8e529965a Extracting [=========================>                         ]  52.92MB/105.2MB
+ 97b8e529965a Extracting [=========================>                         ]  54.59MB/105.2MB
+ 97b8e529965a Extracting [===========================>                       ]  56.82MB/105.2MB
+ 97b8e529965a Extracting [=============================>                     ]  61.28MB/105.2MB
+ 97b8e529965a Extracting [==============================>                    ]  64.62MB/105.2MB
+ 97b8e529965a Extracting [================================>                  ]  67.96MB/105.2MB
+ 97b8e529965a Extracting [=================================>                 ]   71.3MB/105.2MB
+ 97b8e529965a Extracting [===================================>               ]  74.65MB/105.2MB
+ 97b8e529965a Extracting [===================================>               ]   75.2MB/105.2MB
+ 97b8e529965a Extracting [====================================>              ]  75.76MB/105.2MB
+ 97b8e529965a Extracting [====================================>              ]  76.32MB/105.2MB
+ 97b8e529965a Extracting [=====================================>             ]  77.99MB/105.2MB
+ 97b8e529965a Extracting [=====================================>             ]  79.66MB/105.2MB
+ 97b8e529965a Extracting [======================================>            ]  81.89MB/105.2MB
+ 97b8e529965a Extracting [=======================================>           ]  84.12MB/105.2MB
+ 97b8e529965a Extracting [=========================================>         ]  86.34MB/105.2MB
+ 97b8e529965a Extracting [==========================================>        ]  89.13MB/105.2MB
+ 97b8e529965a Extracting [===========================================>       ]  91.36MB/105.2MB
+ 97b8e529965a Extracting [===========================================>       ]  92.47MB/105.2MB
+ 97b8e529965a Extracting [=============================================>     ]  96.37MB/105.2MB
+ 97b8e529965a Extracting [===============================================>   ]  100.8MB/105.2MB
+ 97b8e529965a Extracting [=================================================> ]  103.6MB/105.2MB
+ 97b8e529965a Extracting [==================================================>]  105.2MB/105.2MB
+ 97b8e529965a Pull complete 
+ 6bfb940eb824 Extracting [==================================================>]   9.56kB/9.56kB
+ 6bfb940eb824 Extracting [==================================================>]   9.56kB/9.56kB
+ 6bfb940eb824 Pull complete 
+ e76f2995a422 Extracting [==================================================>]     128B/128B
+ e76f2995a422 Extracting [==================================================>]     128B/128B
+ e76f2995a422 Pull complete 
+ 9582264a43c0 Extracting [==================================================>]     170B/170B
+ 9582264a43c0 Extracting [==================================================>]     170B/170B
+ 9582264a43c0 Pull complete 
+ d3a0dfeb7e38 Extracting [==================================================>]  5.838kB/5.838kB
+ d3a0dfeb7e38 Extracting [==================================================>]  5.838kB/5.838kB
+ d3a0dfeb7e38 Pull complete 
+ feb143896d95 Extracting [==================================================>]     182B/182B
+ feb143896d95 Extracting [==================================================>]     182B/182B
+ feb143896d95 Pull complete 
+ db Pulled 
+ Network staging_default  Creating
+ Network staging_default  Created
+ Container grenoble-roller-db-staging  Creating
+ Container grenoble-roller-minio-staging  Creating
+ Container grenoble-roller-minio-staging  Created
+ Container grenoble-roller-db-staging  Created
+ Container grenoble-roller-staging  Creating
+ Container grenoble-roller-staging  Created
+ Container grenoble-roller-minio-staging  Starting
+ Container grenoble-roller-db-staging  Starting
+ Container grenoble-roller-minio-staging  Started
+ Container grenoble-roller-db-staging  Started
+ Container grenoble-roller-minio-staging  Waiting
+ Container grenoble-roller-db-staging  Waiting
+ Container grenoble-roller-db-staging  Healthy
+ Container grenoble-roller-minio-staging  Healthy
+ Container grenoble-roller-staging  Starting
+ Container grenoble-roller-staging  Started
+[0;32m[2026-01-04 03:51:27] SUCCESS: ✅ Tous les services démarrés avec succès[0m
+[2026-01-04 03:51:27] INFO: 🔍 Vérification que tous les conteneurs sont bien démarrés...
+[0;32m[2026-01-04 03:51:31] SUCCESS: ✅ Tous les services sont running[0m
+[2026-01-04 03:51:32] 🔍 Vérification IMPÉRATIVE : les fichiers de migration locaux sont-ils dans le conteneur ?
+[0;32m[2026-01-04 03:51:32] SUCCESS: ✅ Migrations synchronisées (70 fichiers)[0m
+[2026-01-04 03:51:32] INFO: Pas de healthcheck configuré, attente supplémentaire...
+[2026-01-04 03:51:50] 🕐 Timeout migration adaptatif : 90s pour 1 migration(s)
+[2026-01-04 03:51:50] 🗄️ Exécution des migrations (timeout: 90s)...
+[2026-01-04 03:51:50] INFO:    ℹ️  db:migrate est SÉCURISÉ : applique uniquement les migrations en attente
+[2026-01-04 03:51:50] INFO:    ℹ️  Aucune donnée existante ne sera supprimée
+[2026-01-04 03:51:50] INFO:    ℹ️  Solid Queue utilise PostgreSQL (migrations incluses)
+
+[0;32m[2026-01-04 03:51:53] SUCCESS: ✅ Migrations principales exécutées avec succès (durée: 3s)[0m
+[2026-01-04 03:51:55] INFO: ℹ️  Solid Queue utilise PostgreSQL (migrations incluses dans db:migrate)
+[0;32m[2026-01-04 03:51:55] SUCCESS: ✅ Toutes les migrations ont été appliquées correctement[0m
+[2026-01-04 03:51:55] ⏰ Installation/mise à jour du crontab...
+[2026-01-04 03:51:55] 🔄 Installation/mise à jour du crontab pour staging...
+[2026-01-04 03:51:56] INFO:    Génération du crontab depuis config/schedule.rb...
+[2026-01-04 03:51:56] INFO:    Écriture du crontab dans /rails/config/crontab...
+[0;32m[2026-01-04 03:51:57] SUCCESS: ✅ Crontab généré et écrit dans /rails/config/crontab[0m
+[0;32m[2026-01-04 03:51:57] SUCCESS: ✅ Vérification : 5 entrée(s) cron dans le fichier[0m
+[2026-01-04 03:51:57] INFO: 📋 Entrées cron générées:
+[2026-01-04 03:51:57] INFO:    0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rails.application.load_tasks; Rake::Task["helloasso:sync_payments"].invoke'\'' >> log/cron.log 2>&1'
+[2026-01-04 03:51:57] INFO:    0 19 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''EventReminderJob.perform_now'\'' >> log/cron.log 2>&1'
+[2026-01-04 03:51:57] INFO:    0 7 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''InitiationParticipantsReportJob.perform_now'\'' >> log/cron.log 2>&1'
+[2026-01-04 03:51:57] INFO:    0 0 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rails.application.load_tasks; Rake::Task["memberships:update_expired"].invoke'\'' >> log/cron.log 2>&1'
+[2026-01-04 03:51:57] INFO:    0 9 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e staging '\''Rails.application.load_tasks; Rake::Task["memberships:send_renewal_reminders"].invoke'\'' >> log/cron.log 2>&1'
+[2026-01-04 03:51:57] 🔓 Désactivation du mode maintenance...
+[2026-01-04 03:51:57] INFO: ✅ Désactivation du mode maintenance...
+[0;32m[2026-01-04 03:52:00] SUCCESS: ✅ Mode maintenance désactivé[0m
+[2026-01-04 03:52:00] 🏥 Health check complet avec retry...
+[2026-01-04 03:52:11] 🏥 Health check complet (DB, Redis, Migrations, HTTP)...
+[2026-01-04 03:52:11] INFO:   → Vérification DB...
+[0;32m[2026-01-04 03:52:14] SUCCESS:   ✅ DB accessible[0m
+[2026-01-04 03:52:14] INFO:   → Vérification Redis...
+[1;33m[2026-01-04 03:52:20] WARNING:   ⚠️  Redis non configuré (non bloquant)[0m
+[2026-01-04 03:52:20] INFO:   → Vérification migrations...
+[0;32m[2026-01-04 03:52:23] SUCCESS:   ✅ Toutes les migrations appliquées[0m
+[2026-01-04 03:52:23] INFO:   → Vérification HTTP (port externe: 3001, port interne: 3000)...
+[0;32m[2026-01-04 03:52:23] SUCCESS:   ✅ HTTP endpoint OK (200)[0m
+[0;32m[2026-01-04 03:52:23] SUCCESS: ✅ Déploiement staging terminé avec succès (commit: 5a819ee)[0m
+[2026-01-04 03:52:23] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-01-04 03:52:23] ✅ DEPLOYMENT SUCCESS
+[2026-01-04 03:52:23] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-01-04 03:52:23] INFO: 📊 Métriques exportées: /home/flowtech/Grenoble-Roller-Project/metrics/deploy-staging.prom
