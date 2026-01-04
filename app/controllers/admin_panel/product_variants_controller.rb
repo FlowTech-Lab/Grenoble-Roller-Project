@@ -5,7 +5,7 @@ module AdminPanel
     include Pagy::Backend
 
     before_action :set_product
-    before_action :set_variant, only: %i[edit update destroy toggle_status]
+    before_action :set_variant, only: %i[show edit update destroy toggle_status]
     before_action :authorize_product
 
     # GET /admin-panel/products/:product_id/product_variants
@@ -85,6 +85,11 @@ module AdminPanel
       end
     end
 
+    # GET /admin-panel/products/:product_id/product_variants/:id
+    def show
+      redirect_to edit_admin_panel_product_product_variant_path(@product, @variant)
+    end
+
     # GET /admin-panel/products/:product_id/product_variants/new
     def new
       @variant = @product.product_variants.build
@@ -131,10 +136,34 @@ module AdminPanel
       end
 
       if @variant.update(variant_params)
-        flash[:notice] = "Variante mise à jour avec succès"
-        redirect_to admin_panel_product_path(@product)
+        respond_to do |format|
+          format.html do
+            flash[:notice] = "Variante mise à jour avec succès"
+            redirect_to admin_panel_product_path(@product)
+          end
+          format.json do
+            render json: { 
+              success: true, 
+              message: "Variante mise à jour avec succès",
+              variant: {
+                id: @variant.id,
+                price_cents: @variant.price_cents
+              }
+            }
+          end
+        end
       else
-        render :edit, status: :unprocessable_entity
+        respond_to do |format|
+          format.html do
+            render :edit, status: :unprocessable_entity
+          end
+          format.json do
+            render json: { 
+              success: false, 
+              message: @variant.errors.full_messages.join(', ')
+            }, status: :unprocessable_entity
+          end
+        end
       end
     end
 
