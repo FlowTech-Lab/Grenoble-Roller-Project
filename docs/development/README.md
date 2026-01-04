@@ -44,16 +44,6 @@ Backlog d'améliorations UX et plans d'action :
 
 ---
 
-### ⚙️ Admin Panel
-**Dossier** : [`admin-panel/`](admin-panel/)
-
-Documentation stratégique et plans d'amélioration pour l'admin panel :
-- Analyses stratégiques
-- Plans d'implémentation
-
-**Fichiers** :
-- `admin-panel-strategic-analysis.md` - Analyse stratégique complète
-
 ---
 
 ### ♿ Accessibilité
