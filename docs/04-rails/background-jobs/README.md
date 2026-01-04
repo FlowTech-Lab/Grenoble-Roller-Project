@@ -44,7 +44,7 @@ Ce répertoire contient la documentation complète du système de jobs récurren
 
 - **Configuration** : [`config/recurring.yml`](../../../config/recurring.yml) - Configuration Solid Queue (✅ ACTIF)
 - **Queue config** : [`config/queue.yml`](../../../config/queue.yml) - Configuration workers/dispatchers
-- **Mailing** : [`docs/development/Mailing/mailing-system-complete.md`](../../development/Mailing/mailing-system-complete.md) - Emails automatiques
+- **Mailing** : [`docs/04-rails/mailing/README.md`](../mailing/README.md) - Emails automatiques
 - **Admin Panel** : [`docs/04-rails/admin-panel/`](../admin-panel/) - Mission Control Jobs intégré
 
 ---

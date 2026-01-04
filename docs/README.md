@@ -121,7 +121,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ⚠️ `development/accessibility/` - Audits et plans d'action accessibilité
 - ⚠️ `development/phase2/` - Documentation Phase 2 (non implémentée)
 - ⚠️ `development/testing/` - Roadmaps et todolists tests
-- ⚠️ `development/Mailing/` - Documentation système de mailing (en cours de finalisation)
+- ✅ `04-rails/mailing/` - Documentation complète système de mailing (18 emails, jobs récurrents, configuration)
 
 ### Admin Panel (Complété)
 - ✅ `04-rails/admin-panel/` - Documentation complète du panel admin (100% implémenté, migré depuis ActiveAdmin)

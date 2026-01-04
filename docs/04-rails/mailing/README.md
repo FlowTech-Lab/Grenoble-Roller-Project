@@ -2,8 +2,8 @@
 
 **Date** : 2025-12-20  
 **Dernière mise à jour** : 2025-01-13  
-**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + ✅ **SolidQueue configuré** pour jobs récurrents via `config/recurring.yml`  
-**Version** : 2.4
+**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + ✅ **SolidQueue actif** - Tous les jobs récurrents migrés et fonctionnels  
+**Version** : 2.5
 
 ---
 
@@ -37,11 +37,11 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 | Job | Fréquence | Domaine | Système | Status |
 |-----|-----------|---------|---------|--------|
 | **EventReminderJob** | Quotidien (19h) | Rappels événements | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
-| **HelloAsso Sync** | Toutes les 5 min | Paiements | SolidQueue recurring.yml | ⚠️ **À migrer** depuis Supercronic |
-| **Memberships Expired** | Quotidien (00h) | Adhésions expirées | SolidQueue recurring.yml | ⚠️ **À migrer** depuis Supercronic |
-| **Renewal Reminders** | Quotidien (09h) | Rappels renouvellement | SolidQueue recurring.yml | ⚠️ **À migrer** depuis Supercronic |
-| **Initiation Participants Report** | Quotidien (07h) | Rapport participants | SolidQueue recurring.yml | ✅ **IMPLÉMENTÉ** (voir Section 7.5) |
-| **Clear Finished Jobs** | Toutes les heures | Nettoyage SolidQueue | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
+| **SyncHelloAssoPaymentsJob** | Toutes les 5 min | Paiements | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
+| **UpdateExpiredMembershipsJob** | Quotidien (00h) | Adhésions expirées | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
+| **SendRenewalRemindersJob** | Quotidien (09h) | Rappels renouvellement | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
+| **InitiationParticipantsReportJob** | Sur demande | Rapport participants | SolidQueue (créé automatiquement) | ✅ **ACTIF** (créé à la publication) |
+| **clear_solid_queue_finished_jobs** | Toutes les heures | Nettoyage SolidQueue | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
 
 **✅ SYSTÈME VÉRIFIÉ** : Tous les points "À VÉRIFIER" ont été vérifiés avec tous les liens vers fichiers, variables et logiques.
 
@@ -54,11 +54,14 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 - ✅ Bonus : Cohérence `update_column`, `Rails.logger`, monitoring Sentry (TERMINÉ)
 
 **✅ SolidQueue configuré pour jobs récurrents** :
-- ✅ **Point 3** : **SolidQueue** gère maintenant les jobs récurrents via `config/recurring.yml`
+- ✅ **Point 3** : **SolidQueue** gère maintenant TOUS les jobs récurrents via `config/recurring.yml`
 - ✅ `EventReminderJob` configuré dans `config/recurring.yml` (19h quotidien)
+- ✅ `SyncHelloAssoPaymentsJob` configuré dans `config/recurring.yml` (toutes les 5 minutes)
+- ✅ `UpdateExpiredMembershipsJob` configuré dans `config/recurring.yml` (minuit quotidien)
+- ✅ `SendRenewalRemindersJob` configuré dans `config/recurring.yml` (9h quotidien)
 - ✅ `clear_solid_queue_finished_jobs` configuré dans `config/recurring.yml` (toutes les heures)
-- ⚠️ **Migration en cours** : Autres jobs (HelloAsso sync, memberships tasks) à migrer depuis Supercronic vers `config/recurring.yml`
-- **Voir Section 12.3** pour architecture complète et [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) pour documentation complète
+- ✅ **Migration terminée** : Tous les jobs sont maintenant dans Solid Queue, Supercronic est déprécié
+- **Voir Section 12.3** pour architecture complète et [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md) pour documentation complète
 
 ---
 
@@ -356,66 +359,51 @@ end
 
 #### Configuration Cron
 
-**⚠️ SYSTÈME RÉEL UTILISÉ : Supercronic** (dans le conteneur Docker)
+**✅ SYSTÈME ACTIF : Solid Queue** (Rails 8)
 
-**Fichier crontab** : [`config/crontab`](../../config/crontab)
+**Configuration** : [`config/recurring.yml`](../../config/recurring.yml)
 
-**Génération** : Le fichier `config/crontab` est généré automatiquement depuis `config/schedule.rb` lors du déploiement par le script `ops/lib/deployment/cron.sh`
-
-**Configuration source** : [`config/schedule.rb`](../../config/schedule.rb)
-
-```ruby
-# Job de rappel la veille à 19h pour les événements du lendemain
-every 1.day, at: "7:00 pm" do
-  runner "EventReminderJob.perform_now"
-end
+```yaml
+production:
+  event_reminder:
+    class: EventReminderJob
+    queue: default
+    schedule: every day at 7:00pm
 ```
 
-**Fichier crontab généré** :
-```
-0 19 * * * /bin/bash -l -c 'cd /rails && bundle exec bin/rails runner -e "${RAILS_ENV:-production}" '\''EventReminderJob.perform_now'\'' >> log/cron.log 2>&1'
-```
+**Exécution** : Solid Queue charge automatiquement `config/recurring.yml` au démarrage et exécute les jobs selon leur schedule.
 
-**Démarrage** : Supercronic est lancé automatiquement par [`bin/docker-entrypoint`](../../bin/docker-entrypoint) si le fichier `/rails/config/crontab` existe (lignes 68-82)
+**⚠️ Supercronic déprécié** :
+- [`config/schedule.rb`](../../config/schedule.rb) : Conservé pour référence uniquement
+- [`config/crontab`](../../config/crontab) : Conservé pour référence uniquement
+- Migration terminée vers Solid Queue
 
-**Installation** :
-- ✅ Automatique lors du déploiement (`ops/deploy.sh` appelle `install_crontab`)
-- ✅ Manuel : `./ops/scripts/update-crontab.sh production`
+**✅ VÉRIFICATION - Si les rappels ne fonctionnent pas** :
 
-**⚠️ DIAGNOSTIC - Si les rappels ne fonctionnent pas** :
-
-1. **Vérifier que le fichier crontab existe** :
+1. **Vérifier que les jobs récurrents sont chargés** :
 ```bash
-docker exec grenoble-roller-production cat /rails/config/crontab
+docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::RecurringTask.count"
+# Doit retourner 5 (nombre de jobs configurés)
 ```
 
-2. **Vérifier que Supercronic tourne** :
+2. **Vérifier les jobs récurrents enregistrés** :
 ```bash
-docker exec grenoble-roller-production ps aux | grep supercronic
+docker exec grenoble-roller-production bin/rails runner "SolidQueue::RecurringTask.all.each { |t| puts \"#{t.key}: #{t.schedule}\" }"
 ```
 
-3. **Vérifier les logs d'exécution** :
-```bash
-# Logs des tâches cron
-docker exec grenoble-roller-production tail -f log/cron.log
-
-# Logs du conteneur (pour voir si Supercronic démarre)
-docker logs grenoble-roller-production | grep -i supercronic
-```
-
-4. **Tester manuellement le job** :
+3. **Tester manuellement le job** :
 ```bash
 docker exec grenoble-roller-production bin/rails runner "EventReminderJob.perform_now"
 ```
 
-5. **Vérifier que le crontab est bien généré lors du déploiement** :
+4. **Vérifier les logs Solid Queue** :
 ```bash
-# Vérifier les logs de déploiement
-tail -f logs/deploy-production.log | grep -i cron
+# Logs de l'application (Solid Queue est intégré dans Puma)
+docker logs grenoble-roller-production | grep -i "EventReminderJob"
 ```
 
 **Références** :
-- Documentation jobs récurrents : [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md)
+- Documentation jobs récurrents : [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md)
 - Script installation : [`ops/lib/deployment/cron.sh`](../../ops/lib/deployment/cron.sh)
 - Docker entrypoint : [`bin/docker-entrypoint`](../../bin/docker-entrypoint)
 - Documentation déploiement : [`docs/09-product/deployment-cron.md`](../../09-product/deployment-cron.md)
@@ -726,10 +714,11 @@ Email: order_shipped ✅
 **Fichier mailer** : [`app/mailers/membership_mailer.rb`](../app/mailers/membership_mailer.rb) (lignes 16-24)
 
 **Déclencheur** :
-- **Job cron** : Tâche quotidienne à minuit
-- **Appel dans le code** : [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) (ligne 15) - `MembershipMailer.expired(membership).deliver_now if defined?(MembershipMailer)`
-- Task `memberships:update_expired` dans [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) (lignes 3-22)
-- **Note** : Utilise `deliver_now` (pas `deliver_later`) car exécuté dans une rake task cron
+- ✅ **Job Solid Queue** : `UpdateExpiredMembershipsJob` exécuté quotidiennement à minuit
+- **Fichier job** : [`app/jobs/update_expired_memberships_job.rb`](../app/jobs/update_expired_memberships_job.rb)
+- **Appel dans le code** : `MembershipMailer.expired(membership).deliver_later` (ligne 22 du job)
+- ⚠️ **Rake task dépréciée** : [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) conservée pour référence uniquement
+- **Note** : Utilise `deliver_later` via Solid Queue pour traitement asynchrone avec retry automatique
 
 **Templates** :
 - HTML : [`app/views/membership_mailer/expired.html.erb`](../app/views/membership_mailer/expired.html.erb)
@@ -741,13 +730,9 @@ Email: order_shipped ✅
 - `@membership.season` : Saison (ex: "2024-2025")
 
 **Configuration cron** :
-- [`config/schedule.rb`](../config/schedule.rb) (lignes 18-20) :
-```ruby
-every 1.day, at: "12:00 am" do
-  runner 'Rake::Task["memberships:update_expired"].invoke'
-end
-```
-- Généré dans [`config/crontab`](../config/crontab) (ligne 13) via Supercronic
+- ✅ **Solid Queue** : [`config/recurring.yml`](../config/recurring.yml) - **ACTIF**
+- ✅ Job configuré : `UpdateExpiredMembershipsJob` (minuit quotidien)
+- ⚠️ **Supercronic déprécié** : [`config/schedule.rb`](../config/schedule.rb) conservé pour référence uniquement
 
 **Logique** :
 - Filtre les adhésions `active` avec `end_date < Date.current` (voir [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) lignes 6-9)
@@ -761,11 +746,12 @@ end
 **Fichier mailer** : [`app/mailers/membership_mailer.rb`](../app/mailers/membership_mailer.rb) (lignes 27-35)
 
 **Déclencheur** :
-- **Job cron** : Tâche quotidienne à 9h
+- ✅ **Job Solid Queue** : `SendRenewalRemindersJob` exécuté quotidiennement à 9h
+- **Fichier job** : [`app/jobs/send_renewal_reminders_job.rb`](../app/jobs/send_renewal_reminders_job.rb)
 - 30 jours avant expiration (`end_date = 30.days.from_now.to_date`)
-- **Appel dans le code** : [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) (ligne 34) - `MembershipMailer.renewal_reminder(membership).deliver_now if defined?(MembershipMailer)`
-- Task `memberships:send_renewal_reminders` dans [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) (lignes 25-42)
-- **Note** : Utilise `deliver_now` (pas `deliver_later`) car exécuté dans une rake task cron
+- **Appel dans le code** : `MembershipMailer.renewal_reminder(membership).deliver_later` (ligne 18 du job)
+- ⚠️ **Rake task dépréciée** : [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) conservée pour référence uniquement
+- **Note** : Utilise `deliver_later` via Solid Queue pour traitement asynchrone avec retry automatique
 
 **Templates** :
 - HTML : [`app/views/membership_mailer/renewal_reminder.html.erb`](../app/views/membership_mailer/renewal_reminder.html.erb)
@@ -776,13 +762,9 @@ end
 - `@user` : Utilisateur propriétaire (via `membership.user`, ligne 29)
 
 **Configuration cron** :
-- [`config/schedule.rb`](../config/schedule.rb) (lignes 23-25) :
-```ruby
-every 1.day, at: "9:00 am" do
-  runner 'Rake::Task["memberships:send_renewal_reminders"].invoke'
-end
-```
-- Généré dans [`config/crontab`](../config/crontab) (ligne 16) via Supercronic
+- ✅ **Solid Queue** : [`config/recurring.yml`](../config/recurring.yml) - **ACTIF**
+- ✅ Job configuré : `SendRenewalRemindersJob` (9h quotidien)
+- ⚠️ **Supercronic déprécié** : [`config/schedule.rb`](../config/schedule.rb) conservé pour référence uniquement
 
 **Logique** :
 - Filtre les adhésions `active` avec `end_date = 30.days.from_now.to_date` (voir [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) lignes 26-32)
@@ -1041,11 +1023,11 @@ smtp:
 **Fréquence** : Tous les jours à **19h00** (7:00pm)
 
 **Configuration** :
-- 🚨 **SITUATION CRITIQUE** : **Supercronic ne tourne PAS** = EventReminderJob **N'EST PAS EXÉCUTÉ**
-- **Supercronic** (devrait être) : [`config/schedule.rb`](../config/schedule.rb) → [`config/crontab`](../config/crontab) (généré automatiquement)
-- **SolidQueue** : [`config/recurring.yml`](../config/recurring.yml) existe mais **N'EST PAS UTILISÉ** pour EventReminderJob
-- **Démarrage prévu** : [`bin/docker-entrypoint`](../bin/docker-entrypoint) (lignes 68-82) mais **NE FONCTIONNE PAS**
-- **Voir Section 12.3** pour diagnostic complet et solutions
+- ✅ **SolidQueue** : [`config/recurring.yml`](../config/recurring.yml) - **ACTIF** et utilisé pour EventReminderJob
+- ✅ Job configuré dans `config/recurring.yml` (19h quotidien)
+- ✅ Exécuté automatiquement par Solid Queue au démarrage de l'application
+- ⚠️ **Supercronic déprécié** : [`config/schedule.rb`](../config/schedule.rb) et [`config/crontab`](../config/crontab) conservés pour référence uniquement
+- **Voir Section 12.3** pour architecture complète et [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md) pour documentation complète
 
 **Fonction** : Envoie des rappels la veille (à 19h) pour les événements et initiations du lendemain
 
@@ -1090,17 +1072,13 @@ smtp:
 **Fréquence** : Toutes les **5 minutes**
 
 **Configuration** :
-- [`config/schedule.rb`](../config/schedule.rb) (lignes 8-10) :
-```ruby
-every 5.minutes do
-  runner 'Rake::Task["helloasso:sync_payments"].invoke'
-end
-```
-- Généré dans [`config/crontab`](../config/crontab) (ligne 7) via Supercronic
+- ✅ **SolidQueue** : [`config/recurring.yml`](../config/recurring.yml) - **ACTIF**
+- ✅ Job configuré : `SyncHelloAssoPaymentsJob` (toutes les 5 minutes)
+- ⚠️ **Supercronic déprécié** : [`config/schedule.rb`](../config/schedule.rb) conservé pour référence uniquement
 
 **Fonction** : Synchronise les statuts de paiement HelloAsso (déclenche emails `order_paid`, `membership_activated`, `payment_failed`)
 
-**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
+**✅ STATUT ACTUEL** : **ACTIF** - Exécuté automatiquement par Solid Queue toutes les 5 minutes.
 
 **Logique** :
 - Filtre les paiements `pending` créés dans les dernières 24h (voir [`lib/tasks/helloasso.rake`](../lib/tasks/helloasso.rake) lignes 4-6)
@@ -1121,17 +1099,13 @@ end
 **Fréquence** : Tous les jours à **00h00** (minuit)
 
 **Configuration** :
-- [`config/schedule.rb`](../config/schedule.rb) (lignes 18-20) :
-```ruby
-every 1.day, at: "12:00 am" do
-  runner 'Rake::Task["memberships:update_expired"].invoke'
-end
-```
-- Généré dans [`config/crontab`](../config/crontab) (ligne 13) via Supercronic
+- ✅ **SolidQueue** : [`config/recurring.yml`](../config/recurring.yml) - **ACTIF**
+- ✅ Job configuré : `UpdateExpiredMembershipsJob` (minuit quotidien)
+- ⚠️ **Supercronic déprécié** : [`config/schedule.rb`](../config/schedule.rb) conservé pour référence uniquement
 
 **Fonction** : Met à jour les statuts d'adhésions expirées et envoie `membership_expired`
 
-**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
+**✅ STATUT ACTUEL** : **ACTIF** - Exécuté automatiquement par Solid Queue tous les jours à minuit.
 
 **Logique** :
 - Filtre les adhésions `active` avec `end_date < Date.current` (voir [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) lignes 6-9)
@@ -1152,20 +1126,14 @@ end
 
 **Fréquence** : Tous les jours à **09h00**
 
-**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
-
 **Configuration** :
-- [`config/schedule.rb`](../config/schedule.rb) (lignes 23-25) :
-```ruby
-every 1.day, at: "9:00 am" do
-  runner 'Rake::Task["memberships:send_renewal_reminders"].invoke'
-end
-```
-- Généré dans [`config/crontab`](../config/crontab) (ligne 16) via Supercronic
+- ✅ **SolidQueue** : [`config/recurring.yml`](../config/recurring.yml) - **ACTIF**
+- ✅ Job configuré : `SendRenewalRemindersJob` (9h quotidien)
+- ⚠️ **Supercronic déprécié** : [`config/schedule.rb`](../config/schedule.rb) conservé pour référence uniquement
 
 **Fonction** : Envoie `membership_renewal_reminder` 30 jours avant expiration
 
-**🚨 STATUT ACTUEL** : **INACTIF** - Supercronic ne tourne pas, cette tâche n'est pas exécutée automatiquement.
+**✅ STATUT ACTUEL** : **ACTIF** - Exécuté automatiquement par Solid Queue tous les jours à 9h.
 
 **Logique** :
 - Calcule la date cible : `30.days.from_now.to_date` (voir [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) ligne 26)
@@ -1186,14 +1154,10 @@ end
 
 **Fréquence** : Tous les jours à **07h00** (uniquement en production)
 
-**Configuration à ajouter dans `config/schedule.rb`** :
-
-```ruby
-# Rapport participants initiation (tous les jours à 7h, uniquement en production)
-every 1.day, at: "7:00 am" do
-  runner "InitiationParticipantsReportJob.perform_now" if Rails.env.production?
-end
-```
+**Configuration** :
+- ✅ **SolidQueue** : Job créé automatiquement lors de la publication d'une initiation
+- ✅ Planifié pour s'exécuter le jour de l'initiation à 7h00
+- ⚠️ **Note** : Ce job n'est plus récurrent, il est créé à la demande lors de la publication d'une initiation
 
 **Fonction** : Envoie un email à `contact@grenoble-roller.org` avec la liste des participants et le matériel demandé pour chaque initiation du jour.
 
@@ -1587,8 +1551,10 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
    ├─ Tables : solid_queue_recurring_tasks, solid_queue_recurring_executions
    └─ Jobs configurés :
       ├─ EventReminderJob (19h quotidien) ✅
-      ├─ clear_solid_queue_finished_jobs (toutes les heures) ✅
-      └─ (Autres jobs à migrer depuis Supercronic)
+      ├─ SyncHelloAssoPaymentsJob (toutes les 5 minutes) ✅
+      ├─ UpdateExpiredMembershipsJob (minuit quotidien) ✅
+      ├─ SendRenewalRemindersJob (9h quotidien) ✅
+      └─ clear_solid_queue_finished_jobs (toutes les heures) ✅
 
 2. JOBS ACTIVEJOB ASYNCHRONES (SolidQueue) ✅ FONCTIONNE
    ├─ Configuration : config/queue.yml
@@ -1597,75 +1563,37 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
    └─ Jobs :
       └─ Tous les deliver_later (emails, etc.) ✅
 
-3. SUPERCRONIC (⚠️ DÉPRÉCIÉ - Migration en cours)
-   ├─ Source : config/schedule.rb (Whenever)
-   ├─ Généré : config/crontab (Supercronic)
-   ├─ Démarrage : bin/docker-entrypoint (lignes 68-82)
-   └─ Status : ⚠️ Migration vers SolidQueue recurring.yml en cours
+3. SUPERCRONIC (⚠️ DÉPRÉCIÉ - Migration terminée)
+   ├─ Source : config/schedule.rb (Whenever) - Conservé pour référence uniquement
+   ├─ Généré : config/crontab (Supercronic) - Conservé pour référence uniquement
+   ├─ Démarrage : bin/docker-entrypoint (lignes 68-82) - Non utilisé
+   └─ Status : ✅ **Migration terminée** - Tous les jobs sont dans Solid Queue
 ```
 
-**🚨 DIAGNOSTIC - Pourquoi Supercronic ne tourne pas** :
+**✅ Migration vers Solid Queue - TERMINÉE** :
 
-1. **Conditions de démarrage dans `bin/docker-entrypoint`** (lignes 68-82) :
-   ```bash
-   if [ "${RAILS_ENV}" == "production" ] || [ "${APP_ENV}" == "staging" ] || 
-      [ "${DEPLOY_ENV}" == "staging" ] || [ "${DEPLOY_ENV}" == "production" ]; then
-     if [ -f "/rails/config/crontab" ]; then
-       supercronic /rails/config/crontab &
-   ```
-   - ⚠️ **Problème potentiel 1** : Variables d'environnement non définies correctement
-   - ⚠️ **Problème potentiel 2** : Fichier `/rails/config/crontab` n'existe pas ou n'est pas généré
+Tous les jobs récurrents sont maintenant configurés dans `config/recurring.yml` et exécutés automatiquement par Solid Queue :
+- ✅ `EventReminderJob` : 19h quotidien
+- ✅ `SyncHelloAssoPaymentsJob` : Toutes les 5 minutes
+- ✅ `UpdateExpiredMembershipsJob` : Minuit quotidien
+- ✅ `SendRenewalRemindersJob` : 9h quotidien
+- ✅ `clear_solid_queue_finished_jobs` : Toutes les heures
 
-2. **Génération du crontab** :
-   - Le crontab est généré par [`ops/lib/deployment/cron.sh`](../ops/lib/deployment/cron.sh) lors du déploiement
-   - Fonction `install_crontab()` est appelée dans [`ops/deploy.sh`](../ops/deploy.sh) ligne 382
-   - ⚠️ **Problème potentiel 3** : Le crontab n'est pas généré ou n'est pas écrit correctement
+**Vérification** :
+```bash
+# Vérifier que les jobs récurrents sont chargés
+docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::RecurringTask.count"
+# Doit retourner 5 (nombre de jobs configurés)
 
-3. **Supercronic installé dans Dockerfile** :
-   - ✅ Supercronic est installé dans le Dockerfile (lignes 30-31)
-   - ⚠️ **Problème potentiel 4** : Supercronic n'est peut-être pas dans le PATH ou n'a pas les permissions
-
-**🔧 ACTIONS REQUISES URGENTES** :
-
-1. **Vérifier si Supercronic tourne** :
-   ```bash
-   docker exec -it grenoble-roller-production ps aux | grep supercronic
-   # Si aucun résultat → Supercronic ne tourne pas
-   ```
-
-2. **Vérifier si le crontab existe** :
-   ```bash
-   docker exec -it grenoble-roller-production ls -la /rails/config/crontab
-   # Si fichier n'existe pas → Problème de génération
-   ```
-
-3. **Vérifier les variables d'environnement** :
-   ```bash
-   docker exec -it grenoble-roller-production env | grep -E "RAILS_ENV|APP_ENV|DEPLOY_ENV"
-   # Vérifier que les variables sont définies correctement
-   ```
-
-4. **Démarrer Supercronic manuellement (solution temporaire)** :
-   ```bash
-   docker exec -d grenoble-roller-production supercronic /rails/config/crontab
-   ```
-
-5. **Générer le crontab manuellement** :
-   ```bash
-   docker exec -it grenoble-roller-production bash -c "cd /rails && bundle exec whenever --set 'environment=production' > /rails/config/crontab"
-   ```
-
-6. **Vérifier les logs** :
-   ```bash
-   docker exec -it grenoble-roller-production tail -f log/cron.log
-   # Vérifier si des tâches s'exécutent
-   ```
+# Vérifier les jobs récurrents enregistrés
+docker exec grenoble-roller-production bin/rails runner "SolidQueue::RecurringTask.all.each { |t| puts \"#{t.key}: #{t.schedule}\" }"
+```
 
 **✅ SolidQueue charge automatiquement `config/recurring.yml`** :
 - Solid Queue lit automatiquement `config/recurring.yml` au démarrage
 - Les jobs récurrents sont enregistrés dans `solid_queue_recurring_tasks`
 - Le scheduler Solid Queue enqueue les jobs selon leur schedule
-- Voir [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) pour la documentation complète
+- Voir [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md) pour la documentation complète
 
 **Références** :
 - Recurring config : [`config/recurring.yml`](../config/recurring.yml) ✅ **UTILISÉ** par SolidQueue
@@ -1675,9 +1603,9 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 - Production config : [`config/environments/production.rb`](../config/environments/production.rb) (ligne 56 - queue_adapter = :solid_queue)
 - Staging config : [`config/environments/staging.rb`](../config/environments/staging.rb) (ligne 45 - queue_adapter = :solid_queue)
 - SolidQueue initializer : [`config/initializers/solid_queue.rb`](../config/initializers/solid_queue.rb)
-- Documentation jobs récurrents : [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) (Solid Queue actif, migration terminée)
-- Schedule config (déprécié) : [`config/schedule.rb`](../config/schedule.rb) (⚠️ Migration en cours vers recurring.yml)
-- Crontab généré (déprécié) : [`config/crontab`](../config/crontab) (⚠️ Migration en cours vers recurring.yml)
+- Documentation jobs récurrents : [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md) (Solid Queue actif, migration terminée)
+- Schedule config (déprécié) : [`config/schedule.rb`](../config/schedule.rb) (⚠️ Conservé pour référence uniquement, migration terminée)
+- Crontab généré (déprécié) : [`config/crontab`](../config/crontab) (⚠️ Conservé pour référence uniquement, migration terminée)
 
 ---
 
@@ -2721,7 +2649,7 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 - ✅ **Rake Tasks** : Toutes les tasks vérifiées (2 appels MembershipMailer)
 
 #### deliver_later vs deliver_now
-- ✅ **Tous les appels vérifiés** : 20 appels `deliver_later`, 3 appels `deliver_now` (justifiés : waitlist notification + rake tasks)
+- ✅ **Tous les appels vérifiés** : Tous les appels utilisent `deliver_later` via Solid Queue (migration terminée depuis les rake tasks)
 
 #### Flags de Suivi
 - ✅ **Vérification complète** : `reminder_sent_at`, `renewal_reminder_sent_at`, `expired_email_sent_at` n'existent PAS (documenté comme risque)
@@ -2799,7 +2727,7 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 - [`docs/06-events/event-reminder-job.md`](../06-events/event-reminder-job.md) - Documentation EventReminderJob
 - [`docs/09-product/orders-workflow-emails.md`](../09-product/orders-workflow-emails.md) - Documentation emails commandes
 - [`docs/09-product/membership-mailer-emails.md`](../09-product/membership-mailer-emails.md) - Documentation emails adhésions
-- [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) - Documentation complète système jobs récurrents (Solid Queue actif)
+- [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md) - Documentation complète système jobs récurrents (Solid Queue actif)
 
 ---
 
@@ -2816,4 +2744,4 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 | Adhésions expirées | Quotidien 00:00 | `memberships:update_expired` | `MembershipMailer.expired` | ✅ Actif |
 | Rappels renouvellement | Quotidien 9h | `memberships:send_renewal_reminders` | `MembershipMailer.renewal_reminder` | ✅ Actif |
 
-**Note** : Toutes les tâches récurrentes sont documentées dans [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) avec détails complets, configuration et dépannage.
+**Note** : Toutes les tâches récurrentes sont documentées dans [`docs/04-rails/background-jobs/CRON.md`](../background-jobs/CRON.md) avec détails complets, configuration et dépannage.

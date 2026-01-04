@@ -15,7 +15,7 @@ Cette section contient toute la documentation liée aux **fonctionnalités en d�
 ## 📁 Structure par Domaine
 
 ### 📧 Mailing & Notifications
-**Dossier** : [`Mailing/`](Mailing/)
+**Dossier** : [`../04-rails/mailing/`](../04-rails/mailing/)
 
 Documentation complète du système de mailing automatique :
 - Mailers et leurs méthodes
@@ -24,11 +24,11 @@ Documentation complète du système de mailing automatique :
 - Configuration SMTP
 - Tests et sécurité
 
-**Fichiers** :
-- `Mailing/mailing-system-complete.md` - Documentation complète du système de mailing (18 emails, jobs récurrents, configuration, tests)
-- `Mailing/ANALYSE-JOBS.md` - Analyse de nécessité et état des jobs récurrents
-- `Mailing/solid-queue-deployment-fix.md` - Corrections déploiement Solid Queue
-- `Mailing/waitlist-email-issue.md` - Diagnostic problèmes emails waitlist
+**📖 Documentation principale** : [`docs/04-rails/mailing/README.md`](../04-rails/mailing/README.md)
+
+**Fichiers troubleshooting** :
+- `docs/04-rails/mailing/troubleshooting/waitlist-email-issue.md` - Diagnostic problèmes emails waitlist
+- `docs/04-rails/mailing/troubleshooting/solid-queue-deployment-fix.md` - Corrections déploiement Solid Queue
 
 ---
 

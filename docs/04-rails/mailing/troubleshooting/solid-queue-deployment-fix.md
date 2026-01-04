@@ -216,8 +216,7 @@ docker exec grenoble-roller-staging ls -la /rails/storage/solid_queue.sqlite3
 
 - [Solid Queue GitHub](https://github.com/rails/solid_queue)
 - [Rails 8 Multi-Database Guide](https://guides.rubyonrails.org/active_record_multiple_databases.html)
-- Document : `docs/development/Mailing/solid-queue-sqlite-setup.md`
-- Document : `docs/development/Mailing/solid-queue-migration-order.md`
+- Document : `docs/04-rails/mailing/troubleshooting/solid-queue-deployment-fix.md` (ce fichier)
 
 ---
 

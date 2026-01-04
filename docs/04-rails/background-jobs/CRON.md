@@ -86,7 +86,7 @@ production:
 
 **Mailer** : `EventMailer.event_reminder(attendance)`
 
-**Documentation complète** : Voir [`docs/development/Mailing/mailing-system-complete.md`](../Mailing/mailing-system-complete.md#event_reminder)
+**Documentation complète** : Voir [`docs/04-rails/mailing/README.md`](../mailing/README.md#event_reminder)
 
 ---
 
@@ -107,7 +107,7 @@ end
 
 **Mailer** : `EventMailer.initiation_participants_report(initiation)`
 
-**Documentation complète** : Voir [`docs/development/Mailing/mailing-system-complete.md`](../Mailing/mailing-system-complete.md#initiation_participants_report)
+**Documentation complète** : Voir [`docs/04-rails/mailing/README.md`](../mailing/README.md#initiation_participants_report)
 
 ---
 
@@ -384,7 +384,7 @@ production:
 
 ### Documentation
 
-- [`docs/development/Mailing/mailing-system-complete.md`](../../development/Mailing/mailing-system-complete.md) - Documentation complète système de mailing
+- [`docs/04-rails/mailing/README.md`](../mailing/README.md) - Documentation complète système de mailing
 - [`docs/09-product/deployment-cron.md`](../../09-product/deployment-cron.md) - Documentation déploiement cron (ancienne)
 
 ### Liens Externes

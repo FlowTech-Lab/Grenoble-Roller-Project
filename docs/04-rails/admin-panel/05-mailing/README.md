@@ -2,7 +2,7 @@
 
 **Status** : ✅ Implémenté | **Configuration** : Via Solid Queue (`config/recurring.yml`)
 
-> 📖 **Documentation complète** : Voir [`docs/development/Mailing/mailing-system-complete.md`](../../Mailing/mailing-system-complete.md) pour la documentation détaillée du système de mailing complet.
+> 📖 **Documentation complète** : Voir [`docs/04-rails/mailing/README.md`](../../mailing/README.md) pour la documentation détaillée du système de mailing complet.
 
 ---
 
@@ -171,7 +171,7 @@ Lors de la migration vers Solid Queue, les tâches Rake seront remplacées par d
 
 **Référence** : 
 - Documentation jobs récurrents : Voir [`docs/04-rails/background-jobs/CRON.md`](../../background-jobs/CRON.md) (Solid Queue actif, migration terminée)
-- Documentation mailing complète : Voir `docs/development/Mailing/mailing-system-complete.md`
+- Documentation mailing complète : Voir [`docs/04-rails/mailing/README.md`](../../mailing/README.md)
 
 ---
 

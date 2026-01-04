@@ -168,7 +168,7 @@ Chaque thème contient **tous les éléments nécessaires** (migrations, modèle
 
 **Priorité** : 🟢 BASSE | **Phase** : Future | **Semaine** : 6+
 
-**Note** : Voir documentation existante dans `docs/development/Mailing/`
+**Note** : Voir documentation existante dans [`docs/04-rails/mailing/`](../mailing/)
 
 ---
 
