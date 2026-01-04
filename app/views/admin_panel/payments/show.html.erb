@@ -63,7 +63,7 @@
           <dt class="col-sm-4">Montant</dt>
           <dd class="col-sm-8">
             <strong class="text-liquid-success fs-5">
-              <%= number_to_currency(@payment.amount_cents / 100.0, unit: @payment.currency || 'EUR') %>
+              <%= number_to_currency(@payment.amount_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %>
             </strong>
           </dd>
         </dl>
@@ -115,7 +115,7 @@
                   <%= order.user&.email || '-' %>
                 </td>
                 <td>
-                  <strong><%= number_to_currency(order.total_cents / 100.0, unit: order.currency) %></strong>
+                  <strong><%= number_to_currency(order.total_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></strong>
                 </td>
                 <td>
                   <%= status_badge(order.status) %>

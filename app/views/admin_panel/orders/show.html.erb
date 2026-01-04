@@ -32,7 +32,7 @@
           </dd>
 
           <dt class="col-sm-3">Total</dt>
-          <dd class="col-sm-9"><strong><%= number_to_currency(@order.total_cents / 100.0, unit: '€') %></strong></dd>
+          <dd class="col-sm-9"><strong><%= number_to_currency(@order.total_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></strong></dd>
 
           <dt class="col-sm-3">Statut</dt>
           <dd class="col-sm-9"><%= status_badge(@order.status) %></dd>
@@ -79,8 +79,8 @@
                       <% end %>
                     </td>
                     <td data-label="Quantité"><%= item.quantity %></td>
-                    <td data-label="Prix unitaire"><%= number_to_currency(item.unit_price_cents / 100.0, unit: '€') %></td>
-                    <td data-label="Total"><%= number_to_currency(item.unit_price_cents * item.quantity / 100.0, unit: '€') %></td>
+                    <td data-label="Prix unitaire"><%= number_to_currency(item.unit_price_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></td>
+                    <td data-label="Total"><%= number_to_currency(item.unit_price_cents * item.quantity / 100.0, unit: '€', separator: ',', delimiter: ' ') %></td>
                   </tr>
                 <% end %>
               </tbody>

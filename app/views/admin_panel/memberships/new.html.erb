@@ -72,9 +72,36 @@
                 <%= f.date_field :end_date, class: "form-control form-control-liquid" %>
               </div>
               <div class="col-md-6 mb-3">
-                <%= f.label :amount_cents, "Montant (centimes)", class: "form-label" %>
-                <%= f.number_field :amount_cents, class: "form-control form-control-liquid", step: 1 %>
+                <%= f.label :amount_euros, "Montant (€)", class: "form-label" %>
+                <div class="input-group">
+                  <%= number_field_tag :amount_euros, 
+                      (@membership.amount_cents / 100.0 if @membership.amount_cents.present?),
+                      class: "form-control form-control-liquid", 
+                      step: 0.01, 
+                      min: 0,
+                      placeholder: "Ex: 25.00" %>
+                  <span class="input-group-text">€</span>
+                </div>
+                <div class="form-text">Ex: 25,00 = 25 euros</div>
+                <%= f.hidden_field :amount_cents, id: "membership_amount_cents" %>
               </div>
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  const amountEurosInput = document.querySelector('input[name="amount_euros"]');
+                  const amountCentsInput = document.getElementById('membership_amount_cents');
+                  
+                  if (amountEurosInput && amountCentsInput) {
+                    function updateCents() {
+                      const euros = parseFloat(amountEurosInput.value) || 0;
+                      amountCentsInput.value = Math.round(euros * 100);
+                    }
+                    
+                    amountEurosInput.addEventListener('input', updateCents);
+                    amountEurosInput.addEventListener('change', updateCents);
+                    updateCents(); // Initialiser au chargement
+                  }
+                });
+              </script>
               <div class="col-md-6 mb-3">
                 <%= f.label :currency, "Devise", class: "form-label" %>
                 <%= f.text_field :currency, class: "form-control form-control-liquid", value: @membership.currency || "EUR" %>

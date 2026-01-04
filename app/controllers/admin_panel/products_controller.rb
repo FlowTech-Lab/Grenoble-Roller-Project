@@ -54,7 +54,12 @@ module AdminPanel
 
     # POST /admin-panel/products
     def create
-      @product = Product.new(product_params)
+      params_hash = product_params.to_h
+      # Convertir price_euros en price_cents si présent
+      if params[:price_euros].present?
+        params_hash[:price_cents] = (params[:price_euros].to_f * 100).to_i
+      end
+      @product = Product.new(params_hash)
       authorize [ :admin_panel, @product ]
 
       @categories = ProductCategory.order(:name)
@@ -115,7 +120,12 @@ module AdminPanel
         @product.instance_variable_set(:@generate_missing, true)
       end
       
-      if @product.update(product_params)
+      params_hash = product_params.to_h
+      # Convertir price_euros en price_cents si présent
+      if params[:price_euros].present?
+        params_hash[:price_cents] = (params[:price_euros].to_f * 100).to_i
+      end
+      if @product.update(params_hash)
         # NOUVEAU : Générer options manquantes si ajoutées après création
         if params[:generate_missing] == "true"
           # Accepter soit option_value_ids (nouveau) soit option_ids (ancien pour compatibilité)

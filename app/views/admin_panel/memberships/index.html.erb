@@ -127,7 +127,7 @@
                 </td>
                 <td data-label="Saison"><%= membership.season || "-" %></td>
                 <td data-label="Montant">
-                  <%= number_to_currency(membership.total_amount_cents / 100.0, unit: membership.currency || "EUR") %>
+                  <%= number_to_currency(membership.total_amount_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %>
                 </td>
                 <td data-label="Dates">
                   <% if membership.start_date && membership.end_date %>

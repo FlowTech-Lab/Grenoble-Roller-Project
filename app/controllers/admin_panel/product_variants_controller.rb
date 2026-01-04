@@ -40,7 +40,13 @@ module AdminPanel
 
       # Récupérer les champs globaux à appliquer
       updates = {}
-      updates[:price_cents] = (params[:price_cents].to_f * 100).to_i if params[:price_cents].present?
+      # Convertir price_euros en price_cents si présent (bulk_edit utilise maintenant price_euros)
+      if params[:price_euros].present?
+        updates[:price_cents] = (params[:price_euros].to_f * 100).to_i
+      elsif params[:price_cents].present?
+        # Compatibilité avec l'ancien système (si price_cents est encore envoyé)
+        updates[:price_cents] = (params[:price_cents].to_f * 100).to_i
+      end
       updates[:stock_qty] = params[:stock_qty].to_i if params[:stock_qty].present?
       updates[:is_active] = params[:is_active] == "1" if params[:is_active].present? && params[:is_active] != ""
 
@@ -103,7 +109,12 @@ module AdminPanel
 
     # POST /admin-panel/products/:product_id/product_variants
     def create
-      @variant = @product.product_variants.build(variant_params)
+      params_hash = variant_params.to_h
+      # Convertir price_euros en price_cents si présent
+      if params[:price_euros].present?
+        params_hash[:price_cents] = (params[:price_euros].to_f * 100).to_i
+      end
+      @variant = @product.product_variants.build(params_hash)
       @option_types = OptionType.includes(:option_values).order(:name)
 
       # Associer les OptionValues si fournis
@@ -135,7 +146,12 @@ module AdminPanel
         @variant.option_values = option_values
       end
 
-      if @variant.update(variant_params)
+      params_hash = variant_params.to_h
+      # Convertir price_euros en price_cents si présent
+      if params[:price_euros].present?
+        params_hash[:price_cents] = (params[:price_euros].to_f * 100).to_i
+      end
+      if @variant.update(params_hash)
         respond_to do |format|
           format.html do
             flash[:notice] = "Variante mise à jour avec succès"

@@ -60,7 +60,7 @@
                     <span class="text-muted">Aucune</span>
                   <% end %>
                 </td>
-                <td><%= number_to_currency(variant.price_cents / 100.0, unit: "€", separator: ",", delimiter: " ") %></td>
+                <td><%= number_to_currency(variant.price_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></td>
                 <td>
                   <span class="badge <%= variant.inventory&.available_qty.to_i > 0 ? 'badge-liquid-success' : 'badge-liquid-danger' %>">
                     <%= variant.inventory&.available_qty || 0 %> / <%= variant.inventory&.stock_qty || 0 %>
@@ -103,7 +103,7 @@
             Nouveau prix (€)
           </label>
           <div class="input-group">
-            <%= number_field_tag "price_cents", nil, 
+            <%= number_field_tag "price_euros", nil, 
                 class: "form-control form-control-liquid",
                 placeholder: "Laisser vide pour ne pas modifier",
                 step: 0.01,

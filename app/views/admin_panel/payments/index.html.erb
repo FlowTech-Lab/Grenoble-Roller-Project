@@ -101,7 +101,7 @@
                   <% end %>
                 </td>
                 <td>
-                  <strong><%= number_to_currency(payment.amount_cents / 100.0, unit: payment.currency || 'EUR') %></strong>
+                  <strong><%= number_to_currency(payment.amount_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></strong>
                 </td>
                 <td>
                   <code class="text-muted"><%= payment.provider_payment_id %></code>

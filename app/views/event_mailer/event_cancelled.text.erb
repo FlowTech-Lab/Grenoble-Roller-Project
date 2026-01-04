@@ -21,7 +21,7 @@ Nous vous informons que l'événement <%= @event.title %> auquel vous êtes insc
 🕐 Date prévue : <%= l @event.start_at, format: :event_long, locale: :fr %>
 ⏱️ Durée : <%= @event.duration_min %> minutes
 <% if @event.price_cents > 0 %>
-💰 Prix : <%= number_to_currency(@event.price_cents / 100.0, unit: '€') %>
+💰 Prix : <%= number_to_currency(@event.price_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %>
 <% end %>
 
 ─────────────────────────

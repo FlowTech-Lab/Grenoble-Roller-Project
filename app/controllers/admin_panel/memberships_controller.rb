@@ -46,7 +46,12 @@ module AdminPanel
 
     # POST /admin-panel/memberships
     def create
-      @membership = Membership.new(membership_params)
+      params_hash = membership_params.to_h
+      # Convertir amount_euros en amount_cents si présent
+      if params[:amount_euros].present?
+        params_hash[:amount_cents] = (params[:amount_euros].to_f * 100).to_i
+      end
+      @membership = Membership.new(params_hash)
       authorize [ :admin_panel, @membership ]
 
       if @membership.save
@@ -64,7 +69,12 @@ module AdminPanel
 
     # PATCH/PUT /admin-panel/memberships/:id
     def update
-      if @membership.update(membership_params)
+      params_hash = membership_params.to_h
+      # Convertir amount_euros en amount_cents si présent
+      if params[:amount_euros].present?
+        params_hash[:amount_cents] = (params[:amount_euros].to_f * 100).to_i
+      end
+      if @membership.update(params_hash)
         flash[:notice] = "Adhésion mise à jour avec succès"
         redirect_to admin_panel_membership_path(@membership)
       else

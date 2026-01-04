@@ -80,10 +80,10 @@
 
           <dt class="col-sm-3">Montant</dt>
           <dd class="col-sm-9">
-            <strong><%= number_to_currency(@membership.total_amount_cents / 100.0, unit: @membership.currency || "EUR") %></strong>
+            <strong><%= number_to_currency(@membership.total_amount_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></strong>
             <% if @membership.tshirt_price_cents && @membership.tshirt_price_cents > 0 %>
               <br>
-              <small class="text-muted">Dont T-shirt: <%= number_to_currency(@membership.tshirt_price_cents / 100.0, unit: @membership.currency || "EUR") %></small>
+              <small class="text-muted">Dont T-shirt: <%= number_to_currency(@membership.tshirt_price_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %></small>
             <% end %>
           </dd>
 

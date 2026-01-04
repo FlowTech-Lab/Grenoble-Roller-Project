@@ -76,7 +76,7 @@
           <% end %>
         </p>
         <p><strong>Prix :</strong> 
-          <%= number_to_currency(@event.price_cents / 100.0, unit: @event.currency) %>
+          <%= number_to_currency(@event.price_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %>
         </p>
         <p><strong>Créateur :</strong> <%= @event.creator_user&.email || "-" %></p>
         <% if @event.meeting_lat.present? && @event.meeting_lng.present? %>
