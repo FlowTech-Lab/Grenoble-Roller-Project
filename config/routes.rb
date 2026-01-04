@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
-  ActiveAdmin.routes(self)
+  # ActiveAdmin désactivé - Tout migré vers AdminPanel (2025-01-13)
+  # ActiveAdmin.routes(self)
 
   # ===== NOUVEAU PANEL ADMIN =====
   namespace :admin_panel, path: "admin-panel" do

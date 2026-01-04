@@ -62,9 +62,10 @@ class ApplicationController < ActionController::Base
     ])
   end
 
-  def active_admin_access_denied(exception)
-    user_not_authorized(exception)
-  end
+  # ActiveAdmin désactivé - Tout migré vers AdminPanel (2025-01-13)
+  # def active_admin_access_denied(exception)
+  #   user_not_authorized(exception)
+  # end
 
   private
 
