@@ -21,6 +21,27 @@ production:
     queue: default
     schedule: every day at 7:00pm
 
+  # Synchronisation HelloAsso (toutes les 5 minutes)
+  # Synchronise les paiements HelloAsso en attente pour activer automatiquement les adhésions
+  sync_helloasso_payments:
+    class: SyncHelloAssoPaymentsJob
+    queue: default
+    schedule: every 5 minutes
+
+  # Mise à jour adhésions expirées (tous les jours à minuit)
+  # Met à jour le statut des adhésions expirées et envoie un email
+  update_expired_memberships:
+    class: UpdateExpiredMembershipsJob
+    queue: default
+    schedule: every day at 12:00am
+
+  # Rappels renouvellement (tous les jours à 9h)
+  # Envoie des rappels 30 jours avant l'expiration des adhésions
+  send_renewal_reminders:
+    class: SendRenewalRemindersJob
+    queue: default
+    schedule: every day at 9:00am
+
 # Note: InitiationParticipantsReportJob n'est plus récurrent
 # Il est créé automatiquement lors de la publication d'une initiation
 # et planifié pour s'exécuter le jour de l'initiation à 7h00

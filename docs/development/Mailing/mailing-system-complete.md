@@ -1,9 +1,9 @@
 # 📧 Système de Mailing Automatique - Documentation Complète
 
 **Date** : 2025-12-20  
-**Dernière mise à jour** : 2025-12-20  
-**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + 🚨 **SITUATION CRITIQUE** : Supercronic ne tourne pas (Point 3)  
-**Version** : 2.3
+**Dernière mise à jour** : 2025-01-13  
+**Statut** : ✅ Documentation complète + ✅ Corrections critiques implémentées (Points 1, 2, 11) + ✅ **SolidQueue configuré** pour jobs récurrents via `config/recurring.yml`  
+**Version** : 2.4
 
 ---
 
@@ -36,11 +36,12 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 
 | Job | Fréquence | Domaine | Système | Status |
 |-----|-----------|---------|---------|--------|
-| **EventReminderJob** | Quotidien (19h) | Rappels événements | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
-| **HelloAsso Sync** | Toutes les 5 min | Paiements | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
-| **Memberships Expired** | Quotidien (00h) | Adhésions expirées | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
-| **Renewal Reminders** | Quotidien (09h) | Rappels renouvellement | Supercronic | 🚨 **INACTIF** (Supercronic ne tourne pas) |
-| **Initiation Participants Report** | Quotidien (07h) | Rapport participants | Supercronic | ✅ **IMPLÉMENTÉ** (voir Section 7.5) |
+| **EventReminderJob** | Quotidien (19h) | Rappels événements | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
+| **HelloAsso Sync** | Toutes les 5 min | Paiements | SolidQueue recurring.yml | ⚠️ **À migrer** depuis Supercronic |
+| **Memberships Expired** | Quotidien (00h) | Adhésions expirées | SolidQueue recurring.yml | ⚠️ **À migrer** depuis Supercronic |
+| **Renewal Reminders** | Quotidien (09h) | Rappels renouvellement | SolidQueue recurring.yml | ⚠️ **À migrer** depuis Supercronic |
+| **Initiation Participants Report** | Quotidien (07h) | Rapport participants | SolidQueue recurring.yml | ✅ **IMPLÉMENTÉ** (voir Section 7.5) |
+| **Clear Finished Jobs** | Toutes les heures | Nettoyage SolidQueue | SolidQueue recurring.yml | ✅ **ACTIF** (config/recurring.yml) |
 
 **✅ SYSTÈME VÉRIFIÉ** : Tous les points "À VÉRIFIER" ont été vérifiés avec tous les liens vers fichiers, variables et logiques.
 
@@ -52,12 +53,12 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 - ✅ Point 11 : Timezone configuré `Europe/Paris` (TERMINÉ)
 - ✅ Bonus : Cohérence `update_column`, `Rails.logger`, monitoring Sentry (TERMINÉ)
 
-**🚨 PROBLÈME CRITIQUE IDENTIFIÉ** :
-- 🚨 **Point 3** : **Supercronic ne tourne PAS** = Aucun job cron ne s'exécute (EventReminderJob, HelloAsso sync, memberships tasks)
-- **Impact** : Tous les jobs automatiques sont inactifs
-- **Voir Section 12.3** pour diagnostic complet et solutions
-
-**🚨 PROBLÈME CRITIQUE IDENTIFIÉ** : **Supercronic ne tourne PAS** = Aucun job cron ne s'exécute (EventReminderJob, HelloAsso sync, memberships tasks). Voir **Section 12.3** pour diagnostic complet et solutions. Voir aussi section "Diagnostic EventReminderJob" (section 17) pour le diagnostic détaillé.
+**✅ SolidQueue configuré pour jobs récurrents** :
+- ✅ **Point 3** : **SolidQueue** gère maintenant les jobs récurrents via `config/recurring.yml`
+- ✅ `EventReminderJob` configuré dans `config/recurring.yml` (19h quotidien)
+- ✅ `clear_solid_queue_finished_jobs` configuré dans `config/recurring.yml` (toutes les heures)
+- ⚠️ **Migration en cours** : Autres jobs (HelloAsso sync, memberships tasks) à migrer depuis Supercronic vers `config/recurring.yml`
+- **Voir Section 12.3** pour architecture complète et [`docs/development/cron/CRON.md`](../cron/CRON.md) pour plan de migration
 
 ---
 
@@ -67,7 +68,7 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 |----------|-------|---------|--------|---------|
 | 🔴 **CRITIQUE** | Rake tasks `deliver_now` | [`lib/tasks/memberships.rake`](../lib/tasks/memberships.rake) | Changer en `deliver_later` | 12.1 |
 | 🔴 **CRITIQUE** | Flags de suivi manquants | [`db/schema.rb`](../db/schema.rb) | Ajouter 3 migrations | 12.2 |
-| 🔴 **CRITIQUE** | Architecture SolidQueue/Supercronic | [`config/recurring.yml`](../config/recurring.yml) | Clarifier documentation | 12.3 |
+| ✅ **RÉSOLU** | Architecture SolidQueue/Supercronic | [`config/recurring.yml`](../config/recurring.yml) | ✅ SolidQueue utilise recurring.yml | 12.3 |
 | 🟡 **IMPORTANT** | Scope `active` inclut `no_show` | [`app/models/attendance.rb`](../app/models/attendance.rb) | Clarifier règle métier | 12.5 |
 | 🟡 **IMPORTANT** | Timezone non configuré | [`config/application.rb`](../config/application.rb) | Configurer `Europe/Paris` | 12.11 |
 
@@ -1562,43 +1563,32 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 
 ---
 
-#### 3. 🚨 SolidQueue vs Supercronic - SITUATION CRITIQUE
-
-**🚨 PROBLÈME CRITIQUE IDENTIFIÉ** :
-- **Supercronic ne tourne PAS** = Aucun job cron ne s'exécute
-- Les jobs automatiques (EventReminderJob, HelloAsso sync, memberships tasks) **NE SONT PAS EXÉCUTÉS**
-- [`config/recurring.yml`](../config/recurring.yml) existe mais n'est pas utilisé
-- Le système réel utilisé devrait être **Supercronic** (via [`config/schedule.rb`](../config/schedule.rb) → [`config/crontab`](../config/crontab))
-
-**Architecture prévue** :
+#### 3. ✅ SolidQueue - Architecture Actuelle (2025-01-13)
 
 **Architecture réelle** :
-- **Supercronic** : Gère TOUS les jobs cron (EventReminderJob, HelloAsso sync, memberships tasks)
-  - Fichier source : [`config/schedule.rb`](../config/schedule.rb)
-  - Fichier généré : [`config/crontab`](../config/crontab)
-  - Démarrage : [`bin/docker-entrypoint`](../bin/docker-entrypoint) (lignes 68-82)
-- **SolidQueue** : Gère les jobs ActiveJob asynchrones (`deliver_later`)
-  - Configuration : [`config/queue.yml`](../config/queue.yml)
+- **SolidQueue** : Gère TOUS les jobs (asynchrones ET récurrents)
+  - **Jobs asynchrones** (`deliver_later`) : Configuration via [`config/queue.yml`](../config/queue.yml)
+  - **Jobs récurrents** : Configuration via [`config/recurring.yml`](../config/recurring.yml) ✅ **UTILISÉ**
   - Plugin Puma : [`config/puma.rb`](../config/puma.rb) (ligne 38) - `plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]`
   - Variable env : `SOLID_QUEUE_IN_PUMA: true` dans [`config/deploy.yml`](../config/deploy.yml) (ligne 41)
+  - Configuration ActiveJob : [`config/environments/production.rb`](../config/environments/production.rb) (ligne 56) - `config.active_job.queue_adapter = :solid_queue`
+  - Base de données : PostgreSQL (via `config.solid_queue.connects_to = { database: { writing: :queue } }`)
 
-**Architecture prévue (mais Supercronic ne tourne PAS actuellement)** :
+**Architecture actuelle** :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    SYSTÈME DE JOBS                          │
 └─────────────────────────────────────────────────────────────┘
 
-1. JOBS CRON RÉCURRENTS (Supercronic) ⚠️ NE TOURNE PAS
-   ├─ Source : config/schedule.rb (Whenever)
-   ├─ Généré : config/crontab (Supercronic)
-   ├─ Démarrage : bin/docker-entrypoint (lignes 68-82) ⚠️ PROBLÈME ICI
-   └─ Jobs (⚠️ NON EXÉCUTÉS) :
-      ├─ EventReminderJob (19h quotidien) ❌
-      ├─ helloasso:sync_payments (toutes les 5 min) ❌
-      ├─ memberships:update_expired (00h quotidien) ❌
-      ├─ memberships:send_renewal_reminders (09h quotidien) ❌
-      └─ memberships:check_* (hebdomadaire) ❌
+1. JOBS RÉCURRENTS (SolidQueue) ✅ FONCTIONNE
+   ├─ Configuration : config/recurring.yml
+   ├─ Chargement : Automatique par Solid Queue au démarrage
+   ├─ Tables : solid_queue_recurring_tasks, solid_queue_recurring_executions
+   └─ Jobs configurés :
+      ├─ EventReminderJob (19h quotidien) ✅
+      ├─ clear_solid_queue_finished_jobs (toutes les heures) ✅
+      └─ (Autres jobs à migrer depuis Supercronic)
 
 2. JOBS ACTIVEJOB ASYNCHRONES (SolidQueue) ✅ FONCTIONNE
    ├─ Configuration : config/queue.yml
@@ -1607,10 +1597,11 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
    └─ Jobs :
       └─ Tous les deliver_later (emails, etc.) ✅
 
-3. CONFIG/RECURRING.YML (⚠️ NON UTILISÉ)
-   ├─ Fichier existe mais n'est PAS lu
-   ├─ SolidQueue ne lit PAS ce fichier pour les jobs récurrents
-   └─ Les jobs récurrents DEVRAIENT être gérés par Supercronic (mais ne tourne pas)
+3. SUPERCRONIC (⚠️ DÉPRÉCIÉ - Migration en cours)
+   ├─ Source : config/schedule.rb (Whenever)
+   ├─ Généré : config/crontab (Supercronic)
+   ├─ Démarrage : bin/docker-entrypoint (lignes 68-82)
+   └─ Status : ⚠️ Migration vers SolidQueue recurring.yml en cours
 ```
 
 **🚨 DIAGNOSTIC - Pourquoi Supercronic ne tourne pas** :
@@ -1670,24 +1661,23 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
    # Vérifier si des tâches s'exécutent
    ```
 
-**Action requise** :
-1. 🚨 **URGENT** : Diagnostiquer pourquoi Supercronic ne démarre pas
-2. 🚨 **URGENT** : Vérifier que le crontab est généré et existe dans le conteneur
-3. 🚨 **URGENT** : Vérifier les variables d'environnement dans le conteneur
-4. ⚠️ **À décider** : Supprimer `config/recurring.yml` ou le configurer pour SolidQueue (actuellement non utilisé)
-5. ✅ **Architecture documentée** : Supercronic = jobs cron récurrents (quand il tourne), SolidQueue = jobs ActiveJob asynchrones
+**✅ SolidQueue charge automatiquement `config/recurring.yml`** :
+- Solid Queue lit automatiquement `config/recurring.yml` au démarrage
+- Les jobs récurrents sont enregistrés dans `solid_queue_recurring_tasks`
+- Le scheduler Solid Queue enqueue les jobs selon leur schedule
+- Voir [`docs/development/cron/CRON.md`](../cron/CRON.md) pour le plan de migration complet
 
 **Références** :
-- Recurring config : [`config/recurring.yml`](../config/recurring.yml) (⚠️ Non utilisé actuellement - peut être supprimé ou configuré)
-- Schedule config : [`config/schedule.rb`](../config/schedule.rb) (✅ Source pour Supercronic - mais Supercronic ne tourne pas)
-- Crontab généré : [`config/crontab`](../config/crontab) (⚠️ Devrait être utilisé par Supercronic - mais Supercronic ne tourne pas)
-- Docker entrypoint : [`bin/docker-entrypoint`](../bin/docker-entrypoint) (lignes 68-82 - démarrage Supercronic)
-- Script déploiement : [`ops/lib/deployment/cron.sh`](../ops/lib/deployment/cron.sh) (génération crontab)
-- Deploy script : [`ops/deploy.sh`](../ops/deploy.sh) (ligne 382 - appel install_crontab)
-- Queue config : [`config/queue.yml`](../config/queue.yml) (✅ Utilisé par SolidQueue pour deliver_later)
+- Recurring config : [`config/recurring.yml`](../config/recurring.yml) ✅ **UTILISÉ** par SolidQueue
+- Queue config : [`config/queue.yml`](../config/queue.yml) ✅ Utilisé par SolidQueue pour deliver_later
 - Puma config : [`config/puma.rb`](../config/puma.rb) (ligne 38 - plugin SolidQueue)
 - Deploy config : [`config/deploy.yml`](../config/deploy.yml) (ligne 41 - SOLID_QUEUE_IN_PUMA: true)
-- Documentation cron : [`docs/development/cron/CRON.md`](../cron/CRON.md) (documentation Supercronic)
+- Production config : [`config/environments/production.rb`](../config/environments/production.rb) (ligne 56 - queue_adapter = :solid_queue)
+- Staging config : [`config/environments/staging.rb`](../config/environments/staging.rb) (ligne 45 - queue_adapter = :solid_queue)
+- SolidQueue initializer : [`config/initializers/solid_queue.rb`](../config/initializers/solid_queue.rb)
+- Documentation cron : [`docs/development/cron/CRON.md`](../cron/CRON.md) (documentation migration Supercronic → SolidQueue)
+- Schedule config (déprécié) : [`config/schedule.rb`](../config/schedule.rb) (⚠️ Migration en cours vers recurring.yml)
+- Crontab généré (déprécié) : [`config/crontab`](../config/crontab) (⚠️ Migration en cours vers recurring.yml)
 
 ---
 
