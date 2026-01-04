@@ -107,6 +107,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ✅ `04-rails/conventions/README.md` - Conventions Rails du projet
 - ✅ `04-rails/admin-panel-research.md` - Recherche et recommandations pour le panel admin (Phase 2)
 - ✅ `04-rails/admin-panel/` - Documentation complète du panel admin (100% implémenté, migré depuis ActiveAdmin)
+- ✅ `04-rails/background-jobs/` - Documentation complète des jobs récurrents (Solid Queue, migration terminée)
 - ⚠️ **Déplacé** : `development/phase2/phase2-migrations-models.md` - Documentation Phase 2 (migrations et modèles)
 - ✅ `04-rails/setup/README.md` - Index de la documentation setup Rails
 
@@ -120,6 +121,7 @@ Ce dossier structure la **documentation vivante** du monolithe Ruby on Rails. El
 - ⚠️ `development/accessibility/` - Audits et plans d'action accessibilité
 - ⚠️ `development/phase2/` - Documentation Phase 2 (non implémentée)
 - ⚠️ `development/testing/` - Roadmaps et todolists tests
+- ⚠️ `development/Mailing/` - Documentation système de mailing (en cours de finalisation)
 
 ### Admin Panel (Complété)
 - ✅ `04-rails/admin-panel/` - Documentation complète du panel admin (100% implémenté, migré depuis ActiveAdmin)

@@ -58,7 +58,7 @@ Ce document décrit **l'ensemble du système de mailing automatique** de l'appli
 - ✅ `EventReminderJob` configuré dans `config/recurring.yml` (19h quotidien)
 - ✅ `clear_solid_queue_finished_jobs` configuré dans `config/recurring.yml` (toutes les heures)
 - ⚠️ **Migration en cours** : Autres jobs (HelloAsso sync, memberships tasks) à migrer depuis Supercronic vers `config/recurring.yml`
-- **Voir Section 12.3** pour architecture complète et [`docs/development/cron/CRON.md`](../cron/CRON.md) pour plan de migration
+- **Voir Section 12.3** pour architecture complète et [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) pour documentation complète
 
 ---
 
@@ -415,7 +415,7 @@ tail -f logs/deploy-production.log | grep -i cron
 ```
 
 **Références** :
-- Documentation cron : [`docs/development/cron/CRON.md`](../cron/CRON.md)
+- Documentation jobs récurrents : [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md)
 - Script installation : [`ops/lib/deployment/cron.sh`](../../ops/lib/deployment/cron.sh)
 - Docker entrypoint : [`bin/docker-entrypoint`](../../bin/docker-entrypoint)
 - Documentation déploiement : [`docs/09-product/deployment-cron.md`](../../09-product/deployment-cron.md)
@@ -1665,7 +1665,7 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 - Solid Queue lit automatiquement `config/recurring.yml` au démarrage
 - Les jobs récurrents sont enregistrés dans `solid_queue_recurring_tasks`
 - Le scheduler Solid Queue enqueue les jobs selon leur schedule
-- Voir [`docs/development/cron/CRON.md`](../cron/CRON.md) pour le plan de migration complet
+- Voir [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) pour la documentation complète
 
 **Références** :
 - Recurring config : [`config/recurring.yml`](../config/recurring.yml) ✅ **UTILISÉ** par SolidQueue
@@ -1675,7 +1675,7 @@ MembershipMailer.renewal_reminder(membership).deliver_later if defined?(Membersh
 - Production config : [`config/environments/production.rb`](../config/environments/production.rb) (ligne 56 - queue_adapter = :solid_queue)
 - Staging config : [`config/environments/staging.rb`](../config/environments/staging.rb) (ligne 45 - queue_adapter = :solid_queue)
 - SolidQueue initializer : [`config/initializers/solid_queue.rb`](../config/initializers/solid_queue.rb)
-- Documentation cron : [`docs/development/cron/CRON.md`](../cron/CRON.md) (documentation migration Supercronic → SolidQueue)
+- Documentation jobs récurrents : [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) (Solid Queue actif, migration terminée)
 - Schedule config (déprécié) : [`config/schedule.rb`](../config/schedule.rb) (⚠️ Migration en cours vers recurring.yml)
 - Crontab généré (déprécié) : [`config/crontab`](../config/crontab) (⚠️ Migration en cours vers recurring.yml)
 
@@ -2799,13 +2799,13 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 - [`docs/06-events/event-reminder-job.md`](../06-events/event-reminder-job.md) - Documentation EventReminderJob
 - [`docs/09-product/orders-workflow-emails.md`](../09-product/orders-workflow-emails.md) - Documentation emails commandes
 - [`docs/09-product/membership-mailer-emails.md`](../09-product/membership-mailer-emails.md) - Documentation emails adhésions
-- [`docs/development/cron/CRON.md`](../cron/CRON.md) - Documentation complète système cron/Supercronic et migration Solid Queue
+- [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) - Documentation complète système jobs récurrents (Solid Queue actif)
 
 ---
 
 ## 🔗 Référence système cron
 
-**Documentation complète** : Voir [`docs/development/cron/CRON.md`](../cron/CRON.md) pour la documentation complète du système cron (Supercronic actuel et migration vers Solid Queue).
+**Documentation complète** : Voir [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) pour la documentation complète du système de jobs récurrents (Solid Queue actif).
 
 ### Résumé des tâches cron liées aux emails
 
@@ -2816,4 +2816,4 @@ docker exec grenoble-roller-production bin/rails runner "puts SolidQueue::Job.wh
 | Adhésions expirées | Quotidien 00:00 | `memberships:update_expired` | `MembershipMailer.expired` | ✅ Actif |
 | Rappels renouvellement | Quotidien 9h | `memberships:send_renewal_reminders` | `MembershipMailer.renewal_reminder` | ✅ Actif |
 
-**Note** : Toutes les tâches cron sont documentées dans [`docs/development/cron/CRON.md`](../cron/CRON.md) avec détails complets, configuration, dépannage et plan de migration vers Solid Queue.
+**Note** : Toutes les tâches récurrentes sont documentées dans [`docs/04-rails/background-jobs/CRON.md`](../../04-rails/background-jobs/CRON.md) avec détails complets, configuration et dépannage.

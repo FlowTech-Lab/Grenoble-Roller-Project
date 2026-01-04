@@ -1,6 +1,6 @@
 # 📧 MAILING - Emails automatiques
 
-**Status** : ✅ Implémenté | **Configuration** : Via tâches cron / Solid Queue
+**Status** : ✅ Implémenté | **Configuration** : Via Solid Queue (`config/recurring.yml`)
 
 > 📖 **Documentation complète** : Voir [`docs/development/Mailing/mailing-system-complete.md`](../../Mailing/mailing-system-complete.md) pour la documentation détaillée du système de mailing complet.
 
@@ -8,7 +8,7 @@
 
 ## 📋 Vue d'ensemble
 
-Gestion des emails automatiques envoyés par l'application. Ces emails sont déclenchés par des tâches cron (actuellement Supercronic, migration vers Solid Queue prévue).
+Gestion des emails automatiques envoyés par l'application. Ces emails sont déclenchés par des jobs récurrents Solid Queue (via `config/recurring.yml`).
 
 **Mailers disponibles** :
 - `EventMailer` : Emails liés aux événements et initiations (6 méthodes)
@@ -40,16 +40,16 @@ Gestion des emails automatiques envoyés par l'application. Ces emails sont déc
 
 ### Emails adhésions
 
-#### 3. Rappels renouvellement (memberships:send_renewal_reminders)
+#### 3. Rappels renouvellement (SendRenewalRemindersJob)
 - **Fréquence** : Tous les jours à 9h
-- **Tâche** : `memberships:send_renewal_reminders` (Rake task)
+- **Job** : `SendRenewalRemindersJob` (`app/jobs/send_renewal_reminders_job.rb`)
 - **Mailer** : `MembershipMailer.renewal_reminder(membership)`
 - **Destinataires** : Membres dont l'adhésion expire dans 30 jours
 - **Contenu** : Rappel pour renouveler l'adhésion
 
-#### 4. Adhésions expirées (memberships:update_expired)
+#### 4. Adhésions expirées (UpdateExpiredMembershipsJob)
 - **Fréquence** : Tous les jours à minuit (00:00)
-- **Tâche** : `memberships:update_expired` (Rake task)
+- **Job** : `UpdateExpiredMembershipsJob` (`app/jobs/update_expired_memberships_job.rb`)
 - **Mailer** : `MembershipMailer.expired(membership)`
 - **Destinataires** : Membres dont l'adhésion vient d'expirer
 - **Contenu** : Notification d'expiration d'adhésion
@@ -170,7 +170,7 @@ Lors de la migration vers Solid Queue, les tâches Rake seront remplacées par d
 - `InitiationParticipantsReportJob` : Existe déjà (pas de changement)
 
 **Référence** : 
-- Plan de migration cron → Solid Queue : Voir [`docs/development/cron/CRON.md`](../../../development/cron/CRON.md) (section "Migration vers Solid Queue")
+- Documentation jobs récurrents : Voir [`docs/04-rails/background-jobs/CRON.md`](../../background-jobs/CRON.md) (Solid Queue actif, migration terminée)
 - Documentation mailing complète : Voir `docs/development/Mailing/mailing-system-complete.md`
 
 ---

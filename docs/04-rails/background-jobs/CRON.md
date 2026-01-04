@@ -1,51 +1,64 @@
 # ⏰ Système Cron - Documentation Complète
 
 **Date** : 2025-12-22  
-**Dernière mise à jour** : 2025-12-22  
-**Statut** : ✅ Actif (Supercronic) | 🔄 Migration vers Solid Queue prévue  
-**Version** : 1.0
+**Dernière mise à jour** : 2025-01-13  
+**Statut** : ✅ **Solid Queue actif** | ⚠️ Supercronic déprécié (migration terminée)  
+**Version** : 2.0
 
 ---
 
 ## 📋 Vue d'Ensemble
 
-Ce document décrit le système de tâches planifiées (cron) de l'application Grenoble Roller, actuellement basé sur **Supercronic** et **Whenever**, avec un plan de migration vers **Solid Queue** (Rails 8).
+Ce document décrit le système de tâches planifiées (jobs récurrents) de l'application Grenoble Roller, maintenant basé sur **Solid Queue** (Rails 8) avec `config/recurring.yml`.
 
-### Architecture Actuelle
+### Architecture Actuelle (2025-01-13)
 
-- **Whenever** : Génère le crontab depuis `config/schedule.rb` (DSL Ruby)
-- **Supercronic** : Lit le fichier `config/crontab` dans le conteneur Docker
-- **Docker** : Les tâches s'exécutent dans le conteneur Rails
-- **Logs** : `log/cron.log` (configuré dans `schedule.rb`)
+- **Solid Queue** : Gère tous les jobs récurrents via `config/recurring.yml`
+- **Configuration** : `config/recurring.yml` (YAML, chargé automatiquement)
+- **Monitoring** : Mission Control Jobs (`/admin-panel/jobs`)
+- **Base de données** : PostgreSQL (tables `solid_queue_recurring_tasks`, `solid_queue_recurring_executions`)
+- **Plugin Puma** : Solid Queue intégré dans Puma (`SOLID_QUEUE_IN_PUMA: true`)
+
+### Architecture Ancienne (Dépréciée)
+
+- ⚠️ **Supercronic** : Déprécié (migration terminée)
+- ⚠️ **Whenever** : Déprécié (`config/schedule.rb` conservé pour référence)
+- ⚠️ **Crontab** : Déprécié (`config/crontab` conservé pour référence)
 
 ---
 
 ## 📊 Tâches Cron Actuelles
 
-| Tâche | Fréquence | Job/Task | Utilité | Status |
-|-------|-----------|----------|---------|--------|
-| **Sync HelloAsso** | Toutes les 5 min | `helloasso:sync_payments` | Synchroniser les paiements HelloAsso | ✅ Actif |
-| **Rappels événements** | Quotidien 19h | `EventReminderJob` | Rappels 24h avant événements | ✅ Actif |
-| **Rapport initiation** | Quotidien 7h (prod) | `InitiationParticipantsReportJob` | Rapport participants du jour | ✅ Actif |
-| **Adhésions expirées** | Quotidien 00:00 | `memberships:update_expired` | Marquer adhésions expirées | ✅ Actif |
-| **Rappels renouvellement** | Quotidien 9h | `memberships:send_renewal_reminders` | Rappels 30 jours avant expiration | ✅ Actif |
+| Tâche | Fréquence | Job | Utilité | Status |
+|-------|-----------|-----|---------|--------|
+| **Sync HelloAsso** | Toutes les 5 min | `SyncHelloAssoPaymentsJob` | Synchroniser les paiements HelloAsso | ✅ Actif (SolidQueue) |
+| **Rappels événements** | Quotidien 19h | `EventReminderJob` | Rappels 24h avant événements | ✅ Actif (SolidQueue) |
+| **Adhésions expirées** | Quotidien 00:00 | `UpdateExpiredMembershipsJob` | Marquer adhésions expirées | ✅ Actif (SolidQueue) |
+| **Rappels renouvellement** | Quotidien 9h | `SendRenewalRemindersJob` | Rappels 30 jours avant expiration | ✅ Actif (SolidQueue) |
+| **Nettoyage SolidQueue** | Toutes les heures | `clear_solid_queue_finished_jobs` | Nettoyer les jobs terminés | ✅ Actif (SolidQueue) |
+| **Rapport initiation** | Sur demande | `InitiationParticipantsReportJob` | Rapport participants (créé automatiquement) | ✅ Actif |
 
 ### Détails des Tâches
 
-#### 1. Sync HelloAsso Payments (`helloasso:sync_payments`)
+#### 1. Sync HelloAsso Payments (`SyncHelloAssoPaymentsJob`)
 
-**Fichier** : [`lib/tasks/helloasso.rake`](../../lib/tasks/helloasso.rake)  
+**Fichier** : [`app/jobs/sync_hello_asso_payments_job.rb`](../../app/jobs/sync_hello_asso_payments_job.rb)  
 **Fréquence** : Toutes les 5 minutes  
 **Utilité** : Synchroniser les paiements HelloAsso depuis leur API pour activer automatiquement les adhésions payées.
 
-**Configuration** :
-```ruby
-every 5.minutes do
-  runner 'Rails.application.load_tasks; Rake::Task["helloasso:sync_payments"].invoke'
-end
+**Configuration** (`config/recurring.yml`) :
+```yaml
+production:
+  sync_helloasso_payments:
+    class: SyncHelloAssoPaymentsJob
+    queue: default
+    schedule: every 5 minutes
 ```
 
-**Note** : `Rails.application.load_tasks` est **obligatoire** car `rails runner` ne charge pas automatiquement les tâches Rake.
+**Caractéristiques** :
+- Limite de concurrence : 1 instance à la fois (`limits_concurrency to: 1`)
+- Traite uniquement les paiements des dernières 24h
+- Gestion d'erreurs avec Sentry
 
 ---
 
@@ -55,11 +68,13 @@ end
 **Fréquence** : Tous les jours à 19h  
 **Utilité** : Envoyer des rappels par email 24h avant chaque événement aux participants qui ont coché "rappels".
 
-**Configuration** :
-```ruby
-every 1.day, at: "7:00 pm" do
-  runner "EventReminderJob.perform_now"
-end
+**Configuration** (`config/recurring.yml`) :
+```yaml
+production:
+  event_reminder:
+    class: EventReminderJob
+    queue: default
+    schedule: every day at 7:00pm
 ```
 
 **Filtres appliqués** :
@@ -291,90 +306,60 @@ docker exec grenoble-roller-staging test -f /rails/config/crontab && echo "OK" |
 
 ---
 
-## 🔄 Migration vers Solid Queue (Plan Futur)
+## ✅ Migration vers Solid Queue - TERMINÉE (2025-01-13)
 
-### Pourquoi Migrer ?
+### Migration Complétée
 
-- ✅ Éliminer Supercronic (dépendance externe)
-- ✅ Ajouter contrôle de concurrence sur HelloAsso (fix race condition)
-- ✅ Améliorer observabilité (Mission Control dashboard)
-- ✅ Intégration native Rails 8
-- ✅ Retry automatique et gestion d'erreurs améliorée
+- ✅ Solid Queue configuré et actif
+- ✅ Tous les jobs migrés vers `config/recurring.yml`
+- ✅ Mission Control Jobs intégré (`/admin-panel/jobs`)
+- ✅ Plugin Puma activé (`SOLID_QUEUE_IN_PUMA: true`)
+- ✅ Base de données PostgreSQL configurée
 
-### Plan de Migration
+### Configuration Actuelle
 
-**Phase 1 : Setup** (1h)
-- `bundle add solid_queue mission_control-jobs`
-- `rails db:prepare` (crée tables Solid Queue)
-- Créer `config/recurring.yml`
-- Créer `config/initializers/solid_queue.rb`
-
-**Phase 2 : Jobs Implementation** (2h)
-- Créer `SyncHelloAssoPaymentsJob` avec `limits_concurrency`
-- Créer `UpdateExpiredMembershipsJob`
-- Créer `SendRenewalRemindersJob`
-- `EventReminderJob` et `InitiationParticipantsReportJob` : Existent déjà
-
-**Phase 3 : Config Updates** (1h)
-- Mettre à jour `config/routes.rb` → ajouter Mission Control
-- Mettre à jour `docker-compose.yml` → `SOLID_QUEUE_IN_PUMA: 'true'`
-- Mettre à jour `bin/docker-entrypoint` → supprimer Supercronic
-
-**Phase 4 : Testing** (1h)
-- Tester chaque job manuellement
-- Vérifier Mission Control dashboard
-- Vérifier `recurring.yml` charges
-- Vérifier `limits_concurrency` fonctionne
-
-**Phase 5 : Deployment** (2h)
-- Déployer à staging (1 semaine de monitoring)
-- Déployer à production
-- Supprimer `config/schedule.rb`
-- Supprimer Whenever gem
-- Supprimer Supercronic du Dockerfile
-
-### Configuration Solid Queue (Preview)
-
-**`config/recurring.yml`** :
+**`config/recurring.yml`** (✅ ACTIF) :
 ```yaml
 production:
-  sync_helloasso_payments:
-    class: SyncHelloAssoPaymentsJob
-    queue: default
-    schedule: every 5 minutes
-    limits_concurrency:
-      by: 1
-      of: SyncHelloAssoPaymentsJob
-  
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+
   event_reminder:
     class: EventReminderJob
     queue: default
     schedule: every day at 7:00pm
-  
-  initiation_participants_report:
-    class: InitiationParticipantsReportJob
+
+  sync_helloasso_payments:
+    class: SyncHelloAssoPaymentsJob
     queue: default
-    schedule: every day at 7:00am
-  
+    schedule: every 5 minutes
+
   update_expired_memberships:
     class: UpdateExpiredMembershipsJob
     queue: default
     schedule: every day at 12:00am
-  
+
   send_renewal_reminders:
     class: SendRenewalRemindersJob
     queue: default
     schedule: every day at 9:00am
 ```
 
-**`config/initializers/solid_queue.rb`** :
-```ruby
-Rails.application.config.solid_queue.connects_to = {
-  default: { writing: :primary }
-}
-```
+**Configuration Solid Queue** :
+- `config/environments/production.rb` : `config.active_job.queue_adapter = :solid_queue`
+- `config/environments/staging.rb` : `config.active_job.queue_adapter = :solid_queue`
+- `config/queue.yml` : Configuration workers/dispatchers
+- `config/initializers/solid_queue.rb` : Configuration base de données
 
-**Mission Control** : `/admin_panel/jobs` (dashboard web pour monitoring)
+**Mission Control** : `/admin-panel/jobs` (dashboard web pour monitoring)
+
+### Supercronic (Déprécié)
+
+⚠️ **Supercronic n'est plus utilisé** :
+- `config/schedule.rb` : Conservé pour référence (déprécié)
+- `config/crontab` : Conservé pour référence (déprécié)
+- `bin/docker-entrypoint` : Supercronic peut être retiré (non utilisé)
 
 ---
 
@@ -382,9 +367,11 @@ Rails.application.config.solid_queue.connects_to = {
 
 ### Fichiers de Configuration
 
-- [`config/schedule.rb`](../../config/schedule.rb) - Configuration Whenever (source)
-- [`config/crontab`](../../config/crontab) - Crontab généré (lu par Supercronic)
-- [`config/recurring.yml`](../../config/recurring.yml) - Configuration Solid Queue (futur)
+- [`config/recurring.yml`](../../config/recurring.yml) - Configuration Solid Queue (✅ ACTIF)
+- [`config/queue.yml`](../../config/queue.yml) - Configuration workers/dispatchers Solid Queue
+- [`config/initializers/solid_queue.rb`](../../config/initializers/solid_queue.rb) - Configuration base de données
+- [`config/schedule.rb`](../../config/schedule.rb) - Configuration Whenever (⚠️ DÉPRÉCIÉ - conservé pour référence)
+- [`config/crontab`](../../config/crontab) - Crontab généré (⚠️ DÉPRÉCIÉ - conservé pour référence)
 - [`ops/lib/deployment/cron.sh`](../../ops/lib/deployment/cron.sh) - Script d'installation
 
 ### Scripts et Jobs
@@ -397,7 +384,7 @@ Rails.application.config.solid_queue.connects_to = {
 
 ### Documentation
 
-- [`docs/development/Mailing/mailing-system-complete.md`](../Mailing/mailing-system-complete.md) - Documentation complète système de mailing
+- [`docs/development/Mailing/mailing-system-complete.md`](../../development/Mailing/mailing-system-complete.md) - Documentation complète système de mailing
 - [`docs/09-product/deployment-cron.md`](../../09-product/deployment-cron.md) - Documentation déploiement cron (ancienne)
 
 ### Liens Externes
@@ -409,16 +396,17 @@ Rails.application.config.solid_queue.connects_to = {
 
 ---
 
-## ✅ Checklist Déploiement
+## ✅ Checklist Vérification Solid Queue
 
-- [ ] Le crontab est installé automatiquement lors du déploiement
-- [ ] Les logs sont dans `log/cron.log`
-- [ ] Supercronic tourne dans le conteneur
-- [ ] Les tâches sont visibles avec `cat /rails/config/crontab`
-- [ ] Les rappels événements fonctionnent (tester avec un événement du lendemain)
-- [ ] Le sync HelloAsso fonctionne (vérifier les logs toutes les 5 min)
-- [ ] Les rappels renouvellement fonctionnent (vérifier les logs à 9h)
+- [x] Solid Queue configuré (`config.active_job.queue_adapter = :solid_queue`)
+- [x] `config/recurring.yml` créé avec tous les jobs
+- [x] Mission Control Jobs intégré (`/admin-panel/jobs`)
+- [x] Plugin Puma activé (`SOLID_QUEUE_IN_PUMA: true`)
+- [ ] Vérifier que les jobs récurrents sont chargés : `SolidQueue::RecurringTask.count` (doit retourner 5)
+- [ ] Vérifier Mission Control dashboard : `/admin-panel/jobs`
+- [ ] Tester manuellement un job : `EventReminderJob.perform_now`
+- [ ] Vérifier les logs Solid Queue dans les logs Rails
 
 ---
 
-**Retour** : [INDEX développement](../README.md) | [INDEX principal](../../README.md)
+**Retour** : [INDEX Rails](../../README.md) | [INDEX principal](../../README.md)
