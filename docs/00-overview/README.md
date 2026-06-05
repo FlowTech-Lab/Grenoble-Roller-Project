@@ -17,7 +17,7 @@ tags: ["overview", "project", "vision", "architecture", "status"]
 
 **Grenoble Roller** est une plateforme communautaire Ruby on Rails 8 pour l'association de rollerblading de Grenoble. L'application combine une boutique e-commerce de goodies, un système de gestion d'événements et d'initiations, ainsi qu'un système d'adhésions.
 
-**Repository** : [https://github.com/FlowTech-Lab/Grenoble-Roller-Project](https://github.com/FlowTech-Lab/Grenoble-Roller-Project)
+**Repository** : [https://github.com/Grenoble-roller/Grenoble-Roller-Website](https://github.com/Grenoble-roller/Grenoble-Roller-Website)
 
 ---
 

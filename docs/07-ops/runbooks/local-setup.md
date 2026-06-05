@@ -24,8 +24,8 @@ git --version
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
-cd Grenoble-Roller-Project
+git clone https://github.com/Grenoble-roller/Grenoble-Roller-Website.git
+cd Grenoble-Roller-Website
 ```
 
 ### Step 2: Verify Credentials

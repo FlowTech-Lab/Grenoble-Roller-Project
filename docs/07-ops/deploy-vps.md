@@ -44,11 +44,11 @@ sudo usermod -aG docker $USER
 cd /opt  # ou /home/votre-utilisateur selon votre préférence
 
 # Cloner le repo
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
+git clone https://github.com/Grenoble-roller/Grenoble-Roller-Website.git
 # OU si vous utilisez SSH:
-# git clone git@github.com:FlowTech-Lab/Grenoble-Roller-Project.git
+# git clone git@github.com:Grenoble-roller/Grenoble-Roller-Website.git
 
-cd Grenoble-Roller-Project
+cd Grenoble-Roller-Website
 ```
 
 ### 2. Configuration Git (si nécessaire)

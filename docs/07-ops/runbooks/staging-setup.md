@@ -6,7 +6,7 @@ This guide explains how to set up and deploy the Grenoble Roller application in 
 
 - Docker Engine 20.10+
 - Docker Compose 2.0+
-- Access to the repository: [https://github.com/FlowTech-Lab/Grenoble-Roller-Project](https://github.com/FlowTech-Lab/Grenoble-Roller-Project)
+- Access to the repository: [https://github.com/Grenoble-roller/Grenoble-Roller-Website](https://github.com/Grenoble-roller/Grenoble-Roller-Website)
 - Environment variables configured (`.env` file)
 
 ## Overview
@@ -30,8 +30,8 @@ The staging environment is a production-like environment used for:
 If you haven't cloned the repository yet:
 
 ```bash
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
-cd Grenoble-Roller-Project
+git clone https://github.com/Grenoble-roller/Grenoble-Roller-Website.git
+cd Grenoble-Roller-Website
 ```
 
 ### 2. Checkout Staging Branch
