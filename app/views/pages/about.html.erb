@@ -1044,6 +1044,26 @@
 </section>
 
 <!-- ========================================
+     TRANSPARENCE — statistiques publiques
+     ======================================== -->
+<% if umami_public_stats_available? %>
+<section class="py-4 section-transparency">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8">
+        <h2 class="h4 fw-bold mb-2">Transparence</h2>
+        <p class="text-muted mb-3">
+          Consultez l’audience du site en lecture seule&nbsp;: pages vues, provenance du trafic et appareils —
+          sans données personnelles (Umami, hébergé par l’association).
+        </p>
+        <%= render "shared/umami_public_stats_link", variant: :button, label: "Voir les statistiques publiques" %>
+      </div>
+    </div>
+  </div>
+</section>
+<% end %>
+
+<!-- ========================================
      SECTION CTA FINAL
      ======================================== -->
 <section class="py-5 section-cta">

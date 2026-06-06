@@ -13,6 +13,15 @@ RSpec.describe 'CookieConsents', type: :request do
       post accept_cookie_consent_path
       expect(response).to have_http_status(:redirect).or have_http_status(:success)
     end
+
+    it 'enables analytics cookies when accepting all' do
+      post accept_cookie_consent_path, headers: { 'Accept' => 'application/json' }
+
+      expect(response).to have_http_status(:success)
+      consent = JSON.parse(cookies[:cookie_consent])
+      expect(consent['analytics']).to be true
+      expect(consent['preferences']).to be true
+    end
   end
 
   describe 'POST /cookie_consent/reject' do

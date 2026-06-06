@@ -1,0 +1,4 @@
+<%# Umami — loaded only when ENV is set and the user accepted analytics cookies (RGPD). %>
+<% if umami_tracking_allowed? %>
+  <script defer src="<%= umami_script_url %>" data-website-id="<%= umami_website_id %>"></script>
+<% end %>
