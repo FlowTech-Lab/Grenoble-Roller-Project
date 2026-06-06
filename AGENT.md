@@ -37,6 +37,7 @@ Do **not** duplicate canonical docs here — use the index below.
 | **Ops & deploy** | [`docs/07-ops/deployment.md`](docs/07-ops/deployment.md) · [`ops/README.md`](ops/README.md) | Watchdog, rollback, modular deploy scripts |
 | **Runbooks** | [`docs/07-ops/runbooks/`](docs/07-ops/runbooks/) | Local, staging, production, Dokploy |
 | **Security / a11y / legal** | [`docs/08-security-privacy/README.md`](docs/08-security-privacy/README.md) | RGPD, cookies, WCAG, legal pages |
+| **Umami analytics** | [`docs/08-security-privacy/umami-analytics.md`](docs/08-security-privacy/umami-analytics.md) | ENV vars, consent gate, custom events |
 | **Product & UX** | [`docs/09-product/README.md`](docs/09-product/README.md) | HelloAsso, memberships, orders, backlog |
 | **HelloAsso setup** | [`docs/09-product/helloasso-setup.md`](docs/09-product/helloasso-setup.md) | OAuth credentials, polling, sandbox vs prod |
 | **Changelog** | [`docs/10-decisions-and-changelog/CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) | Release notes |
@@ -256,6 +257,29 @@ Setup: `pip install graphifyy` or `graphify install --platform cursor`.
 - **Role level in code** may differ from stale permission docs — trust `Role` seeds, `AdminPanel::BaseController`, and Pundit policies over outdated tables.
 - **Default seed passwords** are for local dev only — do not reuse in production ([`README.md`](README.md)).
 - **CSS requires watcher** in Docker dev — `watch:css` runs alongside Rails (same as `bin/dev`).
+- **Umami** — `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in deploy env; script only when `cookie_consent?(:analytics)`; public share link via `UMAMI_SHARE_URL` ([`docs/08-security-privacy/umami-analytics.md`](docs/08-security-privacy/umami-analytics.md)).
+
+---
+
+## Native Ruby on dev-workstation (mise)
+
+Do **not** run bare `bundle install` — it uses **`/usr/bin/bundle` (Ruby 3.2, Bundler 2.4.20)** → errors on `/var/lib/gems/3.2.0/cache` and wrong `vendor/bundle/ruby/3.2.0`.
+
+The repo pins **Ruby 3.4.2** via `.ruby-version` + `mise.toml`.
+
+```bash
+sudo ./script/install-native-deps.sh   # one-time APT deps
+./script/setup-native-ruby.sh          # clean vendor/bundle + bundle install
+
+./bin/bundle install                     # always use this prefix
+./bin/bundle exec rspec spec/
+```
+
+After `source script/activate-ruby.sh`, plain `bundle` works (`bin/` is first in PATH).
+
+Cursor/VS Code: terminal profile **bash (Grenoble-Roller Ruby 3.4)** auto-loads `script/terminal-rc.sh`.
+
+Requires PostgreSQL for full test suite (Docker dev DB on port **5434**, or local Postgres).
 
 ---
 

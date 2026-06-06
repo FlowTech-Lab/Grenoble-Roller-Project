@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Always run Bundler with mise Ruby 3.4.2 — safe even when /usr/bin/bundle is first in PATH.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PATH="${HOME}/.local/bin:${PATH}"
+
+cd "$ROOT"
+mise install --quiet 2>/dev/null || mise install
+exec mise exec ruby@3.4.2 -- bundle "$@"

@@ -1,0 +1,9 @@
+{
+  "terminal.integrated.profiles.linux": {
+    "bash (Grenoble-Roller Ruby 3.4)": {
+      "path": "bash",
+      "args": ["--rcfile", "${workspaceFolder}/script/terminal-rc.sh"]
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "bash (Grenoble-Roller Ruby 3.4)"
+}
