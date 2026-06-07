@@ -16,7 +16,7 @@ RSpec.describe "Checkouts", type: :request do
   let!(:product) { create(:product, category: category) }
   let!(:variant) do
     v = create(:product_variant, product: product, stock_qty: 10, is_active: true)
-    Inventory.create!(product_variant: v, stock_qty: 10, reserved_qty: 0) unless v.inventory
+    v.inventory.update!(stock_qty: 10, reserved_qty: 0)
     v.reload
   end
 
