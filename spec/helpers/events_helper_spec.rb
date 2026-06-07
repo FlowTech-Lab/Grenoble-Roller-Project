@@ -71,4 +71,56 @@ RSpec.describe EventsHelper, type: :helper do
       expect(helper.event_loop_columns_class(4)).to eq('col-12 col-sm-6 col-xl-3')
     end
   end
+
+  describe '#event_organizer_display' do
+    it 'falls back to creator display name when no organizer is set' do
+      event = create_event(creator_user: creator)
+
+      expect(helper.event_organizer_display(event)).to eq(
+        name: creator.display_name,
+        url: nil
+      )
+    end
+
+    it 'returns organizer name and safe url when organizer is set' do
+      event_organizer = create(:event_organizer, name: 'Grenoble Roller', url: 'https://grenoble-roller.example')
+      event = create_event(creator_user: creator, organizer: event_organizer)
+
+      expect(helper.event_organizer_display(event)).to eq(
+        name: 'Grenoble Roller',
+        url: 'https://grenoble-roller.example'
+      )
+    end
+
+    it 'sanitizes invalid organizer urls' do
+      event_organizer = create(:event_organizer, url: 'https://example.com')
+      event_organizer.update_column(:url, 'javascript:alert(1)')
+      event = create_event(creator_user: creator, organizer: event_organizer)
+
+      expect(helper.event_organizer_display(event)[:url]).to be_nil
+    end
+  end
+
+  describe '#render_event_organizer' do
+    it 'renders a plain span without url' do
+      event = create_event(creator_user: creator)
+
+      html = helper.render_event_organizer(event)
+
+      expect(html).to include(creator.display_name)
+      expect(html).not_to include('<a ')
+    end
+
+    it 'renders a link when organizer url is present' do
+      event_organizer = create(:event_organizer, name: 'Grenoble Roller', url: 'https://grenoble-roller.example')
+      event = create_event(creator_user: creator, organizer: event_organizer)
+
+      html = helper.render_event_organizer(event)
+
+      expect(html).to include('href="https://grenoble-roller.example"')
+      expect(html).to include('target="_blank"')
+      expect(html).to include('rel="noopener noreferrer"')
+      expect(html).to include('Grenoble Roller')
+    end
+  end
 end

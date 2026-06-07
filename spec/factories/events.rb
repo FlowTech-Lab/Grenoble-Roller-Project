@@ -37,5 +37,9 @@ FactoryBot.define do
     trait :unlimited do
       max_participants { 0 }
     end
+
+    trait :with_organizer do
+      association :organizer, factory: :event_organizer
+    end
   end
 end

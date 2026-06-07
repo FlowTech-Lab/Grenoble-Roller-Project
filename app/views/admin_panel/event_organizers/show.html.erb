@@ -1,0 +1,70 @@
+<% 
+  breadcrumb_items = [
+    { label: "Entités organisatrices", url: admin_panel_event_organizers_path },
+    { label: @event_organizer.name, url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1><%= @event_organizer.name %></h1>
+  <div>
+    <%= link_to "Modifier", edit_admin_panel_event_organizer_path(@event_organizer), class: "btn btn-liquid-primary" %>
+    <%= link_to "Retour à la liste", admin_panel_event_organizers_path, class: "btn btn-outline-liquid-secondary" %>
+  </div>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-header bg-liquid-primary text-white">
+    <h5 class="mb-0">Informations</h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <dl class="row">
+          <dt class="col-sm-4">ID</dt>
+          <dd class="col-sm-8"><%= @event_organizer.id %></dd>
+
+          <dt class="col-sm-4">Nom</dt>
+          <dd class="col-sm-8"><strong><%= @event_organizer.name %></strong></dd>
+
+          <dt class="col-sm-4">URL</dt>
+          <dd class="col-sm-8">
+            <% if @event_organizer.url.present? %>
+              <% safe_url = safe_external_url(@event_organizer.url) %>
+              <% if safe_url %>
+                <%= link_to @event_organizer.url, safe_url, target: "_blank", class: "text-liquid-primary", rel: "noopener noreferrer" %>
+              <% else %>
+                <span class="text-muted">-</span>
+              <% end %>
+            <% else %>
+              <span class="text-muted">-</span>
+            <% end %>
+          </dd>
+
+          <dt class="col-sm-4">Statut</dt>
+          <dd class="col-sm-8">
+            <% if @event_organizer.is_active %>
+              <span class="badge bg-success">Actif</span>
+            <% else %>
+              <span class="badge bg-secondary">Inactif</span>
+            <% end %>
+          </dd>
+        </dl>
+      </div>
+      <div class="col-md-6">
+        <dl class="row">
+          <dt class="col-sm-4">Événements liés</dt>
+          <dd class="col-sm-8"><%= @event_organizer.events.count %></dd>
+
+          <dt class="col-sm-4">Créé le</dt>
+          <dd class="col-sm-8"><%= l @event_organizer.created_at, format: :long %></dd>
+
+          <dt class="col-sm-4">Modifié le</dt>
+          <dd class="col-sm-8"><%= l @event_organizer.updated_at, format: :long %></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>

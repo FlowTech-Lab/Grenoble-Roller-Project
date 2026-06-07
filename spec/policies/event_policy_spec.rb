@@ -201,6 +201,19 @@ RSpec.describe EventPolicy do
     end
   end
 
+  describe '#permitted_attributes' do
+    it 'includes organizer_id for organizers' do
+      expect(policy.permitted_attributes).to include(:organizer_id)
+    end
+
+    it 'includes status for moderators' do
+      moderator_role = Role.find_or_create_by!(code: 'MODERATOR') { |r| r.name = 'Modérateur'; r.level = 50 }
+      moderator = create_user(role: moderator_role)
+
+      expect(described_class.new(moderator, event).permitted_attributes).to include(:status, :organizer_id)
+    end
+  end
+
   describe 'Scope' do
     before do
       Attendance.delete_all

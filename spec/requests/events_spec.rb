@@ -250,6 +250,34 @@ RSpec.describe 'Events', type: :request do
     end
   end
 
+  describe 'PATCH /events/:id' do
+    let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+    let(:organizer) { create_user(role: organizer_role) }
+    let(:event) { create_event(creator_user: organizer, status: 'draft') }
+    let!(:event_organizer) { create(:event_organizer, name: 'Grenoble Roller') }
+
+    before { login_user(organizer) }
+
+    it 'persists organizer_id on update' do
+      patch event_path(event), params: {
+        event: {
+          title: event.title,
+          start_at: event.start_at,
+          duration_min: event.duration_min,
+          location_text: event.location_text,
+          max_participants: event.max_participants,
+          level: event.level,
+          loops_count: 1,
+          organizer_id: event_organizer.id
+        },
+        price_euros: '0'
+      }
+
+      expect(response).to redirect_to(event_path(event))
+      expect(event.reload.organizer_id).to eq(event_organizer.id)
+    end
+  end
+
   describe 'GET /events/:id/loop_routes' do
     let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
     let(:organizer) { create_user(role: organizer_role) }

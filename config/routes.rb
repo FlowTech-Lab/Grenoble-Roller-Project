@@ -53,6 +53,7 @@ Rails.application.routes.draw do
     # Communication
     resources :contact_messages, path: "contact-messages", only: [ :index, :show, :destroy ]
     resources :partners
+    resources :event_organizers, path: "event-organizers"
 
     # Initiations
     resources :initiations do

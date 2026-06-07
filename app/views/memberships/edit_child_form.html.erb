@@ -146,22 +146,7 @@
             <!-- Étape 4 : Santé -->
             <div class="mb-4">
               <h3 class="h5 mb-3">4. Questionnaire de santé</h3>
-              <div class="form-check mb-3">
-                <%= f.radio_button :has_health_issues, "0", 
-                    { class: "form-check-input", id: "health_ok", checked: @membership.health_questionnaire_status == "ok" } %>
-                <label class="form-check-label" for="health_ok">
-                  <strong>L'enfant n'a pas de problèmes de santé</strong>
-                  <p class="text-muted small mb-0">Une attestation parentale de santé suffit (valable 3 ans)</p>
-                </label>
-              </div>
-              <div class="form-check">
-                <%= f.radio_button :has_health_issues, "1", 
-                    { class: "form-check-input", id: "health_issues", checked: @membership.health_questionnaire_status == "medical_required" } %>
-                <label class="form-check-label" for="health_issues">
-                  <strong>L'enfant a des problèmes de santé</strong>
-                  <p class="text-muted small mb-0">Un certificat médical sera requis (valable 6 mois)</p>
-                </label>
-              </div>
+              <%= render "health_questionnaire", f: f, form_id: "_edit", record: @membership %>
             </div>
 
             <!-- Étape 5 : Options -->

@@ -33,6 +33,26 @@ module AdminPanelHelper
     can_access_admin_panel?(60)
   end
 
+  # Whether the current admin may edit/delete the given user (role hierarchy).
+  def can_manage_admin_panel_user?(target_user)
+    return false unless current_user
+
+    RoleAssignmentService.can_manage_user?(assigner: current_user, target_user: target_user)
+  end
+
+  # Whether the role field should be read-only (super admin target, admin actor, or self super admin).
+  def admin_panel_user_role_read_only?(target_user)
+    return false unless target_user&.role&.level && current_user&.role&.level
+
+    if target_user == current_user &&
+       target_user.role.level.to_i >= RoleAssignmentService::SUPERADMIN_LEVEL
+      return true
+    end
+
+    target_user.role.level.to_i >= RoleAssignmentService::SUPERADMIN_LEVEL &&
+      current_user.role.level.to_i < RoleAssignmentService::SUPERADMIN_LEVEL
+  end
+
   # Helper pour vérifier si un controller est actif dans AdminPanel
   def admin_panel_active?(controller_name, action_name = nil)
     return false unless controller.class.name.start_with?("AdminPanel::")

@@ -61,6 +61,19 @@ RSpec.describe AdminPanel::UserPolicy do
       let(:user) { create(:user, role: admin_role) }
 
       it { expect(policy.update?).to be(true) }
+
+      context 'when target is super admin' do
+        let(:target_user) { create(:user, role: superadmin_role) }
+
+        it { expect(policy.update?).to be(false) }
+      end
+    end
+
+    context 'when user is superadmin (level 70)' do
+      let(:user) { create(:user, role: superadmin_role) }
+      let(:target_user) { create(:user, role: admin_role) }
+
+      it { expect(policy.update?).to be(true) }
     end
 
     context 'when user is organizer (level 40)' do
@@ -70,11 +83,26 @@ RSpec.describe AdminPanel::UserPolicy do
     end
   end
 
+  describe '#edit?' do
+    context 'when admin targets super admin' do
+      let(:user) { create(:user, role: admin_role) }
+      let(:target_user) { create(:user, role: superadmin_role) }
+
+      it { expect(policy.edit?).to be(false) }
+    end
+  end
+
   describe '#destroy?' do
     context 'when user is admin (level 60)' do
       let(:user) { create(:user, role: admin_role) }
 
       it { expect(policy.destroy?).to be(true) }
+
+      context 'when target is super admin' do
+        let(:target_user) { create(:user, role: superadmin_role) }
+
+        it { expect(policy.destroy?).to be(false) }
+      end
     end
 
     context 'when user is organizer (level 40)' do

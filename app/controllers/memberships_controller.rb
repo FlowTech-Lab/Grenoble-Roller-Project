@@ -390,46 +390,7 @@ class MembershipsController < ApplicationController
       ffrs_data_sharing_consent: membership_params[:ffrs_data_sharing_consent] == "1"
     )
 
-    # Vérifier les réponses au questionnaire de santé (9 questions)
-    has_health_issue = false
-    all_answered_no = true
-    all_answered = true
-    (1..9).each do |i|
-      answer = membership_params["health_question_#{i}"]
-      if answer.blank?
-        all_answered = false
-        all_answered_no = false
-      elsif answer == "yes"
-        has_health_issue = true
-        all_answered_no = false
-      elsif answer == "no"
-        # Réponse NON, continue
-      end
-    end
-
-    # Traiter Standard et FFRS de la même manière : questionnaire obligatoire, certificat médical jamais obligatoire
-    # Vérifier que toutes les questions sont répondues
-    unless all_answered
-      redirect_to edit_membership_path(@membership), alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."
-      return
-    end
-
-    # Même logique pour Standard et FFRS : juste mettre le statut selon les réponses
-    @membership.health_questionnaire_status = has_health_issue ? "medical_required" : "ok"
-
-    # Mettre à jour les réponses du questionnaire
-    (1..9).each do |i|
-      answer = membership_params["health_question_#{i}"]
-      @membership.send("health_q#{i}=", answer) if answer.present?
-    end
-
-    # Attacher le certificat médical si fourni
-    if membership_params[:medical_certificate].present?
-      @membership.medical_certificate.attach(membership_params[:medical_certificate])
-    end
-
-    # Sauvegarder les modifications
-    @membership.save!
+    return unless apply_health_questionnaire_from_params!(membership_params)
 
     redirect_to memberships_path, notice: "Adhésion de #{@membership.child_full_name} mise à jour avec succès."
   rescue => e
@@ -513,6 +474,37 @@ class MembershipsController < ApplicationController
   end
 
   private
+
+  # Returns false when a redirect was issued (caller must halt).
+  def apply_health_questionnaire_from_params!(membership_params)
+    health_submitted = (1..9).all? { |i| membership_params["health_question_#{i}"].present? }
+
+    unless health_submitted
+      if @membership.health_questionnaire_complete?
+        return true
+      end
+
+      redirect_to edit_membership_path(@membership),
+                  alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."
+      return false
+    end
+
+    has_health_issue = false
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      has_health_issue = true if answer == "yes"
+      @membership.send("health_q#{i}=", answer)
+    end
+
+    @membership.health_questionnaire_status = has_health_issue ? "medical_required" : "ok"
+
+    if membership_params[:medical_certificate].present?
+      @membership.medical_certificate.attach(membership_params[:medical_certificate])
+    end
+
+    @membership.save!
+    true
+  end
 
   def set_membership
     @membership = current_user.memberships.find(params[:id])

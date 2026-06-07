@@ -192,6 +192,21 @@
           </div>
 
           <div class="col-12 col-md-6">
+            <%= f.label :organizer_id, "Organisateur affiché", class: "form-label" %>
+            <%= f.collection_select :organizer_id,
+                @event_organizers,
+                :id,
+                :name,
+                { include_blank: "Moi (créateur)" },
+                class: "form-select form-select-liquid" %>
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>
+              Nom visible sur la fiche publique « Organisateur ». La liste des associations se gère dans
+              <strong>Admin → Événements → Entités organisatrices</strong> ; ici, choisissez celle à afficher pour cet événement.
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
             <%= f.label :max_participants, "Nombre maximum de participants", class: "form-label" %>
             <%= f.number_field :max_participants, class: "form-control form-control-liquid", min: 0, step: 1, required: true, value: event.max_participants || 0, onblur: "validateField(this)" %>
             <div class="form-text">

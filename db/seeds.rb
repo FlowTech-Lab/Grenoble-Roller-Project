@@ -1205,6 +1205,24 @@ partners_data = [
 partners_data.each { |attrs| Partner.create!(attrs) }
 puts "✅ #{Partner.count} partenaires créés !"
 
+# 🏢 Event organizers (entités organisatrices pour randos)
+puts "🏢 Création des entités organisatrices..."
+event_organizers_data = [
+  {
+    name: "Grenoble Roller",
+    url: "https://www.grenoble-roller.org",
+    is_active: true
+  },
+  {
+    name: "Rando Roller Isère",
+    url: "https://www.example-rando-roller.fr",
+    is_active: true
+  }
+]
+
+event_organizers_data.each { |attrs| EventOrganizer.create!(attrs) }
+puts "✅ #{EventOrganizer.count} entités organisatrices créées !"
+
 # 📧 ContactMessages (messages de contact)
 puts "📧 Création des messages de contact..."
 contact_messages_data = [

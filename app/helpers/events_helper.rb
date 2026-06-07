@@ -122,6 +122,20 @@ module EventsHelper
   end
 
   # Formate la durée d'un événement et calcule l'heure de fin
+  def event_organizer_display(event)
+    {
+      name: event.display_organizer_name,
+      url: safe_external_url(event.display_organizer_url)
+    }
+  end
+
+  def render_event_organizer(event)
+    display = event_organizer_display(event)
+    return content_tag(:span, display[:name]) if display[:url].blank?
+
+    link_to(display[:name], display[:url], target: "_blank", rel: "noopener noreferrer")
+  end
+
   def format_event_duration(event)
     return nil unless event.start_at && event.duration_min
 

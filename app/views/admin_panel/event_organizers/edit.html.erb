@@ -1,0 +1,16 @@
+<% 
+  breadcrumb_items = [
+    { label: "Entités organisatrices", url: admin_panel_event_organizers_path },
+    { label: @event_organizer.name, url: admin_panel_event_organizer_path(@event_organizer) },
+    { label: "Modifier", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Modifier <%= @event_organizer.name %></h1>
+  <%= link_to "Retour", admin_panel_event_organizer_path(@event_organizer), class: "btn btn-outline-liquid-secondary" %>
+</div>
+
+<%= render 'form', event_organizer: @event_organizer %>

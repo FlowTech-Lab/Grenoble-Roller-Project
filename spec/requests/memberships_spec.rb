@@ -640,4 +640,108 @@ RSpec.describe "Memberships", type: :request do
       end
     end
   end
+
+  describe "GET /memberships/:id/edit and PATCH /memberships/:id" do
+    let(:child_dob) { Date.new(2015, 6, 15) }
+    let(:pending_child) do
+      create(:membership,
+        :child,
+        :pending,
+        :with_health_questionnaire,
+        user: user,
+        child_first_name: "Léo",
+        child_last_name: "Martin",
+        child_date_of_birth: child_dob,
+        category: "standard",
+        rgpd_consent: true,
+        legal_notices_accepted: true,
+        parent_authorization: true
+      )
+    end
+
+    def child_update_params(overrides = {})
+      base = {
+        category: "standard",
+        child_first_name: "Léo",
+        child_last_name: "Martin",
+        child_date_of_birth: child_dob.to_s,
+        child_date_of_birth_day: child_dob.day.to_s,
+        child_date_of_birth_month: child_dob.month.to_s,
+        child_date_of_birth_year: child_dob.year.to_s,
+        parent_authorization: "1",
+        rgpd_consent: "1",
+        legal_notices_accepted: "1",
+        ffrs_data_sharing_consent: "0"
+      }
+      (1..9).each { |i| base["health_question_#{i}"] = "no" }
+      base.merge(overrides)
+    end
+
+    it "requires authentication for edit" do
+      get edit_membership_path(pending_child)
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "renders the full health questionnaire on edit" do
+      login_user(user)
+      get edit_membership_path(pending_child)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Q1 :")
+      expect(response.body).to include("Q9 :")
+      expect(response.body).not_to include('name="membership[has_health_issues]"')
+    end
+
+    it "updates a pending child membership when health answers are submitted" do
+      login_user(user)
+
+      patch membership_path(pending_child), params: {
+        membership: child_update_params(child_first_name: "Léonie")
+      }
+
+      expect(response).to redirect_to(memberships_path)
+      expect(flash[:notice]).to include("mise à jour")
+      expect(pending_child.reload.child_first_name).to eq("Léonie")
+      expect(pending_child.health_questionnaire_complete?).to be(true)
+    end
+
+    it "preserves existing health answers when they are omitted from the request" do
+      login_user(user)
+      params_without_health = child_update_params.except(*(1..9).map { |i| "health_question_#{i}" })
+
+      patch membership_path(pending_child), params: { membership: params_without_health }
+
+      expect(response).to redirect_to(memberships_path)
+      expect(pending_child.reload.health_questionnaire_complete?).to be(true)
+    end
+
+    it "blocks update when health questionnaire was never completed" do
+      login_user(user)
+      incomplete_child = create(:membership, :child, :pending, user: user,
+        child_first_name: "Noé",
+        child_last_name: "Test",
+        child_date_of_birth: child_dob,
+        parent_authorization: true,
+        rgpd_consent: true,
+        legal_notices_accepted: true)
+
+      patch membership_path(incomplete_child), params: {
+        membership: child_update_params.except(*(1..9).map { |i| "health_question_#{i}" })
+          .merge(child_first_name: "Noé", child_last_name: "Test")
+      }
+
+      expect(response).to redirect_to(edit_membership_path(incomplete_child))
+      expect(flash[:alert]).to include("questionnaire de santé")
+    end
+
+    it "rejects edit for non-pending memberships" do
+      login_user(user)
+      active_child = create(:membership, :child, :with_health_questionnaire, user: user)
+
+      get edit_membership_path(active_child)
+
+      expect(response).to redirect_to(membership_path(active_child))
+      expect(flash[:alert]).to include("ne peut pas être modifiée")
+    end
+  end
 end

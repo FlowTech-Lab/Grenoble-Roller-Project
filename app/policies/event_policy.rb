@@ -101,7 +101,8 @@ class EventPolicy < ApplicationPolicy
       :max_participants,
       :level,
       :distance_km,
-      :loops_count
+      :loops_count,
+      :organizer_id
     ]
 
     # Seuls les modérateurs+ peuvent modifier le statut

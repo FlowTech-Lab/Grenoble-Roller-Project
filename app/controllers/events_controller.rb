@@ -184,6 +184,7 @@ class EventsController < ApplicationController
 
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
+    normalize_organizer_id!(event_params)
 
     # Gérer les parcours par boucle
     loop_routes_params = params[:event_loop_routes] || {}
@@ -221,6 +222,7 @@ class EventsController < ApplicationController
 
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
+    normalize_organizer_id!(event_params)
 
     # Gérer les parcours par boucle
     loop_routes_params = params[:event_loop_routes] || {}
@@ -276,13 +278,18 @@ class EventsController < ApplicationController
   private
 
   def set_event
-    @event = Event.includes(:route, :creator_user, event_loop_routes: :route).find(params[:id])
+    @event = Event.includes(:route, :creator_user, :organizer, event_loop_routes: :route).find(params[:id])
     # Charger l'attendance de l'utilisateur connecté si présent
     @user_attendance = current_user&.attendances&.find_by(event: @event) if user_signed_in?
   end
 
   def load_supporting_data
     @routes = Route.order(:name)
+    organizers = EventOrganizer.active.order(:name)
+    if @event&.organizer_id.present? && @event.organizer && !@event.organizer.is_active?
+      organizers = EventOrganizer.where(id: organizers.select(:id)).or(EventOrganizer.where(id: @event.organizer_id)).order(:name)
+    end
+    @event_organizers = organizers
   end
 
   # Appliquer les filtres depuis les paramètres
@@ -335,5 +342,11 @@ class EventsController < ApplicationController
 
   def handle_record_not_found
     redirect_to events_path, alert: "Cet événement n'existe pas ou n'est plus disponible."
+  end
+
+  def normalize_organizer_id!(event_params)
+    return unless event_params.key?(:organizer_id)
+
+    event_params[:organizer_id] = event_params[:organizer_id].presence
   end
 end

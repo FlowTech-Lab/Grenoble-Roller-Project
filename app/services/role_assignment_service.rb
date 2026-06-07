@@ -3,6 +3,8 @@
 # Service pour gérer l'assignation de rôles avec vérification de sécurité
 # Un utilisateur ne peut jamais donner un rôle supérieur au sien
 class RoleAssignmentService
+  SUPERADMIN_LEVEL = 70
+
   class UnauthorizedRoleAssignment < StandardError
     attr_reader :message
 
@@ -28,6 +30,23 @@ class RoleAssignmentService
     target_level <= assigner_level
   end
 
+  # Whether assigner may modify an existing user (profile, role, delete).
+  # Admins (level 60) cannot manage super admins (level >= 70).
+  def self.can_manage_user?(assigner:, target_user:)
+    return false unless assigner&.role&.level
+    return true if target_user.nil? || !target_user.persisted?
+    return false unless target_user.role&.level
+
+    assigner_level = assigner.role.level.to_i
+    target_level = target_user.role.level.to_i
+
+    if target_level >= SUPERADMIN_LEVEL
+      return assigner_level >= SUPERADMIN_LEVEL
+    end
+
+    assigner_level >= target_level
+  end
+
   # Vérifier si un utilisateur peut assigner un rôle donné à un autre utilisateur
   # @param assigner [User] L'utilisateur qui fait l'assignation
   # @param target_user [User] L'utilisateur qui recevra le rôle
@@ -36,13 +55,18 @@ class RoleAssignmentService
   def self.can_assign_role_to_user?(assigner:, target_user:, new_role:)
     return false unless assigner&.role&.level
     return false unless new_role&.level
+    return false unless can_manage_user?(assigner: assigner, target_user: target_user)
 
-    # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
-    # Un utilisateur ne peut assigner que des rôles avec un level <= au sien
     assigner_level = assigner.role.level.to_i
     new_role_level = new_role.level.to_i
 
-    # Vérifier que le nouveau rôle n'est pas supérieur au rôle de l'assigneur
+    # Super admins cannot demote themselves
+    if target_user&.persisted? && assigner.id == target_user.id &&
+       assigner_level >= SUPERADMIN_LEVEL && new_role_level < SUPERADMIN_LEVEL
+      return false
+    end
+
+    # IMPORTANT : Utilise le NUMÉRO du level, pas le code du rôle
     return false if new_role_level > assigner_level
 
     # Si on modifie un utilisateur existant, vérifier aussi qu'on ne lui donne pas un rôle supérieur à celui qu'il avait déjà

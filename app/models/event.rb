@@ -2,6 +2,7 @@ class Event < ApplicationRecord
   include Hashid::Rails
 
   belongs_to :creator_user, class_name: "User"
+  belongs_to :organizer, class_name: "EventOrganizer", optional: true
   belongs_to :route, optional: true # Parcours principal (rétrocompatibilité)
   has_many :event_loop_routes, dependent: :destroy
   has_many :loop_routes, through: :event_loop_routes, source: :route
@@ -97,6 +98,16 @@ class Event < ApplicationRecord
     is_a?(Event::Initiation)
   end
 
+  # Public display name for the organizing entity (association) or event creator fallback
+  def display_organizer_name
+    organizer&.name.presence || creator_user&.display_name
+  end
+
+  # External URL for the organizing entity, if configured
+  def display_organizer_url
+    organizer&.url
+  end
+
   scope :upcoming, -> { where("start_at + (duration_min * INTERVAL '1 minute') > ?", Time.current) }
   scope :past, -> { where("start_at + (duration_min * INTERVAL '1 minute') <= ?", Time.current) }
   scope :published, -> { where(status: "published") }
@@ -129,6 +140,7 @@ class Event < ApplicationRecord
       level
       distance_km
       creator_user_id
+      organizer_id
       max_participants
       attendances_count
       type
@@ -138,7 +150,7 @@ class Event < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[attendances creator_user route users]
+    %w[attendances creator_user organizer route users]
   end
 
   # Vérifie si l'événement a une limite de participants (0 = illimité)

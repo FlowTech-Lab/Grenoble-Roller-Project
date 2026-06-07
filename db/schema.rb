@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_021500) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_025623) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -117,6 +117,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_021500) do
     t.index ["route_id"], name: "index_event_loop_routes_on_route_id"
   end
 
+  create_table "event_organizers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "is_active", default: true, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["is_active"], name: "index_event_organizers_on_is_active"
+  end
+
   create_table "events", force: :cascade do |t|
     t.boolean "allow_non_member_discovery", default: false, null: false
     t.integer "attendances_count", default: 0, null: false
@@ -135,6 +144,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_021500) do
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
     t.integer "non_member_discovery_slots", default: 0
+    t.bigint "organizer_id"
     t.datetime "participants_report_sent_at"
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
@@ -150,6 +160,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_021500) do
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["creator_user_id"], name: "index_events_on_creator_user_id"
+    t.index ["organizer_id"], name: "index_events_on_organizer_id"
     t.index ["participants_report_sent_at"], name: "index_events_on_participants_report_sent_at"
     t.index ["route_id"], name: "index_events_on_route_id"
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
@@ -616,6 +627,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_021500) do
   add_foreign_key "audit_logs", "users", column: "actor_user_id"
   add_foreign_key "event_loop_routes", "events"
   add_foreign_key "event_loop_routes", "routes"
+  add_foreign_key "events", "event_organizers", column: "organizer_id"
   add_foreign_key "events", "routes"
   add_foreign_key "events", "users", column: "creator_user_id"
   add_foreign_key "inventories", "product_variants"

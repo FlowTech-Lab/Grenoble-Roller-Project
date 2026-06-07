@@ -1,0 +1,128 @@
+<% 
+  breadcrumb_items = [
+    { label: "Entités organisatrices", url: nil }
+  ]
+%>
+
+<%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Entités organisatrices</h1>
+  <%= link_to "Nouvelle entité", new_admin_panel_event_organizer_path, class: "btn btn-liquid-primary" %>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-12">
+        <div class="btn-group" role="group">
+          <%= link_to "Tous", admin_panel_event_organizers_path, 
+              class: "btn btn-sm #{params[:scope].blank? ? 'btn-liquid-primary' : 'btn-outline-liquid-primary'}" %>
+          <%= link_to "Actifs", admin_panel_event_organizers_path(scope: 'active'), 
+              class: "btn btn-sm #{params[:scope] == 'active' ? 'btn-liquid-success' : 'btn-outline-liquid-success'}" %>
+          <%= link_to "Inactifs", admin_panel_event_organizers_path(scope: 'inactive'), 
+              class: "btn btn-sm #{params[:scope] == 'inactive' ? 'btn-liquid-secondary' : 'btn-outline-liquid-secondary'}" %>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <%= search_form_for @q, url: admin_panel_event_organizers_path, method: :get, class: "row g-3" do |f| %>
+      <div class="col-md-4">
+        <%= f.label :name_cont, "Nom", class: "form-label" %>
+        <%= f.search_field :name_cont, class: "form-control form-control-liquid", placeholder: "Rechercher par nom..." %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :is_active_eq, "Statut", class: "form-label" %>
+        <%= f.select :is_active_eq,
+            options_for_select([
+              ["Tous", ""],
+              ["Actif", "true"],
+              ["Inactif", "false"]
+            ], params.dig(:q, :is_active_eq)),
+            {},
+            { class: "form-select form-select-liquid" } %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :created_at_gteq, "Date début", class: "form-label" %>
+        <%= f.date_field :created_at_gteq, class: "form-control form-control-liquid", value: params.dig(:q, :created_at_gteq) %>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <div>
+          <%= f.submit "Filtrer", class: "btn btn-liquid-primary w-100" %>
+        </div>
+      </div>
+      <div class="col-12">
+        <%= link_to "Réinitialiser", admin_panel_event_organizers_path, class: "btn btn-outline-liquid-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-body">
+    <% if @event_organizers.any? %>
+      <div class="table-responsive">
+        <table class="table table-liquid">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>URL</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @event_organizers.each do |event_organizer| %>
+              <tr>
+                <td><%= event_organizer.id %></td>
+                <td><strong><%= event_organizer.name %></strong></td>
+                <td>
+                  <% if event_organizer.url.present? %>
+                    <% safe_url = safe_external_url(event_organizer.url) %>
+                    <% if safe_url %>
+                      <%= link_to event_organizer.url, safe_url, target: "_blank", class: "text-liquid-primary", rel: "noopener noreferrer" %>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  <% else %>
+                    <span class="text-muted">-</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if event_organizer.is_active %>
+                    <span class="badge bg-success">Actif</span>
+                  <% else %>
+                    <span class="badge bg-secondary">Inactif</span>
+                  <% end %>
+                </td>
+                <td><%= l event_organizer.updated_at, format: :short %></td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "Voir", admin_panel_event_organizer_path(event_organizer), class: "btn btn-outline-liquid-primary" %>
+                    <%= link_to "Modifier", edit_admin_panel_event_organizer_path(event_organizer), class: "btn btn-outline-liquid-secondary" %>
+                    <%= button_to "Supprimer", admin_panel_event_organizer_path(event_organizer), 
+                        method: :delete,
+                        data: { turbo_confirm: "Êtes-vous sûr de vouloir supprimer cette entité organisatrice ?" },
+                        class: "btn btn-danger" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4">
+        <%== pagy_bootstrap_nav(@pagy) if @pagy.pages > 1 %>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted">Aucune entité organisatrice trouvée.</p>
+        <%= link_to "Créer la première entité", new_admin_panel_event_organizer_path, class: "btn btn-liquid-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
