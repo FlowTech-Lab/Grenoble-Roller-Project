@@ -97,6 +97,15 @@
               <span class="text-muted">Aucun paiement</span>
             <% end %>
           </dd>
+
+          <dt class="col-sm-3">Goodies distribués</dt>
+          <dd class="col-sm-9">
+            <% if @membership.goodies_distributed? %>
+              <span class="badge bg-success">Oui</span>
+            <% else %>
+              <span class="badge bg-secondary">Non</span>
+            <% end %>
+          </dd>
         </dl>
       </div>
     </div>

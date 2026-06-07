@@ -24,6 +24,7 @@ module AdminPanel
       @memberships = @memberships.personal if params[:scope] == "personal"
       @memberships = @memberships.children if params[:scope] == "children"
       @memberships = @memberships.expiring_soon if params[:scope] == "expiring_soon"
+      @memberships = @memberships.goodies_pending if params[:scope] == "goodies_pending"
 
       # Filtres supplémentaires
       @memberships = @memberships.where(status: params[:status]) if params[:status].present?
@@ -158,7 +159,7 @@ module AdminPanel
         :ffrs_data_sharing_consent, :payment_id,
         :health_q1, :health_q2, :health_q3, :health_q4, :health_q5,
         :health_q6, :health_q7, :health_q8, :health_q9, :health_questionnaire_status,
-        :medical_certificate
+        :medical_certificate, :goodies_distributed
       )
     end
   end

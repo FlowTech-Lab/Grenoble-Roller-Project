@@ -45,6 +45,7 @@ class Membership < ApplicationRecord
   scope :pending_payment, -> { pending }
   scope :personal, -> { where(is_child_membership: false) }
   scope :children, -> { where(is_child_membership: true) }
+  scope :goodies_pending, -> { where(goodies_distributed: false) }
 
   # Ransack pour ActiveAdmin
   def self.ransackable_attributes(_auth_object = nil)
@@ -53,7 +54,7 @@ class Membership < ApplicationRecord
        child_date_of_birth parent_authorization parent_authorization_date parent_name
        parent_email parent_phone rgpd_consent legal_notices_accepted ffrs_data_sharing_consent
        health_questionnaire_status health_q1 health_q2 health_q3 health_q4 health_q5
-       health_q6 health_q7 health_q8 health_q9 created_at updated_at]
+       health_q6 health_q7 health_q8 health_q9 goodies_distributed created_at updated_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)

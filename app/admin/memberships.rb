@@ -13,7 +13,7 @@ ActiveAdmin.register Membership do
                 :ffrs_data_sharing_consent, :payment_id,
                 :health_q1, :health_q2, :health_q3, :health_q4, :health_q5,
                 :health_q6, :health_q7, :health_q8, :health_q9, :health_questionnaire_status,
-                :medical_certificate
+                :medical_certificate, :goodies_distributed
 
   scope :all, default: true
   scope("Actives") { |memberships| memberships.active_now }
@@ -22,6 +22,7 @@ ActiveAdmin.register Membership do
   scope("Personnelles") { |memberships| memberships.personal }
   scope("Enfants") { |memberships| memberships.children }
   scope("Expirent bientôt") { |memberships| memberships.expiring_soon }
+  scope("Goodies en attente") { |memberships| memberships.goodies_pending }
 
   index do
     selectable_column
@@ -68,6 +69,9 @@ ActiveAdmin.register Membership do
       end
     end
     column :payment
+    column :goodies_distributed do |membership|
+      membership.goodies_distributed? ? status_tag("Oui", class: "ok") : status_tag("Non", class: "warning")
+    end
     column :created_at do |membership|
       membership.created_at.strftime("%d/%m/%Y %H:%M")
     end
@@ -78,6 +82,7 @@ ActiveAdmin.register Membership do
   filter :status, as: :select, collection: Membership.statuses.map { |k, v| [ k.humanize, k ] }
   filter :category, as: :select, collection: Membership.categories.map { |k, v| [ k.humanize, k ] }
   filter :is_child_membership, label: "Type", as: :select, collection: [ [ "Personnelle", false ], [ "Enfant", true ] ]
+  filter :goodies_distributed, label: "Goodies distribués", as: :select, collection: [ [ "Oui", true ], [ "Non", false ] ]
   filter :season
   filter :start_date
   filter :end_date
@@ -115,6 +120,9 @@ ActiveAdmin.register Membership do
       end
       row :currency
       row :payment
+      row :goodies_distributed do |membership|
+        membership.goodies_distributed? ? status_tag("Oui", class: "ok") : status_tag("Non", class: "warning")
+      end
       row :tshirt_variant
       row :tshirt_price_cents do |membership|
         if membership.tshirt_price_cents
@@ -236,6 +244,7 @@ ActiveAdmin.register Membership do
       f.input :amount_cents, label: "Montant (cents)"
       f.input :currency, input_html: { value: f.object.currency || "EUR" }
       f.input :is_child_membership, label: "Adhésion enfant"
+      f.input :goodies_distributed, label: "Goodies distribués"
       f.input :payment
     end
 

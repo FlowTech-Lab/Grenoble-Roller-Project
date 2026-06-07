@@ -226,6 +226,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.date "end_date", null: false
     t.datetime "expired_email_sent_at"
     t.boolean "ffrs_data_sharing_consent", default: false
+    t.boolean "goodies_distributed", default: false, null: false
     t.string "health_q1"
     t.string "health_q2"
     t.string "health_q3"
@@ -263,6 +264,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.boolean "wants_email_info", default: true
     t.boolean "wants_whatsapp", default: false
     t.boolean "with_tshirt", default: false, null: false
+    t.index ["goodies_distributed"], name: "index_memberships_on_goodies_distributed"
     t.index ["payment_id"], name: "index_memberships_on_payment_id"
     t.index ["provider_order_id"], name: "index_memberships_on_provider_order_id"
     t.index ["status", "end_date"], name: "index_memberships_on_status_and_end_date"

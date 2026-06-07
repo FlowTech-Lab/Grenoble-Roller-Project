@@ -162,6 +162,17 @@
             </div>
           </div>
 
+          <div class="mb-4">
+            <h5>Goodies</h5>
+            <div class="mb-3">
+              <%= f.label :goodies_distributed, class: "form-check-label" do %>
+                <%= f.check_box :goodies_distributed, class: "form-check-input" %>
+                Goodies distribués
+              <% end %>
+              <div class="form-text">Cocher lorsque le membre a reçu son lot de goodies.</div>
+            </div>
+          </div>
+
           <div class="d-flex gap-2">
             <%= f.submit "Mettre à jour", class: "btn btn-liquid-primary" %>
             <%= link_to "Annuler", admin_panel_membership_path(@membership), class: "btn btn-outline-secondary" %>
