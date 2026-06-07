@@ -1,68 +1,71 @@
 # 🔐 PERMISSIONS ADMIN PANEL - Par Grade
 
-**Date de mise à jour** : 2025-01-XX | **Version** : 1.0
+**Date de mise à jour** : 2026-06-07 | **Version** : 1.1
 
----
-
-## 📊 Tableau des Grades
+Aligné sur `db/seeds.rb` et les policies Pundit (le **level** prime sur le code du rôle).
 
 | Grade | Code | Nom | Level | Accès AdminPanel |
 |-------|------|-----|-------|------------------|
 | 10 | USER | Utilisateur | 10 | ❌ Aucun accès |
 | 20 | REGISTERED | Inscrit | 20 | ❌ Aucun accès |
-| 30 | ORGANIZER | Organisateur | 30 | ❌ Aucun accès |
-| 40 | INITIATION | Initiation | 40 | ✅ Initiations (lecture seule) |
-| 50 | MODERATOR | Modérateur | 50 | ✅ Initiations (lecture seule) |
-| 60 | ADMIN | Admin | 60 | ✅ Accès complet |
+| 30 | INITIATION | Initiation | 30 | ✅ Initiations (lecture), carrousel homepage (base) |
+| 40 | ORGANIZER | Organisateur | 40 | ✅ + Événements randos (lecture), retour matériel |
+| 50 | MODERATOR | Modérateur | 50 | ✅ Idem ORGANIZER |
+| 60 | ADMIN | Admin | 60 | ✅ Accès complet (écriture) |
 | 70 | SUPERADMIN | Super Admin | 70 | ✅ Accès complet |
+
+**Note sidebar :** `can_view_initiations?` / liens menu utilisent level ≥ 40 — les utilisateurs level 30 peuvent accéder aux URLs autorisées par policy mais ne voient pas tous les liens sidebar.
 
 ---
 
 ## 🎯 Permissions par Ressource
 
+### ✅ **ÉVÉNEMENTS (randos)** (`/admin-panel/events`)
+
+#### **Grade 40+ (ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)**
+- ✅ **Lecture** : `index?`, `show?` — liste et détail des randos (hors initiations)
+- ❌ **Écriture** : create/update/destroy, waitlist actions — réservé level ≥ 60
+
+#### **Grade < 40**
+- ❌ Accès refusé par `BaseController` (min level 40 pour controller `events`)
+
+**Sidebar :** level 40–59 → lien « Événements » direct ; level ≥ 60 → sous-menu complet (organizers, routes, participations, candidatures).
+
+---
+
+### ✅ **ENTITÉS ORGANISATRICES** (`/admin-panel/event-organizers`)
+
+#### **Grade 60+ uniquement**
+- ✅ CRUD complet (admin submenu)
+
+---
+
 ### ✅ **INITIATIONS** (`/admin-panel/initiations`)
 
-#### **Grade 40+ (INITIATION, MODERATOR, ADMIN, SUPERADMIN)**
+#### **Grade 30+ (INITIATION, ORGANIZER, MODERATOR, ADMIN, SUPERADMIN)**
 - ✅ **Lecture** : `index?`, `show?`
-  - Voir la liste des initiations
-  - Voir les détails d'une initiation
-  - Voir les participants, bénévoles, liste d'attente
-  - Voir le matériel demandé
-- ❌ **Écriture** : `create?`, `update?`, `destroy?`
-  - Ne peut pas créer d'initiation
-  - Ne peut pas modifier d'initiation
-  - Ne peut pas supprimer d'initiation
-- ❌ **Actions spéciales** : `presences?`, `update_presences?`, `convert_waitlist?`, `notify_waitlist?`, `toggle_volunteer?`
-  - Ne peut pas gérer les présences
-  - Ne peut pas convertir la liste d'attente
-  - Ne peut pas notifier la liste d'attente
-  - Ne peut pas modifier le statut bénévole
+  - Voir la liste et le détail des initiations
+  - Voir participants, bénévoles, liste d'attente, matériel demandé
+- ❌ **Écriture** : `create?`, `update?`, `destroy?` — level ≥ 60
+- ❌ **Actions spéciales** (présences, waitlist, bénévoles) — level ≥ 60
+- ✅ **`return_material?`** : level ≥ 40 — clôture les réservations matériel (`stock_returned_at`)
 
 #### **Grade 60+ (ADMIN, SUPERADMIN)**
-- ✅ **Lecture** : `index?`, `show?`
-- ✅ **Écriture** : `create?`, `update?`, `destroy?`
-- ✅ **Actions spéciales** : `presences?`, `update_presences?`, `convert_waitlist?`, `notify_waitlist?`, `toggle_volunteer?`
+- ✅ Écriture complète + présences, waitlist, bénévoles
 
-**Boutons visibles dans les vues** :
-- Grade 40-50 : Aucun bouton de création/modification
-- Grade 60+ : Bouton "Créer une initiation" (index), Bouton "Éditer" (show)
-
-#### **Grade 30 (ORGANIZER)**
-- ❌ **Aucun accès** : Accès refusé (redirection vers root_path)
+#### **Grade < 30**
+- ❌ Accès refusé
 
 ---
 
 ### ❌ **DASHBOARD** (`/admin-panel`)
 
-#### **Grade 60+ uniquement (ADMIN, SUPERADMIN)**
-- ✅ Accès au tableau de bord
-- ✅ Voir les statistiques (utilisateurs, produits, commandes)
-- ✅ Voir les commandes récentes
+#### **Grade 40+ (sidebar) / BaseController min 40 pour controller `dashboard`**
+- ✅ Accès au tableau de bord (KPIs visibles — contenu orienté admin/boutique)
+- Toggle maintenance : level ≥ 60 uniquement
 
-#### **Grade < 60**
-- ❌ Accès refusé (redirection vers root_path)
-
-**Sidebar** : Le lien "Tableau de bord" n'est visible que pour level >= 60
+#### **Grade < 40**
+- ❌ Accès refusé
 
 ---
 
@@ -90,15 +93,31 @@
 
 ---
 
+### ✅ **ADHÉSIONS / GOODIES** (`/admin-panel/memberships`)
+
+#### **Grade 60+ uniquement**
+- ✅ CRUD adhésions, filtre « Goodies en attente », champ `goodies_distributed`
+
+---
+
+### ❌ **CARROUSEL HOMEPAGE** (`/admin-panel/homepage_carousels`)
+
+#### **Grade 30+ (BaseController) — sidebar level ≥ 40**
+- ✅ CRUD slides, publish/unpublish, reorder
+- ✅ Paramètres autoplay (`HomepageCarouselSetting`) via `update_settings`
+
+---
+
 ### ❌ **STOCK ROLLERS** (`/admin-panel/roller-stocks`)
 
 #### **Grade 60+ uniquement (ADMIN, SUPERADMIN)**
-- ✅ Accès complet (CRUD)
+- ✅ Accès complet (CRUD parc physique)
+- ✅ **Clôturer les prêts terminés** (`return_all`) — clôture `stock_returned_at`, libère réservations
 
 #### **Grade < 60**
 - ❌ Accès refusé (redirection vers root_path)
 
-**Sidebar** : Pas de lien visible (non implémenté dans la sidebar actuelle)
+**Sidebar** : lien dans menu admin (level ≥ 60)
 
 ---
 
@@ -106,60 +125,42 @@
 
 ### **BaseController** (`app/controllers/admin_panel/base_controller.rb`)
 
-```ruby
-def authenticate_admin_user!
-  unless user_signed_in?
-    redirect_to new_user_session_path, alert: 'Vous devez être connecté pour accéder à cette page.'
-    return
-  end
-  
-  user_level = current_user&.role&.level.to_i
-  
-  # Les initiations sont accessibles pour level >= 40 (INITIATION, MODERATOR, ADMIN, SUPERADMIN)
-  # INITIATION (40) est forcément membre Grenoble Roller
-  # ORGANIZER (30) peut être n'importe qui, donc pas accès aux initiations
-  # Toutes les autres ressources nécessitent level >= 60 (ADMIN, SUPERADMIN)
-  if controller_name == 'initiations'
-    unless user_level >= 40
-      redirect_to root_path, alert: 'Accès non autorisé'
-    end
-  else
-    unless user_level >= 60 # ADMIN (60) ou SUPERADMIN (70)
-      redirect_to root_path, alert: 'Accès admin requis'
-    end
-  end
-end
-```
+Seuil minimal par controller (`required_admin_panel_level`) :
+
+| Controllers | Min level |
+| --- | --- |
+| `initiations`, `homepage_carousels`, `homepage_announcements` | 30 |
+| `dashboard`, `events` | 40 |
+| Tous les autres | 60 |
+
+Les policies Pundit peuvent restreindre davantage (ex. écriture events = 60).
 
 ### **InitiationPolicy** (`app/policies/admin_panel/event/initiation_policy.rb`)
 
 ```ruby
 def index?
-  can_view_initiations? # level >= 40
+  can_view_initiations? # level >= 30
 end
 
 def show?
-  can_view_initiations? # level >= 40
+  can_view_initiations? # level >= 30
+end
+
+def return_material?
+  can_return_material? # level >= 40
 end
 
 def create?
   admin_user? # level >= 60
 end
 
-def update?
-  admin_user? # level >= 60
-end
-
-def destroy?
-  admin_user? # level >= 60
-end
-
-def presences?
-  admin_user? # level >= 60
-end
-
-# ... autres actions spéciales nécessitent level >= 60
+# ... update?, destroy?, presences?, etc. — level >= 60
 ```
+
+### **EventPolicy** (`app/policies/admin_panel/event_policy.rb`)
+
+- `index?`, `show?` : level ≥ 40
+- create/update/destroy/waitlist : level ≥ 60
 
 ### **BasePolicy** (`app/policies/admin_panel/base_policy.rb`)
 
@@ -175,31 +176,22 @@ end
 
 ## 📋 Checklist de Vérification
 
-### ✅ **Grade 30 (ORGANIZER)**
-- [x] Ne peut pas accéder à `/admin-panel/initiations` (accès refusé)
-- [x] Ne peut pas accéder au dashboard (lien masqué)
-- [x] Ne peut pas accéder aux commandes (lien masqué)
-- [x] Ne peut accéder à AUCUNE ressource AdminPanel
+### ✅ **Grade 30 (INITIATION)**
+- [x] Peut accéder à `/admin-panel/initiations` (lecture)
+- [x] Ne peut pas créer/éditer initiations (level < 60)
+- [x] Ne peut pas accéder aux commandes / boutique (level < 60)
 
-### ✅ **Grade 40 (INITIATION)**
-- [x] Peut accéder à `/admin-panel/initiations`
-- [x] Peut voir la liste des initiations
-- [x] Peut voir les détails d'une initiation
-- [x] Ne peut pas créer d'initiation (bouton masqué)
-- [x] Ne peut pas éditer d'initiation (bouton masqué)
-- [x] Ne peut pas accéder au dashboard (lien masqué)
-- [x] Ne peut pas accéder aux commandes (lien masqué)
-- [x] Ne peut accéder à AUCUNE autre ressource AdminPanel
+### ✅ **Grade 40 (ORGANIZER)**
+- [x] Peut accéder aux initiations (lecture) et **retour matériel**
+- [x] Peut accéder à `/admin-panel/events` (lecture randos)
+- [x] Ne peut pas créer/éditer randos (level < 60)
 
 ### ✅ **Grade 60 (ADMIN)**
-- [x] Accès complet à toutes les ressources
-- [x] Peut créer/modifier/supprimer des initiations
-- [x] Peut gérer les présences
-- [x] Peut accéder au dashboard
-- [x] Peut accéder aux commandes
+- [x] Accès complet écriture (initiations, events, boutique, stock rollers, adhésions)
+- [x] Peut gérer les présences, waitlist, mail logs
 
 ### ✅ **Grade 70 (SUPERADMIN)**
-- [x] Accès complet à toutes les ressources (identique à ADMIN)
+- [x] Accès complet ; seul un super admin peut modifier un autre super admin (`UserPolicy`)
 
 ---
 

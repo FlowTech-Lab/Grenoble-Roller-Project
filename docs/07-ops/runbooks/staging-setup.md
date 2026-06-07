@@ -69,6 +69,15 @@ RAILS_MASTER_KEY=<your-master-key-here>
 
 # Optional: Add other environment variables as needed
 # SMTP settings, API keys, etc.
+
+# Umami analytics (optional — see docs/08-security-privacy/umami-analytics.md)
+# UMAMI_SCRIPT_URL=
+# UMAMI_WEBSITE_ID=
+# UMAMI_SHARE_URL=
+
+# Cloudflare Turnstile (optional ENV override — see docs/04-rails/setup/credentials.md)
+# TURNSTILE_SITE_KEY=
+# TURNSTILE_SECRET_KEY=
 ```
 
 **Important**: 

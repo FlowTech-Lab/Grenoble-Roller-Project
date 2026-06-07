@@ -2,6 +2,12 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-07] - Release Dev → staging (June 2026 batch)
+
+Consolidated release: events lifecycle/UI, admin panel (event read access, organizers, goodies, mail logs, carousel settings), Umami analytics, Turnstile on contact form, roller stock reservations (v2.3), dev tooling (mise, dotenv).
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md)
+
 ## [2025-12-11] - Correction installation crontab et health check HTTP en staging
 
 ### Corrigé
