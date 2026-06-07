@@ -1,7 +1,7 @@
 ---
 title: "DR-001: Unified checkout — cart vs direct HelloAsso for shop, memberships, and paid events"
-status: "proposed"
-version: "1.0"
+status: "accepted"
+version: "1.1"
 created: "2026-06-08"
 updated: "2026-06-08"
 authors: ["Florian (Mestryx)", "Agent"]
@@ -12,7 +12,12 @@ tags: ["product", "decision", "checkout", "helloasso", "events", "memberships", 
 
 ## Status
 
-**Proposed** — awaiting product validation before implementation on branch `feature/unified-checkout`.
+**Accepted** (2026-06-08) — full epic on `feature/unified-checkout`.
+
+**Implementation plans:**
+
+- **Authoritative (agents):** [PLAN-unified-checkout-MASTER.md](PLAN-unified-checkout-MASTER.md)
+- **Summary index:** [PLAN-unified-checkout-3-phases.md](PLAN-unified-checkout-3-phases.md)
 
 ## Context
 
@@ -34,34 +39,23 @@ tags: ["product", "decision", "checkout", "helloasso", "events", "memberships", 
 
 **User question:** Shop products already go through the **cart**; should **memberships (parent + children)** and **paid event registrations** use the same cart to harmonize UX and a single checkout?
 
-## Decision (proposed)
+## Decision (accepted 2026-06-08)
 
-Adopt a **phased unified checkout model** — not a literal extension of today’s product-only `session[:cart]` in v1.
+**All online payments** (shop, memberships, paid randos) flow through an **account-based cart** (`CartLine`) → **unified checkout** → **one HelloAsso payment** per checkout session.
 
-### Phase 1 (this branch scope)
+- **`payment_required`** on randos (`Event`, not `Event::Initiation`): manual flag, default `false`.
+- **Partial payment:** checkout accepts a **subset** of cart lines (per-line checkboxes); unselected lines remain in cart.
+- **Donation:** optional free donation shown on **every** checkout (always offered, including non-shop carts); added to HelloAsso total.
+- **Initiations:** never paid — member-only registration unchanged; explicitly out of scope for cart/checkout.
+- **Session cart** (`session[:cart]`) deprecated; migrate to DB per user.
+- **UX:** full cart/checkout redesign — see [unified-cart-ux.md](../09-product/unified-cart-ux.md).
+- **Rollout:** feature flag `UNIFIED_CART_ENABLED`; Waves 0–6 in [PLAN-unified-checkout-MASTER.md](PLAN-unified-checkout-MASTER.md).
 
-1. **`payment_required`** on `Event` (boolean, default `false`).
-2. **Paid event registration** via **dedicated checkout** (same *pattern* as memberships: pending record → HelloAsso redirect → polling), **not** the product session cart.
-3. **`ExpirePendingEventAttendancesJob`** + extend `HelloassoService#fetch_and_update_payment` for `Attendance`.
-4. **No waitlist** when `payment_required`.
+### Supersedes earlier “Phase 1 silos” proposal
 
-### Phase 2 (harmonization — separate milestone)
+Paid events no longer use a standalone HelloAsso redirect outside the cart; they add a `CartLine` with 15-minute expiry, same as the unified model.
 
-Introduce a **checkout abstraction** (`Checkout` / polymorphic line items) that can aggregate:
-
-- Product variants (existing shop),
-- Membership lines (adult / N children),
-- Event registration lines,
-
-…into **one HelloAsso checkout-intent** when the user chooses “pay everything together”, while still allowing **single-purpose checkout** (membership-only, event-only) without forcing a cart UI.
-
-**Do not** migrate memberships into `session[:cart]` as `{ variant_id => qty }` — memberships are not SKUs and carry season/category/trial/t-shirt rules.
-
-### Phase 1 default for memberships
-
-**Keep** current membership → HelloAsso direct flow in Phase 1. Revisit in Phase 2 when the line-item model exists.
-
-## Rationale
+## Historical context (pre-decision analysis)
 
 ### Why products use the cart today
 
@@ -126,12 +120,16 @@ Implementation sketch: `CheckoutLine` STI or typed rows (`product_variant_id`, `
 - Status after pay: align on `paid` vs `registered` (see open questions).
 - Polling latency (5 min) vs 15min expiry — expiry job must not rely on poll alone for releasing seats.
 
-## Open questions (product)
+## Resolved product questions (2026-06-08)
 
-1. **Post-payment status:** `paid` only, or `registered` for parity with free events?
-2. **Multi-seat:** One HelloAsso payment for parent + N children on same event (mirror multi-membership)?
-3. **Phase 2 priority:** Combined “membership + event + shop” in one payment — required for 2026 season or nice-to-have?
-4. **Webhooks:** Add HelloAsso webhooks for faster confirmation under load?
+| Question | Resolution |
+|----------|------------|
+| Post-payment attendance status | `registered` + `payment_id` (parity with free events) |
+| Combined payment (shop + membership + event) | Yes — via cart; user may pay all or a subset per checkout |
+| Donation on non-shop checkout | **Always offered** on checkout |
+| Partial cart payment | **Yes** — per-line selection at checkout |
+| Initiations paid online | **No** — out of scope |
+| Webhooks | Deferred; polling only (v1) |
 
 ## Implementation branch
 
@@ -140,6 +138,8 @@ Implementation sketch: `CheckoutLine` STI or typed rows (`product_variant_id`, `
 
 ## References
 
+- [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) — agent implementation plan
+- [`docs/09-product/unified-cart-ux.md`](../09-product/unified-cart-ux.md)
 - [`docs/09-product/flux-boutique-helloasso.md`](../09-product/flux-boutique-helloasso.md)
 - [`docs/06-events/logique-essai-gratuit.md`](../06-events/logique-essai-gratuit.md) — attendance status transitions
 - [`docs/09-product/user-journeys-analysis.md`](../09-product/user-journeys-analysis.md) — “Inscription avec paiement”

@@ -2,6 +2,21 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-08] - Unified checkout MASTER plan (agent SSOT)
+
+### Documentation
+- Added authoritative [PLAN-unified-checkout-MASTER.md](PLAN-unified-checkout-MASTER.md) v1.1: Waves 0–6, partial payment (per-line checkboxes), donation on every checkout, initiations out of scope, file checklist, RSpec matrices + appendix J, QA staging, rollback, orchestration.
+- **Accepted** [DR-001-unified-checkout-cart.md](DR-001-unified-checkout-cart.md) v1.1: account cart + unified HelloAsso checkout.
+- Updated [PLAN-unified-checkout-3-phases.md](PLAN-unified-checkout-3-phases.md) v1.2: index pointing to MASTER as SSOT.
+- Updated [../09-product/unified-cart-ux.md](../09-product/unified-cart-ux.md) v0.3: checkout checkboxes, donation always, resolved open questions.
+
+## [2026-06-08] - Unified checkout plan + UX spec (initial)
+
+### Documentation
+- **Accepted** [DR-001-unified-checkout-cart.md](DR-001-unified-checkout-cart.md): account cart + single HelloAsso checkout for shop, memberships, paid events.
+- Added [PLAN-unified-checkout-3-phases.md](PLAN-unified-checkout-3-phases.md): 6-wave AI implementation plan.
+- Added draft [../09-product/unified-cart-ux.md](../09-product/unified-cart-ux.md).
+
 ## [2026-06-08] - DR-001: Unified checkout (proposed)
 
 ### Documentation
