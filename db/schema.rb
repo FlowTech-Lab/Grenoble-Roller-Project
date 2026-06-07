@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_021500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -304,6 +304,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.bigint "user_id", null: false
     t.index ["reviewed_by_id"], name: "index_organizer_applications_on_reviewed_by_id"
     t.index ["user_id"], name: "index_organizer_applications_on_user_id"
+  end
+
+  create_table "outbound_email_logs", force: :cascade do |t|
+    t.string "active_job_id", null: false
+    t.jsonb "arguments", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.datetime "failed_at"
+    t.string "mailer_class"
+    t.string "mailer_method"
+    t.datetime "queued_at", null: false
+    t.datetime "sent_at"
+    t.bigint "solid_queue_job_id"
+    t.string "status", default: "queued", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active_job_id"], name: "index_outbound_email_logs_on_active_job_id", unique: true
+    t.index ["created_at"], name: "index_outbound_email_logs_on_created_at"
+    t.index ["mailer_class"], name: "index_outbound_email_logs_on_mailer_class"
+    t.index ["solid_queue_job_id"], name: "index_outbound_email_logs_on_solid_queue_job_id"
+    t.index ["status"], name: "index_outbound_email_logs_on_status"
   end
 
   create_table "partners", force: :cascade do |t|
