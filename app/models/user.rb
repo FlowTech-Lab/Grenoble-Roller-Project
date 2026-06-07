@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :orders, dependent: :nullify
   has_many :memberships, dependent: :destroy
   has_many :cart_lines, dependent: :destroy
+  has_many :checkouts, dependent: :destroy
 
   # Active Storage attachments
   has_one_attached :avatar

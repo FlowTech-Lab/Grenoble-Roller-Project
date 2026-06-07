@@ -324,4 +324,26 @@ RSpec.describe 'Orders', type: :request do
       end
     end
   end
+
+  context 'when UNIFIED_CART_ENABLED is true' do
+    around do |example|
+      with_unified_cart_enabled { example.run }
+    end
+
+    before { login_user(user) }
+
+    describe 'GET /orders/new' do
+      it 'redirects to checkout' do
+        get new_order_path
+        expect(response).to redirect_to(new_checkout_path)
+      end
+    end
+
+    describe 'POST /orders' do
+      it 'redirects to checkout' do
+        post orders_path
+        expect(response).to redirect_to(new_checkout_path)
+      end
+    end
+  end
 end

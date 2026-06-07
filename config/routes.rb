@@ -195,6 +195,13 @@ Rails.application.routes.draw do
     delete :clear
   end
 
+  # Unified checkout (Wave 4)
+  get "checkout", to: "checkouts#new", as: :new_checkout
+  post "checkout", to: "checkouts#create", as: :checkouts
+  get "checkout/:id", to: "checkouts#show", as: :checkout
+  get "checkout/:id/status", to: "checkouts#status", as: :checkout_status
+  post "checkout/:id/check_payment", to: "checkouts#check_payment", as: :checkout_check_payment
+
   # Orders (Checkout)
   resources :orders, only: [ :index, :new, :create, :show ] do
     resources :payments, only: [ :create ], shallow: true, controller: "orders/payments" do

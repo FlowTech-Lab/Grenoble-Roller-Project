@@ -1,23 +1,30 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :checkout, class: "UnifiedCheckoutDouble" do
-    id { 42 }
+  factory :checkout do
+    user
+    status { :pending }
     subtotal_cents { 5000 }
     donation_cents { 0 }
     total_cents { 5000 }
-    checkout_lines { [] }
+    metadata { {} }
 
     trait :with_mixed_lines do
-      after(:build) do |checkout|
-        checkout.checkout_lines = [
-          build(:checkout_line, :product),
-          build(:checkout_line, :membership),
-          build(:checkout_line, :event)
-        ]
-        checkout.subtotal_cents = checkout.checkout_lines.sum { |l| l.amount_cents * l.quantity }
-        checkout.total_cents = checkout.subtotal_cents + checkout.donation_cents
+      after(:create) do |checkout|
+        create(:checkout_line, :product, checkout: checkout)
+        create(:checkout_line, :membership, checkout: checkout)
+        create(:checkout_line, :event, checkout: checkout)
+        subtotal = checkout.checkout_lines.sum(&:subtotal_cents)
+        checkout.update!(subtotal_cents: subtotal, total_cents: subtotal + checkout.donation_cents)
       end
+    end
+
+    trait :processing do
+      status { :processing }
+    end
+
+    trait :paid do
+      status { :paid }
     end
   end
 end

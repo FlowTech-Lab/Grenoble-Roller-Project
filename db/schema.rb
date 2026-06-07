@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_205837) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -115,6 +115,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_205837) do
     t.index ["user_id", "line_type"], name: "index_cart_lines_on_user_id_and_line_type"
     t.index ["user_id", "reference_type", "reference_id", "line_type"], name: "index_cart_lines_unique_per_user_reference", unique: true
     t.index ["user_id"], name: "index_cart_lines_on_user_id"
+  end
+
+  create_table "checkout_lines", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.bigint "cart_line_id"
+    t.bigint "checkout_id", null: false
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.string "line_type", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.integer "quantity", default: 1, null: false
+    t.bigint "reference_id", null: false
+    t.string "reference_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cart_line_id"], name: "index_checkout_lines_on_cart_line_id"
+    t.index ["checkout_id"], name: "index_checkout_lines_on_checkout_id"
+    t.index ["reference_type", "reference_id"], name: "index_checkout_lines_on_reference"
+  end
+
+  create_table "checkouts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "donation_cents", default: 0, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.bigint "payment_id"
+    t.string "status", default: "pending", null: false
+    t.integer "subtotal_cents", default: 0, null: false
+    t.integer "total_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["payment_id"], name: "index_checkouts_on_payment_id"
+    t.index ["user_id", "status"], name: "index_checkouts_on_user_id_and_status"
+    t.index ["user_id"], name: "index_checkouts_on_user_id"
   end
 
   create_table "contact_messages", force: :cascade do |t|
@@ -657,6 +689,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_205837) do
   add_foreign_key "attendances", "users"
   add_foreign_key "audit_logs", "users", column: "actor_user_id"
   add_foreign_key "cart_lines", "users"
+  add_foreign_key "checkout_lines", "checkouts"
+  add_foreign_key "checkouts", "payments"
+  add_foreign_key "checkouts", "users"
   add_foreign_key "event_loop_routes", "events"
   add_foreign_key "event_loop_routes", "routes"
   add_foreign_key "events", "event_organizers", column: "organizer_id"

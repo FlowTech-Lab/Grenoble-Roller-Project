@@ -71,8 +71,14 @@
                 <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Continuer les achats
               <% end %>
               <% if user_signed_in? %>
-                <%= link_to new_order_path, class: "btn btn-liquid-primary flex-fill" do %>
-                  <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Confirmer et payer
+                <% if UnifiedCart.enabled? %>
+                  <%= link_to new_checkout_path, class: "btn btn-liquid-primary flex-fill" do %>
+                    <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Payer la sélection
+                  <% end %>
+                <% else %>
+                  <%= link_to new_order_path, class: "btn btn-liquid-primary flex-fill" do %>
+                    <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Confirmer et payer
+                  <% end %>
                 <% end %>
               <% else %>
                 <%= link_to new_user_session_path, class: "btn btn-liquid-primary flex-fill" do %>

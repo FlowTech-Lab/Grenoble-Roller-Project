@@ -239,6 +239,7 @@ class HelloassoService
       membership_ids = lines.select { |l| l.line_type.to_s == "membership" }.map(&:reference_id)
       attendance_ids = lines.select { |l| l.line_type.to_s == "event_registration" }.map(&:reference_id)
       product_variant_ids = lines.select { |l| l.line_type.to_s == "product_variant" }.map(&:reference_id)
+      local_order_ids = [ checkout.metadata&.dig("order_id") ].compact
 
       {
         totalAmount: total_cents,
@@ -251,6 +252,7 @@ class HelloassoService
         metadata: {
           checkoutId: checkout.id,
           lineTypes: lines.map { |l| l.line_type.to_s }.uniq,
+          localOrderIds: local_order_ids,
           membershipIds: membership_ids,
           attendanceIds: attendance_ids,
           productVariantIds: product_variant_ids,
@@ -259,6 +261,73 @@ class HelloassoService
           items: items
         }
       }
+    end
+
+    # Creates a HelloAsso checkout-intent for a unified Checkout (cart subset + donation).
+    def create_unified_checkout_intent(checkout, back_url:, error_url:, return_url:)
+      raise ArgumentError, "checkout is required" unless checkout
+      raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+
+      token = access_token
+      if token.to_s.strip.empty?
+        begin
+          token = fetch_access_token![:access_token]
+        rescue => e
+          Rails.logger.error("[HelloassoService] Échec récupération token : #{e.message}")
+          raise "HelloAsso access_token introuvable"
+        end
+      end
+
+      payload = build_unified_checkout_intent_payload(
+        checkout,
+        back_url: back_url,
+        error_url: error_url,
+        return_url: return_url
+      )
+
+      Rails.logger.info("[HelloassoService] Payload unified checkout-intent: #{payload.to_json}")
+
+      uri = URI.parse("#{api_base_url}/organizations/#{organization_slug}/checkout-intents")
+      request = Net::HTTP::Post.new(uri)
+      request["Authorization"] = "Bearer #{token}"
+      request["accept"] = "application/json"
+      request["content-type"] = "application/json"
+      request.body = payload.to_json
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = (uri.scheme == "https")
+
+      response = http.request(request)
+
+      if response.code.to_i == 401
+        Rails.logger.warn("[HelloassoService] Token expiré (401) lors de create_unified_checkout_intent, réessai...")
+        token = fetch_access_token![:access_token]
+        request["Authorization"] = "Bearer #{token}"
+        response = http.request(request)
+      end
+
+      body = begin
+        JSON.parse(response.body)
+      rescue JSON::ParserError
+        { "raw_body" => response.body }
+      end
+
+      result = {
+        status: response.code.to_i,
+        success: response.is_a?(Net::HTTPSuccess),
+        body: body
+      }
+
+      if result[:success] && body["id"].present?
+        checkout.update!(
+          status: :processing,
+          metadata: checkout.metadata.merge(
+            "helloasso_intent_id" => body["id"].to_s
+          )
+        )
+      end
+
+      result
     end
 
     # ---- OAuth2 / Token management -------------------------------------------------
@@ -493,7 +562,32 @@ class HelloassoService
       # 4. Update payment
       payment.update!(status: new_status)
 
-      # 5. Update related orders
+      # 5. Unified checkout fulfillment (Wave 4)
+      if payment.checkouts.any?
+        checkout_status = case new_status
+        when "succeeded" then :paid
+        when "failed", "refunded" then :failed
+        when "abandoned" then :abandoned
+        else :processing
+        end
+
+        payment.checkouts.each do |checkout|
+          if new_status == "succeeded"
+            CheckoutFulfillmentService.fulfill!(checkout, payment: payment)
+          else
+            checkout.update!(status: checkout_status) unless checkout.paid?
+          end
+        end
+
+        Rails.logger.info(
+          "[HelloassoService] Payment ##{payment.id} updated to #{new_status}. " \
+          "Checkouts: #{payment.checkouts.pluck(:id).join(', ')}"
+        )
+
+        return payment
+      end
+
+      # 6. Legacy: update related orders
       order_status = case new_status
       when "succeeded" then "paid"
       when "failed", "refunded", "abandoned" then "failed"
@@ -502,7 +596,7 @@ class HelloassoService
 
       payment.orders.each { |order| order.update!(status: order_status) }
 
-      # 6. Update related memberships
+      # 7. Legacy: update related memberships
       membership_status = case new_status
       when "succeeded" then "active"
       when "failed", "refunded", "abandoned" then "expired"

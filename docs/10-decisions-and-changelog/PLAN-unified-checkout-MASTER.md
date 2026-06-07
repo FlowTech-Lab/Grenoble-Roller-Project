@@ -755,10 +755,10 @@ end
 
 #### DoD
 
-- [ ] Partial payment works end-to-end (stubbed HelloAsso).
-- [ ] Donation on every checkout (including membership-only).
-- [ ] Fulfillment fan-out correct per line type.
-- [ ] Unselected lines remain in cart after pay.
+- [x] Partial payment works end-to-end (stubbed HelloAsso).
+- [x] Donation on every checkout (including membership-only).
+- [x] Fulfillment fan-out correct per line type.
+- [x] Unselected lines remain in cart after pay.
 
 ---
 

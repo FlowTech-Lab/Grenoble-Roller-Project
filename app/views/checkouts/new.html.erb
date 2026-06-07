@@ -1,0 +1,81 @@
+<div class="container-fluid py-4" data-controller="checkout-selection">
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h1 class="display-5 text-liquid-primary-white mb-2">
+        <i class="bi bi-receipt me-2"></i>Paiement
+      </h1>
+      <p class="text-muted">Sélectionnez les lignes à payer et ajoutez un don optionnel</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+      <div class="card card-liquid rounded-liquid shadow-liquid">
+        <div class="card-body p-4">
+          <%= form_with url: checkouts_path, method: :post, data: { turbo: false, checkout_selection_target: "form" } do |form| %>
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 text-liquid-primary mb-0">
+                  <i class="bi bi-list-check me-2"></i>Lignes du panier
+                </h2>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="selectAllLines" checked
+                         data-action="checkout-selection#toggleAll"
+                         data-checkout-selection-target="selectAll">
+                  <label class="form-check-label" for="selectAllLines">Tout sélectionner</label>
+                </div>
+              </div>
+
+              <% @cart_lines.each do |line| %>
+                <%= render "checkouts/line_row", line: line, form: form %>
+              <% end %>
+            </div>
+
+            <%= render "checkouts/donation", form: form %>
+
+            <div class="border-top pt-3 mb-3">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <%= link_to cart_path, class: "btn btn-outline-secondary btn-sm" do %>
+                  <i class="bi bi-arrow-left me-1"></i>Retour au panier
+                <% end %>
+                <div class="text-end">
+                  <div class="small text-muted mb-1">
+                    Sous-total sélectionné:
+                    <span data-checkout-selection-target="subtotalDisplay"><%= format_price(@subtotal_cents) %></span>
+                  </div>
+                  <div class="small text-muted mb-1">
+                    Don: <span data-checkout-selection-target="donationDisplay">0€</span>
+                  </div>
+                  <strong class="fs-5">
+                    Total:
+                    <span data-checkout-selection-target="totalDisplay"><%= format_price(@subtotal_cents) %></span>
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-check mb-3">
+              <%= check_box_tag :accept_terms, "1", false, class: "form-check-input", required: true, id: "acceptTerms" %>
+              <label class="form-check-label" for="acceptTerms">
+                J'accepte les <%= link_to "conditions générales de vente", cgv_path, target: "_blank", rel: "noopener" %>
+              </label>
+            </div>
+
+            <%= form.hidden_field :donation_cents, value: 0, data: { checkout_selection_target: "donationInput" } %>
+
+            <%= form.submit "Payer Via HelloAsso*",
+                            class: "btn btn-liquid-primary w-100",
+                            data: { checkout_selection_target: "submitButton" },
+                            disabled: @cart_lines.all?(&:expired?) %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.__checkoutLineAmounts = <%= raw @cart_lines.map { |l|
+    { id: l.id, cents: l.subtotal_cents, expired: l.expired? }
+  }.to_json %>;
+</script>
