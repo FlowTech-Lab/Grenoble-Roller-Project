@@ -62,7 +62,7 @@ class Attendance < ApplicationRecord
   # Nom de la personne inscrite (parent ou enfant)
   def participant_name
     if for_child?
-      child_membership&.child_full_name || "Enfant"
+      child_membership&.child_full_name.presence || "Enfant"
     else
       # Construire le nom complet à partir de first_name et last_name
       if user

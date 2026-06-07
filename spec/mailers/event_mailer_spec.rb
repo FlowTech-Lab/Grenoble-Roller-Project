@@ -31,6 +31,27 @@ RSpec.describe EventMailer, type: :mailer do
       expect(mail.body.encoded).to include(user.first_name)
     end
 
+    it 'includes participant name in body' do
+      body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(body).to include(attendance.participant_name)
+    end
+
+    context 'when registration is for a child' do
+      let(:child_membership) do
+        create(:membership, :child, user: user, status: :active, season: '2025-2026',
+          child_first_name: 'Léa', child_last_name: 'Martin')
+      end
+      let(:attendance) { create(:attendance, user: user, event: event, child_membership: child_membership) }
+      let(:mail) { EventMailer.attendance_confirmed(attendance) }
+
+      it 'includes child name in subject and body' do
+        expect(mail.subject).to include('Léa Martin')
+        body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+        expect(body).to include('Léa Martin')
+        expect(body).to include('enfant')
+      end
+    end
+
     it 'includes event date in body' do
       # Vérifier que la date est présente (format peut varier)
       # On vérifie que l'année est présente et qu'il y a des chiffres (jour/mois)
