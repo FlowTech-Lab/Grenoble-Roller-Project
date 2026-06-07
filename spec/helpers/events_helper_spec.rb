@@ -35,6 +35,35 @@ RSpec.describe EventsHelper, type: :helper do
     end
   end
 
+  describe '#route_map_viewer_data' do
+    it 'returns viewer data when a map image is attached' do
+      route = create_route
+      route.map_image.attach(
+        io: StringIO.new(DevLoopMapFixtures.build_map_png(loop_number: 1, color: '#2563eb')),
+        filename: 'map.png',
+        content_type: 'image/png'
+      )
+
+      data = helper.route_map_viewer_data(route, title: 'Boucle 1')
+
+      expect(data[:controller]).to eq('route-image-viewer')
+      expect(data[:route_image_viewer_src_value]).to include('/rails/active_storage/')
+    end
+  end
+
+  describe '#route_map_image_path' do
+    it 'returns a resized representation for PNG attachments' do
+      route = create_route
+      route.map_image.attach(
+        io: StringIO.new(DevLoopMapFixtures.build_map_png(loop_number: 1, color: '#2563eb')),
+        filename: 'map.png',
+        content_type: 'image/png'
+      )
+
+      expect(helper.route_map_image_path(route, resize_to: [800, 400])).to include('/rails/active_storage/representations/proxy/')
+    end
+  end
+
   describe '#event_loop_columns_class' do
     it 'returns responsive column classes' do
       expect(helper.event_loop_columns_class(2)).to eq('col-12 col-md-6')

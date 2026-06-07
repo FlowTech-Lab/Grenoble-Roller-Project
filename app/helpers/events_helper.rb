@@ -98,6 +98,29 @@ module EventsHelper
     end
   end
 
+  def route_map_viewer_data(route, title:)
+    return {} unless route&.map_image&.attached?
+
+    {
+      controller: "route-image-viewer",
+      action: "click->route-image-viewer#open keydown->route-image-viewer#openFromKey",
+      route_image_viewer_src_value: route_map_image_path(route),
+      route_image_viewer_title_value: title
+    }
+  end
+
+  # Active Storage variants only work on raster images (not SVG).
+  def route_map_image_path(route, resize_to: nil)
+    return unless route&.map_image&.attached?
+
+    attachment = route.map_image
+    if resize_to.present? && attachment.variable?
+      rails_representation_path(attachment.variant(resize_to_limit: resize_to))
+    else
+      rails_storage_proxy_path(attachment, only_path: true)
+    end
+  end
+
   # Formate la durée d'un événement et calcule l'heure de fin
   def format_event_duration(event)
     return nil unless event.start_at && event.duration_min

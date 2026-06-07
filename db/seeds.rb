@@ -773,6 +773,7 @@ routes_data = [
 ]
 
 routes = routes_data.map { |attrs| Route.create!(attrs) }
+routes.each_with_index { |route, index| DevLoopMapFixtures.attach_map_image!(route, loop_number: index + 1, force: true) }
 puts "✅ #{Route.count} routes créées !"
 
 # 👥 Récupération des utilisateurs et rôles pour Phase 2
@@ -943,6 +944,16 @@ events = events_data.map do |attrs|
   event
 end
 puts "✅ #{Event.count} événements créés !"
+
+# Dev multi-loop events with map previews (for loop cards / route viewer QA)
+if Rails.env.development?
+  puts "🔄 Création des événements [DEV TEST] multi-boucles..."
+  dev_creator = florian || admin_user
+  [2, 3, 4].each do |loops_count|
+    event = DevLoopMapFixtures.upsert_dev_multi_loop_event!(loops_count: loops_count, creator: dev_creator)
+    puts "  ✅ #{event.title}"
+  end
+end
 
 # 📝 Attendances (inscriptions aux événements)
 puts "📝 Création des inscriptions..."

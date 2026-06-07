@@ -205,38 +205,49 @@
           <h2 class="h5 fw-semibold mb-3">
             <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours
           </h2>
-          <div class="card card-liquid border-liquid">
-            <% if @event.route.map_image.attached? %>
-              <div class="card-img-top route-image-container" 
-                   data-bs-toggle="modal" 
-                   data-bs-target="#routeImageModalSingle"
-                   aria-label="Agrandir la carte du parcours">
-                <%= image_tag(rails_representation_path(@event.route.map_image.variant(resize_to_limit: [1200, 600])), 
-                    alt: "Carte du parcours", 
-                    class: "route-image") %>
+          <div class="card card-liquid border-liquid event-loop-card">
+            <div class="event-loop-card__visual">
+              <% if @event.route.map_image.attached? %>
+                <%= tag.div(
+                      class: "event-loop-card__media route-image-container",
+                      data: route_map_viewer_data(@event.route, title: "Carte du parcours"),
+                      role: "button",
+                      tabindex: 0,
+                      aria: { label: "Agrandir la carte du parcours" }
+                    ) do %>
+                  <%= image_tag(route_map_image_path(@event.route, resize_to: [1200, 600]),
+                      alt: "Carte du parcours",
+                      class: "route-image event-loop-card__img") %>
+                <% end %>
+              <% else %>
+                <div class="event-loop-card__media event-loop-card__media--empty" aria-hidden="true">
+                  <i class="bi bi-map"></i>
+                  <span>Carte non disponible</span>
+                </div>
+              <% end %>
+
+              <div class="event-loop-card__overlay">
+                <ul class="event-loop-card__stats list-unstyled mb-0">
+                  <% if format_event_distance(@event).present? %>
+                    <li class="event-loop-card__stat">
+                      <i class="bi bi-signpost-2" aria-hidden="true"></i>
+                      <%= format_event_distance(@event) %>
+                    </li>
+                  <% end %>
+                  <% if @event.route.difficulty.present? %>
+                    <li class="event-loop-card__stat event-loop-card__stat--difficulty">
+                      <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                      <%= route_difficulty_label(@event.route.difficulty) %>
+                    </li>
+                  <% end %>
+                  <% if @event.route.elevation_m.present? %>
+                    <li class="event-loop-card__stat">
+                      <i class="bi bi-mountain" aria-hidden="true"></i>
+                      <%= @event.route.elevation_m %> m D+
+                    </li>
+                  <% end %>
+                </ul>
               </div>
-            <% end %>
-            <div class="card-body">
-              <ul class="event-loop-card__stats list-unstyled mb-0">
-                <% if format_event_distance(@event).present? %>
-                  <li class="event-loop-card__stat">
-                    <i class="bi bi-signpost-2" aria-hidden="true"></i>
-                    <%= format_event_distance(@event) %>
-                  </li>
-                <% end %>
-                <% if @event.route.difficulty.present? %>
-                  <li class="event-loop-card__stat event-loop-card__stat--difficulty">
-                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
-                    <%= route_difficulty_label(@event.route.difficulty) %>
-                  </li>
-                <% end %>
-                <% if @event.route.elevation_m.present? %>
-                  <li class="event-loop-card__stat">
-                    <i class="bi bi-mountain" aria-hidden="true"></i>
-                    <%= @event.route.elevation_m %> m D+
-                  </li>
-                <% end %>
-              </ul>
             </div>
           </div>
         </div>
@@ -622,48 +633,3 @@
 
 <!-- Modal de confirmation de suppression -->
 <%= render 'shared/event_delete_modal', event: @event %>
-
-<!-- Modals pour agrandir les images de parcours -->
-<% if @event.loops_count && @event.loops_count > 1 && @event.loops_with_routes.any? %>
-  <% @event.loops_with_routes.each do |loop_data| %>
-    <% if loop_data[:route]&.map_image&.attached? %>
-      <div class="modal fade" id="routeImageModal<%= loop_data[:loop_number] %>" tabindex="-1" aria-labelledby="routeImageModalLabel<%= loop_data[:loop_number] %>" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-          <div class="modal-content bg-transparent border-0">
-            <div class="modal-header border-0 pb-0">
-              <h5 class="modal-title text-white" id="routeImageModalLabel<%= loop_data[:loop_number] %>">
-                Boucle <%= loop_data[:loop_number] %>
-              </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body p-0 text-center">
-              <%= image_tag(rails_representation_path(loop_data[:route].map_image), 
-                  alt: "Carte du parcours, boucle #{loop_data[:loop_number]}", 
-                  class: "img-fluid rounded", 
-                  style: "max-height: 85vh; width: auto;") %>
-            </div>
-          </div>
-        </div>
-      </div>
-    <% end %>
-  <% end %>
-<% elsif @event.route.present? && @event.route.map_image.attached? %>
-  <div class="modal fade" id="routeImageModalSingle" tabindex="-1" aria-labelledby="routeImageModalLabelSingle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-      <div class="modal-content bg-transparent border-0">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title text-white" id="routeImageModalLabelSingle">
-            Carte du parcours
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-        </div>
-        <div class="modal-body p-0 text-center">
-          <%= image_tag(rails_representation_path(@event.route.map_image), 
-              alt: "Carte du parcours", 
-              class: "img-fluid rounded", 
-              style: "max-height: 85vh; width: auto;") %>
-        </div>
-      </div>
-    </div>
-  </div>
-<% end %>
