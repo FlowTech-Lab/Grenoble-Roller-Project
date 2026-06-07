@@ -61,6 +61,11 @@ class SessionsController < Devise::SessionsController
     # Turnstile OK, procéder avec l'authentification Devise
     super do |resource|
       if resource.persisted?
+        if UnifiedCart.enabled? && resource.confirmed?
+          CartSessionMergeService.merge!(resource, session_cart: session[:cart] || {})
+          session[:cart] = {}
+        end
+
         # Vérifier si l'email est confirmé APRÈS authentification réussie
         if resource.confirmed?
           # Email confirmé : connexion normale avec message de bienvenue personnalisé

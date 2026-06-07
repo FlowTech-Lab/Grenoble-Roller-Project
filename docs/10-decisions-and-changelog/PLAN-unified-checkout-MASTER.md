@@ -378,10 +378,10 @@ end
 
 #### DoD
 
-- [ ] Shop add/update/remove works via DB cart when flag on.
-- [ ] Login merges session cart once.
-- [ ] Legacy session cart unchanged when flag off.
-- [ ] Wave 1 specs green.
+- [x] Shop add/update/remove works via DB cart when flag on.
+- [x] Login merges session cart once.
+- [x] Legacy session cart unchanged when flag off.
+- [x] Wave 1 specs green.
 
 ---
 
