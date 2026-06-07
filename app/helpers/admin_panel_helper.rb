@@ -28,6 +28,11 @@ module AdminPanelHelper
     can_access_admin_panel?(40)
   end
 
+  # Helper pour vérifier si on peut voir les randos dans le panel (level >= 40)
+  def can_view_events?
+    can_access_admin_panel?(40)
+  end
+
   # Helper pour vérifier si on peut voir la boutique (level >= 60)
   def can_view_boutique?
     can_access_admin_panel?(60)

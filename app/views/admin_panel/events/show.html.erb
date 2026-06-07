@@ -186,6 +186,7 @@
                 </td>
                 <td><%= l(entry.created_at, format: :short) %></td>
                 <td>
+                  <% if admin_user? %>
                   <div class="btn-group btn-group-sm">
                     <% if entry.pending? && @event.has_available_spots? %>
                       <%= button_to "Notifier", notify_waitlist_admin_panel_event_path(@event, waitlist_entry_id: entry.hashid),
@@ -195,6 +196,9 @@
                           method: :post, class: "btn btn-outline-success" %>
                     <% end %>
                   </div>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

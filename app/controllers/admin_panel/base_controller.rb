@@ -21,18 +21,22 @@ module AdminPanel
         return
       end
 
-      # Permissions par level uniquement (10, 20, 30, 40, 50, 60, 70)
       user_level = current_user&.role&.level.to_i
+      min_level = required_admin_panel_level
 
-      # Initiations et homepage : level >= 30. Autres ressources : level >= 60
-      if controller_name == "initiations" || controller_name == "homepage_carousels" || controller_name == "homepage_announcements"
-        unless user_level >= 30
-          redirect_to root_path, alert: "Accès non autorisé"
-        end
+      return if user_level >= min_level
+
+      redirect_to root_path, alert: min_level >= 60 ? "Accès admin requis" : "Accès non autorisé"
+    end
+
+    def required_admin_panel_level
+      case controller_name
+      when "initiations", "homepage_carousels", "homepage_announcements"
+        30
+      when "dashboard", "events"
+        40
       else
-        unless user_level >= 60
-          redirect_to root_path, alert: "Accès admin requis"
-        end
+        60
       end
     end
 

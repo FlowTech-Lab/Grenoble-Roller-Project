@@ -124,7 +124,16 @@ module AdminPanel
     end
 
     def authorize_event
-      authorize ::Event, policy_class: AdminPanel::EventPolicy
+      case action_name
+      when "index"
+        authorize ::Event, policy_class: AdminPanel::EventPolicy
+      when "show", "destroy"
+        authorize @event, policy_class: AdminPanel::EventPolicy
+      when "convert_waitlist"
+        authorize @event, :convert_waitlist?, policy_class: AdminPanel::EventPolicy
+      when "notify_waitlist"
+        authorize @event, :notify_waitlist?, policy_class: AdminPanel::EventPolicy
+      end
     end
   end
 end
