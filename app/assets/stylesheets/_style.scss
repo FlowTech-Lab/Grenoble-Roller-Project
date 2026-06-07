@@ -30,6 +30,11 @@
     --liquid-glass-bg:     rgba(255,255,255,0.35);
     --liquid-glass-border: rgba(255,255,255,0.2);
     --liquid-blur: blur(12px);
+
+    /* Navbar glass — adjust alpha on --navbar-glass-bg (current: 30%) */
+    --navbar-glass-bg: rgba(255, 255, 255, 0.30);
+    --navbar-glass-bg-solid: rgba(248, 249, 250, 0.92); /* prefers-reduced-transparency fallback */
+    --navbar-glass-border: rgba(0, 0, 0, 0.08);
     
     /* Card borders - Mode clair (noir) */
     --card-border-color: rgba(0, 0, 0, 0.15); /* Noir avec transparence pour mode clair */
@@ -59,6 +64,11 @@
   [data-bs-theme=dark] {
     --liquid-glass-bg: rgba(0, 0, 0, 0.25);
     --liquid-glass-border: rgba(255, 255, 255, 0.1);
+
+    /* Navbar glass (dark) — keep alpha in sync with light theme */
+    --navbar-glass-bg: rgba(22, 27, 34, 0.30);
+    --navbar-glass-bg-solid: rgba(22, 27, 34, 0.92); /* prefers-reduced-transparency fallback */
+    --navbar-glass-border: rgba(255, 255, 255, 0.12);
     
     /* Hover shadows (dark theme - white shadows) */
     --shadow-hover: 0 2px 4px rgba(255, 255, 255, 0.15);
@@ -395,11 +405,17 @@
   
   /* Liquid navbar */
   .navbar-liquid {
-    background: var(--liquid-glass-bg);
+    background: var(--navbar-glass-bg);
     backdrop-filter: var(--liquid-blur);
     -webkit-backdrop-filter: var(--liquid-blur);
-    border-bottom: 1px solid var(--liquid-glass-border);
+    border-bottom: 1px solid var(--navbar-glass-border);
     box-shadow: var(--bs-box-shadow);
+  }
+
+  /* Public/admin top bar — override glass defaults and Bootstrap transparency */
+  .navbar-grenoble-roller.navbar-liquid {
+    background-color: var(--navbar-glass-bg) !important;
+    background-image: none !important;
   }
   
   /* Liquid forms */
@@ -1004,13 +1020,19 @@
     }
   }
   
-  /* Réduction de transparence pour utilisateurs préférant moins de transparence */
+  /* Reduced transparency (a11y): opaque navbar, generic glass unchanged */
   @media (prefers-reduced-transparency: reduce) {
     .event-details-section,
     .card-liquid,
-    .navbar-liquid,
     .form-control-liquid {
       background: var(--bs-body-bg) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .navbar-liquid,
+    .navbar-grenoble-roller.navbar-liquid {
+      background-color: var(--navbar-glass-bg-solid) !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
     }
