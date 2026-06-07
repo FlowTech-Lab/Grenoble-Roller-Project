@@ -41,5 +41,6 @@ RSpec.describe AdminPanel::HomepageCarouselPolicy do
     it { expect(policy.create?).to be(true) }
     it { expect(policy.update?).to be(true) }
     it { expect(policy.destroy?).to be(true) }
+    it { expect(policy.update_settings?).to be(true) }
   end
 end

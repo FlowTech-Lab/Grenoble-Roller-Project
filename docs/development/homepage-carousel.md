@@ -22,7 +22,7 @@ Référence unique pour le **carousel de la page d’accueil** : bannière annon
 | Image affichée | `resize_to_fill: [1200, 675]` |
 | Upload | **16:9** ou **4:5** (recommandés) ; voir aussi [`guide-images-benevoles.md`](./guide-images-benevoles.md) et la page site `/guide-images` |
 | Hauteur max visuelle | Largeur limitée à `min(100%, calc(55vh * 16/9))` → marges latérales sur grands écrans, ratio toujours 16:9 |
-| Autoplay | 6 s (`data-bs-interval="6000"`), pause au survol/focus |
+| Autoplay | Configurable via admin (`HomepageCarouselSetting`) ; défaut 6 s (`data-bs-interval="6000"`), pause au survol/focus |
 | Accessibilité | `aria-label="Annonces importantes"` ; flèches + indicateurs ; pas de caption overlay |
 
 ---
@@ -38,7 +38,8 @@ Référence unique pour le **carousel de la page d’accueil** : bannière annon
 | Formulaire admin | `app/views/admin_panel/homepage_carousels/_form.html.erb` |
 | Aperçu formulaire (16:9) | `app/javascript/controllers/carousel_form_controller.js` |
 | Modèle | `app/models/homepage_carousel.rb` |
-| Routes | `resources :homepage_carousels` (member: publish, unpublish, move_up, move_down ; collection: reorder) |
+| Paramètres autoplay | `app/models/homepage_carousel_setting.rb` (singleton id=1) |
+| Routes | `resources :homepage_carousels` (member: publish, unpublish, move_up, move_down ; collection: reorder, update_settings) |
 
 ---
 
@@ -64,6 +65,7 @@ Dans `app/views/pages/index.html.erb` :
   - Si image déjà enregistrée : variant serveur 1200×675.
   - Si nouveau fichier non sauvegardé : preview locale blob (approximation visuelle avant variant serveur).
 - **Publication** : published_at, expires_at, case Publié ; publish/unpublish manuel possible.
+- **Paramètres carrousel** (index admin) : toggle autoplay et délai entre slides (2–30 s, défaut 6 s).
 
 ---
 

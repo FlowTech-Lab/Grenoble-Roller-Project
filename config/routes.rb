@@ -125,6 +125,7 @@ Rails.application.routes.draw do
       end
       collection do
         patch :reorder
+        patch :update_settings
       end
     end
   end

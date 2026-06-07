@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_025623) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -166,6 +166,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_025623) do
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
     t.index ["type", "season"], name: "index_events_on_type_and_season"
     t.index ["type"], name: "index_events_on_type"
+  end
+
+  create_table "homepage_carousel_settings", force: :cascade do |t|
+    t.boolean "autoplay_enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.integer "interval_seconds", default: 6, null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "homepage_carousels", force: :cascade do |t|

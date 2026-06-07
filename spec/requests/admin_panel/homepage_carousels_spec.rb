@@ -135,4 +135,43 @@ RSpec.describe "AdminPanel::HomepageCarousels", type: :request do
       expect(response).to redirect_to(admin_panel_homepage_carousels_path)
     end
   end
+
+  describe "PATCH /admin-panel/homepage-carousels/update_settings" do
+    context "when user is organizer (level 40)" do
+      before { login_user(organizer_user) }
+
+      it "updates carousel settings and redirects with flash" do
+        patch update_settings_admin_panel_homepage_carousels_path, params: {
+          homepage_carousel_setting: { autoplay_enabled: false, interval_seconds: 10 }
+        }
+
+        expect(response).to redirect_to(admin_panel_homepage_carousels_path)
+        expect(flash[:notice]).to eq("Paramètres du carrousel mis à jour")
+
+        settings = HomepageCarouselSetting.current
+        expect(settings.autoplay_enabled).to eq(false)
+        expect(settings.interval_seconds).to eq(10)
+      end
+
+      it "redirects with alert when params are invalid" do
+        patch update_settings_admin_panel_homepage_carousels_path, params: {
+          homepage_carousel_setting: { autoplay_enabled: true, interval_seconds: 1 }
+        }
+
+        expect(response).to redirect_to(admin_panel_homepage_carousels_path)
+        expect(flash[:alert]).to include("Erreur")
+        expect(HomepageCarouselSetting.current.interval_seconds).to eq(6)
+      end
+    end
+
+    context "when user is not signed in" do
+      it "redirects to login" do
+        patch update_settings_admin_panel_homepage_carousels_path, params: {
+          homepage_carousel_setting: { autoplay_enabled: false, interval_seconds: 8 }
+        }
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
 end

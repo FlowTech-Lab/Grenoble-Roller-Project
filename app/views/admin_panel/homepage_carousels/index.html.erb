@@ -11,6 +11,38 @@
   <%= link_to "Nouveau slide", new_admin_panel_homepage_carousel_path, class: "btn btn-liquid-primary" %>
 </div>
 
+<!-- Paramètres autoplay -->
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Paramètres du carrousel</h2>
+    <%= form_with model: @carousel_settings,
+                  url: update_settings_admin_panel_homepage_carousels_path,
+                  method: :patch,
+                  local: true,
+                  class: "row g-3 align-items-end" do |f| %>
+      <div class="col-md-4">
+        <div class="form-check form-switch">
+          <%= f.check_box :autoplay_enabled, class: "form-check-input", role: "switch" %>
+          <%= f.label :autoplay_enabled, "Défilement automatique", class: "form-check-label" %>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <%= f.label :interval_seconds, "Délai entre les slides (secondes)", class: "form-label" %>
+        <%= f.number_field :interval_seconds,
+            class: "form-control form-control-liquid",
+            min: HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.min,
+            max: HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.max,
+            step: 1,
+            required: true %>
+        <div class="form-text">Entre <%= HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.min %> et <%= HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.max %> secondes</div>
+      </div>
+      <div class="col-md-4">
+        <%= f.submit "Enregistrer les paramètres", class: "btn btn-liquid-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
 <!-- Filtres -->
 <div class="card card-liquid rounded-liquid shadow-liquid mb-4">
   <div class="card-body">

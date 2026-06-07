@@ -51,6 +51,10 @@ module AdminPanel
       organizer_user?
     end
 
+    def update_settings?
+      organizer_user?
+    end
+
     class Scope < ApplicationPolicy::Scope
       def resolve
         return scope if organizer_user?

@@ -18,6 +18,7 @@ module AdminPanel
 
       # Pagination
       @pagy, @carousels = pagy(@carousels.ordered, items: params[:per_page] || 25)
+      @carousel_settings = HomepageCarouselSetting.current
     end
 
     # GET /admin-panel/homepage-carousels/:id
@@ -124,6 +125,21 @@ module AdminPanel
       head :ok
     end
 
+    # PATCH /admin-panel/homepage-carousels/update_settings
+    def update_settings
+      authorize [ :admin_panel, HomepageCarousel ], :update_settings?
+
+      @carousel_settings = HomepageCarouselSetting.current
+
+      if @carousel_settings.update(carousel_settings_params)
+        flash[:notice] = "Paramètres du carrousel mis à jour"
+      else
+        flash[:alert] = "Erreur : #{@carousel_settings.errors.full_messages.join(', ')}"
+      end
+
+      redirect_to admin_panel_homepage_carousels_path
+    end
+
     private
 
     def set_carousel
@@ -136,6 +152,10 @@ module AdminPanel
 
     def carousel_params
       params.require(:homepage_carousel).permit(:title, :subtitle, :link_url, :position, :published, :published_at, :expires_at, :image)
+    end
+
+    def carousel_settings_params
+      params.require(:homepage_carousel_setting).permit(:autoplay_enabled, :interval_seconds)
     end
 
     # Swap positions of two records without violating unique constraint
