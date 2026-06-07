@@ -232,4 +232,41 @@ RSpec.describe Event, type: :model do
       expect(event.has_available_spots?).to be false
     end
   end
+
+  describe '#loop_distance_km_values' do
+    let(:route1) { create_route(name: 'Boucle principale') }
+    let(:route2) { create_route(name: 'Boucle secondaire', distance_km: 15.0) }
+
+    it 'returns a single distance for one loop' do
+      event = create_event(creator_user: creator, route: route1, distance_km: 10.0, loops_count: 1)
+
+      expect(event.loop_distance_km_values).to eq([ 10.0 ])
+    end
+
+    it 'returns each loop distance without summing when event_loop_routes exist' do
+      event = create_event(
+        creator_user: creator,
+        route: route1,
+        loops_count: 3,
+        distance_km: 10.0
+      )
+      event.event_loop_routes.create!(loop_number: 1, route: route1, distance_km: 10.0)
+      event.event_loop_routes.create!(loop_number: 2, route: route2, distance_km: 15.0)
+      event.event_loop_routes.create!(loop_number: 3, route: route1, distance_km: 12.0)
+
+      expect(event.loop_distance_km_values).to eq([ 10.0, 15.0, 12.0 ])
+      expect(event.total_distance_km).to eq(37.0)
+    end
+
+    it 'repeats distance_km for each loop in legacy multi-loop mode' do
+      event = create_event(
+        creator_user: creator,
+        route: route1,
+        loops_count: 2,
+        distance_km: 5.0
+      )
+
+      expect(event.loop_distance_km_values).to eq([ 5.0, 5.0 ])
+    end
+  end
 end

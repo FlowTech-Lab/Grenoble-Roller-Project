@@ -255,7 +255,7 @@ class Event < ApplicationRecord
     count
   end
 
-  # Calculer la distance totale si plusieurs boucles
+  # Calculer la distance totale si plusieurs boucles (formulaire admin, stats internes)
   def total_distance_km
     # Si on utilise le nouveau système avec event_loop_routes
     if event_loop_routes.any?
@@ -265,6 +265,15 @@ class Event < ApplicationRecord
       (distance_km || 0) * loops_count
     else
       distance_km
+    end
+  end
+
+  # Distances par boucle, dans l'ordre (affichage public sans total cumulé)
+  def loop_distance_km_values
+    if loops_count && loops_count > 1
+      loops_with_routes.map { |loop_data| loop_data[:distance_km] }.compact
+    else
+      [ distance_km ].compact
     end
   end
 

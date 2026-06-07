@@ -73,6 +73,14 @@ module EventsHelper
     decline_waitlist_entry_url(waitlist_entry)
   end
 
+  # Affiche la distance : une valeur pour une boucle, ou "5 km + 7 km" pour plusieurs
+  def format_event_distance(event)
+    values = event.loop_distance_km_values
+    return nil if values.empty?
+
+    values.map { |km| format_distance_km(km) }.join(" + ")
+  end
+
   # Formate la durée d'un événement et calcule l'heure de fin
   def format_event_duration(event)
     return nil unless event.start_at && event.duration_min
@@ -97,5 +105,11 @@ module EventsHelper
     end_time_text = end_time.strftime("%Hh%M")
 
     "#{duration_text} (#{start_time_text} - #{end_time_text})"
+  end
+
+  private
+
+  def format_distance_km(km)
+    "#{number_with_precision(km, precision: 1, strip_insignificant_zeros: true)} km"
   end
 end

@@ -49,7 +49,7 @@
             <% if @event.loops_count && @event.loops_count > 1 %>
               <span class="meta-item">
                 <i class="bi bi-signpost-2" aria-hidden="true"></i>
-                <%= @event.loops_count %> boucles • <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+                <%= @event.loops_count %> boucles • <%= format_event_distance(@event) %>
               </span>
             <% elsif @event.route.present? %>
               <span class="meta-item">
@@ -251,12 +251,6 @@
                 </div>
               </div>
             <% end %>
-          </div>
-          <div class="mt-3 text-center">
-            <p class="text-muted small mb-0">
-              <i class="bi bi-calculator me-1" aria-hidden="true"></i>
-              <strong>Distance totale :</strong> <%= number_with_precision(@event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-            </p>
           </div>
         </div>
       <% elsif @event.route.present? %>
