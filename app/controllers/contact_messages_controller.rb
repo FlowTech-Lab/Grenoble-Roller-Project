@@ -10,6 +10,13 @@ class ContactMessagesController < ApplicationController
 
   # POST /contact
   def create
+    unless verify_turnstile
+      @contact_message = ContactMessage.new(contact_message_params)
+      flash.now[:alert] = "Vérification de sécurité échouée. Veuillez réessayer."
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     @contact_message = ContactMessage.new(contact_message_params)
 
     if @contact_message.save

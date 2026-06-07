@@ -1,5 +1,6 @@
 module ApplicationHelper
   include ActionView::Helpers::TextHelper
+  include TurnstileHelper
   # Pagy 43 : Utilise series_nav avec :bootstrap comme style
   def pagy_bootstrap_nav(pagy, **options)
     pagy.series_nav(:bootstrap, **options)

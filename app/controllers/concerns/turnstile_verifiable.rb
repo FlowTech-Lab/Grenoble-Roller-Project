@@ -36,8 +36,8 @@ module TurnstileVerifiable
 
   # Vérifier le token avec l'API Cloudflare
   def verify_with_cloudflare(token)
-    secret_key = Rails.application.credentials.dig(:turnstile, :secret_key) ||
-                 ENV.fetch("TURNSTILE_SECRET_KEY", "")
+    secret_key = ENV["TURNSTILE_SECRET_KEY"].presence ||
+                 Rails.application.credentials.dig(:turnstile, :secret_key).to_s
 
     # Si pas de clé secrète configurée, skip verification en dev
     # MAIS logger un avertissement pour indiquer que la vérification est désactivée

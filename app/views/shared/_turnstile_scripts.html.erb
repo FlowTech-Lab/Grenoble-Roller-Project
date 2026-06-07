@@ -1,0 +1,42 @@
+<%# locals: form_selector (required) %>
+<% if turnstile_enabled? %>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const form = document.querySelector("<%= j form_selector %>");
+      if (!form) return;
+
+      const submitButton = form.querySelector('[type="submit"]');
+      const turnstileWidget = form.querySelector(".cf-turnstile");
+      if (!turnstileWidget) return;
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute("aria-disabled", "true");
+
+        const checkTurnstile = setInterval(function() {
+          const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+          if (tokenInput && tokenInput.value) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute("aria-disabled");
+            clearInterval(checkTurnstile);
+          }
+        }, 100);
+
+        setTimeout(function() {
+          clearInterval(checkTurnstile);
+          submitButton.disabled = false;
+          submitButton.removeAttribute("aria-disabled");
+        }, 10000);
+      }
+
+      form.addEventListener("submit", function(e) {
+        const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+        if (!tokenInput || !tokenInput.value) {
+          e.preventDefault();
+          alert("Veuillez patienter, la vérification de sécurité est en cours...");
+        }
+      });
+    });
+  </script>
+<% end %>
