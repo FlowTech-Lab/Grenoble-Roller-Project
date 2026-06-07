@@ -159,29 +159,41 @@ Full map: [`config/routes.rb`](config/routes.rb).
 
 ## Common workflows
 
-### Local dev (Docker — preferred)
+### Local dev (native — dev-workstation)
+
+Requires [mise](https://mise.jdx.dev/) with shell hook (`eval "$(mise activate bash)"` in `~/.bashrc`).
+
+```bash
+cp .env.example .env              # or: ./script/setup-local-env.sh
+sudo ./script/setup-local-postgres.sh   # once: Postgres on localhost:5432
+mise install
+bundle config set --local path vendor/bundle
+bundle install
+npm install
+bin/rails db:prepare db:seed
+bin/dev                           # http://localhost:3000
+```
+
+`.env` sets `DATABASE_*` (port **5432**), `ACTIVE_STORAGE_SERVICE=local`, `SOLID_QUEUE_IN_PUMA=true`.  
+Docker dev (`ops/dev/docker-compose.yml`) remains optional (DB on **5434**).
+
+### Local dev (Docker — optional)
 
 ```bash
 docker compose -f ops/dev/docker-compose.yml up -d --build
-docker compose -f ops/dev/docker-compose.yml run --rm -e BUNDLE_PATH=/rails/vendor/bundle web bundle install
-docker compose -f ops/dev/docker-compose.yml run --rm -e BUNDLE_PATH=/rails/vendor/bundle web bundle exec rails db:migrate db:seed
 # App: http://localhost:3000 — DB: localhost:5434
 ```
 
 Details: [`docs/04-rails/setup/local-development.md`](docs/04-rails/setup/local-development.md).
 
-### Local dev (native)
+### Run tests (native)
 
 ```bash
-bin/dev   # Procfile.dev: Rails + CSS watcher (needs local Ruby 3.4, Postgres, Node)
-```
-
-### Run tests
-
-```bash
-docker compose -f ops/dev/docker-compose.yml exec -e RAILS_ENV=test web bundle exec rspec spec/
-bundle exec rubocop          # style
-bundle exec brakeman         # security scan
+bin/rails db:test:prepare
+bundle exec rspec spec/
+bundle exec rubocop
+bundle exec brakeman --no-pager
+bin/importmap audit
 ```
 
 ### Add a feature touching HelloAsso
@@ -263,23 +275,29 @@ Setup: `pip install graphifyy` or `graphify install --platform cursor`.
 
 ## Native Ruby on dev-workstation (mise)
 
-Do **not** run bare `bundle install` — it uses **`/usr/bin/bundle` (Ruby 3.2, Bundler 2.4.20)** → errors on `/var/lib/gems/3.2.0/cache` and wrong `vendor/bundle/ruby/3.2.0`.
+Ruby **3.4.2** is pinned via `.ruby-version` + `mise.toml`. With the mise shell hook active, `ruby`, `bundle`, and `bin/rails` use the project toolchain — not Debian `/usr/bin/ruby` 3.2.
 
-The repo pins **Ruby 3.4.2** via `.ruby-version` + `mise.toml`.
+One-time system deps: `sudo ./script/install-native-deps.sh`
 
 ```bash
-sudo ./script/install-native-deps.sh   # one-time APT deps
-./script/setup-native-ruby.sh          # clean vendor/bundle + bundle install
-
-./bin/bundle install                     # always use this prefix
-./bin/bundle exec rspec spec/
+mise trust && mise install
+bundle config set --local path vendor/bundle
+bundle install
 ```
 
-After `source script/activate-ruby.sh`, plain `bundle` works (`bin/` is first in PATH).
+Use standard Rails commands ([Getting Started](https://guides.rubyonrails.org/getting_started.html)):
 
-Cursor/VS Code: terminal profile **bash (Grenoble-Roller Ruby 3.4)** auto-loads `script/terminal-rc.sh`.
+```bash
+bundle install
+bin/rails db:migrate
+bin/rails db:seed
+bin/dev
+bundle exec rspec spec/
+```
 
-Requires PostgreSQL for full test suite (Docker dev DB on port **5434**, or local Postgres).
+Copy `.env.example` → `.env` for local Postgres (5432). `dotenv-rails` loads it in development/test.
+
+Requires **PostgreSQL** locally (`script/setup-local-postgres.sh`) for app + RSpec.
 
 ---
 

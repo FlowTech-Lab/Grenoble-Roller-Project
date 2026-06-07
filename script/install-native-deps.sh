@@ -28,4 +28,7 @@ apt-get install -y --no-install-recommends \
   zlib1g-dev
 
 echo "Native deps installed. Next (as user, no sudo):"
-echo "  cd $(dirname "$0")/.. && ./script/setup-native-ruby.sh"
+echo "  cd $(dirname "$0")/.."
+echo "  mise install"
+echo "  bundle config set --local path vendor/bundle"
+echo "  bundle install"
