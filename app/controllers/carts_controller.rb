@@ -25,7 +25,9 @@ class CartsController < ApplicationController
       return redirect_to shop_path, alert: "Cette variante n'est pas disponible."
     end
 
-    if unified_cart_enabled? && user_signed_in?
+    if unified_cart_enabled?
+      return redirect_to new_user_session_path, alert: "Connectez-vous pour ajouter au panier." unless user_signed_in?
+
       add_item_to_db_cart(variant, quantity)
     else
       add_item_to_session_cart(variant, quantity)
@@ -33,7 +35,9 @@ class CartsController < ApplicationController
   end
 
   def update_item
-    if unified_cart_enabled? && user_signed_in?
+    if unified_cart_enabled?
+      return redirect_to new_user_session_path, alert: "Connectez-vous pour gérer votre panier." unless user_signed_in?
+
       update_db_cart_item
     else
       update_session_cart_item
@@ -41,7 +45,9 @@ class CartsController < ApplicationController
   end
 
   def remove_item
-    if unified_cart_enabled? && user_signed_in?
+    if unified_cart_enabled?
+      return redirect_to new_user_session_path, alert: "Connectez-vous pour gérer votre panier." unless user_signed_in?
+
       remove_db_cart_item
     else
       remove_session_cart_item
@@ -49,7 +55,9 @@ class CartsController < ApplicationController
   end
 
   def clear
-    if unified_cart_enabled? && user_signed_in?
+    if unified_cart_enabled?
+      return redirect_to new_user_session_path, alert: "Connectez-vous pour gérer votre panier." unless user_signed_in?
+
       CartLineService.clear!(current_user)
     else
       session[:cart] = {}
@@ -66,6 +74,8 @@ class CartsController < ApplicationController
   end
 
   def ensure_cart
+    return if unified_cart_enabled?
+
     session[:cart] ||= {}
   end
 

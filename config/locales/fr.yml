@@ -168,6 +168,12 @@ fr:
       failed: "Échoué"
       cancelled: "Annulé"
       refunded: "Remboursé"
+    checkout:
+      pending: "En attente"
+      processing: "En cours"
+      paid: "Payé"
+      failed: "Échoué"
+      abandoned: "Abandonné"
     membership:
       pending: "En attente"
       active: "Active"

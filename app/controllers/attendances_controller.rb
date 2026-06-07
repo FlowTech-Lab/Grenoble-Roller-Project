@@ -22,6 +22,11 @@ class AttendancesController < ApplicationController
 
     # Pagination pour les événements passés
     @pagy_past, @past_attendances = pagy_array(past_scope, page_param: :page_past, items: 12)
+
+    @pending_payment_attendances = current_user.attendances
+                                               .payment_pending
+                                               .includes(:event)
+                                               .order(:payment_expires_at)
   end
 
   private

@@ -814,7 +814,7 @@ Staging `.env.example` documents `UNIFIED_CART_ENABLED=true` for QA.
 
 - [ ] Manual QA checklist (section G) pass on staging.
 - [ ] FR copy validated by Florian.
-- [ ] No session cart when flag on.
+- [x] No session cart when flag on.
 
 ---
 

@@ -69,6 +69,13 @@
         <p><strong>Prix :</strong> 
           <%= number_to_currency(@event.price_cents / 100.0, unit: '€', separator: ',', delimiter: ' ') %>
         </p>
+        <p><strong>Paiement en ligne requis :</strong>
+          <% if @event.payment_required? %>
+            <span class="badge badge-liquid-warning">Oui</span>
+          <% else %>
+            <span class="badge badge-liquid-secondary">Non</span>
+          <% end %>
+        </p>
         <p><strong>Créateur :</strong> <%= @event.creator_user&.email || "-" %></p>
         <% if @event.meeting_lat.present? && @event.meeting_lng.present? %>
           <p><strong>Coordonnées GPS :</strong> <%= @event.meeting_lat %>, <%= @event.meeting_lng %></p>

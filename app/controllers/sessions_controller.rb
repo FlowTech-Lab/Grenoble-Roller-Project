@@ -58,11 +58,14 @@ class SessionsController < Devise::SessionsController
     Rails.logger.error("🟢 Turnstile verification PASSED - Proceeding with authentication")
     Rails.logger.error("=" * 80)
 
+    # Capture legacy session cart before Devise may regenerate the session on sign-in.
+    legacy_session_cart = (session[:cart] || {}).deep_dup
+
     # Turnstile OK, procéder avec l'authentification Devise
     super do |resource|
       if resource.persisted?
         if UnifiedCart.enabled? && resource.confirmed?
-          CartSessionMergeService.merge!(resource, session_cart: session[:cart] || {})
+          CartSessionMergeService.merge!(resource, session_cart: legacy_session_cart)
           session[:cart] = {}
         end
 

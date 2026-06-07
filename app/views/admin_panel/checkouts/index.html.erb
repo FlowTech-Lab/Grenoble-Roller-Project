@@ -1,0 +1,73 @@
+<%
+  breadcrumb_items = [
+    { label: "Checkouts unifiés", url: nil }
+  ]
+%>
+
+<%= render "admin_panel/shared/breadcrumb", breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Checkouts unifiés</h1>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <%= search_form_for @q, url: admin_panel_checkouts_path, method: :get, class: "row g-3" do |f| %>
+      <div class="col-md-4">
+        <%= f.label :status_eq, "Statut", class: "form-label" %>
+        <%= f.select :status_eq,
+            options_for_select([
+              ["Tous", ""],
+              ["En attente", "pending"],
+              ["Payé", "paid"],
+              ["Échoué", "failed"],
+              ["Abandonné", "abandoned"]
+            ], params.dig(:q, :status_eq)),
+            {},
+            { class: "form-select form-select-liquid" } %>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <%= f.submit "Filtrer", class: "btn btn-liquid-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Utilisateur</th>
+          <th>Statut</th>
+          <th>Total</th>
+          <th>Don</th>
+          <th>Créé le</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @checkouts.each do |checkout| %>
+          <tr>
+            <td>#<%= checkout.id %></td>
+            <td><%= checkout.user&.email %></td>
+            <td><%= human_status(:checkout, checkout.status) %></td>
+            <td><%= format_price(checkout.total_cents) %></td>
+            <td><%= format_price(checkout.donation_cents) %></td>
+            <td><%= l(checkout.created_at, format: :short) %></td>
+            <td class="text-end">
+              <%= link_to "Voir", admin_panel_checkout_path(checkout), class: "btn btn-sm btn-outline-primary" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if @pagy.pages > 1 %>
+  <div class="mt-4 d-flex justify-content-center">
+    <%== pagy_bootstrap_nav(@pagy) %>
+  </div>
+<% end %>

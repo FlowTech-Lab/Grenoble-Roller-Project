@@ -10,6 +10,8 @@ export default class extends Controller {
     "donationInput",
     "customDonationInput",
     "submitButton",
+    "stickyTotalDisplay",
+    "stickySubmitButton",
     "form"
   ]
 
@@ -56,6 +58,12 @@ export default class extends Controller {
     }
     if (this.hasSubmitButtonTarget) {
       this.submitButtonTarget.disabled = !anySelected
+    }
+    if (this.hasStickySubmitButtonTarget) {
+      this.stickySubmitButtonTarget.disabled = !anySelected
+    }
+    if (this.hasStickyTotalDisplayTarget) {
+      this.stickyTotalDisplayTarget.textContent = this.formatEuros(total)
     }
     if (this.hasSelectAllTarget) {
       const enabled = this.lineCheckboxTargets.filter((cb) => !cb.disabled)

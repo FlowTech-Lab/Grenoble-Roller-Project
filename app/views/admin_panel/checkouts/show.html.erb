@@ -1,0 +1,61 @@
+<%
+  breadcrumb_items = [
+    { label: "Checkouts unifiés", url: admin_panel_checkouts_path },
+    { label: "##{@checkout.id}", url: nil }
+  ]
+%>
+
+<%= render "admin_panel/shared/breadcrumb", breadcrumb_items: breadcrumb_items %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Checkout #<%= @checkout.id %></h1>
+  <%= link_to "Retour", admin_panel_checkouts_path, class: "btn btn-outline-secondary" %>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>Utilisateur :</strong> <%= @checkout.user&.email %></p>
+        <p><strong>Statut :</strong> <%= human_status(:checkout, @checkout.status) %></p>
+        <p><strong>Sous-total :</strong> <%= format_price(@checkout.subtotal_cents) %></p>
+        <p><strong>Don :</strong> <%= format_price(@checkout.donation_cents) %></p>
+        <p><strong>Total :</strong> <%= format_price(@checkout.total_cents) %></p>
+      </div>
+      <div class="col-md-6">
+        <p><strong>Créé le :</strong> <%= l(@checkout.created_at, format: :long) %></p>
+        <% if @checkout.payment.present? %>
+          <p><strong>Paiement :</strong> #<%= @checkout.payment.id %> (<%= @checkout.payment.status %>)</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-header">
+    <h5 class="mb-0">Lignes snapshot</h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Libellé</th>
+          <th>Qté</th>
+          <th>Montant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @checkout_lines.each do |line| %>
+          <tr>
+            <td><%= line.line_type %></td>
+            <td><%= line.label %></td>
+            <td><%= line.quantity %></td>
+            <td><%= format_price(line.amount_cents * line.quantity) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -63,8 +63,10 @@ module Events
         if paid_via_cart
           CartLineService.add_event_registration!(user: current_user, attendance: attendance, event: @event)
           participant_name = attendance.for_child? ? attendance.participant_name : "Vous"
-          redirect_to cart_path,
-                      notice: "Place réservée pour #{participant_name}. Finalisez le paiement dans les 15 minutes depuis votre panier."
+          flash[:notice] = "Place réservée pour #{participant_name}. Finalisez le paiement dans les 15 minutes depuis votre panier."
+          flash[:notice_type] = "success"
+          flash[:show_cart_button] = true
+          redirect_to cart_path
         else
           EventMailer.attendance_confirmed(attendance).deliver_later
           participant_name = attendance.for_child? ? attendance.participant_name : "Vous"

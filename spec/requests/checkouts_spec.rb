@@ -44,6 +44,17 @@ RSpec.describe "Checkouts", type: :request do
       expect(response.body).to include("checked")
     end
 
+    it "renders mobile sticky pay selection footer" do
+      add_product_to_cart!
+      login_user(user)
+
+      get new_checkout_path
+
+      expect(response.body).to include("checkout-sticky-footer")
+      expect(response.body).to include("Payer la sélection")
+      expect(response.body).to include("avec HelloAsso")
+    end
+
     it "renders donation section when cart has only memberships" do
       membership = create(:membership, :pending, :with_health_questionnaire, user: user)
       CartLineService.add_membership!(user, membership: membership)

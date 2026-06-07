@@ -17,6 +17,14 @@ class Checkout < ApplicationRecord
             numericality: { greater_than_or_equal_to: 0 }
   validate :total_equals_subtotal_plus_donation
 
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[status subtotal_cents donation_cents total_cents created_at updated_at]
+  end
+
+  def self.ransackable_associations(_auth_object = nil)
+    %w[user payment]
+  end
+
   def product_order
     order_id = metadata["order_id"]
     return nil unless order_id

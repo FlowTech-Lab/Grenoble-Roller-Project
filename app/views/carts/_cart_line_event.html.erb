@@ -8,9 +8,14 @@
       </p>
       <p class="small text-muted mb-1">Inscription — paiement en attente</p>
       <% if line.expires_at.present? %>
-        <p class="small mb-0 text-warning-emphasis">
+        <% expiring_soon = !line.expired? && line.expires_at <= 5.minutes.from_now %>
+        <p class="small mb-0 <%= expiring_soon ? 'text-danger fw-semibold' : 'text-warning-emphasis' %>">
           <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>
-          Finalisez avant <%= l(line.expires_at, format: :short) %>
+          <% if expiring_soon %>
+            Place réservée — payez avant <%= l(line.expires_at, format: :short) %>
+          <% else %>
+            Finalisez avant <%= l(line.expires_at, format: :short) %>
+          <% end %>
         </p>
       <% end %>
     </div>

@@ -49,6 +49,7 @@ Rails.application.routes.draw do
 
     # Paiements
     resources :payments, only: [ :index, :show, :destroy ]
+    resources :checkouts, only: [ :index, :show ]
 
     # Communication
     resources :contact_messages, path: "contact-messages", only: [ :index, :show, :destroy ]
