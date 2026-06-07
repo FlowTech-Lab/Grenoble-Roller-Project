@@ -38,7 +38,7 @@ RSpec.describe "Unified cart UX", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("expire bientôt")
-    expect(response.body).to include("payez avant")
+    expect(response.body).to include("Finalisez le paiement")
   end
 
   it "shows pending payment banner on mes sorties" do

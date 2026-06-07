@@ -852,9 +852,9 @@ Staging `.env.example` documents `UNIFIED_CART_ENABLED=true` for QA.
 
 #### DoD
 
-- [ ] Deprecated routes removed or 301 to cart/checkout.
+- [x] Deprecated routes removed or 301 to cart/checkout.
 - [ ] Prod flag enabled with rollback plan (section H).
-- [ ] CHANGELOG updated.
+- [x] CHANGELOG updated.
 
 ---
 

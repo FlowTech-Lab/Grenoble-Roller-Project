@@ -14,6 +14,15 @@ RSpec.describe 'Carts', type: :request do
     v
   end
 
+  context 'when UNIFIED_CART_ENABLED is false' do
+    around do |example|
+      previous = ENV['UNIFIED_CART_ENABLED']
+      ENV['UNIFIED_CART_ENABLED'] = 'false'
+      example.run
+    ensure
+      ENV['UNIFIED_CART_ENABLED'] = previous
+    end
+
   describe 'GET /cart' do
     it 'allows public access without authentication' do
       get cart_path
@@ -185,8 +194,11 @@ RSpec.describe 'Carts', type: :request do
     end
   end
 
+  end
+
   context "when UNIFIED_CART_ENABLED is true" do
     let(:user) { create(:user) }
+    let!(:prepared_variant) { variant }
 
     around do |example|
       previous = ENV["UNIFIED_CART_ENABLED"]
@@ -231,7 +243,7 @@ RSpec.describe 'Carts', type: :request do
         post add_item_cart_path, params: { variant_id: variant.id, quantity: 2 }
 
         expect(CartLine.where(user: user, reference: variant).exists?).to be(true)
-        expect(session[:cart]).to be_empty
+        expect(session[:cart]).to be_blank
       end
 
       it "respects inventory available_qty" do
@@ -274,7 +286,7 @@ RSpec.describe 'Carts', type: :request do
     end
   end
 
-  context "when UNIFIED_CART_ENABLED is false" do
+  context "when UNIFIED_CART_ENABLED is false (explicit legacy shim)" do
     around do |example|
       previous = ENV["UNIFIED_CART_ENABLED"]
       ENV["UNIFIED_CART_ENABLED"] = "false"

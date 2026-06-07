@@ -2,6 +2,25 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-08] - Unified checkout Waves 5–6 (UX polish + cleanup)
+
+### Added
+- Navbar badge counts all `CartLine` types when unified cart enabled.
+- Pending payment banner on Mes sorties with cart CTA.
+- Cart section empty states, expiry warnings (< 5 min), mobile sticky checkout/cart footers.
+- `AdminPanel::CheckoutsController` read-only audit (`/admin-panel/checkouts`).
+- Staging env documents `UNIFIED_CART_ENABLED=true` in `ops/dokploy/env/staging.env.example`.
+
+### Changed
+- Flash toasts use `flash[:notice_type]`; cart CTA on membership/event add flashes.
+- `CartsController` / `OrdersController#build_cart_items` skip `session[:cart]` when flag on.
+- `Memberships::PaymentsController` redirects to cart when flag on (legacy HelloAsso when off).
+- Updated `docs/09-product/flux-boutique-helloasso.md` for unified flow.
+
+### Tests
+- Wave 5 specs: `application_helper`, `unified_cart` UX, mailer timing, checkout sticky footer.
+- Wave 6: checkout-related RSpec regression suite (see MASTER Appendix J).
+
 ## [2026-06-08] - Unified checkout MASTER plan (agent SSOT)
 
 ### Documentation
