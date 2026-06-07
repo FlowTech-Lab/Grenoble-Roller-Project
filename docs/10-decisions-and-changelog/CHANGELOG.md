@@ -2,6 +2,11 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-08] - DR-001: Unified checkout (proposed)
+
+### Documentation
+- Added [`DR-001-unified-checkout-cart.md`](DR-001-unified-checkout-cart.md): phased checkout strategy (paid events Phase 1; harmonized cart Phase 2); manual `payment_required` flag.
+
 ## [2026-06-07] - Release Dev → staging (June 2026 batch)
 
 Consolidated release: events lifecycle/UI, admin panel (event read access, organizers, goodies, mail logs, carousel settings), Umami analytics, Turnstile on contact form, roller stock reservations (v2.3), dev tooling (mise, dotenv).
