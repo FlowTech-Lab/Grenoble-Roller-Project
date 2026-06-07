@@ -65,18 +65,19 @@
         <!-- Quick Actions -->
         <div class="card card-liquid shadow-sm mb-4">
           <div class="card-body">
-            <h3 class="h6 mb-3">
+            <h3 class="h6 mb-2">
               <i class="bi bi-lightning-charge text-liquid-primary me-2"></i>
               Actions rapides
             </h3>
-            
+
+            <div class="quick-actions-list">
             <!-- Adhérer pour moi -->
             <% unless @active_membership %>
-              <%= link_to new_membership_path(type: 'adult'), class: "text-decoration-none" do %>
+              <%= link_to new_membership_path(type: 'adult'), class: "quick-action-link text-decoration-none" do %>
                 <div class="quick-action-card teal">
-                  <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-person-badge fs-3 text-liquid-primary me-3"></i>
-                    <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-person-badge quick-action-card-icon text-liquid-primary" aria-hidden="true"></i>
+                    <div class="flex-grow-1 min-w-0">
                       <h4 class="h6 mb-0 fw-bold">J'adhère</h4>
                       <small class="text-muted">
                         <% if @pending_membership %>
@@ -92,11 +93,11 @@
             <% end %>
             
             <!-- Ajouter un enfant -->
-            <%= link_to new_membership_path(type: 'child'), class: "text-decoration-none", data: { turbo: false } do %>
+            <%= link_to new_membership_path(type: 'child'), class: "quick-action-link text-decoration-none", data: { turbo: false } do %>
               <div class="quick-action-card orange">
-                <div class="d-flex align-items-center mb-2">
-                  <i class="bi bi-person-plus fs-3 text-liquid-warning me-3"></i>
-                  <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-3">
+                  <i class="bi bi-person-plus quick-action-card-icon text-liquid-warning" aria-hidden="true"></i>
+                  <div class="flex-grow-1 min-w-0">
                     <h4 class="h6 mb-0 fw-bold">Ajouter un enfant</h4>
                     <small class="text-muted">
                       <% if parent_profile_complete_for_child %>
@@ -113,6 +114,7 @@
                 </div>
               </div>
             <% end %>
+            </div>
           </div>
         </div>
 

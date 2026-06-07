@@ -2,40 +2,42 @@
   <!-- QUICK ACTIONS -->
   <div class="card card-liquid shadow-sm mb-4">
     <div class="card-body">
-      <h3 class="h6 mb-3">
+      <h3 class="h6 mb-2">
         <i class="bi bi-lightning-charge text-liquid-primary me-2"></i>
         Actions rapides
       </h3>
-      
-      <!-- Voir boutique -->
-      <%= link_to shop_path, class: "text-decoration-none" do %>
-        <div class="quick-action-card teal">
-          <div class="d-flex align-items-center mb-2">
-            <i class="bi bi-bag fs-3 text-liquid-primary me-3"></i>
-            <div class="flex-grow-1">
-              <h4 class="h6 mb-0 fw-bold">Voir la boutique</h4>
-              <small class="text-muted">Découvrir nos produits</small>
-            </div>
-          </div>
-        </div>
-      <% end %>
 
-      <!-- Finaliser paiement (si en attente) -->
-      <% if pending_orders.any? %>
-        <%= link_to orders_path(anchor: 'pending'), class: "text-decoration-none" do %>
-          <div class="quick-action-card orange">
-            <div class="d-flex align-items-center mb-2">
-              <i class="bi bi-hourglass-split fs-3 text-liquid-warning me-3"></i>
-              <div class="flex-grow-1">
-                <h4 class="h6 mb-0 fw-bold">Finaliser paiement</h4>
-                <small class="text-muted">
-                  <%= pending_orders.count %> commande<%= 's' if pending_orders.count != 1 %> en attente
-                </small>
+      <div class="quick-actions-list">
+        <!-- Voir boutique -->
+        <%= link_to shop_path, class: "quick-action-link text-decoration-none" do %>
+          <div class="quick-action-card teal">
+            <div class="d-flex align-items-center gap-3">
+              <i class="bi bi-bag quick-action-card-icon text-liquid-primary" aria-hidden="true"></i>
+              <div class="flex-grow-1 min-w-0">
+                <h4 class="h6 mb-0 fw-bold">Voir la boutique</h4>
+                <small class="text-muted">Découvrir nos produits</small>
               </div>
             </div>
           </div>
         <% end %>
-      <% end %>
+
+        <!-- Finaliser paiement (si en attente) -->
+        <% if pending_orders.any? %>
+          <%= link_to orders_path(anchor: 'pending'), class: "quick-action-link text-decoration-none" do %>
+            <div class="quick-action-card orange">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-hourglass-split quick-action-card-icon text-liquid-warning" aria-hidden="true"></i>
+                <div class="flex-grow-1 min-w-0">
+                  <h4 class="h6 mb-0 fw-bold">Finaliser paiement</h4>
+                  <small class="text-muted">
+                    <%= pending_orders.count %> commande<%= 's' if pending_orders.count != 1 %> en attente
+                  </small>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
     </div>
   </div>
 
@@ -98,4 +100,3 @@
     </div>
   </div>
 </div>
-
