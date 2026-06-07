@@ -239,6 +239,19 @@
             <%= f.hidden_field :currency, value: "EUR" %>
           </div>
 
+          <% unless event.is_a?(Event::Initiation) %>
+            <div class="col-12">
+              <div class="form-check">
+                <%= f.check_box :payment_required, class: "form-check-input" %>
+                <%= f.label :payment_required, "Inscription payante en ligne", class: "form-check-label" %>
+              </div>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Si coché, l'inscription passe par le panier et HelloAsso. Le prix affiché peut rester informatif si cette case est décochée.
+              </div>
+            </div>
+          <% end %>
+
           <div class="col-12">
             <%= f.label :location_text, "Lieu / Point de rendez-vous", class: "form-label" do %>
               Lieu / Point de rendez-vous <span class="text-danger">*</span>

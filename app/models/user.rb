@@ -9,6 +9,7 @@ class User < ApplicationRecord
   belongs_to :role
   has_many :orders, dependent: :nullify
   has_many :memberships, dependent: :destroy
+  has_many :cart_lines, dependent: :destroy
 
   # Active Storage attachments
   has_one_attached :avatar

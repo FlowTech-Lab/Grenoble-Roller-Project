@@ -233,6 +233,59 @@ RSpec.describe Event, type: :model do
     end
   end
 
+  describe '#requires_online_payment?' do
+    it 'returns true when payment_required is true on a rando' do
+      event = build_event(creator_user: creator, payment_required: true, price_cents: 500)
+      expect(event.requires_online_payment?).to be true
+    end
+
+    it 'returns false when payment_required is false even if price_cents is positive' do
+      event = build_event(creator_user: creator, payment_required: false, price_cents: 500)
+      expect(event.requires_online_payment?).to be false
+    end
+
+    it 'returns false for Initiation even if payment_required is true' do
+      initiation = build_event(type: 'Event::Initiation', creator_user: creator, payment_required: true, price_cents: 0, max_participants: 10)
+      expect(initiation.requires_online_payment?).to be false
+    end
+  end
+
+  describe 'payment_required validation' do
+    it 'rejects payment_required on Initiation' do
+      initiation = build_event(type: 'Event::Initiation', creator_user: creator, payment_required: true, max_participants: 10)
+      expect(initiation).to be_invalid
+      expect(initiation.errors[:payment_required]).to be_present
+    end
+  end
+
+  describe '#full? when payment_required' do
+    it 'counts pending attendances with payment_expires_at toward capacity' do
+      event = create_event(creator_user: creator, max_participants: 1, payment_required: true, price_cents: 500)
+      user = create_user(role: user_role)
+      create(:attendance, event: event, user: user, status: :pending, payment_expires_at: 10.minutes.from_now)
+      event.reload
+      expect(event.full?).to be true
+    end
+
+    it 'does not count payment-pending attendances when payment_required is false' do
+      event = create_event(creator_user: creator, max_participants: 1, payment_required: false)
+      user = create_user(role: user_role)
+      create(:attendance, event: event, user: user, status: :pending, payment_expires_at: 10.minutes.from_now)
+      event.reload
+      expect(event.full?).to be false
+    end
+  end
+
+  describe '#has_available_spots? when payment_required' do
+    it 'returns false when pending payment holds fill capacity' do
+      event = create_event(creator_user: creator, max_participants: 1, payment_required: true, price_cents: 500)
+      user = create_user(role: user_role)
+      create(:attendance, event: event, user: user, status: :pending, payment_expires_at: 10.minutes.from_now)
+      event.reload
+      expect(event.has_available_spots?).to be false
+    end
+  end
+
   describe '#loop_distance_km_values' do
     let(:route1) { create_route(name: 'Boucle principale') }
     let(:route2) { create_route(name: 'Boucle secondaire', distance_km: 15.0) }

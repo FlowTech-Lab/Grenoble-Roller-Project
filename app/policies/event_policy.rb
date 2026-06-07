@@ -66,6 +66,7 @@ class EventPolicy < ApplicationPolicy
 
   def join_waitlist?
     return false unless user
+    return false if record.requires_online_payment?
     return false unless record.full? # Ne peut rejoindre la liste d'attente que si l'événement est complet
     true
   end
@@ -102,7 +103,8 @@ class EventPolicy < ApplicationPolicy
       :level,
       :distance_km,
       :loops_count,
-      :organizer_id
+      :organizer_id,
+      :payment_required
     ]
 
     # Seuls les modérateurs+ peuvent modifier le statut

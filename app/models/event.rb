@@ -82,6 +82,7 @@ class Event < ApplicationRecord
   validates :location_text, presence: true, length: { minimum: 3, maximum: 255 }
   validates :max_participants, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :cover_image_must_be_present, unless: :skip_cover_image_validation?
+  validate :initiation_cannot_require_payment
 
   # GPS optionnel, mais si meeting_lat présente, meeting_lng obligatoire et vice-versa
   validates :meeting_lat, presence: true, if: :meeting_lng?
@@ -158,28 +159,43 @@ class Event < ApplicationRecord
     max_participants.zero?
   end
 
-  # Vérifie si l'événement est plein (compte uniquement les inscriptions actives, excluant "pending")
-  # Les inscriptions "pending" verrouillent une place mais ne sont pas comptées dans has_available_spots
+  def requires_online_payment?
+    payment_required? && !initiation?
+  end
+
+  # Spots counted toward capacity (payment-pending holds count for paid randos only).
+  def occupied_spots_for_capacity
+    base = attendances.where(is_volunteer: false).where.not(status: "canceled")
+
+    if requires_online_payment?
+      base.where(
+        "status != 'pending' OR (status = 'pending' AND payment_expires_at IS NOT NULL AND payment_expires_at > ?)",
+        Time.current
+      ).count
+    else
+      base.where.not(status: "pending").count
+    end
+  end
+
+  # Vérifie si l'événement est plein
   def full?
     return false if unlimited?
 
-    # Compter seulement les inscriptions confirmées (registered, paid, present), pas "pending"
-    attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count >= max_participants
+    occupied_spots_for_capacity >= max_participants
   end
 
-  # Retourne le nombre de places restantes (excluant "pending")
+  # Retourne le nombre de places restantes
   def remaining_spots
     return nil if unlimited?
 
-    confirmed_count = attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count
-    [ max_participants - confirmed_count, 0 ].max
+    [ max_participants - occupied_spots_for_capacity, 0 ].max
   end
 
-  # Vérifie s'il reste des places disponibles (excluant "pending" qui verrouillent une place)
+  # Vérifie s'il reste des places disponibles
   def has_available_spots?
     return true if unlimited?
-    # Compter seulement les inscriptions confirmées (registered, paid, present), pas "pending"
-    attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count < max_participants
+
+    occupied_spots_for_capacity < max_participants
   end
 
   # Compte les inscriptions actives (non annulées, incluant pending pour verrouiller les places)
@@ -361,6 +377,12 @@ class Event < ApplicationRecord
   after_commit :notify_attendees_on_cancellation, on: [ :update ], if: -> { saved_change_to_status? && canceled? }
 
   private
+
+  def initiation_cannot_require_payment
+    return unless initiation? && payment_required?
+
+    errors.add(:payment_required, "cannot be enabled for initiations")
+  end
 
   def duration_multiple_of_five
     return if duration_min.blank?

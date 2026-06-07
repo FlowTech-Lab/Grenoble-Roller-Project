@@ -344,4 +344,15 @@ RSpec.describe Event::Initiation, type: :model do
       end
     end
   end
+
+  it 'cannot enable payment_required via validation' do
+    initiation = build(:event_initiation, creator_user: creator, payment_required: true)
+    expect(initiation).to be_invalid
+    expect(initiation.errors[:payment_required]).to be_present
+  end
+
+  it 'does not expose payment_required checkbox in admin form' do
+    form_path = Rails.root.join('app/views/initiations/_form.html.erb')
+    expect(File.read(form_path)).not_to include('payment_required')
+  end
 end

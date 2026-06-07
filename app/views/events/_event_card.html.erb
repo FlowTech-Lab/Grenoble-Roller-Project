@@ -105,7 +105,11 @@
             </span>
           <% end %>
           
-          <% if defined?(render_signup_button) && render_signup_button && user_signed_in? && current_user_has_attendance?(event) %>
+          <% if defined?(attendance) && attendance&.payment_pending? %>
+            <span class="badge bg-warning text-dark">
+              <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Paiement en attente
+            </span>
+          <% elsif defined?(render_signup_button) && render_signup_button && user_signed_in? && current_user_has_attendance?(event) %>
             <span class="badge bg-success">
               <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Vous êtes inscrit(e)
             </span>

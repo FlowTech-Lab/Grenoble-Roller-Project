@@ -486,10 +486,10 @@ Paid-event cart path only when `UnifiedCart.enabled?`. Admin can set `payment_re
 
 #### DoD
 
-- [ ] Paid rando → cart + timer; expiry releases seat.
-- [ ] Free randos unchanged.
-- [ ] Initiations unaffected.
-- [ ] Waitlist blocked on paid randos.
+- [x] Paid rando → cart + timer; expiry releases seat.
+- [x] Free randos unchanged.
+- [x] Initiations unaffected.
+- [x] Waitlist blocked on paid randos.
 
 ---
 
@@ -569,9 +569,9 @@ Direct pay buttons hidden when `UnifiedCart.enabled?`.
 
 #### DoD
 
-- [ ] Adult / teen / multi-child → cart lines.
-- [ ] Cash/check unchanged.
-- [ ] Direct HelloAsso deprecated behind flag.
+- [x] Adult / teen / multi-child → cart lines.
+- [x] Cash/check unchanged.
+- [x] Direct HelloAsso deprecated behind flag.
 
 ---
 

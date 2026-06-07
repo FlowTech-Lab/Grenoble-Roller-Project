@@ -569,4 +569,32 @@ RSpec.describe Attendance, type: :model do
       end
     end
   end
+
+  describe 'payment pending registration' do
+    it 'allows pending status with payment_expires_at set' do
+      attendance = build_attendance(user: user, event: event, status: 'pending', payment_expires_at: 10.minutes.from_now)
+      expect(attendance).to be_valid
+    end
+
+    it 'distinguishes waitlist pending from payment pending via payment_expires_at' do
+      waitlist_hold = build_attendance(user: user, event: event, status: 'pending', payment_expires_at: nil)
+      payment_hold = build_attendance(user: create_user, event: event, status: 'pending', payment_expires_at: 10.minutes.from_now)
+
+      expect(waitlist_hold.waitlist_hold?).to be true
+      expect(waitlist_hold.payment_pending?).to be false
+      expect(payment_hold.payment_pending?).to be true
+      expect(payment_hold.waitlist_hold?).to be false
+    end
+  end
+
+  describe 'scopes' do
+    describe '.payment_pending' do
+      it 'returns pending attendances with payment_expires_at present' do
+        pending_payment = create_attendance(user: user, event: event, status: 'pending', payment_expires_at: 10.minutes.from_now)
+        create_attendance(user: create_user, event: event, status: 'pending', payment_expires_at: nil)
+
+        expect(Attendance.payment_pending).to contain_exactly(pending_payment)
+      end
+    end
+  end
 end

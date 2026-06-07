@@ -41,5 +41,10 @@ FactoryBot.define do
     trait :with_organizer do
       association :organizer, factory: :event_organizer
     end
+
+    trait :payment_required do
+      payment_required { true }
+      price_cents { 500 }
+    end
   end
 end

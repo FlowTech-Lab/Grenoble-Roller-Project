@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_205837) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.boolean "free_trial_used", default: false, null: false
     t.boolean "is_volunteer", default: false, null: false
     t.boolean "needs_equipment", default: false, null: false
+    t.datetime "payment_expires_at"
     t.bigint "payment_id"
     t.datetime "reminder_sent_at"
     t.string "roller_size"
@@ -75,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.index ["child_membership_id"], name: "index_attendances_on_child_membership_id"
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
+    t.index ["payment_expires_at"], name: "index_attendances_on_payment_expires_at"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
     t.index ["user_id", "child_membership_id"], name: "index_attendances_unique_free_trial_child_active", unique: true, where: "((free_trial_used = true) AND ((status)::text <> 'canceled'::text) AND (child_membership_id IS NOT NULL))"
     t.index ["user_id", "event_id", "child_membership_id", "is_volunteer"], name: "index_attendances_on_user_event_child_volunteer", unique: true
@@ -94,6 +96,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.datetime "updated_at", null: false
     t.index ["actor_user_id"], name: "index_audit_logs_on_actor_user_id"
     t.index ["target_type", "target_id"], name: "index_audit_logs_on_target_type_and_target_id"
+  end
+
+  create_table "cart_lines", force: :cascade do |t|
+    t.integer "amount_cents", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.string "label", null: false
+    t.string "line_type", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.integer "quantity", default: 1, null: false
+    t.bigint "reference_id", null: false
+    t.string "reference_type", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["reference_type", "reference_id"], name: "index_cart_lines_on_reference"
+    t.index ["user_id", "expires_at"], name: "index_cart_lines_on_user_id_and_expires_at"
+    t.index ["user_id", "line_type"], name: "index_cart_lines_on_user_id_and_line_type"
+    t.index ["user_id", "reference_type", "reference_id", "line_type"], name: "index_cart_lines_unique_per_user_reference", unique: true
+    t.index ["user_id"], name: "index_cart_lines_on_user_id"
   end
 
   create_table "contact_messages", force: :cascade do |t|
@@ -146,6 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
     t.integer "non_member_discovery_slots", default: 0
     t.bigint "organizer_id"
     t.datetime "participants_report_sent_at"
+    t.boolean "payment_required", default: false, null: false
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"
@@ -634,6 +656,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_120000) do
   add_foreign_key "attendances", "payments"
   add_foreign_key "attendances", "users"
   add_foreign_key "audit_logs", "users", column: "actor_user_id"
+  add_foreign_key "cart_lines", "users"
   add_foreign_key "event_loop_routes", "events"
   add_foreign_key "event_loop_routes", "routes"
   add_foreign_key "events", "event_organizers", column: "organizer_id"

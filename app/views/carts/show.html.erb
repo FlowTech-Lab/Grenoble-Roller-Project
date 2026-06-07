@@ -5,7 +5,10 @@
     <div class="col-12 col-lg-8 mx-auto">
       <div class="card card-liquid rounded-liquid shadow-liquid">
         <div class="card-body p-4">
-          <% if @cart_items.empty? %>
+          <% event_lines = @event_cart_lines || [] %>
+          <% membership_lines = @membership_cart_lines || [] %>
+          <% cart_empty = @cart_items.empty? && event_lines.empty? && membership_lines.empty? %>
+          <% if cart_empty %>
             <div class="empty-state">
               <i class="bi bi-bag" aria-hidden="true"></i>
               <p class="mb-3">Votre panier est vide.</p>
@@ -14,64 +17,41 @@
               <% end %>
             </div>
           <% else %>
+            <% if event_lines.any? %>
+              <h2 class="h6 fw-semibold mb-3">
+                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Événements
+              </h2>
+              <div class="mb-4" role="region" aria-label="Inscriptions événements" aria-live="polite">
+                <% event_lines.each do |line| %>
+                  <%= render "carts/cart_line_event", line: line %>
+                <% end %>
+              </div>
+            <% end %>
+
+            <% if membership_lines.any? %>
+              <h2 class="h6 fw-semibold mb-3">
+                <i class="bi bi-person-badge me-1" aria-hidden="true"></i>Adhésions
+              </h2>
+              <div class="mb-4" role="region" aria-label="Adhésions dans le panier">
+                <% membership_lines.each do |line| %>
+                  <%= render "carts/cart_line_membership", line: line %>
+                <% end %>
+              </div>
+            <% end %>
+
+            <% if @cart_items.any? %>
+              <h2 class="h6 fw-semibold mb-3">
+                <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
+              </h2>
+            <% end %>
+            <% if @cart_items.any? %>
             <!-- Cart items list -->
             <div class="mb-4" role="region" aria-label="Articles du panier" aria-live="polite" aria-atomic="false">
               <% @cart_items.each do |ci| %>
-                <div class="cart-item">
-                  <div class="cart-item-image">
-                    <% cart_image = product_image_tag(ci[:product]) %>
-                    <% if cart_image %>
-                      <%= image_tag cart_image, alt: ci[:product].name, loading: "lazy" %>
-                    <% end %>
-                  </div>
-                  
-                  <div class="cart-item-content">
-                    <div class="cart-item-info">
-                      <p class="cart-item-title mb-1"><%= ci[:product].name %></p>
-                      <div class="d-flex align-items-center gap-2">
-                        <p class="small text-muted mb-0"><%= ci[:variant].sku %></p>
-                        <span class="small text-muted">•</span>
-                        <p class="small text-muted mb-0"><%= format_price(ci[:unit_price_cents]) %> / u</p>
-                      </div>
-                    </div>
-                    
-                    <div class="cart-item-qty">
-                      <%= form_with url: update_item_cart_path, method: :patch, class: "d-inline-flex align-items-center gap-2", id: "cart-item-form-#{ci[:variant].id}", data: { turbo: false } do |f| %>
-                        <%= hidden_field_tag :variant_id, ci[:variant].id %>
-                        <%= hidden_field_tag :original_quantity, ci[:quantity], id: "original-qty-#{ci[:variant].id}" %>
-                        <div class="qty-control" id="qty-control-<%= ci[:variant].id %>">
-                          <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQty(#{ci[:variant].id}, #{ci[:variant].stock_qty})" do %>
-                            <i class="bi bi-dash" aria-hidden="true"></i>
-                          <% end %>
-                          <%= number_field_tag :quantity, ci[:quantity], min: 1, max: ci[:variant].stock_qty, class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "qty-#{ci[:variant].id}", data: { original: ci[:quantity], max: ci[:variant].stock_qty }, oninput: "checkQuantityChange(#{ci[:variant].id})" %>
-                          <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, onclick: "incrementQty(#{ci[:variant].id}, #{ci[:variant].stock_qty})" do %>
-                            <i class="bi bi-plus" aria-hidden="true"></i>
-                          <% end %>
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary qty-update-btn" id="update-btn-<%= ci[:variant].id %>" aria-label="Mettre à jour" onclick="resetQuantityState(<%= ci[:variant].id %>)" style="display: none;">
-                          <i class="bi bi-check" aria-hidden="true"></i>
-                        </button>
-                      <% end %>
-                      <div class="qty-error-text" id="invalid-feedback-<%= ci[:variant].id %>" role="alert" style="display: none;">
-                        Max: <%= ci[:variant].stock_qty %>
-                      </div>
-                    </div>
-                    
-                    <div class="cart-item-price">
-                      <div class="text-end">
-                        <strong><%= format_price(ci[:subtotal_cents]) %></strong>
-                      </div>
-                    </div>
-                    
-                    <div class="cart-item-actions">
-                      <%= button_to remove_item_cart_path(variant_id: ci[:variant].id), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Supprimer", aria: { label: "Supprimer" } do %>
-                        <i class="bi bi-trash" aria-hidden="true"></i>
-                      <% end %>
-                    </div>
-                  </div>
-                </div>
+                <%= render "carts/cart_line_product", ci: ci %>
               <% end %>
             </div>
+            <% end %>
 
             <!-- Cart summary -->
             <div class="border-top pt-3">
@@ -135,9 +115,9 @@
     const originalQty = parseInt(qtyInput.dataset.original, 10);
     const maxStock = parseInt(qtyInput.dataset.max, 10);
     const currentQty = parseInt(qtyInput.value, 10) || 0;
-    
+
     const isValid = currentQty >= 1 && currentQty <= maxStock;
-    
+
     if (!isValid && currentQty > 0) {
       qtyInput.classList.add('is-invalid');
       qtyControl.classList.add('qty-invalid');
@@ -150,7 +130,7 @@
       qtyControl.classList.remove('qty-invalid');
       if (invalidFeedback) invalidFeedback.style.display = 'none';
     }
-    
+
     if (currentQty !== originalQty && isValid) {
       updateBtn.style.display = 'inline-block';
       qtyControl.classList.add('qty-changed');

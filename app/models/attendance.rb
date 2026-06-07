@@ -36,6 +36,8 @@ class Attendance < ApplicationRecord
   validate :no_duplicate_registration, on: :create
   validate :roller_size_available_for_initiation, if: :requires_roller_availability_check?
 
+  before_destroy :destroy_payment_cart_line, if: :payment_pending?
+
   after_destroy :notify_waitlist_if_needed # Notifier la liste d'attente si une place se libère
   after_update :notify_waitlist_on_cancellation, if: :saved_change_to_status? # Notifier si le statut passe à "canceled"
 
@@ -45,6 +47,15 @@ class Attendance < ApplicationRecord
   scope :participants, -> { where(is_volunteer: false) }
   scope :for_parent, -> { where(child_membership_id: nil) }
   scope :for_children, -> { where.not(child_membership_id: nil) }
+  scope :payment_pending, -> { where(status: :pending).where.not(payment_expires_at: nil) }
+
+  def payment_pending?
+    pending? && payment_expires_at.present? && payment_expires_at > Time.current
+  end
+
+  def waitlist_hold?
+    pending? && payment_expires_at.blank?
+  end
 
   # Vérifier si c'est une inscription pour un enfant
   def for_child?
@@ -86,9 +97,8 @@ class Attendance < ApplicationRecord
     return if event.unlimited?
     # Ne pas vérifier la limite pour les inscriptions annulées (elles ne comptent pas)
     return if status == "canceled"
-    # Les inscriptions "pending" verrouillent une place mais ne sont pas comptées dans has_available_spots
-    # Elles sont créées lors de la notification de la liste d'attente
-    return if status == "pending"
+    # Waitlist holds (pending without payment_expires_at) skip capacity check at creation
+    return if waitlist_hold?
     # Bénévoles ne comptent pas dans la limite
     return if is_volunteer
 
@@ -115,16 +125,8 @@ class Attendance < ApplicationRecord
         end
       end
     else
-      # Comportement classique : vérifier le total
-      # Exclure "pending" du comptage car elles verrouillent une place mais ne sont pas encore confirmées
-      active_attendances_count = event.attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count
-
-      # Si on crée une nouvelle inscription, vérifier qu'il reste de la place
-      # (ne pas compter cette inscription si elle n'est pas encore sauvegardée)
-      if new_record?
-        if active_attendances_count >= event.max_participants
-          errors.add(:event, "L'événement est complet (#{event.max_participants} participants maximum)")
-        end
+      if new_record? && event.occupied_spots_for_capacity >= event.max_participants
+        errors.add(:event, "L'événement est complet (#{event.max_participants} participants maximum)")
       end
     end
   end
@@ -310,7 +312,7 @@ class Attendance < ApplicationRecord
     # Quand une inscription est supprimée, vérifier si on doit notifier la liste d'attente
     # Ne pas notifier si c'est une inscription "pending" (c'est une place verrouillée par la liste d'attente)
     # Note: dans after_destroy, l'objet existe encore en mémoire avec ses attributs
-    return if status == "pending"
+    return if waitlist_hold?
 
     # Ne pas notifier si c'est un bénévole (ils ne comptent pas dans les places)
     return if is_volunteer
@@ -338,6 +340,10 @@ class Attendance < ApplicationRecord
   end
 
   # Gestion du stock de rollers (réservations par initiation, stock physique inchangé)
+  def destroy_payment_cart_line
+    user.cart_lines.where(line_type: :event_registration, reference: self).destroy_all
+  end
+
   def requires_roller_availability_check?
     needs_equipment? && roller_size.present? && status != "canceled" && event.is_a?(Event::Initiation)
   end
