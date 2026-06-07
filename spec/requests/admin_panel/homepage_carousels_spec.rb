@@ -162,6 +162,39 @@ RSpec.describe "AdminPanel::HomepageCarousels", type: :request do
         expect(flash[:alert]).to include("Erreur")
         expect(HomepageCarouselSetting.current.interval_seconds).to eq(6)
       end
+
+      it "uploads a custom hero image" do
+        test_image_path = Rails.root.join("spec", "fixtures", "files", "test-image.jpg")
+
+        patch update_settings_admin_panel_homepage_carousels_path, params: {
+          homepage_carousel_setting: {
+            hero_image: fixture_file_upload(test_image_path, "image/jpeg")
+          }
+        }
+
+        expect(response).to redirect_to(admin_panel_homepage_carousels_path)
+        expect(flash[:notice]).to eq("Paramètres du carrousel mis à jour")
+        expect(HomepageCarouselSetting.current.custom_hero_image?).to be(true)
+      end
+
+      it "removes a custom hero image and falls back to default" do
+        settings = HomepageCarouselSetting.current
+        test_image_path = Rails.root.join("spec", "fixtures", "files", "test-image.jpg")
+        settings.hero_image.attach(
+          io: File.open(test_image_path),
+          filename: "test-image.jpg",
+          content_type: "image/jpeg"
+        )
+
+        patch update_settings_admin_panel_homepage_carousels_path, params: {
+          remove_hero_image: "1",
+          homepage_carousel_setting: { autoplay_enabled: true, interval_seconds: 6 }
+        }
+
+        expect(response).to redirect_to(admin_panel_homepage_carousels_path)
+        expect(flash[:notice]).to eq("Image hero réinitialisée (image par défaut)")
+        expect(HomepageCarouselSetting.current.custom_hero_image?).to be(false)
+      end
     end
 
     context "when user is not signed in" do

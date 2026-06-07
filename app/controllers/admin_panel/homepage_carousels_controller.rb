@@ -131,6 +131,13 @@ module AdminPanel
 
       @carousel_settings = HomepageCarouselSetting.current
 
+      if ActiveModel::Type::Boolean.new.cast(params[:remove_hero_image])
+        @carousel_settings.hero_image.purge
+        flash[:notice] = "Image hero réinitialisée (image par défaut)"
+        redirect_to admin_panel_homepage_carousels_path
+        return
+      end
+
       if @carousel_settings.update(carousel_settings_params)
         flash[:notice] = "Paramètres du carrousel mis à jour"
       else
@@ -155,7 +162,7 @@ module AdminPanel
     end
 
     def carousel_settings_params
-      params.require(:homepage_carousel_setting).permit(:autoplay_enabled, :interval_seconds)
+      params.require(:homepage_carousel_setting).permit(:autoplay_enabled, :interval_seconds, :hero_image)
     end
 
     # Swap positions of two records without violating unique constraint

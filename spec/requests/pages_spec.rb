@@ -22,6 +22,12 @@ RSpec.describe 'Pages', type: :request do
         get '/'
         expect(response.body).not_to include('id="announcementCarousel"')
       end
+
+      it 'uses the default hero banner without a custom image class' do
+        get '/'
+        expect(response.body).to include('banner-hero mb-0')
+        expect(response.body).not_to include('banner-hero--custom')
+      end
     end
 
     context 'when at least one active carousel slide exists' do
@@ -50,6 +56,23 @@ RSpec.describe 'Pages', type: :request do
       it 'shows only active slides (active slide title in body)' do
         get '/'
         expect(response.body).to include('Événements à venir')
+      end
+    end
+
+    context 'when a custom hero image is configured' do
+      before do
+        settings = HomepageCarouselSetting.current
+        test_image_path = Rails.root.join('spec', 'fixtures', 'files', 'test-image.jpg')
+        settings.hero_image.attach(
+          io: File.open(test_image_path),
+          filename: 'test-image.jpg',
+          content_type: 'image/jpeg'
+        )
+      end
+
+      it 'renders the hero with the custom image class' do
+        get '/'
+        expect(response.body).to include('banner-hero--custom')
       end
     end
 

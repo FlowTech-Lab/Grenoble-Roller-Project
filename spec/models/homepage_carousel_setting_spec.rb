@@ -49,4 +49,42 @@ RSpec.describe HomepageCarouselSetting, type: :model do
       expect(setting.errors[:interval_seconds]).to be_present
     end
   end
+
+  describe "#custom_hero_image?" do
+    it "returns false when no hero image is attached" do
+      setting = described_class.current
+
+      expect(setting.custom_hero_image?).to be(false)
+    end
+
+    it "returns true when a hero image is attached" do
+      setting = described_class.current
+      attach_test_hero_image(setting)
+
+      expect(setting.custom_hero_image?).to be(true)
+    end
+  end
+
+  describe "hero image validation" do
+    it "rejects unsupported content types" do
+      setting = described_class.current
+      setting.hero_image.attach(
+        io: StringIO.new("not-an-image"),
+        filename: "hero.txt",
+        content_type: "text/plain"
+      )
+
+      expect(setting).to be_invalid
+      expect(setting.errors[:hero_image]).to be_present
+    end
+  end
+
+  def attach_test_hero_image(setting)
+    test_image_path = Rails.root.join("spec", "fixtures", "files", "test-image.jpg")
+    setting.hero_image.attach(
+      io: File.open(test_image_path),
+      filename: "test-image.jpg",
+      content_type: "image/jpeg"
+    )
+  end
 end
