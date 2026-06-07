@@ -241,9 +241,9 @@ None.
 
 #### DoD
 
-- [ ] DR-001 + 3-phases plan link to this MASTER doc.
-- [ ] `unified-cart-ux.md` updated (donation + partial payment).
-- [ ] Flag present; full suite green.
+- [x] DR-001 + 3-phases plan link to this MASTER doc.
+- [x] `unified-cart-ux.md` updated (donation + partial payment).
+- [x] Flag present; full suite green.
 
 ---
 

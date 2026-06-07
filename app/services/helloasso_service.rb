@@ -191,6 +191,76 @@ class HelloassoService
       }
     end
 
+# --- Unified checkout (Wave 0 spike — payload only, no HTTP) -------------------
+
+    # Builds the JSON payload for a unified HelloAsso checkout intent from a Checkout
+    # object with checkout_lines (product, membership, event_registration) and donation.
+    def build_unified_checkout_intent_payload(checkout, back_url:, error_url:, return_url:)
+      raise ArgumentError, "checkout is required" unless checkout
+      raise "HelloAsso organization_slug manquant" if organization_slug.to_s.strip.empty?
+
+      lines = Array(checkout.checkout_lines)
+      donation = checkout.donation_cents.to_i
+      items = []
+
+      lines.each do |line|
+        line_type = line.line_type.to_s
+        item_type = case line_type
+                    when "product_variant" then "Product"
+                    when "membership" then "Membership"
+                    when "event_registration" then "EventRegistration"
+                    else "Product"
+                    end
+
+        items << {
+          name: line.label,
+          quantity: line.quantity.to_i,
+          amount: line.amount_cents.to_i,
+          type: item_type,
+          lineType: line_type,
+          referenceType: line.reference_type,
+          referenceId: line.reference_id,
+          metadata: line.respond_to?(:metadata) ? (line.metadata || {}) : {}
+        }
+      end
+
+      if donation.positive?
+        items << {
+          name: "Contribution à l'association",
+          quantity: 1,
+          amount: donation,
+          type: "Donation"
+        }
+      end
+
+      subtotal_cents = checkout.subtotal_cents.to_i
+      total_cents = subtotal_cents + donation
+
+      membership_ids = lines.select { |l| l.line_type.to_s == "membership" }.map(&:reference_id)
+      attendance_ids = lines.select { |l| l.line_type.to_s == "event_registration" }.map(&:reference_id)
+      product_variant_ids = lines.select { |l| l.line_type.to_s == "product_variant" }.map(&:reference_id)
+
+      {
+        totalAmount: total_cents,
+        initialAmount: total_cents,
+        itemName: items.any? ? items.map { |i| "#{i[:name]} x#{i[:quantity]}" }.join(", ") : "Checkout ##{checkout.id}",
+        backUrl: back_url,
+        errorUrl: error_url,
+        returnUrl: return_url,
+        containsDonation: donation.positive?,
+        metadata: {
+          checkoutId: checkout.id,
+          lineTypes: lines.map { |l| l.line_type.to_s }.uniq,
+          membershipIds: membership_ids,
+          attendanceIds: attendance_ids,
+          productVariantIds: product_variant_ids,
+          donationCents: donation,
+          environment: environment,
+          items: items
+        }
+      }
+    end
+
     # ---- OAuth2 / Token management -------------------------------------------------
 
     # Calls HelloAsso OAuth2 to obtain an access_token (client_credentials flow, no end user)
