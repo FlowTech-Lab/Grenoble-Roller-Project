@@ -51,10 +51,10 @@
                 <i class="bi bi-signpost-2" aria-hidden="true"></i>
                 <%= @event.loops_count %> boucles • <%= format_event_distance(@event) %>
               </span>
-            <% elsif @event.route.present? %>
+            <% elsif format_event_distance(@event).present? %>
               <span class="meta-item">
-                <i class="bi bi-signpost" aria-hidden="true"></i>
-                <%= @event.route.name %>
+                <i class="bi bi-signpost-2" aria-hidden="true"></i>
+                <%= format_event_distance(@event) %>
               </span>
             <% end %>
           </div>
@@ -213,41 +213,33 @@
               <div class="card-img-top route-image-container" 
                    data-bs-toggle="modal" 
                    data-bs-target="#routeImageModalSingle"
-                   aria-label="Agrandir l'image du parcours <%= @event.route.name %>">
+                   aria-label="Agrandir la carte du parcours">
                 <%= image_tag(rails_representation_path(@event.route.map_image.variant(resize_to_limit: [1200, 600])), 
-                    alt: @event.route.name, 
+                    alt: "Carte du parcours", 
                     class: "route-image") %>
               </div>
             <% end %>
             <div class="card-body">
-              <h6 class="card-title mb-2">
-                <%= @event.route.name %>
-              </h6>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <% if @event.route.difficulty.present? %>
-                  <span class="badge bg-info">
-                    <% difficulty_label = case @event.route.difficulty
-                        when 'easy' then 'Facile'
-                        when 'medium' then 'Moyen'
-                        when 'hard' then 'Difficile'
-                        else @event.route.difficulty.humanize
-                      end %>
-                    <%= difficulty_label %>
-                  </span>
+              <ul class="event-loop-card__stats list-unstyled mb-0">
+                <% if format_event_distance(@event).present? %>
+                  <li class="event-loop-card__stat">
+                    <i class="bi bi-signpost-2" aria-hidden="true"></i>
+                    <%= format_event_distance(@event) %>
+                  </li>
                 <% end %>
-                <% if @event.distance_km.present? %>
-                  <span class="badge bg-primary">
-                    <i class="bi bi-signpost-2 me-1" aria-hidden="true"></i>
-                    <%= number_with_precision(@event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
-                  </span>
+                <% if @event.route.difficulty.present? %>
+                  <li class="event-loop-card__stat event-loop-card__stat--difficulty">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <%= route_difficulty_label(@event.route.difficulty) %>
+                  </li>
                 <% end %>
                 <% if @event.route.elevation_m.present? %>
-                  <span class="badge bg-secondary">
-                    <i class="bi bi-mountain me-1" aria-hidden="true"></i>
-                    <%= @event.route.elevation_m %> m
-                  </span>
+                  <li class="event-loop-card__stat">
+                    <i class="bi bi-mountain" aria-hidden="true"></i>
+                    <%= @event.route.elevation_m %> m D+
+                  </li>
                 <% end %>
-              </div>
+              </ul>
             </div>
           </div>
         </div>
@@ -664,13 +656,13 @@
       <div class="modal-content bg-transparent border-0">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title text-white" id="routeImageModalLabelSingle">
-            <%= @event.route.name %>
+            Carte du parcours
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body p-0 text-center">
           <%= image_tag(rails_representation_path(@event.route.map_image), 
-              alt: @event.route.name, 
+              alt: "Carte du parcours", 
               class: "img-fluid rounded", 
               style: "max-height: 85vh; width: auto;") %>
         </div>
