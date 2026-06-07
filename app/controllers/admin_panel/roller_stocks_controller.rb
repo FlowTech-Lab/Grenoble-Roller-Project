@@ -38,10 +38,10 @@ module AdminPanel
 
       if count_initiations > 0
         redirect_to admin_panel_roller_stocks_path,
-                    notice: "#{count_initiations} initiation(s) traitée(s), #{total_rollers} roller(s) remis en stock."
+                    notice: "#{count_initiations} initiation(s) traitée(s), #{total_rollers} prêt(s) clôturé(s)."
       else
         redirect_to admin_panel_roller_stocks_path,
-                    notice: "Aucune initiation terminée à traiter (tout le matériel est déjà remis en stock)."
+                    notice: "Aucune initiation terminée à traiter (tout le matériel est déjà marqué rendu)."
       end
     end
 

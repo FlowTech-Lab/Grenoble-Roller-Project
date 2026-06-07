@@ -228,12 +228,10 @@ class Event < ApplicationRecord
       .exists?
   end
 
-  # Cette méthode doit être appelée après qu'un événement soit terminé
-  # Retourne le nombre de rollers remis en stock, ou nil si déjà traité
+  # Marks equipment as returned for this initiation (releases reservations, physical stock unchanged).
   def return_roller_stock
-    return unless is_a?(Event::Initiation) # Seulement pour les initiations
+    return unless is_a?(Event::Initiation)
 
-    # Sécurité : éviter de remettre le stock plusieurs fois
     if stock_returned_at.present?
       Rails.logger.info("Stock déjà remis en place pour initiation ##{id} le #{stock_returned_at}")
       return nil
@@ -242,26 +240,13 @@ class Event < ApplicationRecord
     attendances_to_process = attendances
       .where(needs_equipment: true)
       .where.not(roller_size: nil)
-      .where.not(status: "canceled") # Ne pas traiter les annulées (déjà remises en stock)
+      .where.not(status: "canceled")
 
-    count = 0
-    attendances_to_process.find_each do |attendance|
-      next unless attendance.roller_size.present?
+    count = attendances_to_process.count
 
-      roller_stock = RollerStock.find_by(size: attendance.roller_size)
-      if roller_stock
-        roller_stock.increment!(:quantity)
-        count += 1
-        Rails.logger.info("Stock remis en place pour taille #{attendance.roller_size} (initiation ##{id}, attendance ##{attendance.id})")
-      else
-        Rails.logger.warn("Taille de roller #{attendance.roller_size} non trouvée dans le stock lors de la remise en stock pour initiation ##{id}")
-      end
-    end
-
-    # Marquer que le stock a été remis en place (même si count = 0, pour éviter de retraiter)
-    if count > 0 || attendances_to_process.exists?
+    if count.positive?
       update_column(:stock_returned_at, Time.current)
-      Rails.logger.info("Remise en stock terminée pour initiation ##{id}: #{count} roller(s) remis en stock")
+      Rails.logger.info("Matériel marqué rendu pour initiation ##{id}: #{count} réservation(s) clôturée(s)")
     end
 
     count

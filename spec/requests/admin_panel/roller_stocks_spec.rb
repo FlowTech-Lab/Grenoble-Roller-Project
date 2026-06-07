@@ -26,9 +26,9 @@ RSpec.describe "AdminPanel::RollerStocks", type: :request do
         expect(response.body).to include("38")
       end
 
-      it "displays Tout remettre en stock button" do
+      it "displays Clôturer les prêts terminés button" do
         get admin_panel_roller_stocks_path
-        expect(response.body).to include("Tout remettre en stock")
+        expect(response.body).to include("Clôturer les prêts terminés")
       end
     end
 
@@ -81,16 +81,17 @@ RSpec.describe "AdminPanel::RollerStocks", type: :request do
           allow_any_instance_of(::Event::Initiation).to receive(:schedule_participants_report)
         end
 
-        it "redirects with success notice and increments stock" do
+        it "redirects with success notice and closes reservations without changing physical stock" do
           expect(initiation.stock_returned_at).to be_nil
           qty_before = roller_stock.reload.quantity
 
           post return_all_admin_panel_roller_stocks_path
 
           expect(response).to redirect_to(admin_panel_roller_stocks_path)
-          expect(flash[:notice]).to match(/\d+ initiation\(s\) traitée\(s\).*\d+ roller\(s\) remis/)
+          expect(flash[:notice]).to match(/\d+ initiation\(s\) traitée\(s\).*\d+ prêt\(s\) clôturé/)
           expect(initiation.reload.stock_returned_at).to be_present
-          expect(roller_stock.reload.quantity).to eq(qty_before + 1)
+          expect(roller_stock.reload.quantity).to eq(qty_before)
+          expect(RollerStock.reserved_quantity_for_size("38")).to eq(0)
         end
       end
     end

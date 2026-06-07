@@ -1,15 +1,15 @@
 ---
 title: "Gestion du Stock de Rollers (RollerStock) - Grenoble Roller"
 status: "active"
-version: "2.0"
+version: "2.3"
 created: "2025-01-30"
-updated: "2025-01-13"
+updated: "2026-06-07"
 tags: ["roller-stock", "equipment", "inventory", "initiations"]
 ---
 
 # Gestion du Stock de Rollers (RollerStock)
 
-**Dernière mise à jour** : 2025-01-13
+**Dernière mise à jour** : 2026-06-07
 
 Ce document décrit le système de gestion de l'inventaire des rollers en prêt pour les initiations et événements.
 
@@ -36,7 +36,7 @@ Le modèle `RollerStock` permet de gérer l'inventaire des rollers disponibles e
 | Attribut | Type | Description |
 |----------|------|-------------|
 | `size` | string | Taille du roller (en EU : 28 à 48) |
-| `quantity` | integer | Quantité disponible (>= 0) |
+| `quantity` | integer | Stock **physique** (>= 0) ; les réservations actives sont calculées séparément |
 | `is_active` | boolean | Taille activée/désactivée |
 
 ### Constantes
@@ -56,16 +56,18 @@ SIZES = %w[28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48].freez
 ### Scopes
 
 - `active` : Tailles actives (`is_active = true`)
-- `available` : Tailles actives avec stock > 0
+- `available` : Tailles actives avec stock physique > 0 (legacy ; préférer `selectable_for_event` pour les formulaires)
 - `ordered_by_size` : Tri par taille numérique (ordre croissant)
 
 ### Méthodes
 
 #### Instance
 
-- `available?` : Retourne `true` si actif et quantité > 0
-- `out_of_stock?` : Retourne `true` si quantité <= 0
-- `size_with_stock` : Format "XX (Y disponible(s))" pour affichage
+- `available?` : Retourne `true` si actif et stock physique > 0
+- `out_of_stock?` : Retourne `true` si stock physique <= 0
+- `size_with_stock` : Format "XX (Y disponible(s))" pour affichage (stock physique)
+- `available_quantity_for_size(size)` : Stock physique − réservations actives pour une taille
+- `selectable_for_event(event)` : Tailles proposées à l'inscription (disponibilité tenant compte des réservations)
 
 #### Classe
 
@@ -111,8 +113,8 @@ Dans les formulaires d'inscription :
 ```erb
 <%= f.select :roller_size, 
     options_for_select(
-      RollerStock.available.ordered_by_size.map { |rs| 
-        [rs.size_with_stock, rs.size] 
+      RollerStock.selectable_for_event(event).map { |rs| 
+        [rs.size_with_availability, rs.size] 
       },
       selected: f.object.roller_size
     ),
@@ -139,22 +141,24 @@ Dans les formulaires d'inscription :
 
 ### 2. Gestion Admin du Stock
 
-**ActiveAdmin** : Interface admin pour gérer le stock
+**Admin Panel** : `AdminPanel::RollerStocksController` — `/admin-panel/roller-stocks`
 
 - Lister toutes les tailles
-- Modifier les quantités
+- Modifier les quantités **physiques**
 - Activer/désactiver des tailles
-- Rechercher/filtrer par taille, quantité, statut
+- **Clôturer les prêts terminés** (batch `stock_returned_at`)
 
 **Actions** :
-- `quantity += 1` : Ajout de rollers (achat, retour)
-- `quantity -= 1` : Retrait de rollers (prêt, perte)
-- `is_active = false` : Désactiver une taille (plus disponible)
+- `quantity += N` : Ajout de rollers au parc (achat, réception)
+- `quantity -= N` : Retrait du parc (perte, mise au rebut)
+- `is_active = false` : Désactiver une taille (plus proposée à l'inscription)
+
+Les prêts en cours ne modifient pas `quantity` ; ils créent des **réservations** via `Attendance`.
 
 ### 3. Affichage Stock Disponible
 
 **Dans les formulaires** :
-- Seules les tailles actives avec stock > 0 sont affichées
+- Tailles actives avec au moins 1 paire disponible (physique − réservations)
 - Format : "XX (Y disponible(s))"
 - Tri par taille numérique
 
@@ -168,14 +172,7 @@ Dans les formulaires d'inscription :
 
 ### Export Demandes d'Équipement
 
-**Fichier** : `app/admin/attendances.rb` (ActiveAdmin)
-
-```ruby
-# Export CSV des participants avec demande de matériel
-csv << [att.user.full_name, att.user.email, att.user.phone, att.roller_size]
-```
-
-**Utilisation** : Permet aux organisateurs de préparer les rollers à prêter
+**Admin Panel** : pages initiations / présences — export des participants avec matériel demandé.
 
 ### Notes d'Équipement
 
@@ -187,54 +184,38 @@ Le champ `equipment_note` (text) dans `Attendance` permet d'ajouter des notes su
 
 ### Ajout de Rollers
 
-1. Admin va dans ActiveAdmin → RollerStock
+1. Admin va dans Admin Panel → Stock Rollers
 2. Sélectionne la taille ou crée une nouvelle entrée
-3. Augmente `quantity`
+3. Augmente `quantity` (stock **physique**)
 4. Active `is_active` si nécessaire
 
 ### Prêt de Rollers
 
 1. Participant s'inscrit avec `needs_equipment = true` et `roller_size`
-2. **Le stock est automatiquement décrémenté** lors de la création de l'inscription (`Attendance#after_create`)
+2. **Une réservation** est enregistrée ; le stock physique reste inchangé
 3. Organisateur exporte la liste des demandes
 4. Rollers préparés et prêtés le jour de l'initiation
 
-**Gestion automatique du stock** :
-- Lors de l'inscription : `quantity` est décrémenté automatiquement
-- Si annulation : `quantity` est incrémenté automatiquement
-- Si changement de taille : l'ancienne taille est incrémentée, la nouvelle décrémentée
+**Gestion des réservations** :
+- Inscription : vérifie la disponibilité (`physique − réservations`) puis réserve
+- Annulation : libère la réservation
+- Changement de taille : libère l'ancienne, réserve la nouvelle (si disponible)
+- Clôture prêt (`stock_returned_at`) : libère toutes les réservations de l'initiation
 
-### Retour de Rollers
+### Retour de Rollers (historique v2.2 — remplacé en v2.3)
 
-**Trois options** (retour automatique désactivé tant que non validé par le staff) :
-
-1. **Bouton "Tout remettre en stock"** (recommandé pour un rattrapage global) : **Admin Panel → Stock Rollers** (Gestion de stock). Un clic remet en stock tous les rollers des initiations **déjà terminées** et non encore marquées « Matériel rendu », et marque chaque initiation concernée comme si vous aviez cliqué « Matériel rendu » sur sa page Présences. Idéal pour rattraper plusieurs initiations d’un coup.
-2. **Bouton "Matériel rendu" par initiation** : Admin Panel → Initiations → [Initiation] → Présences. Le bouton apparaît si l’initiation est passée, qu’il y a du matériel prêté et qu’il n’a pas encore été rendu.
-3. **Job automatique** : `ReturnRollerStockJob` existe mais est **désactivé** (schedule.rb + recurring.yml) en attente de validation par le staff. Une fois validé, il pourra être réactivé (tous les jours à 2h).
-
-**Permissions** : Grade INITIATION (level 40) ou plus pour « Matériel rendu » ; accès Admin Panel (RollerStock) pour « Tout remettre en stock ».
-
-**Impact du bouton "Tout remettre en stock"** :
-- Cible : toutes les initiations **terminées** (`start_at + duration_min <= now`) avec `stock_returned_at` nil et au moins une attendance avec matériel (non annulée).
-- Action : pour chaque telle initiation, appelle `Event#return_roller_stock` (incrémente `RollerStock` par taille, puis met à jour `stock_returned_at`). Aucun double traitement grâce à `stock_returned_at`.
-- Résultat : les quantités par taille dans Gestion de stock augmentent ; les initiations concernées affichent « Matériel rendu le [date] » sur la page Présences.
-- Aucun impact sur les initiations à venir ni sur les inscriptions en attente.
-
-**Méthode technique** :
-- La méthode `Event#return_roller_stock` incrémente le stock pour chaque taille prêtée
-- La colonne `stock_returned_at` dans `events` empêche les retraitements multiples
-- Seules les attendances non annulées sont traitées
+Voir la section **Limitations Actuelles** ci-dessous pour le comportement actuel (réservations + clôture).
 
 ---
 
 ## ✅ Fonctionnalités Implémentées
 
-### Gestion Automatique du Stock
+### Gestion du Stock (v2.3)
 
-- **Décrémentation automatique** lors de l'inscription avec matériel
-- **Incrémentation automatique** lors de l'annulation
-- **Gestion des changements** de taille (swap automatique)
-- **Retour matériel** : bouton **"Tout remettre en stock"** dans Gestion de stock (Admin Panel → Stock Rollers) + bouton **"Matériel rendu"** par initiation (page Présences). Job automatique (`ReturnRollerStockJob`) désactivé en attente validation staff.
+- **Stock physique** : `RollerStock.quantity` ajusté uniquement en admin
+- **Réservations** : calculées depuis les inscriptions actives sur initiations non clôturées
+- **Validation** à l'inscription : disponibilité = physique − réservations
+- **Clôture prêt** : bouton **« Clôturer les prêts terminés »** (Stock Rollers) + **« Matériel rendu »** par initiation + job `ReturnRollerStockJob` (2h)
 
 ### Méthode `Event#return_roller_stock`
 
@@ -243,27 +224,23 @@ Le champ `equipment_note` (text) dans `Attendance` permet d'ajouter des notes su
 ```ruby
 def return_roller_stock
   return unless is_a?(Event::Initiation)
-  
-  # Sécurité : éviter de remettre le stock plusieurs fois
   return nil if stock_returned_at.present?
-  
-  # Traiter toutes les attendances avec matériel (non annulées)
-  # Incrémenter le stock pour chaque taille
-  # Marquer stock_returned_at pour éviter les retraitements
+
+  # Marque stock_returned_at ; libère les réservations (stock physique inchangé)
 end
 ```
 
 **Méthode `Event#has_equipment_loaned?`** : Vérifie s'il y a du matériel prêté pour l'événement
 
-### Bouton "Tout remettre en stock" dans Gestion de stock
+### Bouton « Clôturer les prêts terminés » dans Gestion de stock
 
 **Fichier** : `app/views/admin_panel/roller_stocks/index.html.erb`  
 **Action** : `POST /admin-panel/roller-stocks/return_all`  
 **Controller** : `AdminPanel::RollerStocksController#return_all`
 
-- Remet en stock tous les rollers des initiations **déjà terminées** et non encore marquées « Matériel rendu ».
+- Clôture le matériel pour toutes les initiations **déjà terminées** non encore marquées « Matériel rendu ».
 - Équivalent à cliquer « Matériel rendu » sur chaque initiation concernée.
-- Confirmation Turbo avant envoi. Permission : accès Admin Panel (RollerStock).
+- Le stock physique affiché ne change pas ; les réservations actives diminuent.
 
 ### Bouton "Matériel rendu" dans Présences
 
@@ -276,13 +253,28 @@ end
 
 ## ⚠️ Limitations Actuelles
 
-### Stock global (une seule réserve par taille)
+### Stock physique + réservations par initiation
 
-- Le stock est **global** : une taille (ex. 38) a une quantité unique partagée entre toutes les initiations.
-- **Comportement attendu** : une paire réservée pour une initiation du 01/01 est **libérée après** cette initiation (bouton "Tout remettre en stock" ou "Matériel rendu" par initiation ; job automatique désactivé en attente validation staff), donc à nouveau disponible pour une initiation du 05/01.
-- Les événements **simultanés** (même jour / même créneau) partagent le même stock ; l’organisateur doit vérifier la disponibilité.
+- **`RollerStock.quantity`** = inventaire **physique** réel (modifié uniquement dans l’admin stock).
+- **Réservations** = inscriptions avec matériel sur une initiation dont `stock_returned_at` est nil.
+- **Disponible** pour une taille = `stock physique − réservations actives` (toutes initiations non clôturées confondues).
+- **Retour matériel** (`stock_returned_at`) = clôture les réservations de cette initiation ; le stock physique ne bouge pas.
+- Après clôture, les mêmes paires redeviennent disponibles pour les initiations suivantes.
 
-**Alternative non implémentée** : stock "par initiation" (chaque initiation aurait son propre pool de tailles) — évolution plus lourde.
+| Moment | Comportement |
+|--------|--------------|
+| Inscription avec matériel | Réservation enregistrée ; stock physique inchangé |
+| Annulation | Réservation libérée |
+| Initiation terminée + matériel rendu | `stock_returned_at` renseigné ; réservations clôturées |
+| Admin stock | Ajuste le parc physique uniquement |
+
+### Retour de Rollers
+
+**Trois options** :
+
+1. **Bouton « Clôturer les prêts terminés »** (Admin → Stock Rollers) : marque le matériel rendu pour toutes les initiations terminées non clôturées.
+2. **Bouton « Matériel rendu »** par initiation (page Présences).
+3. **Job automatique** `ReturnRollerStockJob` (tous les jours à 2h, activé en prod via `recurring.yml`).
 
 ---
 
@@ -300,7 +292,9 @@ scope :ordered_by_size, -> { order(Arel.sql("CAST(size AS INTEGER)")) }
 
 ### ActiveAdmin Integration
 
-Le modèle expose `ransackable_attributes` et `ransackable_associations` pour permettre la recherche et le filtrage dans ActiveAdmin.
+Legacy ActiveAdmin resources may still exist for reference; **operational stock management** uses Admin Panel (`roller_stocks`).
+
+Le modèle expose `ransackable_attributes` pour recherche admin.
 
 ### Hashid
 
@@ -313,13 +307,13 @@ Utilisation de `Hashid::Rails` pour générer des identifiants URL-friendly (uti
 - **Modèle** : `app/models/roller_stock.rb`
 - **Intégration Attendance** : `app/models/attendance.rb` (champ `roller_size`, validation)
 - **Intégration WaitlistEntry** : `app/models/waitlist_entry.rb` (champ `roller_size`, validation)
-- **Admin** : ActiveAdmin configuration (à vérifier dans `app/admin/`)
+- **Admin** : `app/controllers/admin_panel/roller_stocks_controller.rb`
 
 ---
 
 ## 🎯 Améliorations Futures Possibles
 
-1. **Stock par initiation** : Chaque initiation avec son propre pool de tailles (évolution lourde)
+1. ~~**Stock par initiation**~~ : implémenté via réservations + clôture (`stock_returned_at`)
 2. **Alertes stock faible** : Notification admin quand quantité < seuil
 3. **Historique prêts** : Suivi des prêts par participant/événement
 4. **États des rollers** : Suivi de l'état (neuf, usé, réparation)
@@ -327,6 +321,13 @@ Utilisation de `Hashid::Rails` pour générer des identifiants URL-friendly (uti
 ---
 
 ## 📝 Changelog
+
+### Version 2.3 (2026-06-05)
+- ✅ **Réservations par initiation** : `RollerStock.quantity` = parc physique ; disponibilité = physique − réservations actives
+- ✅ Suppression des callbacks décrément/incrément sur `Attendance`
+- ✅ Bouton renommé « Clôturer les prêts terminés » ; `return_roller_stock` ne modifie plus le stock physique
+- ✅ Job `ReturnRollerStockJob` actif (2h via `recurring.yml`)
+- ⚠️ **Post-déploiement** : ajuster le stock physique en admin si des décréments legacy ont faussé les quantités
 
 ### Version 2.2 (2026-01-31)
 - ✅ **Bouton "Tout remettre en stock"** dans Gestion de stock (Admin Panel → Stock Rollers) : remet en stock tous les rollers des initiations déjà terminées et non encore marquées « Matériel rendu », et marque chaque initiation comme si « Matériel rendu » avait été cliqué. Idéal pour rattrapage global.
@@ -347,6 +348,6 @@ Utilisation de `Hashid::Rails` pour générer des identifiants URL-friendly (uti
 
 ---
 
-**Version** : 2.2  
-**Dernière mise à jour** : 2026-01-31
+**Version** : 2.3  
+**Dernière mise à jour** : 2026-06-07
 

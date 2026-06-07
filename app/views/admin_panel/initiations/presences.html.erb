@@ -13,7 +13,7 @@
   <div class="d-flex gap-2">
     <% # Afficher le bouton "Matériel rendu" seulement si l'initiation est passée, qu'il y a du matériel prêté et qu'il n'a pas encore été rendu %>
     <% if @initiation.start_at.present? && @initiation.start_at <= Time.current && @initiation.has_equipment_loaned? && @initiation.stock_returned_at.nil? %>
-      <%= form_with url: return_material_admin_panel_initiation_path(@initiation), method: :post, local: true, data: { turbo_confirm: "Confirmer le retour du matériel ? Les rollers seront remis en stock." } do |f| %>
+      <%= form_with url: return_material_admin_panel_initiation_path(@initiation), method: :post, local: true, data: { turbo_confirm: "Confirmer le retour du matériel ? Les prêts seront clôturés pour cette initiation." } do |f| %>
         <%= f.button type: :submit, class: "btn btn-success" do %>
           <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
           Matériel rendu

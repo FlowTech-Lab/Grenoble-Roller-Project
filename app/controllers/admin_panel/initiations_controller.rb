@@ -214,18 +214,18 @@ module AdminPanel
         return
       end
 
-      # Remettre le stock en place
+      # Clôturer les réservations de prêt
       rollers_returned = @initiation.return_roller_stock
 
       if rollers_returned && rollers_returned > 0
         redirect_to presences_admin_panel_initiation_path(@initiation),
-                    notice: "Matériel rendu avec succès. #{rollers_returned} roller(s) remis en stock."
+                    notice: "Matériel rendu avec succès. #{rollers_returned} prêt(s) clôturé(s)."
       elsif rollers_returned == 0
         redirect_to presences_admin_panel_initiation_path(@initiation),
-                    notice: "Aucun matériel à remettre en stock pour cette initiation."
+                    notice: "Aucun matériel en prêt pour cette initiation."
       else
         redirect_to presences_admin_panel_initiation_path(@initiation),
-                    alert: "Erreur lors de la remise en stock du matériel."
+                    alert: "Erreur lors de la clôture du matériel."
       end
     end
 
