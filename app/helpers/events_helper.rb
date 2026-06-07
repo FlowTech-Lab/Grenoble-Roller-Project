@@ -81,6 +81,23 @@ module EventsHelper
     values.map { |km| format_distance_km(km) }.join(" + ")
   end
 
+  def route_difficulty_label(difficulty)
+    case difficulty
+    when "easy" then "Facile"
+    when "medium" then "Moyen"
+    when "hard" then "Difficile"
+    else difficulty.to_s.humanize
+    end
+  end
+
+  def event_loop_columns_class(loops_count)
+    case loops_count
+    when 2 then "col-12 col-md-6"
+    when 3 then "col-12 col-md-4"
+    else "col-12 col-sm-6 col-xl-3"
+    end
+  end
+
   # Formate la durée d'un événement et calcule l'heure de fin
   def format_event_duration(event)
     return nil unless event.start_at && event.duration_min

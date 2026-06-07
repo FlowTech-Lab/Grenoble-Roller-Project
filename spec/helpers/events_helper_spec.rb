@@ -26,4 +26,20 @@ RSpec.describe EventsHelper, type: :helper do
       expect(helper.format_event_distance(event)).not_to include('12')
     end
   end
+
+  describe '#route_difficulty_label' do
+    it 'returns French labels' do
+      expect(helper.route_difficulty_label('easy')).to eq('Facile')
+      expect(helper.route_difficulty_label('medium')).to eq('Moyen')
+      expect(helper.route_difficulty_label('hard')).to eq('Difficile')
+    end
+  end
+
+  describe '#event_loop_columns_class' do
+    it 'returns responsive column classes' do
+      expect(helper.event_loop_columns_class(2)).to eq('col-12 col-md-6')
+      expect(helper.event_loop_columns_class(3)).to eq('col-12 col-md-4')
+      expect(helper.event_loop_columns_class(4)).to eq('col-12 col-sm-6 col-xl-3')
+    end
+  end
 end

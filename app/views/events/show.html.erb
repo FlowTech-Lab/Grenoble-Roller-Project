@@ -194,61 +194,10 @@
           <h2 class="h5 fw-semibold mb-3">
             <i class="bi bi-signpost-2 me-2 text-liquid-primary" aria-hidden="true"></i>Parcours par boucle
           </h2>
-          <div class="row g-4">
-            <% @event.loops_with_routes.each_with_index do |loop_data, index| %>
-              <div class="col-12 <%= @event.loops_count == 2 ? 'col-md-6' : 'col-md-4' %>">
-                <div class="card card-liquid border-liquid h-100">
-                  <% if loop_data[:route]&.map_image&.attached? %>
-                    <div class="card-img-top route-image-container" 
-                         data-bs-toggle="modal" 
-                         data-bs-target="#routeImageModal<%= loop_data[:loop_number] %>"
-                         aria-label="Agrandir l'image du parcours <%= loop_data[:route].name %>">
-                      <%= image_tag(rails_representation_path(loop_data[:route].map_image.variant(resize_to_limit: [800, 400])), 
-                          alt: loop_data[:route].name, 
-                          class: "route-image") %>
-                    </div>
-                  <% end %>
-                  <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                      <span class="badge bg-primary me-2">
-                        <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Boucle <%= loop_data[:loop_number] %>
-                      </span>
-                      <% if loop_data[:distance_km] %>
-                        <span class="text-muted small">
-                          <i class="bi bi-signpost-2 me-1" aria-hidden="true"></i>
-                          <%= number_with_precision(loop_data[:distance_km], precision: 1, strip_insignificant_zeros: true) %> km
-                        </span>
-                      <% end %>
-                    </div>
-                    <% if loop_data[:route] %>
-                      <h6 class="card-title mb-2">
-                        <%= loop_data[:route].name %>
-                      </h6>
-                      <% if loop_data[:route].difficulty.present? %>
-                        <span class="badge bg-info mb-2">
-                          <% difficulty_label = case loop_data[:route].difficulty
-                              when 'easy' then 'Facile'
-                              when 'medium' then 'Moyen'
-                              when 'hard' then 'Difficile'
-                              else loop_data[:route].difficulty.humanize
-                            end %>
-                          <%= difficulty_label %>
-                        </span>
-                      <% end %>
-                      <% if loop_data[:route].elevation_m.present? %>
-                        <p class="text-muted small mb-0">
-                          <i class="bi bi-mountain me-1" aria-hidden="true"></i>
-                          Dénivelé : <%= loop_data[:route].elevation_m %> m
-                        </p>
-                      <% end %>
-                    <% else %>
-                      <p class="text-muted mb-0">
-                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
-                        Parcours non défini
-                      </p>
-                    <% end %>
-                  </div>
-                </div>
+          <div class="row g-3">
+            <% @event.loops_with_routes.each do |loop_data| %>
+              <div class="<%= event_loop_columns_class(@event.loops_count) %>">
+                <%= render "events/loop_card", loop_data: loop_data %>
               </div>
             <% end %>
           </div>
@@ -694,13 +643,13 @@
           <div class="modal-content bg-transparent border-0">
             <div class="modal-header border-0 pb-0">
               <h5 class="modal-title text-white" id="routeImageModalLabel<%= loop_data[:loop_number] %>">
-                <%= loop_data[:route].name %> - Boucle <%= loop_data[:loop_number] %>
+                Boucle <%= loop_data[:loop_number] %>
               </h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body p-0 text-center">
               <%= image_tag(rails_representation_path(loop_data[:route].map_image), 
-                  alt: loop_data[:route].name, 
+                  alt: "Carte du parcours, boucle #{loop_data[:loop_number]}", 
                   class: "img-fluid rounded", 
                   style: "max-height: 85vh; width: auto;") %>
             </div>

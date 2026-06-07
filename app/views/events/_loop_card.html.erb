@@ -1,0 +1,60 @@
+<%# locals: loop_data (required) %>
+<% route = loop_data[:route] %>
+<% loop_number = loop_data[:loop_number] %>
+<% distance_km = loop_data[:distance_km] %>
+
+<article class="card card-liquid border-liquid h-100 event-loop-card">
+  <div class="event-loop-card__header">
+    <span class="badge bg-primary event-loop-card__badge">
+      <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Boucle <%= loop_number %>
+    </span>
+  </div>
+
+  <% if route&.map_image&.attached? %>
+    <div class="event-loop-card__media route-image-container"
+         data-bs-toggle="modal"
+         data-bs-target="#routeImageModal<%= loop_number %>"
+         aria-label="Agrandir la carte du parcours, boucle <%= loop_number %>">
+      <%= image_tag(
+            rails_representation_path(route.map_image.variant(resize_to_limit: [800, 400])),
+            alt: "Carte du parcours, boucle #{loop_number}",
+            class: "route-image"
+          ) %>
+    </div>
+  <% else %>
+    <div class="event-loop-card__media event-loop-card__media--empty" aria-hidden="true">
+      <i class="bi bi-map"></i>
+      <span>Carte non disponible</span>
+    </div>
+  <% end %>
+
+  <div class="event-loop-card__body">
+    <% if route %>
+      <ul class="event-loop-card__stats list-unstyled mb-0">
+        <% if distance_km.present? %>
+          <li class="event-loop-card__stat">
+            <i class="bi bi-signpost-2" aria-hidden="true"></i>
+            <%= number_with_precision(distance_km, precision: 1, strip_insignificant_zeros: true) %> km
+          </li>
+        <% end %>
+        <% if route.difficulty.present? %>
+          <li class="event-loop-card__stat event-loop-card__stat--difficulty">
+            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+            <%= route_difficulty_label(route.difficulty) %>
+          </li>
+        <% end %>
+        <% if route.elevation_m.present? %>
+          <li class="event-loop-card__stat">
+            <i class="bi bi-mountain" aria-hidden="true"></i>
+            <%= route.elevation_m %> m D+
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-muted small mb-0">
+        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+        Parcours non défini
+      </p>
+    <% end %>
+  </div>
+</article>
