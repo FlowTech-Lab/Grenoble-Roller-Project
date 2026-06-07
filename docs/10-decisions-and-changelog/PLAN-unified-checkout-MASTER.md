@@ -815,6 +815,13 @@ Staging `.env.example` documents `UNIFIED_CART_ENABLED=true` for QA.
 - [ ] Manual QA checklist (section G) pass on staging.
 - [ ] FR copy validated by Florian.
 - [x] No session cart when flag on.
+- [x] Navbar badge counts all `CartLine` types when flag on.
+- [x] Pending payment banner on Mes sorties; cart empty states and expiry warnings.
+- [x] Mobile sticky footers on `/cart` and `/checkout`; flash CTAs for cart adds.
+- [x] `AdminPanel::CheckoutsController` read-only audit; `payment_required` on admin event show.
+- [x] `staging.env.example` documents `UNIFIED_CART_ENABLED=true`.
+- [x] `flux-boutique-helloasso.md` updated for unified flow.
+- [x] Wave 5 RSpec matrix green (see Appendix J).
 
 ---
 
@@ -853,8 +860,10 @@ Staging `.env.example` documents `UNIFIED_CART_ENABLED=true` for QA.
 #### DoD
 
 - [x] Deprecated routes removed or 301 to cart/checkout.
+- [ ] Staging deploy with `UNIFIED_CART_ENABLED=true` (human).
 - [ ] Prod flag enabled with rollback plan (section H).
 - [x] CHANGELOG updated.
+- [x] Checkout regression suite green (281 examples, Appendix J wave 6 paths).
 
 ---
 
