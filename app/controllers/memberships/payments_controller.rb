@@ -7,6 +7,24 @@ module Memberships
 
     # POST /memberships/:membership_id/payments
     def create
+      if UnifiedCart.enabled?
+        unless @membership.status == "pending"
+          redirect_to membership_path(@membership), notice: "Cette adhésion n'est plus en attente de paiement."
+          return
+        end
+
+        unless @membership.health_questionnaire_complete?
+          redirect_to edit_membership_path(@membership), alert: "Le questionnaire de santé doit être complété avant de procéder au paiement."
+          return
+        end
+
+        already_in_cart = CartLineService.membership_in_cart?(current_user, @membership)
+        CartLineService.add_membership!(current_user, membership: @membership) unless already_in_cart
+        redirect_to cart_path,
+                    notice: already_in_cart ? "Cette adhésion est déjà dans votre panier." : "Adhésion ajoutée au panier"
+        return
+      end
+
       # Vérifier que l'adhésion est bien pending
       if @membership.status != "pending"
         redirect_to membership_path(@membership), notice: "Cette adhésion n'est plus en attente de paiement."
@@ -100,6 +118,34 @@ module Memberships
 
     # POST /memberships/payments/create_multiple (collection)
     def create_multiple
+      if UnifiedCart.enabled?
+        membership_ids = params[:membership_ids] || params["membership_ids"] || []
+        membership_ids = [ membership_ids ] unless membership_ids.is_a?(Array)
+        membership_ids = membership_ids.reject(&:blank?)
+
+        memberships = current_user.memberships.where(
+          id: membership_ids,
+          is_child_membership: true,
+          status: "pending"
+        )
+
+        incomplete = memberships.reject(&:health_questionnaire_complete?)
+        if incomplete.any?
+          names = incomplete.map(&:child_full_name).join(", ")
+          redirect_to memberships_path, alert: "Le questionnaire de santé doit être complété pour #{names} avant de procéder au paiement."
+          return
+        end
+
+        memberships.find_each do |membership|
+          next if CartLineService.membership_in_cart?(current_user, membership)
+
+          CartLineService.add_membership!(current_user, membership: membership)
+        end
+
+        redirect_to cart_path, notice: "Adhésions ajoutées au panier"
+        return
+      end
+
       # Rails envoie membership_ids[] comme un array
       membership_ids = params[:membership_ids] || params["membership_ids"] || []
       # Normaliser en array si c'est une string

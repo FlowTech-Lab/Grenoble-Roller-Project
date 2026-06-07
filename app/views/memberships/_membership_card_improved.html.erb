@@ -144,12 +144,16 @@
         <% end %>
       <% end %>
       
+      <% if UnifiedCart.enabled? %>
+        <%= unified_cart_pay_cta(membership) %>
+      <% else %>
       <%= button_to membership_payments_path(membership),
           method: :post,
           class: "btn btn-sm btn-primary",
           data: { turbo: false },
           form: { style: "display: inline-block;" } do %>
         <i class="bi bi-credit-card me-1"></i>Finaliser paiement →
+      <% end %>
       <% end %>
     <% elsif membership.status == 'expired' %>
       <%= link_to new_membership_path(type: 'adult'), class: "btn btn-sm btn-success" do %>

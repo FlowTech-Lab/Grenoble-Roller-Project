@@ -4,6 +4,8 @@ class CartLineService
   class InactiveVariantError < StandardError; end
   class NotFoundError < StandardError; end
   class UnauthorizedError < StandardError; end
+  class HealthQuestionnaireIncompleteError < StandardError; end
+  class InvalidMembershipStatusError < StandardError; end
 
   EVENT_HOLD_DURATION = 15.minutes
 
@@ -89,6 +91,32 @@ class CartLineService
       list(user, include_expired: include_expired).size
     end
 
+    def add_membership!(user, membership:)
+      raise HealthQuestionnaireIncompleteError unless membership.health_questionnaire_complete?
+      unless membership.pending?
+        raise InvalidMembershipStatusError, "Only pending memberships can be added to the cart."
+      end
+
+      metadata = { "season" => membership.season }
+      metadata["child_name"] = membership.child_full_name if membership.is_child_membership?
+
+      user.cart_lines.find_or_initialize_by(
+        line_type: :membership,
+        reference: membership
+      ).tap do |line|
+        line.amount_cents = membership.total_amount_cents
+        line.label = membership_cart_label(membership)
+        line.quantity = 1
+        line.expires_at = nil
+        line.metadata = metadata
+        line.save!
+      end
+    end
+
+    def membership_in_cart?(user, membership)
+      user.cart_lines.membership.active.exists?(reference: membership)
+    end
+
     def add_event_registration!(user:, attendance:, event:)
       expires_at = EVENT_HOLD_DURATION.from_now
       label = "#{event.title} — #{attendance.participant_name}"
@@ -130,6 +158,15 @@ class CartLineService
           line.destroy
         end
       end
+    end
+
+    private
+
+    def membership_cart_label(membership)
+      base = membership.with_ffrs? ? "Cotisation + Licence FFRS" : "Cotisation Adhérent Grenoble Roller"
+      label = "#{base} — Saison #{membership.season}"
+      label = "#{label} (#{membership.child_full_name})" if membership.is_child_membership?
+      label
     end
   end
 end

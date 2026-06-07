@@ -390,7 +390,7 @@ RSpec.describe "Memberships", type: :request do
             end_date: expired_end_date,
             child_first_name: 'Adulte',
             child_last_name: 'Test',
-            child_date_of_birth: 18.years.ago,
+            child_date_of_birth: Date.new(2000, 1, 1),
             category: 'standard'
           )
         end
@@ -742,6 +742,124 @@ RSpec.describe "Memberships", type: :request do
 
       expect(response).to redirect_to(membership_path(active_child))
       expect(flash[:alert]).to include("ne peut pas être modifiée")
+    end
+  end
+
+  context "when UNIFIED_CART_ENABLED is true" do
+    around do |example|
+      with_unified_cart_enabled { example.run }
+    end
+
+    let(:user_with_dob) do
+      create_user(
+        role: role,
+        date_of_birth: Date.new(1990, 1, 1),
+        address: "1 rue Test",
+        postal_code: "38000",
+        city: "Grenoble",
+        phone: "0612345678"
+      )
+    end
+
+    def adult_membership_params
+      params = {
+        category: "standard",
+        first_name: "Jean",
+        last_name: "Dupont",
+        date_of_birth: Date.new(1990, 1, 1),
+        phone: "0612345678",
+        address: "1 rue Test",
+        postal_code: "38000",
+        city: "Grenoble"
+      }
+      (1..9).each { |i| params["health_question_#{i}"] = "no" }
+      params
+    end
+
+    describe "POST /memberships" do
+      context "adult membership with online pay" do
+        it "creates pending membership and cart line" do
+          login_user(user_with_dob)
+          expect do
+            post memberships_path, params: { membership: adult_membership_params }
+          end.to change(Membership, :count).by(1)
+            .and change(CartLine, :count).by(1)
+
+          membership = Membership.last
+          expect(membership.status).to eq("pending")
+          expect(CartLineService.membership_in_cart?(user_with_dob, membership)).to be(true)
+        end
+
+        it "does not redirect to HelloAsso" do
+          login_user(user_with_dob)
+          allow(HelloassoService).to receive(:membership_checkout_redirect_url)
+
+          post memberships_path, params: { membership: adult_membership_params }
+
+          expect(response).to redirect_to(cart_path)
+          expect(HelloassoService).not_to have_received(:membership_checkout_redirect_url)
+        end
+
+        it "redirects with adhesion added to cart flash" do
+          login_user(user_with_dob)
+          post memberships_path, params: { membership: adult_membership_params }
+          expect(flash[:notice]).to include("Adhésion ajoutée au panier")
+        end
+      end
+
+      context "when health questionnaire is incomplete" do
+        it "blocks add to cart at create or checkout validation" do
+          login_user(user_with_dob)
+          params = adult_membership_params.except(*((1..9).map { |i| "health_question_#{i}" }))
+          expect do
+            post memberships_path, params: { membership: params }
+          end.not_to change(CartLine, :count)
+          expect(response.location).to include(new_membership_path)
+        end
+      end
+
+      context "multi-child" do
+        it "creates one cart line per child membership" do
+          login_user(user_with_dob)
+          child_params_base = {
+            category: "standard",
+            is_child_membership: "true",
+            parent_authorization: "1",
+            rgpd_consent: "1",
+            legal_notices_accepted: "1"
+          }
+          (1..9).each { |i| child_params_base["health_question_#{i}"] = "no" }
+
+          child1 = child_params_base.merge(
+            child_first_name: "Alice",
+            child_last_name: "Test",
+            child_date_of_birth: Date.new(2015, 3, 1)
+          )
+          child2 = child_params_base.merge(
+            child_first_name: "Bob",
+            child_last_name: "Test",
+            child_date_of_birth: Date.new(2016, 5, 1)
+          )
+
+          post memberships_path, params: { membership: child1 }
+          post memberships_path, params: { membership: child2 }
+
+          expect(CartLine.membership.count).to eq(2)
+        end
+      end
+    end
+
+    describe "POST /memberships/create_without_payment" do
+      it "does not create cart line for cash/check path" do
+        login_user(user_with_dob)
+        expect do
+          post memberships_path, params: {
+            payment_method: "cash_check",
+            membership: adult_membership_params
+          }
+        end.to change(Membership, :count).by(1)
+          .and change(CartLine, :count).by(0)
+      end
     end
   end
 end

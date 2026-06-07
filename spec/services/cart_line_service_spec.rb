@@ -71,4 +71,65 @@ RSpec.describe CartLineService do
       expect(event.occupied_spots_for_capacity).to eq(0)
     end
   end
+
+  describe '.add_membership!' do
+    let(:membership) { create(:membership, :pending, :with_health_questionnaire, user: user) }
+
+    it 'creates membership cart line for pending membership' do
+      line = nil
+      expect {
+        line = described_class.add_membership!(user, membership: membership)
+      }.to change(CartLine, :count).by(1)
+
+      expect(line.membership?).to be true
+      expect(line.reference).to eq(membership)
+    end
+
+    it 'uses membership total_amount_cents as amount' do
+      membership.update!(amount_cents: 1000, with_tshirt: true, tshirt_qty: 2)
+
+      line = described_class.add_membership!(user, membership: membership)
+
+      expect(line.amount_cents).to eq(membership.total_amount_cents)
+    end
+
+    it 'includes child name in label for child membership' do
+      child = create(:membership, :child, :pending, :with_health_questionnaire, user: user)
+
+      line = described_class.add_membership!(user, membership: child)
+
+      expect(line.label).to include(child.child_full_name)
+    end
+
+    it 'prevents duplicate line for same membership' do
+      described_class.add_membership!(user, membership: membership)
+
+      expect {
+        described_class.add_membership!(user, membership: membership)
+      }.not_to change(CartLine, :count)
+
+      expect(CartLine.where(user: user, reference: membership).count).to eq(1)
+    end
+
+    it 'raises when health questionnaire is incomplete' do
+      incomplete = create(:membership, :pending, user: user)
+
+      expect {
+        described_class.add_membership!(user, membership: incomplete)
+      }.to raise_error(CartLineService::HealthQuestionnaireIncompleteError)
+    end
+  end
+
+  describe '.membership_in_cart?' do
+    let(:membership) { create(:membership, :pending, :with_health_questionnaire, user: user) }
+
+    it 'returns true when membership line exists' do
+      described_class.add_membership!(user, membership: membership)
+      expect(described_class.membership_in_cart?(user, membership)).to be(true)
+    end
+
+    it 'returns false when membership is not in cart' do
+      expect(described_class.membership_in_cart?(user, membership)).to be(false)
+    end
+  end
 end

@@ -1,0 +1,29 @@
+<div class="cart-item cart-item-membership">
+  <div class="cart-item-image d-flex align-items-center justify-content-center">
+    <i class="bi bi-person-badge fs-2 text-liquid-primary" aria-hidden="true"></i>
+  </div>
+
+  <div class="cart-item-content">
+    <div class="cart-item-info">
+      <p class="cart-item-title mb-1"><%= line.label %></p>
+      <p class="small text-muted mb-0">
+        Saison <%= line.metadata["season"] || line.reference&.season %>
+        <% if line.metadata["child_name"].present? %>
+          · <%= line.metadata["child_name"] %>
+        <% end %>
+      </p>
+    </div>
+
+    <div class="cart-item-price">
+      <div class="text-end">
+        <strong><%= format_price(line.subtotal_cents) %></strong>
+      </div>
+    </div>
+
+    <div class="cart-item-actions">
+      <%= button_to remove_item_cart_path(cart_line_id: line.id), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Retirer", aria: { label: "Retirer l'adhésion du panier" } do %>
+        <i class="bi bi-trash" aria-hidden="true"></i>
+      <% end %>
+    </div>
+  </div>
+</div>
