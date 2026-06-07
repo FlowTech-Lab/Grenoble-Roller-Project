@@ -131,6 +131,14 @@ RSpec.describe EventPolicy do
       past_event.save!
       expect(described_class.new(member, past_event).attend?).to be(false)
     end
+
+    it 'denies when event has started but is not finished' do
+      member = create_user(role: user_role)
+      create(:membership, user: member, status: :active, season: '2025-2026')
+      ongoing_event = build_event(status: 'published', max_participants: 10, start_at: 30.minutes.ago, duration_min: 120)
+      ongoing_event.save!
+      expect(described_class.new(member, ongoing_event).attend?).to be(false)
+    end
   end
 
   describe '#can_attend?' do

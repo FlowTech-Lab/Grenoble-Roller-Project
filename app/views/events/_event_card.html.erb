@@ -11,7 +11,13 @@
       <% if event.cover_image.attached? %>
         <%= image_tag(rails_representation_path(event.cover_image_banner), alt: event.title, loading: 'lazy', class: 'w-100 h-100 object-fit-cover') %>
       <% end %>
-      <span class="card-event-date badge <%= (defined?(past) && past) || event.past? ? 'badge-liquid-secondary' : 'badge-liquid-primary' %>">
+      <span class="card-event-date badge <%= if (defined?(past) && past) || event.past?
+        'badge-liquid-secondary'
+      elsif event.ongoing?
+        'bg-warning text-dark'
+      else
+        'badge-liquid-primary'
+      end %>">
         <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
         <%= l event.start_at, format: :day_month, locale: :fr %>
       </span>
@@ -61,12 +67,7 @@
               <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Rejeté
             </span>
           <% end %>
-          <!-- Badge Passé (si événement passé) -->
-          <% if (defined?(past) && past) || event.past? %>
-            <span class="badge badge-liquid-secondary">
-              <i class="bi bi-archive me-1" aria-hidden="true"></i>Passé
-            </span>
-          <% end %>
+          <%= render "shared/event_lifecycle_badge", event: event %>
           <!-- Badge Annulé (prioritaire) -->
           <% if event.canceled? %>
             <span class="badge bg-danger">
@@ -181,7 +182,7 @@
   </article>
 </div>
 
-<% if defined?(render_signup_button) && render_signup_button && !event.past? && policy(event).can_attend? && !event.full? %>
+<% if defined?(render_signup_button) && render_signup_button && !event.started? && policy(event).can_attend? && !event.full? %>
     <div class="modal fade" id="confirmAttendModal<%= event.id %>" tabindex="-1" aria-labelledby="confirmAttendModalLabel<%= event.id %>" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

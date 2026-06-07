@@ -10,7 +10,7 @@
       <% if initiation.cover_image.attached? %>
         <%= image_tag(rails_representation_path(initiation.cover_image_banner), alt: initiation.title, loading: 'lazy', class: 'w-100 h-100 object-fit-cover') %>
       <% end %>
-      <span class="card-event-date badge badge-liquid-primary">
+      <span class="card-event-date badge <%= initiation.past? ? 'badge-liquid-secondary' : initiation.ongoing? ? 'bg-warning text-dark' : 'badge-liquid-primary' %>">
         <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
         <%= l initiation.start_at, format: :day_month, locale: :fr %>
       </span>
@@ -64,6 +64,7 @@
               <i class="bi bi-x-circle me-1" aria-hidden="true"></i>Rejetée
             </span>
           <% end %>
+          <%= render "shared/event_lifecycle_badge", event: initiation %>
           <!-- Badge Annulé (prioritaire) -->
           <% if initiation.canceled? %>
             <span class="badge bg-danger">
@@ -163,7 +164,7 @@
   </article>
 </div>
 
-<% if user_signed_in? && !initiation.past? && policy(initiation).attend? && !initiation.full? %>
+<% if user_signed_in? && !initiation.started? && policy(initiation).attend? && !initiation.full? %>
   <div class="modal fade" id="confirmAttendModalInitiation<%= initiation.id %>" tabindex="-1" aria-labelledby="confirmAttendModalInitiationLabel<%= initiation.id %>" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">

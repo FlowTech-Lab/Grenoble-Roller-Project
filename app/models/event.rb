@@ -97,8 +97,8 @@ class Event < ApplicationRecord
     is_a?(Event::Initiation)
   end
 
-  scope :upcoming, -> { where("start_at > ?", Time.current) }
-  scope :past, -> { where("start_at <= ?", Time.current) }
+  scope :upcoming, -> { where("start_at + (duration_min * INTERVAL '1 minute') > ?", Time.current) }
+  scope :past, -> { where("start_at + (duration_min * INTERVAL '1 minute') <= ?", Time.current) }
   scope :published, -> { where(status: "published") }
 
   # Événements visibles pour les utilisateurs (publiés + annulés pour information)
@@ -180,9 +180,17 @@ class Event < ApplicationRecord
     WaitlistEntry.notify_next_in_queue(self, count: 1)
   end
 
-  # Vérifie si l'événement est passé
+  # Inscriptions closes at start; "past" listings use end time (start_at + duration_min).
+  def started?
+    start_at.present? && start_at <= Time.current
+  end
+
   def past?
-    start_at <= Time.current
+    finished?
+  end
+
+  def ongoing?
+    started? && !finished?
   end
 
   # Calcule la date de fin de l'événement (start_at + duration_min)
@@ -193,8 +201,7 @@ class Event < ApplicationRecord
 
   # Vérifie si l'événement est terminé (après sa date de fin)
   def finished?
-    return false unless end_at
-    end_at <= Time.current
+    end_at.present? && end_at <= Time.current
   end
 
   # Remet en stock tous les rollers prêtés pour cet événement

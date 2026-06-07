@@ -71,11 +71,40 @@ RSpec.describe Event, type: :model do
       expect(Event.past).to contain_exactly(past_event)
     end
 
+    it 'keeps started-but-not-finished events in upcoming scope' do
+      ongoing_event = create_event(creator_user: creator, start_at: 30.minutes.ago, duration_min: 120)
+      finished_event = create_event(creator_user: creator, start_at: 3.hours.ago, duration_min: 60)
+
+      expect(Event.upcoming).to include(ongoing_event)
+      expect(Event.upcoming).not_to include(finished_event)
+      expect(Event.past).to include(finished_event)
+      expect(Event.past).not_to include(ongoing_event)
+    end
+
     it 'returns published events for published scope' do
       published_event = create_event(creator_user: creator, status: 'published')
       create_event(creator_user: creator, status: 'draft')
 
       expect(Event.published).to contain_exactly(published_event)
+    end
+  end
+
+  describe '#started?, #past?, #finished?' do
+    it 'marks an ongoing event as started but not past' do
+      event = create_event(creator_user: creator, start_at: 30.minutes.ago, duration_min: 120)
+
+      expect(event.started?).to be(true)
+      expect(event.ongoing?).to be(true)
+      expect(event.finished?).to be(false)
+      expect(event.past?).to be(false)
+    end
+
+    it 'marks a finished event as past' do
+      event = create_event(creator_user: creator, start_at: 2.hours.ago, duration_min: 60)
+
+      expect(event.started?).to be(true)
+      expect(event.finished?).to be(true)
+      expect(event.past?).to be(true)
     end
   end
 

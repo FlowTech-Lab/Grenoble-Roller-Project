@@ -36,6 +36,20 @@ RSpec.describe Event::InitiationPolicy do
       expect(policy.attend?).to be(false)
     end
 
+    it 'denies when initiation has started but is not finished' do
+      create(:membership, user: user, status: :active, season: '2025-2026')
+      ongoing_initiation = create_event(
+        type: 'Event::Initiation',
+        status: 'published',
+        max_participants: 30,
+        allow_non_member_discovery: false,
+        start_at: 30.minutes.ago,
+        duration_min: 120
+      )
+      policy = described_class.new(user, ongoing_initiation)
+      expect(policy.attend?).to be(false)
+    end
+
     it 'denies guests' do
       policy = described_class.new(nil, initiation)
       expect(policy.attend?).to be(false)

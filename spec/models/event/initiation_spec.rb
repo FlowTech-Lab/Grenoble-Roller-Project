@@ -334,11 +334,12 @@ RSpec.describe Event::Initiation, type: :model do
     end
 
     describe '.upcoming_initiations' do
-      it 'returns only future initiations' do
+      it 'returns future and ongoing initiations, excluding finished ones' do
         future = create(:event_initiation, creator_user: creator, start_at: 1.week.from_now)
-        past = create(:event_initiation, creator_user: creator, start_at: 1.week.ago)
+        ongoing = create(:event_initiation, creator_user: creator, start_at: 30.minutes.ago, duration_min: 120)
+        past = create(:event_initiation, creator_user: creator, start_at: 2.hours.ago, duration_min: 60)
 
-        expect(Event::Initiation.upcoming_initiations).to include(future)
+        expect(Event::Initiation.upcoming_initiations).to include(future, ongoing)
         expect(Event::Initiation.upcoming_initiations).not_to include(past)
       end
     end
