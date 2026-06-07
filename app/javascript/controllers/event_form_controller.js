@@ -169,7 +169,7 @@ export default class extends Controller {
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Distance (km)</label>
+            <label class="form-label">Distance boucle ${i} (km)</label>
             <div class="input-group">
               <input type="number" 
                      name="event_loop_routes[${i}][distance_km]" 

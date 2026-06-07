@@ -27,7 +27,7 @@ RSpec.describe 'Event Management', type: :system do
         # Le statut n'est pas modifiable par l'organisateur (automatiquement 'draft')
         select route.name, from: 'Parcours associé'
         select 'Tous niveaux', from: 'Niveau'
-        fill_in 'Distance par boucle (km)', with: '10'
+        fill_in 'Distance boucle 1 (km)', with: '10'
         fill_in 'Date et heure de début', with: 3.days.from_now.strftime('%Y-%m-%dT%H:%M')
         fill_in 'Durée (minutes)', with: '90'
         fill_in 'Nombre maximum de participants', with: '20'
@@ -54,7 +54,7 @@ RSpec.describe 'Event Management', type: :system do
         fill_in 'Titre', with: 'Sortie illimitée'
         # Le statut n'est pas modifiable par l'organisateur (automatiquement 'draft')
         select 'Tous niveaux', from: 'Niveau'
-        fill_in 'Distance par boucle (km)', with: '5'
+        fill_in 'Distance boucle 1 (km)', with: '5'
         fill_in 'Date et heure de début', with: 3.days.from_now.strftime('%Y-%m-%dT%H:%M')
         fill_in 'Durée (minutes)', with: '60'
         fill_in 'Nombre maximum de participants', with: '0'
