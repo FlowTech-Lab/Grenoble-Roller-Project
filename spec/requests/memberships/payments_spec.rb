@@ -6,8 +6,8 @@ RSpec.describe "Memberships::Payments", type: :request do
   include RequestAuthenticationHelper
   include TestDataHelper
 
-  let(:role) { ensure_role(code: "USER", name: "Utilisateur", level: 10) }
-  let(:user) { create_user(role: role) }
+  let!(:role) { ensure_role(code: "USER", name: "Utilisateur", level: 10) }
+  let!(:user) { create_user(role: role) }
 
   context "when UNIFIED_CART_ENABLED is true" do
     around do |example|
@@ -15,7 +15,7 @@ RSpec.describe "Memberships::Payments", type: :request do
     end
 
     describe "POST /memberships/:membership_id/payments" do
-      let(:membership) { create(:membership, :pending, :with_health_questionnaire, user: user) }
+      let!(:membership) { create(:membership, :pending, :with_health_questionnaire, user: user) }
 
       it "redirects to cart with deprecation notice" do
         login_user(user)
@@ -31,8 +31,14 @@ RSpec.describe "Memberships::Payments", type: :request do
     end
 
     describe "POST /memberships/payments/create_multiple" do
-      let(:child1) { create(:membership, :child, :pending, :with_health_questionnaire, user: user) }
-      let(:child2) { create(:membership, :child, :pending, :with_health_questionnaire, user: user) }
+      let!(:child1) do
+        create(:membership, :child, :pending, :with_health_questionnaire,
+               user: user, child_first_name: "Alice", child_last_name: "Test")
+      end
+      let!(:child2) do
+        create(:membership, :child, :pending, :with_health_questionnaire,
+               user: user, child_first_name: "Bob", child_last_name: "Test")
+      end
 
       it "redirects to cart" do
         login_user(user)
@@ -43,7 +49,7 @@ RSpec.describe "Memberships::Payments", type: :request do
         expect(response).to redirect_to(cart_path)
         expect(flash[:notice]).to include("Adhésions ajoutées au panier")
         expect(HelloassoService).not_to have_received(:create_multiple_memberships_checkout_intent)
-        expect(CartLine.membership.count).to eq(2)
+        expect(user.cart_lines.membership.count).to eq(2)
       end
     end
   end

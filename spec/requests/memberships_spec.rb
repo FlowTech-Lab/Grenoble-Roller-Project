@@ -4,7 +4,7 @@ RSpec.describe "Memberships", type: :request do
   include RequestAuthenticationHelper
   include TestDataHelper
 
-  let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+  let!(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) { create_user(role: role) }
 
   describe "GET /memberships" do
@@ -783,7 +783,7 @@ RSpec.describe "Memberships", type: :request do
           expect do
             post memberships_path, params: { membership: adult_membership_params }
           end.to change(Membership, :count).by(1)
-            .and change(CartLine, :count).by(1)
+            .and change { user_with_dob.cart_lines.membership.count }.by(1)
 
           membership = Membership.last
           expect(membership.status).to eq("pending")
@@ -813,7 +813,7 @@ RSpec.describe "Memberships", type: :request do
           params = adult_membership_params.except(*((1..9).map { |i| "health_question_#{i}" }))
           expect do
             post memberships_path, params: { membership: params }
-          end.not_to change(CartLine, :count)
+          end.not_to change { user_with_dob.cart_lines.membership.count }
           expect(response.location).to include(new_membership_path)
         end
       end
@@ -844,7 +844,7 @@ RSpec.describe "Memberships", type: :request do
           post memberships_path, params: { membership: child1 }
           post memberships_path, params: { membership: child2 }
 
-          expect(CartLine.membership.count).to eq(2)
+          expect(user_with_dob.cart_lines.membership.count).to eq(2)
         end
       end
     end
@@ -858,7 +858,7 @@ RSpec.describe "Memberships", type: :request do
             membership: adult_membership_params
           }
         end.to change(Membership, :count).by(1)
-          .and change(CartLine, :count).by(0)
+          .and change { user_with_dob.cart_lines.membership.count }.by(0)
       end
     end
   end

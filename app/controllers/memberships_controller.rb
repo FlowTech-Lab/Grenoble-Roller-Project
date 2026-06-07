@@ -1406,7 +1406,10 @@ class MembershipsController < ApplicationController
 
   def add_membership_to_cart_and_redirect!(membership)
     CartLineService.add_membership!(current_user, membership: membership)
-    redirect_to cart_path, notice: "Adhésion ajoutée au panier"
+    flash[:notice] = "Adhésion ajoutée au panier"
+    flash[:notice_type] = "success"
+    flash[:show_cart_button] = true
+    redirect_to cart_path
   rescue CartLineService::HealthQuestionnaireIncompleteError
     destination = membership.is_child_membership? ? edit_membership_path(membership) : new_membership_path(type: membership_form_type(membership))
     redirect_to destination, alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."

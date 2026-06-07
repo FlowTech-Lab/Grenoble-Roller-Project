@@ -20,8 +20,10 @@ module Memberships
 
         already_in_cart = CartLineService.membership_in_cart?(current_user, @membership)
         CartLineService.add_membership!(current_user, membership: @membership) unless already_in_cart
-        redirect_to cart_path,
-                    notice: already_in_cart ? "Cette adhésion est déjà dans votre panier." : "Adhésion ajoutée au panier"
+        flash[:notice] = already_in_cart ? "Cette adhésion est déjà dans votre panier." : "Adhésion ajoutée au panier"
+        flash[:notice_type] = "success"
+        flash[:show_cart_button] = true
+        redirect_to cart_path
         return
       end
 
@@ -142,7 +144,10 @@ module Memberships
           CartLineService.add_membership!(current_user, membership: membership)
         end
 
-        redirect_to cart_path, notice: "Adhésions ajoutées au panier"
+        flash[:notice] = "Adhésions ajoutées au panier"
+        flash[:notice_type] = "success"
+        flash[:show_cart_button] = true
+        redirect_to cart_path
         return
       end
 
