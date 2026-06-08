@@ -2,6 +2,24 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-08] - Release Dev → staging (June 2026 batch v2.1)
+
+Unified checkout epic + June batch + post-checkout hardening (membership season, admin mobile UX, sidebar rail, security patches, RSpec green).
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.1).
+
+### Fixed
+- Membership sale season: before 15 August, cart uses running season (not next season).
+- Admin collapsed sidebar: centered 48×48 active icon rail; spacing scoped to expanded mode.
+- i18n: French validation messages on event creation form.
+
+### Changed
+- Admin panel mobile-first: sticky chrome, `admin-page-header`, responsive tables (cards ≤991px), scope tabs.
+- Rails 8.1.3, Puma 7.2.1, npm audit fixes; `bundler-audit` in dev Gemfile.
+
+### Tests
+- 1462 examples, 0 failures on `Dev` (i18n, admin panel, unified cart spec fixes).
+
 ## [2026-06-08] - Release Dev → staging (June 2026 batch v2)
 
 Unified checkout epic merged on `Dev` + prior June batch (events, admin, roller stock, Umami, Turnstile).

@@ -1,7 +1,7 @@
 ---
 title: "Release Dev → staging (June 2026)"
 status: "active"
-version: "2.0"
+version: "2.1"
 created: "2026-06-07"
 updated: "2026-06-08"
 tags: ["release", "staging", "changelog", "unified-checkout"]
@@ -10,8 +10,8 @@ tags: ["release", "staging", "changelog", "unified-checkout"]
 # Release Dev → staging (June 2026)
 
 **Target branch:** merge `Dev` → `staging` (PR)  
-**Commit range:** `1b877166` … `db0f091b` (`origin/staging` … `Dev`)  
-**Head on Dev:** `db0f091b` — `fix(checkout): membership cart UX and UnifiedCart autoload`
+**Commit range:** `1b877166` … `5b48e999` (`origin/staging` … `Dev`)  
+**Head on Dev:** `5b48e999` — `fix(admin): center collapsed sidebar rail and active icon highlight`
 
 **Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).
 
@@ -23,6 +23,7 @@ This release bundles:
 
 1. **Unified account cart + checkout (major)** — feature-flagged via `UNIFIED_CART_ENABLED`; shop, memberships, and paid events share one cart and one HelloAsso checkout with **partial payment** (per-line checkboxes) and **optional donation** on every checkout. Initiations remain free; cash/check memberships bypass the cart.
 2. **June 2026 public/admin batch** — events lifecycle/UI, admin panel (organizers, goodies, mail logs, carousel), Umami analytics, Turnstile on contact, roller stock reservations (v2.3), homepage hero image, dev tooling (mise, dotenv).
+3. **Post-checkout hardening (June 8)** — membership sale-season gate, admin panel mobile-first UX, collapsed sidebar rail fix, dependency security patches, full RSpec green on `Dev`.
 
 **Rollback (checkout):** set `UNIFIED_CART_ENABLED=false` and redeploy — see [Rollback](#rollback) and MASTER plan §H.
 
@@ -116,6 +117,40 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 
 - Goodies distributed flag.
 - Unified cart: per-child « Ajouter au panier » in pending alert; compact mini-cards (WCAG `aria-label` on icon actions).
+- **Sale season gate (June 8):** before **15 August**, cart and membership flows use the **running** season (e.g. 2025–2026 in June 2026); next season opens 15 Aug–31 Aug; from 1 Sep the new running season applies. `Membership#align_to_sale_season!` + specs.
+
+### Admin panel — mobile-first UX (June 8)
+
+| Change | Description |
+| --- | --- |
+| Mobile chrome | Sticky bar « Menu admin » + « Site » on small screens |
+| Page headers | Shared `admin-page-header` — title and actions stack on mobile |
+| Tables | Card layout up to **991px**; auto `data-label` from `<th>` on Turbo load |
+| Breadcrumbs | Compact/truncated mobile breadcrumb |
+| Scope tabs | Horizontal scroll tabs on memberships index |
+| Layout | Site navbar toggler and admin footer hidden on mobile in admin panel |
+| **Collapsed sidebar rail** | Icon rail 48×48 centered; white ring on active item (no left accent bar); `--admin-sidebar-spacing` scoped to expanded mode only; Stimulus fixes for `.admin-menu-label` / `.admin-menu-chevron`; rail vertical spacing (`0.5rem` gap, `1rem` nav padding) |
+
+**Dev note:** after `assets:precompile`, run `bin/rails assets:clobber && npm run build:css` locally so Propshaft does not serve stale `public/assets/application.bootstrap-*.css`.
+
+### Security & dependencies (June 8)
+
+| Package | Change |
+| --- | --- |
+| Rails | **8.1.3** |
+| Puma | **7.2.1** (`~> 7.2`) |
+| Gems | Transitive security patches via `bundle update` |
+| npm | Partial `npm audit fix` on dev deps |
+| Dev | `bundler-audit` added to Gemfile |
+
+### Tests (June 8)
+
+- Full suite green on `Dev`: **1462 examples, 0 failures** (`72cfaa11`).
+- Fixes: French i18n event validation message, admin dashboard access level 40, legacy session cart specs with `with_unified_cart_disabled`, event attendance Capybara selector, `ActiveJob` test adapter in `rails_helper`.
+
+### i18n (June 8)
+
+- French validation messages for event creation form (`b5ef5336`).
 
 ### Homepage
 
@@ -233,6 +268,13 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 - [ ] Level 40: read-only events; level 60: full CRUD
 - [ ] Mail logs after test registration
 - [ ] `/admin-panel/checkouts` lists checkout attempts
+- [ ] **Mobile (≤991px):** page headers stack; tables as cards; offcanvas menu via mobile chrome
+- [ ] **Desktop collapsed sidebar:** active icon centered in 48×48 blue tile with white ring (no left bar)
+
+### Memberships
+
+- [ ] Before 15 Aug: cart shows **current** season label (not next season)
+- [ ] From 15 Aug: next season available for purchase
 
 ### Roller stock
 
@@ -261,6 +303,13 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 ## Commit reference (checkout epic — highlights)
 
 ```
+5b48e999 fix(admin): center collapsed sidebar rail and active icon highlight
+f831da7a refactor(admin-panel): enhance mobile responsiveness and UI consistency
+72cfaa11 test: fix specs for i18n, admin panel, and unified cart
+64138088 chore(security): patch Rails, Puma, and npm audit fixes
+17866966 fix(memberships): enforce sale season gate before 15 August
+b5ef5336 fix(i18n): French validation messages for event creation form
+417eb809 docs(release): update staging release notes and AGENT workflow
 db0f091b fix(checkout): membership cart UX and UnifiedCart autoload
 f01e7b38 docs(checkout): mark Waves 5–6 DoD complete in MASTER plan
 67dec0d2 chore(checkout): wave 6 cleanup and regression specs
