@@ -1,102 +1,156 @@
 ---
 title: "Release Dev → staging (June 2026)"
 status: "active"
-version: "1.0"
+version: "2.0"
 created: "2026-06-07"
-tags: ["release", "staging", "changelog"]
+updated: "2026-06-08"
+tags: ["release", "staging", "changelog", "unified-checkout"]
 ---
 
 # Release Dev → staging (June 2026)
 
-**Target branch:** merge `Dev` into `staging`  
-**Commit range:** `2e627ba8` … `c09b9f51` (22 commits on `Dev` ahead of `origin/staging`)  
-**Includes uncommitted work:** roller stock reservation model (Option 2) — see [Roller stock](#roller-stock-reservations-v23)
+**Target branch:** merge `Dev` → `staging` (PR)  
+**Commit range:** `1b877166` … `db0f091b` (`origin/staging` … `Dev`)  
+**Head on Dev:** `db0f091b` — `fix(checkout): membership cart UX and UnifiedCart autoload`
+
+**Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).
 
 ---
 
 ## Summary / scope
 
-This release bundles public-site UX improvements (events, homepage, analytics), admin-panel capabilities (event read access, organizers, goodies tracking, mail logs, carousel settings), security (Turnstile on contact form), developer tooling (mise, dotenv, vendor cleanup), and a **breaking operational change** for roller stock: physical quantities are no longer decremented on registration; availability is computed from active reservations per initiation.
+This release bundles:
 
-**Out of scope for this release doc:** Dependabot config, vendor/bundle removal from git (no runtime impact on staging after deploy).
+1. **Unified account cart + checkout (major)** — feature-flagged via `UNIFIED_CART_ENABLED`; shop, memberships, and paid events share one cart and one HelloAsso checkout with **partial payment** (per-line checkboxes) and **optional donation** on every checkout. Initiations remain free; cash/check memberships bypass the cart.
+2. **June 2026 public/admin batch** — events lifecycle/UI, admin panel (organizers, goodies, mail logs, carousel), Umami analytics, Turnstile on contact, roller stock reservations (v2.3), homepage hero image, dev tooling (mise, dotenv).
+
+**Rollback (checkout):** set `UNIFIED_CART_ENABLED=false` and redeploy — see [Rollback](#rollback) and MASTER plan §H.
 
 ---
 
-## Features by domain
+## Unified checkout (epic — merged on `Dev`)
+
+| Area | Change |
+| --- | --- |
+| Account cart | `CartLine` model — product, membership, event line types per user |
+| Checkout | `Checkout` + `CheckoutLine`; partial line selection; donation block |
+| HelloAsso | Single unified payload via `CheckoutService` / `CheckoutFulfillmentService` |
+| Paid events | Registration → cart hold (15 min) → pay; waitlist blocked when payment required |
+| Memberships | Add-to-cart per adhesion (alert block on index); no grouped HelloAsso when flag on |
+| Feature flag | `UnifiedCart.enabled?` — `ENV["UNIFIED_CART_ENABLED"]` (default `false`) |
+| Admin | Read-only `/admin-panel/checkouts` audit |
+| UX | Navbar cart badge, Mes sorties pending banner, mobile sticky cart/checkout footers |
+
+**Canonical docs:**
+
+- [`DR-001-unified-checkout-cart.md`](DR-001-unified-checkout-cart.md)
+- [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) — QA §G, rollback §H
+- [`docs/09-product/unified-cart-ux.md`](../09-product/unified-cart-ux.md)
+- [`docs/09-product/flux-boutique-helloasso.md`](../09-product/flux-boutique-helloasso.md) (updated flow)
+
+### Checkout migrations (new)
+
+| Migration | Purpose |
+| --- | --- |
+| `20260607130200_add_payment_fields_to_events_and_attendances` | Paid event fields, attendance payment expiry |
+| `20260607205837_create_cart_lines` | Account cart lines |
+| `20260608120000_create_checkouts` | Checkout sessions + checkout lines |
+
+Run via `DB_BOOT_TASK=prepare` on deploy (Dokploy default).
+
+### Checkout environment variables
+
+| Variable | Staging | Production (initial) |
+| --- | --- | --- |
+| `UNIFIED_CART_ENABLED` | **`true`** (QA) | **`false`** until human sign-off after staging QA |
+
+Template: [`ops/dokploy/env/staging.env.example`](../../ops/dokploy/env/staging.env.example).
+
+### Checkout — post-deploy (staging)
+
+1. Set `UNIFIED_CART_ENABLED=true` in Dokploy staging env; redeploy.
+2. Run migrations (automatic if `prepare`).
+3. Execute **QA manual checklist** below (MASTER §G).
+4. HelloAsso **sandbox** credentials must be active for E2E payment tests.
+5. Do **not** enable flag in production until Florian signs off staging QA.
+
+### Checkout — automated tests (green on `Dev`)
+
+```bash
+bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
+  spec/services/cart_line_service_spec.rb spec/services/checkout_service_spec.rb \
+  spec/services/checkout_fulfillment_service_spec.rb spec/requests/carts_spec.rb \
+  spec/requests/checkouts_spec.rb spec/requests/memberships/payments_spec.rb \
+  spec/lib/unified_cart_spec.rb
+```
+
+---
+
+## Features by domain (June batch — prior commits)
 
 ### Events
 
 | Change | Description |
 | --- | --- |
-| Past/upcoming lifecycle | Events classified as past when **end time** (`start_at + duration_min`) has passed; **ongoing** badge while in progress |
-| Multi-loop UI | Overlay loop cards on show pages; per-loop distance labels; compact practical info grid |
-| Route map viewer | Fullscreen pinch-zoom viewer (`route_image_viewer_controller.js`) on route/loop map images |
-| Admin route names hidden | Internal route names not exposed on public show pages |
-| Mobile past events | Improved layout for past events on small screens |
-| Multi-loop preload | Routes preloaded on edit; per-loop distances shown on show |
-| Event organizers | `EventOrganizer` model; optional `organizer_id` on events; admin CRUD + public display on event forms/show |
-| Registration emails | Participant name (parent or child) shown in attendance confirmation emails |
+| Past/upcoming lifecycle | Events classified as past when **end time** has passed; **ongoing** badge while in progress |
+| Multi-loop UI | Overlay loop cards; per-loop distance labels; compact practical info grid |
+| Route map viewer | Fullscreen pinch-zoom viewer on route/loop map images |
+| Event organizers | `EventOrganizer` model; optional `organizer_id`; admin CRUD + public display |
+| Registration emails | Participant name (parent or child) in confirmation emails |
+| Paid registration | Wave 2: paid randos → cart + timer (with unified checkout epic) |
 
 ### Admin panel
 
 | Change | Description |
 | --- | --- |
-| Events read access | Level ≥ 40 (ORGANIZER, MODERATOR, …) can **view** randos in admin panel; write remains level ≥ 60 |
-| Event organizers | CRUD at `/admin-panel/event-organizers`; linked from events submenu (admin) or direct link (organizer) |
-| Goodies distribution | `memberships.goodies_distributed` flag; filter/scope in memberships admin |
-| Mail logs | `OutboundEmailLog` persisted via ActiveJob subscriber; mail-logs panel shows outbound history |
-| Homepage carousel | `HomepageCarouselSetting` singleton: autoplay on/off and interval (2–30 s) configurable in admin |
-| Role guards | `UserPolicy` + `RoleAssignmentService` prevent admins from editing/deleting super admins |
-| Membership edit | Fix for child membership edit form |
+| Events read access | Level ≥ 40 can **view** randos; write ≥ 60 |
+| Event organizers | CRUD at `/admin-panel/event-organizers` |
+| Goodies distribution | `memberships.goodies_distributed` flag |
+| Mail logs | `OutboundEmailLog` + admin mail-logs panel |
+| Homepage carousel | Autoplay on/off and interval (2–30 s) |
+| Homepage hero | Admin-customizable hero banner image |
+| Checkouts audit | `/admin-panel/checkouts` (read-only, unified checkout) |
+| Role guards | Prevent admins from editing/deleting super admins |
 
 ### Memberships
 
-- Track **goodies distributed** per membership (`goodies_distributed` boolean, indexed).
+- Goodies distributed flag.
+- Unified cart: per-child « Ajouter au panier » in pending alert; compact mini-cards (WCAG `aria-label` on icon actions).
 
 ### Homepage
 
-- Configurable carousel autoplay and slide interval (admin → carousel index → settings).
+- Configurable carousel; customizable hero image.
 
-### Analytics
+### Analytics & security
 
-- **Umami** tracking injected only when `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` are set **and** user consented to analytics cookies.
-- Optional public stats link via `UMAMI_SHARE_URL` (footer + `/about`).
-
-### Security
-
-- **Cloudflare Turnstile** on contact form (`ContactMessagesController#create`).
-- `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` ENV override Rails credentials (useful for local dev and per-environment Dokploy keys).
+- **Umami** — consent-gated tracking (`UMAMI_*`).
+- **Turnstile** on contact form (`TURNSTILE_*` ENV or credentials).
 
 ### Dev tooling
 
-- **mise** + Ruby 3.4.2 native setup (`mise.toml`, `script/setup-local-env.sh`, `script/install-native-deps.sh`).
-- `.env.example` for native PostgreSQL dev; `vendor/bundle` removed from git tracking.
-- Dependabot targets `Dev` branch.
-- `AGENT.md` replaces `CLAUDE.md`; repo URLs updated to `Grenoble-roller/Grenoble-Roller-Website`.
+- mise + Ruby 3.4.2, `.env.example`, Dependabot → `Dev`.
+- `AGENT.md` agent guide (replaces `CLAUDE.md`).
 
-### Roller stock reservations (v2.3 — includes uncommitted changes)
+### Roller stock reservations (v2.3)
 
-- `RollerStock.quantity` = **physical** inventory (admin-adjusted only).
-- **Reservations** = active equipment requests on initiations where `stock_returned_at` is nil.
-- Available size = physical − active reservations (all non-closed initiations).
-- Button renamed **« Clôturer les prêts terminés »** (`POST /admin-panel/roller-stocks/return_all`); sets `stock_returned_at`, does not change physical stock.
-- `ReturnRollerStockJob` **enabled** (daily ~2h via `config/recurring.yml`).
+- Physical stock vs active reservations model; « Clôturer les prêts terminés »; `ReturnRollerStockJob` enabled.
 
 ---
 
-## Database migrations
-
-Run automatically on deploy if `DB_BOOT_TASK=prepare` (Dokploy default).
+## Database migrations (full list for this release)
 
 | Migration | Purpose |
 | --- | --- |
-| `20260607021500_create_outbound_email_logs` | Persist outbound email job metadata for admin mail logs |
-| `20260607025621_create_event_organizers` | Organizer entities (name, url, is_active) |
-| `20260607025623_add_organizer_to_events` | Optional `events.organizer_id` FK |
-| `20260607094750_add_goodies_distributed_to_memberships` | Boolean flag + index on memberships |
-| `20260607120000_create_homepage_carousel_settings` | Singleton carousel autoplay settings |
+| `20260607021500_create_outbound_email_logs` | Outbound email metadata for admin |
+| `20260607025621_create_event_organizers` | Organizer entities |
+| `20260607025623_add_organizer_to_events` | Optional `events.organizer_id` |
+| `20260607094750_add_goodies_distributed_to_memberships` | Goodies flag |
+| `20260607120000_create_homepage_carousel_settings` | Carousel autoplay settings |
+| `20260607130200_add_payment_fields_to_events_and_attendances` | Paid events (checkout epic) |
+| `20260607205837_create_cart_lines` | Account cart |
+| `20260608120000_create_checkouts` | Unified checkout sessions |
 
-**No migration** for roller stock reservations (logic-only change). Existing `stock_returned_at` on events (migration `20260101183839`) is used for closure.
+**No migration** for roller stock reservations (logic-only). `stock_returned_at` on events unchanged.
 
 ---
 
@@ -104,77 +158,89 @@ Run automatically on deploy if `DB_BOOT_TASK=prepare` (Dokploy default).
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `UMAMI_SCRIPT_URL` | No | Umami tracker URL; leave unset to disable |
-| `UMAMI_WEBSITE_ID` | No | Website UUID; both Umami vars required for tracking |
-| `UMAMI_DASHBOARD_URL` | No | Ops reference only |
-| `UMAMI_SHARE_URL` | No | Public read-only dashboard link |
-| `TURNSTILE_SITE_KEY` | No* | Overrides credentials; Cloudflare test keys for local dev |
-| `TURNSTILE_SECRET_KEY` | No* | Server-side verification; see `.env.example` |
+| `UNIFIED_CART_ENABLED` | No | `true` on staging for QA; **`false` in prod** until sign-off |
+| `UMAMI_SCRIPT_URL` | No | Umami tracker URL |
+| `UMAMI_WEBSITE_ID` | No | Both Umami vars required for tracking |
+| `UMAMI_SHARE_URL` | No | Public stats link |
+| `TURNSTILE_SITE_KEY` | No* | Contact form + login |
+| `TURNSTILE_SECRET_KEY` | No* | Server-side verification |
 
-\* Turnstile still works from Rails credentials if ENV unset. Contact form + login use Turnstile when configured.
+\* Turnstile falls back to Rails credentials if ENV unset.
 
-**Templates updated:** `.env.example`, `ops/dokploy/env/staging.env.example`, `ops/dokploy/env/production.env.example`.
-
-**Staging recommendation:** set Umami vars to a **staging-specific** website ID if available; add staging hostname to Turnstile allowed domains or use ENV override with test keys.
+**Templates:** `.env.example`, `ops/dokploy/env/staging.env.example`, `ops/dokploy/env/production.env.example`.
 
 ---
 
 ## Post-deploy actions
 
-### Roller stock (required after first deploy of v2.3)
+### Unified checkout (staging — required)
 
-1. Open **Admin Panel → Stock Rollers**.
-2. **Reconcile physical quantities** with real inventory — legacy decrements on registration may have lowered `quantity` incorrectly.
-3. Use **« Clôturer les prêts terminés »** for any finished initiations still holding reservations (or wait for `ReturnRollerStockJob`).
-4. Verify registration forms show correct availability (physical − reservations).
+1. Confirm `UNIFIED_CART_ENABLED=true` in Dokploy staging.
+2. Complete QA checklist (section below).
+3. Verify HelloAsso sandbox return URLs and webhook/polling still work for mixed carts.
+
+### Roller stock (if not done on prior deploy)
+
+1. Admin Panel → Stock Rollers — reconcile physical quantities.
+2. « Clôturer les prêts terminés » for finished initiations.
 
 ### Optional
 
-- Configure `UMAMI_*` on staging if analytics validation is needed (accept analytics cookies in browser).
-- Confirm Turnstile on `/contact` with staging domain or test keys.
-- Smoke-test carousel autoplay settings in admin.
+- Configure `UMAMI_*` on staging for analytics validation.
+- Confirm Turnstile on `/contact`.
 
 ---
 
 ## QA / test plan (staging)
 
+### Unified checkout (MASTER §G — human gate)
+
+#### Core flows
+
+- [ ] Add product → cart → checkout (all selected) → HelloAsso sandbox → order paid, stock correct
+- [ ] Adult membership → cart → pay → active
+- [ ] Two child memberships → two cart lines → one payment (both selected) → both active
+- [ ] Paid rando: reserve → cart timer → pay → registered; timer expiry releases seat
+
+#### Partial payment
+
+- [ ] Cart with product + membership + event → uncheck membership → pay → membership remains in cart
+- [ ] Select only event line → product and membership still in cart
+- [ ] Zero lines or expired event line → rejected with flash
+
+#### Donation
+
+- [ ] Membership-only cart → donation 5 € → HelloAsso total correct
+- [ ] Mixed cart + custom donation → metadata contains donation
+
+#### Edge cases
+
+- [ ] Initiation registration unchanged (free, member gate)
+- [ ] Cash/check membership → no cart line
+- [ ] Login merges legacy session cart (one-time)
+- [ ] Unconfirmed email blocked at POST checkout
+- [ ] Mobile cart + checkout layout OK
+- [ ] Membership index: « Ajouter au panier » per child in pending alert; mini-cards without duplicate CTA
+
 ### Events (public)
 
-- [ ] Upcoming / ongoing / past badges and listings use end time, not start time only
-- [ ] Multi-loop event: loop cards, distances, fullscreen map viewer
-- [ ] Single-route event: map opens fullscreen viewer
-- [ ] Past events readable on mobile
-- [ ] Registration confirmation email shows correct participant name (adult + child)
+- [ ] Upcoming / ongoing / past badges use end time
+- [ ] Multi-loop event: loop cards, fullscreen map viewer
+- [ ] Registration email shows correct participant name
 
 ### Admin panel
 
-- [ ] Level 40 user: can open `/admin-panel/events` (read-only); cannot create/edit events
-- [ ] Level 60 user: full event CRUD, event organizers CRUD
-- [ ] Memberships: goodies flag, filter « Goodies en attente »
-- [ ] Mail logs panel shows sent/queued emails after a test registration
-- [ ] Carousel admin: toggle autoplay, change interval, verify homepage behavior
+- [ ] Level 40: read-only events; level 60: full CRUD
+- [ ] Mail logs after test registration
+- [ ] `/admin-panel/checkouts` lists checkout attempts
 
 ### Roller stock
 
-- [ ] Register for initiation with equipment → physical stock unchanged; availability decreases
-- [ ] Cancel registration → reservation released
-- [ ] « Matériel rendu » on presences → `stock_returned_at` set; sizes available again
-- [ ] « Clôturer les prêts terminés » batch-closes finished initiations
+- [ ] Equipment reservation without physical decrement; closure releases sizes
 
 ### Security & analytics
 
-- [ ] Contact form blocked without Turnstile token; succeeds with valid token
-- [ ] Umami script absent until analytics cookie accepted (if Umami configured)
-- [ ] `/admin-panel` pages do not load Umami
-
-### Automated (already green locally)
-
-```bash
-bundle exec rspec spec/models/roller_stock_spec.rb \
-  spec/models/roller_stock_reservations_spec.rb \
-  spec/jobs/return_roller_stock_job_spec.rb \
-  spec/requests/admin_panel/roller_stocks_spec.rb
-```
+- [ ] Contact form Turnstile; Umami consent-gated
 
 ---
 
@@ -182,49 +248,51 @@ bundle exec rspec spec/models/roller_stock_spec.rb \
 
 | Risk | Mitigation / rollback |
 | --- | --- |
-| Roller stock quantities wrong after reservation model | Manual admin stock adjustment; no DB rollback needed |
-| Umami / Turnstile misconfigured on staging | Unset ENV vars to disable; contact form falls back to credentials |
-| New migrations fail | Fix forward; rollback = restore DB snapshot + redeploy previous staging SHA |
-| Organizers FK on events | Nullable FK; safe to leave null |
+| Unified checkout regression | `UNIFIED_CART_ENABLED=false` → immediate legacy session cart + direct HelloAsso |
+| Mid-flight HelloAsso checkouts | Pending `Checkout` rows remain; manual admin review |
+| Orphan `CartLine` rows | Admin clear or optional rake (MASTER §H) |
+| Roller stock quantities wrong | Manual admin adjustment |
+| Migration failure | DB snapshot + redeploy previous staging SHA |
 
-**Rollback procedure:** redeploy previous staging commit; restore DB backup if migrations were applied. Roller stock v2.3 logic is backward-compatible with existing `stock_returned_at` column.
+**Production cutover:** enable `UNIFIED_CART_ENABLED=true` only after staging QA sign-off (Florian).
 
 ---
 
-## Commit reference
+## Commit reference (checkout epic — highlights)
 
 ```
-c09b9f51 feat(memberships): track goodies distribution per membership
-dc269014 fix(events): label loop distance fields with loop number
-e95101a4 feat(homepage): configurable carousel autoplay and slide interval in admin
-eab2f90e fix(mailers): show participant name in registration confirmation emails
-4fea62fe feat(admin-panel): allow organizers and moderators to view events
-7fab3c74 feat: event organizers, admin role guards, and membership edit fix
-657c9b31 feat(events): fullscreen route viewer and overlay loop cards
-68d66670 style(events): compact practical info grid on show pages
-682fee29 fix(events): hide admin route names and improve past events on mobile
-226e0071 fix(events): improve multi-loop cards layout on show page
-5544c9bb style(ui): make quick action cards full-width and more compact
-15897ba0 feat(security): add Turnstile to contact form and ENV override for local dev
-cb24e996 fix(events): preload multi-loop routes on edit and show per-loop distances
-bce4521d style(navbar): set glass background to 30% opacity
-e63dd370 fix(admin): persist outbound email logs for mail-logs panel
-79bc2955 chore(dev): standardize native dev setup with mise and dotenv
-108db94a chore: stop tracking vendor/bundle in git
-9cefd98d feat(events): treat past/upcoming by end time and show ongoing badge
-cc39b1e0 chore(ci): target Dependabot PRs at Dev branch
-fb80cc71 chore(dev): add mise Ruby 3.4.2 native setup for dev-workstation
-2a113e94 feat(analytics): add Umami tracking gated by cookie consent
-2e627ba8 docs(agent): replace CLAUDE.md with AGENT.md and update repo URLs
+db0f091b fix(checkout): membership cart UX and UnifiedCart autoload
+f01e7b38 docs(checkout): mark Waves 5–6 DoD complete in MASTER plan
+67dec0d2 chore(checkout): wave 6 cleanup and regression specs
+4231ed18 feat(checkout): wave 5 UX polish and staging cutover prep
+50d00d2d feat(checkout): wave 4 unified checkout partial payment and fulfillment
+e7c7b75c feat(checkout): wave 3 memberships via account cart
+85bb05e5 feat(checkout): wave 1 account cart and feature flag
+0d0f9289 feat(checkout): wave 2 paid event registration via cart
+18e0debe docs(checkout): add MASTER plan and unified cart UX spec
+4ceced13 docs: add DR-001 unified checkout decision
 ```
 
-**Uncommitted (include in same deploy):** roller stock reservation model, admin button rename, specs — see `docs/06-events/roller-stock.md` v2.3.
+Full Dev log since `origin/staging`: `git log origin/staging..Dev --oneline`
 
 ---
 
 ## Related documentation
 
+- [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md)
+- [`DR-001-unified-checkout-cart.md`](DR-001-unified-checkout-cart.md)
+- [`docs/09-product/unified-cart-ux.md`](../09-product/unified-cart-ux.md)
 - [`docs/06-events/roller-stock.md`](../06-events/roller-stock.md)
 - [`docs/08-security-privacy/umami-analytics.md`](../08-security-privacy/umami-analytics.md)
-- [`docs/development/homepage-carousel.md`](../development/homepage-carousel.md)
-- [`docs/04-rails/admin-panel/PERMISSIONS.md`](../04-rails/admin-panel/PERMISSIONS.md)
+- [`AGENT.md`](../../AGENT.md) — agent workflow & staging release process
+
+---
+
+## Maintaining this file
+
+When preparing the next **Dev → staging** PR:
+
+1. Update **commit range** and **head SHA** at the top.
+2. Add new features / migrations / ENV vars / QA items.
+3. Add a line in [`CHANGELOG.md`](CHANGELOG.md) pointing here.
+4. Cross-check [`AGENT.md`](../../AGENT.md) § Release to staging.

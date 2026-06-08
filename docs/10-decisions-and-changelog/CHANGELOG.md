@@ -2,6 +2,12 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-08] - Release Dev → staging (June 2026 batch v2)
+
+Unified checkout epic merged on `Dev` + prior June batch (events, admin, roller stock, Umami, Turnstile).
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.0 — includes checkout migrations, `UNIFIED_CART_ENABLED`, QA §G).
+
 ## [2026-06-08] - Unified checkout Waves 5–6 (UX polish + cleanup)
 
 ### Added

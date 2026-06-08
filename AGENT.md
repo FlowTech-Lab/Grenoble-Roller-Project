@@ -39,8 +39,13 @@ Do **not** duplicate canonical docs here — use the index below.
 | **Security / a11y / legal** | [`docs/08-security-privacy/README.md`](docs/08-security-privacy/README.md) | RGPD, cookies, WCAG, legal pages |
 | **Umami analytics** | [`docs/08-security-privacy/umami-analytics.md`](docs/08-security-privacy/umami-analytics.md) | ENV vars, consent gate, custom events |
 | **Product & UX** | [`docs/09-product/README.md`](docs/09-product/README.md) | HelloAsso, memberships, orders, backlog |
+| **Unified cart UX** | [`docs/09-product/unified-cart-ux.md`](docs/09-product/unified-cart-ux.md) | Cart + checkout UX, partial pay, donation |
+| **HelloAsso / shop flow** | [`docs/09-product/flux-boutique-helloasso.md`](docs/09-product/flux-boutique-helloasso.md) | Legacy + unified checkout paths |
 | **HelloAsso setup** | [`docs/09-product/helloasso-setup.md`](docs/09-product/helloasso-setup.md) | OAuth credentials, polling, sandbox vs prod |
-| **Changelog** | [`docs/10-decisions-and-changelog/CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) | Release notes |
+| **Unified checkout (agent SSOT)** | [`docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) | Waves 0–6, QA §G, rollback §H |
+| **ADR unified cart** | [`docs/10-decisions-and-changelog/DR-001-unified-checkout-cart.md`](docs/10-decisions-and-changelog/DR-001-unified-checkout-cart.md) | Decision record |
+| **Release Dev → staging** | [`docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md) | **Update before each staging PR** — migrations, ENV, QA |
+| **Changelog** | [`docs/10-decisions-and-changelog/CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) | Release journal; links to release notes |
 | **ADR template** | [`docs/11-templates/adr-template.md`](docs/11-templates/adr-template.md) | Significant architecture decisions |
 | **Root README** | [`README.md`](README.md) | Quick start, roles, Docker ports |
 | **DB diagram** | [`ressources/db/dbdiagram.md`](ressources/db/dbdiagram.md) | Visual schema reference |
@@ -56,10 +61,11 @@ Rails **monolith** — shop, events, initiations, and memberships are **largely 
 
 | Area | State | Canonical doc |
 | --- | --- | --- |
-| E-commerce + HelloAsso checkout | ✅ Complete | [`docs/09-product/flux-boutique-helloasso.md`](docs/09-product/flux-boutique-helloasso.md) |
+| E-commerce + HelloAsso checkout | ✅ Complete (legacy session cart) | [`docs/09-product/flux-boutique-helloasso.md`](docs/09-product/flux-boutique-helloasso.md) |
+| **Unified account cart + checkout** | ✅ On `Dev`; **flag** `UNIFIED_CART_ENABLED` (default off) | [`PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) · [`unified-cart-ux.md`](docs/09-product/unified-cart-ux.md) |
 | Events, routes, attendances, waitlist | ✅ Core done | [`docs/06-events/README.md`](docs/06-events/README.md) |
-| Initiations (`Event::Initiation` STI) | ✅ Core done | [`docs/06-events/logique-essai-gratuit.md`](docs/06-events/logique-essai-gratuit.md) |
-| Memberships (adult/child, HelloAsso) | ✅ ~90% | [`docs/09-product/adhesions-complete.md`](docs/09-product/adhesions-complete.md) |
+| Initiations (`Event::Initiation` STI) | ✅ Core done (never paid online) | [`docs/06-events/logique-essai-gratuit.md`](docs/06-events/logique-essai-gratuit.md) |
+| Memberships (adult/child, HelloAsso) | ✅ ~95% (cart path when flag on) | [`docs/09-product/adhesions-complete.md`](docs/09-product/adhesions-complete.md) |
 | Admin panel (`/admin-panel`) | ✅ Replaces ActiveAdmin | [`docs/04-rails/admin-panel/README.md`](docs/04-rails/admin-panel/README.md) |
 | RSpec | ✅ Green suite (see overview for count) | [`docs/05-testing/rspec/README.md`](docs/05-testing/rspec/README.md) |
 | UX backlog (pagination, search, newsletter…) | 🚧 Open | [`docs/09-product/todo-restant.md`](docs/09-product/todo-restant.md) |
@@ -101,11 +107,15 @@ app/
     events/               # Nested attendances, waitlist
     initiations/          # Nested attendances, waitlist
     orders/, memberships/ # Checkout + HelloAsso payments
+    checkouts/            # Unified checkout (partial pay + donation)
   models/
+    cart_line.rb          # Account cart (when UNIFIED_CART_ENABLED)
+    checkout.rb           # Unified HelloAsso checkout session
+    unified_cart.rb       # Feature flag helper
     event.rb              # Base event
     event/initiation.rb   # STI: initiation sessions
   policies/               # Pundit (public + admin_panel + admin legacy)
-  services/               # HelloAsso, inventory, exports, dashboard
+  services/               # HelloAsso, CartLine, Checkout, fulfillment, exports
   views/                  # ERB + Bootstrap
 config/
   routes.rb               # Public + admin-panel + Devise
@@ -144,9 +154,10 @@ Seven role **levels** (see [`README.md`](README.md)): `USER(10)` → `SUPERADMIN
 | --- | --- |
 | `/` | Homepage |
 | `/shop`, `/products` | Catalog |
-| `/cart` | Session/DB cart |
-| `/orders` | Checkout |
-| `/memberships` | Adhesions (HelloAsso) |
+| `/cart` | Account cart (`CartLine`) when unified flag on; else session cart |
+| `/checkouts/new`, `/checkouts/:id` | Unified checkout (partial lines + donation) |
+| `/orders` | Legacy shop checkout (session cart when flag off) |
+| `/memberships` | Adhesions — add-to-cart per line when flag on |
 | `/events`, `/initiations` | Events & initiation sessions |
 | `/attendances` | “Mes sorties” |
 | `/admin-panel` | Admin dashboard |
@@ -175,6 +186,7 @@ bin/dev                           # http://localhost:3000
 ```
 
 `.env` sets `DATABASE_*` (port **5432**), `ACTIVE_STORAGE_SERVICE=local`, `SOLID_QUEUE_IN_PUMA=true`.  
+Optional for local unified-cart QA: `UNIFIED_CART_ENABLED=true` (see `.env.example`).  
 Docker dev (`ops/dev/docker-compose.yml`) remains optional (DB on **5434**).
 
 ### Local dev (Docker — optional)
@@ -199,8 +211,20 @@ bin/importmap audit
 ### Add a feature touching HelloAsso
 
 1. Read [`docs/09-product/helloasso-setup.md`](docs/09-product/helloasso-setup.md).
-2. Store credentials via `bin/rails credentials:edit` — **never** commit `config/master.key`.
-3. Use [`HelloassoService`](app/services/helloasso_service.rb); follow existing payment controller patterns.
+2. If touching cart/checkout: read [`PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) and [`unified-cart-ux.md`](docs/09-product/unified-cart-ux.md).
+3. Store credentials via `bin/rails credentials:edit` — **never** commit `config/master.key`.
+4. Use [`HelloassoService`](app/services/helloasso_service.rb); unified path via [`CheckoutService`](app/services/checkout_service.rb) when `UnifiedCart.enabled?`.
+
+### Release to staging (human + agent)
+
+1. Merge feature work into **`Dev`** (integration branch for this repo).
+2. **Update** [`release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md): commit range, migrations, ENV, QA checklist.
+3. Add a line in [`CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) pointing to the release note.
+4. Open PR **`Dev` → `staging`**; run RSpec; deploy staging via Dokploy.
+5. Staging checkout QA: `UNIFIED_CART_ENABLED=true` — complete MASTER plan §G before prod flag.
+6. Production: merge `staging` → `main` only after human sign-off; keep `UNIFIED_CART_ENABLED=false` until then.
+
+Full Git rules: [`docs/01-ways-of-working/README.md`](docs/01-ways-of-working/README.md).
 
 ### Add / change admin panel behavior
 
@@ -219,8 +243,13 @@ Create an ADR from [`docs/11-templates/adr-template.md`](docs/11-templates/adr-t
 | Branch | Role |
 | --- | --- |
 | `main` | Production |
-| `staging` | Pre-prod validation |
-| `feature/*`, `fix/*`, `docs/*`, … | Feature work |
+| `staging` | Pre-prod validation (Dokploy staging) |
+| **`Dev`** | **Integration** — feature branches merge here first |
+| `feature/*`, `fix/*`, `docs/*`, … | Feature work → PR into `Dev` |
+
+**Promotion path:** `feature/*` → `Dev` → `staging` → `main`.
+
+**Staging release doc (mandatory before `Dev` → `staging` PR):** [`release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md).
 
 Conventional commits with scope: `feat(events): …`, `fix(cart): …`. PRs require green RSpec. Full rules: [`docs/01-ways-of-working/README.md`](docs/01-ways-of-working/README.md).
 
@@ -230,6 +259,8 @@ Conventional commits with scope: `feat(events): …`, `fix(cart): …`. PRs requ
 
 - **Environments:** `ops/dev/` (3000), `ops/staging/` (3001), `ops/production/` (3002).
 - **Pipeline:** git pull → backup → build → migrate → health check → rollback on failure ([`docs/07-ops/deployment.md`](docs/07-ops/deployment.md)).
+- **Staging env template:** [`ops/dokploy/env/staging.env.example`](ops/dokploy/env/staging.env.example) — includes `UNIFIED_CART_ENABLED=true` for QA.
+- **Production:** keep `UNIFIED_CART_ENABLED=false` until staging QA sign-off ([release note](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md)).
 - **Watchdog:** cron-driven auto-deploy ([`docs/07-ops/runbooks/watchdog/watchdog.md`](docs/07-ops/runbooks/watchdog/watchdog.md)).
 - **Dokploy migration notes:** [`ops/dokploy/Migration.md`](ops/dokploy/Migration.md).
 
@@ -261,7 +292,9 @@ Setup: `pip install graphifyy` or `graphify install --platform cursor`.
 
 - **Admin is `AdminPanel`, not ActiveAdmin** — gem may remain for CSS legacy; routes are disabled.
 - **Initiations are STI** — `Event::Initiation < Event`; shared tables and policies differ from generic events.
-- **HelloAsso secrets** live in Rails credentials only — not `.env` in repo.
+- **HelloAsso secrets** live in Rails credentials only — not `.env` in repo (except public Turnstile/Umami/flag vars).
+- **Unified cart** — gated by `UNIFIED_CART_ENABLED`; use `unified_cart_enabled?` in views (not `UnifiedCart` directly). Rollback = set flag `false` and redeploy ([MASTER §H](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md)).
+- **Initiations are never paid online** — do not add cart/checkout to `Event::Initiation` registration.
 - **Never commit** `config/master.key` or `.env*` files.
 - **UI copy is French**; **code comments and commit messages are English**.
 - **Use RSpec** (`spec/`) — some older docs mention Minitest; ignore that.
