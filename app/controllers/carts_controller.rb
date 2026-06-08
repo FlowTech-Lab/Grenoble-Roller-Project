@@ -4,6 +4,7 @@ class CartsController < ApplicationController
 
   def show
     if unified_cart_enabled?
+      CartLineService.refresh_membership_lines!(current_user) if user_signed_in?
       @cart_lines = CartLineService.list(current_user)
       @cart_items = build_cart_items_from_lines(@cart_lines)
       @event_cart_lines = CartLineService.event_lines(current_user)

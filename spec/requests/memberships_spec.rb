@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe "Memberships", type: :request do
   include RequestAuthenticationHelper
   include TestDataHelper
+  include ActiveSupport::Testing::TimeHelpers
 
   let!(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) { create_user(role: role) }
@@ -246,7 +247,7 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "POST /memberships/:id/renew - Renouvellement adhésion enfant" do
-    let(:current_season) { Membership.current_season_name }
+    let(:current_season) { Membership.sale_season_name }
     # Dates pour une adhésion expirée (saison 2023-2024, clairement expirée en décembre 2025)
     let(:old_start_date) { Date.new(2023, 9, 1) }
     let(:old_end_date) { Date.new(2024, 8, 31) }
@@ -445,7 +446,7 @@ RSpec.describe "Memberships", type: :request do
         :with_health_questionnaire,
         user: user,
         status: :trial,
-        season: Membership.current_season_name,
+        season: Membership.sale_season_name,
         category: 'standard',
         amount_cents: 1000
       )
@@ -469,7 +470,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user,
           status: :active,
-          season: Membership.current_season_name
+          season: Membership.sale_season_name
         )
       end
 
@@ -485,7 +486,7 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "GET /memberships - Affichage bouton Réadhérer" do
-    let(:current_season) { Membership.current_season_name }
+    let(:current_season) { Membership.sale_season_name }
     let(:expired_season) { '2024-2025' }
 
     context "avec adhésion enfant expirée sans adhésion courante" do
@@ -572,7 +573,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user_with_complete_profile,
           status: :trial,
-          season: Membership.current_season_name,
+          season: Membership.sale_season_name,
           child_first_name: 'Enfant',
           child_last_name: 'Test',
           child_date_of_birth: Date.new(2015, 1, 1)
@@ -616,7 +617,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user_with_complete_profile,
           status: :trial,
-          season: Membership.current_season_name,
+          season: Membership.sale_season_name,
           child_first_name: 'Enfant',
           child_last_name: 'Nouveau',
           child_date_of_birth: Date.new(2016, 1, 1)
@@ -809,6 +810,21 @@ RSpec.describe "Memberships", type: :request do
           post memberships_path, params: { membership: adult_membership_params }
           expect(flash[:notice]).to include("Adhésion ajoutée au panier")
         end
+
+        it "assigns sale season (not next season before 15 August)" do
+          travel_to Date.new(2026, 6, 5) do
+            login_user(user_with_dob)
+
+            post memberships_path, params: { membership: adult_membership_params }
+
+            membership = Membership.last
+            expect(membership.season).to eq("2025-2026")
+            expect(membership.start_date).to eq(Date.new(2025, 9, 1))
+            expect(membership.end_date).to eq(Date.new(2026, 8, 31))
+            line = user_with_dob.cart_lines.membership.find_by(reference: membership)
+            expect(line.label).to include("2025-2026")
+          end
+        end
       end
 
       context "when health questionnaire is incomplete" do
@@ -873,7 +889,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user_with_dob,
           status: :trial,
-          season: Membership.current_season_name,
+          season: Membership.sale_season_name,
           category: "standard",
           amount_cents: 1000)
       end

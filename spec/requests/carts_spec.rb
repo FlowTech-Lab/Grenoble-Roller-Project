@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Carts', type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   let(:category) { create(:product_category) }
   let(:product) { create(:product, category: category) }
   let(:variant) do
@@ -233,6 +235,36 @@ RSpec.describe 'Carts', type: :request do
         get cart_path
 
         expect(assigns(:total_cents)).to eq(4000)
+      end
+
+      it "realigns stale membership lines on page load" do
+        travel_to Date.new(2026, 6, 5) do
+          membership = create(
+            :membership,
+            :pending,
+            :with_health_questionnaire,
+            :wrong_next_season,
+            user: user,
+            amount_cents: 5655
+          )
+          line = create(
+            :cart_line,
+            :membership,
+            user: user,
+            reference: membership,
+            label: "Cotisation — Saison 2026-2027",
+            amount_cents: 5655,
+            metadata: { "season" => "2026-2027" }
+          )
+          login_user(user)
+
+          get cart_path
+
+          expect(response).to have_http_status(:success)
+          expect(membership.reload.season).to eq("2025-2026")
+          expect(line.reload.label).to include("2025-2026")
+          expect(assigns(:membership_cart_lines).map(&:reference)).to include(membership)
+        end
       end
     end
 

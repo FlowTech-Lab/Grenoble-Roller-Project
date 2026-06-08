@@ -18,9 +18,16 @@ module Memberships
           return
         end
 
-        already_in_cart = CartLineService.membership_in_cart?(current_user, @membership)
-        CartLineService.add_membership!(current_user, membership: @membership) unless already_in_cart
-        flash[:notice] = already_in_cart ? "Cette adhésion est déjà dans votre panier." : "Adhésion ajoutée au panier"
+        was_in_cart = CartLineService.membership_in_cart?(current_user, @membership)
+        wrong_season = !@membership.sale_season_aligned?
+        CartLineService.add_membership!(current_user, membership: @membership)
+        flash[:notice] = if was_in_cart && wrong_season
+          "Adhésion corrigée pour la saison #{@membership.reload.season} et mise à jour dans votre panier."
+        elsif was_in_cart
+          "Cette adhésion est déjà dans votre panier."
+        else
+          "Adhésion ajoutée au panier"
+        end
         flash[:notice_type] = "success"
         flash[:show_cart_button] = true
         redirect_to cart_path

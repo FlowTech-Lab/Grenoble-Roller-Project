@@ -75,6 +75,21 @@ RSpec.describe CartLineService do
   describe '.add_membership!' do
     let(:membership) { create(:membership, :pending, :with_health_questionnaire, user: user) }
 
+    it 'aligns wrong season on pending membership before cart add' do
+      travel_to Date.new(2026, 6, 5) do
+        membership.update!(
+          season: '2026-2027',
+          start_date: Date.new(2026, 9, 1),
+          end_date: Date.new(2027, 8, 31)
+        )
+
+        line = described_class.add_membership!(user, membership: membership)
+
+        expect(membership.reload.season).to eq('2025-2026')
+        expect(line.label).to include('2025-2026')
+      end
+    end
+
     it 'creates membership cart line for pending membership' do
       line = nil
       expect {
@@ -117,6 +132,87 @@ RSpec.describe CartLineService do
       expect {
         described_class.add_membership!(user, membership: incomplete)
       }.to raise_error(CartLineService::HealthQuestionnaireIncompleteError)
+    end
+
+    it 'stores sale season in line metadata' do
+      travel_to Date.new(2026, 6, 5) do
+        line = described_class.add_membership!(user, membership: membership)
+
+        expect(line.metadata['season']).to eq('2025-2026')
+      end
+    end
+
+    it 'updates cart line label and amount when season is corrected on re-add' do
+      travel_to Date.new(2026, 6, 5) do
+        membership.update!(
+          season: '2026-2027',
+          start_date: Date.new(2026, 9, 1),
+          end_date: Date.new(2027, 8, 31),
+          amount_cents: 5655
+        )
+        stale_line = create(
+          :cart_line,
+          :membership,
+          user: user,
+          reference: membership,
+          label: 'Cotisation — Saison 2026-2027 (stale)',
+          amount_cents: 5655,
+          metadata: { 'season' => '2026-2027' }
+        )
+
+        line = described_class.add_membership!(user, membership: membership)
+
+        expect(line.id).to eq(stale_line.id)
+        expect(line.label).to include('2025-2026')
+        expect(line.metadata['season']).to eq('2025-2026')
+        expect(membership.reload.season).to eq('2025-2026')
+      end
+    end
+  end
+
+  describe '.refresh_membership_lines!' do
+    let(:membership) do
+      create(
+        :membership,
+        :pending,
+        :with_health_questionnaire,
+        :wrong_next_season,
+        user: user,
+        amount_cents: 5655
+      )
+    end
+
+    it 'realigns stale membership cart lines without creating duplicates' do
+      travel_to Date.new(2026, 6, 5) do
+        line = create(
+          :cart_line,
+          :membership,
+          user: user,
+          reference: membership,
+          label: 'Cotisation — Saison 2026-2027',
+          amount_cents: 5655,
+          metadata: { 'season' => '2026-2027', 'child_name' => membership.child_full_name }
+        )
+
+        expect {
+          described_class.refresh_membership_lines!(user)
+        }.not_to change(CartLine, :count)
+
+        line.reload
+        expect(membership.reload.season).to eq('2025-2026')
+        expect(line.label).to include('2025-2026')
+        expect(line.metadata['season']).to eq('2025-2026')
+      end
+    end
+
+    it 'ignores non-membership cart lines' do
+      travel_to Date.new(2026, 6, 5) do
+        product_line = create(:cart_line, user: user, reference: create(:product_variant))
+
+        expect {
+          described_class.refresh_membership_lines!(user)
+        }.not_to change { product_line.reload.attributes }
+      end
     end
   end
 

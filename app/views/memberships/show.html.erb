@@ -299,7 +299,7 @@
               </div>
             <% elsif @membership.status == 'expired' %>
               <% if @membership.is_child_membership? %>
-                <%= button_to renew_membership_path(@membership), method: :post, class: "btn btn-primary", data: { turbo: false, confirm: "Renouveler l'adhésion de #{@membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
+                <%= button_to renew_membership_path(@membership), method: :post, class: "btn btn-primary", data: { turbo: false, confirm: "Renouveler l'adhésion de #{@membership.child_full_name} pour la saison #{Membership.sale_season_name} ?" } do %>
                   <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
                 <% end %>
               <% else %>

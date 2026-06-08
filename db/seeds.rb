@@ -1326,19 +1326,16 @@ puts "   - Logs d'audit : #{AuditLog.count}"
 
 puts "\n👥 Création des adhésions (tous les cas de figure)..."
 
-# Calculer les dates de saison
-def season_dates_for_year(year)
-  start_date = Date.new(year, 9, 1)
-  end_date = Date.new(year + 1, 8, 31)
-  [ start_date, end_date ]
-end
-
-current_year = Date.today.year
-current_season_start, current_season_end = season_dates_for_year(current_year >= 9 ? current_year : current_year - 1)
-previous_season_start, previous_season_end = season_dates_for_year(current_year >= 9 ? current_year - 1 : current_year - 2)
-
-current_season_name = "#{current_season_start.year}-#{current_season_end.year}"
-previous_season_name = "#{previous_season_start.year}-#{previous_season_end.year}"
+# Calculer les dates de saison (via Membership — règle vente 15 août)
+current_season_start, current_season_end = Membership.sale_season_dates
+current_season_name = Membership.sale_season_name
+previous_start, previous_end = Membership.dates_for_season_start_year(
+  Membership.season_start_year_for_sale(Date.current) - 1
+)
+previous_season_start, previous_season_end = previous_start, previous_end
+previous_season_name = Membership.season_name_for_start_year(
+  Membership.season_start_year_for_sale(Date.current) - 1
+)
 
 # Récupérer les utilisateurs réguliers (pas admin, pas superadmins)
 regular_users_for_memberships = regular_users.limit(50)

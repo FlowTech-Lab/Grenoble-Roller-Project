@@ -94,28 +94,74 @@ class Membership < ApplicationRecord
     (1..9).all? { |i| send("health_q#{i}").present? }
   end
 
-  # Calcul automatique des dates de saison (1er sept - 31 août)
-  def self.current_season_dates
-    today = Date.today
-    year = today.year
+  # Season calendar: 1 Sep – 31 Aug. Next season sales open 15 Aug (not before).
+  NEXT_SEASON_SALE_OPENS_MONTH = 8
+  NEXT_SEASON_SALE_OPENS_DAY = 15
 
-    # Si on est après le 1er septembre, la saison courante a déjà commencé
-    if today >= Date.new(year, 9, 1)
-      start_date = Date.new(year, 9, 1)
-      end_date = Date.new(year + 1, 8, 31)
-    else
-      # Sinon, on est dans la saison précédente (qui se termine le 31 août)
-      start_date = Date.new(year - 1, 9, 1)
-      end_date = Date.new(year, 8, 31)
-    end
-
-    [ start_date, end_date ]
+  # Running season (calendar): which season we are in today (initiations, active checks).
+  def self.current_season_dates(on = Date.current)
+    running_season_dates(on)
   end
 
-  # Génère le nom de la saison (ex: "2025-2026")
-  def self.current_season_name
-    start_date, end_date = current_season_dates
+  def self.current_season_name(on = Date.current)
+    season_name_for_start_year(season_start_year_for_running(on))
+  end
+
+  # Sale season: which season new memberships / cart lines use (opens next season from 15 Aug).
+  def self.sale_season_dates(on = Date.current)
+    dates_for_season_start_year(season_start_year_for_sale(on))
+  end
+
+  def self.sale_season_name(on = Date.current)
+    season_name_for_start_year(season_start_year_for_sale(on))
+  end
+
+  def self.season_start_year_for_running(on)
+    on >= Date.new(on.year, 9, 1) ? on.year : on.year - 1
+  end
+
+  def self.season_start_year_for_sale(on)
+    if on >= Date.new(on.year, 9, 1)
+      on.year
+    elsif on >= Date.new(on.year, NEXT_SEASON_SALE_OPENS_MONTH, NEXT_SEASON_SALE_OPENS_DAY)
+      on.year
+    else
+      season_start_year_for_running(on)
+    end
+  end
+
+  def self.dates_for_season_start_year(start_year)
+    [ Date.new(start_year, 9, 1), Date.new(start_year + 1, 8, 31) ]
+  end
+
+  def self.season_name_for_start_year(start_year)
+    start_date, end_date = dates_for_season_start_year(start_year)
     "#{start_date.year}-#{end_date.year}"
+  end
+
+  def self.running_season_dates(on = Date.current)
+    dates_for_season_start_year(season_start_year_for_running(on))
+  end
+
+  def align_to_sale_season!
+    return unless pending? || trial?
+
+    expected_start, expected_end = self.class.sale_season_dates
+    expected_season = self.class.sale_season_name
+    return if season == expected_season && start_date == expected_start && end_date == expected_end
+
+    update!(
+      season: expected_season,
+      start_date: expected_start,
+      end_date: expected_end
+    )
+  end
+
+  def sale_season_aligned?
+    expected_start, expected_end = self.class.sale_season_dates
+    season == self.class.sale_season_name &&
+      start_date == expected_start &&
+      end_date == expected_end
   end
 
   # Callback pour mettre à jour le statut après paiement et envoyer les emails

@@ -91,11 +91,23 @@ class CartLineService
       list(user, include_expired: include_expired).size
     end
 
+    def refresh_membership_lines!(user)
+      user.cart_lines.membership.active.includes(:reference).find_each do |line|
+        membership = line.reference
+        next unless membership.is_a?(Membership)
+
+        add_membership!(user, membership: membership)
+      end
+    end
+
     def add_membership!(user, membership:)
       raise HealthQuestionnaireIncompleteError unless membership.health_questionnaire_complete?
       unless membership.pending?
         raise InvalidMembershipStatusError, "Only pending memberships can be added to the cart."
       end
+
+      membership.align_to_sale_season!
+      membership.reload
 
       metadata = { "season" => membership.season }
       metadata["child_name"] = membership.child_full_name if membership.is_child_membership?
