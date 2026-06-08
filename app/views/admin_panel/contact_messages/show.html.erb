@@ -7,7 +7,7 @@
 
 <%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="admin-page-header">
   <h1>Message #<%= @contact_message.id %></h1>
   <div>
     <%= link_to "Retour à la liste", admin_panel_contact_messages_path, class: "btn btn-outline-liquid-secondary" %>

@@ -8674,7 +8674,7 @@ body.admin-panel {
    ADMIN TABLES - RESPONSIVE MOBILE (2025)
    Transformation en cards sur mobile pour meilleure UX
    ============================================ */
-@media (max-width: 767px) {
+@media (max-width: 991.98px) {
   /* Table responsive - Pas de scroll horizontal */
   .admin-panel .card .table-responsive,
   .admin-dashboard .card .table-responsive {
@@ -8911,25 +8911,7 @@ body.admin-panel {
   }
 }
 
-/* Tablet: Scroll horizontal avec meilleur style */
-@media (min-width: 768px) and (max-width: 991px) {
-  .admin-panel .table-responsive {
-    -webkit-overflow-scrolling: touch;
-    border-radius: var(--bs-border-radius);
-    overflow-x: auto;
-  }
-
-  .admin-panel .table {
-    font-size: 0.9rem;
-    min-width: 700px;
-  }
-
-  .admin-panel .table th,
-  .admin-panel .table td {
-    padding: 0.75rem;
-    white-space: nowrap;
-  }
-}
+/* Tablet: same card layout as mobile (no horizontal scroll) — see max-width 991.98px table rules above */
 
 /* Desktop: Tableau normal */
 @media (min-width: 992px) {
@@ -8970,7 +8952,7 @@ body.admin-panel {
 /* Pas besoin de redéfinir */
 
 /* Mobile: Buttons plus grands pour touch */
-@media (max-width: 767px) {
+@media (max-width: 991.98px) {
   .admin-panel .btn {
     min-height: 44px;
     padding: 0.75rem 1.25rem;
@@ -9001,7 +8983,7 @@ body.admin-panel {
 /* === ADMIN FORMS - Réutilise form-control-liquid existante === */
 /* La classe .form-control-liquid existe déjà */
 /* Mobile: Inputs plus grands pour touch */
-@media (max-width: 767px) {
+@media (max-width: 991.98px) {
   .admin-panel .form-control,
   .admin-panel .form-select {
     min-height: 44px;
@@ -9101,8 +9083,7 @@ body.admin-panel {
     box-sizing: border-box;
   }
 
-  /* Empêcher le texte de déborder */
-  .admin-panel h1,
+  /* Empêcher le texte de déborder (sans césure agressive sur les titres de page) */
   .admin-panel h2,
   .admin-panel h3,
   .admin-panel h4,
@@ -9110,7 +9091,13 @@ body.admin-panel {
   .admin-panel h6 {
     word-wrap: break-word;
     overflow-wrap: break-word;
-    hyphens: auto;
+  }
+
+  .admin-panel h1,
+  .admin-page-title {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    hyphens: manual;
   }
 
   /* Cards responsive */
@@ -9122,5 +9109,222 @@ body.admin-panel {
   .admin-panel .row > * {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+  }
+}
+
+/* ============================================
+   ADMIN MOBILE-FIRST — page chrome, headers, filters
+   ============================================ */
+
+/* Single admin menu entry point on mobile (hide site navbar toggler) */
+@media (max-width: 991.98px) {
+  body.admin-panel .navbar-grenoble-roller .navbar-toggler {
+    display: none !important;
+  }
+
+  body.admin-panel .admin-mobile-menu-toggle {
+    display: none !important;
+  }
+
+  body.admin-panel .layout-footer-simple,
+  body.admin-panel footer {
+    display: none;
+  }
+}
+
+.admin-mobile-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0 -0.25rem 0.75rem;
+  position: sticky;
+  top: var(--navbar-height, 76px);
+  z-index: 1030;
+  background: var(--liquid-glass-bg);
+  backdrop-filter: var(--liquid-blur);
+  -webkit-backdrop-filter: var(--liquid-blur);
+  border: 1px solid var(--liquid-glass-border);
+  border-radius: 12px;
+}
+
+.admin-mobile-chrome__menu,
+.admin-mobile-chrome__site {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-mobile-chrome__menu {
+  flex: 1;
+  border: 1px solid var(--liquid-glass-border);
+  background: rgba(var(--bs-primary-rgb), 0.12);
+  color: var(--gr-primary);
+}
+
+.admin-mobile-chrome__site {
+  border: 1px solid var(--liquid-glass-border);
+  color: var(--bs-body-color);
+  background: transparent;
+}
+
+.admin-breadcrumb .breadcrumb {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 0.5rem 0.75rem;
+}
+
+.admin-breadcrumb-current {
+  max-width: min(52vw, 14rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-page-header .admin-page-title,
+.admin-page-header > h1 {
+  margin-bottom: 0;
+  line-height: 1.25;
+}
+
+.admin-page-actions,
+.admin-page-header > .btn-group,
+.admin-page-header > .d-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (max-width: 991.98px) {
+  .admin-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .admin-page-header .admin-page-title,
+  .admin-page-header > h1 {
+    font-size: 1.35rem;
+    hyphens: none;
+    width: 100%;
+  }
+
+  .admin-page-actions,
+  .admin-page-header > .btn-group,
+  .admin-page-header > .d-flex {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-page-header .btn-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .admin-page-header .btn-group > .btn {
+    width: 100%;
+    margin-left: 0 !important;
+    border-radius: var(--bs-border-radius) !important;
+  }
+
+  .admin-page-header .btn,
+  .admin-page-header .admin-page-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-scope-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem !important;
+  }
+
+  .admin-scope-tabs .btn {
+    width: 100%;
+    min-height: 44px;
+    white-space: normal;
+    text-align: center;
+    padding: 0.5rem 0.35rem;
+    font-size: 0.8125rem;
+  }
+
+  .admin-panel .card .row.g-3 > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .admin-panel .card .row.g-3 .d-flex.align-items-end {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.5rem;
+  }
+
+  .admin-panel .card .row.g-3 .d-flex.align-items-end .btn {
+    width: 100%;
+  }
+
+  /* Interactive tables (presences): stack controls */
+  .admin-panel .table tbody td .form-select,
+  .admin-panel .table tbody td .form-check {
+    width: 100%;
+    margin-left: 0 !important;
+    text-align: left;
+  }
+
+  .admin-panel .table tbody td .form-check-input {
+    margin-left: 0;
+  }
+
+  /* Offcanvas: flat menu — no nested collapse on small screens */
+  .admin-offcanvas .collapse {
+    display: block !important;
+    height: auto !important;
+    visibility: visible;
+  }
+
+  .admin-offcanvas .admin-menu-chevron {
+    display: none;
+  }
+
+  .admin-offcanvas .admin-menu-link[data-bs-toggle="collapse"] {
+    pointer-events: none;
+  }
+
+  .admin-offcanvas .admin-menu-item > ul {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .admin-panel .card-header.d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.5rem;
+  }
+
+  .admin-panel .card-header.d-flex .btn,
+  .admin-panel .card-header.d-flex .btn-group {
+    width: 100%;
   }
 }

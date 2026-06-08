@@ -1,0 +1,16 @@
+<div class="admin-mobile-chrome d-lg-none" role="toolbar" aria-label="Navigation admin mobile">
+  <button type="button"
+          class="admin-mobile-chrome__menu"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasSidebar"
+          aria-label="Ouvrir le menu admin"
+          aria-expanded="false"
+          aria-controls="offcanvasSidebar">
+    <i class="bi bi-list" aria-hidden="true"></i>
+    <span>Menu admin</span>
+  </button>
+  <%= link_to root_path, class: "admin-mobile-chrome__site" do %>
+    <i class="bi bi-house-door" aria-hidden="true"></i>
+    <span>Site</span>
+  <% end %>
+</div>

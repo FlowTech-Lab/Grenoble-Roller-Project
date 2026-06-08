@@ -1,8 +1,10 @@
 <div class="admin-dashboard">
   <!-- HEADER -->
-  <div class="mb-4">
-    <h1>Dashboard Admin</h1>
-    <p class="text-muted">Bienvenue, <%= current_user.first_name || current_user.email %></p>
+  <div class="admin-page-header admin-page-header--dashboard">
+    <div>
+      <h1 class="admin-page-title">Dashboard Admin</h1>
+      <p class="text-muted mb-0">Bienvenue, <%= current_user.first_name || current_user.email %></p>
+    </div>
   </div>
 
   <!-- MODE MAINTENANCE (Admin uniquement - en haut pour visibilité) -->
