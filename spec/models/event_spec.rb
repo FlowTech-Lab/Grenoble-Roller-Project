@@ -27,6 +27,14 @@ RSpec.describe Event, type: :model do
       expect(event.errors[:location_text]).to be_present
     end
 
+    it 'returns French messages for short description (no missing translation)' do
+      event = build_event(creator_user: creator, route: create_route, description: "trop court")
+      expect(event).to be_invalid
+      message = event.errors.full_messages.find { |m| m.include?("Description") }
+      expect(message).to include("20 caractères")
+      expect(message).not_to include("Translation missing")
+    end
+
     it 'enforces duration to be a positive multiple of 5' do
       event = build_event(creator_user: creator, duration_min: 42)
       expect(event).to be_invalid

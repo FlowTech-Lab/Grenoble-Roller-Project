@@ -381,13 +381,13 @@ class Event < ApplicationRecord
   def initiation_cannot_require_payment
     return unless initiation? && payment_required?
 
-    errors.add(:payment_required, "cannot be enabled for initiations")
+    errors.add(:payment_required, "ne peut pas être activé pour une initiation")
   end
 
   def duration_multiple_of_five
     return if duration_min.blank?
 
-    errors.add(:duration_min, "must be a multiple of 5") unless (duration_min % 5).zero?
+    errors.add(:duration_min, "doit être un multiple de 5") unless (duration_min % 5).zero?
   end
 
   def cover_image_must_be_present
