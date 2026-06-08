@@ -91,7 +91,7 @@
                 <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Continuer les achats
               <% end %>
               <% if user_signed_in? %>
-                <% if UnifiedCart.enabled? %>
+                <% if unified_cart_enabled? %>
                   <%= link_to new_checkout_path, class: "btn btn-liquid-primary flex-fill d-none d-md-inline-flex justify-content-center" do %>
                     <i class="bi bi-credit-card me-1" aria-hidden="true"></i>Passer au paiement
                   <% end %>
@@ -113,7 +113,7 @@
   </div>
 </div>
 
-<% if user_signed_in? && UnifiedCart.enabled? && !cart_empty %>
+<% if user_signed_in? && unified_cart_enabled? && !cart_empty %>
   <div class="checkout-sticky-footer d-md-none position-fixed bottom-0 start-0 end-0 p-3 bg-body border-top shadow-lg" style="z-index: 1040;">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <span class="text-muted small">Total panier</span>

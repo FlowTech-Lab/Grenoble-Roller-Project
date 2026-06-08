@@ -261,7 +261,7 @@
           <!-- Actions -->
           <div class="d-flex gap-2 justify-content-center">
             <% if @membership.status == 'pending' %>
-              <% if UnifiedCart.enabled? %>
+              <% if unified_cart_enabled? %>
                 <%= unified_cart_pay_cta(@membership) %>
               <% else %>
               <%= button_to membership_payments_path(@membership),
@@ -288,9 +288,9 @@
                   class: "btn btn-primary",
                   data: { 
                     turbo: false,
-                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? #{UnifiedCart.enabled? ? 'L\'adhésion sera ajoutée au panier.' : 'Vous serez redirigé vers le paiement.'}"
+                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? #{unified_cart_enabled? ? 'L\'adhésion sera ajoutée au panier.' : 'Vous serez redirigé vers le paiement.'}"
                   } do %>
-                <i class="bi bi-<%= UnifiedCart.enabled? ? 'basket' : 'credit-card' %> me-2"></i><%= UnifiedCart.enabled? ? 'Ajouter au panier' : 'Payer la cotisation' %>
+                <i class="bi bi-<%= unified_cart_enabled? ? 'basket' : 'credit-card' %> me-2"></i><%= unified_cart_enabled? ? 'Ajouter au panier' : 'Payer la cotisation' %>
               <% end %>
             <% elsif @membership.status == 'active' %>
               <div class="alert alert-success mb-0">

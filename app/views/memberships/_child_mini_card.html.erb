@@ -1,6 +1,6 @@
 <% 
   age = membership.child_age
-  # Déterminer le statut d'affichage : pending/trial > active > expired
+  show_pay_cta = local_assigns.fetch(:show_pay_cta, true)
   status_class = if membership.pending? || membership.trial?
     'pending'
   elsif membership.active?
@@ -11,14 +11,14 @@
 %>
 
 <div class="child-mini-card card-liquid" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
-  <div class="d-flex justify-content-between align-items-start">
-    <div class="flex-grow-1">
+  <div class="d-flex justify-content-between align-items-start gap-2">
+    <div class="flex-grow-1 min-w-0">
       <div class="d-flex align-items-center mb-1">
-        <span style="font-size: 1.5rem; margin-right: 0.5rem;">👶</span>
+        <span class="child-mini-card__emoji" aria-hidden="true">👶</span>
         <strong><%= membership.child_full_name %></strong>
       </div>
       <small class="text-muted d-block mb-1">
-        Né(e) le <%= l(membership.child_date_of_birth, format: :short) if membership.child_date_of_birth %> 
+        Né(e) le <%= l(membership.child_date_of_birth, format: :short) if membership.child_date_of_birth %>
         (<%= age %> ans)
       </small>
       <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -30,12 +30,12 @@
         </strong>
       </div>
       <small class="text-muted d-block mt-1">
-        <%= l(membership.start_date, format: :short) if membership.start_date %> → 
+        <%= l(membership.start_date, format: :short) if membership.start_date %> →
         <%= l(membership.end_date, format: :short) if membership.end_date %>
       </small>
     </div>
-    
-    <div class="d-flex flex-column align-items-end gap-2">
+
+    <div class="child-mini-card__toolbar d-flex flex-column align-items-end gap-2 flex-shrink-0">
       <span class="badge <%= status_class == 'active' ? 'bg-success' : (status_class == 'pending' ? 'bg-warning text-dark' : 'bg-secondary') %>">
         <% if status_class == 'active' %>
           ✓ <%= t("statuses.membership.active") %>
@@ -49,42 +49,64 @@
           ✗ <%= t("statuses.membership.expired") %>
         <% end %>
       </span>
-      
-      <div class="d-flex gap-1">
-        <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary", title: "Voir détails" do %>
-          <i class="bi bi-eye"></i>
+
+      <div class="child-mini-card__actions d-flex gap-1" role="group" aria-label="Actions pour <%= membership.child_full_name %>">
+        <%= link_to membership_path(membership),
+            class: "btn btn-sm btn-outline-primary",
+            aria: { label: "Voir les détails de #{membership.child_full_name}" } do %>
+          <i class="bi bi-eye" aria-hidden="true"></i>
         <% end %>
-        
-        <% if is_pending %>
-          <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning", title: "Modifier" do %>
-            <i class="bi bi-pencil"></i>
+
+        <% if is_pending || membership.trial? %>
+          <% unless membership.trial? %>
+            <%= link_to edit_membership_path(membership),
+                class: "btn btn-sm btn-outline-warning",
+                aria: { label: "Modifier l'adhésion de #{membership.child_full_name}" } do %>
+              <i class="bi bi-pencil" aria-hidden="true"></i>
+            <% end %>
+            <%= button_to membership_path(membership),
+                method: :delete,
+                class: "btn btn-sm btn-outline-danger",
+                aria: { label: "Supprimer l'adhésion de #{membership.child_full_name}" },
+                data: {
+                  turbo: false,
+                  confirm: "Supprimer l'adhésion de #{membership.child_full_name} ?"
+                },
+                form: { class: "child-mini-card__inline-form" } do %>
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            <% end %>
           <% end %>
-          <%= button_to membership_path(membership),
-              method: :delete,
-              class: "btn btn-sm btn-outline-danger",
-              title: "Supprimer",
-              data: { 
-                turbo: false,
-                confirm: "Supprimer l'adhésion de #{membership.child_full_name} ?"
-              },
-              form: { style: "display: inline-block;" } do %>
-            <i class="bi bi-trash"></i>
-          <% end %>
-          <% if UnifiedCart.enabled? %>
-            <%= unified_cart_pay_cta(membership) %>
-          <% else %>
-          <%= button_to membership_payments_path(membership),
-              method: :post,
-              class: "btn btn-sm btn-primary",
-              title: "Payer",
-              data: { turbo: false },
-              form: { style: "display: inline-block;" } do %>
-            <i class="bi bi-credit-card"></i>
-          <% end %>
+
+          <% if show_pay_cta %>
+            <% if membership.trial? %>
+              <%= button_to upgrade_membership_path(membership),
+                  method: :patch,
+                  class: "btn btn-sm btn-primary",
+                  data: {
+                    turbo: false,
+                    confirm: unified_cart_enabled? ?
+                      "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?" :
+                      "Payer la cotisation de #{membership.child_full_name} ? Vous serez redirigé vers le paiement."
+                  },
+                  form: { class: "child-mini-card__inline-form" } do %>
+                <i class="bi bi-<%= unified_cart_enabled? ? 'basket' : 'credit-card' %> me-1" aria-hidden="true"></i>
+                <%= unified_cart_enabled? ? "Adhérer" : "Payer" %>
+              <% end %>
+            <% elsif unified_cart_enabled? %>
+              <%= unified_cart_pay_cta(membership, form_class: "child-mini-card__inline-form") %>
+            <% else %>
+              <%= button_to membership_payments_path(membership),
+                  method: :post,
+                  class: "btn btn-sm btn-primary",
+                  aria: { label: "Payer l'adhésion de #{membership.child_full_name}" },
+                  data: { turbo: false },
+                  form: { class: "child-mini-card__inline-form" } do %>
+                <i class="bi bi-credit-card" aria-hidden="true"></i>
+              <% end %>
+            <% end %>
           <% end %>
         <% end %>
       </div>
     </div>
   </div>
 </div>
-

@@ -51,6 +51,8 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "POST /memberships/:membership_id/payments" do
+    around { |example| with_unified_cart_disabled { example.run } }
+
     let(:membership) { create(:membership, user: user, status: 'pending') }
 
     it "requires authentication" do
@@ -435,6 +437,8 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "POST /memberships/:id/upgrade - Conversion essai gratuit en adhésion payante" do
+    around { |example| with_unified_cart_disabled { example.run } }
+
     let(:trial_membership) do
       create(:membership,
         :child,
@@ -859,6 +863,30 @@ RSpec.describe "Memberships", type: :request do
           }
         end.to change(Membership, :count).by(1)
           .and change { user_with_dob.cart_lines.membership.count }.by(0)
+      end
+    end
+
+    describe "PATCH /memberships/:id/upgrade" do
+      let(:trial_membership) do
+        create(:membership,
+          :child,
+          :with_health_questionnaire,
+          user: user_with_dob,
+          status: :trial,
+          season: Membership.current_season_name,
+          category: "standard",
+          amount_cents: 1000)
+      end
+
+      it "converts trial to pending and adds membership to cart" do
+        login_user(user_with_dob)
+
+        patch upgrade_membership_path(trial_membership)
+
+        trial_membership.reload
+        expect(trial_membership.status).to eq("pending")
+        expect(response).to redirect_to(cart_path)
+        expect(CartLineService.membership_in_cart?(user_with_dob, trial_membership)).to be(true)
       end
     end
   end

@@ -245,7 +245,7 @@
                 <i class="bi bi-arrow-left me-1"></i>Retour
               <% end %>
               <div class="d-flex gap-2">
-                <%= f.submit UnifiedCart.enabled? ? "Ajouter au panier" : "Valider et payer", 
+                <%= f.submit unified_cart_enabled? ? "Ajouter au panier" : "Valider et payer", 
                     class: "btn btn-liquid-success btn-lg",
                     onclick: "document.getElementById('payment_method_field').value = 'helloasso';" %>
                 <%= f.submit "Déjà adhérent / Espèces / Chèques", 

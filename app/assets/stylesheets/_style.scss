@@ -6371,6 +6371,50 @@
       box-shadow: var(--bs-box-shadow);
       transform: translateY(-1px);
     }
+
+    &__emoji {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+      line-height: 1;
+    }
+
+    &__toolbar {
+      flex-shrink: 0;
+    }
+
+    &__actions {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+
+      .btn {
+        min-width: 2.25rem;
+        min-height: 2.25rem;
+        padding: 0.25rem 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    &__inline-form {
+      display: inline-block;
+      margin: 0;
+    }
+  }
+
+  .payment-alert-item {
+    &__actions {
+      flex-wrap: wrap;
+
+      .btn {
+        white-space: nowrap;
+      }
+
+      form {
+        display: inline-block;
+        margin: 0;
+      }
+    }
   }
 
   [data-bs-theme="dark"] .child-mini-card:hover {

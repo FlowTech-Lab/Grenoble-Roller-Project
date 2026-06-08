@@ -276,15 +276,28 @@
                   
                   <div class="d-flex gap-2 flex-wrap">
                     <% children_trial.each do |membership| %>
-                      <%= button_to upgrade_membership_path(membership),
-                          method: :patch,
-                          class: "btn btn-primary btn-sm",
-                          data: { 
-                            turbo: false,
-                            confirm: "Payer la cotisation de #{membership.child_full_name} (#{number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
-                          } do %>
-                        <i class="bi bi-credit-card me-1"></i>
-                        Payer la cotisation de <%= membership.child_first_name %>
+                      <% if unified_cart_enabled? %>
+                        <%= button_to upgrade_membership_path(membership),
+                            method: :patch,
+                            class: "btn btn-primary btn-sm",
+                            data: {
+                              turbo: false,
+                              confirm: "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?"
+                            } do %>
+                          <i class="bi bi-basket me-1"></i>
+                          Adhérer — <%= membership.child_first_name %>
+                        <% end %>
+                      <% else %>
+                        <%= button_to upgrade_membership_path(membership),
+                            method: :patch,
+                            class: "btn btn-primary btn-sm",
+                            data: {
+                              turbo: false,
+                              confirm: "Payer la cotisation de #{membership.child_full_name} (#{number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
+                            } do %>
+                          <i class="bi bi-credit-card me-1"></i>
+                          Payer la cotisation de <%= membership.child_first_name %>
+                        <% end %>
                       <% end %>
                     <% end %>
                   </div>
@@ -294,7 +307,7 @@
                 <div class="row g-2 mb-4">
                   <% children_trial.each do |membership| %>
                     <div class="col-12 col-md-6">
-                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: false } %>
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: false, show_pay_cta: false } %>
                     </div>
                   <% end %>
                 </div>
@@ -310,14 +323,19 @@
                   
                   <div class="mb-3">
                     <% children_pending.each do |membership| %>
-                      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <div>
+                      <div class="payment-alert-item d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center py-2 border-bottom gap-2">
+                        <div class="payment-alert-item__info min-w-0">
                           <strong><%= membership.child_full_name %></strong>
                           <small class="text-muted d-block">
                             <%= number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
                           </small>
                         </div>
-                        <span class="badge bg-warning text-dark">⏳ <%= t("statuses.membership.pending") %></span>
+                        <div class="payment-alert-item__actions d-flex align-items-center gap-2 flex-shrink-0 align-self-sm-end">
+                          <span class="badge bg-warning text-dark">⏳ <%= t("statuses.membership.pending") %></span>
+                          <% if unified_cart_enabled? %>
+                            <%= unified_cart_pay_cta(membership, btn_class: "btn btn-sm btn-warning") %>
+                          <% end %>
+                        </div>
                       </div>
                     <% end %>
                   </div>
@@ -329,7 +347,7 @@
                     </strong>
                   </div>
                   
-                  <% unless UnifiedCart.enabled? %>
+                  <% unless unified_cart_enabled? %>
                   <%= form_with url: create_multiple_payments_memberships_path, method: :post, local: true, data: { turbo: false }, class: "mb-2" do |f| %>
                     <% children_pending.each do |membership| %>
                       <%= f.hidden_field "membership_ids[]", value: membership.id %>
@@ -338,10 +356,10 @@
                   <% end %>
                   <% else %>
                   <div class="mb-2">
-                    <%= link_to cart_path, class: "btn btn-warning btn-lg w-100 mb-2" do %>
-                      <i class="bi bi-basket me-1"></i>Voir le panier
+                    <%= link_to cart_path, class: "btn btn-outline-warning w-100 mb-2" do %>
+                      <i class="bi bi-basket me-1"></i>Voir mon panier
                     <% end %>
-                    <p class="small text-muted mb-0 text-center">Chaque enfant est une ligne du panier — paiement partiel possible au checkout.</p>
+                    <p class="small text-muted mb-0 text-center">Ajoutez chaque adhésion au panier, puis payez tout ou une partie au checkout.</p>
                   </div>
                   <% end %>
                   
@@ -359,7 +377,7 @@
                 <div class="row g-2 mb-3">
                   <% children_pending.each do |membership| %>
                     <div class="col-12 col-md-6">
-                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: true } %>
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: true, show_pay_cta: false } %>
                     </div>
                   <% end %>
                 </div>

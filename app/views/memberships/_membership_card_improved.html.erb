@@ -144,7 +144,7 @@
         <% end %>
       <% end %>
       
-      <% if UnifiedCart.enabled? %>
+      <% if unified_cart_enabled? %>
         <%= unified_cart_pay_cta(membership) %>
       <% else %>
       <%= button_to membership_payments_path(membership),
