@@ -5,7 +5,7 @@ export default class extends Controller {
   
   // Constantes (Solution #2: Pas de magic strings)
   static values = {
-    collapsedWidth: { type: String, default: "64px" },
+    collapsedWidth: { type: String, default: "72px" },
     expandedWidth: { type: String, default: "280px" },
     breakpoint: { type: Number, default: 992 },
     debounceMs: { type: Number, default: 250 }
@@ -63,8 +63,8 @@ export default class extends Controller {
   // Cache des références DOM (Solution #4)
   cacheRefs() {
     this.mainContent = document.querySelector('.admin-main-content')
-    this.labels = this.sidebarTarget.querySelectorAll('.sidebar-label')
-    this.chevrons = this.sidebarTarget.querySelectorAll('.bi-chevron-right, .bi-chevron-down')
+    this.labels = this.sidebarTarget.querySelectorAll('.admin-menu-label')
+    this.chevrons = this.sidebarTarget.querySelectorAll('.admin-menu-chevron')
   }
   
   // Restaurer l'état sauvegardé
