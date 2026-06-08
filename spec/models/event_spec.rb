@@ -38,7 +38,7 @@ RSpec.describe Event, type: :model do
     it 'enforces duration to be a positive multiple of 5' do
       event = build_event(creator_user: creator, duration_min: 42)
       expect(event).to be_invalid
-      expect(event.errors[:duration_min]).to include('must be a multiple of 5')
+      expect(event.errors[:duration_min]).to include('doit être un multiple de 5')
     end
 
     it 'requires non-negative pricing' do

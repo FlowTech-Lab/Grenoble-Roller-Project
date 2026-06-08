@@ -40,10 +40,10 @@ RSpec.describe 'AdminPanel::Dashboard', type: :request do
 
       before { login_user organizer_user }
 
-      it 'redirects to root with alert' do
+      it 'allows access to dashboard (min level 40)' do
         get admin_panel_root_path
-        expect(response).to redirect_to(root_path)
-        expect(flash[:alert]).to include('Accès admin requis')
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include('Dashboard Admin')
       end
     end
 

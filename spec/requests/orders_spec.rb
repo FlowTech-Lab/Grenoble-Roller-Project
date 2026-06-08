@@ -3,6 +3,10 @@ require 'rails_helper'
 RSpec.describe 'Orders', type: :request do
   include RequestAuthenticationHelper
 
+  around do |example|
+    with_unified_cart_disabled { example.run }
+  end
+
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) do
     user = build(:user, role: role)
