@@ -44,6 +44,7 @@ Do **not** duplicate canonical docs here — use the index below.
 | **HelloAsso setup** | [`docs/09-product/helloasso-setup.md`](docs/09-product/helloasso-setup.md) | OAuth credentials, polling, sandbox vs prod |
 | **Unified checkout (agent SSOT)** | [`docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) | Waves 0–6, QA §G, rollback §H |
 | **ADR unified cart** | [`docs/10-decisions-and-changelog/DR-001-unified-checkout-cart.md`](docs/10-decisions-and-changelog/DR-001-unified-checkout-cart.md) | Decision record |
+| **DR Discord notifications** | [`docs/10-decisions-and-changelog/DR-002-discord-webhook-notifications.md`](docs/10-decisions-and-changelog/DR-002-discord-webhook-notifications.md) | **Implemented** on `Dev` — admin webhooks, ~65 event toggles, `ALLOW_DISCORD_NOTIFICATIONS` gate |
 | **Release Dev → staging** | [`docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md) | **Update before each staging PR** — migrations, ENV, QA |
 | **Changelog** | [`docs/10-decisions-and-changelog/CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) | Release journal; links to release notes |
 | **ADR template** | [`docs/11-templates/adr-template.md`](docs/11-templates/adr-template.md) | Significant architecture decisions |

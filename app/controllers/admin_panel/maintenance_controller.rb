@@ -12,13 +12,14 @@ module AdminPanel
         MaintenanceMode.disable!
         message = "Mode maintenance DÉSACTIVÉ"
         Rails.logger.info("🔓 MAINTENANCE DÉSACTIVÉE par #{user_email}")
-        flash[:notice] = message
       else
         MaintenanceMode.enable!
         message = "Mode maintenance ACTIVÉ"
         Rails.logger.warn("🔒 MAINTENANCE ACTIVÉE par #{user_email}")
-        flash[:notice] = message
       end
+
+      notify_discord("maintenance.toggled", current_user)
+      flash[:notice] = message
 
       redirect_to admin_panel_root_path
     end

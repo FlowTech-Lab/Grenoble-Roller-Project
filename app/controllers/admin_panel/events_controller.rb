@@ -63,6 +63,7 @@ module AdminPanel
     # DELETE /admin-panel/events/:id
     def destroy
       if @event.destroy
+        notify_discord("event.destroyed", @event)
         flash[:notice] = "Événement supprimé avec succès"
         redirect_to admin_panel_events_path
       else
@@ -89,6 +90,7 @@ module AdminPanel
 
       if pending_attendance&.update(status: "registered")
         waitlist_entry.update!(status: "converted")
+        notify_discord("event.waitlist_converted", waitlist_entry)
         WaitlistEntry.notify_next_in_queue(@event) if @event.has_available_spots?
         redirect_to admin_panel_event_path(@event),
                     notice: "Entrée convertie en inscription"
@@ -109,6 +111,7 @@ module AdminPanel
       end
 
       if waitlist_entry.notify!
+        notify_discord("event.waitlist_notified", waitlist_entry)
         redirect_to admin_panel_event_path(@event),
                     notice: "Personne notifiée avec succès"
       else

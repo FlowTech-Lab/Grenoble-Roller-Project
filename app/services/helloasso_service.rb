@@ -517,6 +517,8 @@ class HelloassoService
     # GET /v5/organizations/{slug}/checkout-intents/{checkoutIntentId}
     # When checkout-intent includes an order, fetch order state from /orders/{orderId}
     def fetch_and_update_payment(payment)
+      previous_status = payment.status
+
       # provider_payment_id stores the checkout-intent id
       checkout_intent_id = payment.provider_payment_id
 
@@ -584,6 +586,7 @@ class HelloassoService
           "Checkouts: #{payment.checkouts.pluck(:id).join(', ')}"
         )
 
+        dispatch_payment_status_notifications!(payment, previous_status, new_status)
         return payment
       end
 
@@ -603,6 +606,8 @@ class HelloassoService
       else "pending"
       end
 
+      failed_pending_memberships = []
+
       # Single membership (has_one :membership)
       if payment.membership
         old_status = payment.membership.status
@@ -610,6 +615,7 @@ class HelloassoService
 
         # Email on failed payment
         if new_status == "failed" && old_status == "pending"
+          failed_pending_memberships << payment.membership
           MembershipMailer.payment_failed(payment.membership).deliver_later if defined?(MembershipMailer)
         end
       end
@@ -622,6 +628,7 @@ class HelloassoService
 
           # Email on failed payment
           if new_status == "failed" && old_status == "pending"
+            failed_pending_memberships << membership
             MembershipMailer.payment_failed(membership).deliver_later if defined?(MembershipMailer)
           end
         end
@@ -637,8 +644,33 @@ class HelloassoService
         "Memberships: #{membership_ids.join(', ')}"
       )
 
+      dispatch_payment_status_notifications!(
+        payment,
+        previous_status,
+        new_status,
+        failed_pending_memberships: failed_pending_memberships
+      )
+
       payment
     end
+
+    # DR-002: Discord notifications after HelloAsso status transitions (idempotent via NotificationDispatchService).
+    def dispatch_payment_status_notifications!(payment, previous_status, new_status, failed_pending_memberships: [])
+      return if previous_status == new_status
+
+      case new_status
+      when "succeeded"
+        NotificationDispatchService.dispatch_payment_succeeded!(payment)
+      when "failed"
+        NotificationDispatchService.dispatch("payment.failed", source: payment)
+        failed_pending_memberships.each do |membership|
+          NotificationDispatchService.dispatch("membership.payment_failed", source: membership)
+        end
+      when "abandoned"
+        NotificationDispatchService.dispatch("payment.abandoned", source: payment)
+      end
+    end
+    private :dispatch_payment_status_notifications!
 
     # Fetches HelloAsso order state: GET /orders/{orderId}
     def fetch_helloasso_order(order_id)

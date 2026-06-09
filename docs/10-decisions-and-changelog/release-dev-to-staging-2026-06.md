@@ -1,19 +1,20 @@
 ---
 title: "Release Dev → staging (June 2026)"
 status: "active"
-version: "2.1"
+version: "2.2"
 created: "2026-06-07"
-updated: "2026-06-08"
-tags: ["release", "staging", "changelog", "unified-checkout"]
+updated: "2026-06-09"
+tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications"]
 ---
 
 # Release Dev → staging (June 2026)
 
 **Target branch:** merge `Dev` → `staging` (PR)  
-**Commit range:** `1b877166` … `5b48e999` (`origin/staging` … `Dev`)  
-**Head on Dev:** `5b48e999` — `fix(admin): center collapsed sidebar rail and active icon highlight`
+**Commit range:** `5b48e999` … `2f57e2eb` (`origin/staging` … `Dev`)  
+**Head on Dev:** `2f57e2eb` — `feat(notifications): DR-002 Discord webhook admin channels`
 
-**Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).
+**Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).  
+**Agent SSOT for Discord notifications:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md) (implemented 2026-06-09).
 
 ---
 
@@ -21,11 +22,74 @@ tags: ["release", "staging", "changelog", "unified-checkout"]
 
 This release bundles:
 
-1. **Unified account cart + checkout (major)** — feature-flagged via `UNIFIED_CART_ENABLED`; shop, memberships, and paid events share one cart and one HelloAsso checkout with **partial payment** (per-line checkboxes) and **optional donation** on every checkout. Initiations remain free; cash/check memberships bypass the cart.
-2. **June 2026 public/admin batch** — events lifecycle/UI, admin panel (organizers, goodies, mail logs, carousel), Umami analytics, Turnstile on contact, roller stock reservations (v2.3), homepage hero image, dev tooling (mise, dotenv).
-3. **Post-checkout hardening (June 8)** — membership sale-season gate, admin panel mobile-first UX, collapsed sidebar rail fix, dependency security patches, full RSpec green on `Dev`.
+1. **Discord webhook notifications (DR-002 — new in v2.2)** — SUPERADMIN-configured Discord channels, ~65 event toggles, HelloAsso + admin + public hooks, QA sample embeds, staging gate via `ALLOW_DISCORD_NOTIFICATIONS`.
+2. **Unified account cart + checkout (major)** — feature-flagged via `UNIFIED_CART_ENABLED`; shop, memberships, and paid events share one cart and one HelloAsso checkout with **partial payment** (per-line checkboxes) and **optional donation** on every checkout. Initiations remain free; cash/check memberships bypass the cart.
+3. **June 2026 public/admin batch** — events lifecycle/UI, admin panel (organizers, goodies, mail logs, carousel), Umami analytics, Turnstile on contact, roller stock reservations (v2.3), homepage hero image, dev tooling (mise, dotenv).
+4. **Post-checkout hardening (June 8)** — membership sale-season gate, admin panel mobile-first UX, collapsed sidebar rail fix, dependency security patches, full RSpec green on `Dev`.
 
-**Rollback (checkout):** set `UNIFIED_CART_ENABLED=false` and redeploy — see [Rollback](#rollback) and MASTER plan §H.
+**Rollback (checkout):** set `UNIFIED_CART_ENABLED=false` and redeploy — see [Rollback](#rollback) and MASTER plan §H.  
+**Rollback (Discord):** disable channels in admin or unset `ALLOW_DISCORD_NOTIFICATIONS` on staging — no data loss; deliveries stop immediately.
+
+---
+
+## Discord webhook notifications (DR-002 — v2.2)
+
+| Area | Change |
+| --- | --- |
+| Admin UI | `/admin-panel/notification-channels` — CRUD, grouped event checkboxes, test webhook, QA sample (single + all) |
+| Access | SUPERADMIN only (level ≥ 70); sidebar **Notifications** after **Logs Mails** |
+| Catalog | ~65 keys in `NotificationEventRegistry` (contact, organizer, payments, admin CRUD, maintenance, etc.) |
+| Defaults | New webhooks: `contact_message.received` + `organizer_application.submitted` **on**; `payment.failed` **off** |
+| Dispatch | `NotificationDispatchService` → `DiscordWebhookDeliveryJob` (Solid Queue); audit in `notification_deliveries` |
+| Payment trigger | After HelloAsso confirmation in `HelloassoService` — not bare ActiveRecord callbacks |
+| Staging gate | Dispatch no-op unless `Rails.env.production?` **or** `ALLOW_DISCORD_NOTIFICATIONS=true` |
+
+**Canonical doc:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md)
+
+### DR-002 migrations (new)
+
+| Migration | Purpose |
+| --- | --- |
+| `20260609120000_create_notification_tables` | `notification_channels`, `notification_subscriptions`, `notification_deliveries` |
+
+Run via `DB_BOOT_TASK=prepare` on deploy (Dokploy default).
+
+### DR-002 environment variables
+
+| Variable | Staging | Production |
+| --- | --- | --- |
+| `ALLOW_DISCORD_NOTIFICATIONS` | **`true`** only when QA/testing Discord (optional) | Not required — production dispatches when channels enabled |
+| `SOLID_QUEUE_IN_PUMA` | **`true`** recommended for async delivery + batch QA samples | Same if using in-Puma Solid Queue |
+
+Template: `.env.example` (commented `ALLOW_DISCORD_NOTIFICATIONS`).
+
+### DR-002 — post-deploy (staging)
+
+1. Run migrations (automatic if `prepare`).
+2. Superadmin → **Notifications** → create channel with Discord webhook URL.
+3. Enable desired event toggles; use **Tester** to verify embed.
+4. Optional QA: **Envoyer un exemple** / batch samples (watch Discord rate limits).
+5. Set `ALLOW_DISCORD_NOTIFICATIONS=true` only when staging should receive real dispatches.
+
+### DR-002 — automated tests
+
+```bash
+bundle exec rspec spec/models/notification_channel_spec.rb \
+  spec/models/notification_subscription_spec.rb \
+  spec/models/notification_delivery_spec.rb \
+  spec/services/notification_event_registry_spec.rb \
+  spec/services/notification_dispatch_service_spec.rb \
+  spec/services/discord_webhook_client_spec.rb \
+  spec/services/notification_channel_sample_service_spec.rb \
+  spec/services/helloasso_service_discord_spec.rb \
+  spec/jobs/discord_webhook_delivery_job_spec.rb \
+  spec/requests/admin_panel/notification_channels_spec.rb
+```
+
+### DR-002 — known gaps
+
+- `organizer_application.submitted` — no public submit controller on `Dev` yet (toggle exists).
+- `event.cancelled` — no dedicated admin cancel action wired yet.
 
 ---
 
@@ -184,6 +248,7 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 | `20260607130200_add_payment_fields_to_events_and_attendances` | Paid events (checkout epic) |
 | `20260607205837_create_cart_lines` | Account cart |
 | `20260608120000_create_checkouts` | Unified checkout sessions |
+| `20260609120000_create_notification_tables` | Discord notification channels, subscriptions, deliveries (DR-002) |
 
 **No migration** for roller stock reservations (logic-only). `stock_returned_at` on events unchanged.
 
@@ -199,6 +264,7 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 | `UMAMI_SHARE_URL` | No | Public stats link |
 | `TURNSTILE_SITE_KEY` | No* | Contact form + login |
 | `TURNSTILE_SECRET_KEY` | No* | Server-side verification |
+| `ALLOW_DISCORD_NOTIFICATIONS` | No | **`true`** on staging only when Discord QA/dispatch desired; prod ignores (always allows when channels enabled) |
 
 \* Turnstile falls back to Rails credentials if ENV unset.
 
@@ -223,6 +289,13 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 
 - Configure `UMAMI_*` on staging for analytics validation.
 - Confirm Turnstile on `/contact`.
+
+### Discord notifications (DR-002 — if enabled on staging)
+
+1. Superadmin → `/admin-panel/notification-channels` — create channel, paste webhook URL.
+2. Verify **Tester** sends embed to Discord.
+3. Toggle a subset of events; trigger real action (e.g. contact form) with `ALLOW_DISCORD_NOTIFICATIONS=true`.
+4. Optional: run per-event QA samples; expect Discord rate limits on batch « all events ».
 
 ---
 
@@ -271,6 +344,15 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 - [ ] **Mobile (≤991px):** page headers stack; tables as cards; offcanvas menu via mobile chrome
 - [ ] **Desktop collapsed sidebar:** active icon centered in 48×48 blue tile with white ring (no left bar)
 
+### Discord notifications (DR-002)
+
+- [ ] SUPERADMIN (≥ 70): access **Notifications** in sidebar
+- [ ] Create channel — URL masked after save; test button sends embed
+- [ ] Event toggles persist (group select all / clear all)
+- [ ] HelloAsso sandbox payment → `payment.succeeded` embed (if toggle on + `ALLOW_DISCORD_NOTIFICATIONS=true`)
+- [ ] Public contact form → `contact_message.received` (default on for new channels)
+- [ ] Staging without `ALLOW_DISCORD_NOTIFICATIONS` → no outbound Discord (silent no-op)
+
 ### Memberships
 
 - [ ] Before 15 Aug: cart shows **current** season label (not next season)
@@ -295,14 +377,18 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 | Orphan `CartLine` rows | Admin clear or optional rake (MASTER §H) |
 | Roller stock quantities wrong | Manual admin adjustment |
 | Migration failure | DB snapshot + redeploy previous staging SHA |
+| Discord spam / wrong channel | Disable channel in admin or rotate webhook URL in Discord settings |
+| Discord rate limit (QA batch) | Retry failed samples individually; batch job is best-effort |
 
-**Production cutover:** enable `UNIFIED_CART_ENABLED=true` only after staging QA sign-off (Florian).
+**Production cutover:** enable `UNIFIED_CART_ENABLED=true` only after staging QA sign-off (Florian).  
+**Discord on prod:** configure channels in admin; no extra ENV required beyond production deploy.
 
 ---
 
 ## Commit reference (checkout epic — highlights)
 
 ```
+2f57e2eb feat(notifications): DR-002 Discord webhook admin channels
 5b48e999 fix(admin): center collapsed sidebar rail and active icon highlight
 f831da7a refactor(admin-panel): enhance mobile responsiveness and UI consistency
 72cfaa11 test: fix specs for i18n, admin panel, and unified cart
@@ -328,6 +414,7 @@ Full Dev log since `origin/staging`: `git log origin/staging..Dev --oneline`
 
 ## Related documentation
 
+- [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md)
 - [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md)
 - [`DR-001-unified-checkout-cart.md`](DR-001-unified-checkout-cart.md)
 - [`docs/09-product/unified-cart-ux.md`](../09-product/unified-cart-ux.md)

@@ -109,6 +109,7 @@ module AdminPanel
         end
       end
 
+      notify_discord("initiation.presences_updated", @initiation)
       redirect_to presences_admin_panel_initiation_path(@initiation),
                   notice: "Présences mises à jour avec succès"
     end
@@ -131,6 +132,7 @@ module AdminPanel
 
       if pending_attendance&.update(status: "registered")
         waitlist_entry.update!(status: "converted")
+        notify_discord("initiation.waitlist_converted", waitlist_entry)
         WaitlistEntry.notify_next_in_queue(@initiation) if @initiation.has_available_spots?
         redirect_to admin_panel_initiation_path(@initiation),
                     notice: "Entrée convertie en inscription"
@@ -151,6 +153,7 @@ module AdminPanel
       end
 
       if waitlist_entry.notify!
+        notify_discord("initiation.waitlist_notified", waitlist_entry)
         redirect_to admin_panel_initiation_path(@initiation),
                     notice: "Personne notifiée avec succès"
       else
@@ -175,6 +178,7 @@ module AdminPanel
       is_adding_volunteer = new_volunteer_status # Si on passe de participant à bénévole, on libère une place
 
       if attendance.update(is_volunteer: new_volunteer_status)
+        notify_discord("initiation.volunteer_toggled", attendance)
         # Recharger l'événement pour avoir le bon comptage après le changement
         @initiation.reload
 
@@ -218,9 +222,11 @@ module AdminPanel
       rollers_returned = @initiation.return_roller_stock
 
       if rollers_returned && rollers_returned > 0
+        notify_discord("initiation.material_returned", @initiation)
         redirect_to presences_admin_panel_initiation_path(@initiation),
                     notice: "Matériel rendu avec succès. #{rollers_returned} prêt(s) clôturé(s)."
       elsif rollers_returned == 0
+        notify_discord("initiation.material_returned", @initiation)
         redirect_to presences_admin_panel_initiation_path(@initiation),
                     notice: "Aucun matériel en prêt pour cette initiation."
       else

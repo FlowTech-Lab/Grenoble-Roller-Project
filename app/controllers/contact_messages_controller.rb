@@ -20,6 +20,8 @@ class ContactMessagesController < ApplicationController
     @contact_message = ContactMessage.new(contact_message_params)
 
     if @contact_message.save
+      NotificationDispatchService.dispatch("contact_message.received", source: @contact_message)
+
       flash[:notice] = "Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais."
       redirect_to contact_path, status: :see_other
     else

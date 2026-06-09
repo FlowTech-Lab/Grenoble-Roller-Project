@@ -61,6 +61,7 @@ module AdminPanel
       @user.assigner_user = current_user
 
       if @user.save
+        notify_discord("user.created", @user)
         flash[:notice] = "Utilisateur créé avec succès"
         redirect_to admin_panel_user_path(@user)
       else
@@ -118,6 +119,7 @@ module AdminPanel
       @user.assigner_user = current_user
 
       if @user.update(user_params_to_update)
+        notify_discord("user.updated", @user)
         flash[:notice] = "Utilisateur mis à jour avec succès"
         redirect_to admin_panel_user_path(@user)
       else
@@ -128,6 +130,7 @@ module AdminPanel
     # DELETE /admin-panel/users/:id
     def destroy
       if @user.destroy
+        notify_discord("user.destroyed", @user)
         flash[:notice] = "Utilisateur supprimé avec succès"
       else
         flash[:alert] = "Erreur lors de la suppression: #{@user.errors.full_messages.join(', ')}"

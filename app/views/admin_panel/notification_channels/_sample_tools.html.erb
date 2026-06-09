@@ -1,0 +1,56 @@
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-header">
+    <strong>Prévisualisation QA — échantillons Discord</strong>
+  </div>
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      Envoie un message de test avec le vrai format d'embed (préfixe <code>[QA]</code>).
+      Utilise les dernières données en base, ou un jeu d'exemple si la table est vide.
+      N'utilise pas le système d'abonnements — utile pour valider le rendu visuel.
+    </p>
+
+    <%= form_with url: sample_event_admin_panel_notification_channel_path(notification_channel),
+                  method: :post,
+                  local: true,
+                  html: { class: "row g-3 align-items-end" },
+                  data: { turbo: false } do %>
+      <div class="col-md-8">
+        <%= label_tag :event_key, "Événement", class: "form-label" %>
+        <%= select_tag :event_key,
+            grouped_options_for_select(
+              grouped_events
+                .transform_keys { |group_key| NotificationEventRegistry::GROUPS[group_key] || group_key.humanize }
+                .transform_values { |events|
+                  events
+                    .reject { |event| event.key == "test.ping" }
+                    .map { |event| [ event.label, event.key ] }
+                },
+              params[:event_key]
+            ),
+            include_blank: "Choisir un événement…",
+            class: "form-select form-select-liquid",
+            required: true %>
+      </div>
+      <div class="col-md-4">
+        <%= submit_tag "Envoyer cet échantillon", class: "btn btn-outline-liquid-primary w-100" %>
+      </div>
+    <% end %>
+
+    <hr class="my-4">
+
+    <%= button_to "Envoyer tous les échantillons (#{NotificationEventRegistry.all.count { |e| e.key != 'test.ping' }} messages)",
+        sample_all_events_admin_panel_notification_channel_path(notification_channel),
+        method: :post,
+        class: "btn btn-outline-liquid-secondary",
+        form: {
+          data: {
+            turbo: false,
+            turbo_confirm: "Envoie ~1 échantillon par type (délai anti rate-limit Discord). Continuer ?"
+          }
+        } %>
+    <div class="form-text mt-2">
+      Traitement en arrière-plan (Solid Queue). Vérifiez Discord pendant ~1 minute.
+      <code>SOLID_QUEUE_IN_PUMA=true</code> doit être actif en dev.
+    </div>
+  </div>
+</div>

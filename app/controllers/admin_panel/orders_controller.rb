@@ -42,6 +42,7 @@ module AdminPanel
       authorize [ :admin_panel, @order ]
 
       if @order.save
+        notify_discord("order.created", @order)
         flash[:notice] = "Commande créée avec succès"
         redirect_to admin_panel_order_path(@order)
       else
@@ -57,6 +58,7 @@ module AdminPanel
     # PATCH/PUT /admin-panel/orders/:id
     def update
       if @order.update(order_params)
+        notify_order_discord_after_save
         flash[:notice] = "Commande mise à jour avec succès"
         redirect_to admin_panel_order_path(@order)
       else
@@ -87,6 +89,7 @@ module AdminPanel
 
       # TODO: Valider les transitions de statut (PHASE 3)
       if @order.update(status: new_status)
+        notify_order_discord_after_save
         flash[:notice] = "Statut mis à jour: #{new_status}"
       else
         flash[:alert] = "Erreur lors de la mise à jour: #{@order.errors.full_messages.join(', ')}"
@@ -131,6 +134,21 @@ module AdminPanel
         :currency,
         :donation_cents
       )
+    end
+
+    ORDER_STATUS_CHANGED_KEYS = %w[preparation shipped cancelled refund_requested refunded].freeze
+
+    def notify_order_discord_after_save
+      if @order.saved_change_to_status?
+        new_status = @order.status
+        if new_status == "paid"
+          notify_discord("order.paid_manual", @order)
+        elsif ORDER_STATUS_CHANGED_KEYS.include?(new_status)
+          notify_discord("order.status_changed", @order)
+        end
+      else
+        notify_discord("order.updated", @order)
+      end
     end
 
     def generate_csv

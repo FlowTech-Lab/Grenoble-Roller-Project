@@ -46,6 +46,7 @@ module AdminPanel
       authorize @route, policy_class: AdminPanel::RoutePolicy
 
       if @route.save
+        notify_discord("route.created", @route)
         flash[:notice] = "Route créée avec succès"
         redirect_to admin_panel_route_path(@route)
       else
@@ -61,6 +62,7 @@ module AdminPanel
     # PATCH/PUT /admin-panel/routes/:id
     def update
       if @route.update(route_params)
+        notify_discord("route.updated", @route)
         flash[:notice] = "Route mise à jour avec succès"
         redirect_to admin_panel_route_path(@route)
       else
@@ -71,6 +73,7 @@ module AdminPanel
     # DELETE /admin-panel/routes/:id
     def destroy
       if @route.destroy
+        notify_discord("route.destroyed", @route)
         flash[:notice] = "Route supprimée avec succès"
         redirect_to admin_panel_routes_path
       else

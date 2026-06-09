@@ -2,6 +2,29 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-09] - DR-002: Discord webhook notifications (implemented)
+
+### Added
+- Admin **Notification channels** — CRUD Discord webhooks at `/admin-panel/notification-channels` (SUPERADMIN ≥ 70).
+- `NotificationEventRegistry` (~65 event keys), per-channel toggles, test button, QA sample embeds (single + batch).
+- `NotificationDispatchService` + `DiscordWebhookDeliveryJob`; delivery audit log (`notification_deliveries`).
+- Hooks: HelloAsso payment confirmation, public contact, registrations, admin panel actions via `AdminPanel::NotifiesDiscord`.
+- Migration `20260609120000_create_notification_tables`.
+- ENV gate: `ALLOW_DISCORD_NOTIFICATIONS` (required on staging/dev; production always dispatches when channels enabled).
+
+### Tests
+- RSpec: models, registry, dispatch, Discord client, delivery job, admin requests, HelloAsso discord hook, sample service.
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.2).
+
+**Decision record:** [DR-002-discord-webhook-notifications.md](DR-002-discord-webhook-notifications.md) (status: implemented).
+
+## [2026-06-08] - DR-002: Discord webhook notifications (proposed)
+
+### Documentation
+- **Accepted** [DR-002-discord-webhook-notifications.md](DR-002-discord-webhook-notifications.md) v1.1: full Discord webhook catalog, Florian scope (contact + organizer + all admin toggles).
+- Added [DR-002-discord-webhook-notifications.md](DR-002-discord-webhook-notifications.md) v1.0 (proposed).
+
 ## [2026-06-08] - Release Dev → staging (June 2026 batch v2.1)
 
 Unified checkout epic + June batch + post-checkout hardening (membership season, admin mobile UX, sidebar rail, security patches, RSpec green).

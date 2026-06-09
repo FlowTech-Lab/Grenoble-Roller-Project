@@ -31,6 +31,7 @@ module AdminPanel
       authorize [ :admin_panel, @event_organizer ]
 
       if @event_organizer.save
+        notify_discord("event_organizer.created", @event_organizer)
         flash[:notice] = "Entité organisatrice créée avec succès"
         redirect_to admin_panel_event_organizer_path(@event_organizer)
       else
@@ -43,6 +44,7 @@ module AdminPanel
 
     def update
       if @event_organizer.update(event_organizer_params)
+        notify_discord("event_organizer.updated", @event_organizer)
         flash[:notice] = "Entité organisatrice mise à jour avec succès"
         redirect_to admin_panel_event_organizer_path(@event_organizer)
       else
@@ -52,6 +54,7 @@ module AdminPanel
 
     def destroy
       if @event_organizer.destroy
+        notify_discord("event_organizer.destroyed", @event_organizer)
         flash[:notice] = "L'entité organisatrice ##{@event_organizer.id} a été supprimée avec succès."
         redirect_to admin_panel_event_organizers_path
       else

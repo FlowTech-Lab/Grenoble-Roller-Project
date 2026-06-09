@@ -66,6 +66,7 @@ module AdminPanel
       @option_types = OptionType.includes(:option_values).order(:name)
 
       if @product.save
+        notify_discord("product.created", @product)
         # NOUVEAU : Génération auto si options sélectionnées
         if params[:generate_variants] == "true"
           # Stock initial à appliquer aux variantes (product.stock_qty ou param)
@@ -132,6 +133,7 @@ module AdminPanel
         params_hash[:price_cents] = (params[:price_euros].to_f * 100).to_i
       end
       if @product.update(params_hash)
+        notify_discord("product.updated", @product)
         # NOUVEAU : Générer options manquantes si ajoutées après création
         if params[:generate_missing] == "true"
           # Accepter soit option_value_ids (nouveau) soit option_ids (ancien pour compatibilité)
@@ -186,6 +188,7 @@ module AdminPanel
     # DELETE /admin-panel/products/:id
     def destroy
       if @product.destroy
+        notify_discord("product.destroyed", @product)
         flash[:notice] = "Produit supprimé avec succès"
       else
         flash[:alert] = "Erreur lors de la suppression: #{@product.errors.full_messages.join(', ')}"
@@ -197,6 +200,7 @@ module AdminPanel
     # POST /admin-panel/products/:id/publish
     def publish
       if @product.update(is_active: true)
+        notify_discord("product.updated", @product)
         flash[:notice] = "Produit publié avec succès"
       else
         flash[:alert] = "Erreur : #{@product.errors.full_messages.join(', ')}"
@@ -208,6 +212,7 @@ module AdminPanel
     # POST /admin-panel/products/:id/unpublish
     def unpublish
       if @product.update(is_active: false)
+        notify_discord("product.updated", @product)
         flash[:notice] = "Produit dépublié avec succès"
       else
         flash[:alert] = "Erreur : #{@product.errors.full_messages.join(', ')}"

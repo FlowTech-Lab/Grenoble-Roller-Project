@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -328,6 +328,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_120000) do
     t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season_unique_personal", unique: true, where: "(is_child_membership = false)"
     t.index ["user_id", "status"], name: "index_memberships_on_user_id_and_status"
     t.index ["user_id"], name: "index_memberships_on_user_id"
+  end
+
+  create_table "notification_channels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "last_test_status"
+    t.datetime "last_tested_at"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.text "webhook_url_ciphertext"
+  end
+
+  create_table "notification_deliveries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.text "error_message"
+    t.string "event_key", null: false
+    t.integer "http_code"
+    t.bigint "notification_channel_id", null: false
+    t.bigint "source_id", null: false
+    t.string "source_type", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["notification_channel_id", "event_key", "source_type", "source_id"], name: "index_notification_deliveries_idempotency", unique: true
+    t.index ["notification_channel_id"], name: "index_notification_deliveries_on_notification_channel_id"
+  end
+
+  create_table "notification_subscriptions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "event_key", null: false
+    t.bigint "notification_channel_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["notification_channel_id", "event_key"], name: "index_notification_subscriptions_on_channel_and_event_key", unique: true
+    t.index ["notification_channel_id"], name: "index_notification_subscriptions_on_notification_channel_id"
   end
 
   create_table "option_types", force: :cascade do |t|
@@ -703,6 +738,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_120000) do
   add_foreign_key "memberships", "payments"
   add_foreign_key "memberships", "product_variants", column: "tshirt_variant_id"
   add_foreign_key "memberships", "users"
+  add_foreign_key "notification_deliveries", "notification_channels"
+  add_foreign_key "notification_subscriptions", "notification_channels"
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "product_variants", column: "variant_id"
