@@ -10,8 +10,8 @@ tags: ["release", "staging", "changelog", "unified-checkout", "discord-notificat
 # Release Dev → staging (June 2026)
 
 **Target branch:** merge `Dev` → `staging` (PR)  
-**Commit range:** `5b48e999` … `2f57e2eb` (`origin/staging` … `Dev`)  
-**Head on Dev:** `2f57e2eb` — `feat(notifications): DR-002 Discord webhook admin channels`
+**Commit range:** `5b48e999` … `e99fbbbc` (`origin/staging` … `Dev`)  
+**Head on Dev:** `e99fbbbc` — `feat(notifications): DR-002 Discord webhook admin channels`
 
 **Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).  
 **Agent SSOT for Discord notifications:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md) (implemented 2026-06-09).
@@ -388,7 +388,7 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 ## Commit reference (checkout epic — highlights)
 
 ```
-2f57e2eb feat(notifications): DR-002 Discord webhook admin channels
+e99fbbbc feat(notifications): DR-002 Discord webhook admin channels
 5b48e999 fix(admin): center collapsed sidebar rail and active icon highlight
 f831da7a refactor(admin-panel): enhance mobile responsiveness and UI consistency
 72cfaa11 test: fix specs for i18n, admin panel, and unified cart
