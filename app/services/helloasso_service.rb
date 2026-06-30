@@ -191,7 +191,7 @@ class HelloassoService
       }
     end
 
-# --- Unified checkout (Wave 0 spike — payload only, no HTTP) -------------------
+    # --- Unified checkout (Wave 0 spike — payload only, no HTTP) -------------------
 
     # Builds the JSON payload for a unified HelloAsso checkout intent from a Checkout
     # object with checkout_lines (product, membership, event_registration) and donation.
@@ -206,11 +206,11 @@ class HelloassoService
       lines.each do |line|
         line_type = line.line_type.to_s
         item_type = case line_type
-                    when "product_variant" then "Product"
-                    when "membership" then "Membership"
-                    when "event_registration" then "EventRegistration"
-                    else "Product"
-                    end
+        when "product_variant" then "Product"
+        when "membership" then "Membership"
+        when "event_registration" then "EventRegistration"
+        else "Product"
+        end
 
         items << {
           name: line.label,

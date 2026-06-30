@@ -73,17 +73,17 @@ module DevLoopMapFixtures
     width = 800
     height = 450
     r, g, b = hex_to_rgb(color)
-    bg_r = [r + 180, 255].min
-    bg_g = [g + 180, 255].min
-    bg_b = [b + 180, 255].min
+    bg_r = [ r + 180, 255 ].min
+    bg_g = [ g + 180, 255 ].min
+    bg_b = [ b + 180, 255 ].min
 
-    background = Vips::Image.black(width, height, bands: 3).linear([1, 1, 1], [bg_r, bg_g, bg_b])
-    route_line = Vips::Image.black(width, 12, bands: 3).linear([1, 1, 1], [r, g, b])
+    background = Vips::Image.black(width, height, bands: 3).linear([ 1, 1, 1 ], [ bg_r, bg_g, bg_b ])
+    route_line = Vips::Image.black(width, 12, bands: 3).linear([ 1, 1, 1 ], [ r, g, b ])
     y_offset = (height * 0.62).round
     composed = background.composite(route_line, :over, x: 0, y: y_offset)
 
     if loop_number
-      label_band = Vips::Image.black(width, 56, bands: 3).linear([1, 1, 1], [r, g, b])
+      label_band = Vips::Image.black(width, 56, bands: 3).linear([ 1, 1, 1 ], [ r, g, b ])
       composed = composed.composite(label_band, :over, x: 0, y: 0)
     end
 
@@ -92,6 +92,6 @@ module DevLoopMapFixtures
 
   def hex_to_rgb(hex)
     value = hex.delete("#")
-    [value[0, 2], value[2, 2], value[4, 2]].map { |part| part.to_i(16) }
+    [ value[0, 2], value[2, 2], value[4, 2] ].map { |part| part.to_i(16) }
   end
 end

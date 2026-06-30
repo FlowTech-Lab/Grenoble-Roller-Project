@@ -60,7 +60,7 @@ RSpec.describe EventsHelper, type: :helper do
         content_type: 'image/png'
       )
 
-      expect(helper.route_map_image_path(route, resize_to: [800, 400])).to include('/rails/active_storage/representations/proxy/')
+      expect(helper.route_map_image_path(route, resize_to: [ 800, 400 ])).to include('/rails/active_storage/representations/proxy/')
     end
   end
 

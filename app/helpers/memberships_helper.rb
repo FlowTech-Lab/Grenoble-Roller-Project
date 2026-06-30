@@ -11,7 +11,7 @@ module MembershipsHelper
 
     if in_cart
       link_to cart_path, class: btn_class do
-        safe_join([tag.i("", class: "bi bi-basket me-1"), "Voir le panier"])
+        safe_join([ tag.i("", class: "bi bi-basket me-1"), "Voir le panier" ])
       end
     else
       button_to membership_payments_path(membership),
@@ -19,7 +19,7 @@ module MembershipsHelper
                 class: btn_class,
                 data: { turbo: false },
                 form: form_options do
-        safe_join([tag.i("", class: "bi bi-basket me-1"), "Ajouter au panier"])
+        safe_join([ tag.i("", class: "bi bi-basket me-1"), "Ajouter au panier" ])
       end
     end
   end

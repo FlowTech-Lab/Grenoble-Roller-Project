@@ -16,7 +16,7 @@ namespace :dev do
     puts "  #{attached}/#{Route.count} routes with map_image"
 
     puts "Upserting [DEV TEST] multi-loop events..."
-    [2, 3, 4].each do |loops_count|
+    [ 2, 3, 4 ].each do |loops_count|
       event = DevLoopMapFixtures.upsert_dev_multi_loop_event!(loops_count: loops_count, creator: creator)
       puts "  #{event.title} → /events/#{event.hashid}"
     end

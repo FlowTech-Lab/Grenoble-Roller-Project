@@ -949,7 +949,7 @@ puts "✅ #{Event.count} événements créés !"
 if Rails.env.development?
   puts "🔄 Création des événements [DEV TEST] multi-boucles..."
   dev_creator = florian || admin_user
-  [2, 3, 4].each do |loops_count|
+  [ 2, 3, 4 ].each do |loops_count|
     event = DevLoopMapFixtures.upsert_dev_multi_loop_event!(loops_count: loops_count, creator: dev_creator)
     puts "  ✅ #{event.title}"
   end

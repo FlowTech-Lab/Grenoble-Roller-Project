@@ -352,4 +352,3 @@ RSpec.describe HelloassoService do
     end
   end
 end
-

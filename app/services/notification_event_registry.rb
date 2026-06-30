@@ -704,11 +704,11 @@ class NotificationEventRegistry
       helpers = Rails.application.routes.url_helpers
       path = if parent
                helpers.public_send(path_helper, parent, record)
-             elsif record.persisted?
+      elsif record.persisted?
                helpers.public_send(path_helper, record)
-             else
+      else
                helpers.public_send(path_helper)
-             end
+      end
 
       embed(
         title: title,

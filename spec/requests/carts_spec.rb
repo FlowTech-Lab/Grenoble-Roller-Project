@@ -195,7 +195,6 @@ RSpec.describe 'Carts', type: :request do
       expect(flash[:notice]).to include('Panier mis à jour')
     end
   end
-
   end
 
   context "when UNIFIED_CART_ENABLED is true" do
