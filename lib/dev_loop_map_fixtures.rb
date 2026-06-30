@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "vips"
-
 module DevLoopMapFixtures
   MAP_COLORS = %w[#2563eb #059669 #d97706 #7c3aed #dc2626].freeze
 
@@ -70,6 +68,8 @@ module DevLoopMapFixtures
   end
 
   def build_map_png(loop_number:, color:)
+    require_vips!
+
     width = 800
     height = 450
     r, g, b = hex_to_rgb(color)
@@ -94,4 +94,11 @@ module DevLoopMapFixtures
     value = hex.delete("#")
     [ value[0, 2], value[2, 2], value[4, 2] ].map { |part| part.to_i(16) }
   end
+
+  def require_vips!
+    require "vips"
+  rescue LoadError => e
+    raise LoadError, "libvips is required for DevLoopMapFixtures (install libvips42 / libvips-dev): #{e.message}"
+  end
+  private :require_vips!
 end
