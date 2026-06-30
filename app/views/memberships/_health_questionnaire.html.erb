@@ -1,10 +1,12 @@
-<%# 
+<%#
   Partial pour le questionnaire de santé
   Variables locales attendues:
   - f: l'objet form
   - form_id: ID du formulaire (pour les IDs uniques)
+  - record: optional Membership to pre-fill answers on edit
 %>
 <% form_id = form_id.presence || "" %>
+<% record = local_assigns[:record] %>
 
 <div class="card card-liquid mt-3">
   <div class="card-body">
@@ -31,8 +33,9 @@
           <div class="d-flex gap-4">
             <div class="form-check">
               <% no_id = "#{question[:id]}_no#{form_id}" %>
+              <% existing_answer = record&.public_send("health_q#{index + 1}") %>
               <%= f.radio_button "health_question_#{index + 1}", "no",
-                  { class: "form-check-input", id: no_id } %>
+                  { class: "form-check-input", id: no_id, checked: existing_answer == "no" } %>
               <label class="form-check-label" for="<%= no_id %>">
                 Non
               </label>
@@ -40,7 +43,7 @@
             <div class="form-check">
               <% yes_id = "#{question[:id]}_yes#{form_id}" %>
               <%= f.radio_button "health_question_#{index + 1}", "yes",
-                  { class: "form-check-input", id: yes_id } %>
+                  { class: "form-check-input", id: yes_id, checked: existing_answer == "yes" } %>
               <label class="form-check-label" for="<%= yes_id %>">
                 Oui
               </label>

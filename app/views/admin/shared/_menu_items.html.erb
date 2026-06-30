@@ -57,20 +57,21 @@
   </li>
 <% end %>
 
-<!-- ÉVÉNEMENTS (level >= 60 : ADMIN, SUPERADMIN) -->
-<% if can_access_admin_panel?(60) %>
+<!-- ÉVÉNEMENTS (lecture : level >= 40 ; gestion complète : level >= 60) -->
+<% if can_view_events? %>
+  <% if can_access_admin_panel?(60) %>
   <li class="admin-menu-item">
     <a href="#evenements-submenu" 
-       class="admin-menu-link <%= 'active' if admin_panel_active?('events') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') %>"
+       class="admin-menu-link <%= 'active' if admin_panel_active?('events') || admin_panel_active?('event_organizers') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') %>"
        data-bs-toggle="collapse"
-       aria-expanded="<%= admin_panel_active?('events') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') ? 'true' : 'false' %>"
+       aria-expanded="<%= admin_panel_active?('events') || admin_panel_active?('event_organizers') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') ? 'true' : 'false' %>"
        aria-controls="evenements-submenu"
        title="Événements">
       <i class="bi bi-calendar-event admin-menu-icon" aria-hidden="true"></i>
       <span class="admin-menu-label">Événements</span>
       <i class="bi bi-chevron-down admin-menu-chevron ms-auto" aria-hidden="true"></i>
     </a>
-    <ul class="collapse <%= 'show' if admin_panel_active?('events') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') %>" id="evenements-submenu">
+    <ul class="collapse <%= 'show' if admin_panel_active?('events') || admin_panel_active?('event_organizers') || admin_panel_active?('routes') || admin_panel_active?('attendances') || admin_panel_active?('organizer_applications') %>" id="evenements-submenu">
       <li class="admin-menu-subitem">
         <%= link_to admin_panel_events_path, 
             class: "admin-menu-sublink #{'active' if admin_panel_active?('events')}",
@@ -78,6 +79,15 @@
             data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
           <i class="bi bi-calendar-event admin-menu-subicon" aria-hidden="true"></i>
           <span>Événements</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_event_organizers_path, 
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('event_organizers')}",
+            title: "Entités organisatrices",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-building admin-menu-subicon" aria-hidden="true"></i>
+          <span>Entités organisatrices</span>
         <% end %>
       </li>
       <li class="admin-menu-subitem">
@@ -109,6 +119,18 @@
       </li>
     </ul>
   </li>
+  <% else %>
+  <li class="admin-menu-item">
+    <%= link_to admin_panel_events_path,
+        class: "admin-menu-link #{'active' if admin_panel_active?('events')}",
+        title: "Événements",
+        aria: { label: "Voir les événements", current: admin_panel_active?('events') ? 'page' : nil },
+        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-calendar-event admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Événements</span>
+    <% end %>
+  </li>
+  <% end %>
 <% end %>
 
 <!-- BOUTIQUE (level >= 60 uniquement) -->
@@ -177,6 +199,15 @@
             data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
           <i class="bi bi-credit-card admin-menu-subicon" aria-hidden="true"></i>
           <span>Paiements</span>
+        <% end %>
+      </li>
+      <li class="admin-menu-subitem">
+        <%= link_to admin_panel_checkouts_path,
+            class: "admin-menu-sublink #{'active' if admin_panel_active?('checkouts')}",
+            title: "Checkouts unifiés",
+            data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+          <i class="bi bi-receipt admin-menu-subicon" aria-hidden="true"></i>
+          <span>Checkouts unifiés</span>
         <% end %>
       </li>
     </ul>
@@ -277,6 +308,16 @@
         data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
       <i class="bi bi-envelope-paper admin-menu-icon" aria-hidden="true"></i>
       <span class="admin-menu-label">Logs Mails</span>
+    <% end %>
+  </li>
+  <li class="admin-menu-item">
+    <%= link_to admin_panel_notification_channels_path,
+        class: "admin-menu-link #{'active' if admin_panel_active?('notification_channels')}",
+        title: "Notifications Discord",
+        aria: { label: "Configurer les notifications Discord", current: admin_panel_active?('notification_channels') ? 'page' : nil },
+        data: { bs_dismiss: mobile ? "offcanvas" : nil }.compact do %>
+      <i class="bi bi-bell admin-menu-icon" aria-hidden="true"></i>
+      <span class="admin-menu-label">Notifications</span>
     <% end %>
   </li>
 <% end %>

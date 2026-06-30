@@ -40,6 +40,7 @@ module AdminPanel
       authorize [ :admin_panel, @partner ]
 
       if @partner.save
+        notify_discord("partner.created", @partner)
         flash[:notice] = "Partenaire créé avec succès"
         redirect_to admin_panel_partner_path(@partner)
       else
@@ -55,6 +56,7 @@ module AdminPanel
     # PATCH/PUT /admin-panel/partners/:id
     def update
       if @partner.update(partner_params)
+        notify_discord("partner.updated", @partner)
         flash[:notice] = "Partenaire mis à jour avec succès"
         redirect_to admin_panel_partner_path(@partner)
       else
@@ -65,6 +67,7 @@ module AdminPanel
     # DELETE /admin-panel/partners/:id
     def destroy
       if @partner.destroy
+        notify_discord("partner.destroyed", @partner)
         flash[:notice] = "Le partenaire ##{@partner.id} a été supprimé avec succès."
         redirect_to admin_panel_partners_path
       else

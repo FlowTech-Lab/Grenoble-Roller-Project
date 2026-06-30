@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Event Attendance', type: :system do
+  around { |example| with_unified_cart_disabled { example.run } }
+
   let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
   let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let!(:organizer) { create(:user, role: organizer_role) }
@@ -32,9 +34,7 @@ RSpec.describe 'Event Attendance', type: :system do
       it 'ouvre le popup de confirmation lors du clic sur S\'inscrire' do
         visit event_path(event)
 
-        # Trouver et cliquer sur le bouton (peut être "Inscription" ou "S'inscrire")
-        button = page.find('button[aria-label*="inscrire"]', match: :first)
-        button.click
+        click_button('Inscription', match: :first)
 
         # Vérifier que le modal est affiché
         expect(page).to have_content('Confirmer votre inscription')
@@ -47,9 +47,7 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
-        # Cliquer sur le bouton pour ouvrir le modal (chercher par aria-label ou texte)
-        button = page.find('button[aria-label="S\'inscrire à cet événement"]', match: :first)
-        button.click
+        click_button('Inscription', match: :first)
 
         # Attendre que le modal soit visible (le modal a l'ID confirmAttendModalShow)
         expect(page).to have_css('#confirmAttendModalShow', visible: true)
@@ -73,8 +71,7 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
-        button = page.find('button[aria-label="S\'inscrire à cet événement"]', match: :first)
-        button.click
+        click_button('Inscription', match: :first)
 
         # Attendre que le modal soit visible
         expect(page).to have_css('#confirmAttendModalShow', visible: true)

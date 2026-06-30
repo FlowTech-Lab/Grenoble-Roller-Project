@@ -2,14 +2,21 @@ class EventMailer < ApplicationMailer
   include EventsHelper
   # Email de confirmation d'inscription à un événement
   def attendance_confirmed(attendance)
-    @attendance = attendance
-    @event = attendance.event
-    @user = attendance.user
-    @participant_name = attendance.participant_name
+    @attendance = Attendance.includes(:child_membership, :user, event: :route).find(attendance.id)
+    @event = @attendance.event
+    @user = @attendance.user
+    @participant_name = @attendance.participant_name
+    @is_child_registration = @attendance.for_child?
     @is_initiation = @event.is_a?(Event::Initiation)
 
     subject = if @is_initiation
-      "✅ Inscription confirmée - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+      if @is_child_registration
+        "✅ Inscription confirmée : #{@participant_name} - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+      else
+        "✅ Inscription confirmée - Initiation roller samedi #{l(@event.start_at, format: :day_month, locale: :fr)}"
+      end
+    elsif @is_child_registration
+      "✅ Inscription confirmée : #{@participant_name} - #{@event.title}"
     else
       "✅ Inscription confirmée : #{@event.title}"
     end

@@ -1,9 +1,9 @@
 <div class="admin-mail-logs">
   <!-- HEADER -->
-  <div class="mb-4 d-flex justify-content-between align-items-center">
+  <div class="admin-page-header">
     <div>
       <h1>📧 Logs des Emails</h1>
-      <p class="text-muted">Visualisation des emails envoyés via Solid Queue</p>
+      <p class="text-muted">Historique persistant des emails (Active Job / Solid Queue)</p>
     </div>
     <div>
       <%= link_to "/admin-panel/jobs", class: "btn btn-outline-primary" do %>
@@ -97,66 +97,7 @@
       </div>
     </div>
     <div class="card-body p-0">
-      <% if @jobs.any? %>
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Mailer</th>
-                <th>Méthode</th>
-                <th>Statut</th>
-                <th>Créé le</th>
-                <th>Terminé le</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @jobs.each do |job| %>
-                <% mailer_info = parse_mailer_info(job.arguments) %>
-                <% failed = SolidQueue::FailedExecution.find_by(job_id: job.id) %>
-                <tr>
-                  <td><%= job.id %></td>
-                  <td>
-                    <code class="small"><%= mailer_info[:mailer] || "N/A" %></code>
-                  </td>
-                  <td>
-                    <span class="badge badge-liquid-secondary"><%= mailer_info[:method] || "N/A" %></span>
-                  </td>
-                  <td>
-                    <% if failed %>
-                      <span class="badge badge-liquid-danger">Échec</span>
-                    <% elsif job.finished_at.nil? %>
-                      <span class="badge badge-liquid-warning">En attente</span>
-                    <% else %>
-                      <span class="badge badge-liquid-success">Terminé</span>
-                    <% end %>
-                  </td>
-                  <td>
-                    <small><%= l(job.created_at, format: :short) %></small>
-                  </td>
-                  <td>
-                    <% if job.finished_at %>
-                      <small><%= l(job.finished_at, format: :short) %></small>
-                    <% else %>
-                      <span class="text-muted">-</span>
-                    <% end %>
-                  </td>
-                  <td>
-                    <%= link_to admin_panel_mail_log_path(job), class: "btn btn-sm btn-outline-primary" do %>
-                      <i class="bi bi-eye"></i> Détails
-                    <% end %>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      <% else %>
-        <div class="text-center py-5">
-          <p class="text-muted">Aucun email trouvé avec ces filtres</p>
-        </div>
-      <% end %>
+      <%= render "logs_table" %>
     </div>
     <% if @pagy.pages > 1 %>
       <div class="card-footer">

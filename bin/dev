@@ -1,11 +1,28 @@
 #!/usr/bin/env sh
 
+cd "$(dirname "$0")/.." || exit 1
+ROOT="$PWD"
+
 if gem list --no-installed --exact --silent foreman; then
   echo "Installing foreman..."
   gem install foreman
 fi
 
-# Default to port 3000 if not specified
+# Command-line PORT (e.g. PORT=3005 bin/dev) wins over .env
+CALLER_PORT="${PORT:-}"
+
+ENV_FILE="${ENV_FILE:-$ROOT/.env}"
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+fi
+
+if [ -n "$CALLER_PORT" ]; then
+  export PORT="$CALLER_PORT"
+fi
 export PORT="${PORT:-3000}"
 
-exec foreman start -f Procfile.dev --env /dev/null "$@"
+# Foreman loads .env again and its PORT overrides shell ENV — pass -p explicitly.
+exec foreman start -f Procfile.dev -p "$PORT" "$@"

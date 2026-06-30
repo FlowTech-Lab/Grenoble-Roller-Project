@@ -2,6 +2,7 @@ class Event < ApplicationRecord
   include Hashid::Rails
 
   belongs_to :creator_user, class_name: "User"
+  belongs_to :organizer, class_name: "EventOrganizer", optional: true
   belongs_to :route, optional: true # Parcours principal (rétrocompatibilité)
   has_many :event_loop_routes, dependent: :destroy
   has_many :loop_routes, through: :event_loop_routes, source: :route
@@ -81,6 +82,7 @@ class Event < ApplicationRecord
   validates :location_text, presence: true, length: { minimum: 3, maximum: 255 }
   validates :max_participants, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :cover_image_must_be_present, unless: :skip_cover_image_validation?
+  validate :initiation_cannot_require_payment
 
   # GPS optionnel, mais si meeting_lat présente, meeting_lng obligatoire et vice-versa
   validates :meeting_lat, presence: true, if: :meeting_lng?
@@ -97,8 +99,18 @@ class Event < ApplicationRecord
     is_a?(Event::Initiation)
   end
 
-  scope :upcoming, -> { where("start_at > ?", Time.current) }
-  scope :past, -> { where("start_at <= ?", Time.current) }
+  # Public display name for the organizing entity (association) or event creator fallback
+  def display_organizer_name
+    organizer&.name.presence || creator_user&.display_name
+  end
+
+  # External URL for the organizing entity, if configured
+  def display_organizer_url
+    organizer&.url
+  end
+
+  scope :upcoming, -> { where("start_at + (duration_min * INTERVAL '1 minute') > ?", Time.current) }
+  scope :past, -> { where("start_at + (duration_min * INTERVAL '1 minute') <= ?", Time.current) }
   scope :published, -> { where(status: "published") }
 
   # Événements visibles pour les utilisateurs (publiés + annulés pour information)
@@ -129,6 +141,7 @@ class Event < ApplicationRecord
       level
       distance_km
       creator_user_id
+      organizer_id
       max_participants
       attendances_count
       type
@@ -138,7 +151,7 @@ class Event < ApplicationRecord
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[attendances creator_user route users]
+    %w[attendances creator_user organizer route users]
   end
 
   # Vérifie si l'événement a une limite de participants (0 = illimité)
@@ -146,28 +159,43 @@ class Event < ApplicationRecord
     max_participants.zero?
   end
 
-  # Vérifie si l'événement est plein (compte uniquement les inscriptions actives, excluant "pending")
-  # Les inscriptions "pending" verrouillent une place mais ne sont pas comptées dans has_available_spots
+  def requires_online_payment?
+    payment_required? && !initiation?
+  end
+
+  # Spots counted toward capacity (payment-pending holds count for paid randos only).
+  def occupied_spots_for_capacity
+    base = attendances.where(is_volunteer: false).where.not(status: "canceled")
+
+    if requires_online_payment?
+      base.where(
+        "status != 'pending' OR (status = 'pending' AND payment_expires_at IS NOT NULL AND payment_expires_at > ?)",
+        Time.current
+      ).count
+    else
+      base.where.not(status: "pending").count
+    end
+  end
+
+  # Vérifie si l'événement est plein
   def full?
     return false if unlimited?
 
-    # Compter seulement les inscriptions confirmées (registered, paid, present), pas "pending"
-    attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count >= max_participants
+    occupied_spots_for_capacity >= max_participants
   end
 
-  # Retourne le nombre de places restantes (excluant "pending")
+  # Retourne le nombre de places restantes
   def remaining_spots
     return nil if unlimited?
 
-    confirmed_count = attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count
-    [ max_participants - confirmed_count, 0 ].max
+    [ max_participants - occupied_spots_for_capacity, 0 ].max
   end
 
-  # Vérifie s'il reste des places disponibles (excluant "pending" qui verrouillent une place)
+  # Vérifie s'il reste des places disponibles
   def has_available_spots?
     return true if unlimited?
-    # Compter seulement les inscriptions confirmées (registered, paid, present), pas "pending"
-    attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count < max_participants
+
+    occupied_spots_for_capacity < max_participants
   end
 
   # Compte les inscriptions actives (non annulées, incluant pending pour verrouiller les places)
@@ -180,9 +208,17 @@ class Event < ApplicationRecord
     WaitlistEntry.notify_next_in_queue(self, count: 1)
   end
 
-  # Vérifie si l'événement est passé
+  # Inscriptions closes at start; "past" listings use end time (start_at + duration_min).
+  def started?
+    start_at.present? && start_at <= Time.current
+  end
+
   def past?
-    start_at <= Time.current
+    finished?
+  end
+
+  def ongoing?
+    started? && !finished?
   end
 
   # Calcule la date de fin de l'événement (start_at + duration_min)
@@ -193,8 +229,7 @@ class Event < ApplicationRecord
 
   # Vérifie si l'événement est terminé (après sa date de fin)
   def finished?
-    return false unless end_at
-    end_at <= Time.current
+    end_at.present? && end_at <= Time.current
   end
 
   # Remet en stock tous les rollers prêtés pour cet événement
@@ -209,12 +244,10 @@ class Event < ApplicationRecord
       .exists?
   end
 
-  # Cette méthode doit être appelée après qu'un événement soit terminé
-  # Retourne le nombre de rollers remis en stock, ou nil si déjà traité
+  # Marks equipment as returned for this initiation (releases reservations, physical stock unchanged).
   def return_roller_stock
-    return unless is_a?(Event::Initiation) # Seulement pour les initiations
+    return unless is_a?(Event::Initiation)
 
-    # Sécurité : éviter de remettre le stock plusieurs fois
     if stock_returned_at.present?
       Rails.logger.info("Stock déjà remis en place pour initiation ##{id} le #{stock_returned_at}")
       return nil
@@ -223,32 +256,19 @@ class Event < ApplicationRecord
     attendances_to_process = attendances
       .where(needs_equipment: true)
       .where.not(roller_size: nil)
-      .where.not(status: "canceled") # Ne pas traiter les annulées (déjà remises en stock)
+      .where.not(status: "canceled")
 
-    count = 0
-    attendances_to_process.find_each do |attendance|
-      next unless attendance.roller_size.present?
+    count = attendances_to_process.count
 
-      roller_stock = RollerStock.find_by(size: attendance.roller_size)
-      if roller_stock
-        roller_stock.increment!(:quantity)
-        count += 1
-        Rails.logger.info("Stock remis en place pour taille #{attendance.roller_size} (initiation ##{id}, attendance ##{attendance.id})")
-      else
-        Rails.logger.warn("Taille de roller #{attendance.roller_size} non trouvée dans le stock lors de la remise en stock pour initiation ##{id}")
-      end
-    end
-
-    # Marquer que le stock a été remis en place (même si count = 0, pour éviter de retraiter)
-    if count > 0 || attendances_to_process.exists?
+    if count.positive?
       update_column(:stock_returned_at, Time.current)
-      Rails.logger.info("Remise en stock terminée pour initiation ##{id}: #{count} roller(s) remis en stock")
+      Rails.logger.info("Matériel marqué rendu pour initiation ##{id}: #{count} réservation(s) clôturée(s)")
     end
 
     count
   end
 
-  # Calculer la distance totale si plusieurs boucles
+  # Calculer la distance totale si plusieurs boucles (formulaire admin, stats internes)
   def total_distance_km
     # Si on utilise le nouveau système avec event_loop_routes
     if event_loop_routes.any?
@@ -258,6 +278,15 @@ class Event < ApplicationRecord
       (distance_km || 0) * loops_count
     else
       distance_km
+    end
+  end
+
+  # Distances par boucle, dans l'ordre (affichage public sans total cumulé)
+  def loop_distance_km_values
+    if loops_count && loops_count > 1
+      loops_with_routes.map { |loop_data| loop_data[:distance_km] }.compact
+    else
+      [ distance_km ].compact
     end
   end
 
@@ -349,10 +378,16 @@ class Event < ApplicationRecord
 
   private
 
+  def initiation_cannot_require_payment
+    return unless initiation? && payment_required?
+
+    errors.add(:payment_required, "ne peut pas être activé pour une initiation")
+  end
+
   def duration_multiple_of_five
     return if duration_min.blank?
 
-    errors.add(:duration_min, "must be a multiple of 5") unless (duration_min % 5).zero?
+    errors.add(:duration_min, "doit être un multiple de 5") unless (duration_min % 5).zero?
   end
 
   def cover_image_must_be_present

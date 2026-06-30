@@ -1,10 +1,21 @@
 # 📝 CHANGELOG - Admin Panel
 
-**Dernière mise à jour** : 2025-12-24
+**Dernière mise à jour** : 2026-06-07
 
 ---
 
 ## ✅ Modifications Récentes
+
+### **2026-06-07 - Events read access, organizers, goodies, mail logs, carousel settings**
+
+- ✅ **Events (admin)** : lecture level ≥ 40 ; écriture level ≥ 60 (`AdminPanel::EventPolicy`)
+- ✅ **Event organizers** : CRUD `/admin-panel/event-organizers`, FK optionnelle sur events
+- ✅ **Goodies** : `memberships.goodies_distributed`, filtre admin
+- ✅ **Mail logs** : table `outbound_email_logs`, subscriber ActiveJob
+- ✅ **Carousel** : `HomepageCarouselSetting` (autoplay + interval)
+- ✅ **Role guards** : hiérarchie rôles via `RoleAssignmentService` / `UserPolicy`
+- ✅ **Roller stock v2.3** : réservations par initiation, bouton « Clôturer les prêts terminés »
+- 📄 Release : [`release-dev-to-staging-2026-06.md`](../../10-decisions-and-changelog/release-dev-to-staging-2026-06.md)
 
 ### **2025-12-24 - Module Boutique Complet**
 

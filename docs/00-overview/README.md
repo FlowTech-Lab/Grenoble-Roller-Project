@@ -9,7 +9,7 @@ tags: ["overview", "project", "vision", "architecture", "status"]
 
 # Grenoble Roller – Overview Complet du Projet
 
-**Dernière mise à jour** : 2025-01-30
+**Dernière mise à jour** : 2026-06-07
 
 ---
 
@@ -17,7 +17,7 @@ tags: ["overview", "project", "vision", "architecture", "status"]
 
 **Grenoble Roller** est une plateforme communautaire Ruby on Rails 8 pour l'association de rollerblading de Grenoble. L'application combine une boutique e-commerce de goodies, un système de gestion d'événements et d'initiations, ainsi qu'un système d'adhésions.
 
-**Repository** : [https://github.com/FlowTech-Lab/Grenoble-Roller-Project](https://github.com/FlowTech-Lab/Grenoble-Roller-Project)
+**Repository** : [https://github.com/Grenoble-roller/Grenoble-Roller-Website](https://github.com/Grenoble-roller/Grenoble-Roller-Website)
 
 ---
 
@@ -58,8 +58,8 @@ Créer une plateforme complète qui rassemble la communauté roller grenobloise 
 ├── Événements (Events, Routes, Attendances)
 ├── Initiations (Event::Initiation, spécifique)
 ├── Adhésions (Memberships, adulte/enfant)
-├── Admin Panel (ActiveAdmin)
-└── Pages Légales & Conformité (RGPD, Cookies)
+├── Admin Panel (custom `/admin-panel`, ActiveAdmin legacy)
+└── Pages Légales & Conformité (RGPD, Cookies, Umami analytics)
 ```
 
 ### Environnements
@@ -80,7 +80,8 @@ Créer une plateforme complète qui rassemble la communauté roller grenobloise 
 - ✅ Reset de mot de passe
 - ✅ Confirmation email avec QR code mobile
 - ✅ Rate limiting (rack-attack)
-- ✅ Protection Turnstile (Cloudflare)
+- ✅ Protection Turnstile (Cloudflare) — login, inscription, **formulaire contact**
+- ✅ Analytics Umami (consentement cookies analytics requis)
 
 #### E-commerce
 - ✅ Catalogue produits (3 catégories : Rollers, Protections, Accessoires)
@@ -125,18 +126,21 @@ Créer une plateforme complète qui rassemble la communauté roller grenobloise 
 - ✅ Modal d'inscription avec résumé
 
 #### Admin Panel
-- ✅ ActiveAdmin configuré
+- ✅ Admin Panel custom (`/admin-panel`) — modules initiations, événements, boutique, adhésions
+- ✅ ActiveAdmin legacy (référence / certains exports)
 - ✅ Dashboard admin
-- ✅ CRUD complet tous modèles
+- ✅ CRUD complet modèles principaux
 - ✅ Exports CSV natifs
 - ✅ Actions rapides (publier, annuler, etc.)
 - ✅ Vue "À valider" pour événements
+- ✅ Suivi goodies adhésions (`goodies_distributed`)
+- ✅ Logs emails sortants (`outbound_email_logs`)
 
 #### Fonctionnalités Avancées
 - ✅ Inscriptions bénévoles
 - ✅ Inscriptions enfants (via ChildMembership)
 - ✅ Essai gratuit (1 par utilisateur)
-- ✅ Gestion équipement (roller_size, equipment_note)
+- ✅ Gestion équipement (roller_size, réservations par initiation — voir `docs/06-events/roller-stock.md`)
 - ✅ Emails automatiques (inscription/désinscription)
 - ✅ Rappels événements (optionnels)
 
@@ -364,6 +368,6 @@ docs/
 ---
 
 **Version** : 2.0  
-**Dernière mise à jour** : 2025-01-30  
+**Dernière mise à jour** : 2026-06-07  
 **Maintenu par** : Équipe FlowTech-Lab
 

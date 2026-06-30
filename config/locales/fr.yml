@@ -62,9 +62,30 @@ fr:
       user: "Utilisateur"
       membership: "Adhésion"
       homepage_carousel: "Slide du carrousel"
+      event: "Événement"
     attributes:
       homepage_carousel:
         position: "Position"
+      event:
+        title: "Titre"
+        description: "Description"
+        location_text: "Lieu"
+        start_at: "Date et heure de début"
+        duration_min: "Durée"
+        price_cents: "Prix"
+        currency: "Devise"
+        max_participants: "Nombre maximum de participants"
+        level: "Niveau"
+        distance_km: "Distance"
+        meeting_lat: "Latitude du rendez-vous"
+        meeting_lng: "Longitude du rendez-vous"
+        cover_image: "Image de couverture"
+        status: "Statut"
+        creator_user: "Créateur"
+        organizer: "Organisateur"
+        route: "Parcours"
+        loops_count: "Nombre de boucles"
+        payment_required: "Paiement requis"
       user:
         role: "Rôle"
         role_id: "Rôle"
@@ -115,15 +136,48 @@ fr:
               inclusion: "doit être acceptée"
         event:
           attributes:
-            description:
+            title:
+              blank: "doit être renseigné"
               too_short: "doit contenir au moins %{count} caractères"
               too_long: "ne peut pas dépasser %{count} caractères"
-            title:
+            description:
+              blank: "doit être renseignée"
               too_short: "doit contenir au moins %{count} caractères"
               too_long: "ne peut pas dépasser %{count} caractères"
             location_text:
+              blank: "doit être renseigné"
               too_short: "doit contenir au moins %{count} caractères"
               too_long: "ne peut pas dépasser %{count} caractères"
+            start_at:
+              blank: "doit être renseignée"
+            duration_min:
+              blank: "doit être renseignée"
+              not_a_number: "doit être un nombre entier"
+              greater_than: "doit être supérieure à %{count}"
+            distance_km:
+              blank: "doit être renseignée"
+              not_a_number: "doit être un nombre"
+              greater_than_or_equal_to: "doit être supérieure ou égale à %{count}"
+            level:
+              blank: "doit être renseigné"
+              inclusion: "n'est pas valide"
+            price_cents:
+              blank: "doit être renseigné"
+              not_a_number: "doit être un nombre"
+              greater_than_or_equal_to: "doit être supérieur ou égal à %{count}"
+            currency:
+              blank: "doit être renseignée"
+              wrong_length: "doit comporter exactement %{count} caractères"
+            max_participants:
+              blank: "doit être renseigné"
+              not_a_number: "doit être un nombre entier"
+              greater_than_or_equal_to: "doit être supérieur ou égal à %{count}"
+            cover_image:
+              blank: "doit être présente"
+            creator_user:
+              blank: "doit être renseigné"
+            payment_required:
+              invalid: "ne peut pas être activé pour une initiation"
       messages:
         record_invalid: "La validation a échoué : %{errors}"
         blank: "doit être renseigné"
@@ -132,8 +186,23 @@ fr:
         too_long: "ne peut pas dépasser %{count} caractères"
   
   errors:
+    format: "%{attribute} %{message}"
     messages:
       required: "doit être renseigné"
+      blank: "doit être renseigné"
+      taken: "est déjà utilisé"
+      too_short: "doit contenir au moins %{count} caractères"
+      too_long: "ne peut pas dépasser %{count} caractères"
+      wrong_length: "doit comporter exactement %{count} caractères"
+      not_a_number: "doit être un nombre"
+      greater_than: "doit être supérieur à %{count}"
+      greater_than_or_equal_to: "doit être supérieur ou égal à %{count}"
+      inclusion: "n'est pas valide"
+      invalid: "n'est pas valide"
+    template:
+      header:
+        one: "1 erreur empêche l'enregistrement :"
+        other: "%{count} erreurs empêchent l'enregistrement :"
     attributes:
       role:
         required: "doit être renseigné"
@@ -168,6 +237,12 @@ fr:
       failed: "Échoué"
       cancelled: "Annulé"
       refunded: "Remboursé"
+    checkout:
+      pending: "En attente"
+      processing: "En cours"
+      paid: "Payé"
+      failed: "Échoué"
+      abandoned: "Abandonné"
     membership:
       pending: "En attente"
       active: "Active"

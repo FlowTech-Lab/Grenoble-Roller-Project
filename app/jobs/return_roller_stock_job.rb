@@ -1,16 +1,13 @@
-# Job pour remettre automatiquement les rollers en stock après qu'une initiation soit terminée
-# Exécuté quotidiennement pour traiter les initiations qui viennent de se terminer
+# Job to close equipment loans after an initiation ends.
+# Runs daily for finished initiations not yet marked as returned.
 class ReturnRollerStockJob < ApplicationJob
   queue_as :default
 
-  # Remet en stock les rollers pour toutes les initiations terminées
-  # qui n'ont pas encore eu leur stock remis en place.
-  # Une initiation est "terminée" quand start_at + duration_min <= now.
+  # Closes reservations for all finished initiations with stock_returned_at nil.
   def perform
     now = Time.current
 
-    # Toutes les initiations déjà terminées (end_at <= now) et pas encore remises en stock.
-    # Pas de fenêtre 24h : on traite tout le passé pour rattraper les oublis et les initiations anciennes.
+    # All finished initiations (end_at <= now) not yet closed.
     finished_initiations = Event::Initiation
       .published
       .where("start_at + INTERVAL '1 minute' * duration_min <= ?", now)
@@ -30,16 +27,16 @@ class ReturnRollerStockJob < ApplicationJob
 
       next unless has_equipment_loaned
 
-      # Remettre le stock en place
+      # Close equipment reservations for this initiation
       rollers_returned = initiation.return_roller_stock
       rollers_returned = 0 if rollers_returned.nil?
       if rollers_returned > 0
         count_processed += 1
         total_rollers_returned += rollers_returned
-        Rails.logger.info("[ReturnRollerStockJob] Initiation ##{initiation.id} traitée : #{rollers_returned} roller(s) remis en stock")
+        Rails.logger.info("[ReturnRollerStockJob] Initiation ##{initiation.id}: #{rollers_returned} loan(s) closed")
       end
     end
 
-    Rails.logger.info("[ReturnRollerStockJob] Traitement terminé : #{count_processed} initiation(s) traitée(s), #{total_rollers_returned} roller(s) remis en stock au total")
+    Rails.logger.info("[ReturnRollerStockJob] Done: #{count_processed} initiation(s), #{total_rollers_returned} loan(s) closed total")
   end
 end

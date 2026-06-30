@@ -56,10 +56,29 @@ RSpec.describe 'AdminPanel::Events', type: :request do
         login_user(organizer_user)
       end
 
-      it 'redirects to root with alert' do
+      it 'returns success' do
         get admin_panel_events_path
-        expect(response).to redirect_to(root_path)
-        expect(flash[:alert]).to include('Accès admin requis')
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'displays events list' do
+        create(:event, :published, start_at: 1.week.from_now)
+        get admin_panel_events_path
+        expect(response.body).to include('Événements')
+      end
+    end
+
+    context 'when user is moderator (level 50)' do
+      let(:moderator_user) do
+        moderator_role = Role.find_or_create_by!(code: 'MODERATOR') { |r| r.name = 'Modérateur'; r.level = 50 }
+        create(:user, role: moderator_role)
+      end
+
+      before { login_user(moderator_user) }
+
+      it 'returns success' do
+        get admin_panel_events_path
+        expect(response).to have_http_status(:success)
       end
     end
 
@@ -115,10 +134,14 @@ RSpec.describe 'AdminPanel::Events', type: :request do
         login_user(organizer_user)
       end
 
-      it 'redirects to root with alert' do
+      it 'returns success' do
         get admin_panel_event_path(event)
-        expect(response).to redirect_to(root_path)
-        expect(flash[:alert]).to include('Accès admin requis')
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'displays event details' do
+        get admin_panel_event_path(event)
+        expect(response.body).to include(event.title)
       end
     end
 
@@ -168,8 +191,8 @@ RSpec.describe 'AdminPanel::Events', type: :request do
 
       it 'redirects to root with alert' do
         delete admin_panel_event_path(event)
-        expect(response).to redirect_to(root_path)
-        expect(flash[:alert]).to include('Accès admin requis')
+        expect(response).to redirect_to(admin_panel_root_path)
+        expect(flash[:alert]).to include('autorisé')
       end
 
       it 'does not delete the event' do

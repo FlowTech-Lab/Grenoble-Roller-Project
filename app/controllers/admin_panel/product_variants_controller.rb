@@ -63,6 +63,7 @@ module AdminPanel
         next unless variant
 
         if variant.update(updates)
+          notify_discord("product_variant.updated", variant)
           updated_count += 1
         end
       end
@@ -78,7 +79,9 @@ module AdminPanel
 
     # PATCH /admin-panel/products/:product_id/product_variants/:id/toggle_status
     def toggle_status
-      @variant.update(is_active: !@variant.is_active)
+      if @variant.update(is_active: !@variant.is_active)
+        notify_discord("product_variant.status_toggled", @variant)
+      end
 
       respond_to do |format|
         format.html do
@@ -124,6 +127,7 @@ module AdminPanel
       end
 
       if @variant.save
+        notify_discord("product_variant.created", @variant)
         flash[:notice] = "Variante créée avec succès"
         redirect_to admin_panel_product_path(@product)
       else
@@ -152,6 +156,7 @@ module AdminPanel
         params_hash[:price_cents] = (params[:price_euros].to_f * 100).to_i
       end
       if @variant.update(params_hash)
+        notify_discord("product_variant.updated", @variant)
         respond_to do |format|
           format.html do
             flash[:notice] = "Variante mise à jour avec succès"
@@ -186,6 +191,7 @@ module AdminPanel
     # DELETE /admin-panel/products/:product_id/product_variants/:id
     def destroy
       if @variant.destroy
+        notify_discord("product_variant.destroyed", @variant)
         flash[:notice] = "Variante supprimée avec succès"
       else
         flash[:alert] = "Erreur lors de la suppression: #{@variant.errors.full_messages.join(', ')}"

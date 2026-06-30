@@ -1,0 +1,50 @@
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-body">
+    <%= form_with model: [:admin_panel, event_organizer], local: true, class: "needs-validation", novalidate: true do |f| %>
+      <% if event_organizer.errors.any? %>
+        <div class="alert alert-danger">
+          <h5>Erreurs à corriger :</h5>
+          <ul class="mb-0">
+            <% event_organizer.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= f.label :name, "Nom *", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control form-control-liquid", required: true, maxlength: 140 %>
+            <div class="invalid-feedback">
+              Veuillez saisir un nom.
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= f.label :url, "URL", class: "form-label" %>
+            <%= f.url_field :url, class: "form-control form-control-liquid", placeholder: "https://..." %>
+            <div class="form-text">URL du site web de l'association (optionnel)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <%= f.check_box :is_active, class: "form-check-input" %>
+          <%= f.label :is_active, "Entité active", class: "form-check-label" %>
+          <div class="form-text">Une entité active peut être sélectionnée lors de la création d'un événement</div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <%= f.submit event_organizer.persisted? ? "Mettre à jour" : "Créer", class: "btn btn-liquid-primary" %>
+        <%= link_to "Annuler", event_organizer.persisted? ? admin_panel_event_organizer_path(event_organizer) : admin_panel_event_organizers_path, 
+            class: "btn btn-outline-liquid-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -6,9 +6,9 @@
 
 ## 📋 Vue d'ensemble
 
-Gestion système : paiements.
+Gestion système : paiements, **notifications Discord (webhooks admin)** — voir [DR-002](../../10-decisions-and-changelog/DR-002-discord-webhook-notifications.md).
 
-**Status actuel** : ✅ Existe dans ActiveAdmin - À migrer vers AdminPanel
+**Status actuel** : ✅ Payments dans AdminPanel · ✅ Notification channels **implémenté** (DR-002, 2026-06-09)
 
 **Note** : 
 - **Maintenance** → Géré dans [`00-dashboard/`](../00-dashboard/README.md)
@@ -40,6 +40,14 @@ Gestion système : paiements.
 - Détails avec panels (Orders, Memberships, Attendances associés)
 - CRUD complet
 
+### ✅ Notification channels (Discord webhooks) — DR-002
+
+- CRUD webhooks Discord (SUPERADMIN ≥ 70) — `/admin-panel/notification-channels`
+- Toggles par type d'événement (~65 clés), bouton test, échantillons QA, multi-canaux
+- Dispatch après confirmation paiement HelloAsso (pas callbacks modèle)
+- Gate staging : `ALLOW_DISCORD_NOTIFICATIONS=true`
+- Spec : [DR-002-discord-webhook-notifications.md](../../10-decisions-and-changelog/DR-002-discord-webhook-notifications.md)
+
 ---
 
 ## ✅ Checklist Globale
@@ -53,6 +61,14 @@ Gestion système : paiements.
 - [x] Tests RSpec ✅ **22 exemples, 0 échecs**
 - [x] Factory Payment ✅ **CRÉÉE**
 - [x] Sécurité ✅ **RENFORCÉE** (suppression SUPERADMIN uniquement + disclaimer explicite)
+
+### **Notification channels (DR-002 — 2026-06-09)**
+- [x] Migration `notification_channels`, `notification_subscriptions`, `notification_deliveries`
+- [x] Models + `NotificationDispatchService`, `DiscordWebhookClient`, delivery job
+- [x] Admin CRUD + test + sample events (`NotificationChannelsController`)
+- [x] Hooks HelloAsso, contact public, registrations, ~18 admin controllers (`AdminPanel::NotifiesDiscord`)
+- [x] Menu sidebar **Notifications**
+- [x] Tests RSpec (~65+ examples for registry, dispatch, job, admin requests)
 
 ---
 

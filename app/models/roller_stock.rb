@@ -12,16 +12,63 @@ class RollerStock < ApplicationRecord
   scope :available, -> { active.where("quantity > 0") }
   scope :ordered_by_size, -> { order(Arel.sql("CAST(size AS INTEGER)")) }
 
+  # Active loan reservations: equipment requested on initiations not yet marked returned.
+  def self.active_equipment_reservations(exclude_attendance_id: nil)
+    scope = Attendance
+      .joins(:event)
+      .where(events: { type: "Event::Initiation", stock_returned_at: nil })
+      .where(needs_equipment: true)
+      .where.not(roller_size: nil)
+      .where.not(status: "canceled")
+
+    scope = scope.where.not(attendances: { id: exclude_attendance_id }) if exclude_attendance_id
+    scope
+  end
+
+  def self.reserved_quantity_for_size(size, exclude_attendance_id: nil)
+    active_equipment_reservations(exclude_attendance_id: exclude_attendance_id)
+      .where(roller_size: size)
+      .count
+  end
+
+  def self.available_quantity_for_size(size, exclude_attendance_id: nil)
+    stock = find_by(size: size)
+    return 0 unless stock&.is_active?
+
+    [ stock.quantity - reserved_quantity_for_size(size, exclude_attendance_id: exclude_attendance_id), 0 ].max
+  end
+
+  def self.selectable_for_event(_event, exclude_attendance_id: nil)
+    active.ordered_by_size.select do |stock|
+      stock.available_quantity(exclude_attendance_id: exclude_attendance_id).positive?
+    end
+  end
+
+  def reserved_quantity(exclude_attendance_id: nil)
+    self.class.reserved_quantity_for_size(size, exclude_attendance_id: exclude_attendance_id)
+  end
+
+  def available_quantity(exclude_attendance_id: nil)
+    return 0 unless is_active?
+
+    [ quantity - reserved_quantity(exclude_attendance_id: exclude_attendance_id), 0 ].max
+  end
+
   def available?
-    is_active? && quantity > 0
+    is_active? && available_quantity.positive?
   end
 
   def out_of_stock?
-    quantity <= 0
+    !available?
   end
 
   def size_with_stock
-    "#{size} (#{quantity} disponible#{'s' if quantity > 1})"
+    size_with_availability
+  end
+
+  def size_with_availability(exclude_attendance_id: nil)
+    avail = available_quantity(exclude_attendance_id: exclude_attendance_id)
+    "#{size} (#{avail} disponible#{'s' if avail != 1})"
   end
 
   def self.ransackable_attributes(_auth_object = nil)

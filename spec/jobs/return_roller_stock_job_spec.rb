@@ -14,7 +14,7 @@ RSpec.describe ReturnRollerStockJob, type: :job do
 
   describe "#perform" do
     context "when there are no finished initiations" do
-      it "does not change stock or stock_returned_at" do
+      it "does not change physical stock or stock_returned_at" do
         u = create_user
         create(:membership, user: u, status: :active, season: "2025-2026")
         initiation = create_event(
@@ -51,15 +51,17 @@ RSpec.describe ReturnRollerStockJob, type: :job do
         create_attendance(user: user2, event: initiation, status: "registered", needs_equipment: true, roller_size: "40")
       end
 
-      it "increments stock and sets stock_returned_at for the initiation" do
+      it "closes reservations without changing physical stock" do
         expect(initiation.stock_returned_at).to be_nil
-        expect(roller_stock_38.reload.quantity).to eq(4)
-        expect(roller_stock_40.reload.quantity).to eq(2)
+        expect(roller_stock_38.reload.quantity).to eq(5)
+        expect(roller_stock_40.reload.quantity).to eq(3)
+        expect(RollerStock.reserved_quantity_for_size("38")).to eq(1)
 
         ReturnRollerStockJob.perform_now
 
         expect(roller_stock_38.reload.quantity).to eq(5)
         expect(roller_stock_40.reload.quantity).to eq(3)
+        expect(RollerStock.reserved_quantity_for_size("38")).to eq(0)
         expect(initiation.reload.stock_returned_at).to be_present
       end
     end
@@ -80,12 +82,11 @@ RSpec.describe ReturnRollerStockJob, type: :job do
       before do
         create_attendance(user: user1, event: initiation, status: "registered", needs_equipment: true, roller_size: "38")
         initiation.update_column(:stock_returned_at, 1.day.ago)
-        roller_stock_38.reload
       end
 
       it "does not process the initiation again" do
         ReturnRollerStockJob.perform_now
-        expect(roller_stock_38.reload.quantity).to eq(4)
+        expect(roller_stock_38.reload.quantity).to eq(5)
       end
     end
 
@@ -106,10 +107,9 @@ RSpec.describe ReturnRollerStockJob, type: :job do
         create_attendance(user: user1, event: initiation, status: "canceled", needs_equipment: true, roller_size: "38")
       end
 
-      it "does not double-increment stock (canceled already gave back on status change)" do
-        qty_before = roller_stock_38.reload.quantity
+      it "does not set stock_returned_at" do
         ReturnRollerStockJob.perform_now
-        expect(roller_stock_38.reload.quantity).to eq(qty_before)
+        expect(roller_stock_38.reload.quantity).to eq(5)
         expect(initiation.reload.stock_returned_at).to be_nil
       end
     end

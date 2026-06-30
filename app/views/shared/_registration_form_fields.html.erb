@@ -165,11 +165,9 @@
             <p class="mb-0">
               <i class="bi bi-signpost-2 text-primary me-2" aria-hidden="true"></i>
               <strong>Distance :</strong>
+              <%= format_event_distance(event) %>
               <% if event.loops_count && event.loops_count > 1 %>
-                <%= number_with_precision(event.total_distance_km, precision: 1, strip_insignificant_zeros: true) %> km
                 <span class="badge bg-info ms-2"><%= event.loops_count %> boucles</span>
-              <% else %>
-                <%= number_with_precision(event.distance_km, precision: 1, strip_insignificant_zeros: true) %> km
               <% end %>
             </p>
           </div>
@@ -221,7 +219,7 @@
         Taille de rollers
       <% end %>
       <%= select_tag :roller_size, 
-          options_from_collection_for_select(RollerStock.available.ordered_by_size, :size, :size_with_stock),
+          options_from_collection_for_select(RollerStock.selectable_for_event(event), :size, :size_with_availability),
           { include_blank: "Choisir une taille", class: "form-select", id: "roller_size_select#{prefix_id}", aria: { describedby: "roller_size_help#{prefix_id}" } } %>
       <small id="roller_size_help<%= prefix_id %>" class="text-muted">
         <i class="bi bi-info-circle me-1" aria-hidden="true"></i>

@@ -14,7 +14,7 @@ module Events
 
       # Si c'est pour un enfant, vérifier qu'il n'est pas déjà inscrit
       if child_membership_id.present?
-        existing_attendance = @event.attendances.find_by(
+        existing_attendance = @event.attendances.active.find_by(
           user: current_user,
           child_membership_id: child_membership_id
         )
@@ -25,7 +25,7 @@ module Events
         end
       else
         # Si c'est pour le parent, vérifier qu'il n'est pas déjà inscrit
-        existing_attendance = @event.attendances.find_by(
+        existing_attendance = @event.attendances.active.find_by(
           user: current_user,
           child_membership_id: nil
         )
@@ -36,10 +36,17 @@ module Events
       end
 
       attendance = @event.attendances.build(user: current_user)
-      attendance.status = "registered"
-      # Accepter wants_reminder depuis les params (formulaire ou paramètre direct)
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       attendance.child_membership_id = child_membership_id
+
+      paid_via_cart = @event.requires_online_payment? && UnifiedCart.enabled?
+
+      if paid_via_cart
+        attendance.status = "pending"
+        attendance.payment_expires_at = CartLineService::EVENT_HOLD_DURATION.from_now
+      else
+        attendance.status = "registered"
+      end
 
       # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
       # Vérifier seulement que l'adhésion enfant appartient à l'utilisateur si un enfant est inscrit
@@ -53,13 +60,22 @@ module Events
       # Pour le parent : aucune restriction, ouvert à tous
 
       if attendance.save
-        EventMailer.attendance_confirmed(attendance).deliver_later
-        participant_name = attendance.for_child? ? attendance.participant_name : "Vous"
-        event_date = l(@event.start_at, format: :event_long, locale: :fr)
-        redirect_to @event, notice: "Inscription confirmée pour #{participant_name} ! À bientôt le #{event_date}."
+        if paid_via_cart
+          CartLineService.add_event_registration!(user: current_user, attendance: attendance, event: @event)
+          participant_name = attendance.for_child? ? attendance.participant_name : "Vous"
+          flash[:notice] = "Place réservée pour #{participant_name}. Finalisez le paiement dans les 15 minutes depuis votre panier."
+          flash[:notice_type] = "success"
+          flash[:show_cart_button] = true
+          redirect_to cart_path
+        else
+          EventMailer.attendance_confirmed(attendance).deliver_later
+          participant_name = attendance.for_child? ? attendance.participant_name : "Vous"
+          event_date = l(@event.start_at, format: :event_long, locale: :fr)
+          redirect_to @event, notice: "Inscription confirmée pour #{participant_name} ! À bientôt le #{event_date}."
+        end
       else
-        # Si l'événement est complet, proposer la liste d'attente
-        if @event.full? && attendance.errors[:event].any?
+        # Si l'événement est complet, proposer la liste d'attente (sauf événements payants)
+        if @event.full? && attendance.errors[:event].any? && !@event.requires_online_payment?
           redirect_to @event, alert: "Cet événement est complet. #{attendance.errors.full_messages.to_sentence} Souhaitez-vous être ajouté(e) à la liste d'attente ?"
         else
           redirect_to @event, alert: attendance.errors.full_messages.to_sentence
@@ -93,8 +109,8 @@ module Events
         wants_events_mail = current_user.wants_events_mail?
         if attendance.destroy
           # Notifier la prochaine personne en liste d'attente si une place se libère
-          WaitlistEntry.notify_next_in_queue(@event) if @event.full?
-          if wants_events_mail && attendance.for_parent?
+          WaitlistEntry.notify_next_in_queue(@event) if @event.has_available_spots?
+          if wants_events_mail && attendance.for_parent? && !attendance.payment_pending?
             EventMailer.attendance_cancelled(current_user, @event).deliver_later
           end
           redirect_to @event, notice: "Inscription de #{participant_name} annulée."

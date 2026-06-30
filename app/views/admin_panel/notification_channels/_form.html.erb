@@ -1,0 +1,126 @@
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-body">
+    <%= form_with model: [ :admin_panel, notification_channel ],
+                  local: true,
+                  class: "needs-validation",
+                  html: { id: "notification_channel_form" },
+                  novalidate: true do |f| %>
+      <% if notification_channel.errors.any? %>
+        <div class="alert alert-danger">
+          <h5>Erreurs à corriger :</h5>
+          <ul class="mb-0">
+            <% notification_channel.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= f.label :name, "Nom *", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control form-control-liquid", required: true, maxlength: 140, placeholder: "Discord #ops" %>
+            <div class="form-text">Libellé interne pour identifier ce webhook</div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= f.label :webhook_url, notification_channel.persisted? ? "URL du webhook" : "URL du webhook *", class: "form-label" %>
+            <% if notification_channel.webhook_configured? %>
+              <div class="alert alert-success py-2 mb-2 d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                <span>Webhook enregistré : <code><%= notification_channel.masked_webhook_url %></code></span>
+              </div>
+            <% end %>
+            <%= f.password_field :webhook_url,
+                class: "form-control form-control-liquid",
+                required: !notification_channel.persisted?,
+                autocomplete: "new-password",
+                value: "",
+                placeholder: notification_channel.webhook_configured? ? "Nouvelle URL (optionnel)" : "https://discord.com/api/webhooks/..." %>
+            <% if notification_channel.webhook_configured? %>
+              <div class="form-text">
+                Le champ reste vide volontairement (sécurité). Laissez vide pour conserver l'URL actuelle, ou saisissez une nouvelle URL pour la remplacer.
+              </div>
+            <% else %>
+              <div class="form-text">URL incoming webhook Discord (discord.com ou discordapp.com uniquement)</div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <div class="form-check form-switch">
+          <%= f.check_box :enabled, class: "form-check-input" %>
+          <%= f.label :enabled, "Activer ce webhook", class: "form-check-label" %>
+          <div class="form-text">Un webhook désactivé ne reçoit aucune notification</div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h5 class="mb-3">Événements</h5>
+      <p class="text-muted small">Cochez les événements qui déclencheront une notification sur ce webhook.</p>
+
+      <% grouped_events.each do |group_key, events| %>
+        <% display_events = events.reject { |event| event.key == "test.ping" } %>
+        <% next if display_events.empty? %>
+        <% group_label = NotificationEventRegistry::GROUPS[group_key] || group_key.humanize %>
+        <div class="card card-liquid rounded-liquid mb-3 notification-event-group"
+             data-controller="admin-panel--notification-event-group"
+             data-group="<%= group_key %>">
+          <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <strong><%= group_label %></strong>
+            <div class="btn-group btn-group-sm">
+              <button type="button"
+                      class="btn btn-outline-liquid-primary"
+                      data-action="admin-panel--notification-event-group#selectAll">
+                Tout cocher
+              </button>
+              <button type="button"
+                      class="btn btn-outline-liquid-secondary"
+                      data-action="admin-panel--notification-event-group#deselectAll">
+                Tout décocher
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row g-2">
+              <% display_events.each do |event| %>
+                <div class="col-md-6 col-lg-4">
+                  <div class="form-check">
+                    <%= check_box_tag "event_keys[]",
+                        event.key,
+                        selected_event_keys.include?(event.key),
+                        id: "event_key_#{event.key.tr('.', '_')}",
+                        class: "form-check-input",
+                        data: { admin_panel__notification_event_group_target: "checkbox" } %>
+                    <%= label_tag "event_key_#{event.key.tr('.', '_')}", event.label, class: "form-check-label" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="d-flex flex-wrap gap-2">
+      <button type="submit" form="notification_channel_form" class="btn btn-liquid-primary">
+        <%= notification_channel.persisted? ? "Enregistrer" : "Créer" %>
+      </button>
+      <% if notification_channel.persisted? %>
+        <%= button_to "Envoyer une notification de test",
+            test_admin_panel_notification_channel_path(notification_channel),
+            method: :post,
+            class: "btn btn-outline-liquid-secondary",
+            form: { data: { turbo: false } } %>
+      <% end %>
+      <%= link_to "Annuler",
+          admin_panel_notification_channels_path,
+          class: "btn btn-outline-liquid-secondary" %>
+    </div>
+  </div>
+</div>

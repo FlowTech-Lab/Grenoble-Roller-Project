@@ -1,0 +1,27 @@
+<%
+  breadcrumb_items = [
+    { label: "Notifications Discord", url: admin_panel_notification_channels_path },
+    { label: @notification_channel.name, url: nil }
+  ]
+%>
+
+<%= render "admin_panel/shared/breadcrumb", breadcrumb_items: breadcrumb_items %>
+
+<div class="admin-page-header">
+  <div>
+    <h1><%= @notification_channel.name %></h1>
+    <% if @notification_channel.masked_webhook_url.present? %>
+      <p class="text-muted mb-0 small">URL : <%= @notification_channel.masked_webhook_url %></p>
+    <% end %>
+  </div>
+  <%= link_to "Retour à la liste", admin_panel_notification_channels_path, class: "btn btn-outline-liquid-secondary" %>
+</div>
+
+<%= render "form",
+    notification_channel: @notification_channel,
+    grouped_events: @grouped_events,
+    selected_event_keys: @selected_event_keys %>
+
+<%= render "sample_tools",
+    notification_channel: @notification_channel,
+    grouped_events: @grouped_events %>

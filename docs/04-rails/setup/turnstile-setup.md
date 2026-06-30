@@ -1,7 +1,18 @@
 # 🔒 Cloudflare Turnstile - Configuration
 
-**Dernière mise à jour** : 2025-12-07  
+**Dernière mise à jour** : 2026-06-07  
 **Statut** : ✅ **Configuré**
+
+---
+
+## Formulaires protégés
+
+| Formulaire | Controller | Notes |
+| --- | --- | --- |
+| Connexion / inscription | Devise sessions/registrations | Depuis 2025 |
+| Contact | `ContactMessagesController#create` | Ajouté 2026-06 ; widget sur `/contact` |
+
+Les clés peuvent provenir des **Rails credentials** (`turnstile.site_key` / `secret_key`) ou des variables **`TURNSTILE_SITE_KEY`** / **`TURNSTILE_SECRET_KEY`** (priorité ENV — pratique pour dev local et clés test Cloudflare).
 
 ---
 

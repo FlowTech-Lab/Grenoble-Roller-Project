@@ -3,6 +3,10 @@ require 'rails_helper'
 RSpec.describe 'Orders', type: :request do
   include RequestAuthenticationHelper
 
+  around do |example|
+    with_unified_cart_disabled { example.run }
+  end
+
   let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) do
     user = build(:user, role: role)
@@ -321,6 +325,28 @@ RSpec.describe 'Orders', type: :request do
       it 'redirects to order page' do
         post check_payment_order_path(order)
         expect(response).to redirect_to(order_path(order))
+      end
+    end
+  end
+
+  context 'when UNIFIED_CART_ENABLED is true' do
+    around do |example|
+      with_unified_cart_enabled { example.run }
+    end
+
+    before { login_user(user) }
+
+    describe 'GET /orders/new' do
+      it 'redirects to checkout' do
+        get new_order_path
+        expect(response).to redirect_to(new_checkout_path)
+      end
+    end
+
+    describe 'POST /orders' do
+      it 'redirects to checkout' do
+        post orders_path
+        expect(response).to redirect_to(new_checkout_path)
       end
     end
   end

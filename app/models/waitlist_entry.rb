@@ -199,6 +199,8 @@ class WaitlistEntry < ApplicationRecord
   # ==================== MÉTHODES DE CLASSE ====================
 
   def self.add_to_waitlist(user, event, child_membership_id: nil, needs_equipment: false, roller_size: nil, wants_reminder: false, use_free_trial: false)
+    return nil if event.requires_online_payment?
+
     # Utiliser !full? au lieu de !has_available_spots? pour être cohérent avec la validation event_is_full
     # Pour les initiations, full? utilise available_places qui inclut les "pending" dans participants_count
     # has_available_spots? exclut les "pending", ce qui crée une incohérence
@@ -324,6 +326,12 @@ class WaitlistEntry < ApplicationRecord
 
   def event_is_full
     return if event.nil?
+
+    if event.requires_online_payment?
+      errors.add(:event, "La liste d'attente n'est pas disponible pour les événements payants en ligne")
+      return
+    end
+
     # Vérifier que l'événement est complet (en excluant les inscriptions "pending")
     # car on peut rejoindre la liste d'attente même s'il y a des places "pending" verrouillées
     unless event.full?

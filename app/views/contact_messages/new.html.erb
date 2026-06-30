@@ -21,7 +21,7 @@
             </div>
           <% end %>
 
-          <%= form_with model: @contact_message, url: contact_path, local: true, class: "needs-validation", novalidate: true do |f| %>
+          <%= form_with model: @contact_message, url: contact_path, local: true, class: "needs-validation", novalidate: true, html: { id: "contact-form" } do |f| %>
             <% if @contact_message.errors.any? %>
               <div class="alert alert-danger">
                 <h5>Erreurs à corriger :</h5>
@@ -66,10 +66,14 @@
               </div>
             </div>
 
+            <%= render "shared/turnstile_widget" %>
+
             <div class="d-grid">
               <%= f.submit "Envoyer le message", class: "btn btn-liquid-primary btn-lg" %>
             </div>
           <% end %>
+
+          <%= render "shared/turnstile_scripts", form_selector: "#contact-form" %>
         </div>
       </div>
     </div>

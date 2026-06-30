@@ -37,11 +37,14 @@ module AdminPanel
       end
 
       if count_initiations > 0
+        if (anchor = RollerStock.order(:id).first)
+          notify_discord("roller_stock.return_all", anchor)
+        end
         redirect_to admin_panel_roller_stocks_path,
-                    notice: "#{count_initiations} initiation(s) traitée(s), #{total_rollers} roller(s) remis en stock."
+                    notice: "#{count_initiations} initiation(s) traitée(s), #{total_rollers} prêt(s) clôturé(s)."
       else
         redirect_to admin_panel_roller_stocks_path,
-                    notice: "Aucune initiation terminée à traiter (tout le matériel est déjà remis en stock)."
+                    notice: "Aucune initiation terminée à traiter (tout le matériel est déjà marqué rendu)."
       end
     end
 
@@ -95,6 +98,7 @@ module AdminPanel
       @roller_stock = RollerStock.new(roller_stock_params)
 
       if @roller_stock.save
+        notify_discord("roller_stock.created", @roller_stock)
         redirect_to admin_panel_roller_stock_path(@roller_stock),
                     notice: "Stock créé avec succès"
       else
@@ -109,6 +113,7 @@ module AdminPanel
     # PATCH /admin-panel/roller_stocks/:id
     def update
       if @roller_stock.update(roller_stock_params)
+        notify_discord("roller_stock.updated", @roller_stock)
         redirect_to admin_panel_roller_stock_path(@roller_stock),
                     notice: "Stock mis à jour avec succès"
       else
@@ -118,7 +123,9 @@ module AdminPanel
 
     # DELETE /admin-panel/roller_stocks/:id
     def destroy
-      @roller_stock.destroy
+      if @roller_stock.destroy
+        notify_discord("roller_stock.destroyed", @roller_stock)
+      end
       redirect_to admin_panel_roller_stocks_path,
                   notice: "Stock supprimé avec succès"
     end

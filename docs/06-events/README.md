@@ -88,6 +88,10 @@
 - ✅ **Coordonnées GPS** : Implémenté (optionnel avec Google Maps/Waze)
 - ✅ **Améliorations UX** : Badge orange pour places restantes (≤5), réorganisation boutons (Calendrier avant Se désinscrire)
 - ✅ **Job de rappel 24h avant** : Implémenté (EventReminderJob)
+- ✅ **Cycle de vie événements** : passé / en cours / à venir basé sur l'heure de fin ; badge « En cours »
+- ✅ **Carte parcours plein écran** : viewer pinch-zoom sur les cartes de boucles
+- ✅ **Stock rollers v2.3** : réservations par initiation, stock physique stable — voir [roller-stock.md](roller-stock.md)
+- ✅ **Organisateurs d'événements** : entités `EventOrganizer` + lien sur les randos
 
 ### ❌ Fonctionnalités Non Implémentées
 - Accessibilité (🟡 Moyenne priorité)
@@ -162,7 +166,6 @@
 
 ---
 
-**Document créé le** : Novembre 2025  
-**Dernière mise à jour** : Décembre 2025  
-**Version** : 2.1
+**Dernière mise à jour** : 2026-06-07  
+**Version** : 2.4
 

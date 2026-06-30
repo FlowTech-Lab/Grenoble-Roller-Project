@@ -249,4 +249,77 @@ RSpec.describe 'Events', type: :request do
       expect(response.content_type).to include('text/calendar')
     end
   end
+
+  describe 'PATCH /events/:id' do
+    let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+    let(:organizer) { create_user(role: organizer_role) }
+    let(:event) { create_event(creator_user: organizer, status: 'draft') }
+    let!(:event_organizer) { create(:event_organizer, name: 'Grenoble Roller') }
+
+    before { login_user(organizer) }
+
+    it 'persists organizer_id on update' do
+      patch event_path(event), params: {
+        event: {
+          title: event.title,
+          start_at: event.start_at,
+          duration_min: event.duration_min,
+          location_text: event.location_text,
+          max_participants: event.max_participants,
+          level: event.level,
+          loops_count: 1,
+          organizer_id: event_organizer.id
+        },
+        price_euros: '0'
+      }
+
+      expect(response).to redirect_to(event_path(event))
+      expect(event.reload.organizer_id).to eq(event_organizer.id)
+    end
+  end
+
+  describe 'GET /events/:id/loop_routes' do
+    let(:organizer_role) { Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 } }
+    let(:organizer) { create_user(role: organizer_role) }
+    let(:route1) { create_route(name: 'Boucle principale') }
+    let(:route2) { create_route(name: 'Boucle secondaire', distance_km: 15.0) }
+    let(:event) do
+      create_event(
+        creator_user: organizer,
+        route: route1,
+        loops_count: 3,
+        distance_km: 10.0
+      )
+    end
+
+    before do
+      event.event_loop_routes.create!(loop_number: 1, route: route1, distance_km: 10.0)
+      event.event_loop_routes.create!(loop_number: 2, route: route2, distance_km: 15.0)
+      event.event_loop_routes.create!(loop_number: 3, route: route1, distance_km: 12.0)
+    end
+
+    it 'returns loop routes 2+ as JSON for the event owner' do
+      login_user(organizer)
+
+      get loop_routes_event_path(event, format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to include('application/json')
+
+      body = response.parsed_body
+      expect(body.length).to eq(2)
+      expect(body.map { |row| row['loop_number'] }).to eq([ 2, 3 ])
+      expect(body.first).to include(
+        'loop_number' => 2,
+        'route_id' => route2.id,
+        'distance_km' => '15.0'
+      )
+    end
+
+    it 'requires authentication for JSON requests' do
+      get loop_routes_event_path(event, format: :json)
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

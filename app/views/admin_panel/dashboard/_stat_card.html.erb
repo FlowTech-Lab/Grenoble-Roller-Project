@@ -1,0 +1,18 @@
+<%#
+  locals: label (required), value (required), hint (optional), variant (optional: warning|danger|success)
+%>
+<%
+  variant = local_assigns[:variant]
+  card_border = variant.present? ? "border-#{variant}" : ""
+  label_class = local_assigns[:label_class] || (variant.present? ? "text-#{variant}" : "text-muted")
+  value_class = variant.present? ? "text-#{variant}" : ""
+%>
+<div class="admin-stat-card card card-liquid rounded-liquid shadow-liquid <%= card_border %>">
+  <div class="card-body">
+    <p class="admin-stat-card__label <%= label_class %>"><%= label %></p>
+    <p class="admin-stat-card__value <%= value_class %>"><%= value %></p>
+    <% if local_assigns[:hint].present? %>
+      <p class="admin-stat-card__hint"><%= hint %></p>
+    <% end %>
+  </div>
+</div>

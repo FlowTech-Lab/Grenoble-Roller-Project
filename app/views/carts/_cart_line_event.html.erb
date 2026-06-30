@@ -1,0 +1,33 @@
+<%# locals: (line:) %>
+<div class="cart-item cart-item--event">
+  <div class="cart-item-content w-100">
+    <div class="cart-item-info">
+      <p class="cart-item-title mb-1">
+        <i class="bi bi-calendar-event me-1 text-liquid-primary" aria-hidden="true"></i>
+        <%= line.label %>
+      </p>
+      <p class="small text-muted mb-1">Inscription — paiement en attente</p>
+      <% if line.expires_at.present? %>
+        <% expiring_soon = !line.expired? && line.expires_at <= 5.minutes.from_now %>
+        <p class="small mb-0 <%= expiring_soon ? 'text-danger fw-semibold' : 'text-warning-emphasis' %>">
+          <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>
+          <% if expiring_soon %>
+            Place réservée — payez avant <%= l(line.expires_at, format: :short) %>
+          <% else %>
+            Finalisez avant <%= l(line.expires_at, format: :short) %>
+          <% end %>
+        </p>
+      <% end %>
+    </div>
+
+    <div class="cart-item-price">
+      <strong><%= format_price(line.subtotal_cents) %></strong>
+    </div>
+
+    <div class="cart-item-actions">
+      <%= button_to remove_item_cart_path(cart_line_id: line.id), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Annuler la réservation", aria: { label: "Annuler la réservation" } do %>
+        <i class="bi bi-trash" aria-hidden="true"></i>
+      <% end %>
+    </div>
+  </div>
+</div>

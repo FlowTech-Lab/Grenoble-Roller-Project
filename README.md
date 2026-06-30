@@ -1,7 +1,7 @@
 
 # Grenoble Roller – Community Platform
 
-**Repository**: [https://github.com/FlowTech-Lab/Grenoble-Roller-Project](https://github.com/FlowTech-Lab/Grenoble-Roller-Project)
+**Repository**: [https://github.com/Grenoble-roller/Grenoble-Roller-Website](https://github.com/Grenoble-roller/Grenoble-Roller-Website)
 
 ### Short Description
 Community platform for the Grenoble rollerblading association, featuring an e-commerce shop for goodies and future event management capabilities.
@@ -71,8 +71,8 @@ A Ruby on Rails 8 web application for the Grenoble rollerblading community. Curr
 
 ```bash
 # Clone the repository
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
-cd Grenoble-Roller-Project
+git clone https://github.com/Grenoble-roller/Grenoble-Roller-Website.git
+cd Grenoble-Roller-Website
 
 # Start Docker containers
 docker compose -f ops/dev/docker-compose.yml up -d --build

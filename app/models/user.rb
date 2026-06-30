@@ -9,6 +9,8 @@ class User < ApplicationRecord
   belongs_to :role
   has_many :orders, dependent: :nullify
   has_many :memberships, dependent: :destroy
+  has_many :cart_lines, dependent: :destroy
+  has_many :checkouts, dependent: :destroy
 
   # Active Storage attachments
   has_one_attached :avatar
@@ -33,6 +35,7 @@ class User < ApplicationRecord
   # Elle utilise un contexte pour recevoir l'utilisateur qui fait la modification
   # Ne s'applique que si assigner_user est défini (dans les controllers)
   validate :role_level_not_higher_than_assigner, if: -> { role_id_changed? && role_id.present? && assigner_user.present? }
+  validate :assigner_can_manage_user, if: -> { assigner_user.present? && persisted? }
 
   # Bloquer l'authentification si l'email n'est pas confirmé
   # En développement/test, on permet quand même pour faciliter les tests
@@ -194,6 +197,18 @@ class User < ApplicationRecord
     if new_role_level > assigner_level
       errors.add(:role_id, "Vous ne pouvez pas assigner un rôle supérieur au vôtre")
     end
+
+    if assigner_user.id == id &&
+       assigner_user.role.level.to_i >= RoleAssignmentService::SUPERADMIN_LEVEL &&
+       role.level.to_i < RoleAssignmentService::SUPERADMIN_LEVEL
+      errors.add(:role_id, "Vous ne pouvez pas retirer votre propre rôle super administrateur")
+    end
+  end
+
+  def assigner_can_manage_user
+    return if RoleAssignmentService.can_manage_user?(assigner: assigner_user, target_user: self)
+
+    errors.add(:base, "Vous ne pouvez pas modifier un utilisateur avec un rôle supérieur au vôtre")
   end
 
   def normalize_phone

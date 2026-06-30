@@ -1,0 +1,59 @@
+<%# Product cart line row — used when unified cart is enabled %>
+<div class="cart-item">
+  <div class="cart-item-image">
+    <% cart_image = product_image_tag(ci[:product]) %>
+    <% if cart_image %>
+      <%= image_tag cart_image, alt: ci[:product].name, loading: "lazy" %>
+    <% end %>
+  </div>
+
+  <div class="cart-item-content">
+    <div class="cart-item-info">
+      <p class="cart-item-title mb-1"><%= ci[:product].name %></p>
+      <div class="d-flex align-items-center gap-2">
+        <p class="small text-muted mb-0"><%= ci[:variant].sku %></p>
+        <span class="small text-muted">•</span>
+        <p class="small text-muted mb-0"><%= format_price(ci[:unit_price_cents]) %> / u</p>
+      </div>
+    </div>
+
+    <div class="cart-item-qty">
+      <% max_stock = ci[:variant].inventory&.available_qty || ci[:variant].stock_qty %>
+      <%= form_with url: update_item_cart_path, method: :patch, class: "d-inline-flex align-items-center gap-2", id: "cart-item-form-#{ci[:variant].id}", data: { turbo: false } do |f| %>
+        <%= hidden_field_tag :variant_id, ci[:variant].id %>
+        <% if ci[:cart_line] %>
+          <%= hidden_field_tag :cart_line_id, ci[:cart_line].id %>
+        <% end %>
+        <%= hidden_field_tag :original_quantity, ci[:quantity], id: "original-qty-#{ci[:variant].id}" %>
+        <div class="qty-control" id="qty-control-<%= ci[:variant].id %>">
+          <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, onclick: "decrementQty(#{ci[:variant].id}, #{max_stock})" do %>
+            <i class="bi bi-dash" aria-hidden="true"></i>
+          <% end %>
+          <%= number_field_tag :quantity, ci[:quantity], min: 1, max: max_stock, class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "qty-#{ci[:variant].id}", data: { original: ci[:quantity], max: max_stock }, oninput: "checkQuantityChange(#{ci[:variant].id})" %>
+          <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, onclick: "incrementQty(#{ci[:variant].id}, #{max_stock})" do %>
+            <i class="bi bi-plus" aria-hidden="true"></i>
+          <% end %>
+        </div>
+        <button type="submit" class="btn btn-sm btn-outline-primary qty-update-btn" id="update-btn-<%= ci[:variant].id %>" aria-label="Mettre à jour" onclick="resetQuantityState(<%= ci[:variant].id %>)" style="display: none;">
+          <i class="bi bi-check" aria-hidden="true"></i>
+        </button>
+      <% end %>
+      <div class="qty-error-text" id="invalid-feedback-<%= ci[:variant].id %>" role="alert" style="display: none;">
+        Max: <%= max_stock %>
+      </div>
+    </div>
+
+    <div class="cart-item-price">
+      <div class="text-end">
+        <strong><%= format_price(ci[:subtotal_cents]) %></strong>
+      </div>
+    </div>
+
+    <div class="cart-item-actions">
+      <% remove_params = ci[:cart_line] ? { cart_line_id: ci[:cart_line].id } : { variant_id: ci[:variant].id } %>
+      <%= button_to remove_item_cart_path(remove_params), method: :delete, class: "btn btn-sm btn-outline-danger", title: "Supprimer", aria: { label: "Supprimer" } do %>
+        <i class="bi bi-trash" aria-hidden="true"></i>
+      <% end %>
+    </div>
+  </div>
+</div>

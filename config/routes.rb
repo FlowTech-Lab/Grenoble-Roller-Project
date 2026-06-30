@@ -12,6 +12,15 @@ Rails.application.routes.draw do
     # Logs des emails (SUPERADMIN uniquement)
     resources :mail_logs, path: "mail-logs", only: [ :index, :show ]
 
+    # Notifications Discord (SUPERADMIN uniquement)
+    resources :notification_channels, path: "notification-channels" do
+      member do
+        post :test
+        post :sample_event
+        post :sample_all_events
+      end
+    end
+
     resources :products do
       member do
         post :publish
@@ -49,10 +58,12 @@ Rails.application.routes.draw do
 
     # Paiements
     resources :payments, only: [ :index, :show, :destroy ]
+    resources :checkouts, only: [ :index, :show ]
 
     # Communication
     resources :contact_messages, path: "contact-messages", only: [ :index, :show, :destroy ]
     resources :partners
+    resources :event_organizers, path: "event-organizers"
 
     # Initiations
     resources :initiations do
@@ -124,6 +135,7 @@ Rails.application.routes.draw do
       end
       collection do
         patch :reorder
+        patch :update_settings
       end
     end
   end
@@ -192,6 +204,13 @@ Rails.application.routes.draw do
     delete :remove_item
     delete :clear
   end
+
+  # Unified checkout (Wave 4)
+  get "checkout", to: "checkouts#new", as: :new_checkout
+  post "checkout", to: "checkouts#create", as: :checkouts
+  get "checkout/:id", to: "checkouts#show", as: :checkout
+  get "checkout/:id/status", to: "checkouts#status", as: :checkout_status
+  post "checkout/:id/check_payment", to: "checkouts#check_payment", as: :checkout_check_payment
 
   # Orders (Checkout)
   resources :orders, only: [ :index, :new, :create, :show ] do

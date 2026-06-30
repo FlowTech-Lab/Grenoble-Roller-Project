@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.boolean "free_trial_used", default: false, null: false
     t.boolean "is_volunteer", default: false, null: false
     t.boolean "needs_equipment", default: false, null: false
+    t.datetime "payment_expires_at"
     t.bigint "payment_id"
     t.datetime "reminder_sent_at"
     t.string "roller_size"
@@ -75,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.index ["child_membership_id"], name: "index_attendances_on_child_membership_id"
     t.index ["event_id", "is_volunteer"], name: "index_attendances_on_event_id_and_is_volunteer"
     t.index ["event_id"], name: "index_attendances_on_event_id"
+    t.index ["payment_expires_at"], name: "index_attendances_on_payment_expires_at"
     t.index ["payment_id"], name: "index_attendances_on_payment_id"
     t.index ["user_id", "child_membership_id"], name: "index_attendances_unique_free_trial_child_active", unique: true, where: "((free_trial_used = true) AND ((status)::text <> 'canceled'::text) AND (child_membership_id IS NOT NULL))"
     t.index ["user_id", "event_id", "child_membership_id", "is_volunteer"], name: "index_attendances_on_user_event_child_volunteer", unique: true
@@ -94,6 +96,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.datetime "updated_at", null: false
     t.index ["actor_user_id"], name: "index_audit_logs_on_actor_user_id"
     t.index ["target_type", "target_id"], name: "index_audit_logs_on_target_type_and_target_id"
+  end
+
+  create_table "cart_lines", force: :cascade do |t|
+    t.integer "amount_cents", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.string "label", null: false
+    t.string "line_type", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.integer "quantity", default: 1, null: false
+    t.bigint "reference_id", null: false
+    t.string "reference_type", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["reference_type", "reference_id"], name: "index_cart_lines_on_reference"
+    t.index ["user_id", "expires_at"], name: "index_cart_lines_on_user_id_and_expires_at"
+    t.index ["user_id", "line_type"], name: "index_cart_lines_on_user_id_and_line_type"
+    t.index ["user_id", "reference_type", "reference_id", "line_type"], name: "index_cart_lines_unique_per_user_reference", unique: true
+    t.index ["user_id"], name: "index_cart_lines_on_user_id"
+  end
+
+  create_table "checkout_lines", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.bigint "cart_line_id"
+    t.bigint "checkout_id", null: false
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.string "line_type", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.integer "quantity", default: 1, null: false
+    t.bigint "reference_id", null: false
+    t.string "reference_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cart_line_id"], name: "index_checkout_lines_on_cart_line_id"
+    t.index ["checkout_id"], name: "index_checkout_lines_on_checkout_id"
+    t.index ["reference_type", "reference_id"], name: "index_checkout_lines_on_reference"
+  end
+
+  create_table "checkouts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "donation_cents", default: 0, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.bigint "payment_id"
+    t.string "status", default: "pending", null: false
+    t.integer "subtotal_cents", default: 0, null: false
+    t.integer "total_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["payment_id"], name: "index_checkouts_on_payment_id"
+    t.index ["user_id", "status"], name: "index_checkouts_on_user_id_and_status"
+    t.index ["user_id"], name: "index_checkouts_on_user_id"
   end
 
   create_table "contact_messages", force: :cascade do |t|
@@ -117,6 +170,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.index ["route_id"], name: "index_event_loop_routes_on_route_id"
   end
 
+  create_table "event_organizers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "is_active", default: true, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["is_active"], name: "index_event_organizers_on_is_active"
+  end
+
   create_table "events", force: :cascade do |t|
     t.boolean "allow_non_member_discovery", default: false, null: false
     t.integer "attendances_count", default: 0, null: false
@@ -135,7 +197,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.decimal "meeting_lat", precision: 9, scale: 6
     t.decimal "meeting_lng", precision: 9, scale: 6
     t.integer "non_member_discovery_slots", default: 0
+    t.bigint "organizer_id"
     t.datetime "participants_report_sent_at"
+    t.boolean "payment_required", default: false, null: false
     t.integer "price_cents", default: 0, null: false
     t.string "recurring_day"
     t.date "recurring_end_date"
@@ -150,11 +214,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["creator_user_id"], name: "index_events_on_creator_user_id"
+    t.index ["organizer_id"], name: "index_events_on_organizer_id"
     t.index ["participants_report_sent_at"], name: "index_events_on_participants_report_sent_at"
     t.index ["route_id"], name: "index_events_on_route_id"
     t.index ["status", "start_at"], name: "index_events_on_status_and_start_at"
     t.index ["type", "season"], name: "index_events_on_type_and_season"
     t.index ["type"], name: "index_events_on_type"
+  end
+
+  create_table "homepage_carousel_settings", force: :cascade do |t|
+    t.boolean "autoplay_enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.integer "interval_seconds", default: 6, null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "homepage_carousels", force: :cascade do |t|
@@ -208,6 +280,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.date "end_date", null: false
     t.datetime "expired_email_sent_at"
     t.boolean "ffrs_data_sharing_consent", default: false
+    t.boolean "goodies_distributed", default: false, null: false
     t.string "health_q1"
     t.string "health_q2"
     t.string "health_q3"
@@ -245,6 +318,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.boolean "wants_email_info", default: true
     t.boolean "wants_whatsapp", default: false
     t.boolean "with_tshirt", default: false, null: false
+    t.index ["goodies_distributed"], name: "index_memberships_on_goodies_distributed"
     t.index ["payment_id"], name: "index_memberships_on_payment_id"
     t.index ["provider_order_id"], name: "index_memberships_on_provider_order_id"
     t.index ["status", "end_date"], name: "index_memberships_on_status_and_end_date"
@@ -254,6 +328,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.index ["user_id", "season"], name: "index_memberships_on_user_id_and_season_unique_personal", unique: true, where: "(is_child_membership = false)"
     t.index ["user_id", "status"], name: "index_memberships_on_user_id_and_status"
     t.index ["user_id"], name: "index_memberships_on_user_id"
+  end
+
+  create_table "notification_channels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "last_test_status"
+    t.datetime "last_tested_at"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.text "webhook_url_ciphertext"
+  end
+
+  create_table "notification_deliveries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.text "error_message"
+    t.string "event_key", null: false
+    t.integer "http_code"
+    t.bigint "notification_channel_id", null: false
+    t.bigint "source_id", null: false
+    t.string "source_type", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["notification_channel_id", "event_key", "source_type", "source_id"], name: "index_notification_deliveries_idempotency", unique: true
+    t.index ["notification_channel_id"], name: "index_notification_deliveries_on_notification_channel_id"
+  end
+
+  create_table "notification_subscriptions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "event_key", null: false
+    t.bigint "notification_channel_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["notification_channel_id", "event_key"], name: "index_notification_subscriptions_on_channel_and_event_key", unique: true
+    t.index ["notification_channel_id"], name: "index_notification_subscriptions_on_notification_channel_id"
   end
 
   create_table "option_types", force: :cascade do |t|
@@ -304,6 +413,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
     t.bigint "user_id", null: false
     t.index ["reviewed_by_id"], name: "index_organizer_applications_on_reviewed_by_id"
     t.index ["user_id"], name: "index_organizer_applications_on_user_id"
+  end
+
+  create_table "outbound_email_logs", force: :cascade do |t|
+    t.string "active_job_id", null: false
+    t.jsonb "arguments", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.datetime "failed_at"
+    t.string "mailer_class"
+    t.string "mailer_method"
+    t.datetime "queued_at", null: false
+    t.datetime "sent_at"
+    t.bigint "solid_queue_job_id"
+    t.string "status", default: "queued", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active_job_id"], name: "index_outbound_email_logs_on_active_job_id", unique: true
+    t.index ["created_at"], name: "index_outbound_email_logs_on_created_at"
+    t.index ["mailer_class"], name: "index_outbound_email_logs_on_mailer_class"
+    t.index ["solid_queue_job_id"], name: "index_outbound_email_logs_on_solid_queue_job_id"
+    t.index ["status"], name: "index_outbound_email_logs_on_status"
   end
 
   create_table "partners", force: :cascade do |t|
@@ -594,8 +723,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
   add_foreign_key "attendances", "payments"
   add_foreign_key "attendances", "users"
   add_foreign_key "audit_logs", "users", column: "actor_user_id"
+  add_foreign_key "cart_lines", "users"
+  add_foreign_key "checkout_lines", "checkouts"
+  add_foreign_key "checkouts", "payments"
+  add_foreign_key "checkouts", "users"
   add_foreign_key "event_loop_routes", "events"
   add_foreign_key "event_loop_routes", "routes"
+  add_foreign_key "events", "event_organizers", column: "organizer_id"
   add_foreign_key "events", "routes"
   add_foreign_key "events", "users", column: "creator_user_id"
   add_foreign_key "inventories", "product_variants"
@@ -604,6 +738,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000001) do
   add_foreign_key "memberships", "payments"
   add_foreign_key "memberships", "product_variants", column: "tshirt_variant_id"
   add_foreign_key "memberships", "users"
+  add_foreign_key "notification_deliveries", "notification_channels"
+  add_foreign_key "notification_subscriptions", "notification_channels"
   add_foreign_key "option_values", "option_types"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "product_variants", column: "variant_id"

@@ -261,11 +261,15 @@
           <!-- Actions -->
           <div class="d-flex gap-2 justify-content-center">
             <% if @membership.status == 'pending' %>
+              <% if unified_cart_enabled? %>
+                <%= unified_cart_pay_cta(@membership) %>
+              <% else %>
               <%= button_to membership_payments_path(@membership),
                   method: :post,
                   class: "btn btn-primary",
                   data: { turbo: false } do %>
                 <i class="bi bi-credit-card me-2"></i>Payer via HelloAsso
+              <% end %>
               <% end %>
             <% elsif @membership.status == 'trial' %>
               <div class="alert alert-info mb-3 w-100">
@@ -284,9 +288,9 @@
                   class: "btn btn-primary",
                   data: { 
                     turbo: false,
-                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
+                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? #{unified_cart_enabled? ? 'L\'adhésion sera ajoutée au panier.' : 'Vous serez redirigé vers le paiement.'}"
                   } do %>
-                <i class="bi bi-credit-card me-2"></i>Payer la cotisation
+                <i class="bi bi-<%= unified_cart_enabled? ? 'basket' : 'credit-card' %> me-2"></i><%= unified_cart_enabled? ? 'Ajouter au panier' : 'Payer la cotisation' %>
               <% end %>
             <% elsif @membership.status == 'active' %>
               <div class="alert alert-success mb-0">
@@ -295,7 +299,7 @@
               </div>
             <% elsif @membership.status == 'expired' %>
               <% if @membership.is_child_membership? %>
-                <%= button_to renew_membership_path(@membership), method: :post, class: "btn btn-primary", data: { turbo: false, confirm: "Renouveler l'adhésion de #{@membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
+                <%= button_to renew_membership_path(@membership), method: :post, class: "btn btn-primary", data: { turbo: false, confirm: "Renouveler l'adhésion de #{@membership.child_full_name} pour la saison #{Membership.sale_season_name} ?" } do %>
                   <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
                 <% end %>
               <% else %>

@@ -46,5 +46,13 @@ FactoryBot.define do
         membership.health_questionnaire_status = "ok"
       end
     end
+
+    # Pending membership seeded with next season (bug scenario before 15 August).
+    trait :wrong_next_season do
+      pending
+      season { '2026-2027' }
+      start_date { Date.new(2026, 9, 1) }
+      end_date { Date.new(2027, 8, 31) }
+    end
   end
 end

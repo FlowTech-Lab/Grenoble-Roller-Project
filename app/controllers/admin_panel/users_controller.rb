@@ -6,6 +6,7 @@ module AdminPanel
 
     before_action :set_user, only: %i[show edit update destroy]
     before_action :authorize_user, only: %i[show edit update destroy]
+    before_action :ensure_can_manage_user!, only: %i[edit update destroy]
 
     # GET /admin-panel/users
     def index
@@ -60,6 +61,7 @@ module AdminPanel
       @user.assigner_user = current_user
 
       if @user.save
+        notify_discord("user.created", @user)
         flash[:notice] = "Utilisateur créé avec succès"
         redirect_to admin_panel_user_path(@user)
       else
@@ -95,6 +97,13 @@ module AdminPanel
           render :edit, status: :unprocessable_entity
           return
         end
+        # Empêcher un super admin de se rétrograder lui-même
+        if @user.id == current_user.id && new_role && current_user.role&.level.to_i >= RoleAssignmentService::SUPERADMIN_LEVEL &&
+           new_role.level.to_i < RoleAssignmentService::SUPERADMIN_LEVEL
+          @user.errors.add(:role_id, "Vous ne pouvez pas retirer votre propre rôle super administrateur")
+          render :edit, status: :unprocessable_entity
+          return
+        end
         unless RoleAssignmentService.can_assign_role_to_user?(
           assigner: current_user,
           target_user: @user,
@@ -110,6 +119,7 @@ module AdminPanel
       @user.assigner_user = current_user
 
       if @user.update(user_params_to_update)
+        notify_discord("user.updated", @user)
         flash[:notice] = "Utilisateur mis à jour avec succès"
         redirect_to admin_panel_user_path(@user)
       else
@@ -120,6 +130,7 @@ module AdminPanel
     # DELETE /admin-panel/users/:id
     def destroy
       if @user.destroy
+        notify_discord("user.destroyed", @user)
         flash[:notice] = "Utilisateur supprimé avec succès"
       else
         flash[:alert] = "Erreur lors de la suppression: #{@user.errors.full_messages.join(', ')}"
@@ -136,6 +147,13 @@ module AdminPanel
 
     def authorize_user
       authorize [ :admin_panel, @user ]
+    end
+
+    def ensure_can_manage_user!
+      return if RoleAssignmentService.can_manage_user?(assigner: current_user, target_user: @user)
+
+      flash[:alert] = "Vous ne pouvez pas modifier un utilisateur avec un rôle supérieur au vôtre"
+      redirect_to admin_panel_root_path
     end
 
     def user_params

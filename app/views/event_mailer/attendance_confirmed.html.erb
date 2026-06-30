@@ -2,11 +2,24 @@
 
 <p>Bonjour <%= @user.first_name %>,</p>
 
-<p>L'inscription de <strong><%= @participant_name %></strong> à l'événement <strong><%= @event.title %></strong> a bien été enregistrée.</p>
+<% if @is_child_registration %>
+  <p>L'inscription de votre enfant <strong><%= @participant_name %></strong> à l'événement <strong><%= @event.title %></strong> a bien été enregistrée.</p>
+<% else %>
+  <p>Votre inscription à l'événement <strong><%= @event.title %></strong> a bien été enregistrée pour <strong><%= @participant_name %></strong>.</p>
+<% end %>
 
 <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #007bff;">
   <h3 style="margin-top: 0; color: #333; font-size: 18px;">📅 Détails de l'événement</h3>
   <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #666; width: 120px;">👤 Participant :</td>
+      <td style="padding: 8px 0;">
+        <strong><%= @participant_name %></strong>
+        <% if @is_child_registration %>
+          <span style="color: #666; font-size: 13px;"> (enfant)</span>
+        <% end %>
+      </td>
+    </tr>
     <tr>
       <td style="padding: 8px 0; color: #666; width: 120px;">📍 Lieu :</td>
       <td style="padding: 8px 0;"><strong><%= @event.location_text %></strong></td>

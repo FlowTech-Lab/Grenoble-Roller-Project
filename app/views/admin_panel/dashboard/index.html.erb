@@ -1,8 +1,10 @@
 <div class="admin-dashboard">
   <!-- HEADER -->
-  <div class="mb-4">
-    <h1>Dashboard Admin</h1>
-    <p class="text-muted">Bienvenue, <%= current_user.first_name || current_user.email %></p>
+  <div class="admin-page-header admin-page-header--dashboard">
+    <div>
+      <h1 class="admin-page-title">Dashboard Admin</h1>
+      <p class="text-muted mb-0">Bienvenue, <%= current_user.first_name || current_user.email %></p>
+    </div>
   </div>
 
   <!-- MODE MAINTENANCE (Admin uniquement - en haut pour visibilité) -->
@@ -111,94 +113,40 @@
     </div>
   <% end %>
 
-  <!-- KPIs PRINCIPAUX (8 cartes Liquid Glass) -->
-  <div class="row g-3 mb-4">
-    <!-- Utilisateurs -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body">
-          <h5 class="card-title text-muted">Utilisateurs</h5>
-          <h3 class="mb-0"><%= @stats[:total_users] %></h3>
-        </div>
-      </div>
-    </div>
-
-    <!-- Produits -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body">
-          <h5 class="card-title text-muted">Produits</h5>
-          <h3 class="mb-0"><%= @stats[:total_products] %></h3>
-          <small class="text-muted"><%= @stats[:active_products] %> actifs</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Commandes -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body">
-          <h5 class="card-title text-muted">Commandes</h5>
-          <h3 class="mb-0"><%= @stats[:total_orders] %></h3>
-          <small class="text-muted"><%= @stats[:pending_orders] %> en attente</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- CA Total -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body">
-          <h5 class="card-title text-muted">CA Total</h5>
-          <h3 class="mb-0"><%= number_to_currency(@stats[:total_revenue], unit: '€', precision: 0) %></h3>
-          <small class="text-muted">Commandes payées/expédiées</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stock Faible -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid border-warning">
-        <div class="card-body">
-          <h5 class="card-title text-warning">⚠️ Stock Faible</h5>
-          <h3 class="mb-0 text-warning"><%= @low_stock_count %></h3>
-          <small class="text-muted">&lt; 10 unités</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Rupture Stock -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid border-danger">
-        <div class="card-body">
-          <h5 class="card-title text-danger">🔴 Rupture</h5>
-          <h3 class="mb-0 text-danger"><%= @out_of_stock_count %></h3>
-          <small class="text-muted">0 unité disponible</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Initiations à venir -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid">
-        <div class="card-body">
-          <h5 class="card-title text-muted">Initiations</h5>
-          <h3 class="mb-0"><%= @upcoming_initiations.count %></h3>
-          <small class="text-muted">À venir</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Commandes Payées -->
-    <div class="col-md-6 col-lg-3">
-      <div class="card card-liquid rounded-liquid shadow-liquid border-success">
-        <div class="card-body">
-          <h5 class="card-title text-success">✅ Payées</h5>
-          <h3 class="mb-0 text-success"><%= @stats[:paid_orders] %></h3>
-          <small class="text-muted">En préparation</small>
-        </div>
-      </div>
-    </div>
+  <!-- KPIs PRINCIPAUX (8 cartes compactes, grille responsive) -->
+  <div class="admin-dashboard-kpis mb-4">
+    <%= render "admin_panel/dashboard/stat_card", label: "Utilisateurs", value: @stats[:total_users] %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "Produits",
+          value: @stats[:total_products],
+          hint: "#{@stats[:active_products]} actifs" %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "Commandes",
+          value: @stats[:total_orders],
+          hint: "#{@stats[:pending_orders]} en attente" %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "CA Total",
+          value: number_to_currency(@stats[:total_revenue], unit: "€", precision: 0),
+          hint: "Commandes payées/expédiées" %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "⚠️ Stock faible",
+          value: @low_stock_count,
+          hint: "< 10 unités",
+          variant: "warning" %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "🔴 Rupture",
+          value: @out_of_stock_count,
+          hint: "0 unité disponible",
+          variant: "danger" %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "Initiations",
+          value: @upcoming_initiations.count,
+          hint: "À venir" %>
+    <%= render "admin_panel/dashboard/stat_card",
+          label: "✅ Payées",
+          value: @stats[:paid_orders],
+          hint: "En préparation",
+          variant: "success" %>
   </div>
 
   <!-- GRAPHIQUE VENTES (7 derniers jours) -->

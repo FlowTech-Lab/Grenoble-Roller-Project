@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'ContactMessages (Public)', type: :request do
+  before do
+    allow_any_instance_of(ContactMessagesController).to receive(:verify_turnstile).and_return(true)
+  end
+
   describe 'GET /contact' do
     it 'returns success' do
       get contact_path
@@ -67,6 +71,38 @@ RSpec.describe 'ContactMessages (Public)', type: :request do
         post contact_path, params: invalid_params
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.body).to include('Erreurs à corriger')
+      end
+    end
+
+    context 'when Turnstile verification fails' do
+      before do
+        allow_any_instance_of(ContactMessagesController).to receive(:verify_turnstile).and_return(false)
+      end
+
+      it 'does not create a contact message' do
+        expect {
+          post contact_path, params: {
+            contact_message: {
+              name: 'John Doe',
+              email: 'john@example.com',
+              subject: 'Question',
+              message: 'Message de test suffisamment long.'
+            }
+          }
+        }.not_to change(ContactMessage, :count)
+      end
+
+      it 'returns unprocessable entity with security message' do
+        post contact_path, params: {
+          contact_message: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            subject: 'Question',
+            message: 'Message de test suffisamment long.'
+          }
+        }
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(flash[:alert]).to include('Vérification de sécurité')
       end
     end
   end

@@ -235,14 +235,11 @@
             <%= f.hidden_field :role_id, value: Role.find_by(code: 'USER')&.id || Role.find_by(name: 'Utilisateur')&.id || Role.first&.id %>
             
             <!-- Turnstile Widget (Implicit Rendering - Protection Anti-Bot) -->
-            <% unless Rails.env.test? %>
-              <% turnstile_site_key = Rails.application.credentials.dig(:turnstile, :site_key) || ENV['TURNSTILE_SITE_KEY'] %>
-              <% if turnstile_site_key.present? %>
+            <% if turnstile_enabled? %>
                 <div class="cf-turnstile mb-3 text-center" 
                      data-sitekey="<%= turnstile_site_key %>"
                      data-theme="light">
                 </div>
-              <% end %>
             <% end %>
             
             <!-- Submit Button (Moderne) -->
@@ -267,9 +264,7 @@
   </div>
 </div>
 
-<% unless Rails.env.test? %>
-  <% turnstile_site_key = Rails.application.credentials.dig(:turnstile, :site_key) || ENV['TURNSTILE_SITE_KEY'] %>
-  <% if turnstile_site_key.present? %>
+<% if turnstile_enabled? %>
     <!-- Cloudflare Turnstile Script -->
     <!-- Implicit Rendering : Cloudflare scanne automatiquement les divs .cf-turnstile et les rend -->
     <!-- Le token est automatiquement ajouté au formulaire dans un champ hidden cf-turnstile-response -->
@@ -322,7 +317,6 @@
         }
       });
     </script>
-  <% end %>
 <% end %>
 
 <!-- Validation email en temps réel -->

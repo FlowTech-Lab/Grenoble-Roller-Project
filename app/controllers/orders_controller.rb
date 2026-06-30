@@ -30,13 +30,25 @@ class OrdersController < ApplicationController
     @orders = current_user.orders.includes(:payment, order_items: { variant: :product }).order(created_at: :desc)
   end
 
+  # Legacy shop-only checkout (session cart). Redirects to /checkout when UNIFIED_CART_ENABLED=true.
+  # show/index/check_payment/cancel remain for order history and post-pay status.
   def new
+    if UnifiedCart.enabled?
+      redirect_to new_checkout_path, notice: "Utilisez le paiement unifié depuis votre panier."
+      return
+    end
+
     @cart_items = build_cart_items
     redirect_to cart_path, alert: "Votre panier est vide." and return if @cart_items.empty?
     @total_cents = @cart_items.sum { |ci| ci[:subtotal_cents] }
   end
 
   def create
+    if UnifiedCart.enabled?
+      redirect_to new_checkout_path, notice: "Utilisez le paiement unifié depuis votre panier."
+      return
+    end
+
     # Double vérification de la confirmation email (en plus du callback)
     # Recharger l'utilisateur depuis la DB pour éviter les problèmes de cache
     # Utiliser current_user.id directement pour éviter les problèmes de cache
@@ -235,6 +247,8 @@ class OrdersController < ApplicationController
   private
 
   def build_cart_items
+    return [] if UnifiedCart.enabled?
+
     session[:cart] ||= {}
     variant_ids = session[:cart].keys
     return [] if variant_ids.empty?

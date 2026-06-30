@@ -3,6 +3,50 @@
 require 'rails_helper'
 
 RSpec.describe ApplicationHelper, type: :helper do
+  describe '#cart_items_count' do
+    let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+    let(:user) { create_user(role: role) }
+    let!(:category) { create(:product_category) }
+    let!(:product) { create(:product, category: category) }
+    let!(:variant) { create(:product_variant, product: product) }
+
+    context 'when unified cart enabled and user signed in' do
+      around do |example|
+        with_unified_cart_enabled { example.run }
+      end
+
+      before do
+        allow(helper).to receive(:respond_to?).and_call_original
+        allow(helper).to receive(:respond_to?).with(:current_user).and_return(true)
+        allow(helper).to receive(:current_user).and_return(user)
+      end
+
+      it 'counts all cart line types' do
+        create(:cart_line, user: user, reference: variant)
+        membership = create(:membership, :pending, user: user)
+        create(:cart_line, :membership, user: user, reference: membership)
+
+        expect(helper.cart_items_count).to eq(2)
+      end
+    end
+
+    context 'when unified cart disabled' do
+      around do |example|
+        previous = ENV['UNIFIED_CART_ENABLED']
+        ENV['UNIFIED_CART_ENABLED'] = 'false'
+        example.run
+      ensure
+        ENV['UNIFIED_CART_ENABLED'] = previous
+      end
+
+      it 'uses session cart sum' do
+        helper.session[:cart] = { variant.id.to_s => 2, '999' => 1 }
+
+        expect(helper.cart_items_count).to eq(3)
+      end
+    end
+  end
+
   describe '#human_status' do
     context 'with order scope' do
       it 'returns French label for pending' do

@@ -83,6 +83,8 @@ class RegistrationsController < Devise::RegistrationsController
     build_resource(sign_up_params)
 
     if resource.save
+      NotificationDispatchService.dispatch("user.registered", source: resource)
+
       # Gérer l'opt-in newsletter (futur)
       # TODO: Implémenter newsletter subscription si params[:newsletter_subscription] == "1"
 

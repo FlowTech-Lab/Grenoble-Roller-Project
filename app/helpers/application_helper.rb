@@ -1,5 +1,6 @@
 module ApplicationHelper
   include ActionView::Helpers::TextHelper
+  include TurnstileHelper
   # Pagy 43 : Utilise series_nav avec :bootstrap comme style
   def pagy_bootstrap_nav(pagy, **options)
     pagy.series_nav(:bootstrap, **options)
@@ -16,9 +17,18 @@ module ApplicationHelper
   # Alias de la méthode originale pluralize avant surcharge
   alias_method :original_pluralize, :pluralize
 
+  def unified_cart_enabled?
+    ::UnifiedCart.enabled?
+  end
+
   def cart_items_count
-    return 0 unless session[:cart]
-    session[:cart].values.sum(&:to_i)
+    if unified_cart_enabled? && respond_to?(:current_user) && current_user
+      CartLineService.count(current_user)
+    elsif session[:cart]
+      session[:cart].values.sum(&:to_i)
+    else
+      0
+    end
   end
 
   def format_price(amount_cents)

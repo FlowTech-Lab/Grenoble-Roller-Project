@@ -28,9 +28,34 @@ module AdminPanelHelper
     can_access_admin_panel?(40)
   end
 
+  # Helper pour vérifier si on peut voir les randos dans le panel (level >= 40)
+  def can_view_events?
+    can_access_admin_panel?(40)
+  end
+
   # Helper pour vérifier si on peut voir la boutique (level >= 60)
   def can_view_boutique?
     can_access_admin_panel?(60)
+  end
+
+  # Whether the current admin may edit/delete the given user (role hierarchy).
+  def can_manage_admin_panel_user?(target_user)
+    return false unless current_user
+
+    RoleAssignmentService.can_manage_user?(assigner: current_user, target_user: target_user)
+  end
+
+  # Whether the role field should be read-only (super admin target, admin actor, or self super admin).
+  def admin_panel_user_role_read_only?(target_user)
+    return false unless target_user&.role&.level && current_user&.role&.level
+
+    if target_user == current_user &&
+       target_user.role.level.to_i >= RoleAssignmentService::SUPERADMIN_LEVEL
+      return true
+    end
+
+    target_user.role.level.to_i >= RoleAssignmentService::SUPERADMIN_LEVEL &&
+      current_user.role.level.to_i < RoleAssignmentService::SUPERADMIN_LEVEL
   end
 
   # Helper pour vérifier si un controller est actif dans AdminPanel
@@ -59,37 +84,7 @@ module AdminPanelHelper
   # Format ActiveJob: { "arguments": ["MailerClass", "method_name", "deliver_now", {...}] }
   # Format direct: ["MailerClass", "method_name", "deliver_now", {...}]
   def parse_mailer_info(arguments_data)
-    return { mailer: nil, method: nil } if arguments_data.blank?
-
-    begin
-      # Parser si c'est une String JSON
-      parsed_data = if arguments_data.is_a?(String)
-        JSON.parse(arguments_data)
-      else
-        arguments_data
-      end
-
-      # Si c'est un Hash avec la clé "arguments" (format ActiveJob)
-      if parsed_data.is_a?(Hash) && parsed_data["arguments"].is_a?(Array)
-        args = parsed_data["arguments"]
-      # Si c'est directement un Array
-      elsif parsed_data.is_a?(Array)
-        args = parsed_data
-      else
-        return { mailer: nil, method: nil }
-      end
-
-      if args.is_a?(Array) && args.length >= 2
-        { mailer: args[0], method: args[1] }
-      else
-        { mailer: nil, method: nil }
-      end
-    rescue JSON::ParserError => e
-      Rails.logger.error("Failed to parse mailer info: #{e.message}")
-      { mailer: nil, method: nil }
-    rescue => e
-      Rails.logger.error("Error parsing mailer info: #{e.class} - #{e.message}")
-      { mailer: nil, method: nil }
-    end
+    info = EmailLog::Parser.call(arguments_data)
+    { mailer: info[:mailer], method: info[:method] }
   end
 end

@@ -1,0 +1,80 @@
+# frozen_string_literal: true
+
+# SSOT mirror of DR-002 event catalog for specs (docs/10-decisions-and-changelog/DR-002-discord-webhook-notifications.md)
+module NotificationEventKeys
+  DEFAULT_ON = %w[
+    order.paid
+    membership.activated
+    event_registration.paid
+    contact_message.received
+    organizer_application.submitted
+  ].freeze
+
+  ALL = %w[
+    order.paid
+    membership.activated
+    event_registration.paid
+    membership.activated_manual
+    order.paid_manual
+    payment.failed
+    payment.abandoned
+    membership.payment_failed
+    contact_message.received
+    organizer_application.submitted
+    user.registered
+    organizer_application.approved
+    organizer_application.rejected
+    order.created
+    order.updated
+    order.status_changed
+    product.created
+    product.updated
+    product.destroyed
+    product_variant.created
+    product_variant.updated
+    product_variant.destroyed
+    product_variant.status_toggled
+    membership.created
+    membership.updated
+    membership.destroyed
+    event.cancelled
+    event.destroyed
+    event.waitlist_notified
+    event.waitlist_converted
+    attendance.created
+    attendance.updated
+    attendance.destroyed
+    route.created
+    route.updated
+    route.destroyed
+    event_organizer.created
+    event_organizer.updated
+    event_organizer.destroyed
+    initiation.presences_updated
+    initiation.volunteer_toggled
+    initiation.waitlist_notified
+    initiation.waitlist_converted
+    initiation.material_returned
+    roller_stock.created
+    roller_stock.updated
+    roller_stock.destroyed
+    roller_stock.return_all
+    homepage_carousel.created
+    homepage_carousel.updated
+    homepage_carousel.destroyed
+    homepage_carousel.settings_updated
+    partner.created
+    partner.updated
+    partner.destroyed
+    user.created
+    user.updated
+    user.destroyed
+    role.created
+    role.updated
+    role.destroyed
+    maintenance.toggled
+    payment.destroyed
+    contact_message.destroyed
+    test.ping
+  ].freeze
+end

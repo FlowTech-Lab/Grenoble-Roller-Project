@@ -37,7 +37,7 @@ class EventPolicy < ApplicationPolicy
 
   def attend?
     return false unless user.present?
-    return false if record.past?
+    return false if record.started?
     return false if record.full?
 
     # Pour les événements normaux (randos) : ouverts à tous, aucune restriction d'adhésion
@@ -66,6 +66,7 @@ class EventPolicy < ApplicationPolicy
 
   def join_waitlist?
     return false unless user
+    return false if record.requires_online_payment?
     return false unless record.full? # Ne peut rejoindre la liste d'attente que si l'événement est complet
     true
   end
@@ -101,7 +102,9 @@ class EventPolicy < ApplicationPolicy
       :max_participants,
       :level,
       :distance_km,
-      :loops_count
+      :loops_count,
+      :organizer_id,
+      :payment_required
     ]
 
     # Seuls les modérateurs+ peuvent modifier le statut

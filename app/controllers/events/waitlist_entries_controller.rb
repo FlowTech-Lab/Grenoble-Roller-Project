@@ -18,6 +18,11 @@ module Events
         return
       end
 
+      if @event.requires_online_payment?
+        redirect_to @event, alert: "La liste d'attente n'est pas disponible pour les événements payants en ligne."
+        return
+      end
+
       authorize @event, :join_waitlist?
 
         child_membership_id = params[:child_membership_id].presence
