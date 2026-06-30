@@ -10,8 +10,8 @@ tags: ["release", "staging", "changelog", "unified-checkout", "discord-notificat
 # Release Dev → staging (June 2026)
 
 **Target branch:** merge `Dev` → `staging` (PR)  
-**Commit range:** `5b48e999` … `HEAD` (`origin/staging` … `Dev`) — includes v2.2.1 admin layout patch (2026-06-30)  
-**Head on Dev:** see latest `git log -1 Dev` after push
+**Commit range:** `5b48e999` … `54ebcd1b` (`origin/staging` … `Dev`)  
+**Head on Dev:** `54ebcd1b` — `fix(admin): offcanvas layout, compact dashboard KPIs, and mobile navbar band`
 
 **Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).  
 **Agent SSOT for Discord notifications:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md) (implemented 2026-06-09).
