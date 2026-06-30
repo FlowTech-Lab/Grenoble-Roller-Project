@@ -2,6 +2,19 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-06-30] - Admin panel layout polish (v2.2.1 patch)
+
+### Fixed
+- Admin mobile: offcanvas sidebar moved **outside** `.admin-container` — eliminates flex gap / empty band below navbar.
+- Public navbar mobile: collapsed burger menu no longer reserves flex height (empty strip when closed).
+- `syncAdminNavbarHeight`: re-run on `turbo:load` and `resize`; use `getBoundingClientRect` for stable `--navbar-height`.
+
+### Changed
+- Admin dashboard KPIs: `_stat_card` partial + compact `.admin-dashboard-kpis` grid (2-col mobile, fit-content desktop).
+- Admin mobile layout: `admin-container` / `admin-main-content` block display, `overflow: visible`.
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.2.1).
+
 ## [2026-06-09] - DR-002: Discord webhook notifications (implemented)
 
 ### Added

@@ -21,13 +21,11 @@
     <!-- NAVBAR PRINCIPALE (héritée) -->
     <%= render 'layouts/navbar' %>
 
-    <!-- CONTENEUR ADMIN: Sidebar + Contenu -->
+    <!-- CONTENEUR ADMIN: Sidebar desktop + contenu (offcanvas mobile hors flex — évite trou vide) -->
     <div class="d-flex flex-grow-1 position-relative admin-container">
-      <!-- SIDEBAR ADMIN (fixed pour coller en haut après navbar) -->
-      <%= render 'admin/shared/sidebar' %>
+      <%= render "admin/shared/sidebar" %>
 
-      <!-- CONTENU PRINCIPAL (avec marge pour la sidebar desktop) -->
-      <main class="flex-grow-1 d-flex flex-column admin-main-content">
+      <main class="flex-grow-1 admin-main-content">
         <%= render "admin/shared/mobile_chrome" %>
         <div class="container-fluid px-2 px-md-3 px-lg-4 py-3 py-lg-4 admin-main-inner">
           <!-- Flash messages -->
@@ -49,6 +47,8 @@
         </div>
       </main>
     </div>
+
+    <%= render "admin/shared/offcanvas_sidebar" %>
 
     <!-- Footer de l'application normale -->
     <%= render 'layouts/footer-simple' %>

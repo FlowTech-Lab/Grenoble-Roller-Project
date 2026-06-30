@@ -1,17 +1,17 @@
 ---
 title: "Release Dev → staging (June 2026)"
 status: "active"
-version: "2.2"
+version: "2.2.1"
 created: "2026-06-07"
-updated: "2026-06-09"
-tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications"]
+updated: "2026-06-30"
+tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications", "admin-panel"]
 ---
 
 # Release Dev → staging (June 2026)
 
 **Target branch:** merge `Dev` → `staging` (PR)  
-**Commit range:** `5b48e999` … `e99fbbbc` (`origin/staging` … `Dev`)  
-**Head on Dev:** `e99fbbbc` — `feat(notifications): DR-002 Discord webhook admin channels`
+**Commit range:** `5b48e999` … `HEAD` (`origin/staging` … `Dev`) — includes v2.2.1 admin layout patch (2026-06-30)  
+**Head on Dev:** see latest `git log -1 Dev` after push
 
 **Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).  
 **Agent SSOT for Discord notifications:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md) (implemented 2026-06-09).
@@ -26,6 +26,7 @@ This release bundles:
 2. **Unified account cart + checkout (major)** — feature-flagged via `UNIFIED_CART_ENABLED`; shop, memberships, and paid events share one cart and one HelloAsso checkout with **partial payment** (per-line checkboxes) and **optional donation** on every checkout. Initiations remain free; cash/check memberships bypass the cart.
 3. **June 2026 public/admin batch** — events lifecycle/UI, admin panel (organizers, goodies, mail logs, carousel), Umami analytics, Turnstile on contact, roller stock reservations (v2.3), homepage hero image, dev tooling (mise, dotenv).
 4. **Post-checkout hardening (June 8)** — membership sale-season gate, admin panel mobile-first UX, collapsed sidebar rail fix, dependency security patches, full RSpec green on `Dev`.
+5. **Admin layout polish (v2.2.1 — June 30)** — offcanvas sidebar outside flex container, compact dashboard KPI cards, public navbar mobile band fix, navbar height sync on Turbo navigation.
 
 **Rollback (checkout):** set `UNIFIED_CART_ENABLED=false` and redeploy — see [Rollback](#rollback) and MASTER plan §H.  
 **Rollback (Discord):** disable channels in admin or unset `ALLOW_DISCORD_NOTIFICATIONS` on staging — no data loss; deliveries stop immediately.
@@ -194,6 +195,10 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 | Scope tabs | Horizontal scroll tabs on memberships index |
 | Layout | Site navbar toggler and admin footer hidden on mobile in admin panel |
 | **Collapsed sidebar rail** | Icon rail 48×48 centered; white ring on active item (no left accent bar); `--admin-sidebar-spacing` scoped to expanded mode only; Stimulus fixes for `.admin-menu-label` / `.admin-menu-chevron`; rail vertical spacing (`0.5rem` gap, `1rem` nav padding) |
+| **Offcanvas outside flex (v2.2.1)** | `_offcanvas_sidebar.html.erb` rendered after `.admin-container` in `layouts/admin.html.erb` — fixes empty gap / layout hole on mobile |
+| **Dashboard KPI cards (v2.2.1)** | `_stat_card.html.erb` partial; `.admin-dashboard-kpis` compact grid (2 columns mobile, `fit-content` cards desktop) |
+| **Navbar height sync (v2.2.1)** | `syncAdminNavbarHeight` on `DOMContentLoaded`, `turbo:load`, `resize`; `getBoundingClientRect` (collapsed menu must not inflate `--navbar-height`) |
+| **Public navbar mobile (v2.2.1)** | Collapsed `.navbar-collapse` hidden with zero height — no empty band when burger is closed |
 
 **Dev note:** after `assets:precompile`, run `bin/rails assets:clobber && npm run build:css` locally so Propshaft does not serve stale `public/assets/application.bootstrap-*.css`.
 
@@ -343,6 +348,8 @@ bundle exec rspec spec/models/cart_line_spec.rb spec/models/checkout_spec.rb \
 - [ ] `/admin-panel/checkouts` lists checkout attempts
 - [ ] **Mobile (≤991px):** page headers stack; tables as cards; offcanvas menu via mobile chrome
 - [ ] **Desktop collapsed sidebar:** active icon centered in 48×48 blue tile with white ring (no left bar)
+- [ ] **Mobile offcanvas (v2.2.1):** no empty band between navbar and content when menu closed; offcanvas opens/closes cleanly
+- [ ] **Dashboard KPIs (v2.2.1):** stat cards compact grid; readable on mobile (2-col) and desktop
 
 ### Discord notifications (DR-002)
 

@@ -28,30 +28,3 @@
     </ul>
   </nav>
 </aside>
-
-<!-- OFFCANVAS: Mobile only - Design moderne 2025 -->
-<div class="offcanvas offcanvas-start admin-offcanvas" 
-     tabindex="-1" 
-     id="offcanvasSidebar" 
-     role="navigation"
-     aria-labelledby="offcanvasSidebarLabel"
-     data-bs-backdrop="true"
-     data-bs-scroll="false">
-  <div class="admin-offcanvas-header">
-    <h5 class="admin-offcanvas-title" id="offcanvasSidebarLabel">Menu</h5>
-    <button type="button" 
-            class="admin-offcanvas-close" 
-            data-bs-dismiss="offcanvas" 
-            aria-label="Fermer le menu">
-      <i class="bi bi-x-lg" aria-hidden="true"></i>
-    </button>
-  </div>
-  <div class="admin-offcanvas-body">
-    <nav class="admin-offcanvas-nav" role="navigation" aria-label="Menu principal">
-      <ul class="admin-offcanvas-menu">
-        <%= render 'admin/shared/menu_items', mobile: true %>
-      </ul>
-    </nav>
-  </div>
-</div>
-
