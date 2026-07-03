@@ -64,7 +64,7 @@ class SessionsController < Devise::SessionsController
     # Turnstile OK, procéder avec l'authentification Devise
     super do |resource|
       if resource.persisted?
-        if UnifiedCart.enabled? && resource.confirmed?
+        if resource.confirmed?
           CartSessionMergeService.merge!(resource, session_cart: legacy_session_cart)
           session[:cart] = {}
         end

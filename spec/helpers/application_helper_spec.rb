@@ -10,11 +10,7 @@ RSpec.describe ApplicationHelper, type: :helper do
     let!(:product) { create(:product, category: category) }
     let!(:variant) { create(:product_variant, product: product) }
 
-    context 'when unified cart enabled and user signed in' do
-      around do |example|
-        with_unified_cart_enabled { example.run }
-      end
-
+    context 'when user signed in' do
       before do
         allow(helper).to receive(:respond_to?).and_call_original
         allow(helper).to receive(:respond_to?).with(:current_user).and_return(true)
@@ -27,22 +23,6 @@ RSpec.describe ApplicationHelper, type: :helper do
         create(:cart_line, :membership, user: user, reference: membership)
 
         expect(helper.cart_items_count).to eq(2)
-      end
-    end
-
-    context 'when unified cart disabled' do
-      around do |example|
-        previous = ENV['UNIFIED_CART_ENABLED']
-        ENV['UNIFIED_CART_ENABLED'] = 'false'
-        example.run
-      ensure
-        ENV['UNIFIED_CART_ENABLED'] = previous
-      end
-
-      it 'uses session cart sum' do
-        helper.session[:cart] = { variant.id.to_s => 2, '999' => 1 }
-
-        expect(helper.cart_items_count).to eq(3)
       end
     end
   end

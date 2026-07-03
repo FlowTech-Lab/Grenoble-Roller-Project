@@ -39,7 +39,7 @@ module Events
       attendance.wants_reminder = params[:wants_reminder].present? ? params[:wants_reminder] == "1" : false
       attendance.child_membership_id = child_membership_id
 
-      paid_via_cart = @event.requires_online_payment? && UnifiedCart.enabled?
+      paid_via_cart = @event.requires_online_payment?
 
       if paid_via_cart
         attendance.status = "pending"

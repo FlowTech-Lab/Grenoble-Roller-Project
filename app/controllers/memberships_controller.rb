@@ -453,12 +453,7 @@ class MembershipsController < ApplicationController
       # amount_cents n'est pas modifié car il était déjà défini à la création
     )
 
-    if UnifiedCart.enabled?
-      add_membership_to_cart_and_redirect!(@membership)
-      return
-    end
-
-    redirect_to membership_path(@membership), notice: "L'essai gratuit de #{@membership.child_full_name} a été converti en adhésion. Vous pouvez maintenant procéder au paiement."
+    add_membership_to_cart_and_redirect!(@membership)
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la conversion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
@@ -1001,12 +996,7 @@ class MembershipsController < ApplicationController
       end
     end
 
-    if UnifiedCart.enabled?
-      add_membership_to_cart_and_redirect!(membership)
-      return
-    end
-
-    redirect_to membership_path(membership), notice: "L'adhésion de #{membership.child_full_name} a été renouvelée avec succès. Vous pouvez maintenant procéder au paiement."
+    add_membership_to_cart_and_redirect!(membership)
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors du renouvellement : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
@@ -1022,10 +1012,8 @@ class MembershipsController < ApplicationController
     if membership.persisted?
       if membership.trial?
         redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant utiliser l'essai gratuit pour une initiation."
-      elsif UnifiedCart.enabled?
-        add_membership_to_cart_and_redirect!(membership)
       else
-        redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant procéder au paiement."
+        add_membership_to_cart_and_redirect!(membership)
       end
     else
       redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
@@ -1397,11 +1385,7 @@ class MembershipsController < ApplicationController
   end
 
   def finalize_online_membership!(membership)
-    if UnifiedCart.enabled?
-      add_membership_to_cart_and_redirect!(membership)
-    else
-      redirect_to_helloasso_checkout!(membership)
-    end
+    add_membership_to_cart_and_redirect!(membership)
   end
 
   def add_membership_to_cart_and_redirect!(membership)
@@ -1415,43 +1399,6 @@ class MembershipsController < ApplicationController
     redirect_to destination, alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."
   rescue CartLineService::InvalidMembershipStatusError => e
     redirect_to membership_path(membership), alert: e.message
-  end
-
-  def redirect_to_helloasso_checkout!(membership)
-    checkout_result = HelloassoService.membership_checkout_redirect_url(
-      membership,
-      back_url: new_membership_url,
-      error_url: membership_url(membership),
-      return_url: membership_url(membership)
-    )
-
-    unless checkout_result && checkout_result.is_a?(Hash) && checkout_result[:redirect_url]
-      Rails.logger.error("[MembershipsController] Échec: checkout_result invalide ou nil: #{checkout_result.inspect}")
-      Rails.logger.error("[MembershipsController] Membership ##{membership.id} sera détruite")
-      membership.destroy
-      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez vérifier les logs ou contacter le support si le problème persiste."
-      return
-    end
-
-    redirect_url = checkout_result[:redirect_url]
-    checkout_id = checkout_result[:checkout_id]
-
-    payment = Payment.create!(
-      provider: "helloasso",
-      provider_payment_id: checkout_id ? checkout_id.to_s : nil,
-      status: "pending",
-      amount_cents: membership.total_amount_cents,
-      currency: "EUR"
-    )
-    membership.update!(payment: payment, provider_order_id: checkout_id ? checkout_id.to_s : nil)
-
-    redirect_to redirect_url, allow_other_host: true
-  rescue => e
-    Rails.logger.error("[MembershipsController] Erreur lors de la création du checkout-intent : #{e.message}")
-    Rails.logger.error(e.backtrace.join("\n"))
-    membership.destroy
-    redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso : #{e.message}. Veuillez réessayer ou contacter le support."
-    nil
   end
 
   def membership_form_type(membership)

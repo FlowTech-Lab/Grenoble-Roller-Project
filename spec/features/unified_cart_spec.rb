@@ -17,10 +17,6 @@ RSpec.describe "Unified cart UX", type: :request do
   let!(:variant) { create(:product_variant, product: product, stock_qty: 10, is_active: true) }
   let(:organizer) { create_user(role: ensure_role(code: "ORGANIZER", name: "Organisateur", level: 40)) }
 
-  around do |example|
-    with_unified_cart_enabled { example.run }
-  end
-
   it "shows expiring event warning on cart when under 5 minutes" do
     event = create_event(
       creator_user: organizer,

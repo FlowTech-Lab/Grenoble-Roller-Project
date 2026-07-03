@@ -10,12 +10,7 @@ RSpec.describe "Memberships::Payments", type: :request do
   let!(:role) { ensure_role(code: "USER", name: "Utilisateur", level: 10) }
   let!(:user) { create_user(role: role) }
 
-  context "when UNIFIED_CART_ENABLED is true" do
-    around do |example|
-      with_unified_cart_enabled { example.run }
-    end
-
-    describe "POST /memberships/:membership_id/payments" do
+  describe "POST /memberships/:membership_id/payments" do
       let!(:membership) { create(:membership, :pending, :with_health_questionnaire, user: user) }
 
       it "redirects to cart with deprecation notice" do
@@ -93,9 +88,9 @@ RSpec.describe "Memberships::Payments", type: :request do
           expect(flash[:notice]).to eq("Cette adhésion est déjà dans votre panier.")
         end
       end
-    end
+  end
 
-    describe "POST /memberships/payments/create_multiple" do
+  describe "POST /memberships/payments/create_multiple" do
       let!(:child1) do
         create(:membership, :child, :pending, :with_health_questionnaire,
                user: user, child_first_name: "Alice", child_last_name: "Test")
@@ -116,6 +111,5 @@ RSpec.describe "Memberships::Payments", type: :request do
         expect(HelloassoService).not_to have_received(:create_multiple_memberships_checkout_intent)
         expect(user.cart_lines.membership.count).to eq(2)
       end
-    end
   end
 end

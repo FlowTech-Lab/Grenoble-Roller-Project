@@ -440,7 +440,7 @@
         </div>
       <% elsif show_register_button %>
         <div class="primary-action">
-          <% cta_label = (@event.requires_online_payment? && unified_cart_enabled?) ? "Réserver ma place" : "Inscription" %>
+          <% cta_label = @event.requires_online_payment? ? "Réserver ma place" : "Inscription" %>
           <button type="button"
                   class="btn btn-liquid-primary btn-lg w-100"
                   data-bs-toggle="modal"
@@ -448,7 +448,7 @@
                   aria-label="<%= cta_label %> à cet événement">
             <i class="bi bi-calendar-plus me-2" aria-hidden="true"></i><%= cta_label %>
           </button>
-          <% if @event.requires_online_payment? && unified_cart_enabled? %>
+          <% if @event.requires_online_payment? %>
             <p class="text-muted small text-center mt-2 mb-0">
               <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
               Vous aurez 15 minutes pour finaliser le paiement depuis votre panier.
@@ -598,7 +598,7 @@
               </div>
             <% end %>
             
-            <% if @event.requires_online_payment? && unified_cart_enabled? %>
+            <% if @event.requires_online_payment? %>
               <p class="text-muted small mb-0">
                 <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
                 Votre place sera réservée 15 minutes le temps de finaliser le paiement depuis votre panier.
@@ -612,7 +612,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelBtnShow">Annuler</button>
-            <% submit_label = (@event.requires_online_payment? && unified_cart_enabled?) ? "Réserver ma place" : "Confirmer l'inscription" %>
+            <% submit_label = @event.requires_online_payment? ? "Réserver ma place" : "Confirmer l'inscription" %>
             <%= f.submit submit_label, class: "btn btn-liquid-primary", id: "submitBtnShow", data: { bs_dismiss: "modal" } %>
           </div>
           <script>

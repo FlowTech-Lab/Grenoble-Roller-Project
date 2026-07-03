@@ -16,6 +16,8 @@ tags: ["release", "staging", "changelog", "unified-checkout", "discord-notificat
 **Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).  
 **Agent SSOT for Discord notifications:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md) (implemented 2026-06-09).
 
+> **v2.3 addendum (2026-07-03):** legacy session cart and `UNIFIED_CART_ENABLED` flag **removed** on `Dev`. Unified cart is permanent. Rollback = redeploy previous release (no ENV toggle). See [`CHANGELOG.md`](CHANGELOG.md) § `[2026-07-03]`.
+
 ---
 
 ## Summary / scope

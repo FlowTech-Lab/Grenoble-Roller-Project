@@ -2,7 +2,17 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
-## [2026-06-30] - Admin panel layout polish (v2.2.1 patch)
+## [2026-07-03] - Unified cart permanent (v2.3)
+
+### Changed
+- **Unified cart always on** — removed legacy session cart, direct HelloAsso membership/order checkout, and `UNIFIED_CART_ENABLED` feature flag.
+- Account cart + `/checkout` are the only payment path for shop, memberships, and paid events.
+- Views simplified (no `unified_cart_enabled?` branches); removed `orders/new` legacy template.
+
+### Removed
+- `UnifiedCart` module, `app/views/orders/new.html.erb`, `redirect_to_helloasso_checkout!` membership flow.
+- `UNIFIED_CART_ENABLED` env var (no longer read).
+
 
 ### Fixed
 - Admin mobile: offcanvas sidebar moved **outside** `.admin-container` — eliminates flex gap / empty band below navbar.

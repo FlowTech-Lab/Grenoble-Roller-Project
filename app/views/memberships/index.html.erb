@@ -276,28 +276,15 @@
                   
                   <div class="d-flex gap-2 flex-wrap">
                     <% children_trial.each do |membership| %>
-                      <% if unified_cart_enabled? %>
-                        <%= button_to upgrade_membership_path(membership),
-                            method: :patch,
-                            class: "btn btn-primary btn-sm",
-                            data: {
-                              turbo: false,
-                              confirm: "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?"
-                            } do %>
-                          <i class="bi bi-basket me-1"></i>
-                          Adhérer — <%= membership.child_first_name %>
-                        <% end %>
-                      <% else %>
-                        <%= button_to upgrade_membership_path(membership),
-                            method: :patch,
-                            class: "btn btn-primary btn-sm",
-                            data: {
-                              turbo: false,
-                              confirm: "Payer la cotisation de #{membership.child_full_name} (#{number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
-                            } do %>
-                          <i class="bi bi-credit-card me-1"></i>
-                          Payer la cotisation de <%= membership.child_first_name %>
-                        <% end %>
+                      <%= button_to upgrade_membership_path(membership),
+                          method: :patch,
+                          class: "btn btn-primary btn-sm",
+                          data: {
+                            turbo: false,
+                            confirm: "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?"
+                          } do %>
+                        <i class="bi bi-basket me-1"></i>
+                        Adhérer — <%= membership.child_first_name %>
                       <% end %>
                     <% end %>
                   </div>
@@ -332,9 +319,7 @@
                         </div>
                         <div class="payment-alert-item__actions d-flex align-items-center gap-2 flex-shrink-0 align-self-sm-end">
                           <span class="badge bg-warning text-dark">⏳ <%= t("statuses.membership.pending") %></span>
-                          <% if unified_cart_enabled? %>
-                            <%= unified_cart_pay_cta(membership, btn_class: "btn btn-sm btn-warning") %>
-                          <% end %>
+                          <%= unified_cart_pay_cta(membership, btn_class: "btn btn-sm btn-warning") %>
                         </div>
                       </div>
                     <% end %>
@@ -347,21 +332,12 @@
                     </strong>
                   </div>
                   
-                  <% unless unified_cart_enabled? %>
-                  <%= form_with url: create_multiple_payments_memberships_path, method: :post, local: true, data: { turbo: false }, class: "mb-2" do |f| %>
-                    <% children_pending.each do |membership| %>
-                      <%= f.hidden_field "membership_ids[]", value: membership.id %>
-                    <% end %>
-                    <%= f.submit "🔐 Payer avec HelloAsso →", class: "btn btn-warning btn-lg w-100 mb-2" %>
-                  <% end %>
-                  <% else %>
                   <div class="mb-2">
                     <%= link_to cart_path, class: "btn btn-outline-warning w-100 mb-2" do %>
                       <i class="bi bi-basket me-1"></i>Voir mon panier
                     <% end %>
                     <p class="small text-muted mb-0 text-center">Ajoutez chaque adhésion au panier, puis payez tout ou une partie au checkout.</p>
                   </div>
-                  <% end %>
                   
                   <div class="d-flex gap-3 justify-content-center">
                     <small class="text-muted">

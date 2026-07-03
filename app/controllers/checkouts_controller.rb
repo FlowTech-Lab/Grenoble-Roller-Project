@@ -2,7 +2,6 @@
 
 class CheckoutsController < ApplicationController
   before_action :authenticate_user!
-  before_action :require_unified_cart!
   before_action :set_checkout, only: [ :show, :status, :check_payment ]
   before_action :ensure_email_confirmed, only: [ :create ]
 
@@ -109,12 +108,6 @@ class CheckoutsController < ApplicationController
   end
 
   private
-
-  def require_unified_cart!
-    return if UnifiedCart.enabled?
-
-    redirect_to root_path, alert: "Le paiement unifié n'est pas disponible."
-  end
 
   def set_checkout
     @checkout = current_user.checkouts.includes(checkout_lines: :reference).find(params[:id])

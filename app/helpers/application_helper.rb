@@ -18,17 +18,13 @@ module ApplicationHelper
   alias_method :original_pluralize, :pluralize
 
   def unified_cart_enabled?
-    ::UnifiedCart.enabled?
+    true
   end
 
   def cart_items_count
-    if unified_cart_enabled? && respond_to?(:current_user) && current_user
-      CartLineService.count(current_user)
-    elsif session[:cart]
-      session[:cart].values.sum(&:to_i)
-    else
-      0
-    end
+    return 0 unless respond_to?(:current_user) && current_user
+
+    CartLineService.count(current_user)
   end
 
   def format_price(amount_cents)

@@ -1,6 +1,6 @@
 module MembershipsHelper
   def membership_in_cart?(membership)
-    return false unless user_signed_in? && unified_cart_enabled?
+    return false unless user_signed_in?
 
     CartLineService.membership_in_cart?(current_user, membership)
   end

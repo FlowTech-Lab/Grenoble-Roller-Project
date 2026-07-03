@@ -63,7 +63,7 @@ Rails **monolith** — shop, events, initiations, and memberships are **largely 
 | Area | State | Canonical doc |
 | --- | --- | --- |
 | E-commerce + HelloAsso checkout | ✅ Complete (legacy session cart) | [`docs/09-product/flux-boutique-helloasso.md`](docs/09-product/flux-boutique-helloasso.md) |
-| **Unified account cart + checkout** | ✅ On `Dev`; **flag** `UNIFIED_CART_ENABLED` (default off) | [`PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) · [`unified-cart-ux.md`](docs/09-product/unified-cart-ux.md) |
+| **Unified account cart + checkout** | ✅ Permanent on `Dev` — account cart + `/checkout` only | [`PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) · [`unified-cart-ux.md`](docs/09-product/unified-cart-ux.md) |
 | Events, routes, attendances, waitlist | ✅ Core done | [`docs/06-events/README.md`](docs/06-events/README.md) |
 | Initiations (`Event::Initiation` STI) | ✅ Core done (never paid online) | [`docs/06-events/logique-essai-gratuit.md`](docs/06-events/logique-essai-gratuit.md) |
 | Memberships (adult/child, HelloAsso) | ✅ ~95% (cart path when flag on) | [`docs/09-product/adhesions-complete.md`](docs/09-product/adhesions-complete.md) |
@@ -110,7 +110,7 @@ app/
     orders/, memberships/ # Checkout + HelloAsso payments
     checkouts/            # Unified checkout (partial pay + donation)
   models/
-    cart_line.rb          # Account cart (when UNIFIED_CART_ENABLED)
+    cart_line.rb          # Account cart (DB per user)
     checkout.rb           # Unified HelloAsso checkout session
     unified_cart.rb       # Feature flag helper
     event.rb              # Base event
@@ -187,7 +187,7 @@ bin/dev                           # http://localhost:3000
 ```
 
 `.env` sets `DATABASE_*` (port **5432**), `ACTIVE_STORAGE_SERVICE=local`, `SOLID_QUEUE_IN_PUMA=true`.  
-Optional for local unified-cart QA: `UNIFIED_CART_ENABLED=true` (see `.env.example`).  
+Unified cart is always on — no feature flag required.  
 Docker dev (`ops/dev/docker-compose.yml`) remains optional (DB on **5434**).
 
 ### Local dev (Docker — optional)
@@ -214,7 +214,7 @@ bin/importmap audit
 1. Read [`docs/09-product/helloasso-setup.md`](docs/09-product/helloasso-setup.md).
 2. If touching cart/checkout: read [`PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) and [`unified-cart-ux.md`](docs/09-product/unified-cart-ux.md).
 3. Store credentials via `bin/rails credentials:edit` — **never** commit `config/master.key`.
-4. Use [`HelloassoService`](app/services/helloasso_service.rb); unified path via [`CheckoutService`](app/services/checkout_service.rb) when `UnifiedCart.enabled?`.
+4. Use [`HelloassoService`](app/services/helloasso_service.rb); unified path via [`CheckoutService`](app/services/checkout_service.rb).
 
 ### Release to staging (human + agent)
 
@@ -222,8 +222,8 @@ bin/importmap audit
 2. **Update** [`release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md): commit range, migrations, ENV, QA checklist.
 3. Add a line in [`CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) pointing to the release note.
 4. Open PR **`Dev` → `staging`**; run RSpec; deploy staging via Dokploy.
-5. Staging checkout QA: `UNIFIED_CART_ENABLED=true` — complete MASTER plan §G before prod flag.
-6. Production: merge `staging` → `main` only after human sign-off; keep `UNIFIED_CART_ENABLED=false` until then.
+5. Staging checkout QA: complete MASTER plan §G before prod merge.
+6. Production: merge `staging` → `main` only after human sign-off.
 
 Full Git rules: [`docs/01-ways-of-working/README.md`](docs/01-ways-of-working/README.md).
 
@@ -260,8 +260,8 @@ Conventional commits with scope: `feat(events): …`, `fix(cart): …`. PRs requ
 
 - **Environments:** `ops/dev/` (3000), `ops/staging/` (3001), `ops/production/` (3002).
 - **Pipeline:** git pull → backup → build → migrate → health check → rollback on failure ([`docs/07-ops/deployment.md`](docs/07-ops/deployment.md)).
-- **Staging env template:** [`ops/dokploy/env/staging.env.example`](ops/dokploy/env/staging.env.example) — includes `UNIFIED_CART_ENABLED=true` for QA.
-- **Production:** keep `UNIFIED_CART_ENABLED=false` until staging QA sign-off ([release note](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md)).
+- **Staging env template:** [`ops/dokploy/env/staging.env.example`](ops/dokploy/env/staging.env.example) — unified cart permanent (v2.3+).
+- **Production:** merge `staging` → `main` only after human sign-off ([release note](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md)).
 - **Watchdog:** cron-driven auto-deploy ([`docs/07-ops/runbooks/watchdog/watchdog.md`](docs/07-ops/runbooks/watchdog/watchdog.md)).
 - **Dokploy migration notes:** [`ops/dokploy/Migration.md`](ops/dokploy/Migration.md).
 
@@ -294,7 +294,7 @@ Setup: `pip install graphifyy` or `graphify install --platform cursor`.
 - **Admin is `AdminPanel`, not ActiveAdmin** — gem may remain for CSS legacy; routes are disabled.
 - **Initiations are STI** — `Event::Initiation < Event`; shared tables and policies differ from generic events.
 - **HelloAsso secrets** live in Rails credentials only — not `.env` in repo (except public Turnstile/Umami/flag vars).
-- **Unified cart** — gated by `UNIFIED_CART_ENABLED`; use `unified_cart_enabled?` in views (not `UnifiedCart` directly). Rollback = set flag `false` and redeploy ([MASTER §H](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md)).
+- **Unified cart** — always on; `unified_cart_enabled?` helper returns true. Rollback = redeploy previous release ([MASTER §H](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md)).
 - **Initiations are never paid online** — do not add cart/checkout to `Event::Initiation` registration.
 - **Never commit** `config/master.key` or `.env*` files.
 - **UI copy is French**; **code comments and commit messages are English**.

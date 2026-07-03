@@ -1,73 +1,62 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'Events::Attendances', type: :request do
+RSpec.describe "Events::Attendances", type: :request do
   include RequestAuthenticationHelper
-  include UnifiedCartHelper
 
-  let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+  let(:role) { ensure_role(code: "USER", name: "Utilisateur", level: 10) }
   let(:user) { create_user(role: role, confirmed_at: Time.current) }
-  let(:event) do
-    create_event(
-      status: 'published',
-      start_at: 1.week.from_now,
-      max_participants: 20,
-      payment_required: true,
-      price_cents: 600
-    )
-  end
 
   before do
     allow_any_instance_of(User).to receive(:send_confirmation_instructions).and_return(true)
     allow_any_instance_of(User).to receive(:send_welcome_email_and_confirmation).and_return(true)
   end
 
-  context 'paid event with unified cart enabled' do
-    around do |example|
-      with_unified_cart_enabled { example.run }
+  context "paid event" do
+    let(:event) do
+      create_event(
+        status: "published",
+        start_at: 1.week.from_now,
+        max_participants: 20,
+        payment_required: true,
+        price_cents: 600
+      )
     end
 
-    describe 'POST /events/:event_id/attendances' do
-      before { login_user(user) }
+    before { login_user(user) }
 
-      it 'creates pending attendance with payment_expires_at' do
+    it "creates pending attendance with payment_expires_at" do
+      post event_attendances_path(event)
+
+      attendance = event.attendances.find_by(user: user)
+      expect(attendance).to be_pending
+      expect(attendance.payment_expires_at).to be_present
+    end
+
+    it "creates event_registration cart line" do
+      expect {
         post event_attendances_path(event)
+      }.to change(CartLine.event_registration, :count).by(1)
+    end
 
-        attendance = event.attendances.find_by(user: user)
-        expect(attendance).to be_pending
-        expect(attendance.payment_expires_at).to be_present
-      end
+    it "redirects to cart with reservation flash" do
+      post event_attendances_path(event)
 
-      it 'creates event_registration cart line' do
-        expect {
-          post event_attendances_path(event)
-        }.to change(CartLine.event_registration, :count).by(1)
-      end
+      expect(response).to redirect_to(cart_path)
+      expect(flash[:notice]).to include("Place réservée")
+    end
 
-      it 'redirects to cart with reservation flash' do
-        post event_attendances_path(event)
-
-        expect(response).to redirect_to(cart_path)
-        expect(flash[:notice]).to include('Place réservée')
-      end
-
-      it 'does not send EventMailer.attendance_confirmed immediately' do
-        expect(EventMailer).not_to receive(:attendance_confirmed)
-        post event_attendances_path(event)
-      end
-
-      it 'does not register as registered status' do
-        post event_attendances_path(event)
-        expect(event.attendances.find_by(user: user).status).not_to eq('registered')
-      end
+    it "does not send EventMailer.attendance_confirmed immediately" do
+      expect(EventMailer).not_to receive(:attendance_confirmed)
+      post event_attendances_path(event)
     end
   end
 
-  context 'free event' do
+  context "free event" do
     let(:event) do
       create_event(
-        status: 'published',
+        status: "published",
         start_at: 1.week.from_now,
         max_participants: 20,
         payment_required: false,
@@ -75,44 +64,38 @@ RSpec.describe 'Events::Attendances', type: :request do
       )
     end
 
-    describe 'POST /events/:event_id/attendances' do
-      before { login_user(user) }
+    before { login_user(user) }
 
-      it 'registers immediately with registered status' do
-        post event_attendances_path(event)
-        expect(event.attendances.find_by(user: user).status).to eq('registered')
-      end
+    it "registers immediately with registered status" do
+      post event_attendances_path(event)
+      expect(event.attendances.find_by(user: user).status).to eq("registered")
+    end
 
-      it 'sends confirmation email' do
-        mailer = instance_double(ActionMailer::MessageDelivery, deliver_later: true)
-        expect(EventMailer).to receive(:attendance_confirmed).and_return(mailer)
-        post event_attendances_path(event)
-      end
+    it "sends confirmation email" do
+      mailer = instance_double(ActionMailer::MessageDelivery, deliver_later: true)
+      expect(EventMailer).to receive(:attendance_confirmed).and_return(mailer)
+      post event_attendances_path(event)
     end
   end
 
-  context 'when price_cents positive but payment_required false' do
+  context "when price_cents positive but payment_required false" do
     let(:event) do
       create_event(
-        status: 'published',
+        status: "published",
         start_at: 1.week.from_now,
         payment_required: false,
         price_cents: 500
       )
     end
 
-    around do |example|
-      with_unified_cart_enabled { example.run }
-    end
-
     before { login_user(user) }
 
-    it 'registers immediately without cart line' do
+    it "registers immediately without cart line" do
       expect {
         post event_attendances_path(event)
       }.not_to change(CartLine, :count)
 
-      expect(event.attendances.find_by(user: user).status).to eq('registered')
+      expect(event.attendances.find_by(user: user).status).to eq("registered")
     end
   end
 end

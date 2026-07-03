@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe 'Event Attendance', type: :system do
-  around { |example| with_unified_cart_disabled { example.run } }
-
   let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
   let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let!(:organizer) { create(:user, role: organizer_role) }
@@ -43,52 +41,32 @@ RSpec.describe 'Event Attendance', type: :system do
       end
 
       it 'inscrit l\'utilisateur après confirmation dans le popup', js: true do
-        # Créer une adhésion active pour pouvoir s'inscrire
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
         click_button('Inscription', match: :first)
 
-        # Attendre que le modal soit visible (le modal a l'ID confirmAttendModalShow)
-        expect(page).to have_css('#confirmAttendModalShow', visible: true)
+        expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
         expect(page).to have_content('Confirmer votre inscription')
 
-        # Attendre un peu pour que le modal soit complètement chargé
-        sleep 0.5
+        # Click by stable id — avoids stale nodes when Bootstrap dismisses the modal on submit
+        find('#submitBtnShow').click
 
-        # Confirmer dans le modal
-        within('#confirmAttendModalShow') do
-          click_button "Confirmer l'inscription"
-        end
-
-        # Attendre la redirection et le rechargement de la page
-        expect(page).to have_content(event.title, wait: 5)
+        expect(page).to have_current_path(event_path(event), wait: 10)
+        expect(page).to have_button('Annuler').or have_button("Se désinscrire")
         expect(event.reload.attendances.where(user: member).exists?).to be true
       end
 
       it 'annule l\'inscription si l\'utilisateur clique sur Annuler dans le popup', js: true do
-        # Créer une adhésion active pour pouvoir s'inscrire
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
         click_button('Inscription', match: :first)
 
-        # Attendre que le modal soit visible
-        expect(page).to have_css('#confirmAttendModalShow', visible: true)
-        expect(page).to have_content('Confirmer votre inscription')
+        expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
+        find('#cancelBtnShow').click
 
-        # Attendre un peu pour que le modal soit complètement chargé
-        sleep 0.5
-
-        # Annuler dans le modal
-        within('#confirmAttendModalShow') do
-          click_button 'Annuler'
-        end
-
-        # Attendre que le modal soit fermé
-        expect(page).not_to have_css('#confirmAttendModalShow', visible: true, wait: 2)
-
-        # Vérifier que l'utilisateur n'est pas inscrit
+        expect(page).not_to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
         expect(event.attendances.where(user: member).exists?).to be false
       end
 
@@ -107,23 +85,16 @@ RSpec.describe 'Event Attendance', type: :system do
       end
 
       it 'désinscrit l\'utilisateur lors du clic sur Se désinscrire', js: true do
-        # Créer une adhésion active
         create(:membership, user: member, status: :active, season: '2025-2026')
         create(:attendance, user: member, event: event, status: 'registered')
         event.reload
         visit event_path(event)
 
-        # Confirmer la désinscription (Turbo confirm avec JavaScript)
-        # Le bouton affiche "Annuler" mais a aria-label="Se désinscrire"
         accept_confirm do
-          button = page.find('button[aria-label="Se désinscrire"]')
-          button.click
+          find('button[aria-label="Se désinscrire"]').click
         end
 
-        # Attendre que la page se recharge
-        sleep 0.5
-
-        # Vérifier que le bouton "Inscription" apparaît maintenant (le bouton affiche "Inscription", pas "S'inscrire")
+        expect(page).to have_current_path(event_path(event), wait: 10)
         expect(page).to have_button('Inscription').or have_button("S'inscrire")
         expect(event.reload.attendances.where(user: member).exists?).to be false
       end
