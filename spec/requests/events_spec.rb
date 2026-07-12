@@ -29,6 +29,44 @@ RSpec.describe 'Events', type: :request do
       expect(response.body).to include('Open Session')
     end
 
+    it 'renders image viewer hooks for cover and loop maps without escaped Stimulus actions' do
+      creator = create_user
+      route1 = create_route
+      route2 = create_route(name: 'Boucle 2', distance_km: 12.0)
+      route1.map_image.attach(
+        io: StringIO.new(DevLoopMapFixtures.build_map_png(loop_number: 1, color: '#2563eb')),
+        filename: 'loop1.png',
+        content_type: 'image/png'
+      )
+      route2.map_image.attach(
+        io: StringIO.new(DevLoopMapFixtures.build_map_png(loop_number: 2, color: '#16a34a')),
+        filename: 'loop2.png',
+        content_type: 'image/png'
+      )
+
+      event = create_event(
+        creator_user: creator,
+        status: 'published',
+        route: route1,
+        loops_count: 2,
+        distance_km: 8.0
+      )
+      event.cover_image.attach(
+        io: StringIO.new(DevLoopMapFixtures.build_map_png(loop_number: 1, color: '#dc2626')),
+        filename: 'cover.png',
+        content_type: 'image/png'
+      )
+      event.event_loop_routes.create!(loop_number: 1, route: route1, distance_km: 8.0)
+      event.event_loop_routes.create!(loop_number: 2, route: route2, distance_km: 12.0)
+
+      get event_path(event)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('data-controller="route-image-viewer"')
+      expect(response.body).to include('hero-image-container--expandable')
+      expect(response.body).not_to include('click-&gt;route-image-viewer')
+    end
+
     it 'redirects visitors trying to view a draft event' do
       event = build_event(status: 'draft')
       event.save!

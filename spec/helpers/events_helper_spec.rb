@@ -47,7 +47,25 @@ RSpec.describe EventsHelper, type: :helper do
       data = helper.route_map_viewer_data(route, title: 'Boucle 1')
 
       expect(data[:controller]).to eq('route-image-viewer')
+      expect(data[:action]).to be_nil
       expect(data[:route_image_viewer_src_value]).to include('/rails/active_storage/')
+    end
+  end
+
+  describe '#event_cover_viewer_data' do
+    it 'returns viewer data when a cover image is attached' do
+      event = create_event(creator_user: creator)
+      event.cover_image.attach(
+        io: StringIO.new(DevLoopMapFixtures.build_map_png(loop_number: 1, color: '#dc2626')),
+        filename: 'cover.png',
+        content_type: 'image/png'
+      )
+
+      data = helper.event_cover_viewer_data(event)
+
+      expect(data[:controller]).to eq('route-image-viewer')
+      expect(data[:route_image_viewer_src_value]).to include('/rails/active_storage/')
+      expect(data[:route_image_viewer_title_value]).to eq(event.title)
     end
   end
 

@@ -9,6 +9,18 @@ export default class extends Controller {
     title: { type: String, default: "" }
   }
 
+  connect() {
+    this.openHandler = (event) => this.open(event)
+    this.keyHandler = (event) => this.openFromKey(event)
+    this.element.addEventListener("click", this.openHandler)
+    this.element.addEventListener("keydown", this.keyHandler)
+  }
+
+  disconnect() {
+    this.element.removeEventListener("click", this.openHandler)
+    this.element.removeEventListener("keydown", this.keyHandler)
+  }
+
   open(event) {
     event.preventDefault()
     this.#closeExisting()
@@ -17,6 +29,7 @@ export default class extends Controller {
 
   openFromKey(event) {
     if (event.key !== "Enter" && event.key !== " ") return
+    event.preventDefault()
     this.open(event)
   }
 

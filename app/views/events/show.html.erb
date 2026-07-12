@@ -5,7 +5,14 @@
   <article class="card card-liquid event-detail-card shadow-liquid border-0 mx-auto">
     <!-- Hero image avec overlay gradient et informations superposées -->
     <div class="hero-event-wrapper">
-      <div class="hero-image-container">
+      <% hero_viewer_data = event_cover_viewer_data(@event) %>
+      <%= tag.div(
+            class: ["hero-image-container", ("hero-image-container--expandable" if hero_viewer_data.present?)].compact.join(" "),
+            data: hero_viewer_data.presence,
+            role: (hero_viewer_data.present? ? "button" : nil),
+            tabindex: (hero_viewer_data.present? ? 0 : nil),
+            aria: (hero_viewer_data.present? ? { label: "Agrandir l'image de l'événement" } : {})
+          ) do %>
         <% if @event.cover_image.attached? %>
           <%= image_tag(rails_representation_path(@event.cover_image_banner), alt: @event.title, class: "hero-image", loading: "eager") %>
         <% end %>
@@ -100,7 +107,7 @@
             <% end %>
           </div>
         </div>
-      </div>
+      <% end %>
     </div>
 
     <div class="card-body p-3 p-md-4 p-lg-5">

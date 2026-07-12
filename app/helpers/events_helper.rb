@@ -101,10 +101,26 @@ module EventsHelper
   def route_map_viewer_data(route, title:)
     return {} unless route&.map_image&.attached?
 
+    image_viewer_data(
+      src: route_map_image_path(route),
+      title: title
+    )
+  end
+
+  def event_cover_viewer_data(event)
+    return {} unless event.cover_image.attached?
+
+    image_viewer_data(
+      src: rails_storage_proxy_path(event.cover_image, only_path: true),
+      title: event.title
+    )
+  end
+
+  # Stimulus actions must not be set via tag helpers — Rails HTML-escapes "->" in data-action.
+  def image_viewer_data(src:, title:)
     {
       controller: "route-image-viewer",
-      action: "click->route-image-viewer#open keydown->route-image-viewer#openFromKey",
-      route_image_viewer_src_value: route_map_image_path(route),
+      route_image_viewer_src_value: src,
       route_image_viewer_title_value: title
     }
   end
