@@ -35,6 +35,20 @@ RSpec.describe EventsHelper, type: :helper do
     end
   end
 
+  describe '#event_payment_mode_description' do
+    it 'describes online payment when payment_required is true' do
+      event = create_event(creator_user: creator, payment_required: true, price_cents: 500)
+
+      expect(helper.event_payment_mode_description(event)).to include('panier')
+    end
+
+    it 'describes external payment when price is set but payment_required is false' do
+      event = create_event(creator_user: creator, payment_required: false, price_cents: 500)
+
+      expect(helper.event_payment_mode_description(event)).to include('organisateur')
+    end
+  end
+
   describe '#route_map_viewer_data' do
     it 'returns viewer data when a map image is attached' do
       route = create_route

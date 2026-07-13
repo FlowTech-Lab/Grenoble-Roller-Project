@@ -133,7 +133,13 @@
           </div>
           <div class="detail-content">
             <p class="detail-label">Tarif</p>
-            <p class="detail-value"><%= format_event_price(@event.price_cents) %></p>
+            <p class="detail-value mb-1"><%= format_event_price(@event.price_cents) %></p>
+            <% if @event.price_cents.to_i.positive? %>
+              <p class="detail-meta mb-0 small text-muted">
+                <i class="bi bi-credit-card me-1" aria-hidden="true"></i>
+                <%= event_payment_mode_description(@event) %>
+              </p>
+            <% end %>
           </div>
         </div>
 

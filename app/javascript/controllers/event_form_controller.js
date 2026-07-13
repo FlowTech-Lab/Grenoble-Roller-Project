@@ -2,7 +2,15 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="event-form"
 export default class extends Controller {
-  static targets = ["levelSelect", "distanceInput", "routeSelect", "loopsCountInput"]
+  static targets = [
+    "levelSelect",
+    "distanceInput",
+    "routeSelect",
+    "loopsCountInput",
+    "paymentRequiredCheckbox",
+    "priceEurosInput",
+    "externalPaymentWarning"
+  ]
   static values = {
     eventId: { type: String, default: "" },
     existingLoopRoutes: { type: Object, default: {} }
@@ -50,6 +58,53 @@ export default class extends Controller {
       this.loopRoutesLoaded = true
       this.updateLoopRoutesFields()
     })
+
+    if (this.hasPaymentRequiredCheckboxTarget && this.hasPriceEurosInputTarget) {
+      const price = parseFloat(this.priceEurosInputTarget.value) || 0
+      if (price > 0 && !this.paymentRequiredCheckboxTarget.checked) {
+        this.paymentRequiredCheckboxTarget.dataset.userToggled = "true"
+      }
+    }
+
+    this.syncPaymentRequiredFromPrice()
+  }
+
+  priceEurosChanged() {
+    this.syncPaymentRequiredFromPrice()
+  }
+
+  paymentRequiredToggled() {
+    if (this.hasPaymentRequiredCheckboxTarget) {
+      this.paymentRequiredCheckboxTarget.dataset.userToggled = "true"
+    }
+    this.updateExternalPaymentWarning()
+  }
+
+  syncPaymentRequiredFromPrice() {
+    if (!this.hasPaymentRequiredCheckboxTarget || !this.hasPriceEurosInputTarget) return
+
+    const price = parseFloat(this.priceEurosInputTarget.value) || 0
+    if (price <= 0) {
+      this.paymentRequiredCheckboxTarget.checked = false
+      this.paymentRequiredCheckboxTarget.disabled = true
+    } else {
+      this.paymentRequiredCheckboxTarget.disabled = false
+      if (this.paymentRequiredCheckboxTarget.dataset.userToggled !== "true") {
+        this.paymentRequiredCheckboxTarget.checked = true
+      }
+    }
+
+    this.updateExternalPaymentWarning()
+  }
+
+  updateExternalPaymentWarning() {
+    if (!this.hasExternalPaymentWarningTarget || !this.hasPaymentRequiredCheckboxTarget || !this.hasPriceEurosInputTarget) {
+      return
+    }
+
+    const price = parseFloat(this.priceEurosInputTarget.value) || 0
+    const show = price > 0 && !this.paymentRequiredCheckboxTarget.checked
+    this.externalPaymentWarningTarget.classList.toggle("d-none", !show)
   }
 
   loadRouteInfo(routeId) {

@@ -98,6 +98,16 @@ module EventsHelper
     end
   end
 
+  def event_payment_mode_description(event)
+    return "Gratuit" if event.price_cents.to_i <= 0
+
+    if event.requires_online_payment?
+      "Paiement en ligne via Grenoble Roller (panier, 15 min pour payer)"
+    else
+      "Prix informatif — paiement géré par l'organisateur (inscription directe)"
+    end
+  end
+
   def route_map_viewer_data(route, title:)
     return {} unless route&.map_image&.attached?
 
