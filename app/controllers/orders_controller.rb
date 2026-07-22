@@ -106,5 +106,4 @@ class OrdersController < ApplicationController
   rescue StandardError => e
     redirect_to order_path(@order), alert: "Erreur lors de l'annulation : #{e.message}"
   end
-
 end
