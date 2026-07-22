@@ -71,9 +71,12 @@
         </p>
         <p><strong>Paiement en ligne requis :</strong>
           <% if @event.payment_required? %>
-            <span class="badge badge-liquid-warning">Oui</span>
+            <span class="badge badge-liquid-warning">Oui — panier HelloAsso</span>
           <% else %>
-            <span class="badge badge-liquid-secondary">Non</span>
+            <span class="badge badge-liquid-secondary">Non — inscription directe</span>
+          <% end %>
+          <% if @event.price_cents.to_i.positive? && !@event.payment_required? %>
+            <span class="badge badge-liquid-danger ms-1">Prix affiché sans paiement en ligne</span>
           <% end %>
         </p>
         <p><strong>Créateur :</strong> <%= @event.creator_user&.email || "-" %></p>

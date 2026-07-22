@@ -20,10 +20,6 @@ RSpec.describe "Checkouts", type: :request do
     v.reload
   end
 
-  around do |example|
-    with_unified_cart_enabled { example.run }
-  end
-
   def add_product_to_cart!
     CartLineService.add_product!(user: user, variant: variant, quantity: 1)
   end

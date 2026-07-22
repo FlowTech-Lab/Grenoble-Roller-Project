@@ -52,8 +52,6 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "POST /memberships/:membership_id/payments" do
-    around { |example| with_unified_cart_disabled { example.run } }
-
     let(:membership) { create(:membership, user: user, status: 'pending') }
 
     it "requires authentication" do
@@ -86,20 +84,13 @@ RSpec.describe "Memberships", type: :request do
         end
       end
 
-      it "redirects to HelloAsso for pending membership with complete questionnaire" do
+      it "adds membership to cart for pending membership with complete questionnaire" do
         login_user(user)
-        # Mock HelloAssoService pour éviter les appels réels
-        allow(HelloassoService).to receive(:create_membership_checkout_intent).and_return({
-          success: true,
-          body: {
-            "id" => "checkout_123",
-            "redirectUrl" => "https://helloasso.com/checkout"
-          }
-        })
 
         post membership_payments_path(membership_with_questionnaire)
-        expect(response).to have_http_status(:redirect)
-        expect(HelloassoService).to have_received(:create_membership_checkout_intent)
+
+        expect(response).to redirect_to(cart_path)
+        expect(CartLine.where(user: user, reference: membership_with_questionnaire)).to exist
       end
     end
   end
@@ -438,8 +429,6 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "POST /memberships/:id/upgrade - Conversion essai gratuit en adhésion payante" do
-    around { |example| with_unified_cart_disabled { example.run } }
-
     let(:trial_membership) do
       create(:membership,
         :child,
@@ -460,7 +449,8 @@ RSpec.describe "Memberships", type: :request do
       trial_membership.reload
       expect(trial_membership.status).to eq('pending')
       expect(trial_membership.amount_cents).to eq(1000) # Montant déjà défini
-      expect(response).to redirect_to(membership_path(trial_membership))
+      expect(response).to redirect_to(cart_path)
+      expect(CartLine.where(user: user, reference: trial_membership)).to exist
     end
 
     context "si l'adhésion n'est pas un essai gratuit" do
@@ -750,11 +740,7 @@ RSpec.describe "Memberships", type: :request do
     end
   end
 
-  context "when UNIFIED_CART_ENABLED is true" do
-    around do |example|
-      with_unified_cart_enabled { example.run }
-    end
-
+  describe "unified cart membership flows" do
     let(:user_with_dob) do
       create_user(
         role: role,

@@ -2,7 +2,7 @@
 
 **Date** : 2026-06-08  
 **Version** : 2.0  
-**Status** : Unified checkout (feature flag `UNIFIED_CART_ENABLED`)
+**Status** : Unified checkout permanent (v2.3 — account cart + `/checkout` only)
 
 ---
 
@@ -12,7 +12,7 @@ Tous les paiements en ligne (boutique, adhésions, randos payantes) passent par 
 
 **`CartLine` (DB, par utilisateur) → `/checkout` (sélection partielle + don) → HelloAsso → `CheckoutFulfillmentService`**
 
-Le flux legacy `session[:cart]` → `POST /orders` reste actif uniquement quand `UNIFIED_CART_ENABLED=false`.
+Initiations gratuites et adhésions chèque/espèces restent hors panier.
 
 Références :
 - [`PLAN-unified-checkout-MASTER.md`](../10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md)
@@ -20,7 +20,7 @@ Références :
 
 ---
 
-## Flux unifié (flag activé)
+## Flux unifié
 
 ### Étape 1 — Ajout au panier
 
@@ -64,29 +64,23 @@ Les lignes non sélectionnées restent dans le panier.
 
 ---
 
-## Flux legacy (flag désactivé)
+## Flux supprimés (v2.3)
 
-### Boutique seule
+- ~~Panier session `session[:cart]` → `POST /orders`~~
+- ~~Paiement HelloAsso direct adhésion (sans panier)~~
 
-1. `POST /orders` — panier `session[:cart]`
-2. `Order` pending + `OrderMailer.order_confirmation` immédiat
-3. `HelloassoService.create_checkout_intent(order)`
-4. Polling → `Order` paid
-
-### Adhésions
-
-`Memberships::PaymentsController` → HelloAsso direct (sans panier).
+Rollback = redeploy version précédente (plus de feature flag).
 
 ---
 
-## Feature flag
+## Environnements
 
-| Env | Valeur | Usage |
-|-----|--------|-------|
-| Staging | `UNIFIED_CART_ENABLED=true` | QA manuelle (checklist MASTER §G) |
-| Production | `false` jusqu'à sign-off humain | Rollback : repasser à `false` (voir MASTER §H) |
+| Env | Panier unifié | Notes |
+|-----|---------------|-------|
+| Staging | Toujours actif (v2.3+) | QA manuelle (checklist MASTER §G) |
+| Production | Toujours actif après merge | Rollback = redeploy version précédente (MASTER §H) |
 
-Template : `ops/dokploy/env/staging.env.example`
+Template env : `ops/dokploy/env/staging.env.example` (plus de flag `UNIFIED_CART_ENABLED`).
 
 ---
 

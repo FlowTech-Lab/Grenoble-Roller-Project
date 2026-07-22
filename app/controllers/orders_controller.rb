@@ -30,150 +30,13 @@ class OrdersController < ApplicationController
     @orders = current_user.orders.includes(:payment, order_items: { variant: :product }).order(created_at: :desc)
   end
 
-  # Legacy shop-only checkout (session cart). Redirects to /checkout when UNIFIED_CART_ENABLED=true.
-  # show/index/check_payment/cancel remain for order history and post-pay status.
+  # Shop checkout uses unified /checkout from the account cart.
   def new
-    if UnifiedCart.enabled?
-      redirect_to new_checkout_path, notice: "Utilisez le paiement unifié depuis votre panier."
-      return
-    end
-
-    @cart_items = build_cart_items
-    redirect_to cart_path, alert: "Votre panier est vide." and return if @cart_items.empty?
-    @total_cents = @cart_items.sum { |ci| ci[:subtotal_cents] }
+    redirect_to new_checkout_path, notice: "Utilisez le paiement unifié depuis votre panier."
   end
 
   def create
-    if UnifiedCart.enabled?
-      redirect_to new_checkout_path, notice: "Utilisez le paiement unifié depuis votre panier."
-      return
-    end
-
-    # Double vérification de la confirmation email (en plus du callback)
-    # Recharger l'utilisateur depuis la DB pour éviter les problèmes de cache
-    # Utiliser current_user.id directement pour éviter les problèmes de cache
-    user_id = current_user.id
-    user = User.find(user_id)
-
-    # Vérifier confirmed_at directement (pas confirmed? qui peut être mis en cache)
-    unless user.confirmed_at.present?
-      confirmation_link = view_context.link_to(
-        "demandez un nouvel email de confirmation",
-        new_user_confirmation_path,
-        class: "alert-link"
-      )
-      return redirect_to root_path,
-                    alert: "Vous devez confirmer votre adresse email pour effectuer cette action. " \
-                           "Vérifiez votre boîte mail ou #{confirmation_link}".html_safe
-    end
-
-    cart_items = build_cart_items
-    return redirect_to cart_path, alert: "Votre panier est vide." if cart_items.empty?
-
-    # Vérifier le stock avant de créer la commande
-    # Utilise le système Inventories (available_qty = stock_qty - reserved_qty)
-    stock_errors = []
-    cart_items.each do |ci|
-      variant = ci[:variant]
-      requested_qty = ci[:quantity]
-      # Utiliser inventory.available_qty si disponible, sinon fallback sur stock_qty
-      available_stock = if variant.inventory
-                          variant.inventory.available_qty
-      else
-                          variant.stock_qty.to_i
-      end
-
-      if !variant.is_active || !variant.product&.is_active
-        stock_errors << "#{variant.product.name} (#{variant.sku}) n'est plus disponible"
-      elsif available_stock < requested_qty
-        stock_errors << "#{variant.product.name} (#{variant.sku}) : stock insuffisant (#{requested_qty} demandé, #{available_stock} disponible)"
-      end
-    end
-
-    if stock_errors.any?
-      return redirect_to cart_path, alert: "Stock insuffisant : #{stock_errors.join('; ')}"
-    end
-
-    total_cents = cart_items.sum { |ci| ci[:subtotal_cents] }
-
-    # Récupérer le don (en centimes) depuis les params
-    donation_cents = params[:donation_cents].to_i
-    donation_cents = 0 if donation_cents < 0 # Sécurité : pas de don négatif
-
-    # Le total de la commande inclut le don
-    order_total_cents = total_cents + donation_cents
-
-    # Transaction pour garantir la cohérence des données locales (order + stock)
-    order = Order.transaction do
-      order = Order.create!(
-        user: current_user,
-        status: "pending",
-        total_cents: order_total_cents, # Total inclut le don
-        donation_cents: donation_cents, # Stocker le don séparément
-        currency: "EUR"
-      )
-
-      # Envoyer l'email de confirmation de commande (après création)
-      OrderMailer.order_confirmation(order).deliver_later
-
-      cart_items.each do |ci|
-        variant = ci[:variant]
-        OrderItem.create!(
-          order: order,
-          variant_id: variant.id,
-          quantity: ci[:quantity],
-          unit_price_cents: ci[:unit_price_cents]
-        )
-
-        # Le stock sera réservé automatiquement via le callback after_create :reserve_stock dans Order
-        # Plus besoin de décrementer manuellement stock_qty
-      end
-      order
-    end
-
-    # Vider le panier local une fois la commande créée
-    session[:cart] = {}
-
-    # Initialiser un checkout HelloAsso avec le don
-    checkout_result = HelloassoService.create_checkout_intent(
-      order,
-      donation_cents: donation_cents,
-      back_url: shop_url,
-      error_url: order_url(order),
-      return_url: order_url(order)
-    )
-
-    if checkout_result[:success]
-      body = checkout_result[:body] || {}
-
-      payment = Payment.create!(
-        provider: "helloasso",
-        provider_payment_id: body["id"].to_s,
-        amount_cents: order_total_cents, # Montant total inclut le don
-        currency: "EUR",
-        status: "pending",
-        created_at: Time.current
-      )
-
-      order.update!(payment: payment)
-
-      redirect_url = body["redirectUrl"]
-
-      if redirect_url.present?
-        # URL externe (HelloAsso sandbox/production) → autoriser l'hôte externe explicitement
-        redirect_to redirect_url, allow_other_host: true
-      else
-        redirect_to order_path(order), notice: "Commande créée avec succès (paiement HelloAsso initialisé)."
-      end
-    else
-      # Fallback : si HelloAsso ne renvoie pas d'URL ou renvoie une erreur,
-      # on garde la commande en pending et on affiche un message.
-      redirect_to order_path(order), alert: "Commande créée mais paiement HelloAsso non initialisé (code #{checkout_result[:status]})."
-    end
-  rescue ActiveRecord::RecordInvalid => e
-    redirect_to cart_path, alert: "Erreur lors de la création de la commande: #{e.message}"
-  rescue => e
-    redirect_to cart_path, alert: "Erreur : #{e.message}"
+    redirect_to new_checkout_path, notice: "Utilisez le paiement unifié depuis votre panier."
   end
 
   def show
@@ -242,28 +105,5 @@ class OrdersController < ApplicationController
     raise
   rescue StandardError => e
     redirect_to order_path(@order), alert: "Erreur lors de l'annulation : #{e.message}"
-  end
-
-  private
-
-  def build_cart_items
-    return [] if UnifiedCart.enabled?
-
-    session[:cart] ||= {}
-    variant_ids = session[:cart].keys
-    return [] if variant_ids.empty?
-    variants = ProductVariant.where(id: variant_ids).includes(:product, :inventory).index_by { |v| v.id.to_s }
-    session[:cart].map do |vid, qty|
-      variant = variants[vid.to_s]
-      next nil unless variant
-      price_cents = variant.price_cents
-      {
-        variant: variant,
-        product: variant.product,
-        quantity: qty.to_i,
-        unit_price_cents: price_cents,
-        subtotal_cents: price_cents * qty.to_i
-      }
-    end.compact
   end
 end

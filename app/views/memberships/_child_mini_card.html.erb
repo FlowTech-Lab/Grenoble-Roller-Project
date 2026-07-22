@@ -84,25 +84,14 @@
                   class: "btn btn-sm btn-primary",
                   data: {
                     turbo: false,
-                    confirm: unified_cart_enabled? ?
-                      "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?" :
-                      "Payer la cotisation de #{membership.child_full_name} ? Vous serez redirigé vers le paiement."
+                    confirm: "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?"
                   },
                   form: { class: "child-mini-card__inline-form" } do %>
-                <i class="bi bi-<%= unified_cart_enabled? ? 'basket' : 'credit-card' %> me-1" aria-hidden="true"></i>
-                <%= unified_cart_enabled? ? "Adhérer" : "Payer" %>
+                <i class="bi bi-basket me-1" aria-hidden="true"></i>
+                Adhérer
               <% end %>
-            <% elsif unified_cart_enabled? %>
-              <%= unified_cart_pay_cta(membership, form_class: "child-mini-card__inline-form") %>
             <% else %>
-              <%= button_to membership_payments_path(membership),
-                  method: :post,
-                  class: "btn btn-sm btn-primary",
-                  aria: { label: "Payer l'adhésion de #{membership.child_full_name}" },
-                  data: { turbo: false },
-                  form: { class: "child-mini-card__inline-form" } do %>
-                <i class="bi bi-credit-card" aria-hidden="true"></i>
-              <% end %>
+              <%= unified_cart_pay_cta(membership, form_class: "child-mini-card__inline-form") %>
             <% end %>
           <% end %>
         <% end %>
