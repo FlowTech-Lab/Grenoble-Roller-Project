@@ -20,6 +20,8 @@ tags: ["release", "staging", "changelog", "unified-checkout", "discord-notificat
 
 > **v2.3.1 addendum (2026-08-02):** membership renewal email / login return / early August sale window. Next-season sales open **1 August** (was 15). No migrations, no new ENV. See [`CHANGELOG.md`](CHANGELOG.md) § `[2026-08-02]`.
 
+> **v2.3.1 addendum (2026-08-02 b):** event cover + loop map image viewer — mobile opens native image tab; desktop lightbox. Works for N loops. See [`CHANGELOG.md`](CHANGELOG.md) § event image viewer.
+
 ---
 
 ## Summary / scope

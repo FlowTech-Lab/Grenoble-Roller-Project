@@ -2759,12 +2759,31 @@
   .route-image-viewer__img {
     display: block;
     width: auto;
-    max-width: 100%;
+    max-width: min(96vw, 1400px);
+    max-height: calc(100vh - 5.5rem);
     height: auto;
     margin: 0 auto;
-    touch-action: pan-x pan-y pinch-zoom;
+    object-fit: contain;
+    border-radius: 0.35rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
     user-select: none;
     -webkit-user-drag: none;
+  }
+
+  .route-image-viewer__hint {
+    position: fixed;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    margin: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.75rem;
+    pointer-events: none;
+    white-space: nowrap;
   }
 
   body.route-image-viewer-open {
@@ -2807,13 +2826,16 @@
       &__media {
         position: absolute;
         inset: 0;
+        z-index: 1;
         width: 100%;
         height: 100%;
         margin: 0;
         max-height: none;
         min-height: 0;
         border-radius: 0;
-        cursor: pointer;
+        cursor: zoom-in;
+        text-decoration: none;
+        color: inherit;
 
         &.route-image-container {
           aspect-ratio: unset;

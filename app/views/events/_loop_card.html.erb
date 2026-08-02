@@ -6,11 +6,13 @@
 <article class="card card-liquid border-liquid h-100 event-loop-card">
   <div class="event-loop-card__visual">
     <% if route&.map_image&.attached? %>
-      <%= tag.div(
+      <% full_map_src = route_map_image_path(route) %>
+      <%= link_to(
+            full_map_src,
             class: "event-loop-card__media route-image-container",
+            target: "_blank",
+            rel: "noopener noreferrer",
             data: route_map_viewer_data(route, title: "Boucle #{loop_number}"),
-            role: "button",
-            tabindex: 0,
             aria: { label: "Agrandir la carte du parcours, boucle #{loop_number}" }
           ) do %>
         <%= image_tag(

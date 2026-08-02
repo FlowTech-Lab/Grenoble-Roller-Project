@@ -2,6 +2,22 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Organizer sees own draft events on index
+
+### Fixed
+- Organizers (and creators) see their unpublished (`draft`) events on `/events` (and same fix for initiations index). `EventPolicy::Scope` already allowed it; `EventsController#index` / `InitiationsController#index` incorrectly re-applied `.visible`.
+- Draft badge shown to the creator on event/initiation cards (not only moderators).
+
+## [2026-08-02] - Event image viewer (cover + N loop maps)
+
+### Fixed
+- Clicking event cover or loop map images opens a viewer again (any number of loops).
+- **Mobile / coarse pointer:** open the full image in a new tab (native browser zoom + landscape rotation).
+- **Desktop:** in-page lightbox (Esc / backdrop / close), full-resolution source.
+
+### Changed
+- Loop map thumbnails are `<a href="full-image" target="_blank">` with Stimulus lightbox intercept on desktop only.
+
 ## [2026-08-02] - Membership renewal email → login → form
 
 ### Fixed
