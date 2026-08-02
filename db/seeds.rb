@@ -1326,7 +1326,7 @@ puts "   - Logs d'audit : #{AuditLog.count}"
 
 puts "\n👥 Création des adhésions (tous les cas de figure)..."
 
-# Calculer les dates de saison (via Membership — règle vente 15 août)
+# Calculer les dates de saison (via Membership — règle vente 1er août)
 current_season_start, current_season_end = Membership.sale_season_dates
 current_season_name = Membership.sale_season_name
 previous_start, previous_end = Membership.dates_for_season_start_year(

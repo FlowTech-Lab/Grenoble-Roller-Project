@@ -227,6 +227,17 @@ bin/importmap audit
 
 Full Git rules: [`docs/01-ways-of-working/README.md`](docs/01-ways-of-working/README.md).
 
+### Before commit / push on `Dev` (session hygiene)
+
+Global close loop (env check, promote reusable patterns, retain): WorkSpace [`WORKING.md`](../../../WORKING.md) § Session close.
+
+Project-specific:
+
+1. Prod = `grenoble-roller.org` (`main`) · staging = Dokploy `staging` · local = `Dev`.
+2. Update [`CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) (+ release-note addendum) before push.
+3. `graphify update .` after Ruby/JS/view changes.
+4. Domain gotchas → [Gotchas](#gotchas--read-before-changing-things) here; cross-repo habits → WorkSpace `WORKING.md`.
+
 ### Add / change admin panel behavior
 
 1. Read module doc under [`docs/04-rails/admin-panel/`](docs/04-rails/admin-panel/).
@@ -302,8 +313,13 @@ Setup: `pip install graphifyy` or `graphify install --platform cursor`.
 - **Eager-load associations** in controllers (`includes`) — N+1 is a recurring issue; Bullet gem available in dev.
 - **Role level in code** may differ from stale permission docs — trust `Role` seeds, `AdminPanel::BaseController`, and Pundit policies over outdated tables.
 - **Default seed passwords** are for local dev only — do not reuse in production ([`README.md`](README.md)).
-- **CSS requires watcher** in Docker dev — `watch:css` runs alongside Rails (same as `bin/dev`).
+- **CSS requires watcher** in Docker dev — `watch:css` runs alongside Rails (same as `bin/dev`). Built CSS under `app/assets/builds/` is **gitignored** — rebuild on deploy / `npm run build:css`.
 - **Umami** — `UMAMI_SCRIPT_URL` + `UMAMI_WEBSITE_ID` in deploy env; script only when `cookie_consent?(:analytics)`; public share link via `UMAMI_SHARE_URL` ([`docs/08-security-privacy/umami-analytics.md`](docs/08-security-privacy/umami-analytics.md)).
+- **Membership sale season opens 1 August** (`Membership::NEXT_SEASON_SALE_OPENS_DAY`) — aligned with J-30 renewal reminder emails. Before that date, `sale_season` = running season; from 1–31 Aug, sale = next season while running season stays current until 1 Sep.
+- **Renewal links** must use `type` + `renew_from` (`Membership#renewal_form_type`, `#renewable_now?`). Bare `/memberships/new` redirects to index; active same-season membership blocks `#new` unless sale season already advanced.
+- **Event images (cover + N loop maps):** `route-image-viewer` Stimulus — **mobile/coarse** opens full image in a new tab (native zoom/rotate); **desktop** uses in-page lightbox. Loop thumbs are `<a href="full" target="_blank">`. Do not put Stimulus `data-action` with `->` via Rails `tag` helpers (HTML-escaped); bind in `connect()`.
+- **Staging ≠ prod:** bug reports often come from **staging** (newer than `main`). Always check which branch/deploy the reporter used before blaming local `Dev` or prod HTML.
+- **Event/initiation index visibility:** rely on `EventPolicy::Scope` only — never chain `.visible` after `policy_scope` in `#index` (that hides creators’ own drafts). Guests still see published/canceled only.
 
 ---
 

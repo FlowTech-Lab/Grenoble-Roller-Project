@@ -16,6 +16,40 @@ RSpec.describe 'Events', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('Roller Night')
     end
+
+    it 'shows the organizer their own draft events on the index' do
+      organizer_role = Role.find_or_create_by!(code: 'ORGANIZER') { |r| r.name = 'Organisateur'; r.level = 40 }
+      organizer = create_user(role: organizer_role)
+      draft = create_event(
+        creator_user: organizer,
+        status: 'draft',
+        title: 'Mon brouillon organisateur',
+        start_at: 1.week.from_now
+      )
+      other_draft = create_event(
+        creator_user: create_user,
+        status: 'draft',
+        title: 'Brouillon d un autre',
+        start_at: 1.week.from_now
+      )
+
+      login_user(organizer)
+      get events_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(draft.title)
+      expect(response.body).to include(I18n.t('statuses.event.draft'))
+      expect(response.body).not_to include(other_draft.title)
+    end
+
+    it 'does not show draft events to guests' do
+      create_event(status: 'draft', title: 'Secret draft', start_at: 1.week.from_now)
+
+      get events_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include('Secret draft')
+    end
   end
 
   describe 'GET /events/:id' do
@@ -65,6 +99,10 @@ RSpec.describe 'Events', type: :request do
       expect(response.body).to include('data-controller="route-image-viewer"')
       expect(response.body).to include('hero-image-container--expandable')
       expect(response.body).not_to include('click-&gt;route-image-viewer')
+      # Loop maps are real links (native image tab on mobile; lightbox on desktop)
+      expect(response.body).to include('target="_blank"')
+      expect(response.body).to match(/href="[^"]*rails\/active_storage[^"]*"/)
+      expect(response.body.scan('data-controller="route-image-viewer"').size).to be >= 3
     end
 
     it 'redirects visitors trying to view a draft event' do

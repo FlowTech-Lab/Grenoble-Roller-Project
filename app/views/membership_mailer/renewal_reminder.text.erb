@@ -6,7 +6,7 @@ Votre adhésion pour la saison <%= @membership.season %> expire dans 30 jours (l
 
 Pour continuer à profiter des avantages de l'association, nous vous invitons à renouveler votre adhésion dès maintenant.
 
-Renouveler mon adhésion : <%= new_membership_url %>
+Renouveler mon adhésion : <%= new_membership_url(type: @membership.renewal_form_type, renew_from: @membership.id) %>
 
 Merci de votre fidélité ! 🛼
 

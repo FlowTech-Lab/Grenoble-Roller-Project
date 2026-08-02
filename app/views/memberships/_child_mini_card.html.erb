@@ -94,6 +94,14 @@
               <%= unified_cart_pay_cta(membership, form_class: "child-mini-card__inline-form") %>
             <% end %>
           <% end %>
+        <% elsif membership.renewable_now? %>
+          <%= link_to membership_renewal_path_for(membership),
+              class: "btn btn-sm btn-success",
+              data: { turbo: false },
+              aria: { label: "Renouveler l'adhésion de #{membership.child_full_name}" } do %>
+            <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>
+            Réadhérer
+          <% end %>
         <% end %>
       </div>
     </div>

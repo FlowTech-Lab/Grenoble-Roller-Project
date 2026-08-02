@@ -2,6 +2,38 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Organizer sees own draft events on index
+
+### Fixed
+- Organizers (and creators) see their unpublished (`draft`) events on `/events` (and same fix for initiations index). `EventPolicy::Scope` already allowed it; `EventsController#index` / `InitiationsController#index` incorrectly re-applied `.visible`.
+- Draft badge shown to the creator on event/initiation cards (not only moderators).
+
+## [2026-08-02] - Event image viewer (cover + N loop maps)
+
+### Fixed
+- Clicking event cover or loop map images opens a viewer again (any number of loops).
+- **Mobile / coarse pointer:** open the full image in a new tab (native browser zoom + landscape rotation).
+- **Desktop:** in-page lightbox (Esc / backdrop / close), full-resolution source.
+
+### Changed
+- Loop map thumbnails are `<a href="full-image" target="_blank">` with Stimulus lightbox intercept on desktop only.
+
+## [2026-08-02] - Membership renewal email → login → form
+
+### Fixed
+- Renewal reminder emails now link to `/memberships/new?type=…&renew_from=…` (not bare `/memberships/new`).
+- Guest hitting a membership renewal URL is redirected to login, then returned to the same URL (Devise stored location).
+- Login page shows a short hint when the return URL is under `/memberships`.
+- Early renewal no longer blocked in early August: next-season sales open on **1 August** (aligned with J-30 reminder emails), instead of 15 August.
+- `renew_from` prefills the form for **expired** memberships and **active** ones within 30 days of `end_date` (`Membership#renewable_now?`).
+- Index / show / membership cards expose a « Renouveler » CTA when `renewable_now?`.
+
+### Changed
+- `Membership::NEXT_SEASON_SALE_OPENS_DAY` : `15` → `1` (recurring every year; season calendar remains 1 Sep – 31 Aug).
+
+### Tests
+- Model sale-season thresholds (1 August), `#renewable_now?`, mailer link params, sessions return-to renewal URL, request early renewal after 1 August.
+
 ## [2026-07-03] - Unified cart permanent (v2.3)
 
 ### Changed

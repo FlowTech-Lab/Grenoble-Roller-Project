@@ -1,22 +1,40 @@
 ---
 title: "Release Dev → staging (June 2026)"
 status: "active"
-version: "2.2.1"
+version: "2.3.1"
 created: "2026-06-07"
-updated: "2026-06-30"
-tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications", "admin-panel"]
+updated: "2026-08-03"
+tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications", "admin-panel", "memberships", "events"]
 ---
 
 # Release Dev → staging (June 2026)
 
 **Target branch:** merge `Dev` → `staging` (PR)  
-**Commit range:** `5b48e999` … `54ebcd1b` (`origin/staging` … `Dev`)  
-**Head on Dev:** `54ebcd1b` — `fix(admin): offcanvas layout, compact dashboard KPIs, and mobile navbar band`
+**Commit range:** `2201eefa` … `0f16a913` (`origin/staging` … `Dev`) — **v2.3.1 slice only** (3 commits ahead of current staging tip)  
+**Head on Dev:** `0f16a913` — `fix(events): show organizers their own draft events on index`
 
 **Agent SSOT for checkout epic:** [`PLAN-unified-checkout-MASTER.md`](PLAN-unified-checkout-MASTER.md) (Waves 0–6 complete on `Dev`).  
 **Agent SSOT for Discord notifications:** [`DR-002-discord-webhook-notifications.md`](DR-002-discord-webhook-notifications.md) (implemented 2026-06-09).
 
 > **v2.3 addendum (2026-07-03):** legacy session cart and `UNIFIED_CART_ENABLED` flag **removed** on `Dev`. Unified cart is permanent. Rollback = redeploy previous release (no ENV toggle). See [`CHANGELOG.md`](CHANGELOG.md) § `[2026-07-03]`.
+
+> **v2.3.1 addendum (2026-08-02):** membership renewal email / login return / early August sale window. Next-season sales open **1 August** (was 15). No migrations, no new ENV. See [`CHANGELOG.md`](CHANGELOG.md) § `[2026-08-02]`.
+
+> **v2.3.1 addendum (2026-08-02 b):** event cover + loop map image viewer — mobile opens native image tab; desktop lightbox. Works for N loops. See [`CHANGELOG.md`](CHANGELOG.md) § event image viewer.
+
+> **v2.3.1 addendum (2026-08-03):** organizers see their own `draft` events/initiations on public index (no more `.visible` wipe after `policy_scope`). No migrations, no new ENV. See [`CHANGELOG.md`](CHANGELOG.md) § `[2026-08-03]`.
+
+### v2.3.1 slice — commits (`staging`…`Dev`)
+
+| Commit | Summary |
+|--------|---------|
+| `9bc3ec70` | Membership renewal email → login return; next-season sales open **1 August** |
+| `28f55175` | Event cover + loop maps: native image tab on mobile, lightbox on desktop |
+| `0f16a913` | Organizers see own draft events (and initiations) on index |
+
+**Migrations:** none  
+**ENV:** none  
+**Rollback:** redeploy previous staging image / revert merge to `2201eefa`
 
 ---
 

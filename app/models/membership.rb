@@ -94,9 +94,10 @@ class Membership < ApplicationRecord
     (1..9).all? { |i| send("health_q#{i}").present? }
   end
 
-  # Season calendar: 1 Sep – 31 Aug. Next season sales open 15 Aug (not before).
+  # Season calendar: 1 Sep – 31 Aug.
+  # Next season sales open 1 Aug (aligned with J-30 renewal reminder emails).
   NEXT_SEASON_SALE_OPENS_MONTH = 8
-  NEXT_SEASON_SALE_OPENS_DAY = 15
+  NEXT_SEASON_SALE_OPENS_DAY = 1
 
   # Running season (calendar): which season we are in today (initiations, active checks).
   def self.current_season_dates(on = Date.current)
@@ -107,7 +108,7 @@ class Membership < ApplicationRecord
     season_name_for_start_year(season_start_year_for_running(on))
   end
 
-  # Sale season: which season new memberships / cart lines use (opens next season from 15 Aug).
+  # Sale season: which season new memberships / cart lines use (opens next season from 1 Aug).
   def self.sale_season_dates(on = Date.current)
     dates_for_season_start_year(season_start_year_for_sale(on))
   end
@@ -178,6 +179,22 @@ class Membership < ApplicationRecord
     return false if pending? || trial? # Les adhésions en attente ou en essai ne sont jamais expirées
     return false unless end_date.present? # Pas de date = pas expirée
     end_date < Date.current
+  end
+
+  # True when the member can start next-season renewal (expired, or active within 30 days of end).
+  def renewable_now?
+    return true if expired?
+    return false unless status == "active" && end_date.present?
+
+    end_date <= 30.days.from_now.to_date
+  end
+
+  # Form type for renewal links (email CTA, index/show buttons).
+  def renewal_form_type
+    return "child" if is_child_membership?
+
+    user_age = user&.age
+    user_age.present? && user_age < 18 ? "teen" : "adult"
   end
 
   # Méthode publique pour vérifier si c'est une adhésion enfant

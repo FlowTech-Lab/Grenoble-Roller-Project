@@ -46,23 +46,26 @@ RSpec.describe Membership, type: :model do
     end
   end
 
-  describe 'sale season (opens next season from 15 August)' do
-    it 'uses running season before 15 August' do
+  describe 'sale season (opens next season from 1 August)' do
+    it 'uses running season before 1 August' do
       travel_to Date.new(2026, 6, 5) do
         expect(Membership.sale_season_name).to eq('2025-2026')
         expect(Membership.current_season_name).to eq('2025-2026')
       end
-    end
 
-    it 'still uses running season on 14 August' do
-      travel_to Date.new(2026, 8, 14) do
+      travel_to Date.new(2026, 7, 31) do
         expect(Membership.sale_season_name).to eq('2025-2026')
         expect(Membership.current_season_name).to eq('2025-2026')
       end
     end
 
-    it 'opens next season from 15 August until end of August' do
-      travel_to Date.new(2026, 8, 15) do
+    it 'opens next season from 1 August until end of August' do
+      travel_to Date.new(2026, 8, 1) do
+        expect(Membership.sale_season_name).to eq('2026-2027')
+        expect(Membership.current_season_name).to eq('2025-2026')
+      end
+
+      travel_to Date.new(2026, 8, 14) do
         expect(Membership.sale_season_name).to eq('2026-2027')
         expect(Membership.current_season_name).to eq('2025-2026')
       end
@@ -75,6 +78,29 @@ RSpec.describe Membership, type: :model do
       travel_to Date.new(2026, 8, 31) do
         expect(Membership.sale_season_name).to eq('2026-2027')
         expect(Membership.current_season_name).to eq('2025-2026')
+      end
+    end
+
+    describe '#renewable_now?' do
+      it 'is true for expired memberships' do
+        membership = create(:membership, :expired, end_date: Date.new(2026, 7, 1), start_date: Date.new(2025, 9, 1), season: '2025-2026')
+        travel_to Date.new(2026, 8, 2) do
+          expect(membership.renewable_now?).to be(true)
+        end
+      end
+
+      it 'is true for active memberships within 30 days of end_date' do
+        membership = create(:membership, status: :active, end_date: Date.new(2026, 8, 31), start_date: Date.new(2025, 9, 1), season: '2025-2026')
+        travel_to Date.new(2026, 8, 2) do
+          expect(membership.renewable_now?).to be(true)
+        end
+      end
+
+      it 'is false for active memberships more than 30 days from end_date' do
+        membership = create(:membership, status: :active, end_date: Date.new(2026, 8, 31), start_date: Date.new(2025, 9, 1), season: '2025-2026')
+        travel_to Date.new(2026, 6, 1) do
+          expect(membership.renewable_now?).to be(false)
+        end
       end
     end
 

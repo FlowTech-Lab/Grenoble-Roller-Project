@@ -221,11 +221,12 @@
           <div class="card card-liquid border-liquid event-loop-card">
             <div class="event-loop-card__visual">
               <% if @event.route.map_image.attached? %>
-                <%= tag.div(
+                <%= link_to(
+                      route_map_image_path(@event.route),
                       class: "event-loop-card__media route-image-container",
+                      target: "_blank",
+                      rel: "noopener noreferrer",
                       data: route_map_viewer_data(@event.route, title: "Carte du parcours"),
-                      role: "button",
-                      tabindex: 0,
                       aria: { label: "Agrandir la carte du parcours" }
                     ) do %>
                   <%= image_tag(route_map_image_path(@event.route, resize_to: [1200, 600]),
