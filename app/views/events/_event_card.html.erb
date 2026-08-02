@@ -55,8 +55,8 @@
         <p class="text-muted small mb-3"><%= truncate(event.description, length: 100, omission: '...') %></p>
 
         <div class="d-flex flex-wrap gap-2 mb-3">
-          <!-- Badge Statut (pour admins/moderateurs) - exclure les rejetés -->
-          <% if can_moderate? && event.draft? %>
+          <!-- Draft / rejected badges: moderators always; creator sees their own drafts -->
+          <% if event.draft? && (can_moderate? || (user_signed_in? && event.creator_user_id == current_user.id)) %>
             <span class="badge bg-warning text-dark">
               <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i><%= t("statuses.event.draft") %>
             </span>

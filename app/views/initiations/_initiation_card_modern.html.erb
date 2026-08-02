@@ -55,7 +55,7 @@
 
         <div class="d-flex flex-wrap gap-2 mb-3">
           <!-- Badge Statut (pour admins/moderateurs) - exclure les rejetées -->
-          <% if can_moderate? && initiation.draft? %>
+          <% if initiation.draft? && (can_moderate? || (user_signed_in? && initiation.creator_user_id == current_user.id)) %>
             <span class="badge bg-warning text-dark">
               <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i><%= t("statuses.event.draft") %>
             </span>
