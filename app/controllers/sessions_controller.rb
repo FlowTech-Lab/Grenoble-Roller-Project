@@ -10,6 +10,12 @@ class SessionsController < Devise::SessionsController
       redirect_to root_path, notice: "Vous êtes déjà connecté·e. Bienvenue #{current_user.first_name.presence || 'membre'} ! 👋"
       return
     end
+
+    stored = session["user_return_to"].to_s
+    if stored.include?("/memberships")
+      flash.now[:notice] ||= "Connectez-vous pour renouveler votre adhésion."
+    end
+
     super
   end
 

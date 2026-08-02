@@ -47,7 +47,7 @@ FactoryBot.define do
       end
     end
 
-    # Pending membership seeded with next season (bug scenario before 15 August).
+    # Pending membership seeded with next season (bug scenario before sale open).
     trait :wrong_next_season do
       pending
       season { '2026-2027' }

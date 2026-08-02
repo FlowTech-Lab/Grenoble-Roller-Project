@@ -28,10 +28,10 @@ class MembershipsController < ApplicationController
       return
     end
 
-    # Si renouvellement depuis une adhésion expirée (pour enfants)
+    # Renewal from an expired or active-in-window membership (child)
     if type == "child" && params[:renew_from].present?
       old_membership = current_user.memberships.find_by(id: params[:renew_from])
-      if old_membership && old_membership.is_child_membership? && old_membership.expired?
+      if old_membership&.is_child_membership? && old_membership.renewable_now?
         @old_membership = old_membership
         # Pré-remplir les informations depuis l'ancienne adhésion
         # Note: on ne pré-remplit PAS with_tshirt pour permettre de choisir un nouveau T-shirt
@@ -48,10 +48,10 @@ class MembershipsController < ApplicationController
       end
     end
 
-    # Si renouvellement depuis une adhésion expirée (pour adultes)
-    if type == "adult" && params[:renew_from].present?
+    # Renewal from an expired or active-in-window membership (adult / teen)
+    if %w[adult teen].include?(type) && params[:renew_from].present?
       old_membership = current_user.memberships.find_by(id: params[:renew_from])
-      if old_membership && !old_membership.is_child_membership? && old_membership.expired?
+      if old_membership && !old_membership.is_child_membership? && old_membership.renewable_now?
         @old_membership = old_membership
         # Pré-remplir les informations depuis l'ancienne adhésion
         # Note: Pour les adultes, les données (first_name, last_name, date_of_birth, etc.) sont dans User
@@ -460,11 +460,11 @@ class MembershipsController < ApplicationController
     redirect_to memberships_path, alert: "Erreur lors de la conversion : #{e.message}"
   end
 
-  # Renouvellement d'une adhésion enfant expirée (avec formulaire pour choisir la catégorie)
+  # Renouvellement d'une adhésion enfant (expirée ou active dans la fenêtre J-30)
   def renew
     old_membership = @membership
 
-    unless old_membership.is_child_membership? && old_membership.expired?
+    unless old_membership.is_child_membership? && old_membership.renewable_now?
       redirect_to membership_path(old_membership), alert: "Cette adhésion ne peut pas être renouvelée."
       return
     end

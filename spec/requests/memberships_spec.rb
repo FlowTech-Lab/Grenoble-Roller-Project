@@ -34,6 +34,29 @@ RSpec.describe "Memberships", type: :request do
       # Vérifier simplement qu'il y a une réponse (success ou redirect)
       expect(response.status).to be_between(200, 399)
     end
+
+    context "early renewal during sale of next season" do
+      let!(:expiring_membership) do
+        create(:membership,
+          user: user,
+          status: :active,
+          season: "2025-2026",
+          start_date: Date.new(2025, 9, 1),
+          end_date: Date.new(2026, 8, 31),
+          category: :standard)
+      end
+
+      it "opens the adult renewal form with prefill after 1 August" do
+        travel_to Date.new(2026, 8, 2) do
+          login_user(user)
+          get new_membership_path(type: "adult", renew_from: expiring_membership.id)
+
+          expect(response).to have_http_status(:success)
+          expect(assigns(:old_membership)).to eq(expiring_membership)
+          expect(assigns(:season)).to eq("2026-2027")
+        end
+      end
+    end
   end
 
   describe "GET /memberships/:id" do
@@ -797,7 +820,7 @@ RSpec.describe "Memberships", type: :request do
           expect(flash[:notice]).to include("Adhésion ajoutée au panier")
         end
 
-        it "assigns sale season (not next season before 15 August)" do
+        it "assigns sale season (not next season before 1 August)" do
           travel_to Date.new(2026, 6, 5) do
             login_user(user_with_dob)
 
