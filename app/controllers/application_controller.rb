@@ -49,7 +49,7 @@ class ApplicationController < ActionController::Base
     # Paramètres de pagination
     page_param = vars[:page_param] || :page
     page = (params[page_param] || vars[:page] || 1).to_i
-    items = vars[:items] || Pagy.options[:items] || 25
+    items = vars[:items] || vars[:limit] || Pagy::OPTIONS[:limit] || 25
 
     # Créer l'instance Pagy::Offset avec les paramètres corrects
     # Pagy 43 utilise Pagy::Offset.new avec des keyword arguments
@@ -84,7 +84,7 @@ class ApplicationController < ActionController::Base
     count = array.size
     page_param = vars[:page_param] || :page
     page = (params[page_param] || vars[:page] || 1).to_i
-    items = vars[:items] || Pagy.options[:items] || 25
+    items = vars[:items] || vars[:limit] || Pagy::OPTIONS[:limit] || 25
 
     # Créer l'instance Pagy::Offset avec les paramètres corrects
     # Pagy 43 utilise Pagy::Offset.new avec des keyword arguments
