@@ -46,7 +46,7 @@
                   <span class="text-truncate me-2">
                     <i class="bi bi-grid me-2" aria-hidden="true"></i>Tous les produits
                   </span>
-                  <span class="badge <%= @selected_category.nil? ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= Product.where(is_active: true).count %></span>
+                  <span class="badge <%= @selected_category.nil? ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= @active_products_count %></span>
                 </div>
               <% end %>
               
