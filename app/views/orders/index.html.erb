@@ -148,23 +148,7 @@
             <div id="cancelledList" class="collapse mt-2">
               <div class="d-flex flex-column gap-2">
                 <% cancelled_orders.each do |order| %>
-                  <div class="card border-0 shadow-sm" style="border-left: 3px solid #dc3545;">
-                    <div class="card-body py-2">
-                      <div class="d-flex justify-content-between align-items-start">
-                        <div class="small">
-                          <strong>Commande #<%= order.id %></strong>
-                          <br>
-                          <span class="text-muted">
-                            <%= l(order.created_at, format: "%d %b %Y") %>
-                            • <%= order.order_items.sum(:quantity) %> article<%= 's' if order.order_items.sum(:quantity) != 1 %>
-                          </span>
-                        </div>
-                        <strong class="text-danger">
-                          <%= number_to_currency(order.total_cents / 100.0, unit: "€", format: "%n %u") %>
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
+                  <%= render "order_card_compact", order: order %>
                 <% end %>
               </div>
             </div>

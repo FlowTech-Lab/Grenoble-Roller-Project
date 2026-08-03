@@ -24,12 +24,40 @@
     --gr-warning: #7e4900;
     --gr-danger: #911a14;
     --gr-info: #2782bb;
-    --bs-body-bg: rgba(255, 255, 255, 0.01);
 
-    /* Glass/Liquid effects */
-    --liquid-glass-bg:     rgba(255,255,255,0.35);
-    --liquid-glass-border: rgba(255,255,255,0.2);
+    /* Soft status chips/badges — text on pastel (WCAG 2.1 AA ≥4.5:1).
+       Do NOT use --bs-warning / --bs-info as text on pale fills (≈1.4–2:1). */
+    --status-pending-fg: #7e4900;
+    --status-pending-bg: #FFF3CD;
+    --status-pending-border: #c9a24a;
+    --status-prep-fg: #055160;
+    --status-prep-bg: #CFF4FC;
+    --status-prep-border: #6bb8c9;
+    --status-sent-fg: #0d6322;
+    --status-sent-bg: #D1E7DD;
+    --status-sent-border: #6aaa7e;
+    --status-cancelled-fg: #911a14;
+    --status-cancelled-bg: #F8D7DA;
+    --status-cancelled-border: #c97a7f;
+    --status-active-fg: var(--status-sent-fg);
+    --status-active-bg: var(--status-sent-bg);
+    --status-active-border: var(--status-sent-border);
+    --status-expired-fg: #5a6268;
+    --status-expired-bg: #E9ECEF;
+    --status-expired-border: #adb5bd;
+
+    /* Do NOT leave body bg nearly transparent — it overrides Bootstrap dark and
+       leaves light page + dark-theme text (broken in Cursor Simple Browser). */
+    --bs-body-bg: #f2f4f6;
+    --bs-body-bg-rgb: 242, 244, 246;
+
+    /* Theme-agnostic translucent grey overlay (8-digit hex = RGB + alpha).
+       Works on light and dark page backgrounds without hardcoding navy. */
+    --liquid-glass-bg: #969ca114;
+    --liquid-glass-bg-solid: #969ca114;
+    --liquid-glass-border: rgba(0, 0, 0, 0.12);
     --liquid-blur: blur(12px);
+    --bs-card-bg: var(--liquid-glass-bg);
 
     /* Navbar glass — adjust alpha on --navbar-glass-bg (current: 30%) */
     --navbar-glass-bg: rgba(255, 255, 255, 0.30);
@@ -62,8 +90,19 @@
   }
   
   [data-bs-theme=dark] {
-    --liquid-glass-bg: rgba(0, 0, 0, 0.25);
-    --liquid-glass-border: rgba(255, 255, 255, 0.1);
+    /* Solid dark page base (must redefine --bs-body-bg after :root override) */
+    --bs-body-bg: #0f131a;
+    --bs-body-bg-rgb: 15, 19, 26;
+    --bs-body-color: #e6edf3;
+    --bs-secondary-color: rgba(230, 237, 243, 0.75);
+
+    /* Soft translucent elevation.
+       Note: white@0.10 over #0f131a ≈ #272b31 (reads as opaque black).
+       Shared grey overlay #969ca114 — same token light/dark (not body-bg). */
+    --liquid-glass-bg: #969ca114;
+    --liquid-glass-bg-solid: #969ca114;
+    --liquid-glass-border: rgba(255, 255, 255, 0.18);
+    --bs-card-bg: var(--liquid-glass-bg);
 
     /* Navbar glass (dark) — keep alpha in sync with light theme */
     --navbar-glass-bg: rgba(22, 27, 34, 0.30);
@@ -82,6 +121,26 @@
     --gr-muted-dark: #a0a0a0;      /* Ratio 6.66:1 - conforme ✅ */
     --gr-primary-dark: #4d94ff;    /* Ratio 5.80:1 - conforme ✅ */
     --gr-text-dark: #e5e5e5;       /* Texte principal */
+
+    /* Soft status chips/badges — light text on tinted dark fills (≥4.5:1) */
+    --status-pending-fg: #ffd27a;
+    --status-pending-bg: #3d2e0a;
+    --status-pending-border: #8a6a28;
+    --status-prep-fg: #7dd3e8;
+    --status-prep-bg: #0a2a30;
+    --status-prep-border: #3d7a88;
+    --status-sent-fg: #8fd4a0;
+    --status-sent-bg: #0d2818;
+    --status-sent-border: #3d7a52;
+    --status-cancelled-fg: #f1a0a0;
+    --status-cancelled-bg: #2a1214;
+    --status-cancelled-border: #8a4548;
+    --status-active-fg: var(--status-sent-fg);
+    --status-active-bg: var(--status-sent-bg);
+    --status-active-border: var(--status-sent-border);
+    --status-expired-fg: #c5c8cb;
+    --status-expired-bg: #2a2e33;
+    --status-expired-border: #6c757d;
   }
   
   /* === SKIP LINK - WCAG 2.4.1 Level A === */
@@ -145,7 +204,9 @@
   
   
   [data-bs-theme=dark] body {
-    background: linear-gradient(120deg, rgba(0, 122, 255, 0.05) 0%, rgba(92, 90, 231, 0.185) 50%, rgba(138, 5, 226, 0.05) 100%);
+    background-color: var(--bs-body-bg);
+    background-image: linear-gradient(120deg, rgba(0, 122, 255, 0.08) 0%, rgba(92, 90, 231, 0.16) 50%, rgba(138, 5, 226, 0.06) 100%);
+    color: var(--bs-body-color);
     /* background-attachment: fixed désactivé sur mobile pour performance */
   }
   
@@ -358,30 +419,47 @@
   .card-event {
     border: 1px solid var(--card-border-color) !important;
   }
-  
+
   .card .card-header,
   .card-liquid .card-header {
     border-bottom: 1px solid var(--card-border-color) !important;
   }
-  
-  /* Liquid cards with glass morphism */
+
+  /* Bootstrap .card and liquid cards share the same elevated glass surface */
+  .card,
   .card-liquid {
-    background: var(--liquid-glass-bg);
+    --bs-card-bg: var(--liquid-glass-bg);
+    background: var(--liquid-glass-bg) !important;
+    background-color: var(--liquid-glass-bg) !important;
     backdrop-filter: var(--liquid-blur);
     -webkit-backdrop-filter: var(--liquid-blur);
-    border: 1px solid var(--card-border-color);
     box-shadow: var(--bs-box-shadow);
     transition: var(--transition-liquid) !important;
+  }
+
+  /* Accessibility: drop blur only — keep translucent fill so cards stay glass-like */
+  @media (prefers-reduced-transparency: reduce) {
+    .card,
+    .card-liquid {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
+  /* Liquid cards with glass morphism */
+  .card-liquid {
+    border: 1px solid var(--card-border-color);
     overflow: hidden; /* Contenir le header à l'intérieur */
   }
-  
+
+  .card:hover,
   .card-liquid:hover {
     box-shadow: var(--bs-box-shadow-lg);
   }
-  
+
   .card-liquid .card-header {
-    background: rgba(255, 255, 255, 0.4) !important;
-    background-color: rgba(255, 255, 255, 0.4) !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    background-color: rgba(255, 255, 255, 0.45) !important;
     backdrop-filter: var(--liquid-blur);
     -webkit-backdrop-filter: var(--liquid-blur);
     border-bottom: 1px solid var(--card-border-color) !important;
@@ -393,6 +471,11 @@
     /* Arrondis en haut seulement pour le premier card-header */
     border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0 !important;
     color: var(--bs-card-cap-color);
+  }
+
+  [data-bs-theme="dark"] .card-liquid .card-header {
+    background: rgba(0, 0, 0, 0.35) !important;
+    background-color: rgba(0, 0, 0, 0.35) !important;
   }
   
   .card-liquid-primary {
@@ -1035,12 +1118,14 @@
     }
   }
   
-  /* Reduced transparency (a11y): opaque navbar, generic glass unchanged */
+  /* Reduced transparency (a11y): drop blur only — never paint cards with body-bg
+     (#0f131a in dark looks like a hardcoded opaque slab). */
   @media (prefers-reduced-transparency: reduce) {
     .event-details-section,
+    .card,
     .card-liquid,
     .form-control-liquid {
-      background: var(--bs-body-bg) !important;
+      background: var(--liquid-glass-bg) !important;
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
     }
@@ -6225,9 +6310,9 @@
   }
 
   .quick-action-card {
-    background: var(--liquid-glass-bg);
-    backdrop-filter: var(--liquid-blur);
-    -webkit-backdrop-filter: var(--liquid-blur);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 2px solid;
     border-radius: 0.75rem;
     padding: 0.75rem 1rem;
@@ -6235,7 +6320,7 @@
     width: 100%;
     transition: var(--transition-liquid);
     cursor: pointer;
-    box-shadow: var(--bs-box-shadow);
+    box-shadow: none;
 
     .quick-action-card-icon {
       font-size: 1.25rem;
@@ -6279,22 +6364,25 @@
     }
   }
 
+  /* Dark: tint only — no second opaque slab inside the parent glass card */
   [data-bs-theme="dark"] .quick-action-card {
+    background: rgba(255, 255, 255, 0.04);
+
     &.teal {
       border-color: #4d94ff;
-      background: linear-gradient(135deg, rgba(33, 128, 169, 0.2) 0%, rgba(50, 184, 198, 0.2) 100%);
+      background: rgba(77, 148, 255, 0.12);
       
       &:hover {
-        background: linear-gradient(135deg, rgba(33, 128, 169, 0.3) 0%, rgba(50, 184, 198, 0.3) 100%);
+        background: rgba(77, 148, 255, 0.18);
       }
     }
     
     &.orange {
       border-color: #ffb74d;
-      background: linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 193, 77, 0.2) 100%);
+      background: rgba(255, 183, 77, 0.12);
       
       &:hover {
-        background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(255, 193, 77, 0.3) 100%);
+        background: rgba(255, 183, 77, 0.18);
       }
     }
   }
@@ -6303,6 +6391,12 @@
     .quick-action-card {
       padding: 0.625rem 0.875rem;
     }
+  }
+
+  /* Nested glass inset (e.g. pending children total strip) */
+  .membership-pending-total {
+    background: var(--liquid-glass-bg);
+    border: 1px solid var(--card-border-color);
   }
 
   /* Membership Cards - Réutilise styles card-liquid */
@@ -6376,35 +6470,41 @@
     align-items: center;
     
     &.active {
-      background: #E8F5E9;
-      color: #2E8B57;
+      background: var(--status-active-bg);
+      color: var(--status-active-fg);
+      border: 1px solid var(--status-active-border);
     }
     
     &.pending {
-      background: #FFF3E0;
-      color: #FF9800;
+      background: var(--status-pending-bg);
+      color: var(--status-pending-fg);
+      border: 1px solid var(--status-pending-border);
     }
     
     &.expired {
-      background: #F5F5F5;
-      color: #9E9E9E;
+      background: var(--status-expired-bg);
+      color: var(--status-expired-fg);
+      border: 1px solid var(--status-expired-border);
     }
   }
 
   [data-bs-theme="dark"] .status-badge {
     &.active {
-      background: rgba(76, 175, 80, 0.3);
-      color: #81c784;
+      background: var(--status-active-bg);
+      color: var(--status-active-fg);
+      border-color: var(--status-active-border);
     }
     
     &.pending {
-      background: rgba(255, 152, 0, 0.3);
-      color: #ffb74d;
+      background: var(--status-pending-bg);
+      color: var(--status-pending-fg);
+      border-color: var(--status-pending-border);
     }
     
     &.expired {
-      background: rgba(158, 158, 158, 0.3);
-      color: #bdbdbd;
+      background: var(--status-expired-bg);
+      color: var(--status-expired-fg);
+      border-color: var(--status-expired-border);
     }
   }
 
@@ -7682,13 +7782,120 @@
     }
   }
 
-  /* Order Cards - Réutilise styles card existants */
-  .card[style*="border-left"] {
+  /* Order Cards — dense SaaS row + translucent glass + status accent */
+  .order-card {
+    --order-accent: var(--gr-primary);
+    border-left: 3px solid var(--order-accent) !important;
     transition: var(--transition-liquid);
-    
+
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+      box-shadow: var(--shadow-hover-card);
+    }
+
+    &--pending { --order-accent: var(--bs-warning, #ffc107); }
+    &--prep { --order-accent: var(--bs-info, #17a2b8); }
+    &--sent { --order-accent: var(--bs-success, #28a745); }
+    &--cancelled { --order-accent: var(--bs-danger, #dc3545); }
+
+    .order-card__row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem 1rem;
+      padding: 0.65rem 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .order-card__main {
+      flex: 1 1 12rem;
+      min-width: 0;
+    }
+
+    .order-card__idline {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .order-card__id {
+      font-size: 0.95rem;
+    }
+
+    .order-card__date {
+      font-size: 0.8rem;
+    }
+
+    .order-card__product {
+      font-size: 0.8rem;
+      margin-top: 0.15rem;
+      max-width: 100%;
+    }
+
+    .order-card__chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+
+      &--pending {
+        color: var(--status-pending-fg);
+        background: var(--status-pending-bg);
+        border-color: var(--status-pending-border);
+      }
+
+      &--prep {
+        color: var(--status-prep-fg);
+        background: var(--status-prep-bg);
+        border-color: var(--status-prep-border);
+      }
+
+      &--sent {
+        color: var(--status-sent-fg);
+        background: var(--status-sent-bg);
+        border-color: var(--status-sent-border);
+      }
+
+      &--cancelled {
+        color: var(--status-cancelled-fg);
+        background: var(--status-cancelled-bg);
+        border-color: var(--status-cancelled-border);
+      }
+    }
+
+    .order-card__price {
+      flex-shrink: 0;
+      min-width: 5.5rem;
+
+      strong {
+        font-size: 0.95rem;
+      }
+    }
+
+    .order-card__actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    @media (max-width: 575.98px) {
+      .order-card__voir-label {
+        display: none;
+      }
+
+      .order-card__actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-left: 0;
+      }
     }
   }
 

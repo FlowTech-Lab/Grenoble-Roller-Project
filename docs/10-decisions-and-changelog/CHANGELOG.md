@@ -2,6 +2,21 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Orders density + glass + WCAG status chips (v2.3.3 → Dev)
+
+### Changed
+- **Orders (`/orders`):** dense billing-style rows (`#id · date · product · status chip · price · Payer/Voir`); FR icon chips; inline actions (no full-width Détails).
+- **Glass:** solid light/dark `--bs-body-bg`; theme-agnostic `--liquid-glass-bg: #969ca114`; reduced-transparency drops blur only (never paints cards with `body-bg`).
+- **A11y soft status:** `--status-*-fg/bg/border` dual-theme (≥4.5:1); order chips + `.status-badge` no longer use `--bs-warning` as text on pastel fills.
+
+### Fixed
+- Theme flash / broken dark text when body bg was nearly transparent.
+- Stimulus `route_image_viewer`: declare `#escapeHandler` (private field SyntaxError).
+
+### Documentation
+- Patch note: [`release-orders-density-ux-2026-08.md`](release-orders-density-ux-2026-08.md) (v2.3.3)
+- Plan: [`PLAN-orders-density-ux.md`](PLAN-orders-density-ux.md)
+
 ## [2026-08-03] - UX memberships + shop catalog (v2.3.2 → Dev)
 
 ### Changed

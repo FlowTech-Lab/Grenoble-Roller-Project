@@ -308,7 +308,7 @@
                     <%= children_pending.count %>
                     <%= children_pending.count == 1 ? 'enfant en attente de paiement' : 'enfants en attente de paiement' %>
                   </h4>
-                  <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                  <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded membership-pending-total">
                     <strong>Total :</strong>
                     <strong class="fs-5">
                       <%= number_to_currency(children_pending.sum(&:total_amount_cents) / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
