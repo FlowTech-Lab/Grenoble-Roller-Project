@@ -35,53 +35,22 @@
     </div>
   </div>
 
-  <section class="mb-5" aria-label="Catalogue produits">
-    <div class="row">
-      <!-- Sidebar filtres catégories (sticky on desktop, like memberships sidebar) -->
-      <aside class="col-12 col-lg-3 mb-4 mb-lg-0" aria-label="Filtres par catégorie">
-        <div class="sidebar-sticky shop-filters-sidebar">
-          <div class="card card-liquid rounded-liquid shadow-sm">
-            <div class="card-body">
-              <h2 class="h6 mb-3">
-                <i class="bi bi-funnel text-liquid-primary me-2" aria-hidden="true"></i>Catégories
-              </h2>
-            
-            <div class="d-flex flex-column gap-2">
-              <%= link_to products_path, 
-                  class: "category-filter-item text-decoration-none #{'active' unless @selected_category}" do %>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="text-truncate me-2">
-                    <i class="bi bi-grid me-2" aria-hidden="true"></i>Tous les produits
-                  </span>
-                  <span class="badge <%= @selected_category.nil? ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= @active_products_count %></span>
-                </div>
-              <% end %>
-              
-              <% @categories.each do |category| %>
-                <% 
-                  is_active = @selected_category&.id == category.id
-                  count = @category_counts[category.id] || 0
-                %>
-                <% if count > 0 %>
-                  <%= link_to products_path(category: category.slug), 
-                      class: "category-filter-item text-decoration-none #{'active' if is_active}" do %>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <span class="text-truncate me-2">
-                        <i class="bi bi-tag me-2" aria-hidden="true"></i><%= category.name %>
-                      </span>
-                      <span class="badge <%= is_active ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= count %></span>
-                    </div>
-                  <% end %>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        </div>
+  <section class="shop-catalog mb-5" aria-label="Catalogue produits">
+    <!-- Mobile: horizontal chips (no tall filter card above the grid) -->
+    <div class="shop-filters-mobile d-lg-none mb-3">
+      <p class="small text-muted mb-2">Filtrer</p>
+      <%= render "category_filters", variant: :chips %>
+    </div>
+
+    <div class="shop-catalog-layout">
+      <!-- Desktop: floating sticky rail, visually separated from the grid -->
+      <aside class="shop-filter-rail d-none d-lg-block" aria-label="Filtres par catégorie">
+        <div class="shop-filter-panel sidebar-sticky shop-filters-sidebar">
+          <%= render "category_filters", variant: :rail %>
         </div>
       </aside>
-      
-      <!-- Contenu principal -->
-      <div class="col-12 col-lg-9">
+
+      <div class="shop-catalog-main">
         <% if @selected_category %>
           <div class="mb-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -96,7 +65,7 @@
             </div>
           </div>
         <% end %>
-        
+
         <div class="product-grid">
           <% @products.each do |product| %>
             <% 

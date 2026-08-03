@@ -4632,6 +4632,95 @@
     }
   }
 
+
+  /* Shop catalog: floating filter rail + separated product grid */
+  .shop-catalog-layout {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 992px) {
+    .shop-catalog-layout {
+      grid-template-columns: 15rem minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .shop-catalog-layout {
+      grid-template-columns: 16.5rem minmax(0, 1fr);
+      gap: 2.5rem;
+    }
+  }
+
+  .shop-filter-panel {
+    background: var(--liquid-glass-bg);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid var(--card-border-color);
+    border-radius: 1.2rem;
+    padding: 1.25rem 1rem;
+    box-shadow: var(--bs-box-shadow);
+  }
+
+  .shop-filter-heading {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+    margin-bottom: 1rem;
+  }
+
+  .shop-filter-chips {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .shop-filter-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--card-border-color);
+    background: var(--liquid-glass-bg);
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .shop-filter-chip:hover {
+    border-color: var(--gr-primary);
+    color: var(--gr-primary);
+  }
+
+  .shop-filter-chip.active {
+    background: var(--gr-primary);
+    border-color: var(--gr-primary);
+    color: #fff;
+  }
+
+  .shop-filter-chip-count {
+    font-size: 0.75rem;
+    opacity: 0.85;
+  }
+
+  .shop-filter-chip.active .shop-filter-chip-count {
+    opacity: 1;
+  }
+
+  .shop-catalog-main .product-grid {
+    padding-top: 0;
+  }
+
 .price-row {
   display: flex;
   align-items: baseline;
