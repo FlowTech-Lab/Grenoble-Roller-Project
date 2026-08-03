@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <!-- Bannière temporaire vers l'ancienne boutique HelloAsso -->
+  <!-- Temporary HelloAsso banner — keep until volunteers finish native shop -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
@@ -100,7 +100,7 @@
         <div class="card-body d-flex flex-column">
           <!-- Titre et catégorie -->
           <div class="mb-3">
-            <h1 class="product-title mb-2"><%= @product.name %></h1>
+            <h1 class="product-show-title mb-2"><%= @product.name %></h1>
             <% if @product.category %>
               <p class="text-muted mb-0">
                 <i class="bi bi-tag me-1" aria-hidden="true"></i><%= @product.category.name %>

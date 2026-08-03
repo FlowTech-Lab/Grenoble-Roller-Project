@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Pagy configuration (version 43+)
-# Note: Les extras Bootstrap sont chargés automatiquement via le module Loader
-# Les helpers bootstrap_series_nav sont disponibles directement sans require
+# Note: Bootstrap extras load via the Loader module; bootstrap_series_nav helpers
+# are available without an explicit require.
 
-# Configuration via Pagy.options (nouvelle API Pagy 43)
-Pagy.options[:items] = 25 # Items par page par défaut
-Pagy.options[:size] = [ 1, 4, 4, 1 ] # [first, page, gap, last]
-# Note: overflow n'est plus nécessaire dans Pagy 43, géré automatiquement
+# Official API: Pagy::OPTIONS (Pagy.options is deprecated and warns at boot)
+Pagy::OPTIONS[:limit] = 25 # default items per page
+# Nav window uses :slots (Integer). Old :size arrays are ignored in Pagy 43+.
+# Default SERIES_SLOTS is 7 — leave unset unless we need a different window.

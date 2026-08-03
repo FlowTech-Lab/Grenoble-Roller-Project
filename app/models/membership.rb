@@ -182,11 +182,34 @@ class Membership < ApplicationRecord
   end
 
   # True when the member can start next-season renewal (expired, or active within 30 days of end).
+  # Hidden once a paid/pending sale-season membership already exists for the same person.
+  # Trial alone does not count (child may still upgrade to a paid renewal).
   def renewable_now?
+    return false if successor_sale_season_membership?
     return true if expired?
     return false unless status == "active" && end_date.present?
 
     end_date <= 30.days.from_now.to_date
+  end
+
+  # Paid sale-season membership already created for this adult / child (active or pending payment).
+  def successor_sale_season_membership?
+    return false unless user_id.present?
+
+    sale = self.class.sale_season_name
+    return false if season == sale
+
+    scope = user.memberships.where(season: sale).where(status: [ :active, :pending ])
+    if is_child_membership?
+      scope.where(
+        is_child_membership: true,
+        child_first_name: child_first_name,
+        child_last_name: child_last_name,
+        child_date_of_birth: child_date_of_birth
+      ).exists?
+    else
+      scope.personal.exists?
+    end
   end
 
   # Form type for renewal links (email CTA, index/show buttons).

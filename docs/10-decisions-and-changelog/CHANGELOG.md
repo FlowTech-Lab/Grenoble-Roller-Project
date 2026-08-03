@@ -2,6 +2,21 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - UX memberships + shop catalog (v2.3.2 → Dev)
+
+### Changed
+- **Memberships:** remaining-days progress bar; **Réadhérer** on adult card (not hero-only); hide renew once sale-season active/pending successor exists; skip misleading sidebar « Pas d'adhésion active » during renew window; button/icon vertical centering.
+- **Shop catalog:** fixed **1:1** listing thumbnails (PDP stays **16:9**); denser shelf cards; whole-card links (no listing CTA buttons); floating filter rail + mobile chips; HelloAsso migration banner kept; product count in controller; cart shortcut in header.
+- **Orders / checkout:** hero balance + hide empty-state sidebar shop link; checkout uses site `container`.
+
+### Tests
+- Membership `#renewable_now?` successor cases; request specs for adult/child Réadhérer; shop catalog clickable cards.
+
+### Documentation
+- Patch note: [`release-ux-pages-verification-2026-08.md`](release-ux-pages-verification-2026-08.md) (v2.3.2)
+- PLAN tracker: [`PLAN-ux-pages-verification.md`](PLAN-ux-pages-verification.md)
+- Image formats: listing 1:1 CSS exception — [`image-formats-and-variants.md`](../04-rails/setup/image-formats-and-variants.md)
+
 ## [2026-08-03] - Shop index uses site container width
 
 ### Fixed

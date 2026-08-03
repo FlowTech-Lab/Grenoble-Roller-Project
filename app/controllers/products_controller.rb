@@ -30,6 +30,7 @@ class ProductsController < ApplicationController
                                       .where(products: { is_active: true })
                                       .group("product_categories.id")
                                       .count("products.id")
+    @active_products_count = Product.where(is_active: true).count
   end
 
   def show
