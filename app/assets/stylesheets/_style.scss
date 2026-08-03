@@ -215,7 +215,22 @@
   }
   
   /* === LIQUID COMPONENTS === */
-  
+
+  /* Icon + label vertical centering (Bootstrap Icons sit high with default line-height) */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn > .bi,
+  .btn > i[class^="bi-"],
+  .btn > i[class*=" bi-"] {
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+  }
+
   /* Liquid buttons */
   .btn-liquid-primary {
     background: var(--gradient-liquid-primary);
@@ -4417,16 +4432,28 @@
      SHOP - MINI BOUTIQUE COMPONENTS
      ======================================== */
 
-  /* Product card */
+  /* Product card — whole card is the link (no CTA button) */
+  a.card-product,
+  a.card-product:hover,
+  a.card-product:focus,
+  a.card-product:focus-visible {
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none !important; /* overrides global a:hover underline */
+  }
+
   .card-product {
     transition: var(--transition-liquid) !important;
     overflow: hidden;
+    height: 100%;
   }
 
-  /* Assurer pied aligné : contenu + spacer + footer collé en bas */
+  /* Assurer pied aligné + densité compacte type shelf ecommerce */
   .card-product .card-body {
     display: flex;
     flex-direction: column;
+    padding: 0.85rem 0.9rem 1rem;
+    gap: 0.35rem;
   }
 
   .card-product:hover {
@@ -4434,14 +4461,20 @@
     box-shadow: var(--shadow-hover-card) !important;
   }
 
-  /* Image wrapper 16:9 centré — format unique décision bénévoles 2026-05 */
+  a.card-product:focus-visible {
+    outline: 2px solid var(--bs-primary, #0d6efd);
+    outline-offset: 3px;
+  }
+
+  /* Catalog cards: fixed square thumbnails (ecommerce shelf).
+     PDP / events keep 16:9 — see docs/04-rails/setup/image-formats-and-variants.md */
   .card-product-image-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1 / 1;
     border-bottom: 1px solid var(--liquid-glass-border);
     overflow: hidden;
-    border-radius: 1.6rem 1.6rem 0 0; /* cartes produits : arrondi uniquement en haut */
+    border-radius: 1.2rem 1.2rem 0 0;
   }
 
 /* Show produit : image avec arrondi adapté au layout */
@@ -4514,22 +4547,88 @@
     font-weight: 600;
   }
 
-  /* Product content spacing */
+  /* Product content — fixed density so cards stay shelf-aligned */
   .product-content {
-    min-height: 3.25rem; /* reserve space for title/desc without compressing footer */
+    min-height: 0;
+  }
+
+  .card-product .product-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .card-product .product-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.35;
+    margin-bottom: 0 !important;
+  }
+
+  .card-product .product-options-section {
+    margin-bottom: 0.35rem !important;
+  }
+
+  .card-product .product-options p {
+    margin-bottom: 0.15rem !important;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    overflow: hidden;
+  }
+
+  /* Do not stretch cards with empty flex space — keeps responsive height tight */
+  .card-product .spacer {
+    display: none;
   }
 
   .product-description {
     line-height: 1.4;
   }
 
-  /* Flexible footer: price left, CTA right */
+  /* Footer: price only (card itself is the click target) */
   .product-footer {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-top: 8px;
+    align-items: center;
+    padding-top: 0.5rem;
+    margin-top: auto;
     border-top: 1px solid var(--liquid-glass-border);
+  }
+
+  .card-product .price {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  /* Tighter grid once thumbnails are square */
+  .shop-catalog-main .product-grid {
+    gap: 12px;
+  }
+
+  @media (min-width: 640px) {
+    .shop-catalog-main .product-grid {
+      gap: 16px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .shop-catalog-main .product-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 1400px) {
+    .shop-catalog-main .product-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
 .spacer { 

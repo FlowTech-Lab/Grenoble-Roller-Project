@@ -96,22 +96,16 @@
                 end
               end
 
-              has_options = size_options.any? || color_options.any?
+              product_href = product_path(product.slug.presence || product)
             %>
-            <article class="card card-product card-liquid rounded-liquid" 
-                     data-product-url="<%= product_path(product.slug.presence || product) %>" 
-                     style="cursor: pointer;">
+            <%= link_to product_href,
+                        class: "card card-product card-liquid rounded-liquid text-decoration-none text-reset",
+                        aria: { label: "Voir #{product.name}" } do %>
               <div class="card-product-image-wrapper">
                 <% product_image = product_image_tag(product) %>
-                <div class="card-product-image <%= 'product-image-clickable' if product_image %>" 
-                     <% if product_image %>
-                       style="cursor: pointer;" 
-                       data-bs-toggle="modal" 
-                       data-bs-target="#productImageModal<%= product.id %>"
-                       aria-label="Agrandir l'image de <%= product.name %>"
-                     <% end %>>
+                <div class="card-product-image">
                   <% if product_image %>
-                    <%= image_tag product_image, alt: product.name, loading: "lazy", decoding: "async" %>
+                    <%= image_tag product_image, alt: "", loading: "lazy", decoding: "async" %>
                   <% end %>
                 </div>
                 <% if has_stock %>
@@ -128,9 +122,6 @@
                   </p>
                 </div>
 
-                <!-- pousse le bloc options + footer en bas de la card -->
-                <div class="spacer"></div>
-                
                 <% if active_variants.any? %>
                   <div class="product-options-section mb-1">
                     <div class="product-options">
@@ -148,7 +139,7 @@
                           <% end %>
                         </p>
                       <% end %>
-                      
+
                       <% if color_options.size > 1 %>
                         <p class="small text-body-secondary mb-1">
                           <strong>Couleurs :</strong>
@@ -163,7 +154,7 @@
                           <% end %>
                         </p>
                       <% end %>
-                      
+
                       <% if size_options.empty? && color_options.empty? %>
                         <p class="small text-body-secondary mb-1">
                           <strong>Taille :</strong> Taille unique
@@ -174,27 +165,16 @@
                 <% end %>
 
                 <div class="product-footer">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="price-section-vertical mb-0">
-                      <div class="price-display">
-                        <% if has_multiple_prices %>
-                          <span class="price">À partir de <%= format_price(min_price) %></span>
-                        <% else %>
-                          <span class="price"><%= format_price(min_price) %></span>
-                        <% end %>
-                      </div>
-                    </div>
+                  <div class="price-display">
+                    <% if has_multiple_prices %>
+                      <span class="price">À partir de <%= format_price(min_price) %></span>
+                    <% else %>
+                      <span class="price"><%= format_price(min_price) %></span>
+                    <% end %>
                   </div>
-
-                  <%= link_to product_path(product.slug.presence || product),
-                              class: "btn btn-liquid-primary btn-add w-100",
-                              aria: { label: "Voir le produit #{product.name}" } do %>
-                    <i class="bi bi-eye me-2" aria-hidden="true"></i>
-                    <span><%= has_options ? "Choisir les options" : "Voir le produit" %></span>
-                  <% end %>
                 </div>
               </div>
-            </article>
+            <% end %>
           <% end %>
         </div>
         
@@ -222,23 +202,3 @@
     </div>
   </section>
 </div>
-
-<!-- Modals Lightbox pour images produits -->
-<% @products.each do |product| %>
-  <% modal_image = product_image_tag(product) %>
-  <% if modal_image %>
-    <div class="modal fade" id="productImageModal<%= product.id %>" tabindex="-1" aria-labelledby="productImageModalLabel<%= product.id %>" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bg-transparent border-0">
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title text-white" id="productImageModalLabel<%= product.id %>"><%= product.name %></h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-          </div>
-          <div class="modal-body p-0 text-center">
-            <%= image_tag modal_image, alt: product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;" %>
-          </div>
-        </div>
-      </div>
-    </div>
-  <% end %>
-<% end %>

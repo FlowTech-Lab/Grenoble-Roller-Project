@@ -204,3 +204,4 @@ Estimate per page: **15–45 min verify**; **0–0.5 day** if fixes. Full plan i
 |------|--------|
 | 2026-08-03 | Initial PLAN after memberships UX polish + Graphify refresh |
 | 2026-08-03 | Wave 1 shop/checkout + Wave 2.1 orders on `ux/pages-verification` (atomic commits) |
+| 2026-08-03 | Shop catalog cards: fixed 1:1 thumbnails + denser shelf layout (Amazon-style compare) |
