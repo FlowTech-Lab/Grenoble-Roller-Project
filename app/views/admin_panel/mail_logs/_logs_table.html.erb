@@ -1,0 +1,62 @@
+      <% if @logs.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mailer</th>
+                <th>Méthode</th>
+                <th>Statut</th>
+                <th>En file le</th>
+                <th>Terminé le</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @logs.each do |log| %>
+                <tr>
+                  <td><%= log.id %></td>
+                  <td>
+                    <code class="small"><%= log.mailer_class.presence || "N/A" %></code>
+                  </td>
+                  <td>
+                    <span class="badge badge-liquid-secondary"><%= log.mailer_method.presence || "N/A" %></span>
+                  </td>
+                  <td>
+                    <% if log.status == "failed" %>
+                      <span class="badge badge-liquid-danger">Échec</span>
+                    <% elsif log.pending? %>
+                      <span class="badge badge-liquid-warning">En attente</span>
+                    <% else %>
+                      <span class="badge badge-liquid-success">Terminé</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <small><%= l(log.queued_at, format: :short) %></small>
+                  </td>
+                  <td>
+                    <% if log.finished_at %>
+                      <small><%= l(log.finished_at, format: :short) %></small>
+                    <% else %>
+                      <span class="text-muted">-</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <%= link_to admin_panel_mail_log_path(log), class: "btn btn-sm btn-outline-primary" do %>
+                      <i class="bi bi-eye"></i> Détails
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <p class="text-muted">Aucun email trouvé avec ces filtres</p>
+          <p class="text-muted small mb-0">
+            Les nouveaux envois sont enregistrés automatiquement. Pour importer l'historique Solid Queue :
+            <code>bin/rails outbound_email_logs:backfill</code>
+          </p>
+        </div>
+      <% end %>

@@ -24,6 +24,7 @@ module AdminPanel
       @memberships = @memberships.personal if params[:scope] == "personal"
       @memberships = @memberships.children if params[:scope] == "children"
       @memberships = @memberships.expiring_soon if params[:scope] == "expiring_soon"
+      @memberships = @memberships.goodies_pending if params[:scope] == "goodies_pending"
 
       # Filtres supplémentaires
       @memberships = @memberships.where(status: params[:status]) if params[:status].present?
@@ -56,6 +57,7 @@ module AdminPanel
       authorize [ :admin_panel, @membership ]
 
       if @membership.save
+        notify_discord("membership.created", @membership)
         flash[:notice] = "Adhésion créée avec succès"
         redirect_to admin_panel_membership_path(@membership)
       else
@@ -76,6 +78,7 @@ module AdminPanel
         params_hash[:amount_cents] = (params[:amount_euros].to_f * 100).to_i
       end
       if @membership.update(params_hash)
+        notify_discord("membership.updated", @membership)
         flash[:notice] = "Adhésion mise à jour avec succès"
         redirect_to admin_panel_membership_path(@membership)
       else
@@ -86,6 +89,7 @@ module AdminPanel
     # DELETE /admin-panel/memberships/:id
     def destroy
       if @membership.destroy
+        notify_discord("membership.destroyed", @membership)
         flash[:notice] = "Adhésion supprimée avec succès"
       else
         flash[:alert] = "Erreur lors de la suppression: #{@membership.errors.full_messages.join(', ')}"
@@ -98,6 +102,7 @@ module AdminPanel
     def activate
       if @membership.status == "pending"
         if @membership.update(status: :active)
+          notify_discord("membership.activated_manual", @membership)
           flash[:notice] = "Adhésion validée avec succès. L'adhésion est maintenant active."
         else
           flash[:alert] = "Erreur lors de la validation: #{@membership.errors.full_messages.join(', ')}"
@@ -158,7 +163,7 @@ module AdminPanel
         :ffrs_data_sharing_consent, :payment_id,
         :health_q1, :health_q2, :health_q3, :health_q4, :health_q5,
         :health_q6, :health_q7, :health_q8, :health_q9, :health_questionnaire_status,
-        :medical_certificate
+        :medical_certificate, :goodies_distributed
       )
     end
   end

@@ -6,9 +6,98 @@
 
 <%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="admin-page-header">
   <h1>Carrousel Hero</h1>
   <%= link_to "Nouveau slide", new_admin_panel_homepage_carousel_path, class: "btn btn-liquid-primary" %>
+</div>
+
+<!-- Paramètres hero + autoplay -->
+<div class="card card-liquid rounded-liquid shadow-liquid mb-4">
+  <div class="card-body">
+    <h2 class="h5 mb-3">Image du hero (bannière principale)</h2>
+    <p class="text-muted small mb-3">
+      Si aucune image personnalisée n'est enregistrée, l'image par défaut
+      (<code><%= HomepageCarouselSetting::DEFAULT_HERO_IMAGE_PATH %></code>) est utilisée.
+    </p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-5">
+        <% if @carousel_settings.custom_hero_image? %>
+          <%= image_tag @carousel_settings.hero_image.variant(resize_to_limit: [480, 270]),
+              class: "img-fluid rounded border",
+              alt: "Image hero actuelle" %>
+          <p class="small text-success mt-2 mb-0">
+            <i class="bi bi-check-circle me-1"></i>Image personnalisée active
+          </p>
+        <% else %>
+          <div class="rounded border bg-light d-flex align-items-center justify-content-center text-center p-4" style="min-height: 160px;">
+            <div>
+              <i class="bi bi-image fs-2 text-muted d-block mb-2"></i>
+              <span class="small text-muted">Image par défaut du site</span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="col-md-7">
+        <%= form_with model: @carousel_settings,
+                      url: update_settings_admin_panel_homepage_carousels_path,
+                      method: :patch,
+                      local: true,
+                      multipart: true,
+                      class: "row g-3" do |f| %>
+          <div class="col-12">
+            <%= f.label :hero_image, "Nouvelle image", class: "form-label" %>
+            <%= f.file_field :hero_image,
+                class: "form-control form-control-liquid",
+                accept: HomepageCarouselSetting::HERO_IMAGE_CONTENT_TYPES.join(",") %>
+            <div class="form-text">JPEG, PNG ou WebP — recommandé 1920×1080 minimum</div>
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <%= f.submit "Enregistrer l'image hero", class: "btn btn-outline-liquid-primary" %>
+            <% if @carousel_settings.custom_hero_image? %>
+              <%= button_tag type: "submit",
+                  name: "remove_hero_image",
+                  value: "1",
+                  class: "btn btn-outline-danger",
+                  data: { turbo_confirm: "Supprimer l'image personnalisée et revenir à l'image par défaut ?" } do %>
+                <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>
+                Image par défaut
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h2 class="h5 mb-3">Paramètres du carrousel d'annonces</h2>
+    <%= form_with model: @carousel_settings,
+                  url: update_settings_admin_panel_homepage_carousels_path,
+                  method: :patch,
+                  local: true,
+                  class: "row g-3 align-items-end" do |f| %>
+      <div class="col-md-4">
+        <div class="form-check form-switch">
+          <%= f.check_box :autoplay_enabled, class: "form-check-input", role: "switch" %>
+          <%= f.label :autoplay_enabled, "Défilement automatique", class: "form-check-label" %>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <%= f.label :interval_seconds, "Délai entre les slides (secondes)", class: "form-label" %>
+        <%= f.number_field :interval_seconds,
+            class: "form-control form-control-liquid",
+            min: HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.min,
+            max: HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.max,
+            step: 1,
+            required: true %>
+        <div class="form-text">Entre <%= HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.min %> et <%= HomepageCarouselSetting::INTERVAL_SECONDS_RANGE.max %> secondes</div>
+      </div>
+      <div class="col-md-4">
+        <%= f.submit "Enregistrer les paramètres", class: "btn btn-liquid-primary" %>
+      </div>
+    <% end %>
+  </div>
 </div>
 
 <!-- Filtres -->

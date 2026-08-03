@@ -8,7 +8,7 @@
 
 <%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="admin-page-header">
   <h1>Modifier <%= @user.to_s %></h1>
   <%= link_to "Retour", admin_panel_user_path(@user), class: "btn btn-outline-secondary" %>
 </div>
@@ -38,9 +38,23 @@
               </div>
               <div class="col-md-6 mb-3">
                 <%= f.label :role_id, "Rôle *", class: "form-label" %>
-                <%= f.collection_select :role_id, Role.assignable_by(current_user), :id, :name, 
-                    { selected: @user.role_id }, 
-                    { class: "form-select form-control-liquid", required: true } %>
+                <% if admin_panel_user_role_read_only?(@user) %>
+                  <p class="form-control-plaintext mb-0">
+                    <span class="badge bg-primary"><%= @user.role&.name %></span>
+                    <small class="text-muted d-block">
+                      <% if @user == current_user %>
+                        Vous ne pouvez pas retirer votre propre rôle super administrateur.
+                      <% else %>
+                        Seul un super administrateur peut modifier ce rôle.
+                      <% end %>
+                    </small>
+                  </p>
+                  <%= f.hidden_field :role_id, value: @user.role_id %>
+                <% else %>
+                  <%= f.collection_select :role_id, Role.assignable_by(current_user), :id, :name,
+                      { selected: @user.role_id },
+                      { class: "form-select form-control-liquid", required: true } %>
+                <% end %>
               </div>
               <div class="col-md-6 mb-3">
                 <%= f.label :first_name, "Prénom", class: "form-label" %>

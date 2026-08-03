@@ -1619,9 +1619,10 @@ docker exec grenoble-roller-production bin/rails runner "SolidQueue::RecurringTa
 - **Question** : Ordre des callbacks, pas de race condition avec attendances ?
 
 **Ordre des callbacks dans Attendance** :
-1. `after_destroy :increment_roller_stock` (ligne 41)
-2. `after_destroy :notify_waitlist_if_needed` (ligne 42)
-3. `after_update :notify_waitlist_on_cancellation` (ligne 43) - si statut change vers `canceled`
+1. `after_destroy :notify_waitlist_if_needed`
+2. `after_update :notify_waitlist_on_cancellation` — si statut passe à `canceled`
+
+**Roller stock :** les callbacks `increment_roller_stock` / `decrement_roller_stock` ont été **supprimés** (v2.3) — voir [`docs/06-events/roller-stock.md`](../../06-events/roller-stock.md).
 
 **Logique notify_waitlist_if_needed** :
 - Vérifie si `status == "pending"` → skip (ligne 299)

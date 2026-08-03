@@ -15,23 +15,13 @@ class EventsController < ApplicationController
     # Appliquer les filtres
     scoped_events = apply_filters(scoped_events)
 
-    if can_moderate?
-      # Admins/moderateurs voient les événements non publiés (draft) mais pas les rejetés
-      # Événements à venir : 6 minicards (sans pagination)
-      @upcoming_events = scoped_events.upcoming.order(:start_at).limit(6)
+    # Visibility comes from EventPolicy::Scope:
+    # guests → published/canceled; creator/organizer → those + own drafts; moderators → all (minus rejected above).
+    # Do not re-apply .visible here — it hid organizers' own unpublished events from the index.
+    @upcoming_events = scoped_events.upcoming.order(:start_at).limit(6)
 
-      # Événements passés : tableau avec pagination (limité à 10 par page pour une meilleure lisibilité)
-      past_scope = scoped_events.past.order(start_at: :desc)
-      @pagy_past, @past_events = pagy(past_scope, page_param: :page_past, items: 10)
-    else
-      # Utilisateurs normaux voient seulement les événements visibles (publiés/annulés)
-      # Événements à venir : 6 minicards (sans pagination)
-      @upcoming_events = scoped_events.visible.upcoming.order(:start_at).limit(6)
-
-      # Événements passés : tableau avec pagination (limité à 10 par page pour une meilleure lisibilité)
-      past_scope = scoped_events.visible.past.order(start_at: :desc)
-      @pagy_past, @past_events = pagy(past_scope, page_param: :page_past, items: 10)
-    end
+    past_scope = scoped_events.past.order(start_at: :desc)
+    @pagy_past, @past_events = pagy(past_scope, page_param: :page_past, items: 10)
 
     # Charger les données pour les filtres
     @routes = Route.order(:name)
@@ -184,6 +174,7 @@ class EventsController < ApplicationController
 
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
+    normalize_organizer_id!(event_params)
 
     # Gérer les parcours par boucle
     loop_routes_params = params[:event_loop_routes] || {}
@@ -221,6 +212,7 @@ class EventsController < ApplicationController
 
     # Initialiser loops_count à 1 si non défini
     event_params[:loops_count] ||= 1
+    normalize_organizer_id!(event_params)
 
     # Gérer les parcours par boucle
     loop_routes_params = params[:event_loop_routes] || {}
@@ -276,13 +268,18 @@ class EventsController < ApplicationController
   private
 
   def set_event
-    @event = Event.includes(:route, :creator_user, event_loop_routes: :route).find(params[:id])
+    @event = Event.includes(:route, :creator_user, :organizer, event_loop_routes: :route).find(params[:id])
     # Charger l'attendance de l'utilisateur connecté si présent
     @user_attendance = current_user&.attendances&.find_by(event: @event) if user_signed_in?
   end
 
   def load_supporting_data
     @routes = Route.order(:name)
+    organizers = EventOrganizer.active.order(:name)
+    if @event&.organizer_id.present? && @event.organizer && !@event.organizer.is_active?
+      organizers = EventOrganizer.where(id: organizers.select(:id)).or(EventOrganizer.where(id: @event.organizer_id)).order(:name)
+    end
+    @event_organizers = organizers
   end
 
   # Appliquer les filtres depuis les paramètres
@@ -335,5 +332,11 @@ class EventsController < ApplicationController
 
   def handle_record_not_found
     redirect_to events_path, alert: "Cet événement n'existe pas ou n'est plus disponible."
+  end
+
+  def normalize_organizer_id!(event_params)
+    return unless event_params.key?(:organizer_id)
+
+    event_params[:organizer_id] = event_params[:organizer_id].presence
   end
 end

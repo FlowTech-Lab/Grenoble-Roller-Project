@@ -261,12 +261,7 @@
           <!-- Actions -->
           <div class="d-flex gap-2 justify-content-center">
             <% if @membership.status == 'pending' %>
-              <%= button_to membership_payments_path(@membership),
-                  method: :post,
-                  class: "btn btn-primary",
-                  data: { turbo: false } do %>
-                <i class="bi bi-credit-card me-2"></i>Payer via HelloAsso
-              <% end %>
+              <%= unified_cart_pay_cta(@membership) %>
             <% elsif @membership.status == 'trial' %>
               <div class="alert alert-info mb-3 w-100">
                 <i class="bi bi-gift-fill me-2"></i>
@@ -284,23 +279,32 @@
                   class: "btn btn-primary",
                   data: { 
                     turbo: false,
-                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? Vous serez redirigé vers le paiement."
+                    confirm: "Payer la cotisation (#{number_to_currency(@membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")}) ? L'adhésion sera ajoutée au panier."
                   } do %>
-                <i class="bi bi-credit-card me-2"></i>Payer la cotisation
+                <i class="bi bi-basket me-2"></i>Ajouter au panier
               <% end %>
             <% elsif @membership.status == 'active' %>
-              <div class="alert alert-success mb-0">
+              <div class="alert alert-success <%= @membership.renewable_now? ? 'mb-3' : 'mb-0' %> w-100">
                 <i class="bi bi-check-circle me-2"></i>
                 Votre adhésion est active jusqu'au <%= l(@membership.end_date, format: :long) %>
               </div>
-            <% elsif @membership.status == 'expired' %>
-              <% if @membership.is_child_membership? %>
-                <%= button_to renew_membership_path(@membership), method: :post, class: "btn btn-primary", data: { turbo: false, confirm: "Renouveler l'adhésion de #{@membership.child_full_name} pour la saison #{Membership.current_season_name} ?" } do %>
-                  <i class="bi bi-arrow-repeat me-2"></i>Réadhérer <%= @membership.child_first_name %>
+              <% if @membership.renewable_now? %>
+                <%= link_to membership_renewal_path_for(@membership), class: "btn btn-primary", data: { turbo: false } do %>
+                  <i class="bi bi-arrow-repeat me-2"></i>
+                  <% if @membership.is_child_membership? %>
+                    Réadhérer <%= @membership.child_first_name %>
+                  <% else %>
+                    Renouveler mon adhésion
+                  <% end %>
                 <% end %>
-              <% else %>
-                <%= link_to new_membership_path(type: 'adult'), class: "btn btn-primary", data: { turbo: false } do %>
-                  <i class="bi bi-arrow-repeat me-2"></i>Renouveler mon adhésion
+              <% end %>
+            <% elsif @membership.status == 'expired' %>
+              <%= link_to membership_renewal_path_for(@membership), class: "btn btn-primary", data: { turbo: false } do %>
+                <i class="bi bi-arrow-repeat me-2"></i>
+                <% if @membership.is_child_membership? %>
+                  Réadhérer <%= @membership.child_first_name %>
+                <% else %>
+                  Renouveler mon adhésion
                 <% end %>
               <% end %>
             <% end %>

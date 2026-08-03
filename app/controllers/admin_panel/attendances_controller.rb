@@ -47,6 +47,7 @@ module AdminPanel
       authorize @attendance, policy_class: AdminPanel::AttendancePolicy
 
       if @attendance.save
+        notify_discord("attendance.created", @attendance)
         flash[:notice] = "Participation créée avec succès"
         redirect_to admin_panel_attendance_path(@attendance)
       else
@@ -62,6 +63,7 @@ module AdminPanel
     # PATCH/PUT /admin-panel/attendances/:id
     def update
       if @attendance.update(attendance_params)
+        notify_discord("attendance.updated", @attendance)
         flash[:notice] = "Participation mise à jour avec succès"
         redirect_to admin_panel_attendance_path(@attendance)
       else
@@ -72,6 +74,7 @@ module AdminPanel
     # DELETE /admin-panel/attendances/:id
     def destroy
       if @attendance.destroy
+        notify_discord("attendance.destroyed", @attendance)
         flash[:notice] = "Participation supprimée avec succès"
         redirect_to admin_panel_attendances_path
       else

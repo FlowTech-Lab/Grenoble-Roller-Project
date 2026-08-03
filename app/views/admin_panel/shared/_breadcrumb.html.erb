@@ -1,16 +1,21 @@
-<nav aria-label="breadcrumb" class="mb-3">
-  <ol class="breadcrumb">
+<nav aria-label="breadcrumb" class="admin-breadcrumb mb-3">
+  <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item">
       <%= link_to "Dashboard", admin_panel_root_path, class: "text-decoration-none" %>
     </li>
     <% if defined?(breadcrumb_items) && breadcrumb_items.present? %>
-      <% breadcrumb_items.each do |item| %>
-        <% if item[:url] %>
+      <% breadcrumb_items.each_with_index do |item, index| %>
+        <% is_last = index == breadcrumb_items.length - 1 %>
+        <% if item[:url] && !is_last %>
+          <li class="breadcrumb-item d-none d-sm-inline">
+            <%= link_to item[:label], item[:url], class: "text-decoration-none" %>
+          </li>
+        <% elsif item[:url] %>
           <li class="breadcrumb-item">
             <%= link_to item[:label], item[:url], class: "text-decoration-none" %>
           </li>
         <% else %>
-          <li class="breadcrumb-item active" aria-current="page">
+          <li class="breadcrumb-item active admin-breadcrumb-current" aria-current="page" title="<%= item[:label] %>">
             <%= item[:label] %>
           </li>
         <% end %>

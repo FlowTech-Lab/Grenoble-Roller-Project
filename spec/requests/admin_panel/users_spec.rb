@@ -119,9 +119,11 @@ RSpec.describe 'AdminPanel::Users', type: :request do
         expect(response).to have_http_status(:success)
       end
 
-      it 'shows only assignable roles (no Super_Admin)' do
+      it 'shows only assignable roles in the role select (no Super_Admin option)' do
         get edit_admin_panel_user_path(target_user)
-        expect(response.body).not_to include('Super Administrateur')
+        role_select = response.body[/select[^>]+name="user\[role_id\]"[^>]*>.*?<\/select>/m]
+        expect(role_select).to be_present
+        expect(role_select).not_to include('Super Administrateur')
       end
     end
 
@@ -139,6 +141,22 @@ RSpec.describe 'AdminPanel::Users', type: :request do
       it 'shows Super_Admin in role options' do
         get edit_admin_panel_user_path(target_user)
         expect(response.body).to include('Super Administrateur')
+      end
+    end
+
+    context 'when admin tries to edit a super admin' do
+      let(:admin_user) { create(:user, :admin) }
+      let(:superadmin_target) { create(:user, :superadmin) }
+
+      before do
+        create(:role_superadmin)
+        login_user(admin_user)
+      end
+
+      it 'redirects with not authorized' do
+        get edit_admin_panel_user_path(superadmin_target)
+        expect(response).to redirect_to(admin_panel_root_path)
+        expect(flash[:alert]).to include('autorisé')
       end
     end
   end
@@ -290,6 +308,75 @@ RSpec.describe 'AdminPanel::Users', type: :request do
         expect(response.body).to include('Vous ne pouvez pas vous attribuer')
       end
     end
+
+    context 'when admin tries to demote a super admin' do
+      let(:superadmin_target) { create(:user, :superadmin) }
+      let(:admin_role_record) do
+        Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 }
+      end
+
+      it 'rejects the update' do
+        patch admin_panel_user_path(superadmin_target), params: {
+          user: { role_id: admin_role_record.id }
+        }
+        expect(response).to redirect_to(admin_panel_root_path)
+        expect(flash[:alert]).to include('autorisé')
+      end
+
+      it 'does not change the super admin role' do
+        previous_role_id = superadmin_target.role_id
+        patch admin_panel_user_path(superadmin_target), params: {
+          user: { role_id: admin_role_record.id, first_name: 'Hacked' }
+        }
+        superadmin_target.reload
+        expect(superadmin_target.role_id).to eq(previous_role_id)
+        expect(superadmin_target.first_name).not_to eq('Hacked')
+      end
+    end
+  end
+
+  describe 'GET /admin-panel/users/:id (super admin target)' do
+    let(:admin_user) { create(:user, :admin) }
+    let(:superadmin_target) { create(:user, :superadmin) }
+
+    before { login_user(admin_user) }
+
+    it 'allows viewing the profile' do
+      get admin_panel_user_path(superadmin_target)
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'does not show edit or delete actions' do
+      get admin_panel_user_path(superadmin_target)
+      expect(response.body).not_to include(edit_admin_panel_user_path(superadmin_target))
+      expect(response.body).to include('Modification réservée aux super administrateurs')
+    end
+  end
+
+  describe 'PATCH /admin-panel/users/:id (super admin self-edit)' do
+    let(:superadmin_user) { create(:user, :superadmin) }
+    let(:admin_role_record) do
+      Role.find_or_create_by!(code: 'ADMIN') { |r| r.name = 'Administrateur'; r.level = 60 }
+    end
+
+    before { login_user(superadmin_user) }
+
+    it 'rejects self-demotion from super admin' do
+      patch admin_panel_user_path(superadmin_user), params: {
+        user: { role_id: admin_role_record.id }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include('retirer votre propre rôle super administrateur')
+    end
+
+    it 'keeps super admin role after rejected self-demotion' do
+      previous_role_id = superadmin_user.role_id
+      patch admin_panel_user_path(superadmin_user), params: {
+        user: { role_id: admin_role_record.id, first_name: 'StillSuper' }
+      }
+      superadmin_user.reload
+      expect(superadmin_user.role_id).to eq(previous_role_id)
+    end
   end
 
   describe 'DELETE /admin-panel/users/:id' do
@@ -307,6 +394,22 @@ RSpec.describe 'AdminPanel::Users', type: :request do
     it 'redirects to users index' do
       delete admin_panel_user_path(user_to_delete)
       expect(response).to redirect_to(admin_panel_users_path)
+    end
+
+    context 'when target is super admin' do
+      let!(:superadmin_target) { create(:user, :superadmin) }
+
+      it 'does not delete the user' do
+        expect {
+          delete admin_panel_user_path(superadmin_target)
+        }.not_to change(User, :count)
+      end
+
+      it 'redirects with not authorized' do
+        delete admin_panel_user_path(superadmin_target)
+        expect(response).to redirect_to(admin_panel_root_path)
+        expect(flash[:alert]).to include('autorisé')
+      end
     end
   end
 end

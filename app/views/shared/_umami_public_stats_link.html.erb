@@ -1,0 +1,20 @@
+<%# Public read-only Umami dashboard (share URL). Gated by UMAMI_SHARE_URL — see umami-analytics.md %>
+<% return unless umami_public_stats_available? %>
+
+<% variant = local_assigns.fetch(:variant, :link) %>
+<% label = local_assigns.fetch(:label, "Statistiques du site") %>
+
+<% link_options = {
+  target: "_blank",
+  rel: "noopener noreferrer",
+  title: "Consulter les statistiques de fréquentation (Umami, lecture seule)"
+} %>
+
+<% if variant == :button %>
+  <%= link_to umami_share_url, **link_options, class: "btn btn-outline-liquid-primary btn-lg" do %>
+    <i class="bi bi-bar-chart-line me-2" aria-hidden="true"></i>
+    <%= label %>
+  <% end %>
+<% else %>
+  <%= link_to label, umami_share_url, **link_options, class: "footer-link" %>
+<% end %>

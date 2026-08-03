@@ -8,11 +8,11 @@ class MembershipsController < ApplicationController
     @memberships = current_user.memberships.includes(:payment, :tshirt_variant).order(created_at: :desc)
 
     # Variables pour la section "Nouvelle adhésion"
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
+    @season = Membership.sale_season_name
+    @start_date, @end_date = Membership.sale_season_dates
 
     # Vérifier s'il y a une adhésion personnelle en cours (pending ou active) pour cette saison
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
     @pending_membership = existing_memberships.find { |m| m.status == "pending" }
     @active_membership = existing_memberships.find { |m| m.active? && m.end_date.present? && m.end_date > Date.current }
@@ -28,10 +28,10 @@ class MembershipsController < ApplicationController
       return
     end
 
-    # Si renouvellement depuis une adhésion expirée (pour enfants)
+    # Renewal from an expired or active-in-window membership (child)
     if type == "child" && params[:renew_from].present?
       old_membership = current_user.memberships.find_by(id: params[:renew_from])
-      if old_membership && old_membership.is_child_membership? && old_membership.expired?
+      if old_membership&.is_child_membership? && old_membership.renewable_now?
         @old_membership = old_membership
         # Pré-remplir les informations depuis l'ancienne adhésion
         # Note: on ne pré-remplit PAS with_tshirt pour permettre de choisir un nouveau T-shirt
@@ -48,10 +48,10 @@ class MembershipsController < ApplicationController
       end
     end
 
-    # Si renouvellement depuis une adhésion expirée (pour adultes)
-    if type == "adult" && params[:renew_from].present?
+    # Renewal from an expired or active-in-window membership (adult / teen)
+    if %w[adult teen].include?(type) && params[:renew_from].present?
       old_membership = current_user.memberships.find_by(id: params[:renew_from])
-      if old_membership && !old_membership.is_child_membership? && old_membership.expired?
+      if old_membership && !old_membership.is_child_membership? && old_membership.renewable_now?
         @old_membership = old_membership
         # Pré-remplir les informations depuis l'ancienne adhésion
         # Note: Pour les adultes, les données (first_name, last_name, date_of_birth, etc.) sont dans User
@@ -70,7 +70,7 @@ class MembershipsController < ApplicationController
 
     # Vérifier si l'utilisateur a déjà une adhésion personnelle active ou pending (sauf pour enfants)
     if %w[adult teen].include?(type)
-      current_season = Membership.current_season_name
+      current_season = Membership.sale_season_name
       existing_memberships = current_user.memberships.personal.where(season: current_season)
 
       # Vérifier adhésion active (protection contre end_date nil)
@@ -100,8 +100,8 @@ class MembershipsController < ApplicationController
     end
 
     @type = type
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
+    @season = Membership.sale_season_name
+    @start_date, @end_date = Membership.sale_season_dates
 
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless @start_date.present? && @end_date.present?
@@ -131,8 +131,8 @@ class MembershipsController < ApplicationController
       render :teen_form
     when "child"
       # Formulaire pour un seul enfant (simplifié)
-      @season = Membership.current_season_name
-      @start_date, @end_date = Membership.current_season_dates
+      @season = Membership.sale_season_name
+      @start_date, @end_date = Membership.sale_season_dates
 
       # S'assurer que les dates sont valides (protection contre les valeurs nil)
       unless @start_date.present? && @end_date.present?
@@ -191,7 +191,7 @@ class MembershipsController < ApplicationController
 
   def check_age_and_redirect
     # Vérifier d'abord si l'utilisateur a déjà une adhésion personnelle active ou pending
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
     existing_memberships = current_user.memberships.personal.where(season: current_season)
 
     # Vérifier adhésion active (protection contre end_date nil)
@@ -246,7 +246,7 @@ class MembershipsController < ApplicationController
       old_membership = current_user.memberships.find_by(id: params[:renew_from])
       if old_membership && old_membership.is_child_membership? && old_membership.expired?
         # Bloquer si ce même enfant a déjà une adhésion pour la saison courante (avant d'appeler renew_child_membership_from_form)
-        current_season = Membership.current_season_name
+        current_season = Membership.sale_season_name
         existing_membership = current_user.memberships.children
           .where(season: current_season)
           .where(status: [ Membership.statuses[:active], Membership.statuses[:pending], Membership.statuses[:trial] ])
@@ -324,8 +324,8 @@ class MembershipsController < ApplicationController
       return
     end
 
-    @season = Membership.current_season_name
-    @start_date, @end_date = Membership.current_season_dates
+    @season = Membership.sale_season_name
+    @start_date, @end_date = Membership.sale_season_dates
     @categories = get_categories
     @user = current_user
     render :edit_child_form
@@ -390,46 +390,7 @@ class MembershipsController < ApplicationController
       ffrs_data_sharing_consent: membership_params[:ffrs_data_sharing_consent] == "1"
     )
 
-    # Vérifier les réponses au questionnaire de santé (9 questions)
-    has_health_issue = false
-    all_answered_no = true
-    all_answered = true
-    (1..9).each do |i|
-      answer = membership_params["health_question_#{i}"]
-      if answer.blank?
-        all_answered = false
-        all_answered_no = false
-      elsif answer == "yes"
-        has_health_issue = true
-        all_answered_no = false
-      elsif answer == "no"
-        # Réponse NON, continue
-      end
-    end
-
-    # Traiter Standard et FFRS de la même manière : questionnaire obligatoire, certificat médical jamais obligatoire
-    # Vérifier que toutes les questions sont répondues
-    unless all_answered
-      redirect_to edit_membership_path(@membership), alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."
-      return
-    end
-
-    # Même logique pour Standard et FFRS : juste mettre le statut selon les réponses
-    @membership.health_questionnaire_status = has_health_issue ? "medical_required" : "ok"
-
-    # Mettre à jour les réponses du questionnaire
-    (1..9).each do |i|
-      answer = membership_params["health_question_#{i}"]
-      @membership.send("health_q#{i}=", answer) if answer.present?
-    end
-
-    # Attacher le certificat médical si fourni
-    if membership_params[:medical_certificate].present?
-      @membership.medical_certificate.attach(membership_params[:medical_certificate])
-    end
-
-    # Sauvegarder les modifications
-    @membership.save!
+    return unless apply_health_questionnaire_from_params!(membership_params)
 
     redirect_to memberships_path, notice: "Adhésion de #{@membership.child_full_name} mise à jour avec succès."
   rescue => e
@@ -482,7 +443,7 @@ class MembershipsController < ApplicationController
     end
 
     # Définir les dates de saison (le montant est déjà défini lors de la création avec la catégorie)
-    start_date, end_date = Membership.current_season_dates
+    start_date, end_date = Membership.sale_season_dates
 
     # Mettre à jour l'adhésion : trial → pending (le montant est déjà correct)
     @membership.update!(
@@ -492,18 +453,18 @@ class MembershipsController < ApplicationController
       # amount_cents n'est pas modifié car il était déjà défini à la création
     )
 
-    redirect_to membership_path(@membership), notice: "L'essai gratuit de #{@membership.child_full_name} a été converti en adhésion. Vous pouvez maintenant procéder au paiement."
+    add_membership_to_cart_and_redirect!(@membership)
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la conversion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
     redirect_to memberships_path, alert: "Erreur lors de la conversion : #{e.message}"
   end
 
-  # Renouvellement d'une adhésion enfant expirée (avec formulaire pour choisir la catégorie)
+  # Renouvellement d'une adhésion enfant (expirée ou active dans la fenêtre J-30)
   def renew
     old_membership = @membership
 
-    unless old_membership.is_child_membership? && old_membership.expired?
+    unless old_membership.is_child_membership? && old_membership.renewable_now?
       redirect_to membership_path(old_membership), alert: "Cette adhésion ne peut pas être renouvelée."
       return
     end
@@ -513,6 +474,37 @@ class MembershipsController < ApplicationController
   end
 
   private
+
+  # Returns false when a redirect was issued (caller must halt).
+  def apply_health_questionnaire_from_params!(membership_params)
+    health_submitted = (1..9).all? { |i| membership_params["health_question_#{i}"].present? }
+
+    unless health_submitted
+      if @membership.health_questionnaire_complete?
+        return true
+      end
+
+      redirect_to edit_membership_path(@membership),
+                  alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."
+      return false
+    end
+
+    has_health_issue = false
+    (1..9).each do |i|
+      answer = membership_params["health_question_#{i}"]
+      has_health_issue = true if answer == "yes"
+      @membership.send("health_q#{i}=", answer)
+    end
+
+    @membership.health_questionnaire_status = has_health_issue ? "medical_required" : "ok"
+
+    if membership_params[:medical_certificate].present?
+      @membership.medical_certificate.attach(membership_params[:medical_certificate])
+    end
+
+    @membership.save!
+    true
+  end
 
   def set_membership
     @membership = current_user.memberships.find(params[:id])
@@ -571,7 +563,7 @@ class MembershipsController < ApplicationController
       return
     end
 
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
 
     # Vérifier les adhésions existantes pour cette saison
     existing_memberships = current_user.memberships.personal.where(season: current_season)
@@ -590,7 +582,7 @@ class MembershipsController < ApplicationController
       return
     end
 
-    start_date, end_date = Membership.current_season_dates
+    start_date, end_date = Membership.sale_season_dates
 
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless start_date.present? && end_date.present?
@@ -721,50 +713,13 @@ class MembershipsController < ApplicationController
 
     # Validation déjà effectuée avant création, pas besoin de re-vérifier ici
 
-    # Créer le paiement HelloAsso
-    begin
-      checkout_result = HelloassoService.membership_checkout_redirect_url(
-        membership,
-        back_url: new_membership_url,
-        error_url: membership_url(membership),
-        return_url: membership_url(membership)
-      )
-
-      unless checkout_result && checkout_result.is_a?(Hash) && checkout_result[:redirect_url]
-        Rails.logger.error("[MembershipsController] Échec: checkout_result invalide ou nil: #{checkout_result.inspect}")
-        Rails.logger.error("[MembershipsController] Membership ##{membership.id} sera détruite")
-        membership.destroy
-        redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez vérifier les logs ou contacter le support si le problème persiste."
-        return
-      end
-
-      redirect_url = checkout_result[:redirect_url]
-      checkout_id = checkout_result[:checkout_id]
-
-      # Créer le Payment avec l'ID du checkout-intent
-      payment = Payment.create!(
-        provider: "helloasso",
-        provider_payment_id: checkout_id ? checkout_id.to_s : nil,
-        status: "pending",
-        amount_cents: membership.total_amount_cents,
-        currency: "EUR"
-      )
-      membership.update!(payment: payment, provider_order_id: checkout_id ? checkout_id.to_s : nil)
-
-      redirect_to redirect_url, allow_other_host: true
-    rescue => e
-      Rails.logger.error("[MembershipsController] Erreur lors de la création du checkout-intent : #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-      membership.destroy
-      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso : #{e.message}. Veuillez réessayer ou contacter le support."
-      nil
-    end
+    finalize_online_membership!(membership)
   rescue ActiveRecord::RecordNotUnique => e
     # Gérer l'erreur de contrainte unique (adhésion déjà existante pour cette saison)
     Rails.logger.error("[MembershipsController] Erreur de contrainte unique lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
 
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
     existing_membership = current_user.memberships.personal.find_by(season: current_season)
 
     if existing_membership
@@ -789,7 +744,7 @@ class MembershipsController < ApplicationController
 
     # Vérifier si c'est une erreur de contrainte unique PostgreSQL
     if e.message.include?("duplicate key") || e.message.include?("UniqueViolation")
-      current_season = Membership.current_season_name
+      current_season = Membership.sale_season_name
       existing_membership = current_user.memberships.personal.find_by(season: current_season)
 
       if existing_membership
@@ -822,7 +777,7 @@ class MembershipsController < ApplicationController
       return
     end
 
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
 
     # Vérifier les adhésions existantes pour cette saison
     existing_memberships = current_user.memberships.personal.where(season: current_season)
@@ -852,7 +807,7 @@ class MembershipsController < ApplicationController
       return
     end
 
-    start_date, end_date = Membership.current_season_dates
+    start_date, end_date = Membership.sale_season_dates
 
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless start_date.present? && end_date.present?
@@ -939,44 +894,7 @@ class MembershipsController < ApplicationController
       parent_phone: membership_params[:parent_phone] || current_user.phone
     )
 
-    # Créer le paiement HelloAsso
-    begin
-      checkout_result = HelloassoService.membership_checkout_redirect_url(
-        membership,
-        back_url: new_membership_url,
-        error_url: membership_url(membership),
-        return_url: membership_url(membership)
-      )
-
-      unless checkout_result && checkout_result.is_a?(Hash) && checkout_result[:redirect_url]
-        Rails.logger.error("[MembershipsController] Échec: checkout_result invalide ou nil: #{checkout_result.inspect}")
-        Rails.logger.error("[MembershipsController] Membership ##{membership.id} sera détruite")
-        membership.destroy
-        redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso. Veuillez vérifier les logs ou contacter le support si le problème persiste."
-        return
-      end
-
-      redirect_url = checkout_result[:redirect_url]
-      checkout_id = checkout_result[:checkout_id]
-
-      # Créer le Payment avec l'ID du checkout-intent
-      payment = Payment.create!(
-        provider: "helloasso",
-        provider_payment_id: checkout_id ? checkout_id.to_s : nil,
-        status: "pending",
-        amount_cents: membership.total_amount_cents,
-        currency: "EUR"
-      )
-      membership.update!(payment: payment, provider_order_id: checkout_id ? checkout_id.to_s : nil)
-
-      redirect_to redirect_url, allow_other_host: true
-    rescue => e
-      Rails.logger.error("[MembershipsController] Erreur lors de la création du checkout-intent : #{e.message}")
-      Rails.logger.error(e.backtrace.join("\n"))
-      membership.destroy
-      redirect_to new_membership_path, alert: "Erreur lors de l'initialisation du paiement HelloAsso : #{e.message}. Veuillez réessayer ou contacter le support."
-      nil
-    end
+    finalize_online_membership!(membership)
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors de la création de l'adhésion : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
@@ -1006,8 +924,8 @@ class MembershipsController < ApplicationController
       return
     end
 
-    current_season = Membership.current_season_name
-    start_date, end_date = Membership.current_season_dates
+    current_season = Membership.sale_season_name
+    start_date, end_date = Membership.sale_season_dates
     amount_cents = Membership.price_for_category(category)
 
     # Vérifier qu'il n'y a pas déjà une adhésion pour cette saison
@@ -1078,7 +996,7 @@ class MembershipsController < ApplicationController
       end
     end
 
-    redirect_to membership_path(membership), notice: "L'adhésion de #{membership.child_full_name} a été renouvelée avec succès. Vous pouvez maintenant procéder au paiement."
+    add_membership_to_cart_and_redirect!(membership)
   rescue => e
     Rails.logger.error("[MembershipsController] Erreur lors du renouvellement : #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
@@ -1092,11 +1010,10 @@ class MembershipsController < ApplicationController
     membership = create_child_membership_from_params(membership_params, 0)
 
     if membership.persisted?
-      # Message différent selon le statut
       if membership.trial?
         redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant utiliser l'essai gratuit pour une initiation."
       else
-        redirect_to memberships_path, notice: "#{membership.child_full_name} a été ajouté avec succès. Vous pouvez maintenant procéder au paiement."
+        add_membership_to_cart_and_redirect!(membership)
       end
     else
       redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{membership.errors.full_messages.join(', ')}"
@@ -1164,7 +1081,7 @@ class MembershipsController < ApplicationController
     create_trial = params[:create_trial] == "1" || child_params[:create_trial] == "1"
 
     # Toujours calculer les dates de saison (même pour les essais gratuits, car la DB exige end_date NOT NULL)
-    start_date, end_date = Membership.current_season_dates
+    start_date, end_date = Membership.sale_season_dates
 
     # S'assurer que les dates sont valides (protection contre les valeurs nil)
     unless start_date.present? && end_date.present?
@@ -1175,7 +1092,7 @@ class MembershipsController < ApplicationController
     # Pour les essais gratuits, on stocke le montant correspondant à la catégorie choisie
     # (même si le paiement n'est pas encore effectué, l'essai gratuit permet juste de s'inscrire aux initiations)
     amount_cents = Membership.price_for_category(category)
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
 
     if create_trial
       membership_status = :trial
@@ -1300,7 +1217,7 @@ class MembershipsController < ApplicationController
       return
     end
 
-    current_season = Membership.current_season_name
+    current_season = Membership.sale_season_name
 
     # Vérifier les adhésions existantes pour cette saison
     existing_memberships = current_user.memberships.personal.where(season: current_season)
@@ -1319,7 +1236,7 @@ class MembershipsController < ApplicationController
       return
     end
 
-    start_date, end_date = Membership.current_season_dates
+    start_date, end_date = Membership.sale_season_dates
     amount_cents = Membership.price_for_category(category)
 
     # Mettre à jour les informations User
@@ -1465,5 +1382,28 @@ class MembershipsController < ApplicationController
     Rails.logger.error(e.backtrace.join("\n"))
     error_message = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(", ") : e.message
     redirect_to new_membership_path(type: "child"), alert: "Erreur lors de la création de l'adhésion : #{error_message}"
+  end
+
+  def finalize_online_membership!(membership)
+    add_membership_to_cart_and_redirect!(membership)
+  end
+
+  def add_membership_to_cart_and_redirect!(membership)
+    CartLineService.add_membership!(current_user, membership: membership)
+    flash[:notice] = "Adhésion ajoutée au panier"
+    flash[:notice_type] = "success"
+    flash[:show_cart_button] = true
+    redirect_to cart_path
+  rescue CartLineService::HealthQuestionnaireIncompleteError
+    destination = membership.is_child_membership? ? edit_membership_path(membership) : new_membership_path(type: membership_form_type(membership))
+    redirect_to destination, alert: "Le questionnaire de santé est obligatoire. Veuillez répondre à toutes les questions."
+  rescue CartLineService::InvalidMembershipStatusError => e
+    redirect_to membership_path(membership), alert: e.message
+  end
+
+  def membership_form_type(membership)
+    return "child" if membership.is_child_membership?
+
+    current_user.age >= 18 ? "adult" : "teen"
   end
 end

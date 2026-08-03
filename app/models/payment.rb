@@ -1,5 +1,6 @@
 class Payment < ApplicationRecord
   has_many :orders, dependent: :nullify
+  has_many :checkouts, dependent: :nullify
   has_many :attendances, dependent: :nullify
   has_one :membership, dependent: :nullify # Pour adhésions personnelles (1 paiement = 1 adhésion)
   has_many :memberships, dependent: :nullify # Pour adhésions enfants groupées (1 paiement = plusieurs adhésions)

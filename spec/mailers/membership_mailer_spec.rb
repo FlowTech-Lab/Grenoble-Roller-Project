@@ -48,6 +48,12 @@ RSpec.describe MembershipMailer, type: :mailer do
       decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
       expect(decoded_body).to include("renouvel").or include("30")
     end
+
+    it "links to the renewal form with type and renew_from" do
+      decoded_body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(decoded_body).to include("renew_from=#{membership.id}")
+      expect(decoded_body).to include("type=#{membership.renewal_form_type}")
+    end
   end
 
   describe "payment_failed" do

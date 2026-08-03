@@ -113,4 +113,242 @@ RSpec.describe HelloassoService do
       end
     end
   end
+
+  describe ".build_unified_checkout_intent_payload" do
+    let(:helloasso_creds) { { organization_slug: "grenoble-roller", environment: "sandbox" } }
+    let(:checkout) { create(:checkout, donation_cents: 500, total_cents: 5500) }
+    let!(:product_line) { create(:checkout_line, :product, checkout: checkout) }
+    let!(:membership_line) { create(:checkout_line, :membership, checkout: checkout) }
+    let!(:event_line) { create(:checkout_line, :event, checkout: checkout) }
+    let(:urls) do
+      {
+        back_url: "https://example.com/back",
+        error_url: "https://example.com/error",
+        return_url: "https://example.com/return"
+      }
+    end
+
+    before do
+      allow(Rails.application).to receive(:credentials).and_return(double(helloasso: helloasso_creds))
+      subtotal = checkout.checkout_lines.sum(&:subtotal_cents)
+      checkout.update!(subtotal_cents: subtotal, total_cents: subtotal + checkout.donation_cents)
+      checkout.reload
+    end
+
+    it "includes product line items in metadata" do
+      payload = described_class.build_unified_checkout_intent_payload(checkout, **urls)
+      product_items = payload[:metadata][:items].select { |i| i[:lineType] == "product_variant" }
+
+      expect(product_items).not_to be_empty
+      expect(product_items.first[:metadata]).to include("sku" => "SKU-TSHIRT")
+    end
+
+    it "includes membership line items in metadata" do
+      payload = described_class.build_unified_checkout_intent_payload(checkout, **urls)
+      membership_items = payload[:metadata][:items].select { |i| i[:lineType] == "membership" }
+
+      expect(membership_items).not_to be_empty
+      expect(payload[:metadata][:membershipIds]).to include(membership_line.reference_id)
+    end
+
+    it "includes event_registration line items in metadata" do
+      payload = described_class.build_unified_checkout_intent_payload(checkout, **urls)
+      event_items = payload[:metadata][:items].select { |i| i[:lineType] == "event_registration" }
+
+      expect(event_items).not_to be_empty
+      expect(payload[:metadata][:attendanceIds]).to include(event_line.reference_id)
+    end
+
+    it "adds a Donation line when donation_cents is positive" do
+      payload = described_class.build_unified_checkout_intent_payload(checkout, **urls)
+      donation_items = payload[:metadata][:items].select { |i| i[:type] == "Donation" }
+
+      expect(donation_items.size).to eq(1)
+      expect(donation_items.first[:amount]).to eq(500)
+    end
+
+    it "sets totalAmount to subtotal_cents plus donation_cents" do
+      payload = described_class.build_unified_checkout_intent_payload(checkout, **urls)
+
+      expect(payload[:totalAmount]).to eq(checkout.subtotal_cents + checkout.donation_cents)
+      expect(payload[:initialAmount]).to eq(payload[:totalAmount])
+    end
+
+    it "sets containsDonation to true when donation is positive" do
+      payload = described_class.build_unified_checkout_intent_payload(checkout, **urls)
+
+      expect(payload[:containsDonation]).to be(true)
+    end
+
+    it "sets containsDonation to false when donation is zero" do
+      checkout_no_donation = create(:checkout, donation_cents: 0)
+      create(:checkout_line, :product, checkout: checkout_no_donation)
+      checkout_no_donation.update!(
+        subtotal_cents: checkout_no_donation.checkout_lines.sum(&:subtotal_cents),
+        total_cents: checkout_no_donation.checkout_lines.sum(&:subtotal_cents)
+      )
+      payload = described_class.build_unified_checkout_intent_payload(checkout_no_donation, **urls)
+
+      expect(payload[:containsDonation]).to be(false)
+    end
+  end
+
+  describe ".create_unified_checkout_intent" do
+    let(:helloasso_creds) do
+      {
+        organization_slug: "grenoble-roller",
+        environment: "sandbox",
+        client_id: "cid",
+        client_secret: "secret"
+      }
+    end
+    let(:checkout) do
+      c = create(:checkout, donation_cents: 200, subtotal_cents: 1000, total_cents: 1200)
+      create(:checkout_line, :product, checkout: c, amount_cents: 1000)
+      c.reload
+    end
+    let(:urls) do
+      {
+        back_url: "https://example.com/back",
+        error_url: "https://example.com/error",
+        return_url: "https://example.com/return"
+      }
+    end
+
+    before do
+      allow(Rails.application).to receive(:credentials).and_return(double(helloasso: helloasso_creds))
+      allow(described_class).to receive(:access_token).and_return("token")
+    end
+
+    it "posts to checkout-intents with correct totalAmount" do
+      http = instance_double(Net::HTTP)
+      response = instance_double(Net::HTTPSuccess, body: { id: "ci_1", redirectUrl: "https://pay.example" }.to_json)
+      allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+      allow(response).to receive(:code).and_return("200")
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:request).and_return(response)
+
+      result = described_class.create_unified_checkout_intent(checkout, **urls)
+      expect(result[:success]).to be(true)
+      expect(checkout.reload.total_cents).to eq(1200)
+    end
+
+    it "includes donation in totalAmount and metadata donationCents" do
+      captured_payload = nil
+      http = instance_double(Net::HTTP)
+      response = instance_double(Net::HTTPSuccess, body: { id: "ci_2", redirectUrl: "https://pay.example" }.to_json)
+      allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+      allow(response).to receive(:code).and_return("200")
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:request) do |request|
+        captured_payload = JSON.parse(request.body)
+        response
+      end
+
+      described_class.create_unified_checkout_intent(checkout, **urls)
+      expect(captured_payload["totalAmount"]).to eq(1200)
+      expect(captured_payload.dig("metadata", "donationCents")).to eq(200)
+    end
+
+    it "includes checkoutId in metadata" do
+      captured_payload = nil
+      http = instance_double(Net::HTTP)
+      response = instance_double(Net::HTTPSuccess, body: { id: "ci_3", redirectUrl: "https://pay.example" }.to_json)
+      allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+      allow(response).to receive(:code).and_return("200")
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:request) do |request|
+        captured_payload = JSON.parse(request.body)
+        response
+      end
+
+      described_class.create_unified_checkout_intent(checkout, **urls)
+      expect(captured_payload.dig("metadata", "checkoutId")).to eq(checkout.id)
+    end
+
+    it "returns redirectUrl on success" do
+      http = instance_double(Net::HTTP)
+      response = instance_double(Net::HTTPSuccess, body: { id: "ci_4", redirectUrl: "https://pay.example/redirect" }.to_json)
+      allow(response).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+      allow(response).to receive(:code).and_return("200")
+      allow(Net::HTTP).to receive(:new).and_return(http)
+      allow(http).to receive(:use_ssl=)
+      allow(http).to receive(:request).and_return(response)
+
+      result = described_class.create_unified_checkout_intent(checkout, **urls)
+      expect(result.dig(:body, "redirectUrl")).to eq("https://pay.example/redirect")
+    end
+  end
+
+  describe ".fetch_and_update_payment" do
+    let(:helloasso_creds) do
+      {
+        organization_slug: "grenoble-roller",
+        environment: "sandbox",
+        client_id: "cid",
+        client_secret: "secret"
+      }
+    end
+
+    before do
+      allow(Rails.application).to receive(:credentials).and_return(double(helloasso: helloasso_creds))
+      allow(described_class).to receive(:access_token).and_return("token")
+    end
+
+    context "when payment is linked to a checkout" do
+      it "calls CheckoutFulfillmentService on success" do
+        payment = create(:payment, provider: "helloasso", status: "pending", provider_payment_id: "intent_checkout")
+        checkout = create(:checkout, :processing, payment: payment)
+        create(:checkout_line, checkout: checkout, line_type: :membership, reference: create(:membership, :pending, :with_health_questionnaire))
+
+        allow(described_class).to receive(:fetch_checkout_intent).and_return({ "order" => { "id" => "ha_order_1" } })
+        allow(described_class).to receive(:fetch_helloasso_order).and_return({ "state" => "Confirmed" })
+
+        expect(CheckoutFulfillmentService).to receive(:fulfill!).with(having_attributes(id: checkout.id), payment: kind_of(Payment))
+
+        described_class.fetch_and_update_payment(payment)
+      end
+
+      it "does not fulfill when payment still pending" do
+        payment = create(:payment, provider: "helloasso", status: "pending", provider_payment_id: "intent_pending")
+        create(:checkout, :processing, payment: payment)
+
+        allow(described_class).to receive(:fetch_checkout_intent).and_return({})
+
+        expect(CheckoutFulfillmentService).not_to receive(:fulfill!)
+
+        described_class.fetch_and_update_payment(payment)
+        expect(payment.reload.status).to eq("pending")
+      end
+    end
+
+    context "legacy order-only payment" do
+      it "still updates order status without checkout" do
+        payment = create(:payment, provider: "helloasso", status: "pending", provider_payment_id: "intent_order")
+        order = create(:order, payment: payment, status: "pending")
+
+        allow(described_class).to receive(:fetch_checkout_intent).and_return({ "order" => { "id" => "ha_order_2" } })
+        allow(described_class).to receive(:fetch_helloasso_order).and_return({ "state" => "Confirmed" })
+
+        described_class.fetch_and_update_payment(payment)
+        expect(order.reload.status).to eq("paid")
+      end
+    end
+
+    context "legacy membership-only payment" do
+      it "still activates membership without checkout" do
+        payment = create(:payment, provider: "helloasso", status: "pending", provider_payment_id: "intent_mem")
+        membership = create(:membership, :pending, :with_health_questionnaire, payment: payment)
+
+        allow(described_class).to receive(:fetch_checkout_intent).and_return({ "order" => { "id" => "ha_order_3" } })
+        allow(described_class).to receive(:fetch_helloasso_order).and_return({ "state" => "Confirmed" })
+
+        described_class.fetch_and_update_payment(payment)
+        expect(membership.reload).to be_active
+      end
+    end
+  end
 end

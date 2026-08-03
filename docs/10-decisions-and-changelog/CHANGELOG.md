@@ -2,6 +2,165 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Shop index uses site container width
+
+### Fixed
+- Public boutique (`/shop`) used `container-fluid` and stretched edge-to-edge on desktop; aligned with `container` like product show, events, and cart.
+
+## [2026-08-03] - Production release staging → main (v2.3.1)
+
+### Documentation
+- Added production release / patch note: [`release-staging-to-main-2026-08.md`](release-staging-to-main-2026-08.md) — 64 commits (`8fa153c1`…`092061d0`), 9 migrations, ENV checklist, rollback (redeploy previous main; unified cart has no ENV kill-switch).
+
+Bundles staging-validated slices **v2.2 → v2.3.1**: permanent unified checkout, Discord admin notifications (DR-002), June admin/events batch, membership renewals from **1 August**, event image viewer (mobile/desktop), organizer draft index.
+
+## [2026-08-03] - Organizer sees own draft events on index
+
+### Fixed
+- Organizers (and creators) see their unpublished (`draft`) events on `/events` (and same fix for initiations index). `EventPolicy::Scope` already allowed it; `EventsController#index` / `InitiationsController#index` incorrectly re-applied `.visible`.
+- Draft badge shown to the creator on event/initiation cards (not only moderators).
+
+## [2026-08-02] - Event image viewer (cover + N loop maps)
+
+### Fixed
+- Clicking event cover or loop map images opens a viewer again (any number of loops).
+- **Mobile / coarse pointer:** open the full image in a new tab (native browser zoom + landscape rotation).
+- **Desktop:** in-page lightbox (Esc / backdrop / close), full-resolution source.
+
+### Changed
+- Loop map thumbnails are `<a href="full-image" target="_blank">` with Stimulus lightbox intercept on desktop only.
+
+## [2026-08-02] - Membership renewal email → login → form
+
+### Fixed
+- Renewal reminder emails now link to `/memberships/new?type=…&renew_from=…` (not bare `/memberships/new`).
+- Guest hitting a membership renewal URL is redirected to login, then returned to the same URL (Devise stored location).
+- Login page shows a short hint when the return URL is under `/memberships`.
+- Early renewal no longer blocked in early August: next-season sales open on **1 August** (aligned with J-30 reminder emails), instead of 15 August.
+- `renew_from` prefills the form for **expired** memberships and **active** ones within 30 days of `end_date` (`Membership#renewable_now?`).
+- Index / show / membership cards expose a « Renouveler » CTA when `renewable_now?`.
+
+### Changed
+- `Membership::NEXT_SEASON_SALE_OPENS_DAY` : `15` → `1` (recurring every year; season calendar remains 1 Sep – 31 Aug).
+
+### Tests
+- Model sale-season thresholds (1 August), `#renewable_now?`, mailer link params, sessions return-to renewal URL, request early renewal after 1 August.
+
+## [2026-07-03] - Unified cart permanent (v2.3)
+
+### Changed
+- **Unified cart always on** — removed legacy session cart, direct HelloAsso membership/order checkout, and `UNIFIED_CART_ENABLED` feature flag.
+- Account cart + `/checkout` are the only payment path for shop, memberships, and paid events.
+- Views simplified (no `unified_cart_enabled?` branches); removed `orders/new` legacy template.
+
+### Removed
+- `UnifiedCart` module, `app/views/orders/new.html.erb`, `redirect_to_helloasso_checkout!` membership flow.
+- `UNIFIED_CART_ENABLED` env var (no longer read).
+
+
+### Fixed
+- Admin mobile: offcanvas sidebar moved **outside** `.admin-container` — eliminates flex gap / empty band below navbar.
+- Public navbar mobile: collapsed burger menu no longer reserves flex height (empty strip when closed).
+- `syncAdminNavbarHeight`: re-run on `turbo:load` and `resize`; use `getBoundingClientRect` for stable `--navbar-height`.
+
+### Changed
+- Admin dashboard KPIs: `_stat_card` partial + compact `.admin-dashboard-kpis` grid (2-col mobile, fit-content desktop).
+- Admin mobile layout: `admin-container` / `admin-main-content` block display, `overflow: visible`.
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.2.1).
+
+## [2026-06-09] - DR-002: Discord webhook notifications (implemented)
+
+### Added
+- Admin **Notification channels** — CRUD Discord webhooks at `/admin-panel/notification-channels` (SUPERADMIN ≥ 70).
+- `NotificationEventRegistry` (~65 event keys), per-channel toggles, test button, QA sample embeds (single + batch).
+- `NotificationDispatchService` + `DiscordWebhookDeliveryJob`; delivery audit log (`notification_deliveries`).
+- Hooks: HelloAsso payment confirmation, public contact, registrations, admin panel actions via `AdminPanel::NotifiesDiscord`.
+- Migration `20260609120000_create_notification_tables`.
+- ENV gate: `ALLOW_DISCORD_NOTIFICATIONS` (required on staging/dev; production always dispatches when channels enabled).
+
+### Tests
+- RSpec: models, registry, dispatch, Discord client, delivery job, admin requests, HelloAsso discord hook, sample service.
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.2).
+
+**Decision record:** [DR-002-discord-webhook-notifications.md](DR-002-discord-webhook-notifications.md) (status: implemented).
+
+## [2026-06-08] - DR-002: Discord webhook notifications (proposed)
+
+### Documentation
+- **Accepted** [DR-002-discord-webhook-notifications.md](DR-002-discord-webhook-notifications.md) v1.1: full Discord webhook catalog, Florian scope (contact + organizer + all admin toggles).
+- Added [DR-002-discord-webhook-notifications.md](DR-002-discord-webhook-notifications.md) v1.0 (proposed).
+
+## [2026-06-08] - Release Dev → staging (June 2026 batch v2.1)
+
+Unified checkout epic + June batch + post-checkout hardening (membership season, admin mobile UX, sidebar rail, security patches, RSpec green).
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.1).
+
+### Fixed
+- Membership sale season: before 15 August, cart uses running season (not next season).
+- Admin collapsed sidebar: centered 48×48 active icon rail; spacing scoped to expanded mode.
+- i18n: French validation messages on event creation form.
+
+### Changed
+- Admin panel mobile-first: sticky chrome, `admin-page-header`, responsive tables (cards ≤991px), scope tabs.
+- Rails 8.1.3, Puma 7.2.1, npm audit fixes; `bundler-audit` in dev Gemfile.
+
+### Tests
+- 1462 examples, 0 failures on `Dev` (i18n, admin panel, unified cart spec fixes).
+
+## [2026-06-08] - Release Dev → staging (June 2026 batch v2)
+
+Unified checkout epic merged on `Dev` + prior June batch (events, admin, roller stock, Umami, Turnstile).
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md) (v2.0 — includes checkout migrations, `UNIFIED_CART_ENABLED`, QA §G).
+
+## [2026-06-08] - Unified checkout Waves 5–6 (UX polish + cleanup)
+
+### Added
+- Navbar badge counts all `CartLine` types when unified cart enabled.
+- Pending payment banner on Mes sorties with cart CTA.
+- Cart section empty states, expiry warnings (< 5 min), mobile sticky checkout/cart footers.
+- `AdminPanel::CheckoutsController` read-only audit (`/admin-panel/checkouts`).
+- Staging env documents `UNIFIED_CART_ENABLED=true` in `ops/dokploy/env/staging.env.example`.
+
+### Changed
+- Flash toasts use `flash[:notice_type]`; cart CTA on membership/event add flashes.
+- `CartsController` / `OrdersController#build_cart_items` skip `session[:cart]` when flag on.
+- `Memberships::PaymentsController` redirects to cart when flag on (legacy HelloAsso when off).
+- Updated `docs/09-product/flux-boutique-helloasso.md` for unified flow.
+
+### Tests
+- Wave 5 specs: `application_helper`, `unified_cart` UX, mailer timing, checkout sticky footer.
+- Wave 6: checkout-related RSpec regression suite (see MASTER Appendix J).
+
+## [2026-06-08] - Unified checkout MASTER plan (agent SSOT)
+
+### Documentation
+- Added authoritative [PLAN-unified-checkout-MASTER.md](PLAN-unified-checkout-MASTER.md) v1.1: Waves 0–6, partial payment (per-line checkboxes), donation on every checkout, initiations out of scope, file checklist, RSpec matrices + appendix J, QA staging, rollback, orchestration.
+- **Accepted** [DR-001-unified-checkout-cart.md](DR-001-unified-checkout-cart.md) v1.1: account cart + unified HelloAsso checkout.
+- Updated [PLAN-unified-checkout-3-phases.md](PLAN-unified-checkout-3-phases.md) v1.2: index pointing to MASTER as SSOT.
+- Updated [../09-product/unified-cart-ux.md](../09-product/unified-cart-ux.md) v0.3: checkout checkboxes, donation always, resolved open questions.
+
+## [2026-06-08] - Unified checkout plan + UX spec (initial)
+
+### Documentation
+- **Accepted** [DR-001-unified-checkout-cart.md](DR-001-unified-checkout-cart.md): account cart + single HelloAsso checkout for shop, memberships, paid events.
+- Added [PLAN-unified-checkout-3-phases.md](PLAN-unified-checkout-3-phases.md): 6-wave AI implementation plan.
+- Added draft [../09-product/unified-cart-ux.md](../09-product/unified-cart-ux.md).
+
+## [2026-06-08] - DR-001: Unified checkout (proposed)
+
+### Documentation
+- Added [`DR-001-unified-checkout-cart.md`](DR-001-unified-checkout-cart.md): phased checkout strategy (paid events Phase 1; harmonized cart Phase 2); manual `payment_required` flag.
+
+## [2026-06-07] - Release Dev → staging (June 2026 batch)
+
+Consolidated release: events lifecycle/UI, admin panel (event read access, organizers, goodies, mail logs, carousel settings), Umami analytics, Turnstile on contact form, roller stock reservations (v2.3), dev tooling (mise, dotenv).
+
+**Full release notes:** [`release-dev-to-staging-2026-06.md`](release-dev-to-staging-2026-06.md)
+
 ## [2025-12-11] - Correction installation crontab et health check HTTP en staging
 
 ### Corrigé

@@ -2,10 +2,25 @@
 <% if notice || alert %>
   <div class="toast-container position-fixed end-0 p-3" style="top: 80px; z-index: 1050;">
     <% if notice %>
-      <% 
-        # Déterminer le type de toast (success par défaut si flash[:type] == 'success', sinon info)
-        toast_type = flash[:type] == 'success' ? 'success' : 'info'
+      <%
+        notice_type = flash[:notice_type].presence || flash[:type].presence || 'success'
+        toast_type = notice_type == 'success' ? 'success' : (notice_type == 'warning' ? 'warning' : 'info')
         show_cart_button = flash[:show_cart_button] == true
+        toast_header_class = case toast_type
+                             when 'success' then 'bg-success'
+                             when 'warning' then 'bg-warning text-dark'
+                             else 'bg-info'
+                             end
+        toast_icon = case toast_type
+                     when 'success' then 'bi-check-circle'
+                     when 'warning' then 'bi-hourglass-split'
+                     else 'bi-info-circle'
+                     end
+        toast_title = case toast_type
+                      when 'success' then 'Succès'
+                      when 'warning' then 'Attention'
+                      else 'Information'
+                      end
       %>
       <div class="toast" 
            role="alert" 
@@ -14,9 +29,9 @@
            data-bs-autohide="true" 
            data-bs-delay="6000"
            data-controller="toast">
-        <div class="toast-header <%= toast_type == 'success' ? 'bg-success' : 'bg-info' %> text-white">
-          <i class="bi <%= toast_type == 'success' ? 'bi-check-circle' : 'bi-info-circle' %> me-2"></i>
-          <strong class="me-auto"><%= toast_type == 'success' ? 'Succès' : 'Information' %></strong>
+        <div class="toast-header <%= toast_header_class %> <%= 'text-white' unless toast_type == 'warning' %>">
+          <i class="bi <%= toast_icon %> me-2"></i>
+          <strong class="me-auto"><%= toast_title %></strong>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body">

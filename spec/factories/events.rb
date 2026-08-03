@@ -37,5 +37,14 @@ FactoryBot.define do
     trait :unlimited do
       max_participants { 0 }
     end
+
+    trait :with_organizer do
+      association :organizer, factory: :event_organizer
+    end
+
+    trait :payment_required do
+      payment_required { true }
+      price_cents { 500 }
+    end
   end
 end

@@ -27,6 +27,7 @@ module AdminPanel
     # DELETE /admin-panel/contact-messages/:id
     def destroy
       if @contact_message.destroy
+        notify_discord("contact_message.destroyed", @contact_message)
         flash[:notice] = "Le message ##{@contact_message.id} a été supprimé avec succès."
         redirect_to admin_panel_contact_messages_path
       else

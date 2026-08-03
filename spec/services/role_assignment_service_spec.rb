@@ -96,6 +96,66 @@ RSpec.describe RoleAssignmentService do
         expect(result).to be false
       end
     end
+
+    context 'when admin tries to demote a super admin' do
+      let(:admin_user) { create(:user, :admin) }
+      let(:superadmin_user) { create(:user, :superadmin) }
+
+      it 'returns false when assigning Admin role to super admin' do
+        result = described_class.can_assign_role_to_user?(
+          assigner: admin_user,
+          target_user: superadmin_user,
+          new_role: role_admin
+        )
+        expect(result).to be false
+      end
+    end
+
+    context 'when super admin tries to demote themselves' do
+      let(:superadmin_user) { create(:user, :superadmin) }
+
+      it 'returns false when assigning Admin role to self' do
+        result = described_class.can_assign_role_to_user?(
+          assigner: superadmin_user,
+          target_user: superadmin_user,
+          new_role: role_admin
+        )
+        expect(result).to be false
+      end
+    end
+  end
+
+  describe '.can_manage_user?' do
+    let(:admin_user) { create(:user, :admin) }
+    let(:superadmin_user) { create(:user, :superadmin) }
+    let(:regular_user) { create(:user) }
+
+    it 'allows admin to manage regular users' do
+      expect(described_class.can_manage_user?(assigner: admin_user, target_user: regular_user)).to be true
+    end
+
+    it 'allows admin to manage other admins' do
+      other_admin = create(:user, :admin)
+      expect(described_class.can_manage_user?(assigner: admin_user, target_user: other_admin)).to be true
+    end
+
+    it 'denies admin from managing super admins' do
+      expect(described_class.can_manage_user?(assigner: admin_user, target_user: superadmin_user)).to be false
+    end
+
+    it 'allows super admin to manage admins' do
+      expect(described_class.can_manage_user?(assigner: superadmin_user, target_user: admin_user)).to be true
+    end
+
+    it 'allows super admin to manage other super admins' do
+      other_superadmin = create(:user, :superadmin)
+      expect(described_class.can_manage_user?(assigner: superadmin_user, target_user: other_superadmin)).to be true
+    end
+
+    it 'allows managing new users' do
+      new_user = User.new
+      expect(described_class.can_manage_user?(assigner: admin_user, target_user: new_user)).to be true
+    end
   end
 
   describe '.assign_role!' do

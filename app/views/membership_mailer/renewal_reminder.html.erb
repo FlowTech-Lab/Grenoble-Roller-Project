@@ -12,7 +12,7 @@
     
     <p>Pour continuer à profiter des avantages de l'association, nous vous invitons à renouveler votre adhésion dès maintenant.</p>
     
-    <p><%= link_to "Renouveler mon adhésion", new_membership_url, class: "button" %></p>
+    <p><%= link_to "Renouveler mon adhésion", new_membership_url(type: @membership.renewal_form_type, renew_from: @membership.id), class: "button" %></p>
     
     <p>Merci de votre fidélité ! 🛼</p>
     

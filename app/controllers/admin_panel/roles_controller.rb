@@ -42,6 +42,7 @@ module AdminPanel
       authorize [ :admin_panel, @role ]
 
       if @role.save
+        notify_discord("role.created", @role)
         flash[:notice] = "Rôle créé avec succès"
         redirect_to admin_panel_role_path(@role)
       else
@@ -57,6 +58,7 @@ module AdminPanel
     # PATCH/PUT /admin-panel/roles/:id
     def update
       if @role.update(role_params)
+        notify_discord("role.updated", @role)
         flash[:notice] = "Rôle mis à jour avec succès"
         redirect_to admin_panel_role_path(@role)
       else
@@ -67,6 +69,7 @@ module AdminPanel
     # DELETE /admin-panel/roles/:id
     def destroy
       if @role.destroy
+        notify_discord("role.destroyed", @role)
         flash[:notice] = "Rôle supprimé avec succès"
       else
         flash[:alert] = "Erreur lors de la suppression: #{@role.errors.full_messages.join(', ')}"

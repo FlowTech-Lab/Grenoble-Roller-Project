@@ -1,0 +1,86 @@
+<%
+  breadcrumb_items = [
+    { label: "Notifications Discord", url: nil }
+  ]
+%>
+
+<%= render "admin_panel/shared/breadcrumb", breadcrumb_items: breadcrumb_items %>
+
+<div class="admin-page-header">
+  <div>
+    <h1>Notifications Discord</h1>
+    <p class="text-muted mb-0">Webhooks ops configurables par événement (SUPERADMIN)</p>
+  </div>
+  <%= link_to "Ajouter un webhook Discord", new_admin_panel_notification_channel_path, class: "btn btn-liquid-primary" %>
+</div>
+
+<div class="card card-liquid rounded-liquid shadow-liquid">
+  <div class="card-body">
+    <% if @notification_channels.any? %>
+      <div class="table-responsive">
+        <table class="table table-liquid">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Statut</th>
+              <th>Événements</th>
+              <th>Dernier test</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @notification_channels.each do |channel| %>
+              <tr>
+                <td><strong><%= channel.name %></strong></td>
+                <td>
+                  <% if channel.enabled? %>
+                    <span class="badge bg-success">Activé</span>
+                  <% else %>
+                    <span class="badge bg-secondary">Désactivé</span>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="badge bg-primary"><%= channel.enabled_subscriptions_count %></span>
+                  <span class="text-muted small">événement(s) actif(s)</span>
+                </td>
+                <td>
+                  <% if channel.last_tested_at.present? %>
+                    <div class="small">
+                      <%= l channel.last_tested_at, format: :short %>
+                      <% if channel.last_test_status == "success" %>
+                        <span class="text-success ms-1" title="Succès">✓</span>
+                      <% elsif channel.last_test_status == "error" %>
+                        <span class="text-danger ms-1" title="Échec">✗</span>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <%= link_to "Modifier", edit_admin_panel_notification_channel_path(channel), class: "btn btn-outline-liquid-primary" %>
+                    <%= button_to "Test",
+                        test_admin_panel_notification_channel_path(channel),
+                        method: :post,
+                        class: "btn btn-outline-liquid-secondary" %>
+                    <%= button_to "Supprimer",
+                        admin_panel_notification_channel_path(channel),
+                        method: :delete,
+                        data: { turbo_confirm: "Supprimer le webhook « #{channel.name} » ?" },
+                        class: "btn btn-danger" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted">Aucun webhook Discord configuré.</p>
+        <%= link_to "Ajouter un webhook Discord", new_admin_panel_notification_channel_path, class: "btn btn-liquid-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

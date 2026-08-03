@@ -23,6 +23,8 @@ namespace :admin_panel, path: 'admin-panel' do
       post :notify_waitlist
     end
   end
+
+  resources :event_organizers, path: 'event-organizers'
   
   resources :routes
   resources :attendances

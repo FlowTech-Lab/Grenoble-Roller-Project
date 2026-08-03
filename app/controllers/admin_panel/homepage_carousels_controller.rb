@@ -18,6 +18,7 @@ module AdminPanel
 
       # Pagination
       @pagy, @carousels = pagy(@carousels.ordered, items: params[:per_page] || 25)
+      @carousel_settings = HomepageCarouselSetting.current
     end
 
     # GET /admin-panel/homepage-carousels/:id
@@ -40,6 +41,7 @@ module AdminPanel
       @carousel.position ||= (HomepageCarousel.maximum(:position) || 0) + 1
 
       if @carousel.save
+        notify_discord("homepage_carousel.created", @carousel)
         flash[:notice] = "Slide créé avec succès"
         redirect_to admin_panel_homepage_carousel_path(@carousel)
       else
@@ -54,6 +56,7 @@ module AdminPanel
     # PATCH /admin-panel/homepage-carousels/:id
     def update
       if @carousel.update(carousel_params)
+        notify_discord("homepage_carousel.updated", @carousel)
         flash[:notice] = "Slide mis à jour avec succès"
         redirect_to admin_panel_homepage_carousel_path(@carousel)
       else
@@ -63,7 +66,9 @@ module AdminPanel
 
     # DELETE /admin-panel/homepage-carousels/:id
     def destroy
-      @carousel.destroy
+      if @carousel.destroy
+        notify_discord("homepage_carousel.destroyed", @carousel)
+      end
       flash[:notice] = "Slide supprimé avec succès"
       redirect_to admin_panel_homepage_carousels_path
     end
@@ -71,6 +76,7 @@ module AdminPanel
     # POST /admin-panel/homepage-carousels/:id/publish
     def publish
       if @carousel.update(published: true, published_at: Time.current)
+        notify_discord("homepage_carousel.updated", @carousel)
         flash[:notice] = "Slide publié avec succès"
       else
         flash[:alert] = "Erreur : #{@carousel.errors.full_messages.join(', ')}"
@@ -81,6 +87,7 @@ module AdminPanel
     # POST /admin-panel/homepage-carousels/:id/unpublish
     def unpublish
       if @carousel.update(published: false)
+        notify_discord("homepage_carousel.updated", @carousel)
         flash[:notice] = "Slide dépublié avec succès"
       else
         flash[:alert] = "Erreur : #{@carousel.errors.full_messages.join(', ')}"
@@ -93,6 +100,7 @@ module AdminPanel
       previous = HomepageCarousel.where("position < ?", @carousel.position).ordered.last
       if previous
         swap_positions(@carousel, previous)
+        notify_discord("homepage_carousel.updated", @carousel)
         flash[:notice] = "Position mise à jour"
       else
         flash[:alert] = "Déjà en première position"
@@ -105,6 +113,7 @@ module AdminPanel
       next_item = HomepageCarousel.where("position > ?", @carousel.position).ordered.first
       if next_item
         swap_positions(@carousel, next_item)
+        notify_discord("homepage_carousel.updated", @carousel)
         flash[:notice] = "Position mise à jour"
       else
         flash[:alert] = "Déjà en dernière position"
@@ -124,6 +133,30 @@ module AdminPanel
       head :ok
     end
 
+    # PATCH /admin-panel/homepage-carousels/update_settings
+    def update_settings
+      authorize [ :admin_panel, HomepageCarousel ], :update_settings?
+
+      @carousel_settings = HomepageCarouselSetting.current
+
+      if ActiveModel::Type::Boolean.new.cast(params[:remove_hero_image])
+        @carousel_settings.hero_image.purge
+        notify_discord("homepage_carousel.settings_updated", @carousel_settings)
+        flash[:notice] = "Image hero réinitialisée (image par défaut)"
+        redirect_to admin_panel_homepage_carousels_path
+        return
+      end
+
+      if @carousel_settings.update(carousel_settings_params)
+        notify_discord("homepage_carousel.settings_updated", @carousel_settings)
+        flash[:notice] = "Paramètres du carrousel mis à jour"
+      else
+        flash[:alert] = "Erreur : #{@carousel_settings.errors.full_messages.join(', ')}"
+      end
+
+      redirect_to admin_panel_homepage_carousels_path
+    end
+
     private
 
     def set_carousel
@@ -136,6 +169,10 @@ module AdminPanel
 
     def carousel_params
       params.require(:homepage_carousel).permit(:title, :subtitle, :link_url, :position, :published, :published_at, :expires_at, :image)
+    end
+
+    def carousel_settings_params
+      params.require(:homepage_carousel_setting).permit(:autoplay_enabled, :interval_seconds, :hero_image)
     end
 
     # Swap positions of two records without violating unique constraint

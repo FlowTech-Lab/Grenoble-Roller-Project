@@ -2,7 +2,19 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="event-form"
 export default class extends Controller {
-  static targets = ["levelSelect", "distanceInput", "routeSelect", "loopsCountInput"]
+  static targets = [
+    "levelSelect",
+    "distanceInput",
+    "routeSelect",
+    "loopsCountInput",
+    "paymentRequiredCheckbox",
+    "priceEurosInput",
+    "externalPaymentWarning"
+  ]
+  static values = {
+    eventId: { type: String, default: "" },
+    existingLoopRoutes: { type: Object, default: {} }
+  }
 
   connect() {
     // Si un parcours est déjà sélectionné au chargement, pré-remplir les champs
@@ -14,10 +26,10 @@ export default class extends Controller {
     this.storageKey = 'event_draft'
     this.storageExpiryDays = 7 // Durée maximale RGPD pour données temporaires
     
-    // Initialiser les données des parcours par boucle
-    this.existingLoopRoutesData = {}
-    this.loopRoutesLoaded = false // Flag pour indiquer si les données sont chargées
-    
+    // Initialiser les données des parcours par boucle (server-rendered on edit, fetch as fallback)
+    this.existingLoopRoutesData = this.normalizeLoopRoutesData(this.existingLoopRoutesValue)
+    this.loopRoutesLoaded = Object.keys(this.existingLoopRoutesData).length > 0
+
     // Restaurer les données sauvegardées au chargement
     this.restoreDraft()
     
@@ -46,6 +58,53 @@ export default class extends Controller {
       this.loopRoutesLoaded = true
       this.updateLoopRoutesFields()
     })
+
+    if (this.hasPaymentRequiredCheckboxTarget && this.hasPriceEurosInputTarget) {
+      const price = parseFloat(this.priceEurosInputTarget.value) || 0
+      if (price > 0 && !this.paymentRequiredCheckboxTarget.checked) {
+        this.paymentRequiredCheckboxTarget.dataset.userToggled = "true"
+      }
+    }
+
+    this.syncPaymentRequiredFromPrice()
+  }
+
+  priceEurosChanged() {
+    this.syncPaymentRequiredFromPrice()
+  }
+
+  paymentRequiredToggled() {
+    if (this.hasPaymentRequiredCheckboxTarget) {
+      this.paymentRequiredCheckboxTarget.dataset.userToggled = "true"
+    }
+    this.updateExternalPaymentWarning()
+  }
+
+  syncPaymentRequiredFromPrice() {
+    if (!this.hasPaymentRequiredCheckboxTarget || !this.hasPriceEurosInputTarget) return
+
+    const price = parseFloat(this.priceEurosInputTarget.value) || 0
+    if (price <= 0) {
+      this.paymentRequiredCheckboxTarget.checked = false
+      this.paymentRequiredCheckboxTarget.disabled = true
+    } else {
+      this.paymentRequiredCheckboxTarget.disabled = false
+      if (this.paymentRequiredCheckboxTarget.dataset.userToggled !== "true") {
+        this.paymentRequiredCheckboxTarget.checked = true
+      }
+    }
+
+    this.updateExternalPaymentWarning()
+  }
+
+  updateExternalPaymentWarning() {
+    if (!this.hasExternalPaymentWarningTarget || !this.hasPaymentRequiredCheckboxTarget || !this.hasPriceEurosInputTarget) {
+      return
+    }
+
+    const price = parseFloat(this.priceEurosInputTarget.value) || 0
+    const show = price > 0 && !this.paymentRequiredCheckboxTarget.checked
+    this.externalPaymentWarningTarget.classList.toggle("d-none", !show)
   }
 
   loadRouteInfo(routeId) {
@@ -165,7 +224,7 @@ export default class extends Controller {
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Distance (km)</label>
+            <label class="form-label">Distance boucle ${i} (km)</label>
             <div class="input-group">
               <input type="number" 
                      name="event_loop_routes[${i}][distance_km]" 
@@ -230,25 +289,50 @@ export default class extends Controller {
     return this.element.querySelector('form')
   }
 
-  // Récupérer l'ID de l'événement depuis le formulaire
+  // Event public identifier (hashid in URLs, not numeric DB id)
   getEventId() {
+    if (this.hasEventIdValue && this.eventIdValue) {
+      return this.eventIdValue
+    }
+
     const form = this.getForm()
     if (!form) return null
-    
-    // Chercher un input caché avec l'ID
-    const idInput = form.querySelector('input[name="event[id]"]')
-    if (idInput && idInput.value) {
-      return parseInt(idInput.value)
-    }
-    
-    // Ou chercher dans l'action du formulaire (ex: /events/123 ou http://.../events/123)
+
     const formAction = form.getAttribute('action') || form.action || ''
-    const match = formAction.match(/\/events\/(\d+)/)
-    if (match) {
-      return parseInt(match[1])
+    const match = formAction.match(/\/events\/([^/?#]+)/)
+    if (match && match[1] !== 'new') {
+      return match[1]
     }
-    
+
     return null
+  }
+
+  normalizeLoopRoutesData(data) {
+    const normalized = {}
+
+    if (Array.isArray(data)) {
+      data.forEach(loopRoute => {
+        if (loopRoute.loop_number > 1) {
+          normalized[loopRoute.loop_number] = {
+            route_id: loopRoute.route_id,
+            distance_km: loopRoute.distance_km
+          }
+        }
+      })
+      return normalized
+    }
+
+    Object.entries(data || {}).forEach(([loopNumber, loopRoute]) => {
+      const number = parseInt(loopNumber)
+      if (number > 1 && loopRoute) {
+        normalized[number] = {
+          route_id: loopRoute.route_id,
+          distance_km: loopRoute.distance_km
+        }
+      }
+    })
+
+    return normalized
   }
 
   // Charger les parcours existants depuis le serveur
@@ -263,18 +347,7 @@ export default class extends Controller {
       const response = await fetch(`/events/${eventId}/loop_routes.json`)
       if (response.ok) {
         const data = await response.json()
-        this.existingLoopRoutesData = {}
-        // Ne charger que les boucles 2 et suivantes (la boucle 1 utilise le parcours principal)
-        data.forEach(loopRoute => {
-          if (loopRoute.loop_number > 1) {
-            this.existingLoopRoutesData[loopRoute.loop_number] = {
-              route_id: loopRoute.route_id,
-              distance_km: loopRoute.distance_km
-            }
-          }
-        })
-        // Debug: afficher les données chargées
-        console.log('Parcours par boucle chargés:', this.existingLoopRoutesData)
+        this.existingLoopRoutesData = this.normalizeLoopRoutesData(data)
       } else {
         console.warn('Erreur lors du chargement des parcours par boucle:', response.status)
         this.existingLoopRoutesData = {}

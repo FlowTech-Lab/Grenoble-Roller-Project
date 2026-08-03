@@ -8,7 +8,7 @@
 
 <%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="admin-page-header">
   <h1>Modifier adhésion #<%= @membership.id %></h1>
   <%= link_to "Retour", admin_panel_membership_path(@membership), class: "btn btn-outline-secondary" %>
 </div>
@@ -159,6 +159,17 @@
                   <%= f.date_field :parent_authorization_date, class: "form-control form-control-liquid" %>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h5>Goodies</h5>
+            <div class="mb-3">
+              <%= f.label :goodies_distributed, class: "form-check-label" do %>
+                <%= f.check_box :goodies_distributed, class: "form-check-input" %>
+                Goodies distribués
+              <% end %>
+              <div class="form-text">Cocher lorsque le membre a reçu son lot de goodies.</div>
             </div>
           </div>
 

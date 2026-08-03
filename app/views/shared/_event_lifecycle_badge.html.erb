@@ -1,0 +1,11 @@
+<%# Passé / En cours badge for Event or Event::Initiation.
+    Locals: event (required) %>
+<% if event.past? %>
+  <span class="badge badge-liquid-secondary">
+    <i class="bi bi-archive me-1" aria-hidden="true"></i>Passé
+  </span>
+<% elsif event.ongoing? %>
+  <span class="badge bg-warning text-dark">
+    <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>En cours
+  </span>
+<% end %>

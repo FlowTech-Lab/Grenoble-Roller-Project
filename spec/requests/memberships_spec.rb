@@ -3,8 +3,9 @@ require 'rails_helper'
 RSpec.describe "Memberships", type: :request do
   include RequestAuthenticationHelper
   include TestDataHelper
+  include ActiveSupport::Testing::TimeHelpers
 
-  let(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
+  let!(:role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let(:user) { create_user(role: role) }
 
   describe "GET /memberships" do
@@ -32,6 +33,29 @@ RSpec.describe "Memberships", type: :request do
       # Peut rediriger si certaines conditions ne sont pas remplies (ex: adhésion déjà active)
       # Vérifier simplement qu'il y a une réponse (success ou redirect)
       expect(response.status).to be_between(200, 399)
+    end
+
+    context "early renewal during sale of next season" do
+      let!(:expiring_membership) do
+        create(:membership,
+          user: user,
+          status: :active,
+          season: "2025-2026",
+          start_date: Date.new(2025, 9, 1),
+          end_date: Date.new(2026, 8, 31),
+          category: :standard)
+      end
+
+      it "opens the adult renewal form with prefill after 1 August" do
+        travel_to Date.new(2026, 8, 2) do
+          login_user(user)
+          get new_membership_path(type: "adult", renew_from: expiring_membership.id)
+
+          expect(response).to have_http_status(:success)
+          expect(assigns(:old_membership)).to eq(expiring_membership)
+          expect(assigns(:season)).to eq("2026-2027")
+        end
+      end
     end
   end
 
@@ -83,20 +107,13 @@ RSpec.describe "Memberships", type: :request do
         end
       end
 
-      it "redirects to HelloAsso for pending membership with complete questionnaire" do
+      it "adds membership to cart for pending membership with complete questionnaire" do
         login_user(user)
-        # Mock HelloAssoService pour éviter les appels réels
-        allow(HelloassoService).to receive(:create_membership_checkout_intent).and_return({
-          success: true,
-          body: {
-            "id" => "checkout_123",
-            "redirectUrl" => "https://helloasso.com/checkout"
-          }
-        })
 
         post membership_payments_path(membership_with_questionnaire)
-        expect(response).to have_http_status(:redirect)
-        expect(HelloassoService).to have_received(:create_membership_checkout_intent)
+
+        expect(response).to redirect_to(cart_path)
+        expect(CartLine.where(user: user, reference: membership_with_questionnaire)).to exist
       end
     end
   end
@@ -244,7 +261,7 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "POST /memberships/:id/renew - Renouvellement adhésion enfant" do
-    let(:current_season) { Membership.current_season_name }
+    let(:current_season) { Membership.sale_season_name }
     # Dates pour une adhésion expirée (saison 2023-2024, clairement expirée en décembre 2025)
     let(:old_start_date) { Date.new(2023, 9, 1) }
     let(:old_end_date) { Date.new(2024, 8, 31) }
@@ -390,7 +407,7 @@ RSpec.describe "Memberships", type: :request do
             end_date: expired_end_date,
             child_first_name: 'Adulte',
             child_last_name: 'Test',
-            child_date_of_birth: 18.years.ago,
+            child_date_of_birth: Date.new(2000, 1, 1),
             category: 'standard'
           )
         end
@@ -441,7 +458,7 @@ RSpec.describe "Memberships", type: :request do
         :with_health_questionnaire,
         user: user,
         status: :trial,
-        season: Membership.current_season_name,
+        season: Membership.sale_season_name,
         category: 'standard',
         amount_cents: 1000
       )
@@ -455,7 +472,8 @@ RSpec.describe "Memberships", type: :request do
       trial_membership.reload
       expect(trial_membership.status).to eq('pending')
       expect(trial_membership.amount_cents).to eq(1000) # Montant déjà défini
-      expect(response).to redirect_to(membership_path(trial_membership))
+      expect(response).to redirect_to(cart_path)
+      expect(CartLine.where(user: user, reference: trial_membership)).to exist
     end
 
     context "si l'adhésion n'est pas un essai gratuit" do
@@ -465,7 +483,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user,
           status: :active,
-          season: Membership.current_season_name
+          season: Membership.sale_season_name
         )
       end
 
@@ -481,7 +499,7 @@ RSpec.describe "Memberships", type: :request do
   end
 
   describe "GET /memberships - Affichage bouton Réadhérer" do
-    let(:current_season) { Membership.current_season_name }
+    let(:current_season) { Membership.sale_season_name }
     let(:expired_season) { '2024-2025' }
 
     context "avec adhésion enfant expirée sans adhésion courante" do
@@ -568,7 +586,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user_with_complete_profile,
           status: :trial,
-          season: Membership.current_season_name,
+          season: Membership.sale_season_name,
           child_first_name: 'Enfant',
           child_last_name: 'Test',
           child_date_of_birth: Date.new(2015, 1, 1)
@@ -612,7 +630,7 @@ RSpec.describe "Memberships", type: :request do
           :with_health_questionnaire,
           user: user_with_complete_profile,
           status: :trial,
-          season: Membership.current_season_name,
+          season: Membership.sale_season_name,
           child_first_name: 'Enfant',
           child_last_name: 'Nouveau',
           child_date_of_birth: Date.new(2016, 1, 1)
@@ -637,6 +655,263 @@ RSpec.describe "Memberships", type: :request do
 
         expect(response).to have_http_status(:success)
         expect(response.body).to include("Votre enfant a droit à un essai gratuit")
+      end
+    end
+  end
+
+  describe "GET /memberships/:id/edit and PATCH /memberships/:id" do
+    let(:child_dob) { Date.new(2015, 6, 15) }
+    let(:pending_child) do
+      create(:membership,
+        :child,
+        :pending,
+        :with_health_questionnaire,
+        user: user,
+        child_first_name: "Léo",
+        child_last_name: "Martin",
+        child_date_of_birth: child_dob,
+        category: "standard",
+        rgpd_consent: true,
+        legal_notices_accepted: true,
+        parent_authorization: true
+      )
+    end
+
+    def child_update_params(overrides = {})
+      base = {
+        category: "standard",
+        child_first_name: "Léo",
+        child_last_name: "Martin",
+        child_date_of_birth: child_dob.to_s,
+        child_date_of_birth_day: child_dob.day.to_s,
+        child_date_of_birth_month: child_dob.month.to_s,
+        child_date_of_birth_year: child_dob.year.to_s,
+        parent_authorization: "1",
+        rgpd_consent: "1",
+        legal_notices_accepted: "1",
+        ffrs_data_sharing_consent: "0"
+      }
+      (1..9).each { |i| base["health_question_#{i}"] = "no" }
+      base.merge(overrides)
+    end
+
+    it "requires authentication for edit" do
+      get edit_membership_path(pending_child)
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "renders the full health questionnaire on edit" do
+      login_user(user)
+      get edit_membership_path(pending_child)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Q1 :")
+      expect(response.body).to include("Q9 :")
+      expect(response.body).not_to include('name="membership[has_health_issues]"')
+    end
+
+    it "updates a pending child membership when health answers are submitted" do
+      login_user(user)
+
+      patch membership_path(pending_child), params: {
+        membership: child_update_params(child_first_name: "Léonie")
+      }
+
+      expect(response).to redirect_to(memberships_path)
+      expect(flash[:notice]).to include("mise à jour")
+      expect(pending_child.reload.child_first_name).to eq("Léonie")
+      expect(pending_child.health_questionnaire_complete?).to be(true)
+    end
+
+    it "preserves existing health answers when they are omitted from the request" do
+      login_user(user)
+      params_without_health = child_update_params.except(*(1..9).map { |i| "health_question_#{i}" })
+
+      patch membership_path(pending_child), params: { membership: params_without_health }
+
+      expect(response).to redirect_to(memberships_path)
+      expect(pending_child.reload.health_questionnaire_complete?).to be(true)
+    end
+
+    it "blocks update when health questionnaire was never completed" do
+      login_user(user)
+      incomplete_child = create(:membership, :child, :pending, user: user,
+        child_first_name: "Noé",
+        child_last_name: "Test",
+        child_date_of_birth: child_dob,
+        parent_authorization: true,
+        rgpd_consent: true,
+        legal_notices_accepted: true)
+
+      patch membership_path(incomplete_child), params: {
+        membership: child_update_params.except(*(1..9).map { |i| "health_question_#{i}" })
+          .merge(child_first_name: "Noé", child_last_name: "Test")
+      }
+
+      expect(response).to redirect_to(edit_membership_path(incomplete_child))
+      expect(flash[:alert]).to include("questionnaire de santé")
+    end
+
+    it "rejects edit for non-pending memberships" do
+      login_user(user)
+      active_child = create(:membership, :child, :with_health_questionnaire, user: user)
+
+      get edit_membership_path(active_child)
+
+      expect(response).to redirect_to(membership_path(active_child))
+      expect(flash[:alert]).to include("ne peut pas être modifiée")
+    end
+  end
+
+  describe "unified cart membership flows" do
+    let(:user_with_dob) do
+      create_user(
+        role: role,
+        date_of_birth: Date.new(1990, 1, 1),
+        address: "1 rue Test",
+        postal_code: "38000",
+        city: "Grenoble",
+        phone: "0612345678"
+      )
+    end
+
+    def adult_membership_params
+      params = {
+        category: "standard",
+        first_name: "Jean",
+        last_name: "Dupont",
+        date_of_birth: Date.new(1990, 1, 1),
+        phone: "0612345678",
+        address: "1 rue Test",
+        postal_code: "38000",
+        city: "Grenoble"
+      }
+      (1..9).each { |i| params["health_question_#{i}"] = "no" }
+      params
+    end
+
+    describe "POST /memberships" do
+      context "adult membership with online pay" do
+        it "creates pending membership and cart line" do
+          login_user(user_with_dob)
+          expect do
+            post memberships_path, params: { membership: adult_membership_params }
+          end.to change(Membership, :count).by(1)
+            .and change { user_with_dob.cart_lines.membership.count }.by(1)
+
+          membership = Membership.last
+          expect(membership.status).to eq("pending")
+          expect(CartLineService.membership_in_cart?(user_with_dob, membership)).to be(true)
+        end
+
+        it "does not redirect to HelloAsso" do
+          login_user(user_with_dob)
+          allow(HelloassoService).to receive(:membership_checkout_redirect_url)
+
+          post memberships_path, params: { membership: adult_membership_params }
+
+          expect(response).to redirect_to(cart_path)
+          expect(HelloassoService).not_to have_received(:membership_checkout_redirect_url)
+        end
+
+        it "redirects with adhesion added to cart flash" do
+          login_user(user_with_dob)
+          post memberships_path, params: { membership: adult_membership_params }
+          expect(flash[:notice]).to include("Adhésion ajoutée au panier")
+        end
+
+        it "assigns sale season (not next season before 1 August)" do
+          travel_to Date.new(2026, 6, 5) do
+            login_user(user_with_dob)
+
+            post memberships_path, params: { membership: adult_membership_params }
+
+            membership = Membership.last
+            expect(membership.season).to eq("2025-2026")
+            expect(membership.start_date).to eq(Date.new(2025, 9, 1))
+            expect(membership.end_date).to eq(Date.new(2026, 8, 31))
+            line = user_with_dob.cart_lines.membership.find_by(reference: membership)
+            expect(line.label).to include("2025-2026")
+          end
+        end
+      end
+
+      context "when health questionnaire is incomplete" do
+        it "blocks add to cart at create or checkout validation" do
+          login_user(user_with_dob)
+          params = adult_membership_params.except(*((1..9).map { |i| "health_question_#{i}" }))
+          expect do
+            post memberships_path, params: { membership: params }
+          end.not_to change { user_with_dob.cart_lines.membership.count }
+          expect(response.location).to include(new_membership_path)
+        end
+      end
+
+      context "multi-child" do
+        it "creates one cart line per child membership" do
+          login_user(user_with_dob)
+          child_params_base = {
+            category: "standard",
+            is_child_membership: "true",
+            parent_authorization: "1",
+            rgpd_consent: "1",
+            legal_notices_accepted: "1"
+          }
+          (1..9).each { |i| child_params_base["health_question_#{i}"] = "no" }
+
+          child1 = child_params_base.merge(
+            child_first_name: "Alice",
+            child_last_name: "Test",
+            child_date_of_birth: Date.new(2015, 3, 1)
+          )
+          child2 = child_params_base.merge(
+            child_first_name: "Bob",
+            child_last_name: "Test",
+            child_date_of_birth: Date.new(2016, 5, 1)
+          )
+
+          post memberships_path, params: { membership: child1 }
+          post memberships_path, params: { membership: child2 }
+
+          expect(user_with_dob.cart_lines.membership.count).to eq(2)
+        end
+      end
+    end
+
+    describe "POST /memberships/create_without_payment" do
+      it "does not create cart line for cash/check path" do
+        login_user(user_with_dob)
+        expect do
+          post memberships_path, params: {
+            payment_method: "cash_check",
+            membership: adult_membership_params
+          }
+        end.to change(Membership, :count).by(1)
+          .and change { user_with_dob.cart_lines.membership.count }.by(0)
+      end
+    end
+
+    describe "PATCH /memberships/:id/upgrade" do
+      let(:trial_membership) do
+        create(:membership,
+          :child,
+          :with_health_questionnaire,
+          user: user_with_dob,
+          status: :trial,
+          season: Membership.sale_season_name,
+          category: "standard",
+          amount_cents: 1000)
+      end
+
+      it "converts trial to pending and adds membership to cart" do
+        login_user(user_with_dob)
+
+        patch upgrade_membership_path(trial_membership)
+
+        trial_membership.reload
+        expect(trial_membership.status).to eq("pending")
+        expect(response).to redirect_to(cart_path)
+        expect(CartLineService.membership_in_cart?(user_with_dob, trial_membership)).to be(true)
       end
     end
   end

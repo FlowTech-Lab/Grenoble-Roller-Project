@@ -10,6 +10,12 @@ class SessionsController < Devise::SessionsController
       redirect_to root_path, notice: "Vous êtes déjà connecté·e. Bienvenue #{current_user.first_name.presence || 'membre'} ! 👋"
       return
     end
+
+    stored = session["user_return_to"].to_s
+    if stored.include?("/memberships")
+      flash.now[:notice] ||= "Connectez-vous pour renouveler votre adhésion."
+    end
+
     super
   end
 
@@ -58,9 +64,17 @@ class SessionsController < Devise::SessionsController
     Rails.logger.error("🟢 Turnstile verification PASSED - Proceeding with authentication")
     Rails.logger.error("=" * 80)
 
+    # Capture legacy session cart before Devise may regenerate the session on sign-in.
+    legacy_session_cart = (session[:cart] || {}).deep_dup
+
     # Turnstile OK, procéder avec l'authentification Devise
     super do |resource|
       if resource.persisted?
+        if resource.confirmed?
+          CartSessionMergeService.merge!(resource, session_cart: legacy_session_cart)
+          session[:cart] = {}
+        end
+
         # Vérifier si l'email est confirmé APRÈS authentification réussie
         if resource.confirmed?
           # Email confirmé : connexion normale avec message de bienvenue personnalisé

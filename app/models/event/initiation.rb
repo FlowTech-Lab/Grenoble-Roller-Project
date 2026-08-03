@@ -1,6 +1,6 @@
 class Event::Initiation < Event
   # Scopes spécifiques
-  scope :upcoming_initiations, -> { where("start_at > ?", Time.current).order(:start_at) }
+  scope :upcoming_initiations, -> { upcoming.order(:start_at) }
   scope :by_season, ->(season) { where(season: season) }
 
   # Validations spécifiques aux initiations

@@ -1,5 +1,6 @@
 <%
   carousels = HomepageCarousel.active.ordered
+  carousel_settings = HomepageCarouselSetting.current
 %>
 
 <% if carousels.any? %>
@@ -8,8 +9,8 @@
       <div id="announcementCarousel"
            class="carousel slide carousel-fade announcement-banner-carousel"
            data-controller="carousel"
-           data-carousel-autoplay-value="true"
-           data-bs-interval="4000"
+           data-carousel-autoplay-value="<%= carousel_settings.autoplay_enabled %>"
+           data-bs-interval="<%= carousel_settings.interval_ms %>"
            role="region"
            aria-label="Annonces importantes">
         <% if carousels.count > 1 %>

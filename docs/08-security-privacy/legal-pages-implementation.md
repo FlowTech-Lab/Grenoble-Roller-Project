@@ -88,7 +88,7 @@ end
    - Préférences utilisateur
 
 3. **Cookies analytiques** (consentement requis)
-   - Aucun actuellement utilisé
+   - **[Umami](umami-analytics.md)** (mesure d'audience, self-hosted) — chargé uniquement si consentement `analytics` + variables `UMAMI_SCRIPT_URL` / `UMAMI_WEBSITE_ID`
 
 ### Configuration des Cookies
 

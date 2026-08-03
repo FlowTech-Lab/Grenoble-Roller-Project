@@ -2,8 +2,26 @@
 
 module AdminPanel
   class UserPolicy < BasePolicy
-    # Hérite de BasePolicy qui vérifie user.role.level.to_i >= 60
-    # Les restrictions utilisent le NUMÉRO du level, pas le code du rôle
-    # Level 60 = ADMIN, Level 70 = SUPERADMIN
+    # Inherits BasePolicy admin gate (level >= 60).
+    # Level 60 = ADMIN, Level 70 = SUPERADMIN.
+    # Admins cannot modify or delete super admins.
+
+    def update?
+      admin_user? && manageable_user?
+    end
+
+    def edit?
+      update?
+    end
+
+    def destroy?
+      admin_user? && manageable_user?
+    end
+
+    private
+
+    def manageable_user?
+      RoleAssignmentService.can_manage_user?(assigner: user, target_user: record)
+    end
   end
 end

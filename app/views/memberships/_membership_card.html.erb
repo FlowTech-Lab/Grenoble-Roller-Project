@@ -57,7 +57,6 @@
       
       <% if membership.status == 'pending' %>
         <% if is_child && local_assigns[:is_pending] %>
-          <!-- Actions pour enfants pending : Modifier, Supprimer, Payer individuellement -->
           <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning" do %>
             <i class="bi bi-pencil me-1"></i>Modifier
           <% end %>
@@ -71,23 +70,8 @@
               form: { style: "display: inline-block;" } do %>
             <i class="bi bi-trash me-1"></i>Supprimer
           <% end %>
-          <%= button_to membership_payments_path(membership),
-              method: :post,
-              class: "btn btn-sm btn-primary",
-              data: { turbo: false },
-              form: { style: "display: inline-block;" } do %>
-            <i class="bi bi-credit-card me-1"></i>Payer
-          <% end %>
-        <% else %>
-          <!-- Paiement individuel pour adhésions personnelles pending -->
-          <%= button_to membership_payments_path(membership),
-              method: :post,
-              class: "btn btn-sm btn-primary",
-              data: { turbo: false },
-              form: { style: "display: inline-block;" } do %>
-            <i class="bi bi-credit-card me-1"></i>Payer
-          <% end %>
         <% end %>
+        <%= unified_cart_pay_cta(membership) %>
       <% elsif membership.status == 'trial' && membership.is_child_membership? %>
         <!-- Bouton pour convertir essai gratuit en adhésion payante -->
         <%= link_to upgrade_membership_path(membership), 
@@ -99,15 +83,10 @@
             } do %>
           <i class="bi bi-credit-card me-1"></i>Adhérer maintenant
         <% end %>
-      <% elsif membership.status == 'expired' %>
-        <% if membership.is_child_membership? %>
-          <%= link_to new_membership_path(type: 'child', renew_from: membership.id), class: "btn btn-sm btn-success", data: { turbo: false } do %>
-            <i class="bi bi-arrow-repeat me-1"></i>Réadhérer
-          <% end %>
-        <% else %>
-          <%= link_to new_membership_path(type: 'adult', renew_from: membership.id), class: "btn btn-sm btn-success" do %>
-            <i class="bi bi-arrow-repeat me-1"></i>Renouveler
-          <% end %>
+      <% elsif membership.renewable_now? %>
+        <%= link_to membership_renewal_path_for(membership), class: "btn btn-sm btn-success", data: { turbo: false } do %>
+          <i class="bi bi-arrow-repeat me-1"></i>
+          <%= membership.is_child_membership? ? "Réadhérer" : "Renouveler" %>
         <% end %>
       <% end %>
     </div>

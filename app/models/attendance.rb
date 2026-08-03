@@ -34,11 +34,10 @@ class Attendance < ApplicationRecord
   validate :can_register_to_event, on: :create
   validate :child_membership_belongs_to_user
   validate :no_duplicate_registration, on: :create
+  validate :roller_size_available_for_initiation, if: :requires_roller_availability_check?
 
-  after_create :decrement_roller_stock, if: :should_decrement_stock? # Décrémenter le stock si matériel demandé
-  after_update :handle_stock_on_equipment_change # Gérer le stock si besoin matériel change
-  after_update :handle_stock_on_status_change, if: :saved_change_to_status? # Gérer le stock si statut change
-  after_destroy :increment_roller_stock, if: :should_increment_stock_on_destroy? # Incrémenter le stock si matériel était demandé
+  before_destroy :destroy_payment_cart_line, if: :payment_pending?
+
   after_destroy :notify_waitlist_if_needed # Notifier la liste d'attente si une place se libère
   after_update :notify_waitlist_on_cancellation, if: :saved_change_to_status? # Notifier si le statut passe à "canceled"
 
@@ -48,6 +47,15 @@ class Attendance < ApplicationRecord
   scope :participants, -> { where(is_volunteer: false) }
   scope :for_parent, -> { where(child_membership_id: nil) }
   scope :for_children, -> { where.not(child_membership_id: nil) }
+  scope :payment_pending, -> { where(status: :pending).where.not(payment_expires_at: nil) }
+
+  def payment_pending?
+    pending? && payment_expires_at.present? && payment_expires_at > Time.current
+  end
+
+  def waitlist_hold?
+    pending? && payment_expires_at.blank?
+  end
 
   # Vérifier si c'est une inscription pour un enfant
   def for_child?
@@ -62,7 +70,7 @@ class Attendance < ApplicationRecord
   # Nom de la personne inscrite (parent ou enfant)
   def participant_name
     if for_child?
-      child_membership&.child_full_name || "Enfant"
+      child_membership&.child_full_name.presence || "Enfant"
     else
       # Construire le nom complet à partir de first_name et last_name
       if user
@@ -89,9 +97,8 @@ class Attendance < ApplicationRecord
     return if event.unlimited?
     # Ne pas vérifier la limite pour les inscriptions annulées (elles ne comptent pas)
     return if status == "canceled"
-    # Les inscriptions "pending" verrouillent une place mais ne sont pas comptées dans has_available_spots
-    # Elles sont créées lors de la notification de la liste d'attente
-    return if status == "pending"
+    # Waitlist holds (pending without payment_expires_at) skip capacity check at creation
+    return if waitlist_hold?
     # Bénévoles ne comptent pas dans la limite
     return if is_volunteer
 
@@ -118,16 +125,8 @@ class Attendance < ApplicationRecord
         end
       end
     else
-      # Comportement classique : vérifier le total
-      # Exclure "pending" du comptage car elles verrouillent une place mais ne sont pas encore confirmées
-      active_attendances_count = event.attendances.where.not(status: [ "canceled", "pending" ]).where(is_volunteer: false).count
-
-      # Si on crée une nouvelle inscription, vérifier qu'il reste de la place
-      # (ne pas compter cette inscription si elle n'est pas encore sauvegardée)
-      if new_record?
-        if active_attendances_count >= event.max_participants
-          errors.add(:event, "L'événement est complet (#{event.max_participants} participants maximum)")
-        end
+      if new_record? && event.occupied_spots_for_capacity >= event.max_participants
+        errors.add(:event, "L'événement est complet (#{event.max_participants} participants maximum)")
       end
     end
   end
@@ -313,7 +312,7 @@ class Attendance < ApplicationRecord
     # Quand une inscription est supprimée, vérifier si on doit notifier la liste d'attente
     # Ne pas notifier si c'est une inscription "pending" (c'est une place verrouillée par la liste d'attente)
     # Note: dans after_destroy, l'objet existe encore en mémoire avec ses attributs
-    return if status == "pending"
+    return if waitlist_hold?
 
     # Ne pas notifier si c'est un bénévole (ils ne comptent pas dans les places)
     return if is_volunteer
@@ -340,92 +339,25 @@ class Attendance < ApplicationRecord
     end
   end
 
-  # Gestion du stock de rollers
-  def should_decrement_stock?
-    needs_equipment? && roller_size.present? && status != "canceled"
+  # Gestion du stock de rollers (réservations par initiation, stock physique inchangé)
+  def destroy_payment_cart_line
+    user.cart_lines.where(line_type: :event_registration, reference: self).destroy_all
   end
 
-  def should_increment_stock_on_destroy?
-    needs_equipment? && roller_size.present?
+  def requires_roller_availability_check?
+    needs_equipment? && roller_size.present? && status != "canceled" && event.is_a?(Event::Initiation)
   end
 
-  def decrement_roller_stock
-    return unless needs_equipment? && roller_size.present?
+  def roller_size_available_for_initiation
+    return unless requires_roller_availability_check?
 
-    roller_stock = RollerStock.find_by(size: roller_size)
-    if roller_stock && roller_stock.quantity > 0
-      roller_stock.decrement!(:quantity)
-      Rails.logger.info("Stock décrémenté pour taille #{roller_size}: #{roller_stock.quantity} restants")
-    elsif roller_stock
-      Rails.logger.warn("Impossible de décrémenter le stock : taille #{roller_size} déjà à 0")
-    else
-      Rails.logger.warn("Taille de roller #{roller_size} non trouvée dans le stock")
-    end
-  end
+    available = RollerStock.available_quantity_for_size(
+      roller_size,
+      exclude_attendance_id: persisted? ? id : nil
+    )
 
-  def increment_roller_stock
-    return unless needs_equipment? && roller_size.present?
+    return if available.positive?
 
-    roller_stock = RollerStock.find_by(size: roller_size)
-    if roller_stock
-      roller_stock.increment!(:quantity)
-      Rails.logger.info("Stock incrémenté pour taille #{roller_size}: #{roller_stock.quantity} disponibles")
-    else
-      Rails.logger.warn("Taille de roller #{roller_size} non trouvée dans le stock lors de l'incrémentation")
-    end
-  end
-
-  def handle_stock_on_equipment_change
-    # Si le besoin de matériel change
-    if saved_change_to_needs_equipment? || saved_change_to_roller_size?
-      old_needs = saved_change_to_needs_equipment? ? saved_change_to_needs_equipment[0] : needs_equipment?
-      old_size = saved_change_to_roller_size? ? saved_change_to_roller_size[0] : roller_size
-      new_needs = needs_equipment?
-      new_size = roller_size
-
-      # Si on passait de "besoin matériel" à "pas besoin", incrémenter le stock de l'ancienne taille
-      if old_needs && old_size.present? && !new_needs && status != "canceled"
-        old_stock = RollerStock.find_by(size: old_size)
-        old_stock&.increment!(:quantity)
-        Rails.logger.info("Stock incrémenté (changement besoin matériel) pour taille #{old_size}")
-      end
-
-      # Si on passe de "pas besoin" à "besoin matériel", décrémenter le stock de la nouvelle taille
-      if !old_needs && new_needs && new_size.present? && status != "canceled"
-        new_stock = RollerStock.find_by(size: new_size)
-        if new_stock && new_stock.quantity > 0
-          new_stock.decrement!(:quantity)
-          Rails.logger.info("Stock décrémenté (changement besoin matériel) pour taille #{new_size}")
-        end
-      end
-
-      # Si la taille change mais qu'on a toujours besoin de matériel
-      if old_needs && new_needs && old_size != new_size && old_size.present? && new_size.present? && status != "canceled"
-        old_stock = RollerStock.find_by(size: old_size)
-        old_stock&.increment!(:quantity)
-        new_stock = RollerStock.find_by(size: new_size)
-        if new_stock && new_stock.quantity > 0
-          new_stock.decrement!(:quantity)
-          Rails.logger.info("Stock mis à jour : taille #{old_size} incrémentée, taille #{new_size} décrémentée")
-        end
-      end
-    end
-  end
-
-  def handle_stock_on_status_change
-    return unless needs_equipment? && roller_size.present?
-
-    old_status = status_before_last_save
-    new_status = status
-
-    # Si on passe de "non canceled" à "canceled", incrémenter le stock
-    if old_status != "canceled" && new_status == "canceled"
-      increment_roller_stock
-    end
-
-    # Si on passe de "canceled" à "non canceled", décrémenter le stock
-    if old_status == "canceled" && new_status != "canceled"
-      decrement_roller_stock
-    end
+    errors.add(:roller_size, "n'est plus disponible pour cette initiation")
   end
 end

@@ -5,6 +5,22 @@ RSpec.describe OrderMailer, type: :mailer do
   let!(:user) { create_user(role: role, email: 'order@example.com', first_name: 'John') }
   let!(:order) { Order.create!(user: user, status: 'pending', total_cents: 5000, currency: 'EUR') }
 
+  context 'unified checkout path' do
+    it 'does not send order_confirmation on order create at checkout build' do
+      expect {
+        Order.create!(user: user, status: 'pending', total_cents: 5000, currency: 'EUR')
+      }.not_to have_enqueued_mail(OrderMailer, :order_confirmation)
+    end
+
+    it 'sends order_confirmation after fulfillment' do
+      order = Order.create!(user: user, status: 'pending', total_cents: 5000, currency: 'EUR')
+
+      expect {
+        OrderMailer.order_confirmation(order).deliver_later
+      }.to have_enqueued_mail(OrderMailer, :order_confirmation).with(order)
+    end
+  end
+
   describe '#order_confirmation' do
     let(:mail) { OrderMailer.order_confirmation(order) }
 

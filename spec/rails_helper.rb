@@ -120,6 +120,7 @@ RSpec.configure do |config|
     ActionMailer::Base.delivery_method = :test
     # Activer les deliveries pour les tests de jobs (ils utilisent perform_enqueued_jobs)
     ActionMailer::Base.perform_deliveries = true
+    ActiveJob::Base.queue_adapter = :test
   end
 
   config.after(:each) do

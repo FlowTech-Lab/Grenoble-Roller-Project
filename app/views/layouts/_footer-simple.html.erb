@@ -77,6 +77,10 @@
           <%= link_to "CGU", cgu_path, class: "footer-link" %>
           <span class="mx-2 text-muted" aria-hidden="true">•</span>
           <%= link_to "CGV", cgv_path, class: "footer-link" %>
+          <% if umami_public_stats_available? %>
+            <span class="mx-2 text-muted" aria-hidden="true">•</span>
+            <%= render "shared/umami_public_stats_link" %>
+          <% end %>
           <%# TODO: Créer pages Accessibilité et Plan du site %>
           <% if false %>
             <span class="mx-2 text-muted" aria-hidden="true">•</span>

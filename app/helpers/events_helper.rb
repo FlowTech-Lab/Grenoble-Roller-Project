@@ -73,7 +73,95 @@ module EventsHelper
     decline_waitlist_entry_url(waitlist_entry)
   end
 
+  # Affiche la distance : une valeur pour une boucle, ou "5 km + 7 km" pour plusieurs
+  def format_event_distance(event)
+    values = event.loop_distance_km_values
+    return nil if values.empty?
+
+    values.map { |km| format_distance_km(km) }.join(" + ")
+  end
+
+  def route_difficulty_label(difficulty)
+    case difficulty
+    when "easy" then "Facile"
+    when "medium" then "Moyen"
+    when "hard" then "Difficile"
+    else difficulty.to_s.humanize
+    end
+  end
+
+  def event_loop_columns_class(loops_count)
+    case loops_count
+    when 2 then "col-12 col-md-6"
+    when 3 then "col-12 col-md-4"
+    else "col-12 col-sm-6 col-xl-3"
+    end
+  end
+
+  def event_payment_mode_description(event)
+    return "Gratuit" if event.price_cents.to_i <= 0
+
+    if event.requires_online_payment?
+      "Paiement en ligne via Grenoble Roller (panier, 15 min pour payer)"
+    else
+      "Prix informatif — paiement géré par l'organisateur (inscription directe)"
+    end
+  end
+
+  def route_map_viewer_data(route, title:)
+    return {} unless route&.map_image&.attached?
+
+    image_viewer_data(
+      src: route_map_image_path(route),
+      title: title
+    )
+  end
+
+  def event_cover_viewer_data(event)
+    return {} unless event.cover_image.attached?
+
+    image_viewer_data(
+      src: rails_storage_proxy_path(event.cover_image, only_path: true),
+      title: event.title
+    )
+  end
+
+  # Stimulus actions must not be set via tag helpers — Rails HTML-escapes "->" in data-action.
+  def image_viewer_data(src:, title:)
+    {
+      controller: "route-image-viewer",
+      route_image_viewer_src_value: src,
+      route_image_viewer_title_value: title
+    }
+  end
+
+  # Active Storage variants only work on raster images (not SVG).
+  def route_map_image_path(route, resize_to: nil)
+    return unless route&.map_image&.attached?
+
+    attachment = route.map_image
+    if resize_to.present? && attachment.variable?
+      rails_representation_path(attachment.variant(resize_to_limit: resize_to))
+    else
+      rails_storage_proxy_path(attachment, only_path: true)
+    end
+  end
+
   # Formate la durée d'un événement et calcule l'heure de fin
+  def event_organizer_display(event)
+    {
+      name: event.display_organizer_name,
+      url: safe_external_url(event.display_organizer_url)
+    }
+  end
+
+  def render_event_organizer(event)
+    display = event_organizer_display(event)
+    return content_tag(:span, display[:name]) if display[:url].blank?
+
+    link_to(display[:name], display[:url], target: "_blank", rel: "noopener noreferrer")
+  end
+
   def format_event_duration(event)
     return nil unless event.start_at && event.duration_min
 
@@ -97,5 +185,11 @@ module EventsHelper
     end_time_text = end_time.strftime("%Hh%M")
 
     "#{duration_text} (#{start_time_text} - #{end_time_text})"
+  end
+
+  private
+
+  def format_distance_km(km)
+    "#{number_with_precision(km, precision: 1, strip_insignificant_zeros: true)} km"
   end
 end

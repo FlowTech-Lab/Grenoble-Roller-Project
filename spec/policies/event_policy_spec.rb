@@ -131,6 +131,14 @@ RSpec.describe EventPolicy do
       past_event.save!
       expect(described_class.new(member, past_event).attend?).to be(false)
     end
+
+    it 'denies when event has started but is not finished' do
+      member = create_user(role: user_role)
+      create(:membership, user: member, status: :active, season: '2025-2026')
+      ongoing_event = build_event(status: 'published', max_participants: 10, start_at: 30.minutes.ago, duration_min: 120)
+      ongoing_event.save!
+      expect(described_class.new(member, ongoing_event).attend?).to be(false)
+    end
   end
 
   describe '#can_attend?' do
@@ -190,6 +198,19 @@ RSpec.describe EventPolicy do
 
     it 'returns false when user is nil' do
       expect(described_class.new(nil, event).user_has_attendance?).to be(false)
+    end
+  end
+
+  describe '#permitted_attributes' do
+    it 'includes organizer_id for organizers' do
+      expect(policy.permitted_attributes).to include(:organizer_id)
+    end
+
+    it 'includes status for moderators' do
+      moderator_role = Role.find_or_create_by!(code: 'MODERATOR') { |r| r.name = 'Modérateur'; r.level = 50 }
+      moderator = create_user(role: moderator_role)
+
+      expect(described_class.new(moderator, event).permitted_attributes).to include(:status, :organizer_id)
     end
   end
 

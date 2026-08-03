@@ -28,7 +28,7 @@ class CookieConsentsController < ApplicationController
     consent_data = {
       necessary: true,
       preferences: true,
-      analytics: false,
+      analytics: true,
       timestamp: Time.current.iso8601
     }
 

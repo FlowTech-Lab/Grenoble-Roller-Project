@@ -7,7 +7,7 @@
 
 <%= render 'admin_panel/shared/breadcrumb', breadcrumb_items: breadcrumb_items %>
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="admin-page-header">
   <h1>Adhésion #<%= @membership.id %></h1>
   <div class="d-flex gap-2">
     <% if @membership.status == "pending" %>
@@ -95,6 +95,15 @@
               <%= link_to "Paiement ##{@membership.payment.id}", admin_panel_payment_path(@membership.payment) if defined?(admin_panel_payment_path) %>
             <% else %>
               <span class="text-muted">Aucun paiement</span>
+            <% end %>
+          </dd>
+
+          <dt class="col-sm-3">Goodies distribués</dt>
+          <dd class="col-sm-9">
+            <% if @membership.goodies_distributed? %>
+              <span class="badge bg-success">Oui</span>
+            <% else %>
+              <span class="badge bg-secondary">Non</span>
             <% end %>
           </dd>
         </dl>

@@ -134,6 +134,17 @@ RSpec.describe 'AdminPanel::Memberships', type: :request do
         expect(response).to redirect_to(admin_panel_membership_path(target_membership))
       end
     end
+
+    context 'when updating goodies_distributed' do
+      let(:update_params) do
+        { membership: { goodies_distributed: true } }
+      end
+
+      it 'marks goodies as distributed' do
+        patch admin_panel_membership_path(target_membership), params: update_params
+        expect(target_membership.reload.goodies_distributed).to eq(true)
+      end
+    end
   end
 
   describe 'PATCH /admin-panel/memberships/:id/activate' do

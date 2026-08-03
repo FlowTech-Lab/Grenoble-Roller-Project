@@ -1,0 +1,36 @@
+<% expired = line.expired? %>
+<div class="cart-item mb-2 <%= 'opacity-50' if expired %>" data-checkout-selection-target="lineRow" data-line-cents="<%= line.subtotal_cents %>">
+  <div class="d-flex align-items-start gap-3">
+    <div class="form-check mt-1">
+      <%= check_box_tag "cart_line_ids[]", line.id, !expired,
+          class: "form-check-input",
+          id: "cart_line_#{line.id}",
+          disabled: expired,
+          checked: !expired,
+          data: {
+            checkout_selection_target: "lineCheckbox",
+            action: "checkout-selection#recalculate"
+          } %>
+    </div>
+    <div class="flex-grow-1">
+      <label for="cart_line_<%= line.id %>" class="mb-0 fw-semibold"><%= line.label %></label>
+      <div class="small text-muted">
+        <% if line.product_variant? && line.reference.is_a?(ProductVariant) %>
+          <%= line.reference.sku %> · Qté <%= line.quantity %>
+        <% elsif line.quantity > 1 %>
+          Qté <%= line.quantity %>
+        <% end %>
+        <% if expired %>
+          <span class="badge bg-danger ms-1">Expiré</span>
+        <% elsif line.event_registration? && line.expires_at.present? %>
+          <span class="badge bg-warning text-dark ms-1">
+            Expire <%= l(line.expires_at, format: :short) %>
+          </span>
+        <% end %>
+      </div>
+    </div>
+    <div class="text-end fw-semibold">
+      <%= format_price(line.subtotal_cents) %>
+    </div>
+  </div>
+</div>

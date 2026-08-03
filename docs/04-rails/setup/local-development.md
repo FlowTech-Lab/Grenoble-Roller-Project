@@ -15,8 +15,8 @@ This guide explains how to set up the Grenoble Roller project for local developm
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/FlowTech-Lab/Grenoble-Roller-Project.git
-cd Grenoble-Roller-Project
+git clone https://github.com/Grenoble-roller/Grenoble-Roller-Website.git
+cd Grenoble-Roller-Website
 ```
 
 ### 2. Configure Credentials

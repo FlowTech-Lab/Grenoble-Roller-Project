@@ -41,6 +41,7 @@ module AdminPanel
         reviewed_by: current_user,
         reviewed_at: Time.current
       )
+        notify_discord("organizer_application.approved", @organizer_application)
         flash[:notice] = "Candidature approuvée avec succès"
         redirect_to admin_panel_organizer_application_path(@organizer_application)
       else
@@ -58,6 +59,7 @@ module AdminPanel
         reviewed_by: current_user,
         reviewed_at: Time.current
       )
+        notify_discord("organizer_application.rejected", @organizer_application)
         flash[:notice] = "Candidature refusée"
         redirect_to admin_panel_organizer_application_path(@organizer_application)
       else

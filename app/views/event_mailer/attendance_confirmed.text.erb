@@ -2,10 +2,16 @@
 
 Bonjour <%= @user.first_name %>,
 
-Votre inscription à l'événement <%= @event.title %> a bien été enregistrée.
+<% if @is_child_registration %>
+L'inscription de votre enfant <%= @participant_name %> à l'événement <%= @event.title %> a bien été enregistrée.
+<% else %>
+Votre inscription à l'événement <%= @event.title %> a bien été enregistrée pour <%= @participant_name %>.
+<% end %>
 
 📅 DÉTAILS DE L'ÉVÉNEMENT
 ─────────────────────────
+
+👤 Participant : <%= @participant_name %><%= @is_child_registration ? " (enfant)" : "" %>
 
 📍 Lieu : <%= @event.location_text %>
 🕐 Date : <%= l @event.start_at, format: :event_long, locale: :fr %>

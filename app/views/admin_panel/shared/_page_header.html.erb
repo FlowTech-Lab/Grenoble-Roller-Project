@@ -1,0 +1,9 @@
+<%# locals: title (required) — optional block for action buttons %>
+<div class="admin-page-header">
+  <h1 class="admin-page-title"><%= title %></h1>
+  <% if block_given? %>
+    <div class="admin-page-actions">
+      <%= yield %>
+    </div>
+  <% end %>
+</div>

@@ -144,15 +144,9 @@
         <% end %>
       <% end %>
       
-      <%= button_to membership_payments_path(membership),
-          method: :post,
-          class: "btn btn-sm btn-primary",
-          data: { turbo: false },
-          form: { style: "display: inline-block;" } do %>
-        <i class="bi bi-credit-card me-1"></i>Finaliser paiement →
-      <% end %>
-    <% elsif membership.status == 'expired' %>
-      <%= link_to new_membership_path(type: 'adult'), class: "btn btn-sm btn-success" do %>
+      <%= unified_cart_pay_cta(membership) %>
+    <% elsif membership.renewable_now? %>
+      <%= link_to membership_renewal_path_for(membership), class: "btn btn-sm btn-success", data: { turbo: false } do %>
         <i class="bi bi-arrow-repeat me-1"></i>Renouveler
       <% end %>
     <% end %>

@@ -56,14 +56,14 @@ end
 | POST | `/admin-panel/initiations/:id/convert_waitlist` | `convert_waitlist` | Convertir waitlist |
 | POST | `/admin-panel/initiations/:id/notify_waitlist` | `notify_waitlist` | Notifier waitlist |
 | PATCH | `/admin-panel/initiations/:id/toggle_volunteer` | `toggle_volunteer` | Toggle bénévole |
-| POST | `/admin-panel/initiations/:id/return_material` | `return_material` | Marquer matériel comme rendu (remet les rollers en stock) |
+| POST | `/admin-panel/initiations/:id/return_material` | `return_material` | Marquer matériel comme rendu (clôture les réservations ; stock physique inchangé) |
 
 ### **Roller Stocks**
 
 | Méthode | Route | Action | Description |
 |---------|-------|--------|-------------|
 | GET | `/admin-panel/roller-stocks` | `index` | Liste stock rollers |
-| POST | `/admin-panel/roller-stocks/return_all` | `return_all` | Tout remettre en stock (initiations terminées non encore marquées « Matériel rendu ») |
+| POST | `/admin-panel/roller-stocks/return_all` | `return_all` | Clôturer les prêts terminés (initiations terminées non encore marquées « Matériel rendu ») |
 | GET | `/admin-panel/roller-stocks/:id` | `show` | Détails stock |
 | GET | `/admin-panel/roller-stocks/new` | `new` | Nouveau stock |
 | POST | `/admin-panel/roller-stocks` | `create` | Créer stock |

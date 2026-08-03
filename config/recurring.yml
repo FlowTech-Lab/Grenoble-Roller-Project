@@ -28,6 +28,12 @@ production:
     queue: default
     schedule: every 5 minutes
 
+  # Expire stale cart lines (event payment holds — Wave 1 job, Wave 2 side effects)
+  expire_cart_lines:
+    class: ExpireCartLinesJob
+    queue: default
+    schedule: every 2 minutes
+
   # Mise à jour adhésions expirées (tous les jours à minuit)
   # Met à jour le statut des adhésions expirées et envoie un email
   update_expired_memberships:
@@ -47,6 +53,12 @@ production:
     class: ReturnRollerStockJob
     queue: default
     schedule: every day at 2:00am
+
+  # Expire event registration cart lines and release unpaid seats (every 2 minutes)
+  expire_cart_lines:
+    class: ExpireCartLinesJob
+    queue: default
+    schedule: every 2 minutes
 
 # Note: InitiationParticipantsReportJob n'est plus récurrent
 # Il est créé automatiquement lors de la publication d'une initiation

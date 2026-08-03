@@ -30,6 +30,7 @@ module AdminPanel
     # DELETE /admin-panel/payments/:id
     def destroy
       if @payment.destroy
+        notify_discord("payment.destroyed", @payment)
         flash[:notice] = "Le paiement ##{@payment.id} a été supprimé avec succès."
         redirect_to admin_panel_payments_path
       else

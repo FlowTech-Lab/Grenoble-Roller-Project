@@ -4,6 +4,30 @@ RSpec.describe EventMailer, type: :mailer do
   let!(:user_role) { ensure_role(code: 'USER', name: 'Utilisateur', level: 10) }
   let!(:organizer_role) { ensure_role(code: 'ORGANIZER', name: 'Organisateur', level: 40) }
 
+  context 'paid event unified checkout' do
+    let(:user) { create(:user, first_name: 'John', email: 'john@example.com', role: user_role) }
+    let(:organizer) { create(:user, role: organizer_role) }
+    let!(:user_membership) { create(:membership, user: user, status: :active, season: '2025-2026') }
+    let(:event) do
+      create(:event, :published, :upcoming, title: 'Rando payante', location_text: 'Parc Paul Mistral',
+             creator_user: organizer, payment_required: true, price_cents: 1000)
+    end
+
+    it 'does not send on pending attendance creation' do
+      expect {
+        create(:attendance, user: user, event: event, status: :pending, payment_expires_at: 15.minutes.from_now)
+      }.not_to have_enqueued_mail(EventMailer, :attendance_confirmed)
+    end
+
+    it 'sends attendance_confirmed only after fulfillment' do
+      attendance = create(:attendance, user: user, event: event, status: :registered)
+
+      expect {
+        EventMailer.attendance_confirmed(attendance).deliver_later
+      }.to have_enqueued_mail(EventMailer, :attendance_confirmed).with(attendance)
+    end
+  end
+
   describe '#attendance_confirmed' do
     let(:user) { create(:user, first_name: 'John', email: 'john@example.com', role: user_role) }
     let(:organizer) { create(:user, role: organizer_role) }
@@ -29,6 +53,27 @@ RSpec.describe EventMailer, type: :mailer do
 
     it 'includes user first name in body' do
       expect(mail.body.encoded).to include(user.first_name)
+    end
+
+    it 'includes participant name in body' do
+      body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+      expect(body).to include(attendance.participant_name)
+    end
+
+    context 'when registration is for a child' do
+      let(:child_membership) do
+        create(:membership, :child, user: user, status: :active, season: '2025-2026',
+          child_first_name: 'Léa', child_last_name: 'Martin')
+      end
+      let(:attendance) { create(:attendance, user: user, event: event, child_membership: child_membership) }
+      let(:mail) { EventMailer.attendance_confirmed(attendance) }
+
+      it 'includes child name in subject and body' do
+        expect(mail.subject).to include('Léa Martin')
+        body = mail.body.parts.any? ? mail.body.parts.map(&:decoded).join : mail.body.decoded
+        expect(body).to include('Léa Martin')
+        expect(body).to include('enfant')
+      end
     end
 
     it 'includes event date in body' do
@@ -431,8 +476,13 @@ RSpec.describe EventMailer, type: :mailer do
     end
 
     context 'when participants request equipment' do
-      let!(:attendance1) { create_attendance(user: user1, event: initiation, status: 'registered', is_volunteer: false, needs_equipment: true, roller_size: '38') }
-      let!(:attendance2) { create_attendance(user: user2, event: initiation, status: 'registered', is_volunteer: false, needs_equipment: true, roller_size: '40') }
+      before do
+        Attendance.where(event: initiation).delete_all
+        create(:roller_stock, size: '38', quantity: 2, is_active: true)
+        create(:roller_stock, size: '40', quantity: 2, is_active: true)
+        create_attendance(user: user1, event: initiation, status: 'registered', is_volunteer: false, needs_equipment: true, roller_size: '38')
+        create_attendance(user: user2, event: initiation, status: 'registered', is_volunteer: false, needs_equipment: true, roller_size: '40')
+      end
       let(:mail) { EventMailer.initiation_participants_report(initiation) }
 
       it 'includes equipment requests count in body' do

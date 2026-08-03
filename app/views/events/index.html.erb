@@ -147,7 +147,7 @@
 
     <% if @past_events.any? %>
       <!-- Tableau des événements passés -->
-      <div class="card card-liquid">
+      <div class="card card-liquid events-past-table">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover mb-0">
@@ -155,7 +155,6 @@
                 <tr>
                   <th>Date</th>
                   <th>Titre</th>
-                  <th>Parcours</th>
                   <th>Niveau</th>
                   <th>Distance</th>
                   <th>Participants</th>
@@ -176,13 +175,10 @@
                     <td data-label="Titre">
                       <div class="d-flex align-items-center">
                         <% if event.cover_image.attached? %>
-                          <%= image_tag rails_representation_path(event.cover_image_banner), class: "rounded me-2", style: "width: 71px; height: 40px; object-fit: cover;", alt: event.title %>
+                          <%= image_tag rails_representation_path(event.cover_image_banner), class: "rounded me-2 flex-shrink-0", style: "width: 71px; height: 40px; object-fit: cover;", alt: event.title %>
                         <% end %>
                         <span class="fw-semibold"><%= event.title %></span>
                       </div>
-                    </td>
-                    <td data-label="Parcours">
-                      <%= event.route&.name || "-" %>
                     </td>
                     <td data-label="Niveau">
                       <% case event.level %>
@@ -197,7 +193,12 @@
                       <% end %>
                     </td>
                     <td data-label="Distance">
-                      <%= event.distance_km %> km
+                      <div>
+                        <span><%= format_event_distance(event) || "-" %></span>
+                        <% if event.loops_count && event.loops_count > 1 %>
+                          <small class="text-muted d-block"><%= pluralize(event.loops_count, "boucle") %></small>
+                        <% end %>
+                      </div>
                     </td>
                     <td data-label="Participants">
                       <% if event.unlimited? %>
