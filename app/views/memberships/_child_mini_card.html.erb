@@ -50,7 +50,7 @@
         <% end %>
       </span>
 
-      <div class="child-mini-card__actions d-flex gap-1" role="group" aria-label="Actions pour <%= membership.child_full_name %>">
+      <div class="child-mini-card__actions d-flex gap-1 align-items-center" role="group" aria-label="Actions pour <%= membership.child_full_name %>">
         <%= link_to membership_path(membership),
             class: "btn btn-sm btn-outline-primary",
             aria: { label: "Voir les détails de #{membership.child_full_name}" } do %>

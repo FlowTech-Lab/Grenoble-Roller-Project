@@ -29,7 +29,8 @@
   else
     :add_child
   end
-  show_sidebar_join = @active_membership.blank? && hero_cta_kind != :join && hero_cta_kind != :pending_pay
+  # Skip sidebar entries already covered by the hero (including renew window)
+  show_sidebar_join = @active_membership.blank? && !%i[join pending_pay renew].include?(hero_cta_kind)
   show_sidebar_add_child = hero_cta_kind != :add_child
 %>
 
@@ -257,7 +258,6 @@
             <%= render partial: 'membership_card_improved', locals: {
                   membership: membership,
                   is_child: false,
-                  hide_renew_cta: hero_renewable_membership&.id == membership.id,
                   hide_pay_cta: hero_cta_kind == :pending_pay && @pending_membership&.id == membership.id
                 } %>
           <% end %>
@@ -397,8 +397,10 @@
                       <% end %>
                     <% end %>
                   <% else %>
-                    <%= link_to membership_renewal_path_for(membership), class: "btn btn-sm btn-success", data: { turbo: false } do %>
-                      <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+                    <% if membership.renewable_now? %>
+                      <%= link_to membership_renewal_path_for(membership), class: "btn btn-sm btn-success", data: { turbo: false } do %>
+                        <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+                      <% end %>
                     <% end %>
                   <% end %>
                 </div>

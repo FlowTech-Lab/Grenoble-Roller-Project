@@ -112,15 +112,15 @@
   <% end %>
 
   <!-- Actions: right-aligned action group -->
-  <div class="d-flex gap-2 flex-wrap justify-content-end">
+  <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
     <%= link_to membership_path(membership), class: "btn btn-sm btn-outline-primary" do %>
-      <i class="bi bi-eye me-1"></i>Voir détails
+      <i class="bi bi-eye me-1" aria-hidden="true"></i>Voir détails
     <% end %>
     
     <% if membership.status == 'pending' %>
       <% if is_child %>
         <%= link_to edit_membership_path(membership), class: "btn btn-sm btn-outline-warning" do %>
-          <i class="bi bi-pencil me-1"></i>Modifier
+          <i class="bi bi-pencil me-1" aria-hidden="true"></i>Modifier
         <% end %>
         <%= button_to membership_path(membership),
             method: :delete,
@@ -129,15 +129,15 @@
               turbo: false,
               confirm: "Êtes-vous sûr de vouloir supprimer l'adhésion de #{membership.child_full_name} ?"
             },
-            form: { style: "display: inline-block;" } do %>
-          <i class="bi bi-trash me-1"></i>Supprimer
+            form: { class: "d-inline-flex align-items-center m-0" } do %>
+          <i class="bi bi-trash me-1" aria-hidden="true"></i>Supprimer
         <% end %>
       <% end %>
       
       <%= unified_cart_pay_cta(membership) unless hide_pay_cta %>
     <% elsif membership.renewable_now? && !hide_renew_cta %>
       <%= link_to membership_renewal_path_for(membership), class: "btn btn-sm btn-success", data: { turbo: false } do %>
-        <i class="bi bi-arrow-repeat me-1"></i>Renouveler
+        <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Réadhérer
       <% end %>
     <% end %>
   </div>
