@@ -35,6 +35,7 @@ Cette section contient toute la documentation liée au **produit**, aux **parcou
 - **[`quick-wins-helloasso.md`](quick-wins-helloasso.md)** - Synthèse quick wins et intégration HelloAsso (état actuel, plan d'action) ✅ **100% INTÉGRÉ**
 
 ### UX Analysis
+- **[`../10-decisions-and-changelog/PLAN-ux-pages-verification.md`](../10-decisions-and-changelog/PLAN-ux-pages-verification.md)** : **Active** — site-wide UX page verification (priority waves, checklist, skills; verify-first, no blanket refactor)
 - **[`user-journeys-analysis.md`](user-journeys-analysis.md)** : Detailed analysis of 9 user journeys with friction points and identified improvements
 - **[`ux-improvements-backlog.md`](ux-improvements-backlog.md)** - Référence historique des améliorations UX (119 améliorations identifiées, fonctionnalités essentielles terminées) ✅
 - **[`todo-restant.md`](todo-restant.md)** - Récapitulatif des fonctionnalités essentielles terminées ✅
