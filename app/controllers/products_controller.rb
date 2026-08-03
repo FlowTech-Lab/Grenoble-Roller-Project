@@ -30,6 +30,7 @@ class ProductsController < ApplicationController
                                       .where(products: { is_active: true })
                                       .group("product_categories.id")
                                       .count("products.id")
+    @active_products_count = Product.where(is_active: true).count
   end
 
   def show
@@ -65,6 +66,7 @@ class ProductsController < ApplicationController
                         .where(is_active: true)
                         .includes(
                           :inventory,
+                          images_attachments: :blob,
                           variant_option_values: { option_value: :option_type }
                         )
                         .order(:sku)

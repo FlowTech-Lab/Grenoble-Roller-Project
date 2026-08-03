@@ -32,9 +32,30 @@
     --gr-warning: #7e4900;
     --gr-danger: #911a14;
     --gr-info: #2782bb;
+
+    /* Soft status chips/badges — WCAG 2.1 AA (≥4.5:1); not --bs-warning as text */
+    --status-pending-fg: #7e4900;
+    --status-pending-bg: #FFF3CD;
+    --status-pending-border: #c9a24a;
+    --status-prep-fg: #055160;
+    --status-prep-bg: #CFF4FC;
+    --status-prep-border: #6bb8c9;
+    --status-sent-fg: #0d6322;
+    --status-sent-bg: #D1E7DD;
+    --status-sent-border: #6aaa7e;
+    --status-cancelled-fg: #911a14;
+    --status-cancelled-bg: #F8D7DA;
+    --status-cancelled-border: #c97a7f;
+    --status-active-fg: var(--status-sent-fg);
+    --status-active-bg: var(--status-sent-bg);
+    --status-active-border: var(--status-sent-border);
+    --status-expired-fg: #5a6268;
+    --status-expired-bg: #E9ECEF;
+    --status-expired-border: #adb5bd;
     
     /* Glass/Liquid effects */
-    --liquid-glass-bg:     rgba(255,255,255,0.35);
+    --liquid-glass-bg: #969ca114;
+    --liquid-glass-bg-solid: #969ca114;
     --liquid-glass-border: rgba(255,255,255,0.2);
     --liquid-blur: blur(12px);
     
@@ -59,8 +80,28 @@
   }
   
   [data-bs-theme=dark] {
-    --liquid-glass-bg: rgba(0, 0, 0, 0.25);
+    --liquid-glass-bg: #969ca114;
+    --liquid-glass-bg-solid: #969ca114;
     --liquid-glass-border: rgba(255, 255, 255, 0.1);
+
+    --status-pending-fg: #ffd27a;
+    --status-pending-bg: #3d2e0a;
+    --status-pending-border: #8a6a28;
+    --status-prep-fg: #7dd3e8;
+    --status-prep-bg: #0a2a30;
+    --status-prep-border: #3d7a88;
+    --status-sent-fg: #8fd4a0;
+    --status-sent-bg: #0d2818;
+    --status-sent-border: #3d7a52;
+    --status-cancelled-fg: #f1a0a0;
+    --status-cancelled-bg: #2a1214;
+    --status-cancelled-border: #8a4548;
+    --status-active-fg: var(--status-sent-fg);
+    --status-active-bg: var(--status-sent-bg);
+    --status-active-border: var(--status-sent-border);
+    --status-expired-fg: #c5c8cb;
+    --status-expired-bg: #2a2e33;
+    --status-expired-border: #6c757d;
     
     /* Hover shadows (dark theme - white shadows) */
     --shadow-hover: 0 2px 4px rgba(255, 255, 255, 0.15);

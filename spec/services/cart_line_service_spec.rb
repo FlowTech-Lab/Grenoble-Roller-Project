@@ -214,6 +214,17 @@ RSpec.describe CartLineService do
         }.not_to change { product_line.reload.attributes }
       end
     end
+
+    it 'removes membership cart lines that are no longer pending' do
+      membership = create(:membership, :with_health_questionnaire, user: user, status: :active)
+      line = create(:cart_line, :membership, user: user, reference: membership)
+
+      expect {
+        described_class.refresh_membership_lines!(user)
+      }.to change(CartLine, :count).by(-1)
+
+      expect(CartLine.exists?(line.id)).to be(false)
+    end
   end
 
   describe '.membership_in_cart?' do

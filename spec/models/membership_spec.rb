@@ -102,6 +102,28 @@ RSpec.describe Membership, type: :model do
           expect(membership.renewable_now?).to be(false)
         end
       end
+
+      it 'is false when a sale-season membership already exists (already renewed)' do
+        user = create(:user)
+        old = create(:membership, user: user, status: :active, end_date: Date.new(2026, 8, 31), start_date: Date.new(2025, 9, 1), season: '2025-2026')
+        create(:membership, user: user, status: :active, end_date: Date.new(2027, 8, 31), start_date: Date.new(2026, 9, 1), season: '2026-2027')
+        travel_to Date.new(2026, 8, 2) do
+          expect(old.renewable_now?).to be(false)
+        end
+      end
+
+      it 'is false for a child when a sale-season child membership already exists' do
+        user = create(:user)
+        old = create(:membership, :child, user: user, status: :active,
+                     end_date: Date.new(2026, 8, 31), start_date: Date.new(2025, 9, 1), season: '2025-2026',
+                     child_first_name: 'Emma', child_last_name: 'Test', child_date_of_birth: Date.new(2018, 1, 1))
+        create(:membership, :child, user: user, status: :pending,
+               end_date: Date.new(2027, 8, 31), start_date: Date.new(2026, 9, 1), season: '2026-2027',
+               child_first_name: 'Emma', child_last_name: 'Test', child_date_of_birth: Date.new(2018, 1, 1))
+        travel_to Date.new(2026, 8, 2) do
+          expect(old.renewable_now?).to be(false)
+        end
+      end
     end
 
     it 'uses new running season from 1 September' do

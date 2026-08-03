@@ -502,6 +502,94 @@ RSpec.describe "Memberships", type: :request do
     let(:current_season) { Membership.sale_season_name }
     let(:expired_season) { '2024-2025' }
 
+    context "avec adhésion adulte active dans la fenêtre J-30" do
+      let!(:adult_membership) do
+        create(:membership,
+          user: user,
+          status: :active,
+          season: '2025-2026',
+          start_date: Date.new(2025, 9, 1),
+          end_date: Date.new(2026, 8, 31),
+          category: :standard)
+      end
+
+      it "affiche Réadhérer sur la carte adulte (pas seulement dans le hero)" do
+        travel_to Date.new(2026, 8, 3) do
+          login_user(user)
+          get memberships_path
+
+          expect(response).to have_http_status(:success)
+          expect(response.body).to include("Réadhérer")
+          expect(response.body).to include("renew_from=#{adult_membership.id}")
+          expect(response.body).not_to include("Pas d'adhésion active")
+        end
+      end
+
+      it "n'affiche plus Réadhérer après renouvellement saison suivante" do
+        create(:membership,
+          user: user,
+          status: :pending,
+          season: '2026-2027',
+          start_date: Date.new(2026, 9, 1),
+          end_date: Date.new(2027, 8, 31),
+          category: :standard)
+
+        travel_to Date.new(2026, 8, 3) do
+          login_user(user)
+          get memberships_path
+
+          expect(response).to have_http_status(:success)
+          expect(response.body).not_to include("Réadhérer")
+        end
+      end
+    end
+
+    context "avec adhésion enfant active dans la fenêtre J-30" do
+      let!(:child_membership) do
+        create(:membership,
+          :child,
+          user: user,
+          status: :active,
+          season: '2025-2026',
+          start_date: Date.new(2025, 9, 1),
+          end_date: Date.new(2026, 8, 31),
+          child_first_name: 'Sophie',
+          child_last_name: 'Astier',
+          child_date_of_birth: Date.new(2011, 12, 10))
+      end
+
+      it "affiche Réadhérer pour l'enfant" do
+        travel_to Date.new(2026, 8, 3) do
+          login_user(user)
+          get memberships_path
+
+          expect(response).to have_http_status(:success)
+          expect(response.body).to include("Réadhérer")
+        end
+      end
+
+      it "masque Réadhérer si l'enfant a déjà une adhésion saison de vente" do
+        create(:membership,
+          :child,
+          user: user,
+          status: :active,
+          season: '2026-2027',
+          start_date: Date.new(2026, 9, 1),
+          end_date: Date.new(2027, 8, 31),
+          child_first_name: 'Sophie',
+          child_last_name: 'Astier',
+          child_date_of_birth: Date.new(2011, 12, 10))
+
+        travel_to Date.new(2026, 8, 3) do
+          login_user(user)
+          get memberships_path
+
+          expect(response).to have_http_status(:success)
+          expect(response.body).not_to include("Réadhérer")
+        end
+      end
+    end
+
     context "avec adhésion enfant expirée sans adhésion courante" do
       let!(:expired_child_membership) do
         create(:membership,
@@ -518,11 +606,13 @@ RSpec.describe "Memberships", type: :request do
       end
 
       it "affiche le bouton Réadhérer" do
-        login_user(user)
-        get memberships_path
+        travel_to Date.new(2026, 8, 3) do
+          login_user(user)
+          get memberships_path
 
-        expect(response).to have_http_status(:success)
-        expect(response.body).to include("Réadhérer")
+          expect(response).to have_http_status(:success)
+          expect(response.body).to include("Réadhérer")
+        end
       end
     end
 
@@ -554,13 +644,15 @@ RSpec.describe "Memberships", type: :request do
       end
 
       it "n'affiche PAS le bouton Réadhérer" do
-        login_user(user)
-        get memberships_path
+        travel_to Date.new(2026, 8, 3) do
+          login_user(user)
+          get memberships_path
 
-        expect(response).to have_http_status(:success)
-        # Vérifier que le bouton Réadhérer n'apparaît pas pour cette adhésion expirée
-        # (il peut y avoir d'autres boutons Réadhérer pour d'autres enfants, mais pas pour celui-ci)
-        expect(response.body).not_to match(/Réadhérer.*Léa Astier|Léa Astier.*Réadhérer/)
+          expect(response).to have_http_status(:success)
+          # Vérifier que le bouton Réadhérer n'apparaît pas pour cette adhésion expirée
+          # (il peut y avoir d'autres boutons Réadhérer pour d'autres enfants, mais pas pour celui-ci)
+          expect(response.body).not_to match(/Réadhérer.*Léa Astier|Léa Astier.*Réadhérer/)
+        end
       end
     end
   end

@@ -13,6 +13,8 @@ export default class extends Controller {
     title: { type: String, default: "" }
   }
 
+  #escapeHandler = null
+
   connect() {
     this.openHandler = (event) => this.open(event)
     this.keyHandler = (event) => this.openFromKey(event)

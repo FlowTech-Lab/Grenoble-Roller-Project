@@ -17,6 +17,9 @@ LABEL build.id="${BUILD_ID}"
 # Rails app lives here
 WORKDIR /rails
 
+# Silence apt/debconf "no TTY" noise in non-interactive Docker builds
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install base packages (including curl for healthchecks and Supercronic for cron jobs)
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
@@ -47,7 +50,9 @@ RUN apt-get update -qq && \
 
 # Install JavaScript dependencies
 ARG NODE_VERSION=24.7.0
-ENV PATH=/usr/local/node/bin:$PATH
+ENV PATH=/usr/local/node/bin:$PATH \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false
 RUN ARCH=$(uname -m) && \
     case "$ARCH" in \
         x86_64) ARCH_SUFFIX="x64" ;; \
@@ -58,15 +63,19 @@ RUN ARCH=$(uname -m) && \
     mv /tmp/node-v${NODE_VERSION}-linux-${ARCH_SUFFIX} /usr/local/node && \
     rm -rf /tmp/node-v${NODE_VERSION}-linux-${ARCH_SUFFIX}
 
+# Match Gemfile.lock BUNDLED WITH so Bundler does not reinstall mid-build
+RUN gem install bundler -v 2.7.2 --no-document
+
 # Install application gems
 COPY Gemfile Gemfile.lock ./
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Install node modules
+# Install node modules (include CSS build tools: sass, postcss, purgecss are in
+# package.json "devDependencies"; omit=dev forces a second npm install during assets:precompile)
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 
 # Copy application code
 COPY . .
@@ -77,7 +86,7 @@ RUN bundle exec bootsnap precompile app/ lib/
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-
+# Drop JS toolchain from the final image layer copied below
 RUN rm -rf node_modules
 
 
