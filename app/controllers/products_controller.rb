@@ -20,7 +20,8 @@ class ProductsController < ApplicationController
     # Utiliser inventory.available_qty si disponible, sinon fallback sur stock_qty
     @products = products.to_a.sort_by do |product|
       has_stock = product.product_variants.any? { |v|
-        v.is_active && (v.inventory&.available_qty || v.stock_qty.to_i) > 0
+        available = v.inventory ? [ v.inventory.available_qty.to_i, 0 ].max : v.stock_qty.to_i
+        v.is_active && available > 0
       }
       [ has_stock ? 0 : 1, product.name ]
     end
