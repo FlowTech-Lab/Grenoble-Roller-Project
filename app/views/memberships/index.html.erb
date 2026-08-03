@@ -17,43 +17,60 @@
 
   # Profil parent complet pour pouvoir ajouter un enfant (sécurité côté vue + contrôleur)
   parent_profile_complete_for_child = current_user.child_profile_complete_for_membership?
+
+  # Hero CTA: renew personal membership first, else finish pending, join, or add a child
+  hero_renewable_membership = personal_memberships.find(&:renewable_now?)
 %>
 
 
 <div class="container py-4">
-  <!-- HERO SECTION -->
+  <!-- HERO SECTION: copy left · season meta + contextual CTA right (stack on mobile) -->
   <div class="hero-memberships">
-    <div class="d-flex justify-content-between align-items-center flex-wrap">
-      <div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 gap-md-4">
+      <div class="hero-memberships-copy min-w-0">
         <h1 class="h2 mb-2">
-          <i class="bi bi-person-badge me-2 fs-2"></i>
+          <i class="bi bi-person-badge me-2 fs-2" aria-hidden="true"></i>
           <% if current_user.has_active_children_memberships? %>
             Mes adhésions
           <% else %>
             Mon adhésion
           <% end %>
         </h1>
-        <p class="mb-2 opacity-75" style="font-style: italic;">
+        <p class="mb-0 opacity-75" style="font-style: italic;">
           Gérez vos adhésions et celles de vos enfants
         </p>
-        <div class="d-flex align-items-center gap-3 flex-wrap mt-3">
+      </div>
+
+      <div class="hero-memberships-aside d-flex flex-column align-items-stretch align-items-md-end gap-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
           <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
-            <i class="bi bi-calendar-event me-1"></i>
+            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
             Saison <%= @season %>
           </span>
           <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
-            <i class="bi bi-calendar-range me-1"></i>
+            <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>
             <%= l(@start_date, format: :short) %> → <%= l(@end_date, format: :short) %>
           </span>
         </div>
-      </div>
-      <% if @memberships.empty? %>
-        <div class="mt-3 mt-md-0">
-          <%= link_to new_membership_path(type: 'adult'), class: "btn btn-light btn-lg" do %>
-            <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
+
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <% if hero_renewable_membership %>
+            <%= link_to membership_renewal_path_for(hero_renewable_membership), class: "btn btn-light btn-lg", data: { turbo: false } do %>
+              <i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>Renouveler
+            <% end %>
+          <% elsif @pending_membership %>
+            <%= unified_cart_pay_cta(@pending_membership, btn_class: "btn btn-light btn-lg") %>
+          <% elsif !@active_membership %>
+            <%= link_to new_membership_path(type: 'adult'), class: "btn btn-light btn-lg" do %>
+              <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Adhérer maintenant
+            <% end %>
+          <% else %>
+            <%= link_to new_membership_path(type: 'child'), class: "btn btn-outline-light btn-lg", data: { turbo: false } do %>
+              <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Ajouter un enfant
+            <% end %>
           <% end %>
         </div>
-      <% end %>
+      </div>
     </div>
   </div>
 

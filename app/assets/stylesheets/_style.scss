@@ -5871,6 +5871,16 @@
       border: none;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
+    /* Right cluster: season chips + primary CTA */
+    .hero-memberships-aside {
+      flex: 0 1 auto;
+      max-width: 100%;
+    }
+
+    .hero-memberships-aside .btn {
+      white-space: nowrap;
+    }
   }
 
   [data-bs-theme="dark"] .hero-memberships {
