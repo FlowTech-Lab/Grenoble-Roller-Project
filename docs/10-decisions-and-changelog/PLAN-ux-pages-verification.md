@@ -107,28 +107,29 @@ Legend: `todo` · `verify` · `done-ok` · `done-tweak` · `done-fix` · `skip`
 |------|------|--------|-------|
 | 0.1 | `graphify update .` at repo root | done | 2026-08-03 → commit `d8c45305` |
 | 0.2 | Confirm this PLAN linked from `docs/09-product/README.md` | done | 2026-08-03 |
-| 0.3 | Optional: Hindsight retain wave start/end | todo | `project:grenoble-roller-website` |
+| 0.3 | Optional: Hindsight retain wave start/end | done | Wave 1–2 progress 2026-08-03 |
 
-### Wave 1 — P0 Commerce (do next)
+### Wave 1 — P0 Commerce
 
 | Step | Route / view | Status | Likely findings (pre-check) | Decision |
 |------|--------------|--------|-----------------------------|----------|
-| 1.1 | `GET /shop` → [`app/views/products/index.html.erb`](../../app/views/products/index.html.erb) | todo | HelloAsso migration banner; title-only header; `Product.where(...).count` in view | |
-| 1.2 | `GET /products/:id` → [`app/views/products/show.html.erb`](../../app/views/products/show.html.erb) | todo | Same banner; add-to-cart clarity | |
-| 1.3 | `GET /cart` → [`app/views/carts/show.html.erb`](../../app/views/carts/show.html.erb) | todo | Already stronger empty/sticky CTA — likely `ok` or tiny tweaks | |
-| 1.4 | Checkout `new` / `show` / status | todo | Trust + partial selection UX per unified-cart docs | |
-| 1.5 | Commit(s) only for agreed fixes; `npm run build:css` if SCSS touched | todo | |
+| 1.1 | `GET /shop` → [`app/views/products/index.html.erb`](../../app/views/products/index.html.erb) | done-fix | HelloAsso migration banner; title-only header; `Product.count` in view | Count → controller; banner demoted; header + cart link (separate commits) |
+| 1.2 | `GET /products/:id` → [`app/views/products/show.html.erb`](../../app/views/products/show.html.erb) | done-tweak | Same banner | Banner demoted only |
+| 1.3 | `GET /cart` → [`app/views/carts/show.html.erb`](../../app/views/carts/show.html.erb) | done-ok | Already stronger empty/sticky CTA | No code change |
+| 1.4 | Checkout `new` | done-tweak | `container-fluid` vs shop/cart | Switched to `container` |
+| 1.4b | Checkout `show` / status | defer | Polling/status UX | Leave unless bug reports |
+| 1.5 | Commits on `ux/pages-verification` | done | Independent commits per concern | |
 
-**Wave 1 exit:** P0 rows filled; staging smoke on shop → cart → checkout.
+**Wave 1 exit:** P0 shop/cart/checkout-new filled; smoke on staging after PR.
 
 ### Wave 2 — P1 Member shell
 
 | Step | Route / view | Status | Notes | Decision |
 |------|--------------|--------|-------|----------|
-| 2.1 | Orders [`app/views/orders/index.html.erb`](../../app/views/orders/index.html.erb) (`hero-orders`) | todo | Cousin of memberships hero — apply **same checklist**, not a full copy of memberships layout | |
-| 2.2 | Orders show | todo | | |
-| 2.3 | Memberships show | todo | Dense cards — tweak only if confusing | |
-| 2.4 | Attendances index | todo | | |
+| 2.1 | Orders [`app/views/orders/index.html.erb`](../../app/views/orders/index.html.erb) (`hero-orders`) | done-tweak | Hero balance + empty CTA dedupe + sidebar hide when empty | |
+| 2.2 | Orders show | defer | Verify later if needed | |
+| 2.3 | Memberships show | defer | Index already polished on this branch | |
+| 2.4 | Attendances index | defer | | |
 
 ### Wave 3 — P2 Public content
 
@@ -202,3 +203,4 @@ Estimate per page: **15–45 min verify**; **0–0.5 day** if fixes. Full plan i
 | Date | Change |
 |------|--------|
 | 2026-08-03 | Initial PLAN after memberships UX polish + Graphify refresh |
+| 2026-08-03 | Wave 1 shop/checkout + Wave 2.1 orders on `ux/pages-verification` (atomic commits) |
