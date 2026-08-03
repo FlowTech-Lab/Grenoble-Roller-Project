@@ -278,116 +278,60 @@
                     <% end %>
               </div>
 
-              <!-- ESSAIS GRATUITS ACTIFS (en haut) -->
+              <!-- Essais gratuits actifs -->
               <% if children_trial.any? %>
-                <div class="alert alert-info payment-alert-improved mb-4" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%); border: 1px solid rgba(13, 110, 253, 0.3);">
-                  <h4 class="h6 mb-3">
-                    <i class="bi bi-gift-fill me-2"></i>
-                    <%= children_trial.count %> ESSAI(S) GRATUIT(S) ACTIF(S)
+                <div class="alert alert-info payment-alert-improved mb-3">
+                  <h4 class="h6 mb-2">
+                    <i class="bi bi-gift me-2" aria-hidden="true"></i>
+                    <%= children_trial.count %>
+                    <%= children_trial.count == 1 ? 'essai gratuit actif' : 'essais gratuits actifs' %>
                   </h4>
-                  <p class="small mb-3 text-muted">
+                  <p class="small mb-0 text-muted">
                     Ces enfants peuvent utiliser leur essai gratuit pour s'inscrire à une initiation.
                   </p>
-                  
-                  <div class="mb-3">
-                    <% children_trial.each do |membership| %>
-                      <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-info border-opacity-25">
-                        <div>
-                          <strong><%= membership.child_full_name %></strong>
-                          <small class="text-muted d-block">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Peut s'inscrire a une initiations sans adhésion
-                          </small>
-                          <small class="text-muted d-block mt-1">
-                            <i class="bi bi-tag me-1"></i>
-                            Cotisation : <%= number_to_currency(membership.amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-                          </small>
-                        </div>
-                        <span class="badge bg-info text-white">🎁 Essai gratuit</span>
-                      </div>
-                    <% end %>
-                  </div>
-                  
-                  <div class="d-flex gap-2 flex-wrap">
-                    <% children_trial.each do |membership| %>
-                      <%= button_to upgrade_membership_path(membership),
-                          method: :patch,
-                          class: "btn btn-primary btn-sm",
-                          data: {
-                            turbo: false,
-                            confirm: "Convertir l'essai de #{membership.child_full_name} en adhésion payante et l'ajouter au panier ?"
-                          } do %>
-                        <i class="bi bi-basket me-1"></i>
-                        Adhérer — <%= membership.child_first_name %>
-                      <% end %>
-                    <% end %>
-                  </div>
                 </div>
-                
-                <!-- Mini cards enfants trial -->
+
                 <div class="row g-2 mb-4">
                   <% children_trial.each do |membership| %>
                     <div class="col-12 col-md-6">
-                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: false, show_pay_cta: false } %>
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: false, show_pay_cta: true } %>
                     </div>
                   <% end %>
                 </div>
               <% end %>
 
-              <!-- ENFANTS EN ATTENTE DE PAIEMENT (en bas) -->
+              <!-- Enfants en attente de paiement -->
               <% if children_pending.any? %>
-                <div class="alert alert-warning payment-alert-improved <%= 'mt-4' if children_trial.any? %>">
-                  <h4 class="h6 mb-3">
-                    <i class="bi bi-pin-map me-2"></i>
-                    <%= children_pending.count %> ENFANT(S) EN ATTENTE DE PAIEMENT
+                <div class="alert alert-warning payment-alert-improved <%= 'mt-2' if children_trial.any? %> mb-3">
+                  <h4 class="h6 mb-2">
+                    <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>
+                    <%= children_pending.count %>
+                    <%= children_pending.count == 1 ? 'enfant en attente de paiement' : 'enfants en attente de paiement' %>
                   </h4>
-                  
-                  <div class="mb-3">
-                    <% children_pending.each do |membership| %>
-                      <div class="payment-alert-item d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center py-2 border-bottom gap-2">
-                        <div class="payment-alert-item__info min-w-0">
-                          <strong><%= membership.child_full_name %></strong>
-                          <small class="text-muted d-block">
-                            <%= number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-                          </small>
-                        </div>
-                        <div class="payment-alert-item__actions d-flex align-items-center gap-2 flex-shrink-0 align-self-sm-end">
-                          <span class="badge bg-warning text-dark">⏳ <%= t("statuses.membership.pending") %></span>
-                          <%= unified_cart_pay_cta(membership, btn_class: "btn btn-sm btn-warning") %>
-                        </div>
-                      </div>
-                    <% end %>
-                  </div>
-                  
-                  <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
+                  <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
                     <strong>Total :</strong>
                     <strong class="fs-5">
                       <%= number_to_currency(children_pending.sum(&:total_amount_cents) / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
                     </strong>
                   </div>
-                  
-                  <div class="mb-2">
-                    <%= link_to cart_path, class: "btn btn-outline-warning w-100 mb-2" do %>
-                      <i class="bi bi-basket me-1"></i>Voir mon panier
-                    <% end %>
-                    <p class="small text-muted mb-0 text-center">Ajoutez chaque adhésion au panier, puis payez tout ou une partie au checkout.</p>
-                  </div>
-                  
+                  <%= link_to cart_path, class: "btn btn-outline-warning w-100 mb-2" do %>
+                    <i class="bi bi-basket me-1" aria-hidden="true"></i>Voir mon panier
+                  <% end %>
+                  <p class="small text-muted mb-2 text-center">Ajoutez chaque adhésion au panier, puis payez tout ou une partie au checkout.</p>
                   <div class="d-flex gap-3 justify-content-center">
                     <small class="text-muted">
-                      <i class="bi bi-shield-check me-1"></i>Paiement sécurisé
+                      <i class="bi bi-shield-check me-1" aria-hidden="true"></i>Paiement sécurisé
                     </small>
                     <small class="text-muted">
-                      <i class="bi bi-envelope me-1"></i>Reçu par email
+                      <i class="bi bi-envelope me-1" aria-hidden="true"></i>Reçu par email
                     </small>
                   </div>
                 </div>
-                
-                <!-- Mini cards enfants pending -->
+
                 <div class="row g-2 mb-3">
                   <% children_pending.each do |membership| %>
                     <div class="col-12 col-md-6">
-                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: true, show_pay_cta: false } %>
+                      <%= render partial: 'child_mini_card', locals: { membership: membership, is_pending: true, show_pay_cta: true } %>
                     </div>
                   <% end %>
                 </div>
