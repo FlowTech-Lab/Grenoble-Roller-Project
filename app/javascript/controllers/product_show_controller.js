@@ -12,6 +12,7 @@ export default class extends Controller {
     "priceDisplay",
     "unitPriceValue",
     "productImage",
+    "galleryThumb",
     "modal"
   ]
 
@@ -52,11 +53,69 @@ export default class extends Controller {
   }
 
   sizeChanged() {
+    this.syncOptionTiles("size")
     this.updateVariant()
   }
 
   colorChanged() {
+    this.syncOptionTiles("color")
     this.updateVariant()
+  }
+
+  /** Baymard-style size/color tiles — keep hidden <select> as SSOT for updateVariant() */
+  pickSize(event) {
+    if (!this.hasSizeSelectTarget) return
+    const id = event.currentTarget.dataset.sizeId
+    if (!id || event.currentTarget.disabled) return
+    this.sizeSelectTarget.value = id
+    this.syncOptionTiles("size")
+    this.updateVariant()
+  }
+
+  pickColor(event) {
+    if (!this.hasColorSelectTarget) return
+    const id = event.currentTarget.dataset.colorId
+    if (!id || event.currentTarget.disabled) return
+    this.colorSelectTarget.value = id
+    this.syncOptionTiles("color")
+    this.updateVariant()
+  }
+
+  pickGalleryImage(event) {
+    const btn = event.currentTarget
+    const url = btn.dataset.imageUrl
+    if (!url || !this.hasProductImageTarget) return
+
+    this.productImageTarget.src = url
+    this.initialImageSrc = url
+    this.syncGalleryThumbs(url)
+
+    const modalImage = document.getElementById("productModalImage")
+    if (modalImage) modalImage.src = url
+  }
+
+  syncGalleryThumbs(activeUrl) {
+    if (!this.hasGalleryThumbTarget) return
+    this.galleryThumbTargets.forEach((thumb) => {
+      const active = thumb.dataset.imageUrl === activeUrl
+      thumb.classList.toggle("is-active", active)
+      thumb.setAttribute("aria-pressed", active ? "true" : "false")
+    })
+  }
+
+  syncOptionTiles(kind) {
+    const select = kind === "size"
+      ? (this.hasSizeSelectTarget ? this.sizeSelectTarget : null)
+      : (this.hasColorSelectTarget ? this.colorSelectTarget : null)
+    if (!select) return
+
+    const selected = select.value
+    this.element.querySelectorAll(`[data-product-show-tile="${kind}"]`).forEach((btn) => {
+      const id = kind === "size" ? btn.dataset.sizeId : btn.dataset.colorId
+      const active = selected !== "" && id === selected
+      btn.classList.toggle("is-active", active)
+      btn.setAttribute("aria-pressed", active ? "true" : "false")
+    })
   }
 
   quantityChanged() {
@@ -166,9 +225,12 @@ export default class extends Controller {
         this.qtyFieldTarget.value = current
       }
 
-      // Mettre à jour le prix unitaire
+      // Mettre à jour le prix unitaire (may appear in header + elsewhere)
       if (this.hasUnitPriceValueTarget) {
-        this.unitPriceValueTarget.textContent = this.formatPrice(variant.price)
+        const unit = this.formatPrice(variant.price)
+        this.unitPriceValueTargets.forEach((el) => { el.textContent = unit })
+        const prefix = this.element.querySelector(".product-show-price-prefix")
+        if (prefix) prefix.hidden = true
       }
 
       // Mettre à jour le prix total
@@ -194,6 +256,7 @@ export default class extends Controller {
     // Mettre à jour l'image principale
     if (this.hasProductImageTarget && imageUrlToUse) {
       this.productImageTarget.src = imageUrlToUse
+      this.syncGalleryThumbs(imageUrlToUse)
     }
 
     // Mettre à jour l'image du modal lightbox (si le modal existe)

@@ -66,6 +66,7 @@ class ProductsController < ApplicationController
                         .where(is_active: true)
                         .includes(
                           :inventory,
+                          images_attachments: :blob,
                           variant_option_values: { option_value: :option_type }
                         )
                         .order(:sku)
