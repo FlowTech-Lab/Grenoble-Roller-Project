@@ -8,10 +8,12 @@ export default class extends Controller {
     "addButton",
     "stockHint",
     "stockValue",
+    "stockBadge",
     "qtyField",
     "priceDisplay",
     "unitPriceValue",
     "productImage",
+    "galleryThumb",
     "modal"
   ]
 
@@ -52,11 +54,69 @@ export default class extends Controller {
   }
 
   sizeChanged() {
+    this.syncOptionTiles("size")
     this.updateVariant()
   }
 
   colorChanged() {
+    this.syncOptionTiles("color")
     this.updateVariant()
+  }
+
+  /** Baymard-style size/color tiles — keep hidden <select> as SSOT for updateVariant() */
+  pickSize(event) {
+    if (!this.hasSizeSelectTarget) return
+    const id = event.currentTarget.dataset.sizeId
+    if (!id || event.currentTarget.disabled) return
+    this.sizeSelectTarget.value = id
+    this.syncOptionTiles("size")
+    this.updateVariant()
+  }
+
+  pickColor(event) {
+    if (!this.hasColorSelectTarget) return
+    const id = event.currentTarget.dataset.colorId
+    if (!id || event.currentTarget.disabled) return
+    this.colorSelectTarget.value = id
+    this.syncOptionTiles("color")
+    this.updateVariant()
+  }
+
+  pickGalleryImage(event) {
+    const btn = event.currentTarget
+    const url = btn.dataset.imageUrl
+    if (!url || !this.hasProductImageTarget) return
+
+    this.productImageTarget.src = url
+    this.initialImageSrc = url
+    this.syncGalleryThumbs(url)
+
+    const modalImage = document.getElementById("productModalImage")
+    if (modalImage) modalImage.src = url
+  }
+
+  syncGalleryThumbs(activeUrl) {
+    if (!this.hasGalleryThumbTarget) return
+    this.galleryThumbTargets.forEach((thumb) => {
+      const active = thumb.dataset.imageUrl === activeUrl
+      thumb.classList.toggle("is-active", active)
+      thumb.setAttribute("aria-pressed", active ? "true" : "false")
+    })
+  }
+
+  syncOptionTiles(kind) {
+    const select = kind === "size"
+      ? (this.hasSizeSelectTarget ? this.sizeSelectTarget : null)
+      : (this.hasColorSelectTarget ? this.colorSelectTarget : null)
+    if (!select) return
+
+    const selected = select.value
+    this.element.querySelectorAll(`[data-product-show-tile="${kind}"]`).forEach((btn) => {
+      const id = kind === "size" ? btn.dataset.sizeId : btn.dataset.colorId
+      const active = selected !== "" && id === selected
+      btn.classList.toggle("is-active", active)
+      btn.setAttribute("aria-pressed", active ? "true" : "false")
+    })
   }
 
   quantityChanged() {
@@ -95,46 +155,38 @@ export default class extends Controller {
     const sizeSelected = sizeId !== null
     const colorSelected = colorId !== null
 
-    let variant = null
+    let matched = null
     let imageVariant = null // Variante pour l'image (peut être différente si seule la couleur est sélectionnée)
 
-    // Trouver une variante complète pour le stock/prix (nécessite toutes les options)
+    // Match by options first (even at 0 stock) so the badge stays honest.
     if ((hasSizeSelect && !sizeSelected) || (hasColorSelect && !colorSelected)) {
-      variant = null
+      matched = null
     } else {
-      // Trouver la variante correspondante
-      // Une variante correspond si :
-      // - Elle a la même taille (ou pas de sélection de taille)
-      // - Elle a la même couleur (ou pas de sélection de couleur)
-      // - ET elle a du stock
-      variant = this.variantsValue.find(v => {
-        // Vérifier la correspondance de la taille
-        const matchSize = !hasSizeSelect 
-          ? true 
-          : (v.sizeId === sizeId)
-        
-        // Vérifier la correspondance de la couleur
-        const matchColor = !hasColorSelect 
-          ? true 
-          : (v.colorId === colorId)
-        
-        // La variante doit correspondre ET avoir du stock
-        return matchSize && matchColor && v.stock > 0
-      })
+      matched = this.variantsValue.find(v => {
+        const matchSize = !hasSizeSelect ? true : (v.sizeId === sizeId)
+        const matchColor = !hasColorSelect ? true : (v.colorId === colorId)
+        return matchSize && matchColor
+      }) || null
     }
+
+    const variant = matched && matched.stock > 0 ? matched : null
 
     // Pour l'image : si seule la couleur est sélectionnée, trouver une variante avec cette couleur
     if (colorSelected && !sizeSelected && hasColorSelect) {
-      // Chercher la première variante avec cette couleur (n'importe quelle taille)
       imageVariant = this.variantsValue.find(v => v.colorId === colorId)
-    } else if (variant) {
-      // Si on a une variante complète, l'utiliser pour l'image aussi
-      imageVariant = variant
+    } else if (matched) {
+      imageVariant = matched
     }
 
     const qty = this.hasQtyFieldTarget 
       ? Math.max(1, parseInt(this.qtyFieldTarget.value || '1', 10)) 
       : 1
+
+    if (matched) {
+      this.updateStockBadge(matched.stock)
+    } else {
+      this.updateStockBadge(this.productStockTotal())
+    }
 
     if (variant && variant.stock > 0) {
       // Variante valide avec stock
@@ -166,9 +218,12 @@ export default class extends Controller {
         this.qtyFieldTarget.value = current
       }
 
-      // Mettre à jour le prix unitaire
+      // Mettre à jour le prix unitaire (may appear in header + elsewhere)
       if (this.hasUnitPriceValueTarget) {
-        this.unitPriceValueTarget.textContent = this.formatPrice(variant.price)
+        const unit = this.formatPrice(variant.price)
+        this.unitPriceValueTargets.forEach((el) => { el.textContent = unit })
+        const prefix = this.element.querySelector(".product-show-price-prefix")
+        if (prefix) prefix.hidden = true
       }
 
       // Mettre à jour le prix total
@@ -194,6 +249,7 @@ export default class extends Controller {
     // Mettre à jour l'image principale
     if (this.hasProductImageTarget && imageUrlToUse) {
       this.productImageTarget.src = imageUrlToUse
+      this.syncGalleryThumbs(imageUrlToUse)
     }
 
     // Mettre à jour l'image du modal lightbox (si le modal existe)
@@ -216,7 +272,10 @@ export default class extends Controller {
         this.stockValueTarget.textContent = '0'
       }
       if (this.hasStockHintTarget) {
-        this.stockHintTarget.style.display = 'none'
+        this.stockHintTarget.style.display = matched ? 'block' : 'none'
+        if (matched && this.hasStockValueTarget) {
+          this.stockValueTarget.textContent = matched.stock
+        }
       }
 
       // Réinitialiser la quantité max
@@ -253,6 +312,45 @@ export default class extends Controller {
       // Ne pas toucher à l'image si aucune variante n'est sélectionnée
       // (garder l'image initiale chargée par image_tag)
     }
+  }
+
+  productStockTotal() {
+    if (!this.hasStockBadgeTarget) return 0
+    const raw = this.stockBadgeTarget.dataset.productStock
+    const n = parseInt(raw || '0', 10)
+    return Number.isFinite(n) ? n : 0
+  }
+
+  lowStockThreshold() {
+    if (!this.hasStockBadgeTarget) return 5
+    const n = parseInt(this.stockBadgeTarget.dataset.lowStockThreshold || '5', 10)
+    return Number.isFinite(n) && n > 0 ? n : 5
+  }
+
+  updateStockBadge(qty) {
+    if (!this.hasStockBadgeTarget) return
+
+    const q = Math.max(0, parseInt(qty || '0', 10) || 0)
+    const threshold = this.lowStockThreshold()
+    let level = 'in_stock'
+    let label = 'En stock'
+    let css = 'badge-liquid-success'
+
+    if (q <= 0) {
+      level = 'out_of_stock'
+      label = 'Rupture'
+      css = 'badge-liquid-danger'
+    } else if (q <= threshold) {
+      level = 'low_stock'
+      label = `Plus que ${q}`
+      css = 'badge-liquid-warning'
+    }
+
+    const el = this.stockBadgeTarget
+    el.classList.remove('badge-liquid-success', 'badge-liquid-danger', 'badge-liquid-warning')
+    el.classList.add(css)
+    el.textContent = label
+    el.dataset.stockLevel = level
   }
 
   formatPrice(cents) {

@@ -1,0 +1,97 @@
+name: Discord release announce
+
+# Posts a curated release note when staging or main is updated (typically after a merge).
+# Distinct from DR-002 (app runtime admin notifications).
+#
+# Secrets (two channels):
+#   DISCORD_RELEASE_WEBHOOK_STAGING     — Captain Hook (staging)
+#   DISCORD_RELEASE_WEBHOOK_PRODUCTION  — Grenoble Roller prod salon
+# Payload: .github/release-discord.yml
+# Skip: commit message contains [skip discord]
+# Docs: docs/07-ops/runbooks/discord-release-announce.md
+
+on:
+  push:
+    branches: [staging, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Announce environment label"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    name: Discord announce
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Skip if [skip discord]
+        id: skip
+        run: |
+          MSG="$(git log -1 --pretty=%B)"
+          if echo "$MSG" | grep -Fq '[skip discord]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Commit requests [skip discord] — skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve environment
+        id: env
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.environment }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=staging" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select webhook secret
+        id: secret
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          DISCORD_RELEASE_WEBHOOK_STAGING: ${{ secrets.DISCORD_RELEASE_WEBHOOK_STAGING }}
+          DISCORD_RELEASE_WEBHOOK_PRODUCTION: ${{ secrets.DISCORD_RELEASE_WEBHOOK_PRODUCTION }}
+          RELEASE_ENV: ${{ steps.env.outputs.name }}
+        run: |
+          if [ "$RELEASE_ENV" = "production" ]; then
+            WH="${DISCORD_RELEASE_WEBHOOK_PRODUCTION}"
+            NAME="DISCORD_RELEASE_WEBHOOK_PRODUCTION"
+          else
+            WH="${DISCORD_RELEASE_WEBHOOK_STAGING}"
+            NAME="DISCORD_RELEASE_WEBHOOK_STAGING"
+          fi
+          if [ -z "$WH" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "${NAME} secret not set — skipping (green)."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post Discord announce
+        if: steps.skip.outputs.skip != 'true' && steps.secret.outputs.present == 'true'
+        env:
+          DISCORD_RELEASE_WEBHOOK_STAGING: ${{ secrets.DISCORD_RELEASE_WEBHOOK_STAGING }}
+          DISCORD_RELEASE_WEBHOOK_PRODUCTION: ${{ secrets.DISCORD_RELEASE_WEBHOOK_PRODUCTION }}
+          RELEASE_ENV: ${{ steps.env.outputs.name }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          chmod +x .github/scripts/discord-release-announce.sh
+          .github/scripts/discord-release-announce.sh

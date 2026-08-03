@@ -7,7 +7,9 @@ Ce document est la source de vérité pour :
 - Les règles de preview admin.
 - La stratégie de migration `image_url`.
 
-> **Décision bénévoles — mai 2026 :** format unique **16:9 centré** sur toutes les surfaces du site. Le terme `square` est conservé dans le code comme alias de compatibilité ; il génère désormais du **16:9** (800×450) et non plus du 1:1.
+> **Décision bénévoles — mai 2026 :** format unique **16:9 centré** sur les surfaces événement / initiation / heroes. Le terme `square` est un alias de compatibilité (génère du **16:9** 800×450).
+>
+> **Exception UX boutique — août 2026 :** grille `/shop` et fiche produit utilisent un cadre **carré (1:1)** en CSS + variantes Active Storage `resize_to_fill` carrées. Galerie PDP : image produit + images variantes uniques en vignettes. Description longue sous la grille d’achat. Navigation : « Boutique » (pas Accueil).
 
 ---
 
@@ -17,7 +19,7 @@ Ce document est la source de vérité pour :
 |------|-------|------------|-------|
 | `master` | libre | fichier source | Seul upload bénévole ; conservé en storage sans transformation |
 | `banner` | **16:9** | 1200×675 | Hero Event, carrousel homepage, surfaces larges |
-| `square` | **16:9** | 800×450 | Cartes/listes events, boutique grille + détail *(nom legacy conservé pour compat)* |
+| `square` | **16:9** | 800×450 | Cartes/listes events ; source boutique *(nom legacy ; listing grille croppe en 1:1 CSS)* |
 | `thumb` | **16:9** | 400×225 | Miniatures tableaux admin |
 | `story` | 9:16 | — | Canal social uniquement (doc/export V1 ; variant serveur si Phase B validée) |
 
@@ -34,8 +36,8 @@ Tous les variants servis au navigateur sont en **WebP**, centré (`resize_to_fil
 | Initiation card / liste | `square` | 800×450 |
 | Initiation hero | `banner` | 1200×675 |
 | Carousel homepage | `banner` | 1200×675 |
-| Boutique grille (listing) | variant 16:9 via `ProductsHelper` | 800×450 |
-| Boutique fiche produit | variant 16:9 via `ProductsHelper` | 800×450 |
+| Boutique grille (listing) | CSS `aspect-ratio: 1/1` + `object-fit: cover` | Square shelf cards (2026-08 UX) — Active Storage may still serve 16:9, cropped in frame |
+| Boutique fiche produit | CSS 1:1 + gallery thumbs under hero; description section below buy column | Variant `has_many_attached :images` feed the thumb strip when present |
 | Miniature tableau passés | `banner` inline 71×40 | — |
 
 ---

@@ -1,0 +1,22 @@
+<%#
+  locals:
+    level: :in_stock | :low_stock | :out_of_stock (required)
+    qty: Integer (optional — enables "Plus que X" for low_stock)
+    live: Boolean — Stimulus target + aria-live for PDP
+    product_qty: Integer — product-level stock for Stimulus fallback
+%>
+<%
+  level = local_assigns.fetch(:level).to_sym
+  qty = local_assigns[:qty]
+  live = local_assigns.fetch(:live, false)
+  product_qty = local_assigns.fetch(:product_qty, qty).to_i
+%>
+<span class="badge badge-stock <%= stock_badge_css_class(level) %>"
+      <% if live %>
+        data-product-show-target="stockBadge"
+        data-product-stock="<%= product_qty %>"
+        data-low-stock-threshold="<%= ProductsHelper::LOW_STOCK_THRESHOLD %>"
+        aria-live="polite"
+      <% end %>>
+  <%= stock_badge_label(level, qty: qty) %>
+</span>

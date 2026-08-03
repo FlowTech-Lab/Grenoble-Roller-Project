@@ -10,12 +10,11 @@ module MembershipsHelper
   end
 
   def unified_cart_pay_cta(membership, in_cart: membership_in_cart?(membership), btn_class: "btn btn-sm btn-primary", form_class: nil)
-    form_options = { style: "display: inline-block;" }
-    form_options[:class] = form_class if form_class.present?
+    form_options = { class: [ "d-inline-flex", "align-items-center", "m-0", form_class ].compact.join(" ") }
 
     if in_cart
       link_to cart_path, class: btn_class do
-        safe_join([ tag.i("", class: "bi bi-basket me-1"), "Voir le panier" ])
+        safe_join([ tag.i("", class: "bi bi-basket me-1", "aria-hidden": true), "Voir le panier" ])
       end
     else
       button_to membership_payments_path(membership),
@@ -23,7 +22,7 @@ module MembershipsHelper
                 class: btn_class,
                 data: { turbo: false },
                 form: form_options do
-        safe_join([ tag.i("", class: "bi bi-basket me-1"), "Ajouter au panier" ])
+        safe_join([ tag.i("", class: "bi bi-basket me-1", "aria-hidden": true), "Ajouter au panier" ])
       end
     end
   end

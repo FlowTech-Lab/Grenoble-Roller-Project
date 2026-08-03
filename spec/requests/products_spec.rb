@@ -11,6 +11,23 @@ RSpec.describe 'Products', type: :request do
     create(:product_variant, product: product, is_active: true) unless product.product_variants.any?
   end
 
+  describe 'GET /shop (catalog)' do
+    it 'renders clickable product cards without listing CTA buttons' do
+      get shop_path
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(product_path(product.slug))
+      expect(response.body).to include('card-product')
+      expect(response.body).not_to include('Choisir les options')
+      expect(response.body).not_to include('Voir le produit')
+    end
+
+    it 'exposes active products count from the controller' do
+      get shop_path
+      expect(assigns(:active_products_count)).to be >= 1
+    end
+  end
+
   describe 'GET /products/:id' do
     it 'allows public access without authentication' do
       get product_path(product.slug)

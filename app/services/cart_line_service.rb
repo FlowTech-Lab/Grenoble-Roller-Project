@@ -91,10 +91,22 @@ class CartLineService
       list(user, include_expired: include_expired).size
     end
 
+    # Re-sync pending membership cart lines (season/amount/label).
+    # Drop stale lines when the membership is no longer pending (paid, cancelled, etc.).
     def refresh_membership_lines!(user)
       user.cart_lines.membership.active.includes(:reference).find_each do |line|
         membership = line.reference
-        next unless membership.is_a?(Membership)
+        unless membership.is_a?(Membership)
+          line.destroy
+          next
+        end
+
+        unless membership.pending?
+          line.destroy
+          next
+        end
+
+        next unless membership.health_questionnaire_complete?
 
         add_membership!(user, membership: membership)
       end

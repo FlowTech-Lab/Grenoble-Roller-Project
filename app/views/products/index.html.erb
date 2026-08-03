@@ -2,15 +2,21 @@
 <% content_for :description, "Boutique officielle Grenoble Roller. Découvrez nos produits et accessoires Roller. Commandez en ligne et recevez vos articles rapidement !" %>
 
 <div class="container py-4 py-lg-5">
-  <div class="row mb-4">
-    <div class="col-12 text-center">
-      <h1 class="display-5 text-liquid-primary-white mb-2">
+  <div class="row mb-4 align-items-center">
+    <div class="col-12 col-md">
+      <h1 class="display-5 text-liquid-primary-white mb-1 mb-md-0">
         <i class="bi bi-bag-heart me-2" aria-hidden="true"></i>Boutique
       </h1>
+      <p class="text-body-secondary mb-0 small">Produits et accessoires Grenoble Roller</p>
+    </div>
+    <div class="col-12 col-md-auto mt-3 mt-md-0">
+      <%= link_to cart_path, class: "btn btn-outline-primary" do %>
+        <i class="bi bi-basket me-1" aria-hidden="true"></i>Voir le panier
+      <% end %>
     </div>
   </div>
 
-  <!-- Bannière temporaire vers l'ancienne boutique HelloAsso -->
+  <!-- Temporary HelloAsso banner — keep until volunteers finish native shop -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
@@ -29,51 +35,22 @@
     </div>
   </div>
 
-  <section class="mb-5" aria-label="Catalogue produits">
-    <div class="row">
-      <!-- Sidebar filtres catégories -->
-      <aside class="col-12 col-md-3 mb-4 mb-md-0" aria-label="Filtres par catégorie">
-        <div class="card card-liquid rounded-liquid shadow-sm">
-          <div class="card-body">
-            <h2 class="h6 mb-3">
-              <i class="bi bi-funnel text-liquid-primary me-2" aria-hidden="true"></i>Catégories
-            </h2>
-            
-            <div class="d-flex flex-column gap-2">
-              <%= link_to products_path, 
-                  class: "category-filter-item text-decoration-none #{'active' unless @selected_category}" do %>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="text-truncate me-2">
-                    <i class="bi bi-grid me-2" aria-hidden="true"></i>Tous les produits
-                  </span>
-                  <span class="badge <%= @selected_category.nil? ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= Product.where(is_active: true).count %></span>
-                </div>
-              <% end %>
-              
-              <% @categories.each do |category| %>
-                <% 
-                  is_active = @selected_category&.id == category.id
-                  count = @category_counts[category.id] || 0
-                %>
-                <% if count > 0 %>
-                  <%= link_to products_path(category: category.slug), 
-                      class: "category-filter-item text-decoration-none #{'active' if is_active}" do %>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <span class="text-truncate me-2">
-                        <i class="bi bi-tag me-2" aria-hidden="true"></i><%= category.name %>
-                      </span>
-                      <span class="badge <%= is_active ? 'bg-primary' : 'bg-secondary' %> flex-shrink-0"><%= count %></span>
-                    </div>
-                  <% end %>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
+  <section class="shop-catalog mb-5" aria-label="Catalogue produits">
+    <!-- Mobile: horizontal chips (no tall filter card above the grid) -->
+    <div class="shop-filters-mobile d-lg-none mb-3">
+      <p class="small text-muted mb-2">Filtrer</p>
+      <%= render "category_filters", variant: :chips %>
+    </div>
+
+    <div class="shop-catalog-layout">
+      <!-- Desktop: floating sticky rail, visually separated from the grid -->
+      <aside class="shop-filter-rail d-none d-lg-block" aria-label="Filtres par catégorie">
+        <div class="shop-filter-panel sidebar-sticky shop-filters-sidebar">
+          <%= render "category_filters", variant: :rail %>
         </div>
       </aside>
-      
-      <!-- Contenu principal -->
-      <div class="col-12 col-md-9">
+
+      <div class="shop-catalog-main">
         <% if @selected_category %>
           <div class="mb-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -88,13 +65,13 @@
             </div>
           </div>
         <% end %>
-        
+
         <div class="product-grid">
           <% @products.each do |product| %>
             <% 
               active_variants = product.product_variants.where(is_active: true).includes(:inventory, variant_option_values: { option_value: :option_type })
-              # Utiliser inventory.available_qty si disponible, sinon fallback sur stock_qty
-              has_stock = active_variants.any? { |v| (v.inventory&.available_qty || v.stock_qty.to_i) > 0 }
+              total_stock = product_available_stock(active_variants)
+              stock_level = stock_availability_level(total_stock)
               min_price = active_variants.minimum(:price_cents) || product.price_cents
               max_price = active_variants.maximum(:price_cents) || product.price_cents
               has_multiple_prices = min_price != max_price
@@ -104,11 +81,10 @@
               color_options = active_variants.flat_map { |v| v.option_values.select { |ov| ov.option_type.name == 'color' } }.uniq
 
               # Stock par option (pour marquer les tailles/couleurs épuisées)
-              # Utiliser inventory.available_qty si disponible, sinon fallback sur stock_qty
               size_stock = Hash.new(0)
               color_stock = Hash.new(0)
               active_variants.each do |v|
-                available_qty = v.inventory&.available_qty || v.stock_qty.to_i
+                available_qty = variant_available_stock(v)
                 v.option_values.each do |ov|
                   case ov.option_type.name
                   when 'size'
@@ -119,29 +95,19 @@
                 end
               end
 
-              has_options = size_options.any? || color_options.any?
+              product_href = product_path(product.slug.presence || product)
             %>
-            <article class="card card-product card-liquid rounded-liquid" 
-                     data-product-url="<%= product_path(product.slug.presence || product) %>" 
-                     style="cursor: pointer;">
+            <%= link_to product_href,
+                        class: "card card-product card-liquid rounded-liquid text-decoration-none text-reset",
+                        aria: { label: "Voir #{product.name}" } do %>
               <div class="card-product-image-wrapper">
                 <% product_image = product_image_tag(product) %>
-                <div class="card-product-image <%= 'product-image-clickable' if product_image %>" 
-                     <% if product_image %>
-                       style="cursor: pointer;" 
-                       data-bs-toggle="modal" 
-                       data-bs-target="#productImageModal<%= product.id %>"
-                       aria-label="Agrandir l'image de <%= product.name %>"
-                     <% end %>>
+                <div class="card-product-image">
                   <% if product_image %>
-                    <%= image_tag product_image, alt: product.name, loading: "lazy", decoding: "async" %>
+                    <%= image_tag product_image, alt: "", loading: "lazy", decoding: "async" %>
                   <% end %>
                 </div>
-                <% if has_stock %>
-                  <span class="badge badge-liquid-success badge-stock">En stock</span>
-                <% else %>
-                  <span class="badge badge-liquid-danger badge-stock">Rupture</span>
-                <% end %>
+                <%= render "products/stock_badge", level: stock_level, qty: total_stock %>
               </div>
               <div class="card-body">
                 <div class="product-content">
@@ -151,9 +117,6 @@
                   </p>
                 </div>
 
-                <!-- pousse le bloc options + footer en bas de la card -->
-                <div class="spacer"></div>
-                
                 <% if active_variants.any? %>
                   <div class="product-options-section mb-1">
                     <div class="product-options">
@@ -171,7 +134,7 @@
                           <% end %>
                         </p>
                       <% end %>
-                      
+
                       <% if color_options.size > 1 %>
                         <p class="small text-body-secondary mb-1">
                           <strong>Couleurs :</strong>
@@ -186,7 +149,7 @@
                           <% end %>
                         </p>
                       <% end %>
-                      
+
                       <% if size_options.empty? && color_options.empty? %>
                         <p class="small text-body-secondary mb-1">
                           <strong>Taille :</strong> Taille unique
@@ -197,27 +160,16 @@
                 <% end %>
 
                 <div class="product-footer">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="price-section-vertical mb-0">
-                      <div class="price-display">
-                        <% if has_multiple_prices %>
-                          <span class="price">À partir de <%= format_price(min_price) %></span>
-                        <% else %>
-                          <span class="price"><%= format_price(min_price) %></span>
-                        <% end %>
-                      </div>
-                    </div>
+                  <div class="price-display">
+                    <% if has_multiple_prices %>
+                      <span class="price">À partir de <%= format_price(min_price) %></span>
+                    <% else %>
+                      <span class="price"><%= format_price(min_price) %></span>
+                    <% end %>
                   </div>
-
-                  <%= link_to product_path(product.slug.presence || product),
-                              class: "btn btn-liquid-primary btn-add w-100",
-                              aria: { label: "Voir le produit #{product.name}" } do %>
-                    <i class="bi bi-eye me-2" aria-hidden="true"></i>
-                    <span><%= has_options ? "Choisir les options" : "Voir le produit" %></span>
-                  <% end %>
                 </div>
               </div>
-            </article>
+            <% end %>
           <% end %>
         </div>
         
@@ -245,23 +197,3 @@
     </div>
   </section>
 </div>
-
-<!-- Modals Lightbox pour images produits -->
-<% @products.each do |product| %>
-  <% modal_image = product_image_tag(product) %>
-  <% if modal_image %>
-    <div class="modal fade" id="productImageModal<%= product.id %>" tabindex="-1" aria-labelledby="productImageModalLabel<%= product.id %>" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bg-transparent border-0">
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title text-white" id="productImageModalLabel<%= product.id %>"><%= product.name %></h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-          </div>
-          <div class="modal-body p-0 text-center">
-            <%= image_tag modal_image, alt: product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;" %>
-          </div>
-        </div>
-      </div>
-    </div>
-  <% end %>
-<% end %>

@@ -2,6 +2,56 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Storefront stock badges (honest + low-stock)
+
+### Fixed
+- Product stock badge used `stock_qty` when inventory was out of sync — could show **En stock** while add-to-cart stayed disabled.
+
+### Changed
+- Storefront badges: **En stock** (>5) · **Plus que N** / orange (1–5) · **Rupture** (0); PDP badge updates with selected variant.
+- Threshold `ProductsHelper::LOW_STOCK_THRESHOLD = 5` (aligned with events/admin cues).
+
+## [2026-08-03] - Production release staging → main (v2.3.3)
+
+### Documentation
+- Production release / patch note: [`release-staging-to-main-v2.3.3-2026-08.md`](release-staging-to-main-v2.3.3-2026-08.md) — 34 commits (`764095dd`…`ba965598`), **no migrations**, rollback = redeploy previous `main` image.
+
+Bundles staging-validated UX slices **v2.3.2 + v2.3.3**: memberships polish, shop catalog/PDP, orders density, glass/WCAG chips, stock badges, cart stale-membership fix.
+
+## [2026-08-03] - Orders density + PDP + glass + WCAG chips (v2.3.3)
+
+### Changed
+- **Orders (`/orders`):** dense billing-style rows (`#id · date · product · status chip · price · Payer/Voir`); FR icon chips; inline actions (no full-width Détails).
+- **Product detail (`/shop/:slug`):** pro PDP — square 1:1 gallery + variant image thumbs; compact buy column (size tiles, price, qty, CTA); long description below; nav `Boutique / product` (no Accueil).
+- **Glass:** solid light/dark `--bs-body-bg`; theme-agnostic `--liquid-glass-bg: #969ca114`; reduced-transparency drops blur only (never paints cards with `body-bg`).
+- **A11y soft status:** `--status-*-fg/bg/border` dual-theme (≥4.5:1); order chips + `.status-badge` no longer use `--bs-warning` as text on pastel fills.
+- **Images:** `square_image_variant` true 1:1 `resize_to_fill` for storefront.
+
+### Fixed
+- Theme flash / broken dark text when body bg was nearly transparent.
+- Stimulus `route_image_viewer`: declare `#escapeHandler` (private field SyntaxError).
+- **Cart:** `refresh_membership_lines!` destroys stale membership lines when status is no longer `pending` (avoids `InvalidMembershipStatusError` on `/cart`).
+
+### Documentation
+- Patch note: [`release-orders-density-ux-2026-08.md`](release-orders-density-ux-2026-08.md) (v2.3.3)
+- Plan: [`PLAN-orders-density-ux.md`](PLAN-orders-density-ux.md)
+- Image formats: [`image-formats-and-variants.md`](../04-rails/setup/image-formats-and-variants.md)
+
+## [2026-08-03] - UX memberships + shop catalog (v2.3.2 → Dev)
+
+### Changed
+- **Memberships:** remaining-days progress bar; **Réadhérer** on adult card (not hero-only); hide renew once sale-season active/pending successor exists; skip misleading sidebar « Pas d'adhésion active » during renew window; button/icon vertical centering.
+- **Shop catalog:** fixed **1:1** listing thumbnails (PDP stays **16:9**); denser shelf cards; whole-card links (no listing CTA buttons); floating filter rail + mobile chips; HelloAsso migration banner kept; product count in controller; cart shortcut in header.
+- **Orders / checkout:** hero balance + hide empty-state sidebar shop link; checkout uses site `container`.
+
+### Tests
+- Membership `#renewable_now?` successor cases; request specs for adult/child Réadhérer; shop catalog clickable cards.
+
+### Documentation
+- Patch note: [`release-ux-pages-verification-2026-08.md`](release-ux-pages-verification-2026-08.md) (v2.3.2)
+- PLAN tracker: [`PLAN-ux-pages-verification.md`](PLAN-ux-pages-verification.md)
+- Image formats: listing 1:1 CSS exception — [`image-formats-and-variants.md`](../04-rails/setup/image-formats-and-variants.md)
+
 ## [2026-08-03] - Shop index uses site container width
 
 ### Fixed

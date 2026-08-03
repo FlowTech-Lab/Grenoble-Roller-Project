@@ -1,47 +1,58 @@
 <% content_for :title, "#{@product.name} - Boutique Grenoble Roller" %>
 <% content_for :description, "#{@product.name} - #{@product.description.presence || 'Produit disponible dans la boutique Grenoble Roller'}. Commandez en ligne !" %>
 
-<div class="container py-4 py-lg-5">
-  <div class="row mb-4">
-    <div class="col-12">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><%= link_to "Accueil", root_path %></li>
-          <li class="breadcrumb-item"><%= link_to "Boutique", shop_path %></li>
-          <li class="breadcrumb-item active" aria-current="page"><%= @product.name %></li>
-        </ol>
-      </nav>
+<%
+  if @variants.any?
+    variant_min = @variants.where.not(price_cents: nil).minimum(:price_cents)
+    variant_max = @variants.where.not(price_cents: nil).maximum(:price_cents)
+    single_variant = @variants.count == 1 ? @variants.first : nil
+  else
+    variant_min = nil
+    variant_max = nil
+    single_variant = nil
+  end
+  min_price = variant_min || @product.price_cents
+  max_price = variant_max || @product.price_cents
+  has_multiple_prices = min_price.present? && max_price.present? && min_price != max_price
+  total_stock = product_available_stock(@variants)
+  stock_level = stock_availability_level(total_stock)
+  gallery = product_gallery_entries(@product, @variants)
+  main_image = product_image_tag(@product)
+  main_image_url = product_image_url(@product)
+%>
+
+<div class="container py-4 py-lg-5 product-pdp-page">
+  <nav class="product-show-nav mb-3" aria-label="Fil d'Ariane produit">
+    <%= link_to shop_path, class: "product-show-back" do %>
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      <span>Boutique</span>
+    <% end %>
+    <span class="product-show-nav-sep" aria-hidden="true">/</span>
+    <span class="product-show-nav-current text-truncate"><%= @product.name %></span>
+  </nav>
+
+  <!-- Temporary HelloAsso banner — keep until volunteers finish native shop -->
+  <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+      <span>Boutique temporairement en cours de migration. En attendant, accédez à notre <strong>ancienne boutique HelloAsso</strong>.</span>
     </div>
+    <%= link_to "https://www.helloasso.com/associations/grenoble-roller/boutiques/boutique",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        class: "btn btn-sm btn-outline-primary flex-shrink-0" do %>
+      <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
+      Accéder à la boutique HelloAsso
+    <% end %>
   </div>
 
-  <!-- Bannière temporaire vers l'ancienne boutique HelloAsso -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
-        <div class="d-flex align-items-center">
-          <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-          <span>Boutique temporairement en cours de migration. En attendant, accédez à notre <strong>ancienne boutique HelloAsso</strong>.</span>
-        </div>
-        <%= link_to "https://www.helloasso.com/associations/grenoble-roller/boutiques/boutique", 
-            target: "_blank", 
-            rel: "noopener noreferrer",
-            class: "btn btn-sm btn-outline-primary flex-shrink-0" do %>
-          <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
-          Accéder à la boutique HelloAsso
-        <% end %>
-      </div>
-    </div>
-  </div>
-
-  <!-- Card unique : image à gauche, infos à droite -->
-  <div class="card card-liquid rounded-liquid product-show-card"
+  <div class="product-pdp"
        data-controller="product-show"
-       data-product-show-variants-value='<%= @variants.map { |v| 
+       data-product-show-variants-value='<%= @variants.map { |v|
          begin
-           # option_values est déjà chargé via variant_option_values dans le contrôleur
            option_vals = v.option_values.to_a
-           size_opt = option_vals.find { |ov| ov.option_type&.name == 'size' }
-           color_opt = option_vals.find { |ov| ov.option_type&.name == 'color' }
+           size_opt = option_vals.find { |ov| ov.option_type&.name == "size" }
+           color_opt = option_vals.find { |ov| ov.option_type&.name == "color" }
            {
              id: v.id,
              sizeId: size_opt&.id,
@@ -51,7 +62,7 @@
              imageUrl: variant_image_url(v) || ""
            }
          rescue => e
-           Rails.logger.error "[ProductShow] Erreur lors du chargement des options pour variant #{v.id}: #{e.message}"
+           Rails.logger.error "[ProductShow] variant options #{v.id}: #{e.message}"
            {
              id: v.id,
              sizeId: nil,
@@ -61,245 +72,229 @@
              imageUrl: variant_image_url(v) || ""
            }
          end
-      }.to_json.html_safe %>'
-       data-product-show-default-image-url-value="<%= (product_image_url(@product) || '').to_json.html_safe %>">
-    <div class="row g-4 align-items-stretch flex-column flex-lg-row">
-      <!-- Image principale -->
-      <div class="col-12 col-lg-5">
-        <div class="card-product-image-wrapper product-show-image-wrapper" style="aspect-ratio: 16 / 9;">
-          <% product_image = product_image_tag(@product) %>
-          <div class="card-product-image" 
-               style="<%= 'cursor: pointer;' if product_image %>"
-               <% if product_image %>
-                 data-bs-toggle="modal" 
-                 data-bs-target="#productImageModalShow"
-                 aria-label="Agrandir l'image de <%= @product.name %>"
-               <% end %>>
-            <% if product_image %>
-              <%= image_tag product_image, alt: @product.name, loading: "eager", decoding: "async", style: "object-fit: cover; object-position: center;", data: { product_show_target: "productImage" } %>
-            <% else %>
-              <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                <i class="bi bi-image fs-1 text-muted" aria-hidden="true"></i>
-              </div>
-            <% end %>
+       }.to_json.html_safe %>'
+       data-product-show-default-image-url-value="<%= (main_image_url || "").to_json.html_safe %>">
+
+    <div class="row g-4 g-xl-5 align-items-start">
+      <!-- Gallery (hero media + thumbs) -->
+      <div class="col-12 col-md-6">
+        <div class="product-gallery">
+          <div class="product-show-image-wrapper">
+            <div class="card-product-image product-show-media"
+                 <% if main_image %>
+                   role="button"
+                   tabindex="0"
+                   data-bs-toggle="modal"
+                   data-bs-target="#productImageModalShow"
+                   aria-label="Agrandir l'image de <%= @product.name %>"
+                 <% end %>>
+              <% if main_image %>
+                <%= image_tag main_image,
+                      alt: @product.name,
+                      class: "product-show-photo",
+                      loading: "eager",
+                      decoding: "async",
+                      data: { product_show_target: "productImage" } %>
+              <% else %>
+                <div class="product-show-placeholder d-flex align-items-center justify-content-center w-100 h-100" aria-hidden="true">
+                  <i class="bi bi-image fs-1 text-muted"></i>
+                </div>
+              <% end %>
+            </div>
+            <%= render "products/stock_badge",
+                       level: stock_level,
+                       qty: total_stock,
+                       product_qty: total_stock,
+                       live: true %>
           </div>
-          <% 
-            # Utiliser stock_qty de la variante comme source de vérité principale
-            has_stock = @variants.any? { |v| variant_available_stock(v) > 0 }
-          %>
-          <% if has_stock %>
-            <span class="badge badge-liquid-success badge-stock">En stock</span>
-          <% else %>
-            <span class="badge badge-liquid-danger badge-stock">Rupture</span>
+
+          <% if gallery.size > 1 %>
+            <div class="product-gallery-thumbs" role="list" aria-label="Autres photos du produit">
+              <% gallery.each_with_index do |entry, idx| %>
+                <button type="button"
+                        class="product-gallery-thumb<%= " is-active" if idx.zero? %>"
+                        role="listitem"
+                        data-product-show-target="galleryThumb"
+                        data-image-url="<%= entry[:full_url] %>"
+                        data-action="click->product-show#pickGalleryImage"
+                        aria-label="<%= entry[:label].presence || "Photo #{idx + 1}" %>"
+                        aria-pressed="<%= idx.zero? %>">
+                  <%= image_tag entry[:thumb_url], alt: "", loading: "lazy", decoding: "async" %>
+                </button>
+              <% end %>
+            </div>
           <% end %>
         </div>
       </div>
 
-      <!-- Informations produit -->
-      <div class="col-12 col-lg-7 d-flex">
-        <div class="card-body d-flex flex-column">
-          <!-- Titre et catégorie -->
-          <div class="mb-3">
-            <h1 class="product-title mb-2"><%= @product.name %></h1>
-            <% if @product.category %>
-              <p class="text-muted mb-0">
-                <i class="bi bi-tag me-1" aria-hidden="true"></i><%= @product.category.name %>
-              </p>
-            <% end %>
-          </div>
-
-          <!-- Description -->
-          <% if @product.description.present? %>
-            <div class="mb-4">
-              <p class="product-description text-muted">
-                <%= simple_format(@product.description) %>
-              </p>
-            </div>
+      <!-- Buy column (purchase path only — pro PDP pattern) -->
+      <div class="col-12 col-md-6">
+        <div class="product-buy">
+          <% if @product.category %>
+            <p class="product-buy-category mb-1">
+              <i class="bi bi-tag me-1" aria-hidden="true"></i><%= @product.category.name %>
+            </p>
           <% end %>
+          <h1 class="product-show-title"><%= @product.name %></h1>
 
-          <!-- pousse le bloc options + prix + CTA vers le bas -->
-          <div class="spacer"></div>
+          <p class="product-buy-price" aria-live="polite">
+            <% if has_multiple_prices %>
+              <span class="product-show-price-prefix">À partir de</span>
+            <% end %>
+            <strong class="product-show-price-value" data-product-show-target="unitPriceValue"><%= format_price(min_price) %></strong>
+          </p>
 
-          <% 
-            # Calculer le prix minimum/maximum AVANT le bloc conditionnel pour qu'il soit toujours défini
-            if @variants.any?
-              variant_min = @variants.where.not(price_cents: nil).minimum(:price_cents)
-              variant_max = @variants.where.not(price_cents: nil).maximum(:price_cents)
-              single_variant = @variants.count == 1 ? @variants.first : nil
-            else
-              variant_min = nil
-              variant_max = nil
-              single_variant = nil
-            end
-            min_price = variant_min || @product.price_cents
-            max_price = variant_max || @product.price_cents
-            has_multiple_prices = min_price.present? && max_price.present? && min_price != max_price
-          %>
-
-          <!-- Sélection variantes -->
           <% if @variants.any? %>
-            <% 
-              # Charger toutes les options disponibles depuis les variantes actives
-              # option_values est déjà chargé via variant_option_values dans le contrôleur
-              # Utiliser to_a pour forcer le chargement et uniq pour éviter les doublons
-              all_option_values = @variants.flat_map { |v| 
-                # option_values est chargé via variant_option_values, donc option_type devrait être accessible
-                v.option_values.to_a
-              }.uniq
-              
-              # Filtrer par type d'option (size/color)
-              size_options = all_option_values.select { |ov| ov.option_type&.name == 'size' }.uniq
-              color_options = all_option_values.select { |ov| ov.option_type&.name == 'color' }.uniq
-
-              # Calculer le stock disponible par option
-              # Pour chaque option, vérifier s'il existe AU MOINS UNE variante complète avec cette option qui a du stock
+            <%
+              all_option_values = @variants.flat_map { |v| v.option_values.to_a }.uniq
+              size_options = all_option_values.select { |ov| ov.option_type&.name == "size" }.uniq
+              color_options = all_option_values.select { |ov| ov.option_type&.name == "color" }.uniq
               size_stock = Hash.new(0)
               color_stock = Hash.new(0)
-              
-              # Pour chaque variante avec stock, marquer ses options comme disponibles
               @variants.each do |v|
-                # Utiliser stock_qty de la variante comme source de vérité principale
                 available = variant_available_stock(v)
-                next if available <= 0 # Ignorer les variantes sans stock
-                
-                # option_values est déjà chargé via variant_option_values dans le contrôleur
-                option_vals = v.option_values.to_a
-                
-                # Pour chaque option de cette variante, marquer le stock maximum disponible
-                # Le stock d'une option = le stock maximum parmi toutes les variantes qui ont cette option ET qui ont du stock
-                option_vals.each do |ov|
-                  next unless ov.option_type # Sécurité si option_type n'est pas chargé
-                  
+                next if available <= 0
+                v.option_values.to_a.each do |ov|
+                  next unless ov.option_type
                   case ov.option_type.name
-                  when 'size'
-                    # Garder le stock maximum pour cette taille parmi toutes les variantes avec cette taille
-                    size_stock[ov.id] = [size_stock[ov.id], available].max
-                  when 'color'
-                    # Garder le stock maximum pour cette couleur parmi toutes les variantes avec cette couleur
-                    color_stock[ov.id] = [color_stock[ov.id], available].max
+                  when "size" then size_stock[ov.id] = [size_stock[ov.id], available].max
+                  when "color" then color_stock[ov.id] = [color_stock[ov.id], available].max
                   end
                 end
               end
-              
             %>
-            <div class="product-options-section mb-3">
-              <div class="product-options">
-                <% if size_options.size > 1 %>
-                  <select class="form-select form-select-sm product-size-select" 
-                          aria-label="Choisir la taille" 
-                          id="size-select-detail"
-                          data-product-show-target="sizeSelect"
-                          data-action="change->product-show#sizeChanged">
+            <div class="product-options">
+              <% if size_options.size > 1 %>
+                <div class="product-option-group">
+                  <span class="product-option-label">Taille</span>
+                  <select class="visually-hidden" aria-hidden="true" tabindex="-1" id="size-select-detail"
+                          data-product-show-target="sizeSelect" data-action="change->product-show#sizeChanged">
                     <option value="">Choisir taille</option>
                     <% size_options.each do |size_opt| %>
-                      <% 
-                        option_stock = size_stock[size_opt.id]
-                      %>
-                      <option value="<%= size_opt.id %>" <%= 'disabled' if option_stock <= 0 %>>
-                        <%= size_opt.presentation %><%= ' (épuisé)' if option_stock <= 0 %>
+                      <option value="<%= size_opt.id %>" <%= "disabled" if size_stock[size_opt.id] <= 0 %>>
+                        <%= size_opt.presentation %><%= " (épuisé)" if size_stock[size_opt.id] <= 0 %>
                       </option>
                     <% end %>
                   </select>
-                <% elsif size_options.size == 1 %>
-                  <% size_opt = size_options.first %>
-                  <p class="small text-body-secondary mb-1">
-                    <strong>Taille :</strong> <%= size_opt.presentation %>
-                    <% if size_stock[size_opt.id] <= 0 %>
-                      <span class="text-danger ms-1">(plus en stock)</span>
+                  <div class="product-option-tiles" role="group" aria-label="Choisir la taille">
+                    <% size_options.each do |size_opt| %>
+                      <button type="button" class="product-option-tile"
+                              data-product-show-tile="size" data-size-id="<%= size_opt.id %>"
+                              data-action="click->product-show#pickSize" aria-pressed="false"
+                              <%= "disabled" if size_stock[size_opt.id] <= 0 %>>
+                        <%= size_opt.presentation.to_s.sub(/\ATaille\s+/i, "") %>
+                      </button>
                     <% end %>
-                  </p>
-                <% end %>
-                
-                <% if color_options.size > 1 %>
-                  <select class="form-select form-select-sm product-color-select" 
-                          aria-label="Choisir la couleur" 
-                          id="color-select-detail"
-                          data-product-show-target="colorSelect"
-                          data-action="change->product-show#colorChanged">
+                  </div>
+                </div>
+              <% elsif size_options.size == 1 %>
+                <p class="product-option-static mb-0">
+                  <span class="product-option-label">Taille</span>
+                  <%= size_options.first.presentation %>
+                </p>
+              <% end %>
+
+              <% if color_options.size > 1 %>
+                <div class="product-option-group">
+                  <span class="product-option-label">Couleur</span>
+                  <select class="visually-hidden" aria-hidden="true" tabindex="-1" id="color-select-detail"
+                          data-product-show-target="colorSelect" data-action="change->product-show#colorChanged">
                     <option value="">Choisir couleur</option>
                     <% color_options.each do |color_opt| %>
-                      <% 
-                        option_stock = color_stock[color_opt.id]
-                      %>
-                      <option value="<%= color_opt.id %>" <%= 'disabled' if option_stock <= 0 %>>
-                        <%= color_opt.presentation %><%= ' (épuisé)' if option_stock <= 0 %>
+                      <option value="<%= color_opt.id %>" <%= "disabled" if color_stock[color_opt.id] <= 0 %>>
+                        <%= color_opt.presentation %><%= " (épuisé)" if color_stock[color_opt.id] <= 0 %>
                       </option>
                     <% end %>
                   </select>
-                <% elsif color_options.size == 1 %>
-                  <% color_opt = color_options.first %>
-                  <p class="small text-body-secondary mb-1">
-                    <strong>Couleur :</strong> <%= color_opt.presentation %>
-                    <% if color_stock[color_opt.id] <= 0 %>
-                      <span class="text-danger ms-1">(plus en stock)</span>
+                  <div class="product-option-tiles" role="group" aria-label="Choisir la couleur">
+                    <% color_options.each do |color_opt| %>
+                      <button type="button" class="product-option-tile"
+                              data-product-show-tile="color" data-color-id="<%= color_opt.id %>"
+                              data-action="click->product-show#pickColor" aria-pressed="false"
+                              <%= "disabled" if color_stock[color_opt.id] <= 0 %>>
+                        <%= color_opt.presentation %>
+                      </button>
                     <% end %>
-                  </p>
-                <% end %>
-                
-                <% if size_options.empty? && color_options.empty? %>
-                  <p class="small text-body-secondary mb-1">
-                    <strong>Taille :</strong> Taille unique
-                  </p>
-                <% end %>
-              </div>
-              <small id="stock_hint" class="text-muted d-block mt-2" style="display: none;" data-product-show-target="stockHint">
-                Stock: <span id="stock_value" data-product-show-target="stockValue">0</span>
-                &mdash;
-                Prix unitaire: <span id="unit_price_value" data-product-show-target="unitPriceValue"><%= format_price(min_price) %></span>
-              </small>
+                  </div>
+                </div>
+              <% elsif color_options.size == 1 %>
+                <p class="product-option-static mb-0">
+                  <span class="product-option-label">Couleur</span>
+                  <%= color_options.first.presentation %>
+                </p>
+              <% end %>
+
+              <% if size_options.empty? && color_options.empty? %>
+                <p class="product-option-static mb-0">
+                  <span class="product-option-label">Taille</span>
+                  Unique
+                </p>
+              <% end %>
             </div>
+
+            <p id="stock_hint" class="product-stock-hint" style="display: none;" data-product-show-target="stockHint">
+              Stock disponible : <span id="stock_value" data-product-show-target="stockValue">0</span>
+            </p>
           <% end %>
 
-          <!-- Prix + Quantité et ajout au panier -->
-          <div class="mt-auto">
-            <%= form_with url: add_item_cart_path, method: :post, class: "d-flex flex-column gap-3", id: "add-to-cart-form", data: { turbo: false } do |f| %>
-              <%= hidden_field_tag :variant_id, single_variant ? single_variant.id : "", id: "variant-id-detail", required: true, data: { product_show_target: "variantInput" } %>
-              
-              <div class="d-flex align-items-center justify-content-between gap-3 align-items-end flex-wrap product-qty-total-row">
-                <label for="quantity_field" class="form-label mb-0">Quantité:</label>
-                <div class="qty-control">
+          <%= form_with url: add_item_cart_path, method: :post, class: "product-buy-form", id: "add-to-cart-form", data: { turbo: false } do |f| %>
+            <%= hidden_field_tag :variant_id, single_variant ? single_variant.id : "", id: "variant-id-detail", required: true, data: { product_show_target: "variantInput" } %>
+
+            <div class="product-buy-row">
+              <div class="product-qty-block">
+                <label for="quantity_field" class="product-option-label mb-1">Quantité</label>
+                <div class="qty-control product-qty-control">
                   <%= button_tag type: "button", class: "qty-btn", aria: { label: "Diminuer" }, data: { action: "click->product-show#decrementQty" } do %>
                     <i class="bi bi-dash" aria-hidden="true"></i>
                   <% end %>
-                  <%= number_field_tag :quantity, 1, min: 1, max: (single_variant ? variant_available_stock(single_variant) : nil), class: "form-control form-control-sm border-0 bg-transparent p-0 form-control-number-compact", id: "quantity_field", style: "width: 3em;", data: { product_show_target: "qtyField", action: "input->product-show#quantityChanged" } %>
+                  <%= number_field_tag :quantity, 1,
+                        min: 1,
+                        max: (single_variant ? variant_available_stock(single_variant) : nil),
+                        class: "form-control border-0 bg-transparent p-0 form-control-number-compact",
+                        id: "quantity_field",
+                        data: { product_show_target: "qtyField", action: "input->product-show#quantityChanged" } %>
                   <%= button_tag type: "button", class: "qty-btn", aria: { label: "Augmenter" }, data: { action: "click->product-show#incrementQty" } do %>
                     <i class="bi bi-plus" aria-hidden="true"></i>
                   <% end %>
                 </div>
-                <div class="text-end fw-semibold text-liquid-primary product-total">
-                  <span class="product-total-label">Total :</span>
-                  <span id="price_detail" data-product-show-target="priceDisplay"><%= format_price(min_price) %></span>
-                </div>
               </div>
-
-              <div class="d-flex flex-column flex-md-row gap-2 mt-3 product-actions-row">
-                <%= link_to cart_path, class: "btn btn-outline-primary btn-sm w-100 w-md-auto product-cart-link" do %>
-                  <i class="bi bi-basket me-1" aria-hidden="true"></i>
-                  Voir le panier
-                <% end %>
-
-                <button type="submit" 
-                        class="btn btn-liquid-primary w-100 product-add-btn" 
-                        id="add-btn-detail"
-                        data-product-show-target="addButton"
-                        <%= 'disabled' unless single_variant && variant_available_stock(single_variant) > 0 %>>
-                  <i class="bi bi-cart-plus me-2" aria-hidden="true"></i>
-                  <span>Ajouter au panier</span>
-                </button>
+              <div class="product-total" aria-live="polite">
+                <span class="product-total-label">Total</span>
+                <span id="price_detail" class="product-total-value" data-product-show-target="priceDisplay"><%= format_price(min_price) %></span>
               </div>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-liquid-primary product-add-btn"
+                    id="add-btn-detail"
+                    data-product-show-target="addButton"
+                    <%= "disabled" unless single_variant && variant_available_stock(single_variant) > 0 %>>
+              <i class="bi bi-cart-plus me-2" aria-hidden="true"></i>
+              Ajouter au panier
+            </button>
+
+            <%= link_to cart_path, class: "product-cart-link" do %>
+              <i class="bi bi-basket me-1" aria-hidden="true"></i>
+              Voir le panier
             <% end %>
-          </div> <!-- /.mt-auto -->
-        </div> <!-- /.card-body -->
-      </div> <!-- /.col infos -->
-    </div> <!-- /.row -->
-  </div> <!-- /.card product-show-card -->
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <% if @product.description.present? %>
+      <section class="product-details" aria-labelledby="product-details-heading">
+        <h2 id="product-details-heading" class="product-details-title">Description</h2>
+        <div class="product-details-body">
+          <%= simple_format(@product.description) %>
+        </div>
+      </section>
+    <% end %>
+  </div>
 </div>
 
-<!-- Modal Lightbox pour image produit (en dehors de la card pour le z-index Bootstrap) -->
-<% modal_image = product_image_tag(@product) %>
-<% if modal_image %>
-  <div class="modal fade" id="productImageModalShow" tabindex="-1" aria-labelledby="productImageModalLabelShow" aria-hidden="true"
-       data-product-show-target="modal">
+<% if main_image %>
+  <div class="modal fade" id="productImageModalShow" tabindex="-1" aria-labelledby="productImageModalLabelShow" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-transparent border-0">
         <div class="modal-header border-0 pb-0">
@@ -307,7 +302,7 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body p-0 text-center">
-          <%= image_tag modal_image, alt: @product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;", id: "productModalImage" %>
+          <%= image_tag main_image, alt: @product.name, class: "img-fluid rounded", style: "max-height: 80vh; width: auto;", id: "productModalImage" %>
         </div>
       </div>
     </div>

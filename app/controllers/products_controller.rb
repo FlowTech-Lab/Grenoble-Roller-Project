@@ -20,7 +20,8 @@ class ProductsController < ApplicationController
     # Utiliser inventory.available_qty si disponible, sinon fallback sur stock_qty
     @products = products.to_a.sort_by do |product|
       has_stock = product.product_variants.any? { |v|
-        v.is_active && (v.inventory&.available_qty || v.stock_qty.to_i) > 0
+        available = v.inventory ? [ v.inventory.available_qty.to_i, 0 ].max : v.stock_qty.to_i
+        v.is_active && available > 0
       }
       [ has_stock ? 0 : 1, product.name ]
     end
@@ -30,6 +31,7 @@ class ProductsController < ApplicationController
                                       .where(products: { is_active: true })
                                       .group("product_categories.id")
                                       .count("products.id")
+    @active_products_count = Product.where(is_active: true).count
   end
 
   def show
@@ -65,6 +67,7 @@ class ProductsController < ApplicationController
                         .where(is_active: true)
                         .includes(
                           :inventory,
+                          images_attachments: :blob,
                           variant_option_values: { option_value: :option_type }
                         )
                         .order(:sku)

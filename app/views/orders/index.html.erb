@@ -7,51 +7,54 @@
 %>
 
 <div class="container py-4">
-  <!-- HERO SECTION -->
+  <!-- HERO SECTION: copy left · badges + CTA right -->
   <div class="hero-orders">
-    <div class="d-flex justify-content-between align-items-center flex-wrap">
-      <div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 gap-md-4">
+      <div class="min-w-0">
         <h1 class="h2 mb-2">
-          <i class="bi bi-box-seam me-2 fs-2"></i>
+          <i class="bi bi-box-seam me-2 fs-2" aria-hidden="true"></i>
           Mes commandes
         </h1>
-        <p class="mb-2 opacity-75" style="font-style: italic;">
+        <p class="mb-0 opacity-75" style="font-style: italic;">
           Suivez l'aventure de vos achats
         </p>
+      </div>
+
+      <div class="d-flex flex-column align-items-stretch align-items-md-end gap-3">
         <% if @orders.any? %>
-          <div class="d-flex align-items-center gap-3 flex-wrap mt-3">
+          <div class="d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
             <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
-              <i class="bi bi-box me-1"></i>
+              <i class="bi bi-box me-1" aria-hidden="true"></i>
               <%= @orders.count %> commande<%= 's' if @orders.count != 1 %>
             </span>
             <% if pending_orders.any? %>
               <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
-                <i class="bi bi-hourglass-split text-warning me-1"></i>
+                <i class="bi bi-hourglass-split text-warning me-1" aria-hidden="true"></i>
                 <%= pending_orders.count %> en attente
               </span>
             <% end %>
             <% if sent_orders.any? %>
               <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
-                <i class="bi bi-truck text-success me-1"></i>
+                <i class="bi bi-truck text-success me-1" aria-hidden="true"></i>
                 <%= sent_orders.count %> expédiée<%= 's' if sent_orders.count != 1 %>
               </span>
             <% end %>
             <% if total_spent > 0 %>
               <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.875rem;">
-                <i class="bi bi-currency-euro text-primary me-1"></i>
+                <i class="bi bi-currency-euro text-primary me-1" aria-hidden="true"></i>
                 <%= number_to_currency(total_spent, unit: "€", format: "%n %u") %> total
               </span>
             <% end %>
           </div>
+          <%= link_to shop_path, class: "btn btn-outline-light align-self-md-end" do %>
+            <i class="bi bi-bag me-1" aria-hidden="true"></i>Boutique
+          <% end %>
+        <% else %>
+          <%= link_to shop_path, class: "btn btn-light btn-lg" do %>
+            <i class="bi bi-bag me-2" aria-hidden="true"></i>Découvrir la boutique
+          <% end %>
         <% end %>
       </div>
-      <% if @orders.empty? %>
-        <div class="mt-3 mt-md-0">
-          <%= link_to shop_path, class: "btn btn-light btn-lg" do %>
-            <i class="bi bi-bag me-2"></i>Découvrir la boutique
-          <% end %>
-        </div>
-      <% end %>
     </div>
   </div>
 
@@ -70,12 +73,11 @@
     <!-- CONTENU PRINCIPAL (COL-8) -->
     <div class="col-12 col-lg-8">
       <% if @orders.empty? %>
-        <!-- EMPTY STATE -->
+        <!-- EMPTY STATE (primary CTA lives in the hero) -->
         <div class="text-center py-5">
-          <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">🛍️</div>
+          <i class="bi bi-bag display-4 text-muted mb-3 d-block" aria-hidden="true"></i>
           <h2 class="h5 fw-bold mb-2">Aucune commande</h2>
-          <p class="text-muted small mb-4">Découvrez notre sélection de produits</p>
-          <%= link_to "Voir la boutique →", shop_path, class: "btn btn-primary" %>
+          <p class="text-muted small mb-0">Découvrez notre sélection de produits via le bouton du bandeau.</p>
         </div>
       <% else %>
         <!-- EN ATTENTE -->
@@ -146,23 +148,7 @@
             <div id="cancelledList" class="collapse mt-2">
               <div class="d-flex flex-column gap-2">
                 <% cancelled_orders.each do |order| %>
-                  <div class="card border-0 shadow-sm" style="border-left: 3px solid #dc3545;">
-                    <div class="card-body py-2">
-                      <div class="d-flex justify-content-between align-items-start">
-                        <div class="small">
-                          <strong>Commande #<%= order.id %></strong>
-                          <br>
-                          <span class="text-muted">
-                            <%= l(order.created_at, format: "%d %b %Y") %>
-                            • <%= order.order_items.sum(:quantity) %> article<%= 's' if order.order_items.sum(:quantity) != 1 %>
-                          </span>
-                        </div>
-                        <strong class="text-danger">
-                          <%= number_to_currency(order.total_cents / 100.0, unit: "€", format: "%n %u") %>
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
+                  <%= render "order_card_compact", order: order %>
                 <% end %>
               </div>
             </div>
