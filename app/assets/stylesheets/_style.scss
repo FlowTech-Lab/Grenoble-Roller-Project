@@ -4620,14 +4620,15 @@
 }
 
   .product-title {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--gr-primary);
-    font-size: 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.3;
   }
 
   @media (min-width: 992px) {
     .product-title {
-      font-size: 1.75rem;
+      font-size: 1.125rem;
     }
   }
 
