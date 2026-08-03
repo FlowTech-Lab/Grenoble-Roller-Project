@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Post a release announce to Discord via webhook.
 # Env:
-#   DISCORD_RELEASE_WEBHOOK  — required (GitHub secret)
+#   DISCORD_RELEASE_WEBHOOK_STAGING     — Captain Hook (staging channel)
+#   DISCORD_RELEASE_WEBHOOK_PRODUCTION  — Grenoble Roller prod release channel
+#   Legacy: DISCORD_RELEASE_WEBHOOK used as fallback for the selected env
 #   RELEASE_ENV              — staging | production (default: staging)
 #   GITHUB_SHA, GITHUB_REPOSITORY, GITHUB_SERVER_URL — from Actions
 #   GITHUB_EVENT_BEFORE      — previous SHA on push (optional)
@@ -19,11 +21,6 @@ REPO="${GITHUB_REPOSITORY:-Grenoble-roller/Grenoble-Roller-Website}"
 SERVER="${GITHUB_SERVER_URL:-https://github.com}"
 BEFORE="${GITHUB_EVENT_BEFORE:-}"
 
-if [[ -z "${DISCORD_RELEASE_WEBHOOK:-}" ]]; then
-  echo "DISCORD_RELEASE_WEBHOOK is empty — skipping announce (no failure)."
-  exit 0
-fi
-
 case "$RELEASE_ENV" in
   production|main|prod)
     RELEASE_ENV="production"
@@ -31,6 +28,7 @@ case "$RELEASE_ENV" in
     SITE_URL="https://grenoble-roller.org"
     HELLOASSO="HelloAsso **live**"
     COLOR=5763719
+    WEBHOOK="${DISCORD_RELEASE_WEBHOOK_PRODUCTION:-${DISCORD_RELEASE_WEBHOOK:-}}"
     ;;
   *)
     RELEASE_ENV="staging"
@@ -38,8 +36,14 @@ case "$RELEASE_ENV" in
     SITE_URL="https://staging.grenoble-roller.org"
     HELLOASSO="HelloAsso **sandbox** · **pas la prod**"
     COLOR=15105570
+    WEBHOOK="${DISCORD_RELEASE_WEBHOOK_STAGING:-${DISCORD_RELEASE_WEBHOOK:-}}"
     ;;
 esac
+
+if [[ -z "${WEBHOOK}" ]]; then
+  echo "Discord webhook for ${RELEASE_ENV} is empty — skipping announce (no failure)."
+  exit 0
+fi
 
 COMPARE_URL=""
 if [[ -n "$BEFORE" && "$BEFORE" != "0000000000000000000000000000000000000000" ]]; then
@@ -102,7 +106,6 @@ if not version or not headline:
     if cl.is_file():
         for line in cl.read_text(encoding="utf-8").splitlines():
             if line.startswith("## ["):
-                # ## [2026-08-03] - Title (v2.3.3)
                 vm = re.search(r"\(v([\d.]+)\)", line)
                 if vm and not version:
                     version = vm.group(1)
@@ -127,7 +130,6 @@ content = (
 )
 
 fields = []
-# Discord field value max 1024; keep bullets compact
 bullet_text = "\n".join(f"• {b}" for b in bullets[:12])
 if len(bullet_text) > 1000:
     bullet_text = bullet_text[:997] + "…"
@@ -152,9 +154,9 @@ PY
 HTTP="$(curl -sS -o /tmp/discord-release-out.txt -w '%{http_code}' -X POST \
   -H 'Content-Type: application/json' \
   -d "$PAYLOAD" \
-  "$DISCORD_RELEASE_WEBHOOK")"
+  "$WEBHOOK")"
 
-echo "discord_release_http=${HTTP}"
+echo "discord_release_http=${HTTP} env=${RELEASE_ENV}"
 if [[ "$HTTP" != "204" && "$HTTP" != "200" ]]; then
   echo "Discord webhook failed (HTTP ${HTTP}). Body:" >&2
   cat /tmp/discord-release-out.txt >&2 || true
