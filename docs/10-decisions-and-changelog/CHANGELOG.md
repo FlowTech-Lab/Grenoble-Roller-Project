@@ -2,6 +2,13 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Production release staging → main (v2.3.1)
+
+### Documentation
+- Added production release / patch note: [`release-staging-to-main-2026-08.md`](release-staging-to-main-2026-08.md) — 64 commits (`8fa153c1`…`092061d0`), 9 migrations, ENV checklist, rollback (redeploy previous main; unified cart has no ENV kill-switch).
+
+Bundles staging-validated slices **v2.2 → v2.3.1**: permanent unified checkout, Discord admin notifications (DR-002), June admin/events batch, membership renewals from **1 August**, event image viewer (mobile/desktop), organizer draft index.
+
 ## [2026-08-03] - Organizer sees own draft events on index
 
 ### Fixed
