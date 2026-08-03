@@ -5,7 +5,7 @@
     days_remaining = (membership.end_date - Date.current).to_i
     days_remaining = [days_remaining, 0].max
   end
-  
+
   # Fill represents days remaining (matches the "Jours restants" label)
   progress_percent = 0
   if membership.start_date.present? && membership.end_date.present?
@@ -21,7 +21,7 @@
   else
     "red"
   end
-  
+
   # Classe CSS pour la card
   card_class = case membership.status
     when 'active'
@@ -36,29 +36,34 @@
 
   hide_renew_cta = local_assigns.fetch(:hide_renew_cta, false)
   hide_pay_cta = local_assigns.fetch(:hide_pay_cta, false)
+
+  category_label = membership.category == 'standard' ? 'Standard' : 'FFRS'
+  amount_label = number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u")
+  dates_label = [
+    (l(membership.start_date, format: :short) if membership.start_date),
+    (l(membership.end_date, format: :short) if membership.end_date)
+  ].compact.join(" → ")
+
+  status_icon = case membership.status
+  when 'active' then 'bi-check-circle'
+  when 'pending' then 'bi-hourglass-split'
+  when 'expired' then 'bi-x-circle'
+  when 'trial' then 'bi-gift'
+  else 'bi-info-circle'
+  end
 %>
 
 <div class="<%= card_class %> card-liquid position-relative">
   <!-- Status Badge -->
   <span class="status-badge <%= membership.status %>">
-    <% case membership.status %>
-      <% when 'active' %>
-        ✓ <%= human_status(:membership, 'active').upcase %>
-      <% when 'pending' %>
-        ⏳ <%= human_status(:membership, 'pending').upcase %>
-      <% when 'expired' %>
-        ✗ <%= human_status(:membership, 'expired').upcase %>
-      <% when 'trial' %>
-        🎁 <%= human_status(:membership, 'trial').upcase %>
-      <% else %>
-        <%= human_status(:membership, membership.status).upcase %>
-    <% end %>
+    <i class="bi <%= status_icon %> me-1" aria-hidden="true"></i>
+    <%= human_status(:membership, membership.status) %>
   </span>
 
   <!-- Header -->
   <div class="mb-3">
     <div class="d-flex align-items-center mb-2">
-      <i class="bi <%= is_child ? 'bi-person-heart' : 'bi-person-badge' %> fs-3 text-liquid-primary me-3"></i>
+      <i class="bi <%= is_child ? 'bi-person-heart' : 'bi-person-badge' %> fs-3 text-liquid-primary me-3" aria-hidden="true"></i>
       <div>
         <h4 class="h5 mb-0">
           <% if is_child %>
@@ -78,37 +83,20 @@
     </div>
   </div>
 
-  <!-- Informations -->
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-4">
-      <div class="p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
-        <small class="text-muted d-block">Catégorie</small>
-        <strong>
-          <%= membership.category == 'standard' ? 'Standard' : 'FFRS' %>
-        </strong>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
-        <small class="text-muted d-block">Tarif</small>
-        <strong>
-          <%= number_to_currency(membership.total_amount_cents / 100.0, unit: "€", separator: ",", delimiter: " ", format: "%n %u") %>
-        </strong>
-        <% if membership.tshirt_variant_id.present? %>
-          <small class="text-muted d-block">+ T-shirt</small>
-        <% end %>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="p-2 rounded" style="background: var(--liquid-glass-bg); border: 1px solid var(--card-border-color);">
-        <small class="text-muted d-block">Dates</small>
-        <strong>
-          <%= l(membership.start_date, format: :short) if membership.start_date %> → 
-          <%= l(membership.end_date, format: :short) if membership.end_date %>
-        </strong>
-      </div>
-    </div>
-  </div>
+  <!-- Meta line -->
+  <p class="membership-card-meta text-muted small mb-3">
+    <span><%= category_label %></span>
+    <span aria-hidden="true"> · </span>
+    <span><%= amount_label %></span>
+    <% if membership.tshirt_variant_id.present? %>
+      <span aria-hidden="true"> · </span>
+      <span>+ T-shirt</span>
+    <% end %>
+    <% if dates_label.present? %>
+      <span aria-hidden="true"> · </span>
+      <span><%= dates_label %></span>
+    <% end %>
+  </p>
 
   <!-- Progress Bar (si actif) -->
   <% if membership.active? && days_remaining > 0 %>
@@ -154,4 +142,3 @@
     <% end %>
   </div>
 </div>
-
