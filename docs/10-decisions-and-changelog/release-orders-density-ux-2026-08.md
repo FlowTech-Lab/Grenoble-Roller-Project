@@ -1,22 +1,21 @@
 ---
-title: "Patch note Dev UX — orders density + glass + status chips (v2.3.3)"
+title: "Patch note — orders density, PDP, glass, WCAG chips (v2.3.3)"
 status: "active"
 version: "2.3.3"
 created: "2026-08-03"
 updated: "2026-08-03"
-tags: ["release", "patchnote", "Dev", "ux", "orders", "a11y", "changelog"]
+tags: ["release", "patchnote", "Dev", "staging", "ux", "orders", "shop", "a11y", "changelog"]
 ---
 
-# Patch note — v2.3.3 (Commandes densifiées + glass + WCAG chips)
+# Patch note — v2.3.3 (Commandes · PDP · glass · WCAG)
 
-**Target:** merge `ux/orders-density-and-cards` → `Dev`  
-**Next step after Dev validation:** Dev → staging (separate PR)  
+**Branch:** `ux/orders-density-and-cards` → `Dev` → `staging`  
 **Changelog:** [`CHANGELOG.md`](CHANGELOG.md)  
 **Plan:** [`PLAN-orders-density-ux.md`](PLAN-orders-density-ux.md)
 
 **Migrations:** none  
 **ENV:** none  
-**Rollback:** revert merge / redeploy previous `Dev` image
+**Rollback:** revert merge / redeploy previous image on the target env
 
 ---
 
@@ -24,54 +23,55 @@ tags: ["release", "patchnote", "Dev", "ux", "orders", "a11y", "changelog"]
 
 ### Headline
 
-**Grenoble Roller — Dev v2.3.3**  
-Liste commandes dense · cartes glass cohérentes clair/sombre · chips statut WCAG AA
+**Grenoble Roller — v2.3.3 (staging)**  
+Commandes densifiées · fiche produit pro · glass clair/sombre · chips WCAG · fix panier adhésion
 
 ### What’s new (user-facing)
 
 1. **Commandes (`/orders`)**
    - Lignes denses type billing : `#id · date · produit · chip · prix · Payer/Voir`
-   - Chip statut (icône + libellé FR) — plus d’emoji
-   - Actions inline (`Payer` + `Voir` compact) — plus de bandeau « Détails » pleine largeur
-   - Accents de statut via classes (pas de hex inline)
+   - Chip statut (icône + libellé FR)
+   - Actions inline — plus de bandeau « Détails » pleine largeur
 
-2. **Design system — glass**
-   - Fond page solide clair/sombre (plus de body quasi transparent qui cassait le thème)
+2. **Fiche produit (`/shop/:slug`)**
+   - Layout pro : galerie (photo carrée 1:1 + vignettes multi-photos variantes) | colonne d’achat compacte
+   - Description longue **sous** la grille (plus dans la colonne droite)
+   - Nav compacte `← Boutique / produit` (plus Accueil)
+   - Tuiles taille/couleur ; prix + CTA hiérarchisés
+
+3. **Design system — glass**
+   - Fond page solide clair/sombre
    - `--liquid-glass-bg: #969ca114` (overlay neutre dual-theme)
-   - `prefers-reduced-transparency` : coupe le blur seulement — **ne** repeint **pas** les cards avec `body-bg` (`#0f131a`)
+   - `prefers-reduced-transparency` : coupe le blur seulement (pas de plaque `body-bg`)
 
-3. **Accessibilité — soft status chips**
+4. **Accessibilité — soft status chips**
    - Tokens `--status-*-fg/bg/border` (clair + sombre), contraste ≥4.5:1
-   - « En attente » n’utilise plus `--bs-warning` (`#ffc107`) en texte sur pastel (~1.6:1 fail)
-   - `.order-card__chip` + `.status-badge` branchés sur ces tokens
+   - « En attente » conforme WCAG AA (plus `--bs-warning` sur pastel)
 
-### Not in this slice
+5. **Panier**
+   - Fix crash `/cart` : lignes d’adhésion déjà payées/actives retirées au refresh (plus d’erreur `Only pending memberships…`)
 
-- Sidebar sticky / dédup CTA hero (reste dans le PLAN)
-- Preload N+1 controller + specs request orders (à finaliser si besoin avant merge)
-- Vague 2 a11y : `text-muted` sur glass, outlines, soft alerts (checklist dans le PLAN)
-- Staging / production — uniquement branche → `Dev` pour l’instant
+### Smoke checklist
 
----
-
-## Commits (this branch)
-
-| Area | Focus |
-| --- | --- |
-| Orders | Dense row partial, index hygiene, cancelled reuse |
-| Glass | Body bg solid, `#969ca114`, reduced-transparency fix |
-| A11y | Soft status tokens AA, chips + status-badge |
-| Layout | Early theme script in `<head>` |
-| Bugfix | Stimulus `route_image_viewer` private field `#escapeHandler` |
-| Docs | PLAN orders density + this patch note + CHANGELOG |
+- [ ] `/orders` clair + sombre — chips lisibles, lignes denses
+- [ ] `/shop/:slug` — galerie + buy column + description dessous ; tablette ≥768 horizontal
+- [ ] `/cart` — ouvre sans erreur même avec ancienne ligne adhésion active
+- [ ] Thème clair ↔ sombre ; hard-refresh après deploy (`npm run build:css` au build)
 
 ---
 
-## Smoke checklist (Dev / local)
+## Discord message (staging)
 
-- [ ] `/orders` light — chip « En attente » lisible (contraste) ; ligne dense ; Payer/Voir
-- [ ] `/orders` dark — cards glass (pas plaque `#0f131a`) ; chips lisibles
-- [ ] Hard-refresh après `npm run build:css` (builds gitignored)
-- [ ] Toggle thème clair ↔ sombre sans flash / texte illisible
-- [ ] `/memberships` — smoke cards + status badges si présents
-- [ ] Cursor Simple Browser with reduced transparency — cards still translucent fill
+```text
+🎿 Grenoble Roller — staging v2.3.3
+
+Déployé sur staging :
+
+• /orders — liste commandes dense (chip statut, Payer/Voir inline)
+• Fiche produit — galerie carrée + vignettes, colonne d’achat compacte, description en dessous
+• Glass clair/sombre + chips statut accessibles (WCAG)
+• Fix panier — plus de crash si une adhésion déjà payée trainait dans le panier
+
+À tester : /orders, /shop (fiche), /cart, toggle thème.
+Rollback : redeploy image staging précédente (pas de migration).
+```

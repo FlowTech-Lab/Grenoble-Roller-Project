@@ -9,7 +9,7 @@ Ce document est la source de vérité pour :
 
 > **Décision bénévoles — mai 2026 :** format unique **16:9 centré** sur les surfaces événement / initiation / heroes. Le terme `square` est un alias de compatibilité (génère du **16:9** 800×450).
 >
-> **Exception UX boutique listing — août 2026 :** la grille `/shop` affiche des vignettes **carrées (1:1)** en CSS (`object-fit: cover`). La fiche produit reste 16:9. Les fichiers Active Storage restent 16:9 ; le cadre listing croppe.
+> **Exception UX boutique — août 2026 :** grille `/shop` et fiche produit utilisent un cadre **carré (1:1)** en CSS + variantes Active Storage `resize_to_fill` carrées. Galerie PDP : image produit + images variantes uniques en vignettes. Description longue sous la grille d’achat. Navigation : « Boutique » (pas Accueil).
 
 ---
 
@@ -37,7 +37,7 @@ Tous les variants servis au navigateur sont en **WebP**, centré (`resize_to_fil
 | Initiation hero | `banner` | 1200×675 |
 | Carousel homepage | `banner` | 1200×675 |
 | Boutique grille (listing) | CSS `aspect-ratio: 1/1` + `object-fit: cover` | Square shelf cards (2026-08 UX) — Active Storage may still serve 16:9, cropped in frame |
-| Boutique fiche produit | variant 16:9 via `ProductsHelper` | 800×450 |
+| Boutique fiche produit | CSS 1:1 + gallery thumbs under hero; description section below buy column | Variant `has_many_attached :images` feed the thumb strip when present |
 | Miniature tableau passés | `banner` inline 71×40 | — |
 
 ---
