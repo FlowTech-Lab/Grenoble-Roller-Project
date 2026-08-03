@@ -45,6 +45,7 @@ Do **not** duplicate canonical docs here — use the index below.
 | **Unified checkout (agent SSOT)** | [`docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md`](docs/10-decisions-and-changelog/PLAN-unified-checkout-MASTER.md) | Waves 0–6, QA §G, rollback §H |
 | **ADR unified cart** | [`docs/10-decisions-and-changelog/DR-001-unified-checkout-cart.md`](docs/10-decisions-and-changelog/DR-001-unified-checkout-cart.md) | Decision record |
 | **DR Discord notifications** | [`docs/10-decisions-and-changelog/DR-002-discord-webhook-notifications.md`](docs/10-decisions-and-changelog/DR-002-discord-webhook-notifications.md) | **Implemented** on `Dev` — admin webhooks, ~65 event toggles, `ALLOW_DISCORD_NOTIFICATIONS` gate |
+| **CI Discord release announce** | [`docs/07-ops/runbooks/discord-release-announce.md`](docs/07-ops/runbooks/discord-release-announce.md) | Auto post on push to `staging` / `main` — update [`.github/release-discord.yml`](.github/release-discord.yml); secret `DISCORD_RELEASE_WEBHOOK` |
 | **Release Dev → staging** | [`docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md) | **Update before each staging PR** — migrations, ENV, QA |
 | **Changelog** | [`docs/10-decisions-and-changelog/CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) | Release journal; links to release notes |
 | **ADR template** | [`docs/11-templates/adr-template.md`](docs/11-templates/adr-template.md) | Significant architecture decisions |
@@ -221,9 +222,10 @@ bin/importmap audit
 1. Merge feature work into **`Dev`** (integration branch for this repo).
 2. **Update** [`release-dev-to-staging-2026-06.md`](docs/10-decisions-and-changelog/release-dev-to-staging-2026-06.md): commit range, migrations, ENV, QA checklist.
 3. Add a line in [`CHANGELOG.md`](docs/10-decisions-and-changelog/CHANGELOG.md) pointing to the release note.
-4. Open PR **`Dev` → `staging`**; run RSpec; deploy staging via Dokploy.
-5. Staging checkout QA: complete MASTER plan §G before prod merge.
-6. Production: merge `staging` → `main` only after human sign-off.
+4. Update [`.github/release-discord.yml`](.github/release-discord.yml) (`version` / `headline` / `bullets`) — CI posts to Discord on merge to `staging` / `main` ([runbook](docs/07-ops/runbooks/discord-release-announce.md)).
+5. Open PR **`Dev` → `staging`**; run RSpec; deploy staging via Dokploy.
+6. Staging checkout QA: complete MASTER plan §G before prod merge.
+7. Production: merge `staging` → `main` only after human sign-off.
 
 Full Git rules: [`docs/01-ways-of-working/README.md`](docs/01-ways-of-working/README.md).
 
