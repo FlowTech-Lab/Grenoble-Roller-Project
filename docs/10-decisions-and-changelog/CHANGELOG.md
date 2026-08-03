@@ -2,6 +2,11 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Shop index uses site container width
+
+### Fixed
+- Public boutique (`/shop`) used `container-fluid` and stretched edge-to-edge on desktop; aligned with `container` like product show, events, and cart.
+
 ## [2026-08-03] - Production release staging → main (v2.3.1)
 
 ### Documentation
