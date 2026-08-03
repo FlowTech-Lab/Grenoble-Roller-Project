@@ -65,19 +65,23 @@ Adhésions UX · boutique catalogue/PDP · commandes densifiées · glass/WCAG �
 
 ---
 
-## Discord message (production — after merge)
+## Discord (production)
+
+**Target channel (Grenoble Roller guild):** `1513250924489867455`  
+**Not** Captain Hook (`1522208233291382836`) — that channel was used by mistake for earlier staging notes.
+
+**Webhook:** store as `GRENOBLE_ROLLER_DISCORD_RELEASE_WEBHOOK` (Agent Vault or local `.env`, chmod 600). Must be created on channel `1513250924489867455`.
+
+### After merge — same model as staging (prod wording)
 
 ```text
-🎿 Grenoble Roller — production v2.3.3
-
-En ligne sur https://grenoble-roller.org :
+🎿 **Patch Production v2.3.3** — en ligne sur https://grenoble-roller.org (PR #256)
+HelloAsso **live** · migrations : aucune · rollback : redeploy image main précédente
 
 • Adhésions — jours restants, Réadhérer
 • Boutique — cartes 1:1, fiche produit galerie, badges stock
-• Commandes — liste dense + chips accessibles
+• Commandes — liste dense + chips WCAG
 • Glass clair/sombre · fix panier adhésion
-
-Migrations : aucune · Rollback : redeploy image main précédente
 ```
 
 ---

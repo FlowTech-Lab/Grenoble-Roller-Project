@@ -1,0 +1,14 @@
+# Curated Discord release announce (read by CI on push to staging/main).
+# Update this file in every Dev→staging or staging→main release PR.
+# Skip a push: include [skip discord] in the merge commit message.
+#
+# Channel target (ops): Grenoble Roller release salon — see
+# docs/07-ops/runbooks/discord-release-announce.md
+
+version: "2.3.3"
+headline: "Adhésions UX · boutique · commandes · glass/WCAG"
+bullets:
+  - "Adhésions — jours restants, Réadhérer"
+  - "Boutique — cartes 1:1, PDP galerie, badges stock"
+  - "Commandes — liste dense + chips WCAG"
+  - "Glass dual-theme · fix panier adhésion"
