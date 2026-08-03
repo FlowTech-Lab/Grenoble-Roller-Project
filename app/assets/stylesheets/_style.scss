@@ -4632,6 +4632,20 @@
     }
   }
 
+  /* PDP heading — keep ecommerce scale (not the compact card title) */
+  .product-show-title {
+    font-weight: 700;
+    color: var(--gr-primary);
+    font-size: 1.75rem;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 992px) {
+    .product-show-title {
+      font-size: 2rem;
+    }
+  }
 
   /* Shop catalog: floating filter rail + separated product grid */
   .shop-catalog-layout {
