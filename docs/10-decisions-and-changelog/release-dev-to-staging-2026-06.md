@@ -1,10 +1,10 @@
 ---
 title: "Release Dev → staging (June 2026)"
 status: "active"
-version: "2.3.1"
+version: "2.3.2"
 created: "2026-06-07"
 updated: "2026-08-03"
-tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications", "admin-panel", "memberships", "events"]
+tags: ["release", "staging", "changelog", "unified-checkout", "discord-notifications", "admin-panel", "memberships", "events", "ux"]
 ---
 
 # Release Dev → staging (June 2026)
@@ -24,6 +24,7 @@ tags: ["release", "staging", "changelog", "unified-checkout", "discord-notificat
 
 > **v2.3.1 addendum (2026-08-03):** organizers see their own `draft` events/initiations on public index (no more `.visible` wipe after `policy_scope`). No migrations, no new ENV. See [`CHANGELOG.md`](CHANGELOG.md) § `[2026-08-03]`.
 
+> **v2.3.2 addendum (2026-08-03):** UX memberships + shop catalog shelf (`ux/pages-verification` → `Dev`). Adult **Réadhérer**, square listing thumbs, clickable product cards. Full patch note: [`release-ux-pages-verification-2026-08.md`](release-ux-pages-verification-2026-08.md).
 ### v2.3.1 slice — commits (`staging`…`Dev`)
 
 | Commit | Summary |
