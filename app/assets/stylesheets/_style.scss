@@ -1004,9 +1004,10 @@
     border: none;
   }
   
+  /* Orange urgency (low stock) — dark text for WCAG on amber fills */
   .badge-liquid-warning {
-    background: #ffc107;
-    color: #000;
+    background: linear-gradient(135deg, #e65100 0%, #ff9800 100%);
+    color: #fff;
     border: none;
   }
   

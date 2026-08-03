@@ -90,12 +90,54 @@ module ProductsHelper
     square_image_variant(image, size: 800) if image
   end
 
+  # Storefront urgency threshold (aligned with events/initiations ≤5 and admin low-stock cues).
+  LOW_STOCK_THRESHOLD = 5
+
+  # Prefer inventory.available_qty (stock − reserved). Never fall back to raw stock_qty when
+  # an inventory row exists — that falsely showed "En stock" while CTA stayed disabled.
   def variant_available_stock(variant)
     return 0 unless variant
-    if variant.inventory && variant.inventory.stock_qty == variant.stock_qty
-      variant.inventory.available_qty
+
+    if variant.inventory
+      [ variant.inventory.available_qty.to_i, 0 ].max
     else
-      variant.stock_qty.to_i
+      [ variant.stock_qty.to_i, 0 ].max
+    end
+  end
+
+  def product_available_stock(variants)
+    Array(variants).sum { |v| variant_available_stock(v) }
+  end
+
+  # :out_of_stock | :low_stock | :in_stock
+  def stock_availability_level(qty)
+    q = qty.to_i
+    return :out_of_stock if q <= 0
+    return :low_stock if q <= LOW_STOCK_THRESHOLD
+
+    :in_stock
+  end
+
+  def stock_badge_label(level, qty: nil)
+    case level.to_sym
+    when :out_of_stock
+      "Rupture"
+    when :low_stock
+      q = qty.to_i
+      q.between?(1, LOW_STOCK_THRESHOLD) ? "Plus que #{q}" : "Derniers disponibles"
+    when :in_stock
+      "En stock"
+    else
+      "En stock"
+    end
+  end
+
+  def stock_badge_css_class(level)
+    case level.to_sym
+    when :out_of_stock then "badge-liquid-danger"
+    when :low_stock then "badge-liquid-warning"
+    when :in_stock then "badge-liquid-success"
+    else "badge-liquid-success"
     end
   end
 

@@ -2,6 +2,15 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-08-03] - Storefront stock badges (honest + low-stock)
+
+### Fixed
+- Product stock badge used `stock_qty` when inventory was out of sync — could show **En stock** while add-to-cart stayed disabled.
+
+### Changed
+- Storefront badges: **En stock** (>5) · **Plus que N** / orange (1–5) · **Rupture** (0); PDP badge updates with selected variant.
+- Threshold `ProductsHelper::LOW_STOCK_THRESHOLD = 5` (aligned with events/admin cues).
+
 ## [2026-08-03] - Orders density + PDP + glass + WCAG chips (v2.3.3)
 
 ### Changed

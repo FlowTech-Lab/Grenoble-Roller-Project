@@ -14,7 +14,8 @@
   min_price = variant_min || @product.price_cents
   max_price = variant_max || @product.price_cents
   has_multiple_prices = min_price.present? && max_price.present? && min_price != max_price
-  has_stock = @variants.any? { |v| variant_available_stock(v) > 0 }
+  total_stock = product_available_stock(@variants)
+  stock_level = stock_availability_level(total_stock)
   gallery = product_gallery_entries(@product, @variants)
   main_image = product_image_tag(@product)
   main_image_url = product_image_url(@product)
@@ -100,11 +101,11 @@
                 </div>
               <% end %>
             </div>
-            <% if has_stock %>
-              <span class="badge badge-liquid-success badge-stock">En stock</span>
-            <% else %>
-              <span class="badge badge-liquid-danger badge-stock">Rupture</span>
-            <% end %>
+            <%= render "products/stock_badge",
+                       level: stock_level,
+                       qty: total_stock,
+                       product_qty: total_stock,
+                       live: true %>
           </div>
 
           <% if gallery.size > 1 %>
