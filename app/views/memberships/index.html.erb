@@ -20,6 +20,17 @@
 
   # Hero CTA: renew personal membership first, else finish pending, join, or add a child
   hero_renewable_membership = personal_memberships.find(&:renewable_now?)
+  hero_cta_kind = if hero_renewable_membership
+    :renew
+  elsif @pending_membership
+    :pending_pay
+  elsif !@active_membership
+    :join
+  else
+    :add_child
+  end
+  show_sidebar_join = @active_membership.blank? && hero_cta_kind != :join && hero_cta_kind != :pending_pay
+  show_sidebar_add_child = hero_cta_kind != :add_child
 %>
 
 
@@ -79,61 +90,63 @@
     <!-- SIDEBAR GAUCHE (Desktop) -->
     <div class="col-12 col-lg-4 mb-4 mb-lg-0">
       <div class="sidebar-sticky">
-        <!-- Quick Actions -->
-        <div class="card card-liquid shadow-sm mb-4">
-          <div class="card-body">
-            <h3 class="h6 mb-2">
-              <i class="bi bi-lightning-charge text-liquid-primary me-2"></i>
-              Actions rapides
-            </h3>
+        <!-- Quick Actions (skip entries already covered by the hero CTA) -->
+        <% if show_sidebar_join || show_sidebar_add_child %>
+          <div class="card card-liquid shadow-sm mb-4">
+            <div class="card-body">
+              <h3 class="h6 mb-2">
+                <i class="bi bi-lightning-charge text-liquid-primary me-2"></i>
+                Actions rapides
+              </h3>
 
-            <div class="quick-actions-list">
-            <!-- Adhérer pour moi -->
-            <% unless @active_membership %>
-              <%= link_to new_membership_path(type: 'adult'), class: "quick-action-link text-decoration-none" do %>
-                <div class="quick-action-card teal">
-                  <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-person-badge quick-action-card-icon text-liquid-primary" aria-hidden="true"></i>
-                    <div class="flex-grow-1 min-w-0">
-                      <h4 class="h6 mb-0 fw-bold">J'adhère</h4>
-                      <small class="text-muted">
-                        <% if @pending_membership %>
-                          Adhésion en attente
-                        <% else %>
-                          Pas d'adhésion active
-                        <% end %>
-                      </small>
+              <div class="quick-actions-list">
+              <% if show_sidebar_join %>
+                <%= link_to new_membership_path(type: 'adult'), class: "quick-action-link text-decoration-none" do %>
+                  <div class="quick-action-card teal">
+                    <div class="d-flex align-items-center gap-3">
+                      <i class="bi bi-person-badge quick-action-card-icon text-liquid-primary" aria-hidden="true"></i>
+                      <div class="flex-grow-1 min-w-0">
+                        <h4 class="h6 mb-0 fw-bold">J'adhère</h4>
+                        <small class="text-muted">
+                          <% if @pending_membership %>
+                            Adhésion en attente
+                          <% else %>
+                            Pas d'adhésion active
+                          <% end %>
+                        </small>
+                      </div>
                     </div>
                   </div>
-                </div>
+                <% end %>
               <% end %>
-            <% end %>
-            
-            <!-- Ajouter un enfant -->
-            <%= link_to new_membership_path(type: 'child'), class: "quick-action-link text-decoration-none", data: { turbo: false } do %>
-              <div class="quick-action-card orange">
-                <div class="d-flex align-items-center gap-3">
-                  <i class="bi bi-person-plus quick-action-card-icon text-liquid-warning" aria-hidden="true"></i>
-                  <div class="flex-grow-1 min-w-0">
-                    <h4 class="h6 mb-0 fw-bold">Ajouter un enfant</h4>
-                    <small class="text-muted">
-                      <% if parent_profile_complete_for_child %>
-                        <% if children_trial.any? || children_pending.any? %>
-                          <%= children_trial.count + children_pending.count %> à finaliser
-                        <% else %>
-                          Inscrire un enfant
-                        <% end %>
-                      <% else %>
-                        Complétez d'abord votre profil (nom, prénom, téléphone, adresse, code postal, ville, date de naissance)
-                      <% end %>
-                    </small>
+
+              <% if show_sidebar_add_child %>
+                <%= link_to new_membership_path(type: 'child'), class: "quick-action-link text-decoration-none", data: { turbo: false } do %>
+                  <div class="quick-action-card orange">
+                    <div class="d-flex align-items-center gap-3">
+                      <i class="bi bi-person-plus quick-action-card-icon text-liquid-warning" aria-hidden="true"></i>
+                      <div class="flex-grow-1 min-w-0">
+                        <h4 class="h6 mb-0 fw-bold">Ajouter un enfant</h4>
+                        <small class="text-muted">
+                          <% if parent_profile_complete_for_child %>
+                            <% if children_trial.any? || children_pending.any? %>
+                              <%= children_trial.count + children_pending.count %> à finaliser
+                            <% else %>
+                              Inscrire un enfant
+                            <% end %>
+                          <% else %>
+                            Complétez d'abord votre profil (nom, prénom, téléphone, adresse, code postal, ville, date de naissance)
+                          <% end %>
+                        </small>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                <% end %>
+              <% end %>
               </div>
-            <% end %>
             </div>
           </div>
-        </div>
+        <% end %>
 
         <!-- Overview Stats -->
         <% if @memberships.any? %>
@@ -230,19 +243,17 @@
               <span class="benefit-text">Réduction sur les t-shirts et goodies</span>
             </div>
           </div>
-          
-          <div class="empty-state-cta">
-            <%= link_to new_membership_path(type: 'adult'), class: "btn btn-liquid-primary btn-lg btn-cta-modern" do %>
-              <i class="bi bi-person-plus me-2"></i>Adhérer maintenant
-              <i class="bi bi-arrow-right ms-2"></i>
-            <% end %>
-          </div>
         </div>
       <% else %>
         <!-- ADHÉSION PERSONNELLE -->
         <% if personal_memberships.any? %>
           <% personal_memberships.each do |membership| %>
-            <%= render partial: 'membership_card_improved', locals: { membership: membership, is_child: false } %>
+            <%= render partial: 'membership_card_improved', locals: {
+                  membership: membership,
+                  is_child: false,
+                  hide_renew_cta: hero_renewable_membership&.id == membership.id,
+                  hide_pay_cta: hero_cta_kind == :pending_pay && @pending_membership&.id == membership.id
+                } %>
           <% end %>
         <% end %>
 

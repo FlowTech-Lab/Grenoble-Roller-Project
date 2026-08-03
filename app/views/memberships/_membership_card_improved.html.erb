@@ -33,6 +33,9 @@
     else
       'membership-card'
   end
+
+  hide_renew_cta = local_assigns.fetch(:hide_renew_cta, false)
+  hide_pay_cta = local_assigns.fetch(:hide_pay_cta, false)
 %>
 
 <div class="<%= card_class %> card-liquid position-relative">
@@ -143,8 +146,8 @@
         <% end %>
       <% end %>
       
-      <%= unified_cart_pay_cta(membership) %>
-    <% elsif membership.renewable_now? %>
+      <%= unified_cart_pay_cta(membership) unless hide_pay_cta %>
+    <% elsif membership.renewable_now? && !hide_renew_cta %>
       <%= link_to membership_renewal_path_for(membership), class: "btn btn-sm btn-success", data: { turbo: false } do %>
         <i class="bi bi-arrow-repeat me-1"></i>Renouveler
       <% end %>
