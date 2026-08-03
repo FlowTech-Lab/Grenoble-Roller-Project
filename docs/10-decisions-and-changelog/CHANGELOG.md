@@ -11,6 +11,13 @@ Ce fichier documente les changements significatifs du projet Grenoble Roller.
 - Storefront badges: **En stock** (>5) · **Plus que N** / orange (1–5) · **Rupture** (0); PDP badge updates with selected variant.
 - Threshold `ProductsHelper::LOW_STOCK_THRESHOLD = 5` (aligned with events/admin cues).
 
+## [2026-08-03] - Production release staging → main (v2.3.3)
+
+### Documentation
+- Production release / patch note: [`release-staging-to-main-v2.3.3-2026-08.md`](release-staging-to-main-v2.3.3-2026-08.md) — 34 commits (`764095dd`…`ba965598`), **no migrations**, rollback = redeploy previous `main` image.
+
+Bundles staging-validated UX slices **v2.3.2 + v2.3.3**: memberships polish, shop catalog/PDP, orders density, glass/WCAG chips, stock badges, cart stale-membership fix.
+
 ## [2026-08-03] - Orders density + PDP + glass + WCAG chips (v2.3.3)
 
 ### Changed
