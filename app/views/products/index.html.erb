@@ -37,13 +37,14 @@
 
   <section class="mb-5" aria-label="Catalogue produits">
     <div class="row">
-      <!-- Sidebar filtres catégories -->
-      <aside class="col-12 col-md-3 mb-4 mb-md-0" aria-label="Filtres par catégorie">
-        <div class="card card-liquid rounded-liquid shadow-sm">
-          <div class="card-body">
-            <h2 class="h6 mb-3">
-              <i class="bi bi-funnel text-liquid-primary me-2" aria-hidden="true"></i>Catégories
-            </h2>
+      <!-- Sidebar filtres catégories (sticky on desktop, like memberships sidebar) -->
+      <aside class="col-12 col-lg-3 mb-4 mb-lg-0" aria-label="Filtres par catégorie">
+        <div class="sidebar-sticky shop-filters-sidebar">
+          <div class="card card-liquid rounded-liquid shadow-sm">
+            <div class="card-body">
+              <h2 class="h6 mb-3">
+                <i class="bi bi-funnel text-liquid-primary me-2" aria-hidden="true"></i>Catégories
+              </h2>
             
             <div class="d-flex flex-column gap-2">
               <%= link_to products_path, 
@@ -76,10 +77,11 @@
             </div>
           </div>
         </div>
+        </div>
       </aside>
       
       <!-- Contenu principal -->
-      <div class="col-12 col-md-9">
+      <div class="col-12 col-lg-9">
         <% if @selected_category %>
           <div class="mb-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">

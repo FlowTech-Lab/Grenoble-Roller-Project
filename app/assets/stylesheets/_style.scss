@@ -5996,6 +5996,11 @@
     overflow-y: auto;
   }
 
+  /* Shop category filters: stick while scrolling the product grid */
+  .shop-filters-sidebar {
+    top: 5.5rem;
+  }
+
   @media (max-width: 1024px) {
     .sidebar-sticky {
       position: relative;
