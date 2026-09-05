@@ -10281,3 +10281,27 @@ img.lazy-skeleton {
 img.lazy-loaded {
   opacity: 1;
 }
+
+/* Fade-in effect for lazy-loaded images */
+img.lazy-skeleton {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+img.lazy-loaded {
+  opacity: 1;
+}
+
+img.lazy-skeleton {
+  background-color: var(--gr-bg-light);
+  background-size: 100% 100%;
+  animation: pulse 1.5s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+img.lazy-loaded {
+  opacity: 1;
+}
+[data-bs-theme="dark"] img.lazy-skeleton {
+  background-color: #0f131a;
+}
