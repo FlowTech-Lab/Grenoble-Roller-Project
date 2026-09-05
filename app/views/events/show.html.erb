@@ -22,7 +22,7 @@
               data: hero_viewer_data,
               aria: { label: "Agrandir l'image de l'événement" }
             ) do %>
-          <%= image_tag(rails_representation_path(@event.cover_image_banner), alt: @event.title, class: "hero-image", loading: "eager") %>
+          <%= lazy_image_tag(rails_representation_path(@event.cover_image_banner), alt: @event.title, class: "hero-image", loading: "eager") %>
           <div class="hero-overlay"></div>
 
           <!-- Badge de date en haut à droite (z-index élevé) -->
@@ -118,7 +118,7 @@
       <% else %>
         <div class="hero-image-container">
           <% if @event.cover_image.attached? %>
-            <%= image_tag(rails_representation_path(@event.cover_image_banner), alt: @event.title, class: "hero-image", loading: "eager") %>
+            <%= lazy_image_tag(rails_representation_path(@event.cover_image_banner), alt: @event.title, class: "hero-image", loading: "eager") %>
           <% end %>
           <div class="hero-overlay"></div>
           <div class="hero-content">
@@ -251,7 +251,7 @@
                       data: route_map_viewer_data(@event.route, title: "Carte du parcours"),
                       aria: { label: "Agrandir la carte du parcours" }
                     ) do %>
-                  <%= image_tag(route_map_image_path(@event.route, resize_to: [1200, 600]),
+                  <%= lazy_image_tag(route_map_image_path(@event.route, resize_to: [1200, 600]),
                       alt: "Carte du parcours",
                       class: "route-image event-loop-card__img") %>
                 <% end %>
