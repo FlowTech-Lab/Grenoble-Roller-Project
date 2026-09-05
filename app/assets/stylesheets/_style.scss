@@ -10271,3 +10271,13 @@ body.admin-panel {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
+
+/* Fade-in effect for lazy-loaded images */
+img.lazy-skeleton {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+img.lazy-loaded {
+  opacity: 1;
+}
