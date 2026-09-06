@@ -41,11 +41,6 @@ class Attendance < ApplicationRecord
   after_destroy :notify_waitlist_if_needed # Notifier la liste d'attente si une place se libère
   after_update :notify_waitlist_on_cancellation, if: :saved_change_to_status? # Notifier si le statut passe à "canceled"
 
-  # Audit trail for attendance changes
-  after_create :create_attendance_audit
-  after_update :update_attendance_audit
-  after_destroy :destroy_attendance_audit
-
   scope :active, -> { where.not(status: "canceled") }
   scope :canceled, -> { where(status: "canceled") }
   scope :volunteers, -> { where(is_volunteer: true) }
@@ -364,63 +359,5 @@ class Attendance < ApplicationRecord
     return if available.positive?
 
     errors.add(:roller_size, "n'est plus disponible pour cette initiation")
-  end
-
-  # Audit trail methods
-  def create_attendance_audit
-    AuditLog.create!(
-      actor_user: user,
-      action: "created",
-      target_type: "Attendance",
-      target_id: id,
-      metadata: {
-        event_id: event_id,
-        status: status,
-        child_membership_id: child_membership_id,
-        is_volunteer: is_volunteer,
-        free_trial_used: free_trial_used,
-        wants_reminder: wants_reminder,
-        needs_equipment: needs_equipment,
-        roller_size: roller_size,
-        payment_id: payment_id
-      }
-    )
-  end
-
-  def update_attendance_audit
-    # Only log if relevant fields changed
-    relevant_changes = saved_changes.slice(:status, :child_membership_id, :is_volunteer, :free_trial_used, :wants_reminder, :needs_equipment, :roller_size)
-    return if relevant_changes.empty?
-
-    AuditLog.create!(
-      actor_user: user,
-      action: "updated",
-      target_type: "Attendance",
-      target_id: id,
-      metadata: {
-        changes: relevant_changes,
-        event_id: event_id
-      }
-    )
-  end
-
-  def destroy_attendance_audit
-    AuditLog.create!(
-      actor_user: user,
-      action: "destroyed",
-      target_type: "Attendance",
-      target_id: id,
-      metadata: {
-        event_id: event_id,
-        status: status,
-        child_membership_id: child_membership_id,
-        is_volunteer: is_volunteer,
-        free_trial_used: free_trial_used,
-        wants_reminder: wants_reminder,
-        needs_equipment: needs_equipment,
-        roller_size: roller_size,
-        payment_id: payment_id
-      }
-    )
   end
 end
