@@ -597,4 +597,42 @@ RSpec.describe Attendance, type: :model do
       end
     end
   end
+  describe 'audit trail' do
+    let(:user) { create_user }
+    let(:event) { create_event(creator_user: user) }
+
+    it 'creates an audit log on creation' do
+      expect {
+        Attendance.create!(user: user, event: event, status: 'registered')
+      }.to change { AuditLog.count }.by(1)
+
+      log = AuditLog.last
+      expect(log.actor_user).to eq(user)
+      expect(log.action).to eq('created')
+      expect(log.target_type).to eq('Attendance')
+      expect(log.metadata['status']).to eq('registered')
+    end
+
+    it 'updates audit log on update' do
+      att = Attendance.create!(user: user, event: event, status: 'pending')
+      expect {
+        att.update!(status: 'registered')
+      }.to change { AuditLog.count }.by(1)
+
+      log = AuditLog.last
+      expect(log.action).to eq('updated')
+      expect(log.metadata['changes']).to include('status' => ['pending', 'registered'])
+    end
+
+    it 'creates audit log on destruction' do
+      att = Attendance.create!(user: user, event: event, status: 'registered')
+      expect {
+        att.destroy
+      }.to change { AuditLog.count }.by(1)
+
+      log = AuditLog.last
+      expect(log.action).to eq('destroyed')
+      expect(log.metadata['status']).to eq('registered')
+    end
+  end
 end

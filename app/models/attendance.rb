@@ -360,6 +360,8 @@ class Attendance < ApplicationRecord
     return if available.positive?
 
     errors.add(:roller_size, "n'est plus disponible pour cette initiation")
+  end
+
   # Auditable concern methods
   def audit_actor
     user
