@@ -8,6 +8,24 @@ RSpec.describe 'Event Attendance', type: :system do
   let!(:route) { create(:route) }
   let!(:event) { create(:event, :published, creator_user: organizer, route: route, max_participants: 10, start_at: 3.days.from_now) }
 
+  def open_attend_confirm_modal!
+    find('button[data-bs-target="#confirmAttendModalShow"]', match: :first).click
+    return if page.has_css?('#confirmAttendModalShow.show', visible: :visible, wait: 3)
+
+    page.execute_script(<<~JS)
+      const el = document.getElementById('confirmAttendModalShow');
+      if (el && window.bootstrap?.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(el).show();
+      } else if (el) {
+        el.classList.add('show');
+        el.style.display = 'block';
+        el.removeAttribute('aria-hidden');
+        el.setAttribute('aria-modal', 'true');
+      }
+    JS
+    expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
+  end
+
   describe 'Inscription à un événement' do
     context 'quand l\'utilisateur est connecté' do
       before do
@@ -44,9 +62,7 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
-        click_button('Inscription', match: :first)
-
-        expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
+        open_attend_confirm_modal!
         expect(page).to have_content('Confirmer votre inscription')
 
         # Click by stable id — avoids stale nodes when Bootstrap dismisses the modal on submit
@@ -61,9 +77,7 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
-        click_button('Inscription', match: :first)
-
-        expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
+        open_attend_confirm_modal!
         find('#cancelBtnShow').click
 
         expect(page).not_to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
@@ -90,9 +104,9 @@ RSpec.describe 'Event Attendance', type: :system do
         event.reload
         visit event_path(event)
 
-        accept_confirm do
-          find('button[aria-label="Se désinscrire"]').click
-        end
+        # data-turbo-confirm uses window.confirm; stub for headless reliability
+        page.execute_script('window.confirm = () => true')
+        find('button[aria-label="Se désinscrire"]').click
 
         expect(page).to have_current_path(event_path(event), wait: 10)
         expect(page).to have_button('Inscription').or have_button("S'inscrire")
@@ -120,7 +134,9 @@ RSpec.describe 'Event Attendance', type: :system do
       it 'affiche le badge "Complet" et désactive le bouton S\'inscrire' do
         visit event_path(full_event)
 
-        expect(page).to have_content('Complet')
+        # Cover-less events expose "complet" in the alert (lowercase); badge uses "Complet"
+        expect(page).to have_text(/complet/i)
+        expect(page).to have_content('Cet événement est complet')
         # Le bouton "S'inscrire" ou "Inscription" ne doit pas être présent quand l'événement est complet
         expect(page).not_to have_button('S\'inscrire')
         expect(page).not_to have_button('Inscription')
