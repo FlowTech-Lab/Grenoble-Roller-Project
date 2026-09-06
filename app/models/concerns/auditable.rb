@@ -24,6 +24,12 @@ module Auditable
 
   private
 
+  # Default actor is nil (system-level). Models with a user association
+  # should override this to return the responsible User.
+  def audit_actor
+    nil
+  end
+
   # Build a hash of attributes to store in the audit log.
   # Subclasses can override to customise what is audited.
   def audit_attributes
@@ -41,25 +47,26 @@ module Auditable
   end
 
   def audit_update
-    # Only log if there are changes to audited attributes.
-    # We consider changes in the return of `audit_attributes` (excluding id).
-    # To keep it simple, we log on every update; subclasses can override
-    # to skip logging when irrelevant.
     AuditLog.create!(
       actor_user: audit_actor,
       action:     'updated',
       target_type: self.class.name,
       target_id:   id,
       metadata:    audit_attributes.merge(
-                    id: id,
-                    changed: saved_changes
-                  )
+                     id: id,
+                     changes: saved_changes
+                   )
     )
   end
 
   def audit_destroy
+    actor = audit_actor
+    # If the actor is the record being destroyed, it will no longer exist in the DB
+    # after the transaction commits. Set actor_user_id to nil to avoid FK violations.
+    actor_id = (actor.present? && actor == self) ? nil : actor.try(:id)
+
     AuditLog.create!(
-      actor_user: audit_actor,
+      actor_user_id: actor_id,
       action:     'destroyed',
       target_type: self.class.name,
       target_id:   id,
