@@ -12,16 +12,15 @@ RSpec.describe 'Event Attendance', type: :system do
     find('button[data-bs-target="#confirmAttendModalShow"]', match: :first).click
     return if page.has_css?('#confirmAttendModalShow.show', visible: :visible, wait: 3)
 
+    # Prefer Bootstrap Modal API so data-bs-dismiss on Annuler can hide the dialog.
+    # Do not fake .show via classList — that leaves dismiss broken.
     page.execute_script(<<~JS)
       const el = document.getElementById('confirmAttendModalShow');
-      if (el && window.bootstrap?.Modal) {
-        window.bootstrap.Modal.getOrCreateInstance(el).show();
-      } else if (el) {
-        el.classList.add('show');
-        el.style.display = 'block';
-        el.removeAttribute('aria-hidden');
-        el.setAttribute('aria-modal', 'true');
+      if (!el) throw new Error('confirmAttendModalShow missing');
+      if (!window.bootstrap || !window.bootstrap.Modal) {
+        throw new Error('window.bootstrap.Modal unavailable');
       }
+      window.bootstrap.Modal.getOrCreateInstance(el).show();
     JS
     expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
   end
@@ -78,9 +77,11 @@ RSpec.describe 'Event Attendance', type: :system do
         visit event_path(event)
 
         open_attend_confirm_modal!
-        find('#cancelBtnShow').click
+        within('#confirmAttendModalShow') do
+          find('#cancelBtnShow').click
+        end
 
-        expect(page).not_to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
+        expect(page).not_to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 10)
         expect(event.attendances.where(user: member).exists?).to be false
       end
 
