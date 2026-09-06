@@ -602,11 +602,18 @@ RSpec.describe Attendance, type: :model do
     let(:event) { create_event(creator_user: user) }
 
     it 'creates an audit log on creation' do
-      expect {
-        Attendance.create!(user: user, event: event, status: 'registered')
-      }.to change { AuditLog.count }.by(1)
+      # On crée l'événement d'abord pour séparer les logs
+      event = create_event(creator_user: user)
+      # On compte les logs attendance avant la création
+      before_count = AuditLog.where(target_type: 'Attendance').count
+      
+      Attendance.create!(user: user, event: event, status: 'registered')
+      
+      # On vérifie seulement les logs liés à l'Attendance
+      attendance_logs = AuditLog.where(target_type: 'Attendance')
+      expect(attendance_logs.count).to eq(before_count + 1)
 
-      log = AuditLog.last
+      log = attendance_logs.last
       expect(log.actor_user).to eq(user)
       expect(log.action).to eq('created')
       expect(log.target_type).to eq('Attendance')
