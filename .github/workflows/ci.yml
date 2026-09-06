@@ -69,7 +69,7 @@ jobs:
 
     env:
       RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/grenoble_roller_test
 
     steps:
       - name: Install system dependencies
@@ -95,8 +95,10 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Create and load database schema
-        run: bin/rails db:create db:schema:load
+      - name: Prepare database
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
 
       - name: Run RSpec
         run: bundle exec rspec --format progress
