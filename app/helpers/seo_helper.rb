@@ -43,7 +43,7 @@ module SeoHelper
   def seo_og_tags
     og_title   = content_for?(:og_title)   ? content_for(:og_title)   : seo_title.gsub(/<\/?title>/, '').strip
     og_desc    = content_for?(:og_description) ? content_for(:og_description) : seo_description.gsub(/<\/?meta[^>]*>/, '').strip
-    og_image   = content_for?(:og_image)   ? content_for(:og_image)   : image_url("logo.png")
+    og_image   = content_for?(:og_image)   ? content_for(:og_image)   : image_url("logo/logo_grenobleroller_color.png")
     og_url     = request.original_url
     og_type    = "website"
 
@@ -64,7 +64,7 @@ module SeoHelper
       tag(:meta, name: "twitter:creator", content: "@grenobleroller"),
       tag(:meta, name: "twitter:title", content: seo_title.gsub(/<\/?title>/, '').strip),
       tag(:meta, name: "twitter:description", content: seo_description.gsub(/<\/?meta[^>]*>/, '').strip),
-      tag(:meta, name: "twitter:image", content: content_for?(:og_image) ? content_for(:og_image) : image_url("logo.png"))
+      tag(:meta, name: "twitter:image", content: content_for?(:og_image) ? content_for(:og_image) : image_url("logo/logo_grenobleroller_color.png"))
     ], "\n"
   end
 
@@ -77,7 +77,7 @@ module SeoHelper
       "@type": "Organization",
       "name": "Grenoble Roller",
       "url": root_url,
-      "logo": image_url("logo.png"),
+      "logo": image_url("logo/logo_grenobleroller_color.png"),
       "sameAs": [
         "https://www.facebook.com/GrenobleRoller",
         "https://www.instagram.com/grenobleroller/",

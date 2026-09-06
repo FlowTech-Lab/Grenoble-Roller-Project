@@ -44,7 +44,9 @@ This release focuses on improving search engine optimization (SEO), generative e
 - Existing helper `lazy_image_tag` adds `loading="lazy"` by default (wrapper around `image_tag`).
 - **Extended to all images**: every `image_tag` call in view files (excluding admin panel, but applied there as well for consistency) has been replaced with `lazy_image_tag`.
   - Exceptions where eager loading is required (e.g., LCP‑critical images) retain explicit options (`loading: "eager"`, `fetchpriority: "high"`). Example: the main history image on `/about`.
-- Result: all non‑critical images now load lazily, improving LCP and reducing initial payload.
+- Added a CSS skeleton placeholder via the `lazy-skeleton` class (added automatically by the helper) for a smoother loading experience (pulsing animation).
+- Added a fade‑in transition (`opacity` + `transition`) when the image finishes loading (class `lazy-loaded`).
+- Result: all non‑critical images now load lazily with a visual placeholder that fades in, improving LCP and reducing initial payload.
 
 ## Files Modified
 

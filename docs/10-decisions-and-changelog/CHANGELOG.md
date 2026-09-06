@@ -2,6 +2,11 @@
 
 Ce fichier documente les changements significatifs du projet Grenoble Roller.
 
+## [2026-09-06] - Attendance Audit Trail (v2.4.1)
+
+### Added
+- Audit trail for attendance create/update/destroy actions via `AuditLog` model, tracking user, event, status changes, etc.
+
 ## [2026-09-05] - SEO/GEO Improvements & Lazy Loading (v2.4.0)
 
 ### Added
