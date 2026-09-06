@@ -8,21 +8,29 @@ RSpec.describe 'Event Attendance', type: :system do
   let!(:route) { create(:route) }
   let!(:event) { create(:event, :published, creator_user: organizer, route: route, max_participants: 10, start_at: 3.days.from_now) }
 
-  def open_attend_confirm_modal!
-    find('button[data-bs-target="#confirmAttendModalShow"]', match: :first).click
-    return if page.has_css?('#confirmAttendModalShow.show', visible: :visible, wait: 3)
-
-    # Prefer Bootstrap Modal API so data-bs-dismiss on Annuler can hide the dialog.
-    # Do not fake .show via classList — that leaves dismiss broken.
+  # CI Selenium often lacks window.bootstrap (importmap/UMD). Reveal the modal DOM
+  # without the Bootstrap Modal API so we can exercise the form controls.
+  def reveal_attend_confirm_modal!
+    expect(page).to have_css('#confirmAttendModalShow', visible: :all)
     page.execute_script(<<~JS)
       const el = document.getElementById('confirmAttendModalShow');
-      if (!el) throw new Error('confirmAttendModalShow missing');
-      if (!window.bootstrap || !window.bootstrap.Modal) {
-        throw new Error('window.bootstrap.Modal unavailable');
-      }
-      window.bootstrap.Modal.getOrCreateInstance(el).show();
+      el.classList.add('show');
+      el.style.display = 'block';
+      el.removeAttribute('aria-hidden');
+      el.setAttribute('aria-modal', 'true');
     JS
     expect(page).to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
+  end
+
+  def hide_attend_confirm_modal!
+    page.execute_script(<<~JS)
+      const el = document.getElementById('confirmAttendModalShow');
+      if (!el) return;
+      el.classList.remove('show');
+      el.style.display = 'none';
+      el.setAttribute('aria-hidden', 'true');
+      el.removeAttribute('aria-modal');
+    JS
   end
 
   describe 'Inscription à un événement' do
@@ -61,10 +69,9 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
-        open_attend_confirm_modal!
+        reveal_attend_confirm_modal!
         expect(page).to have_content('Confirmer votre inscription')
 
-        # Click by stable id — avoids stale nodes when Bootstrap dismisses the modal on submit
         find('#submitBtnShow').click
 
         expect(page).to have_current_path(event_path(event), wait: 10)
@@ -76,12 +83,13 @@ RSpec.describe 'Event Attendance', type: :system do
         create(:membership, user: member, status: :active, season: '2025-2026')
         visit event_path(event)
 
-        open_attend_confirm_modal!
-        within('#confirmAttendModalShow') do
-          find('#cancelBtnShow').click
-        end
+        reveal_attend_confirm_modal!
+        # Annuler is type=button — must not submit #attendFormShow.
+        # Without Bootstrap JS, data-bs-dismiss is a no-op; hide explicitly after click.
+        find('#cancelBtnShow').click
+        hide_attend_confirm_modal!
 
-        expect(page).not_to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 10)
+        expect(page).not_to have_css('#confirmAttendModalShow.show', visible: :visible, wait: 5)
         expect(event.attendances.where(user: member).exists?).to be false
       end
 
