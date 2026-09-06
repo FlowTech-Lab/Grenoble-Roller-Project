@@ -24,7 +24,7 @@ jobs:
         run: bundle exec brakeman --no-pager
 
       - name: Bundle Audit — gem CVE check
-        run: bundle exec bundle-audit check --update || echo "::warning::Gem vulnerabilities found — review bundle-audit output"
+        run: bundle exec bundle-audit check --update || echo "::warning::Gem vulnerabilities found"
 
       - name: Setup Node & npm audit
         uses: actions/setup-node@v4
@@ -95,8 +95,117 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Prepare database (schema only, no seeds)
-        run: bin/rails db:schema:load
+      - name: Create and load database schema
+        run: bin/rails db:create db:schema:load
+
+      - name: Run RSpec
+        run: bundle exec rspec --format progress
+
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots
+          path: tmp/screenshots
+          if-no-files-found: ignorename: CI
+
+on:
+  pull_request:
+    branches: [main, staging, Dev]
+  push:
+    branches: [main, Dev]
+
+jobs:
+  security:
+    name: Security scans
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Brakeman — Rails security
+        run: bundle exec brakeman --no-pager
+
+      - name: Bundle Audit — gem CVE check
+        run: bundle exec bundle-audit check --update || echo "::warning::Gem vulnerabilities found"
+
+      - name: Setup Node & npm audit
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm audit --omit=dev || echo "::warning::JS vulnerabilities found"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: RuboCop
+        run: bundle exec rubocop -f github
+
+  test:
+    name: RSpec
+    runs-on: ubuntu-latest
+    needs: [lint]
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432
+
+    steps:
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential libpq-dev libyaml-dev node-gyp pkg-config libvips-dev
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Create and load database schema
+        run: bin/rails db:create db:schema:load
 
       - name: Run RSpec
         run: bundle exec rspec --format progress
