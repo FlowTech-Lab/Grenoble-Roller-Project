@@ -184,7 +184,7 @@ class User < ApplicationRecord
     self
   end
 
-  
+
 
   def audit_attributes
     {

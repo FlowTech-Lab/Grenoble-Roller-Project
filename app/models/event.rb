@@ -377,7 +377,7 @@ class Event < ApplicationRecord
   # Callback pour notifier tous les inscrits et bénévoles quand l'événement est annulé
   after_commit :notify_attendees_on_cancellation, on: [ :update ], if: -> { saved_change_to_status? && canceled? }
 
-  # Auditable concern methods
+    # Auditable concern methods
     def audit_actor
       creator_user
     end

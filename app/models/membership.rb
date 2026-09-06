@@ -277,7 +277,7 @@ include Auditable
     end
   end
 
-  # Auditable concern methods
+    # Auditable concern methods
     def audit_actor
       user
     end

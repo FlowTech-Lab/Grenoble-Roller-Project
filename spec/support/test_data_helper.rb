@@ -77,7 +77,7 @@ module TestDataHelper
   def build_attendance(attrs = {})
     user = attrs.delete(:user) || create_user
     event = attrs.delete(:event) || create_event
-    
+
     defaults = {
       user: user,
       event: event,
