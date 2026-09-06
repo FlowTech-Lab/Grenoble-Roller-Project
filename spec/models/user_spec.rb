@@ -162,7 +162,7 @@ describe 'audit trail' do
     expect(log.metadata).to have_key('changes')
     changes = log.metadata['changes']
     expect(changes).to be_a(Hash)
-    expect(changes['first_name']).to eq(['Test', 'Updated'])
+    expect(changes['first_name']).to eq([ 'Test', 'Updated' ])
   end
 
   it 'creates an audit log on destruction' do

@@ -20,7 +20,7 @@ module SeoHelper
   def seo_title
     title = content_for?(:title) ? content_for(:title) : "Grenoble Roller – Official site"
     # Ensure length between 30 and 60 characters
-    title = title.truncate(60, omission: '') if title.length > 60
+    title = title.truncate(60, omission: "") if title.length > 60
     title = title.ljust(30, " – ") if title.length < 30
     content_tag(:title, title)
   end
@@ -29,7 +29,7 @@ module SeoHelper
   def seo_description
     desc = content_for?(:description) ? content_for(:description) :
            "Boutique en ligne, événements roller, adhésions HelloAsso pour le club de roller de Grenoble."
-    desc = desc.truncate(160, separator: ' ', omission: "…")
+    desc = desc.truncate(160, separator: " ", omission: "…")
     tag(:meta, name: "description", content: desc)
   end
 
@@ -41,8 +41,8 @@ module SeoHelper
 
   # Returns Open Graph meta tags.
   def seo_og_tags
-    og_title   = content_for?(:og_title)   ? content_for(:og_title)   : seo_title.gsub(/<\/?title>/, '').strip
-    og_desc    = content_for?(:og_description) ? content_for(:og_description) : seo_description.gsub(/<\/?meta[^>]*>/, '').strip
+    og_title   = content_for?(:og_title)   ? content_for(:og_title)   : seo_title.gsub(/<\/?title>/, "").strip
+    og_desc    = content_for?(:og_description) ? content_for(:og_description) : seo_description.gsub(/<\/?meta[^>]*>/, "").strip
     og_image   = content_for?(:og_image)   ? content_for(:og_image)   : image_url("logo/logo_grenobleroller_color.png")
     og_url     = request.original_url
     og_type    = "website"
@@ -62,8 +62,8 @@ module SeoHelper
       tag(:meta, name: "twitter:card", content: "summary_large_image"),
       tag(:meta, name: "twitter:site", content: "@grenobleroller"),
       tag(:meta, name: "twitter:creator", content: "@grenobleroller"),
-      tag(:meta, name: "twitter:title", content: seo_title.gsub(/<\/?title>/, '').strip),
-      tag(:meta, name: "twitter:description", content: seo_description.gsub(/<\/?meta[^>]*>/, '').strip),
+      tag(:meta, name: "twitter:title", content: seo_title.gsub(/<\/?title>/, "").strip),
+      tag(:meta, name: "twitter:description", content: seo_description.gsub(/<\/?meta[^>]*>/, "").strip),
       tag(:meta, name: "twitter:image", content: content_for?(:og_image) ? content_for(:og_image) : image_url("logo/logo_grenobleroller_color.png"))
     ], "\n"
   end
@@ -83,12 +83,12 @@ module SeoHelper
         "https://www.instagram.com/grenobleroller/",
         "https://twitter.com/grenobleroller"
       ],
-      "contactPoint": [{
+      "contactPoint": [ {
         "@type": "ContactPoint",
         "telephone": "+33-4-XX-XX-XX-XX",
         "contactType": "Customer service",
         "areaServed": "FR"
-      }]
+      } ]
     }
 
     if content_for?(:event)
@@ -110,7 +110,7 @@ module SeoHelper
           "availability": "https://schema.org/InStock"
         }
       }
-      org = { "@context": "https://schema.org", "@graph": [org, event] }
+      org = { "@context": "https://schema.org", "@graph": [ org, event ] }
     end
 
     tag(:script, type: "application/ld+json", content: org.to_json)

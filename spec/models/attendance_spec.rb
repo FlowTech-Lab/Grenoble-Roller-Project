@@ -606,9 +606,9 @@ RSpec.describe Attendance, type: :model do
       event = create_event(creator_user: user)
       # On compte les logs attendance avant la création
       before_count = AuditLog.where(target_type: 'Attendance').count
-      
+
       Attendance.create!(user: user, event: event, status: 'registered')
-      
+
       # On vérifie seulement les logs liés à l'Attendance
       attendance_logs = AuditLog.where(target_type: 'Attendance')
       expect(attendance_logs.count).to eq(before_count + 1)
@@ -628,7 +628,7 @@ RSpec.describe Attendance, type: :model do
 
       log = AuditLog.last
       expect(log.action).to eq('updated')
-      expect(log.metadata['changes']).to include('status' => ['pending', 'registered'])
+      expect(log.metadata['changes']).to include('status' => [ 'pending', 'registered' ])
     end
 
     it 'creates audit log on destruction' do

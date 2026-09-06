@@ -135,7 +135,7 @@ RSpec.describe NotificationChannel, type: :model do
       log = AuditLog.last
       expect(log.action).to eq("updated")
       expect(log.target_type).to eq("NotificationChannel")
-      expect(log.metadata["changes"]).to include("enabled" => [true, false])
+      expect(log.metadata["changes"]).to include("enabled" => [ true, false ])
     end
 
     it "creates an audit log on destruction" do

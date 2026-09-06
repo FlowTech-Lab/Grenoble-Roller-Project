@@ -39,7 +39,7 @@ module Auditable
   def audit_create
     AuditLog.create!(
       actor_user: audit_actor,
-      action:     'created',
+      action:     "created",
       target_type: self.class.name,
       target_id:   id,
       metadata:    audit_attributes.merge(id: id)
@@ -49,7 +49,7 @@ module Auditable
   def audit_update
     AuditLog.create!(
       actor_user: audit_actor,
-      action:     'updated',
+      action:     "updated",
       target_type: self.class.name,
       target_id:   id,
       metadata:    audit_attributes.merge(
@@ -67,7 +67,7 @@ module Auditable
 
     AuditLog.create!(
       actor_user_id: actor_id,
-      action:     'destroyed',
+      action:     "destroyed",
       target_type: self.class.name,
       target_id:   id,
       metadata:    audit_attributes.merge(id: id)

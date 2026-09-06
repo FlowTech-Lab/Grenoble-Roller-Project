@@ -357,7 +357,7 @@ RSpec.describe Event, type: :model do
       expect(log.metadata).to have_key('changes')
       changes = log.metadata['changes']
       expect(changes).to be_a(Hash)
-      expect(changes['title']).to eq(['Test Event', 'Updated Test Event'])
+      expect(changes['title']).to eq([ 'Test Event', 'Updated Test Event' ])
     end
 
     it 'creates audit log on destruction' do
@@ -398,7 +398,7 @@ RSpec.describe Event, type: :model do
       expect(log.metadata).to have_key('changes')
       changes = log.metadata['changes']
       expect(changes).to be_a(Hash)
-      expect(changes['title']).to eq(['Test Event', 'Updated Test Event'])
+      expect(changes['title']).to eq([ 'Test Event', 'Updated Test Event' ])
     end
 
     it 'creates audit log on destruction' do
